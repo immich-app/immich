@@ -17,7 +17,7 @@ export type DateGroup = {
   bucket: AssetBucket;
 };
 export type ScrollBarListener = (
-  bucketDate: string,
+  bucketDate: string | undefined,
   overallScrollPercent: number,
   bucketScrollPercent: number,
 ) => void | Promise<void>;

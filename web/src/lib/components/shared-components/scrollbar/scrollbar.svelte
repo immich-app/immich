@@ -5,6 +5,7 @@
   import { clamp } from 'lodash-es';
 
   export let timelineTopOffset = 0;
+  export let timelineBottomOffset = 0;
   export let height = 0;
   export let assetStore: AssetStore;
   export let invisible = false;
@@ -25,10 +26,10 @@
   let scrollBar: HTMLElement | undefined;
   let segments: Segment[] = [];
 
-  const toScrollY = (percent: number) => percent * height;
-  const toTimelineY = (scrollY: number) => scrollY / height;
+  const toScrollY = (percent: number) => percent * (height - HOVER_DATE_HEIGHT * 2);
+  const toTimelineY = (scrollY: number) => scrollY / (height - HOVER_DATE_HEIGHT * 2);
 
-  const HOVER_DATE_HEIGHT = 30;
+  const HOVER_DATE_HEIGHT = 31.75;
   const MIN_YEAR_LABEL_DISTANCE = 16;
 
   const toScrollFromBucketPercentage = (
@@ -37,22 +38,24 @@
     scrubOverallPercent: number,
   ) => {
     if (scrubBucket) {
-      let offset = timelineTopOffset;
-      for (const bucket of assetStore.buckets) {
-        if (bucket === scrubBucket) {
+      let offset = relativeTopOffset + relativeBottomOffset;
+      let segmentHeight = 0;
+      for (const segment of segments) {
+        if (segment.bucketDate === scrubBucket.bucketDate) {
+          segmentHeight = segment.height;
           break;
         }
-        offset += bucket.bucketHeight;
+        offset += segment.height;
       }
-      offset += scrubBucketPercent * scrubBucket.bucketHeight;
-      const percent = offset / $assetStore.timelineHeight;
-      const timelineY = percent * height;
-      return timelineY;
+      offset += scrubBucketPercent * segmentHeight;
+      return offset;
     } else {
-      return scrubOverallPercent * height - 2;
+      return scrubOverallPercent * (height - HOVER_DATE_HEIGHT * 2) - 2;
     }
   };
   $: scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
+  $: relativeTopOffset = (timelineTopOffset / $assetStore.timelineHeight) * (height - HOVER_DATE_HEIGHT * 2);
+  $: relativeBottomOffset = (timelineBottomOffset / $assetStore.timelineHeight) * (height - HOVER_DATE_HEIGHT * 2);
 
   const listener: BucketListener = (event) => {
     const { type } = event;
@@ -81,10 +84,11 @@
 
     for (const [i, bucket] of buckets.entries()) {
       const previous = segments[i - 1];
+      const scrollBarPercentage = bucket.bucketHeight / ($assetStore.timelineHeight + timelineTopOffset);
 
       const segment = {
         count: bucket.assets.length,
-        height: toScrollY(bucket.scrollBarPercentage),
+        height: toScrollY(scrollBarPercentage),
         bucketDate: bucket.bucketDate,
         date: fromLocalDateTime(bucket.bucketDate),
         dateFormatted: bucket.bucketDateFormattted,
@@ -105,16 +109,13 @@
       segments.push(segment);
     }
 
+    hoverLabel = segments[0].dateFormatted;
     return segments;
   };
 
-  const updateLabel = (cursorX: number, cursorY: number) => {
-    const segment = document.elementsFromPoint(cursorX, cursorY).find(({ id }) => id === 'time-segment');
-    if (!segment) {
-      return;
-    }
-    hoverLabel = (segment as HTMLElement).dataset.label;
-    bucketDate = (segment as HTMLElement).dataset.timeSegmentBucketDate;
+  const updateLabel = (segment: HTMLElement) => {
+    hoverLabel = segment.dataset.label;
+    bucketDate = segment.dataset.timeSegmentBucketDate;
   };
 
   const handleMouseEvent = (event: { clientY: number; isDragging?: boolean }) => {
@@ -123,33 +124,41 @@
     isDragging = event.isDragging ?? isDragging;
     clientY = event.clientY;
 
-    hoverY = clamp(height - windowHeight + clientY, 0, height);
+    if (!scrollBar) {
+      return;
+    }
 
-    const rect = scrollBar?.getBoundingClientRect();
+    const rect = scrollBar.getBoundingClientRect()!;
+    const lower = 0;
+    const upper = rect?.height - HOVER_DATE_HEIGHT * 2;
+    hoverY = clamp(clientY - rect?.top - HOVER_DATE_HEIGHT, lower, upper);
     const x = rect!.left + rect!.width / 2;
-    const y = rect!.top + Math.min(hoverY, height - 1);
-
-    updateLabel(x, y);
-
-    const segment = document.elementsFromPoint(x, y).find(({ id }) => id === 'time-segment');
+    const elems = document.elementsFromPoint(x, clientY);
+    const segment = elems.find(({ id }) => id === 'time-segment');
     let bucketPercentY = 0;
     if (segment) {
+      updateLabel(segment as HTMLElement);
       const sr = segment.getBoundingClientRect();
       const sy = sr.y;
-      const relativeY = y - sy;
+      const relativeY = clientY - sy;
       bucketPercentY = relativeY / sr.height;
+    } else {
+      const leadin = elems.find(({ id }) => id === 'lead-in');
+      if (leadin) {
+        updateLabel(leadin as HTMLElement);
+      } else {
+        bucketDate = undefined;
+        bucketPercentY = 0;
+      }
     }
 
     const scrollPercent = toTimelineY(hoverY);
-
-    if (!bucketDate) {
-      return;
-    }
 
     if (wasDragging === false && isDragging) {
       void startScrub?.(bucketDate, scrollPercent, bucketPercentY);
       void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
     }
+
     if (wasDragging && !isDragging) {
       void stopScrub?.(bucketDate, scrollPercent, bucketPercentY);
     }
@@ -157,6 +166,7 @@
     if (!isDragging) {
       return;
     }
+
     void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
   };
 </script>
@@ -172,7 +182,9 @@
 
 <div
   id="immich-scrubbable-scrollbar"
-  class="absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
+  class={`absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize`}
+  style:padding-top={HOVER_DATE_HEIGHT + 'px'}
+  style:padding-bottom={HOVER_DATE_HEIGHT + 'px'}
   class:invisible
   style:width={isDragging ? '100vw' : '60px'}
   style:height={height + 'px'}
@@ -182,11 +194,11 @@
   on:mouseenter={() => (isHover = true)}
   on:mouseleave={() => (isHover = false)}
 >
-  {#if isHover || isDragging}
+  {#if hoverLabel && (isHover || isDragging)}
     <div
       id="time-label"
-      class="pointer-events-none absolute right-0 z-[100] min-w-24 w-fit whitespace-nowrap rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
-      style:top="{clamp(hoverY - HOVER_DATE_HEIGHT, 0, height - HOVER_DATE_HEIGHT - 2)}px"
+      class="truncate pointer-events-none absolute right-0 z-[100] min-w-24 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+      style:top="{hoverY}px"
     >
       {hoverLabel}
     </div>
@@ -194,10 +206,18 @@
 
   <!-- Scroll Position Indicator Line -->
   {#if !isDragging}
-    <div class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary" style:top="{scrollY}px" />
+    <div
+      class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
+      style:top="{scrollY + HOVER_DATE_HEIGHT}px"
+    />
   {/if}
+  <div id="lead-in" class="relative" style:height={relativeTopOffset + 'px'} data-label={segments.at(0)?.dateFormatted}>
+    {#if relativeTopOffset > 6}
+      <div class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300" />
+    {/if}
+  </div>
   <!-- Time Segment -->
-  {#each segments as segment}
+  {#each segments as segment, index}
     <div
       id="time-segment"
       class="relative"
@@ -213,14 +233,22 @@
         >
           {segment.date.year}
         </div>
-      {:else if segment.height > 5}
+        <div class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300" />
+      {:else if segment.height > 6}
         <div
           aria-label={segment.dateFormatted + ' ' + segment.count}
           class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300"
         />
+        {#if segment.height > 18 && (index === segments.length - 1 || segments[index + 1]?.height < 18)}
+          <div
+            aria-label={segment.dateFormatted + ' ' + segment.count}
+            class="absolute right-0 mr-3 block bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"
+          />
+        {/if}
       {/if}
     </div>
   {/each}
+  <div id="lead-out" class="relative" style:height={relativeBottomOffset + 'px'}></div>
 </div>
 
 <style>

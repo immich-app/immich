@@ -76,6 +76,8 @@
   let scrubOverallPercent: number = 0;
   let topSectionHeight = 0;
   let topSectionOffset = 0;
+  // 60 is the bottom spacer element at 60px
+  let bottomSectionHeight = 60;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
@@ -258,32 +260,34 @@
   const _updateViewport = () => void $assetStore.updateViewport(safeViewport);
   const updateViewport = throttle(_updateViewport, 16);
 
-  const _onScrub: ScrollBarListener = (bucketDate: string, scrollPercent: number, bucketScrollPercent: number) => {
-    if ($assetStore.timelineHeight < safeViewport.height * 2) {
+  const _onScrub: ScrollBarListener = (
+    bucketDate: string | undefined,
+    scrollPercent: number,
+    bucketScrollPercent: number,
+  ) => {
+    if (!bucketDate || $assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
 
-      // 60 is the bottom spacer element at 60px
-      const maxScroll = topSectionHeight + 60 + (timelineElement.clientHeight - element.clientHeight);
+      const maxScroll = topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
       const offset = maxScroll * scrollPercent;
       element.scrollTop = offset;
     } else {
-      // note - using findTotalOffset in timeline-utils.ts is a bit more accurate, because this
-      // relies on offsetTop which is rounded to integer
       const toffset = getOffset(bucketDate) + topSectionHeight + topSectionOffset;
       const bucket = assetStore.buckets.find((b) => b.bucketDate === bucketDate);
       if (bucket) {
+        const maxScrollPercent = ($assetStore.timelineHeight - safeViewport.height) / $assetStore.timelineHeight;
         const delta = bucket.bucketHeight * bucketScrollPercent;
-        element.scrollTop = toffset + delta;
+        element.scrollTop = (toffset + delta) * maxScrollPercent;
       }
     }
   };
   const onScrub = throttle(_onScrub, 16, { leading: false, trailing: true });
   const stopScrub: ScrollBarListener = async (
-    bucketDate: string,
+    bucketDate: string | undefined,
     _scrollPercent: number,
     bucketScrollPercent: number,
   ) => {
-    if ($assetStore.timelineHeight < safeViewport.height * 2) {
+    if (!bucketDate || $assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       return;
     }
@@ -319,29 +323,43 @@
       // Wait here, and collect the deltas that are above offset, which affect offset position
       await bucket.measuredPromise;
       assetStore.removeListener(listen);
-      element.scrollTo({ top: offset + deltas });
+      const maxScrollPercent =
+        ($assetStore.timelineHeight + bottomSectionHeight - safeViewport.height) / $assetStore.timelineHeight;
+      element.scrollTo({ top: (offset + deltas) * maxScrollPercent });
     }
   };
 
   const _handleTimelineScroll = () => {
     if ($assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
-      const maxScroll = topSectionHeight + 60 + (timelineElement.clientHeight - element.clientHeight);
+      const maxScroll = topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
       scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
 
-      // console.log(scrubOverallPercent);
       scrubBucket = undefined;
       scrubBucketPercent = 0;
     } else {
       let top = element?.scrollTop;
-      top -= topSectionHeight;
+      if (top < topSectionHeight) {
+        // in the lead-in area
+        scrubBucket = undefined;
+        scrubBucketPercent = 0;
+        const maxScroll =
+          topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+        scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
+        return;
+      }
+
+      let maxScrollPercent =
+        ($assetStore.timelineHeight + topSectionHeight + bottomSectionHeight - safeViewport.height) /
+        $assetStore.timelineHeight;
 
       for (let i = 0; i < assetStore.buckets.length; i++) {
         const bucket = assetStore.buckets[i];
-        let next = top - bucket.bucketHeight;
+        let next = top - bucket.bucketHeight * maxScrollPercent;
+
         if (next < 0) {
           scrubBucket = assetStore.buckets[i];
-          scrubBucketPercent = top / bucket.bucketHeight;
+          scrubBucketPercent = top / (bucket.bucketHeight * maxScrollPercent);
           break;
         }
         top = next;
@@ -737,6 +755,7 @@
   {assetStore}
   height={safeViewport.height}
   timelineTopOffset={topSectionHeight}
+  timelineBottomOffset={bottomSectionHeight}
   {scrubOverallPercent}
   {scrubBucketPercent}
   {scrubBucket}
