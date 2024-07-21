@@ -880,12 +880,12 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
-export type LicenseKeyDto = {
+export type LicenseResponseDto = {
+    activatedAt: string;
     activationKey: string;
     licenseKey: string;
 };
-export type LicenseResponseDto = {
-    activatedAt: string;
+export type LicenseKeyDto = {
     activationKey: string;
     licenseKey: string;
 };
@@ -2510,7 +2510,7 @@ export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
 export function getServerLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: object;
+        data: LicenseResponseDto | null;
     }>("/server/license", {
         ...opts
     }));

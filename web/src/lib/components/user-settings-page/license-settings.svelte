@@ -36,7 +36,7 @@
     }
 
     if (isServerLicense && $user.isAdmin) {
-      serverLicenseInfo = (await getServerLicense()) as LicenseResponseDto | null;
+      serverLicenseInfo = await getServerLicense();
     }
   };
 

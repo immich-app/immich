@@ -5022,7 +5022,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/LicenseResponseDto"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             },
