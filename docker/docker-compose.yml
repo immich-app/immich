@@ -18,6 +18,9 @@ services:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+      - /home/user/old-pics:/home/user/old-pics:ro
+      - /srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:/srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:ro
+      
     env_file:
       - .env
     ports:
