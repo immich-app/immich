@@ -248,6 +248,8 @@
     "transcoding_accepted_audio_codecs_description": "Select which audio codecs do not need to be transcoded. Only used for certain transcode policies.",
     "transcoding_accepted_video_codecs": "Accepted video codecs",
     "transcoding_accepted_video_codecs_description": "Select which video codecs do not need to be transcoded. Only used for certain transcode policies.",
+    "transcoding_accepted_containers": "Accepted video containers",
+    "transcoding_accepted_containers_description": "Select which video containers do not need to be remuxed to MP4. Only used for certain transcode policies.",
     "transcoding_advanced_options_description": "Options most users should not need to change",
     "transcoding_audio_codec": "Audio codec",
     "transcoding_audio_codec_description": "Opus is the highest quality option, but has lower compatibility with old devices or software.",
