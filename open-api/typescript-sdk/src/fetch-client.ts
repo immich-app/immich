@@ -960,6 +960,7 @@ export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     accelDecode: boolean;
     acceptedAudioCodecs: AudioCodec[];
+    acceptedContainers: VideoContainer[];
     acceptedVideoCodecs: VideoCodec[];
     bframes: number;
     cqMode: CQMode;
@@ -3177,6 +3178,12 @@ export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
     Libopus = "libopus"
+}
+export enum VideoContainer {
+    Mov = "mov",
+    Mp4 = "mp4",
+    Ogg = "ogg",
+    Webm = "webm"
 }
 export enum VideoCodec {
     H264 = "h264",
