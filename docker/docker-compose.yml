@@ -18,6 +18,12 @@ services:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+      - /srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:/srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:ro
+      - /srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:/srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Roland:ro
+      - /srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:/srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Arne:ro
+      - /srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:/srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Firma:ro
+      - /srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Andre:/srv/dev-disk-by-uuid-72237add-b470-426c-b5cf-cc3123ea0482/Bilder-Archiv/Kerstin:ro
+      
     env_file:
       - .env
     ports:
