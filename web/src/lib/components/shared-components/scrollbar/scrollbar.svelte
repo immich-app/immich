@@ -3,6 +3,7 @@
   import type { DateTime } from 'luxon';
   import { fromLocalDateTime, type ScrollBarListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';
+  import { onMount } from 'svelte';
 
   export let timelineTopOffset = 0;
   export let timelineBottomOffset = 0;
@@ -31,6 +32,7 @@
 
   const HOVER_DATE_HEIGHT = 31.75;
   const MIN_YEAR_LABEL_DISTANCE = 16;
+  const MIN_DOT_DISTANCE = 8;
 
   const toScrollFromBucketPercentage = (
     scrubBucket: AssetBucket | undefined,
@@ -61,11 +63,14 @@
     const { type } = event;
     if (type === 'viewport') {
       segments = calculateSegments($assetStore.buckets);
-      assetStore.removeListener(listener);
+      scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
     }
   };
 
-  assetStore.addListener(listener);
+  onMount(() => {
+    assetStore.addListener(listener);
+    return () => assetStore.removeListener(listener);
+  });
 
   type Segment = {
     count: number;
@@ -74,10 +79,12 @@
     bucketDate: string;
     date: DateTime;
     hasLabel: boolean;
+    hasDot: boolean;
   };
 
   const calculateSegments = (buckets: AssetBucket[]) => {
     let height = 0;
+    let dotHeight = 0;
 
     let segments: Segment[] = [];
     let previousLabeledSegment: Segment | undefined;
@@ -93,10 +100,13 @@
         date: fromLocalDateTime(bucket.bucketDate),
         dateFormatted: bucket.bucketDateFormattted,
         hasLabel: false,
+        hasDot: false,
       };
 
       if (i == 1) {
         height = 0;
+        dotHeight = 0;
+        previous.hasDot = true;
         previous.hasLabel = true;
         previousLabeledSegment = segment;
       } else if (previousLabeledSegment?.date?.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
@@ -104,12 +114,17 @@
         segment.hasLabel = true;
         previousLabeledSegment = segment;
       }
+      if (i !== 1 && segment.height > 5 && dotHeight > MIN_DOT_DISTANCE) {
+        segment.hasDot = true;
+        dotHeight = 0;
+      }
 
       height += segment.height;
+      dotHeight += segment.height;
       segments.push(segment);
     }
 
-    hoverLabel = segments[0].dateFormatted;
+    hoverLabel = segments[0]?.dateFormatted;
     return segments;
   };
 
@@ -213,7 +228,7 @@
   {/if}
   <div id="lead-in" class="relative" style:height={relativeTopOffset + 'px'} data-label={segments.at(0)?.dateFormatted}>
     {#if relativeTopOffset > 6}
-      <div class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300" />
+      <div class="absolute right-[0.75rem] h-[4px] w-[4px] rounded-full bg-gray-300" />
     {/if}
   </div>
   <!-- Time Segment -->
@@ -229,22 +244,16 @@
       {#if segment.hasLabel}
         <div
           aria-label={segment.dateFormatted + ' ' + segment.count}
-          class="absolute right-0 bottom-0 z-10 pr-5 text-[12px] dark:text-immich-dark-fg font-immich-mono"
+          class="absolute right-[1.25rem] bottom-0 z-10 text-[12px] dark:text-immich-dark-fg font-immich-mono"
         >
           {segment.date.year}
         </div>
-        <div class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300" />
-      {:else if segment.height > 6}
+      {/if}
+      {#if segment.hasDot}
         <div
           aria-label={segment.dateFormatted + ' ' + segment.count}
-          class="absolute right-0 mr-3 block h-[4px] w-[4px] rounded-full bg-gray-300"
+          class="absolute right-[0.75rem] bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"
         />
-        {#if segment.height > 18 && (index === segments.length - 1 || segments[index + 1]?.height < 18)}
-          <div
-            aria-label={segment.dateFormatted + ' ' + segment.count}
-            class="absolute right-0 mr-3 block bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"
-          />
-        {/if}
       {/if}
     </div>
   {/each}
