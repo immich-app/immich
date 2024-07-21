@@ -456,13 +456,13 @@ export class MediaService {
     }
   }
 
-  private isRemuxRequired(ffmpegConfig: SystemConfigFFmpegDto, format: VideoFormat): boolean {
+  private isRemuxRequired(ffmpegConfig: SystemConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
     if (ffmpegConfig.transcode === TranscodePolicy.DISABLED) {
       return false;
     }
 
-    const name = format.formatLongName === 'QuickTime / MOV' ? VideoContainer.MOV : format.formatName;
-    return !ffmpegConfig.acceptedContainers.includes(name as VideoContainer);
+    const name = formatLongName === 'QuickTime / MOV' ? VideoContainer.MOV : (formatName as VideoContainer);
+    return name !== VideoContainer.MP4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
   isSRGB(asset: AssetEntity): boolean {
