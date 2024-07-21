@@ -26,8 +26,8 @@ services:
     container_name: immich_machine_learning
     image: immich-machine-learning:latest
     # extends:
-      #   file: hwaccel.ml.yml
-      #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+    #   file: hwaccel.ml.yml
+    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
