@@ -112,6 +112,7 @@
         root: assetGridElement,
         priority: PRIORITY,
         disabled: INTERSECTION_DISABLED,
+        immediate: true,
       }}
       data-display={display}
       data-date-group={dateGroup.date}

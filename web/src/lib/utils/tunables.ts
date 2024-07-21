@@ -10,10 +10,18 @@ function getNumber(string: string | null, fallback: number) {
   }
   return Number.parseInt(string);
 }
+function getFloat(string: string | null, fallback: number) {
+  if (string === null) {
+    return fallback;
+  }
+  return Number.parseFloat(string);
+}
 export const TUNABLES = {
   SCROLL_TASK_QUEUE: {
     TRICKLE_BONUS_FACTOR: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_BONUS_FACTOR'), 50),
+    TRICKLE_ACCELERATION_FACTOR: getFloat(localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_ACCELERATION_FACTOR'), 1.5),
     DRAIN_MAX_TASKS: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS'), 15),
+    DRAIN_MAX_TASKS_DELAY_MS: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS_DELAY_MS'), 16),
     MIN_DELAY_MS: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.MIN_DELAY_MS')!, 200),
     CHECK_INTERVAL_MS: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS'), 32),
   },
@@ -39,7 +47,7 @@ export const TUNABLES = {
   THUMBNAIL: {
     PRIORITY: getNumber(localStorage.getItem('THUMBNAIL.PRIORITY'), 8),
     INTERSECTION_ROOT_TOP: localStorage.getItem('THUMBNAIL.INTERSECTION_ROOT_TOP') || '150%',
-    INTERSECTION_ROOT_BOTTOM: localStorage.getItem('THUMBNAIL.INTERSECTION_ROOT_TOP') || '150%',
+    INTERSECTION_ROOT_BOTTOM: localStorage.getItem('THUMBNAIL.INTERSECTION_ROOT_BOTTOM') || '150%',
   },
   IMAGE_THUMBNAIL: {
     THUMBHASH_FADE_DURATION: getNumber(localStorage.getItem('THUMBHASH_FADE_DURATION'), 150),

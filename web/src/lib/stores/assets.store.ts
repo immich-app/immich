@@ -868,34 +868,37 @@ function drain() {
   for (let t = tasks.shift(); t; t = tasks.shift()) {
     t.value();
     if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
-      scheduleDrain();
+      scheduleDrain(TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS_DELAY_MS);
       break;
     }
   }
 }
 
-function scheduleDrain() {
+function scheduleDrain(delay: number = TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS) {
   clearTimeout(queueTimer);
   queueTimer = setTimeout(() => {
     const delta = Date.now() - get(lastScrollTime);
     if (delta < TUNABLES.SCROLL_TASK_QUEUE.MIN_DELAY_MS) {
       let amount = clamp(
-        Math.round(tasks.length / TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_BONUS_FACTOR),
+        1 + Math.round(tasks.length / TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_BONUS_FACTOR),
         1,
         TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS * 2,
       );
-
+      const nextDelay =
+        amount > 1
+          ? Math.round(delay / TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_ACCELERATION_FACTOR)
+          : TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS;
       while (amount > 0) {
         tasks.shift()?.value();
         amount--;
       }
       if (tasks.length > 0) {
-        scheduleDrain();
+        scheduleDrain(nextDelay);
       }
     } else {
       drain();
     }
-  }, TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS);
+  }, delay);
 }
 
 export function queueScrollSensitiveTask(task: Task, priority: number = 10) {
