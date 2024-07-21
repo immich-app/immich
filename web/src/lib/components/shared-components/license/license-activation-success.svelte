@@ -13,6 +13,6 @@
   <p class="text-lg mt-6">{$t('license_activated_subtitle')}</p>
 
   <div class="mt-10 w-full">
-    <Button fullwidth on:click={onDone}>OK</Button>
+    <Button fullwidth on:click={onDone}>{$t('ok')}</Button>
   </div>
 </div>

@@ -51,10 +51,10 @@
   const removeUserLicense = async () => {
     try {
       const isConfirmed = await dialogController.show({
-        title: 'Remove License',
-        prompt: 'Are you sure you want to remove the license?',
-        confirmText: 'Remove',
-        cancelText: 'Cancel',
+        title: $t('remove_license'),
+        prompt: $t('remove_license_prompt'),
+        confirmText: $t('remove'),
+        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {
@@ -64,17 +64,17 @@
       await deleteUserLicense();
       licenseStore.setLicenseStatus(false);
     } catch (error) {
-      handleError(error, 'Failed to remove license');
+      handleError(error, $t('errors.failed_to_remove_license'));
     }
   };
 
   const removeServerLicense = async () => {
     try {
       const isConfirmed = await dialogController.show({
-        title: 'Remove License',
-        prompt: 'Are you sure you want to remove the Server license?',
-        confirmText: 'Remove',
-        cancelText: 'Cancel',
+        title: $t('remove_license'),
+        prompt: $t('remove_server_license_prompt'),
+        confirmText: $t('remove'),
+        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {
@@ -84,7 +84,7 @@
       await deleteServerLicense();
       licenseStore.setLicenseStatus(false);
     } catch (error) {
-      handleError(error, 'Failed to remove license');
+      handleError(error, $t('errors.failed_to_remove_license'));
     }
   };
 
@@ -104,21 +104,23 @@
           <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
           <div>
-            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Server License</p>
+            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">
+              {$t('license_server_title')}
+            </p>
 
             {#if $user.isAdmin && serverLicenseInfo?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
-                Activated on {new Date(serverLicenseInfo?.activatedAt).toLocaleDateString()}
+                {$t('license_activated_date', { values: { date: new Date(serverLicenseInfo.activatedAt) } })}
               </p>
             {:else}
-              <p class="dark:text-white">Your license is managed by the admin</p>
+              <p class="dark:text-white">{$t('license_managed_by_admin')}</p>
             {/if}
           </div>
         </div>
 
         {#if $user.isAdmin}
           <div class="text-right mt-4">
-            <Button size="sm" color="red" on:click={removeServerLicense}>Remove license</Button>
+            <Button size="sm" color="red" on:click={removeServerLicense}>{$t('remove_license')}</Button>
           </div>
         {/if}
       {:else}
@@ -128,17 +130,19 @@
           <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
           <div>
-            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Individual License</p>
+            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">
+              {$t('license_individual_title')}
+            </p>
             {#if $user.license?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
-                Activated on {new Date($user.license?.activatedAt).toLocaleDateString()}
+                {$t('license_activated_date', { values: { date: new Date($user.license.activatedAt) } })}
               </p>
             {/if}
           </div>
         </div>
 
         <div class="text-right mt-4">
-          <Button size="sm" color="red" on:click={removeUserLicense}>Remove license</Button>
+          <Button size="sm" color="red" on:click={removeUserLicense}>{$t('remove_license')}</Button>
         </div>
       {/if}
     {:else}
