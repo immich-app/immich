@@ -232,7 +232,7 @@
     {/if}
   </div>
   <!-- Time Segment -->
-  {#each segments as segment, index}
+  {#each segments as segment}
     <div
       id="time-segment"
       class="relative"
