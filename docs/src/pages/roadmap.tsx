@@ -72,6 +72,8 @@ import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
+  // TODO
+  'v1.110.0': new Date(2024, 5, 11),
   'v1.106.1': new Date(2024, 5, 11),
   'v1.104.0': new Date(2024, 4, 13),
   'v1.103.0': new Date(2024, 3, 29),
@@ -220,6 +222,13 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  {
+    icon: mdiStar,
+    iconColor: 'gold',
+    title: '40,000 Stars',
+    description: 'Reached 40K Stars on GitHub!',
+    getDateLabel: withLanguage(new Date(2024, 6, 21)),
+  },
   withRelease({
     icon: mdiHistory,
     title: 'Versioned documentation',
@@ -236,7 +245,7 @@ const milestones: Item[] = [
   withRelease({
     icon: mdiContentDuplicate,
     title: 'Similar image detection',
-    description: 'Detect duplicate assets that aren’t exactly identical',
+    description: "Detect duplicate assets that aren't exactly identical",
     release: 'v1.106.1',
   }),
   withRelease({
