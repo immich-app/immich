@@ -957,6 +957,21 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should remux when input is not an accepted container', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamAvi);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v copy', '-c:a copy']),
+          twoPass: false,
+        },
+      );
+    });
+
     it('should throw an exception if transcode value is invalid', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: 'invalid' as any } });
@@ -967,6 +982,14 @@ describe(MediaService.name, () => {
 
     it('should not transcode if transcoding is disabled', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.DISABLED } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should not remux when input is not an accepted container and transcoding is disabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.DISABLED } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });

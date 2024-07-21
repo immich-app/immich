@@ -29,6 +29,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
+  VideoContainer,
 } from 'src/config';
 import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
@@ -78,6 +79,10 @@ export class SystemConfigFFmpegDto {
   @IsEnum(AudioCodec, { each: true })
   @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec, isArray: true })
   acceptedAudioCodecs!: AudioCodec[];
+
+  @IsEnum(VideoContainer, { each: true })
+  @ApiProperty({ enumName: 'VideoContainer', enum: VideoContainer, isArray: true })
+  acceptedContainers!: VideoContainer[];
 
   @IsString()
   targetResolution!: string;
