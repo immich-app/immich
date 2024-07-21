@@ -12,7 +12,7 @@ export class PriorityQueue<T> {
   }
 
   shift() {
-    return this.items.shift()?.value;
+    return this.items.shift();
   }
 
   get length() {

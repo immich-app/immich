@@ -107,6 +107,7 @@
   const {
     ASSET_GRID: { NAVIGATE_ON_ASSET_IN_VIEW },
     BUCKET: {
+      PRIORITY,
       INTERSECTION_ROOT_TOP: BUCKET_INTERSECTION_ROOT_TOP,
       INTERSECTION_ROOT_BOTTOM: BUCKET_INTERSECTION_ROOT_BOTTOM,
     },
@@ -500,14 +501,14 @@
       if (bucket) {
         void loadIt(bucket);
       }
-    });
+    }, PRIORITY);
   }
 
   function seperatedHandler(bucketDate: string) {
     queueScrollSensitiveTask(() => {
       $assetStore.updateBucket(bucketDate, { intersecting: false });
       $assetStore.getBucketByDate(bucketDate)?.cancel();
-    });
+    }, PRIORITY);
   }
 
   const handlePrevious = async () => {
@@ -801,6 +802,7 @@
             top: BUCKET_INTERSECTION_ROOT_TOP,
             bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
             root: element,
+            priority: PRIORITY,
           }}
           data-bucket-date={bucket.bucketDate}
           style:height={bucket.bucketHeight + 'px'}

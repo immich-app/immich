@@ -25,6 +25,7 @@
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { queueScrollSensitiveTask } from '$lib/stores/assets.store';
   import { thumbHashToDataURL } from 'thumbhash';
+  import { TUNABLES } from '$lib/utils/tunables';
 
   export let asset: AssetResponseDto;
   export let groupIndex = 0;
@@ -75,6 +76,9 @@
   $: height = thumbnailSize || thumbnailHeight || 235;
   $: display = intersecting;
 
+  const {
+    THUMBNAIL: { PRIORITY },
+  } = TUNABLES;
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
     e?.preventDefault();
@@ -125,7 +129,7 @@
   };
   const onIntersect = () => {
     if (delayIntersectionsDuringScroll) {
-      queueScrollSensitiveTask(() => _onIntersect());
+      queueScrollSensitiveTask(() => _onIntersect(), PRIORITY);
     } else {
       _onIntersect();
     }
@@ -133,7 +137,7 @@
 
   const onSeparate = () => {
     if (delayIntersectionsDuringScroll) {
-      queueScrollSensitiveTask(() => (intersecting = false));
+      queueScrollSensitiveTask(() => (intersecting = false), PRIORITY);
     } else {
       intersecting = false;
     }
@@ -146,6 +150,7 @@
     ...intersectionConfig,
     onIntersect,
     onSeparate,
+    priority: PRIORITY,
   }}
   style:width="{width}px"
   style:height="{height}px"

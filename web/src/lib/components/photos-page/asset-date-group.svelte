@@ -33,7 +33,7 @@
   $: dateGroups = bucket.dateGroups;
 
   const {
-    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
+    DATEGROUP: { INTERSECTION_DISABLED, INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM, PRIORITY },
   } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
@@ -98,12 +98,20 @@
       id="date-group"
       use:intersectionObserver={{
         onIntersect: () =>
-          queueScrollSensitiveTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true })),
+          queueScrollSensitiveTask(
+            () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true }),
+            PRIORITY,
+          ),
         onSeparate: () =>
-          queueScrollSensitiveTask(() => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false })),
+          queueScrollSensitiveTask(
+            () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
+            PRIORITY,
+          ),
         top: INTERSECTION_ROOT_TOP,
         bottom: INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
+        priority: PRIORITY,
+        disabled: INTERSECTION_DISABLED,
       }}
       data-display={display}
       data-date-group={dateGroup.date}
@@ -185,7 +193,7 @@
                     root: assetGridElement,
                     bottom: renderThumbsAtBottomMargin,
                     top: renderThumbsAtTopMargin,
-                    priority: 1,
+                    priority: 5,
                   }}
                   retrieveElement={$assetStore.pendingScrollAssetId === asset.id}
                   onRetrieveElement={(element) => onRetrieveElement(dateGroup, asset, element)}

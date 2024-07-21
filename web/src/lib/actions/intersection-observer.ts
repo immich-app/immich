@@ -1,4 +1,4 @@
-import { PriorityQueue } from '$lib/utils/data-structure';
+import { PriorityQueue } from '$lib/utils/priority-queue';
 import { TUNABLES } from '$lib/utils/tunables';
 import { throttle } from 'lodash-es';
 
@@ -13,7 +13,7 @@ type TrackedProperties = {
   bottom?: string;
   left?: string;
 };
-type OnIntersectCallback = (entry: IntersectionObserverEntry) => unknown;
+type OnIntersectCallback = (entryOrElement: IntersectionObserverEntry | HTMLElement) => unknown;
 type OnSeperateCallback = (element: HTMLElement) => unknown;
 type IntersectionObserverActionProperties = {
   key?: string;
@@ -27,7 +27,7 @@ type IntersectionObserverActionProperties = {
   bottom?: string;
   left?: string;
 
-  hidden?: boolean;
+  disabled?: boolean;
   priority?: number;
   immediate?: boolean;
 };
@@ -38,39 +38,39 @@ const queue = new PriorityQueue<TaskKey>();
 const queueMap = new Map<TaskKey, Task>();
 
 const {
-  INTERSECTION_OBSERVER: { THROTTLE, THROTTLE_MS, RESPONSIVENESS_FACTOR },
+  INTERSECTION_OBSERVER_QUEUE: { THROTTLE, THROTTLE_MS, DRAIN_MAX_TASKS: RESPONSIVENESS_FACTOR },
 } = TUNABLES;
 
 function _drainTasks(factor: number) {
   let key = queue.shift();
   let count = 0;
   while (key) {
-    const task = queueMap.get(key);
+    const task = queueMap.get(key.value);
     if (task) {
       // note - the queue may contain deleted or updated tasks
       // which produce gaps, just ignore these as we loop
-      queueMap.delete(key);
+      queueMap.delete(key.value);
       task();
       if (count++ >= factor) {
-        drain();
+        scheduleDrain();
         break;
       }
     }
     key = queue.shift();
   }
 }
-const _drain = _drainTasks.bind(undefined, RESPONSIVENESS_FACTOR);
-const drain = THROTTLE ? throttle(_drain, THROTTLE_MS, { leading: false, trailing: true }) : _drain;
+const drain = _drainTasks.bind(undefined, RESPONSIVENESS_FACTOR);
+const scheduleDrain = THROTTLE ? throttle(drain, THROTTLE_MS, { leading: false, trailing: true }) : drain;
 
-function addTask(key: TaskKey, task: Task, priority: number = 0) {
+function addTask(key: TaskKey, task: Task, priority: number = 10) {
   queue.push(key, priority);
   queueMap.set(key, task);
-  drain();
+  scheduleDrain();
 }
 
 function deleteTask(key: TaskKey) {
   queueMap.delete(key);
-  drain();
+  scheduleDrain();
 }
 
 function isEquivalent(a: TrackedProperties, b: TrackedProperties) {
@@ -141,7 +141,11 @@ function _intersectionObserver(
   element: HTMLElement,
   properties: IntersectionObserverActionProperties,
 ) {
-  configure(key, element, properties);
+  if (properties.disabled) {
+    properties.onIntersect?.(element);
+  } else {
+    configure(key, element, properties);
+  }
   return {
     update(properties: IntersectionObserverActionProperties) {
       const config = elementToConfig.get(key);
@@ -155,13 +159,17 @@ function _intersectionObserver(
       configure(key, element, properties);
     },
     destroy: () => {
-      const config = elementToConfig.get(key);
-      const { observer, onSeparate } = config || {};
-      observer?.unobserve(element);
-      elementToConfig.delete(key);
-      deleteTask(key);
-      if (onSeparate) {
-        onSeparate?.(element);
+      if (properties.disabled) {
+        properties.onSeparate?.(element);
+      } else {
+        const config = elementToConfig.get(key);
+        const { observer, onSeparate } = config || {};
+        observer?.unobserve(element);
+        elementToConfig.delete(key);
+        deleteTask(key);
+        if (onSeparate) {
+          onSeparate?.(element);
+        }
       }
     },
   };

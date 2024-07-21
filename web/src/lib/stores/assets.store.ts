@@ -2,11 +2,12 @@ import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
+import { PriorityQueue } from '$lib/utils/priority-queue';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import createJustifiedLayout from 'justified-layout';
-import { throttle } from 'lodash-es';
+import { clamp, throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get, writable, type Unsubscriber } from 'svelte/store';
@@ -65,7 +66,6 @@ export class AssetBucket {
   intersecting: boolean = false;
   measured: boolean = false;
   measuredPromise!: Promise<void>;
-  scrollBarPercentage: number = 0;
 
   constructor(props: Partial<AssetBucket> & { store: AssetStore; bucketDate: string }) {
     Object.assign(this, props);
@@ -399,16 +399,7 @@ export class AssetStore {
     for (const bucket of this.buckets) {
       this.updateGeometry(bucket, changedWidth);
     }
-    const totalHeight = (this.timelineHeight = this.buckets.reduce(
-      (accumulator, b) => accumulator + b.bucketHeight,
-      0,
-    ));
-    // 2nd pass to set the initial percentage heights for scrollbar
-    for (const bucket of this.buckets) {
-      if (!bucket.isBucketHeightActual) {
-        bucket.scrollBarPercentage = bucket.bucketHeight / totalHeight;
-      }
-    }
+    this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
     const loaders = [];
     let height = 0;
@@ -867,12 +858,19 @@ export const isSelectingAllAssets = writable(false);
 
 export const lastScrollTime = writable<number>(0);
 
-const tasks: (() => void)[] = [];
+type Task = () => void;
+
+const tasks = new PriorityQueue<Task>();
 let queueTimer: ReturnType<typeof setTimeout> | undefined;
 
 function drain() {
+  let count = 0;
   for (let t = tasks.shift(); t; t = tasks.shift()) {
-    t();
+    t.value();
+    if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
+      scheduleDrain();
+      break;
+    }
   }
 }
 
@@ -880,20 +878,31 @@ function scheduleDrain() {
   clearTimeout(queueTimer);
   queueTimer = setTimeout(() => {
     const delta = Date.now() - get(lastScrollTime);
-    if (delta < TUNABLES.ASSETS_STORE.MIN_DELAY_MS) {
-      tasks.shift()?.();
-      scheduleDrain();
+    if (delta < TUNABLES.SCROLL_TASK_QUEUE.MIN_DELAY_MS) {
+      let amount = clamp(
+        Math.round(tasks.length / TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_BONUS_FACTOR),
+        1,
+        TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS * 2,
+      );
+
+      while (amount > 0) {
+        tasks.shift()?.value();
+        amount--;
+      }
+      if (tasks.length > 0) {
+        scheduleDrain();
+      }
     } else {
       drain();
     }
-  }, TUNABLES.ASSETS_STORE.CHECK_INTERVAL_MS);
+  }, TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS);
 }
 
-export function queueScrollSensitiveTask(task: () => void) {
-  tasks.push(task);
+export function queueScrollSensitiveTask(task: Task, priority: number = 10) {
+  tasks.push(task, priority);
   const lastTime = get(lastScrollTime);
   const delta = Date.now() - lastTime;
-  if (lastTime != 0 && delta < TUNABLES.ASSETS_STORE.MIN_DELAY_MS) {
+  if (lastTime != 0 && delta < TUNABLES.SCROLL_TASK_QUEUE.MIN_DELAY_MS) {
     scheduleDrain();
   } else {
     // flush the queue early
