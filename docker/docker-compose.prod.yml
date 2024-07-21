@@ -33,6 +33,8 @@ services:
       dockerfile: Dockerfile
       args:
         - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+    ports:
+      - 3003:3003
     volumes:
       - model-cache:/cache
     env_file:
