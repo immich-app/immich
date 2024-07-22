@@ -154,7 +154,7 @@
           </p>
         </div>
       {/if}
-      <LicenseContent onActivate={onLicenseActivated} />
+      <LicenseContent onActivate={onLicenseActivated} showTitle={false} />
     {/if}
   </div>
 </section>

@@ -750,7 +750,7 @@
   "license_activated_title": "Your license has been successfully activated",
   "license_button_activate": "Activate",
   "license_button_buy": "Buy",
-  "license_button_buy_license": "View Options",
+  "license_button_buy_license": "Buy Immich",
   "license_button_select": "Select",
   "license_failed_activation": "Failed to activate license. Please check your email for the the correct license key!",
   "license_individual_description_1": "For an individual",

@@ -11,6 +11,7 @@
 
   export let onActivate: () => void;
 
+  export let showTitle = true;
   let licenseKey = '';
   let isLoading = false;
 
@@ -34,15 +35,22 @@
 
 <section class="p-4">
   <div>
-    <h1 class="text-4xl font-bold text-immich-primary dark:text-immich-dark-primary tracking-wider">
-      {$t('license_license_title')}
-    </h1>
+    {#if showTitle}
+      <h1 class="text-4xl font-bold text-immich-primary dark:text-immich-dark-primary tracking-wider">
+        {$t('license_license_title')}
+      </h1>
+    {/if}
     <div class="mt-2 dark:text-immich-gray">
       <p>
         Building Immich takes a lot of time and effort, and we have full-time engineers working on it to make it as good
         as we possibly can. Our mission is for open-source software and ethical business practices to become a
         sustainable income source for developers, and to create a privacy-respecting ecosystem with real alternatives to
         exploitative cloud services.
+      </p>
+      <br />
+      <p>
+        As we’re committed not to add paywalls, this purchase will not grant you any additional features in Immich. We
+        rely on users like you to support Immich’s ongoing development.
       </p>
       <div />
     </div>
