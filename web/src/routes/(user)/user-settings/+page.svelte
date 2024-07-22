@@ -11,7 +11,7 @@
   export let isShowKeyboardShortcut = false;
 </script>
 
-<UserPageLayout title={data.meta.title}>
+we<UserPageLayout title={data.meta.title}>
   <svelte:fragment slot="buttons">
     <CircleIconButton
       icon={mdiKeyboard}
