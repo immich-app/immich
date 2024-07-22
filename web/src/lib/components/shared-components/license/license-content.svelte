@@ -6,7 +6,7 @@
   import { activateLicense, getActivationKey } from '$lib/utils/license-utils';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { licenseStore } from '$lib/stores/license.store';
+  import { purchaseStore } from '$lib/stores/purchase.store';
   import { t } from 'svelte-i18n';
 
   export let onActivate: () => void;
@@ -23,7 +23,7 @@
       await activateLicense(licenseKey, activationKey);
 
       onActivate();
-      licenseStore.setLicenseStatus(true);
+      purchaseStore.setPurchaseStatus(true);
     } catch (error) {
       handleError(error, $t('license_failed_activation'));
     } finally {
@@ -37,34 +37,40 @@
     <h1 class="text-4xl font-bold text-immich-primary dark:text-immich-dark-primary tracking-wider">
       {$t('license_license_title')}
     </h1>
-    <p class="text-lg mt-2 dark:text-immich-gray">{$t('license_license_subtitle')}</p>
-  </div>
-  <div class="flex gap-6 mt-4 justify-between">
-    {#if $user.isAdmin}
+    <div class="mt-2 dark:text-immich-gray">
+      <p>
+        Building Immich takes a lot of time and effort, and we have full-time engineers working on it to make it as good
+        as we possibly can. Our mission is for open-source software and ethical business practices to become a
+        sustainable income source for developers, and to create a privacy-respecting ecosystem with real alternatives to
+        exploitative cloud services.
+      </p>
+      <div />
+    </div>
+    <div class="flex gap-6 mt-4 justify-between">
       <ServerLicenseCard />
-    {/if}
-    <UserLicenseCard />
-  </div>
+      <UserLicenseCard />
+    </div>
 
-  <div class="mt-6">
-    <p class="dark:text-immich-gray">{$t('license_input_suggestion')}</p>
-    <form class="mt-2 flex gap-2" on:submit={activate}>
-      <input
-        class="immich-form-input w-full"
-        id="licensekey"
-        type="text"
-        bind:value={licenseKey}
-        required
-        placeholder="IMCL-0KEY-0CAN-00BE-FOUD-FROM-YOUR-EMAIL-INBX"
-        disabled={isLoading}
-      />
-      <Button type="submit" rounded="lg"
-        >{#if isLoading}
-          <LoadingSpinner />
-        {:else}
-          {$t('license_button_activate')}
-        {/if}</Button
-      >
-    </form>
+    <div class="mt-6">
+      <p class="dark:text-immich-gray">{$t('license_input_suggestion')}</p>
+      <form class="mt-2 flex gap-2" on:submit={activate}>
+        <input
+          class="immich-form-input w-full"
+          id="licensekey"
+          type="text"
+          bind:value={licenseKey}
+          required
+          placeholder="IMCL-0KEY-0CAN-00BE-FOUD-FROM-YOUR-EMAIL-INBX"
+          disabled={isLoading}
+        />
+        <Button type="submit" rounded="lg"
+          >{#if isLoading}
+            <LoadingSpinner />
+          {:else}
+            {$t('license_button_activate')}
+          {/if}</Button
+        >
+      </form>
+    </div>
   </div>
 </section>

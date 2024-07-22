@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition';
 
   import { onMount } from 'svelte';
-  import { licenseStore } from '$lib/stores/license.store';
+  import { purchaseStore } from '$lib/stores/purchase.store';
   import { user } from '$lib/stores/user.store';
   import {
     deleteServerLicense,
@@ -20,7 +20,7 @@
   import LicenseContent from '$lib/components/shared-components/license/license-content.svelte';
   import { t } from 'svelte-i18n';
   import { getAccountAge } from '$lib/utils/auth';
-  const { isLicenseActivated } = licenseStore;
+  const { isPurchased } = purchaseStore;
 
   let isServerLicense = false;
   let serverLicenseInfo: LicenseResponseDto | null = null;
@@ -41,7 +41,7 @@
   };
 
   onMount(async () => {
-    if (!$isLicenseActivated) {
+    if (!$isPurchased) {
       return;
     }
 
@@ -62,7 +62,7 @@
       }
 
       await deleteUserLicense();
-      licenseStore.setLicenseStatus(false);
+      purchaseStore.setPurchaseStatus(false);
     } catch (error) {
       handleError(error, 'Failed to remove license');
     }
@@ -82,21 +82,21 @@
       }
 
       await deleteServerLicense();
-      licenseStore.setLicenseStatus(false);
+      purchaseStore.setPurchaseStatus(false);
     } catch (error) {
       handleError(error, 'Failed to remove license');
     }
   };
 
   const onLicenseActivated = async () => {
-    licenseStore.setLicenseStatus(true);
+    purchaseStore.setPurchaseStatus(true);
     await checkLicenseInfo();
   };
 </script>
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    {#if $isLicenseActivated}
+    {#if $isPurchased}
       {#if isServerLicense}
         <div
           class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"

@@ -9,11 +9,11 @@
   import type { PageData } from './$types';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAlertCircleOutline, mdiLicense } from '@mdi/js';
-  import { licenseStore } from '$lib/stores/license.store';
+  import { purchaseStore } from '$lib/stores/purchase.store';
 
   export let data: PageData;
   let showLicenseActivated = false;
-  const { isLicenseActivated } = licenseStore;
+  const { isPurchased } = purchaseStore;
 </script>
 
 <UserPageLayout title={$t('buy')}>
@@ -29,7 +29,7 @@
         </div>
       {/if}
 
-      {#if $isLicenseActivated}
+      {#if $isPurchased}
         <div
           class="bg-immich-primary/10 text-immich-primary px-4 py-3 rounded-md flex place-items-center place-content-center gap-2 mb-5 dark:text-black dark:bg-immich-dark-primary"
           role="alert"

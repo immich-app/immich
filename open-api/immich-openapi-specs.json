@@ -9745,6 +9745,25 @@
         ],
         "type": "object"
       },
+      "PurchaseResponse": {
+        "properties": {
+          "hideBuyButtonForever": {
+            "type": "boolean"
+          },
+          "lastTimeHide": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "showBuyButton": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hideBuyButtonForever",
+          "showBuyButton"
+        ],
+        "type": "object"
+      },
       "QueueStatusDto": {
         "properties": {
           "isActive": {
@@ -11724,13 +11743,17 @@
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryResponse"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
-          "memories"
+          "memories",
+          "purchase"
         ],
         "type": "object"
       },

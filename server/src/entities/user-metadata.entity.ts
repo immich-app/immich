@@ -45,6 +45,11 @@ export interface UserPreferences {
   download: {
     archiveSize: number;
   };
+  purchase: {
+    showBuyButton: boolean;
+    hideBuyButtonForever: boolean;
+    lastTimeHide?: Date;
+  };
 }
 
 export const getDefaultPreferences = (user: { email: string }): UserPreferences => {
@@ -67,6 +72,10 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     download: {
       archiveSize: HumanReadableSize.GiB * 4,
+    },
+    purchase: {
+      showBuyButton: false,
+      hideBuyButtonForever: false,
     },
   };
 };

@@ -1,4 +1,4 @@
-import { licenseStore } from '$lib/stores/license.store';
+import { purchaseStore } from '$lib/stores/purchase.store';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { activateLicense, getActivationKey } from '$lib/utils/license-utils';
@@ -21,7 +21,7 @@ export const load = (async ({ url }) => {
       const response = await activateLicense(licenseKey, activationKey);
       if (response.activatedAt !== '') {
         isActivated = true;
-        licenseStore.setLicenseStatus(true);
+        purchaseStore.setPurchaseStatus(true);
       }
     }
   } catch (error) {

@@ -77,11 +77,18 @@ class DownloadResponse {
   archiveSize!: number;
 }
 
+class PurchaseResponse {
+  showBuyButton!: boolean;
+  hideBuyButtonForever!: boolean;
+  lastTimeHide?: Date;
+}
+
 export class UserPreferencesResponseDto implements UserPreferences {
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
+  purchase!: PurchaseResponse;
 }
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {

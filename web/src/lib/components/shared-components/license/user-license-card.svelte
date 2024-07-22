@@ -15,7 +15,7 @@
   </div>
 
   <div class="mt-4 dark:text-immich-gray">
-    <p class="text-6xl font-bold">$24<span class="text-2xl font-medium">.99</span></p>
+    <p class="text-6xl font-bold">$25</p>
     <p>{$t('license_per_user')}</p>
   </div>
 
@@ -29,6 +29,11 @@
       <div class="grid grid-cols-[36px_auto]">
         <Icon path={mdiCheckCircleOutline} size="24" class="text-green-500 self-center" />
         <p class="self-center">{$t('license_lifetime_description')}</p>
+      </div>
+
+      <div class="grid grid-cols-[36px_auto]">
+        <Icon path={mdiCheckCircleOutline} size="24" class="text-green-500 self-center" />
+        <p class="self-center">{$t('license_individual_description_2')}</p>
       </div>
     </div>
 
