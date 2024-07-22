@@ -5022,17 +5022,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/LicenseResponseDto"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/LicenseResponseDto"
                 }
               }
             },
+            "description": ""
+          },
+          "404": {
             "description": ""
           }
         },

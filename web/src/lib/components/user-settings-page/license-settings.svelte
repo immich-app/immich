@@ -10,6 +10,7 @@
     getAboutInfo,
     getMyUser,
     getServerLicense,
+    isHttpError,
     type LicenseResponseDto,
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -36,7 +37,18 @@
     }
 
     if (isServerLicense && $user.isAdmin) {
-      serverLicenseInfo = await getServerLicense();
+      serverLicenseInfo = await getServerLicenseInfo();
+    }
+  };
+
+  const getServerLicenseInfo = async () => {
+    try {
+      return await getServerLicense();
+    } catch (error) {
+      if (isHttpError(error) && error.status === 404) {
+        return null;
+      }
+      throw error;
     }
   };
 

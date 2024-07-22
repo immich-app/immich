@@ -2510,7 +2510,9 @@ export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
 export function getServerLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: LicenseResponseDto | null;
+        data: LicenseResponseDto;
+    } | {
+        status: 404;
     }>("/server/license", {
         ...opts
     }));

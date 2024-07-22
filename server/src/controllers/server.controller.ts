@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Put } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
@@ -95,19 +95,8 @@ export class ServerController {
 
   @Get('license')
   @Authenticated({ admin: true })
-  @ApiOkResponse({
-    schema: {
-      oneOf: [
-        {
-          $ref: getSchemaPath(LicenseResponseDto),
-        },
-        {
-          type: 'null',
-        },
-      ],
-    },
-  })
-  getServerLicense(): Promise<LicenseResponseDto | null> {
+  @ApiNotFoundResponse()
+  getServerLicense(): Promise<LicenseResponseDto> {
     return this.service.getLicense();
   }
 }
