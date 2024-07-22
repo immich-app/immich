@@ -24,7 +24,7 @@ void handleShareAssets(
     builder: (BuildContext buildContext) {
       ref
           .watch(shareServiceProvider)
-          .shareAssets(selection.toList(), buildContext)
+          .shareAssets(selection.toList(), context)
           .then(
         (bool status) {
           if (!status) {
