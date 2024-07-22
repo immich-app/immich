@@ -67,7 +67,7 @@ class ShareService {
       final box = context.findRenderObject() as RenderBox?;
       Share.shareXFiles(
         downloadedXFiles,
-        sharePositionOrigin: Rect.zero,
+        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
       );
       return true;
     } catch (error) {
