@@ -7,7 +7,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart';
 
 @RoutePage()
 class AppLogPage extends HookConsumerWidget {
@@ -92,19 +91,21 @@ class AppLogPage extends HookConsumerWidget {
               logMessages.value = [];
             },
           ),
-          Builder(builder: (BuildContext iconContext) {
-            return IconButton(
-              icon: Icon(
-                Icons.share_rounded,
-                color: context.primaryColor,
-                semanticLabel: "Share logs",
-                size: 20.0,
-              ),
-              onPressed: () {
-                immichLogger.shareLogs(iconContext);
-              },
-            );
-          }),
+          Builder(
+            builder: (BuildContext iconContext) {
+              return IconButton(
+                icon: Icon(
+                  Icons.share_rounded,
+                  color: context.primaryColor,
+                  semanticLabel: "Share logs",
+                  size: 20.0,
+                ),
+                onPressed: () {
+                  immichLogger.shareLogs(iconContext);
+                },
+              );
+            },
+          ),
         ],
         leading: IconButton(
           onPressed: () {
