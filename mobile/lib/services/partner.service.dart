@@ -14,17 +14,6 @@ final partnerServiceProvider = Provider(
   ),
 );
 
-enum PartnerDirection {
-  sharedWith("shared-with"),
-  sharedBy("shared-by");
-
-  const PartnerDirection(
-    this._value,
-  );
-
-  final String _value;
-}
-
 class PartnerService {
   final ApiService _apiService;
   final Isar _db;
@@ -34,8 +23,7 @@ class PartnerService {
 
   Future<List<User>?> getPartners(PartnerDirection direction) async {
     try {
-      final userDtos =
-          await _apiService.partnersApi.getPartners(direction._value);
+      final userDtos = await _apiService.partnersApi.getPartners(direction);
       if (userDtos != null) {
         return userDtos.map((u) => User.fromPartnerDto(u)).toList();
       }

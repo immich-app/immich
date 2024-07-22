@@ -8,6 +8,10 @@ sidebar_position: 20
 This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/docs/install/docker-compose.mdx).
 :::
 
+:::note
+The install script only supports Linux operating systems and requires Docker to be already installed on the system.
+:::
+
 In the shell, from a directory of your choice, run the following command:
 
 ```bash

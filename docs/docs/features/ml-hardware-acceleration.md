@@ -32,12 +32,13 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - Where and how you can get this file depends on device and vendor, but typically, the device vendor also supplies these
   - The `hwaccel.ml.yml` file assumes the path to it is `/usr/lib/libmali.so`, so update accordingly if it is elsewhere
   - The `hwaccel.ml.yml` file assumes an additional file `/lib/firmware/mali_csffw.bin`, so update accordingly if your device's driver does not require this file
+- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for ARM NN specific settings
 
 #### CUDA
 
 - The GPU must have compute capability 5.2 or greater.
 - The server must have the official NVIDIA driver installed.
-- The installed driver must be >= 535 (it must support CUDA 12.2).
+- The installed driver must be >= 545 (it must support CUDA 12.3.2).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### OpenVINO

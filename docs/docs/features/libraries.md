@@ -104,18 +104,19 @@ The `immich-server` container will need access to the gallery. Modify your docke
   immich-server:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
-+     - /home/user/old-pics:/mnt/media/old-pics:ro
++     - /mnt/nas/christmas-trip:/mnt/nas/christmas-trip:ro
++     - /home/user/old-pics:/home/user/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
++     - /mnt/media/videos2:/mnt/media/videos2 # the files in this folder can be deleted, as it does not end with :ro
 +     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 ```
 
 :::tip
-The `ro` flag at the end only gives read-only access to the volumes. While Immich does not modify files, it's a good practice to mount read-only.
+The `ro` flag at the end only gives read-only access to the volumes. This will disallow the images from being deleted in the web UI.
 :::
 
 :::info
-_Remember to bring the container `docker compose down/up` to register the changes. Make sure you can see the mounted path in the container._
+_Remember to run `docker compose up -d` to register the changes. Make sure you can see the mounted path in the container._
 :::
 
 ### Create External Libraries

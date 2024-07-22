@@ -167,7 +167,7 @@ Immich uses CLIP models. For more information about CLIP and its capabilities, r
 
 ### How does facial recognition work?
 
-For face detection and recognition, Immich uses [InsightFace models](https://github.com/deepinsight/insightface/tree/master/model_zoo).
+See [How Facial Recognition Works](/docs/features/facial-recognition#How-Facial-Recognition-Works) for details.
 
 ### How can I disable machine learning?
 
@@ -181,19 +181,15 @@ However, disabling all jobs will not disable the machine learning service itself
 
 ### I'm getting errors about models being corrupt or failing to download. What do I do?
 
-You can delete the model cache volume, where models are downloaded. This will give the service a clean environment to download the model again. If models are failing to download entirely, you can manually download them from [Huggingface][huggingface] and place them in the cache folder.
+You can delete the model cache volume, where models are downloaded. This will give the service a clean environment to download the model again. If models are failing to download entirely, you can manually download them from [Hugging Face][huggingface] and place them in the cache folder.
 
 ### Can I use a custom CLIP model?
 
-No, this is not supported. Only models listed in the [Huggingface][huggingface] page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
+No, this is not supported. Only models listed in the [Hugging Face][huggingface] page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
-You can change to a multilingual model listed [here](https://huggingface.co/collections/immich-app/multilingual-clip-654eb08c2382f591eeb8c2a7) by going to Administration > Machine Learning Settings > Smart Search and replacing the name of the model. Be sure to re-run Smart Search on all assets after this change. You can then search in over 100 languages.
-
-:::note
-Feel free to make a feature request if there's a model you want to use that isn't in [Immich Huggingface list][huggingface].
-:::
+You can change to a multilingual CLIP model. See [here](/docs/features/smart-search#CLIP-model) for instructions.
 
 ### Does Immich support Facial Recognition for videos?
 
@@ -234,7 +230,7 @@ ls clip/ facial-recognition/
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning), or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
+Immich optionally uses transcoding and machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning), or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### Can I lower CPU and RAM usage?
 
@@ -243,10 +239,12 @@ The initial backup is the most intensive due to the number of jobs running. The 
 - Lower the job concurrency for these jobs to 1.
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
 - Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good.
-- For facial recognition on new images to work properly, You must re-run the Face Detection job for all images after this.
+  - For facial recognition on new images to work properly, You must re-run the Face Detection job for all images after this.
+- At the container level, you can [set resource constraints](/docs/FAQ#can-i-limit-cpu-and-ram-usage) to lower usage further.
+  - It's recommended to only apply these constraints _after_ taking some of the measures here for best performance.
 - If these changes are not enough, see [below](/docs/FAQ#how-can-i-disable-machine-learning) for instructions on how to disable machine learning.
 
-### Can I limit the amount of CPU and RAM usage?
+### Can I limit CPU and RAM usage?
 
 By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker-compose.yml` block of any containers that you want to have limited resources.
 
@@ -266,6 +264,8 @@ deploy:
 </details>
 For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
+Note that memory constraints work by terminating the container, so this can introduce instability if set too low.
+
 ### How can I boost machine learning speed?
 
 :::note
@@ -275,21 +275,16 @@ This advice improves throughput, not latency. This is to say that it will make S
 You can increase throughput by increasing the job concurrency for machine learning jobs (Smart Search, Face Detection). With higher concurrency, the host will work on more assets in parallel. You can do this by navigating to Administration > Settings > Job Settings and increasing concurrency as needed.
 
 :::danger
-On a normal machine, 2 or 3 concurrent jobs can probably max the CPU. Beyond this, note that storage speed and latency may quickly become the limiting factor; particularly when using HDDs.
+On a normal machine, 2 or 3 concurrent jobs can probably max the CPU. Storage speed and latency can quickly become the limiting factor beyond this, particularly when using HDDs.
 
-Do not exaggerate with the amount of jobs because you're probably thoroughly overloading the server.
+The concurrency can be increased more comfortably with a GPU, but should still not be above 16 in most cases.
 
-More details can be found [here](https://discord.com/channels/979116623879368755/994044917355663450/1174711719994605708)
+Do not exaggerate with the job concurrency because you're probably thoroughly overloading the server.
 :::
 
-### Why is Immich using so much of my CPU?
+### My server shows Server Status Offline | Version Unknown. What can I do?
 
-When a large number of assets are uploaded to Immich, it makes sense that the CPU and RAM will be heavily used for machine learning work and creating image thumbnails.
-Once this process is completed, the percentage of CPU usage will drop to around 3-5% usage
-
-### My server shows Server Status Offline | Version Unknown what can I do?
-
-You need to enable Websocket on your reverse proxy.
+You need to enable WebSockets on your reverse proxy.
 
 ---
 

@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingInputField, {
     SettingInputFieldType,
@@ -17,6 +16,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 
   $: cronExpressionOptions = [
     { title: $t('interval.night_at_midnight'), expression: '0 0 * * *' },
@@ -24,8 +25,6 @@
     { title: $t('interval.day_at_onepm'), expression: '0 13 * * *' },
     { title: $t('interval.hours', { values: { hours: 6 } }), expression: '0 */6 * * *' },
   ];
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
 </script>
 
 <div>
@@ -47,8 +46,8 @@
 
         <div class="ml-4">
           <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['library'] })}
-            on:save={() => dispatch('save', { library: config.library })}
+            onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
+            onSave={() => onSave({ library: config.library })}
             showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
             {disabled}
           />
@@ -112,8 +111,8 @@
 
         <div class="ml-4">
           <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['library'] })}
-            on:save={() => dispatch('save', { library: config.library })}
+            onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
+            onSave={() => onSave({ library: config.library })}
             showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
             {disabled}
           />

@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
+  import { decodeBase64 } from '$lib/utils';
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
-  // eslint-disable-next-line unicorn/prefer-node-protocol
-  import { Buffer } from 'buffer';
   import { mdiEyeOffOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
@@ -19,7 +18,7 @@
   export let hidden = false;
   export let border = false;
   export let preload = true;
-  export let eyeColor: 'black' | 'white' = 'white';
+  export let hiddenIconClass = 'text-white';
 
   let complete = false;
   let img: HTMLImageElement;
@@ -54,7 +53,7 @@
 
 {#if hidden}
   <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-    <Icon {title} path={mdiEyeOffOutline} size="2em" class="text-{eyeColor}" />
+    <Icon {title} path={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
   </div>
 {/if}
 
@@ -62,7 +61,7 @@
   <img
     style:width={widthStyle}
     style:height={heightStyle}
-    src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
+    src={thumbHashToDataURL(decodeBase64(thumbhash))}
     alt={altText}
     {title}
     class="absolute top-0 object-cover"

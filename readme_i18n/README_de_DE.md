@@ -37,72 +37,96 @@
 ## Warnung
 
 - ⚠️ Das Projekt befindet sich in **sehr aktiver** Entwicklung.
-- ⚠️ Erwarte Fehler und Änderungen mit Breaking-Changes.
+- ⚠️ Gehe von möglichen Fehlern und von Änderungen mit Breaking-Changes aus.
 - ⚠️ **Nutze die App auf keinen Fall als einziges Speichermedium für deine Fotos und Videos.**
 - ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
+
+> [!NOTE]
+> Die Hauptdokumentation, einschließlich der Installationsanleitungen, befinden sich unter https://immich.app/.
+
 
 ## Inhalt
 
 - [Offizielle Dokumentation](https://immich.app/docs)
+- [Über Immich](https://immich.app/docs/overview/introduction)
+- [Installation](https://immich.app/docs/install/requirements)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funktionen](#funktionen)
-- [Einführung](https://immich.app/docs/overview/introduction)
-- [Installation](https://immich.app/docs/install/requirements)
+- [Übersetzungen](https://immich.app/docs/developer/translations)
 - [Beitragsrichtlinien](https://immich.app/docs/overview/support-the-project)
-
-## Dokumentation
-
-Die Hauptdokumentation, inklusive Installationsanleitungen, ist unter https://immich.app zu finden.
 
 ## Demo
 
 Die Web-Demo kannst Du unter https://demo.immich.app finden.
+Die Demo läuft auf einer Free Tier Oracle VM in Amsterdam mit einer 2.4Ghz Quad-Core ARM64 CPU und 24GB RAM.
 
 Für die Handy-App kannst Du `https://demo.immich.app/api` als `Server Endpoint URL` angeben.
 
-```bash title="Demo Credential"
-Die Anmeldedaten
-email: demo@immich.app
-passwort: demo
-```
+### Login Daten
 
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
-```
+| Email           | Password |
+| --------------- | -------- |
+| demo@immich.app | demo     |
 
 ## Funktionen
 
 | Funktionen                                           | Mobil  | Web   |
 | ---------------------------------------------------- | ------ | ----- |
 | Fotos & Videos hochladen und ansehen                 | Ja     | Ja    |
-| Automatisches Backup wenn die App geöffnet ist       | Ja     | n. a. |
-| Selektive Auswahl von Alben zum Sichern              | Ja     | n. a. |
+| Automatische Sicherung beim öffnen der App           | Ja     | k. A  |
+| Selektive Auswahl von Alben zum Sichern              | Ja     | k. A  |
+| Vermeidung von Duplikaten                            | Ja     | Ja    |     
 | Fotos und Videos auf das Gerät herunterladen         | Ja     | Ja    |
-| Unterstützt mehrere Benutzer                         | Ja     | Ja    |
-| Album und geteilte Alben                             | Ja     | Ja    |
-| Scrollleiste                                         | Ja     | Ja    |
-| Unterstützt RAW Formate                              | Ja     | Ja    |
+| Unterstützung mehrerer Benutzer                      | Ja     | Ja    |
+| Alben und geteilte Alben                             | Ja     | Ja    |
+| Scrollbar mit Scrubbing-/Drag-Funktion               | Ja     | Ja    |
+| Unterstützung für RAW Formate                        | Ja     | Ja    |
 | Metadaten anzeigen (EXIF, Karte)                     | Ja     | Ja    |
 | Suchen nach Metadaten, Objekten, Gesichtern und CLIP | Ja     | Ja    |
 | Administrative Funktionen (Benutzerverwaltung)       | Nein   | Ja    |
-| Backup im Hintergrund                                | Ja     | n. a. |
+| Hintergrundsicherung                                 | Ja     | k. A  |
 | Virtuelles Scrollen                                  | Ja     | Ja    |
 | OAuth Unterstützung                                  | Ja     | Ja    |
-| API-Schlüssel                                        | n. a.  | Ja    |
-| LivePhoto/MotionPhoto Backup und Wiedergabe          | Ja     | Ja    |
+| API-Schlüssel                                        | k. A   | Ja    |
+| LivePhoto/MotionPhoto Sicherung und Wiedergabe       | Ja     | Ja    |
+| Unterstützung für 360-Grad-Bilder     	             | Nein   | Ja    |
 | Benutzerdefinierte Speicherstruktur                  | Ja     | Ja    |
 | Öffentliches Teilen                                  | Nein   | Ja    |
-| Archive und Favoriten                                | Ja     | Ja    |
+| Archiv und Favoriten                                 | Ja     | Ja    |
 | Globale Karte                                        | Ja     | Ja    |
-| Teilen mit Partner                                   | Ja     | Ja    |
-| Gesichtserkennung und Gruppierung                    | Ja     | Ja    |
+| Partnerfreigabe (Teilen)                             | Ja     | Ja    |
+| Gesichtserkennung und -gruppierung                   | Ja     | Ja    |
 | Rückblicke (heute vor x Jahren)                      | Ja     | Ja    |
 | Offline Unterstützung                                | Ja     | Nein  |
 | Schreibgeschützte Gallerie                           | Ja     | Ja    |
 | Gestapelte Bilder                                    | Ja     | Ja    |
 
+
+## Übersetzungen
+
+Mehr zum Thema Übersetzungen kannst du [hier](https://immich.app/docs/developer/translations) erfahren.
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
+</a>
+
+## Repository-Aktivität
+
+![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
+
+## Github Sterne
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>
+
 ## Mitwirkende
+
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

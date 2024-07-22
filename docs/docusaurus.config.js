@@ -92,6 +92,7 @@ const config = {
           alt: 'Immich Logo',
           src: 'img/immich-logo-inline-light.png',
           srcDark: 'img/immich-logo-inline-dark.png',
+          className: 'rounded-none',
         },
         items: [
           {

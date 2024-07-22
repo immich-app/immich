@@ -15,13 +15,13 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios beta
+### ios release
 
 ```sh
-[bundle exec] fastlane ios beta
+[bundle exec] fastlane ios release
 ```
 
-iOS Beta
+iOS Release
 
 ----
 

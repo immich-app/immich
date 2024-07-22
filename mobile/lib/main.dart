@@ -104,7 +104,7 @@ Future<Isar> loadDb() async {
       if (Platform.isIOS) IOSDeviceAssetSchema,
     ],
     directory: dir.path,
-    maxSizeMiB: 256,
+    maxSizeMiB: 1024,
   );
   Store.init(db);
   return db;
@@ -192,7 +192,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       home: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: false,

@@ -3660,11 +3660,7 @@
             "required": true,
             "in": "query",
             "schema": {
-              "enum": [
-                "shared-by",
-                "shared-with"
-              ],
-              "type": "string"
+              "$ref": "#/components/schemas/PartnerDirection"
             }
           }
         ],
@@ -5026,10 +5022,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/LicenseResponseDto"
                 }
               }
             },
+            "description": ""
+          },
+          "404": {
             "description": ""
           }
         },
@@ -7011,7 +7010,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.107.2",
+    "version": "1.109.2",
     "contact": {}
   },
   "tags": [],
@@ -9473,6 +9472,13 @@
         ],
         "type": "object"
       },
+      "PartnerDirection": {
+        "enum": [
+          "shared-by",
+          "shared-with"
+        ],
+        "type": "string"
+      },
       "PartnerResponseDto": {
         "properties": {
           "avatarColor": {
@@ -10688,6 +10694,12 @@
             },
             "type": "array"
           },
+          "acceptedContainers": {
+            "items": {
+              "$ref": "#/components/schemas/VideoContainer"
+            },
+            "type": "array"
+          },
           "acceptedVideoCodecs": {
             "items": {
               "$ref": "#/components/schemas/VideoCodec"
@@ -10759,6 +10771,7 @@
           "accel",
           "accelDecode",
           "acceptedAudioCodecs",
+          "acceptedContainers",
           "acceptedVideoCodecs",
           "bframes",
           "cqMode",
@@ -11027,6 +11040,9 @@
           "mobileRedirectUri": {
             "type": "string"
           },
+          "profileSigningAlgorithm": {
+            "type": "string"
+          },
           "scope": {
             "type": "string"
           },
@@ -11051,6 +11067,7 @@
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
+          "profileSigningAlgorithm",
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
@@ -11838,6 +11855,15 @@
           "hevc",
           "vp9",
           "av1"
+        ],
+        "type": "string"
+      },
+      "VideoContainer": {
+        "enum": [
+          "mov",
+          "mp4",
+          "ogg",
+          "webm"
         ],
         "type": "string"
       }

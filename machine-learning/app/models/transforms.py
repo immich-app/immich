@@ -47,8 +47,8 @@ def pil_to_cv2(image: Image.Image) -> NDArray[np.uint8]:
 def decode_pil(image_bytes: bytes | IO[bytes] | Image.Image) -> Image.Image:
     if isinstance(image_bytes, Image.Image):
         return image_bytes
-    image = Image.open(BytesIO(image_bytes) if isinstance(image_bytes, bytes) else image_bytes)
-    image.load()  # type: ignore
+    image: Image.Image = Image.open(BytesIO(image_bytes) if isinstance(image_bytes, bytes) else image_bytes)
+    image.load()
     if not image.mode == "RGB":
         image = image.convert("RGB")
     return image

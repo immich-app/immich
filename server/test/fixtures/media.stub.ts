@@ -177,4 +177,14 @@ export const probeStub = {
     ...probeStubDefault,
     videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'h264' }],
   }),
+  videoStreamAvi: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'h264' }],
+    format: {
+      formatName: 'avi',
+      formatLongName: 'AVI (Audio Video Interleaved)',
+      duration: 0,
+      bitrate: 0,
+    },
+  }),
 };

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.107.2
+ * 1.109.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -880,12 +880,12 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
-export type LicenseKeyDto = {
+export type LicenseResponseDto = {
+    activatedAt: string;
     activationKey: string;
     licenseKey: string;
 };
-export type LicenseResponseDto = {
-    activatedAt: string;
+export type LicenseKeyDto = {
     activationKey: string;
     licenseKey: string;
 };
@@ -960,6 +960,7 @@ export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     accelDecode: boolean;
     acceptedAudioCodecs: AudioCodec[];
+    acceptedContainers: VideoContainer[];
     acceptedVideoCodecs: VideoCodec[];
     bframes: number;
     cqMode: CQMode;
@@ -1063,6 +1064,7 @@ export type SystemConfigOAuthDto = {
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    profileSigningAlgorithm: string;
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;
@@ -2128,7 +2130,7 @@ export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     }));
 }
 export function getPartners({ direction }: {
-    direction: "shared-by" | "shared-with";
+    direction: PartnerDirection;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2509,7 +2511,9 @@ export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
 export function getServerLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: object;
+        data: LicenseResponseDto;
+    } | {
+        status: 404;
     }>("/server/license", {
         ...opts
     }));
@@ -3131,6 +3135,10 @@ export enum Type2 {
 export enum MemoryType {
     OnThisDay = "on_this_day"
 }
+export enum PartnerDirection {
+    SharedBy = "shared-by",
+    SharedWith = "shared-with"
+}
 export enum PathEntityType {
     Asset = "asset",
     Person = "person",
@@ -3172,6 +3180,12 @@ export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
     Libopus = "libopus"
+}
+export enum VideoContainer {
+    Mov = "mov",
+    Mp4 = "mp4",
+    Ogg = "ogg",
+    Webm = "webm"
 }
 export enum VideoCodec {
     H264 = "h264",

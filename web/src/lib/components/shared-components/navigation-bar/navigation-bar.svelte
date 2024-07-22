@@ -31,6 +31,7 @@
 
   const logOut = async () => {
     const { redirectUri } = await logout();
+
     if (redirectUri.startsWith('/')) {
       await goto(redirectUri);
     } else {

@@ -4,6 +4,7 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
+import { resourcePaths } from 'src/constants';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GitHubRelease, IServerInfoRepository, ServerBuildVersions } from 'src/interfaces/server-info.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
@@ -61,9 +62,9 @@ export class ServerInfoRepository implements IServerInfoRepository {
       maybeFirstLine('convert --version'),
     ]);
 
-    const lockfile = await readFile('build-lock.json')
+    const lockfile = await readFile(resourcePaths.lockFile)
       .then((buffer) => JSON.parse(buffer.toString()))
-      .catch(() => this.logger.warn('Failed to read build-lock.json'));
+      .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
     return {
       nodejs: nodejsOutput || process.env.NODE_VERSION || '',

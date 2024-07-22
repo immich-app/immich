@@ -10,7 +10,7 @@ function HomepageHeader() {
       <section className="text-center m-6 p-12 border border-red-400 rounded-[50px] bg-slate-200 dark:bg-immich-dark-gray">
         <img
           src={isDarkTheme ? 'img/immich-logo-stacked-dark.svg' : 'img/immich-logo-stacked-light.svg'}
-          className="md:h-60 h-44 mb-2 antialiased"
+          className="md:h-60 h-44 mb-2 antialiased rounded-none"
           alt="Immich logo"
         />
         <div className="sm:text-2xl text-lg md:text-4xl mb-12 sm:leading-tight">

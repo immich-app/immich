@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField, {
@@ -19,8 +18,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div class="mt-2">
@@ -181,8 +180,8 @@
       </SettingAccordion>
 
       <SettingButtonsRow
-        on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['machineLearning'] })}
-        on:save={() => dispatch('save', { machineLearning: config.machineLearning })}
+        onReset={(options) => onReset({ ...options, configKeys: ['machineLearning'] })}
+        onSave={() => onSave({ machineLearning: config.machineLearning })}
         showResetToDefault={!isEqual(savedConfig.machineLearning, defaultConfig.machineLearning)}
         {disabled}
       />

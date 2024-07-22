@@ -4,7 +4,7 @@ import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from '
 import { UserAvatarColor, UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity, UserStatus } from 'src/entities/user.entity';
 import { getPreferences } from 'src/utils/preferences';
-import { Optional, toEmail, toSanitized, ValidateBoolean } from 'src/validation';
+import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
 export class UserUpdateMeDto {
   @Optional()
@@ -140,7 +140,7 @@ export class UserAdminResponseDto extends UserResponseDto {
 }
 
 export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
-  const license = entity.metadata.find(
+  const license = entity.metadata?.find(
     (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
   )?.value;
   return {

@@ -145,7 +145,7 @@ export class StorageTemplateService implements OnEvents {
       return JobStatus.SKIPPED;
     }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { withExif: true }),
+      this.assetRepository.getAll(pagination, { withExif: true, withArchived: true }),
     );
     const users = await this.userRepository.getList();
 

@@ -166,6 +166,7 @@ part 'model/o_auth_authorize_response_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/on_this_day_dto.dart';
+part 'model/partner_direction.dart';
 part 'model/partner_response_dto.dart';
 part 'model/path_entity_type.dart';
 part 'model/path_type.dart';
@@ -262,6 +263,7 @@ part 'model/validate_library_dto.dart';
 part 'model/validate_library_import_path_response_dto.dart';
 part 'model/validate_library_response_dto.dart';
 part 'model/video_codec.dart';
+part 'model/video_container.dart';
 
 
 /// An [ApiClient] instance that uses the default values obtained from

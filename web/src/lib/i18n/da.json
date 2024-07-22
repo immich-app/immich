@@ -7,6 +7,7 @@
   "actions": "Handlinger",
   "active": "Aktiv",
   "activity": "Aktivitet",
+  "activity_changed": "Aktivitet er {enabled, select, true {enabled} other {disabled}}",
   "add": "Tilføj",
   "add_a_description": "Tilføj en beskrivelse",
   "add_a_location": "Tilføj en placering",

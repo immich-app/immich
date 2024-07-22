@@ -138,9 +138,9 @@ export const albumStub = {
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
-  emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
+  emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
-    albumName: 'Empty album with invalid thumbnail',
+    albumName: 'Empty album with valid thumbnail',
     description: '',
     ownerId: authStub.admin.user.id,
     owner: userStub.admin,
@@ -155,7 +155,7 @@ export const albumStub = {
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
-  emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
+  emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
     albumName: 'Empty album with invalid thumbnail',
     description: '',

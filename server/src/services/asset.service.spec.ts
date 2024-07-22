@@ -350,6 +350,7 @@ describe(AssetService.name, () => {
       expect(stackMock.delete).toHaveBeenCalledWith('stack-1');
       expect(stackMock.create).toHaveBeenCalledWith({
         assets: [{ id: 'child-1' }, { id: 'parent' }, { id: 'child-1' }, { id: 'child-2' }],
+        ownerId: 'user-id',
         primaryAssetId: 'parent',
       });
       expect(assetMock.updateAll).toBeCalledWith(['child-1', 'parent', 'child-1', 'child-2'], {

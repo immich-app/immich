@@ -26,7 +26,7 @@
   }
 </script>
 
-{#if asset.exifInfo?.city}
+{#if asset.exifInfo?.country}
   <button
     type="button"
     class="flex w-full text-left justify-between place-items-start gap-4 py-4"
@@ -39,7 +39,9 @@
       <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
       <div>
-        <p>{asset.exifInfo.city}</p>
+        {#if asset.exifInfo?.city}
+          <p>{asset.exifInfo.city}</p>
+        {/if}
         {#if asset.exifInfo?.state}
           <div class="flex gap-2 text-sm">
             <p>{asset.exifInfo.state}</p>

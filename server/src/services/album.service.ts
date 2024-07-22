@@ -146,8 +146,8 @@ export class AlbumService {
     const album = await this.findOrFail(id, { withAssets: true });
 
     if (dto.albumThumbnailAssetId) {
-      const valid = await this.albumRepository.hasAsset({ albumId: id, assetId: dto.albumThumbnailAssetId });
-      if (!valid) {
+      const results = await this.albumRepository.getAssetIds(id, [dto.albumThumbnailAssetId]);
+      if (results.size === 0) {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }
@@ -165,10 +165,7 @@ export class AlbumService {
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.access.requirePermission(auth, Permission.ALBUM_DELETE, id);
-
-    const album = await this.findOrFail(id, { withAssets: false });
-
-    await this.albumRepository.delete(album);
+    await this.albumRepository.delete(id);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
