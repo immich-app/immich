@@ -5022,10 +5022,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/LicenseResponseDto"
                 }
               }
             },
+            "description": ""
+          },
+          "404": {
             "description": ""
           }
         },
