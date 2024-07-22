@@ -4,7 +4,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { QueueOptions } from 'bullmq';
 import { Request, Response } from 'express';
 import { RedisOptions } from 'ioredis';
-import Joi from 'joi';
+import Joi, { Root } from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { ImmichHeader } from 'src/dtos/auth.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
@@ -387,6 +387,20 @@ export const immichAppConfig: ConfigModuleOptions = {
     IMMICH_PORT: Joi.number().optional(),
     IMMICH_API_METRICS_PORT: Joi.number().optional(),
     IMMICH_MICROSERVICES_METRICS_PORT: Joi.number().optional(),
+
+    IMMICH_TRUSTED_PROXIES: Joi.extend((joi: Root) => ({
+      type: 'stringArray',
+      base: joi.array(),
+      coerce: (value) => (value.split ? value.split(',') : value),
+    }))
+      .stringArray()
+      .single()
+      .items(
+        Joi.string().ip({
+          version: ['ipv4', 'ipv6'],
+          cidr: 'optional',
+        }),
+      ),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
     IMMICH_HOST_METRICS: Joi.boolean().optional().default(false),
