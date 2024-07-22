@@ -19,11 +19,11 @@ class ShareService {
 
   ShareService(this._apiService);
 
-  Future<bool> shareAsset(Asset asset) async {
-    return await shareAssets([asset]);
+  Future<bool> shareAsset(Asset asset, BuildContext context) async {
+    return await shareAssets([asset], context);
   }
 
-  Future<bool> shareAssets(List<Asset> assets) async {
+  Future<bool> shareAssets(List<Asset> assets, BuildContext context) async {
     try {
       final downloadedXFiles = <XFile>[];
 
@@ -64,6 +64,7 @@ class ShareService {
         );
       }
 
+      final box = context.findRenderObject() as RenderBox?;
       Share.shareXFiles(
         downloadedXFiles,
         sharePositionOrigin: Rect.zero,
