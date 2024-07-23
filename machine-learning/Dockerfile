@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:d24fe15653659ce8f3e9c576533ed5591ad75f9a0cce0fa8dcdd2f4205ca93f7 as builder-cpu
+FROM python:3.11-bookworm@sha256:ef4b550f029a76b94f8e6cc6e4a8ed0e870fc6c5af1c4e9d77faaea50f41f6cd as builder-cpu
 
 FROM builder-cpu as builder-openvino
 
@@ -34,7 +34,7 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:80bcf8d243a0d763a7759d6b99e5bf89af1869135546698be4bf7ff6c3f98a59 as prod-cpu
+FROM python:3.11-slim-bookworm@sha256:ee317183d292ee6ed30e90bc325043ca3f7d2e8c79ac5019575490b5256ae244 as prod-cpu
 
 FROM prod-cpu as prod-openvino
 
