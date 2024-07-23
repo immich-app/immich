@@ -297,6 +297,10 @@
 
       timelineInteractionStore.clearMultiselect();
       viewMode = ViewMode.VIEW;
+      await navigate(
+        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+        { replaceState: true, forceNavigate: true },
+      );
     } catch (error) {
       handleError(error, $t('errors.error_adding_assets_to_album'));
     }
@@ -308,7 +312,7 @@
 
     await navigate(
       { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
-      { replaceState: true },
+      { replaceState: true, forceNavigate: true },
     );
     oldAt = null;
   };

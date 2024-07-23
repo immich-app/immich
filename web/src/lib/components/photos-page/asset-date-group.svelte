@@ -98,14 +98,12 @@
       id="date-group"
       use:intersectionObserver={{
         onIntersect: () =>
-          queueScrollSensitiveTask(
-            () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true }),
-            PRIORITY,
+          $assetStore.taskManager.intersectedDateGroup(dateGroup, () =>
+            assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true }),
           ),
         onSeparate: () =>
-          queueScrollSensitiveTask(
-            () => assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
-            PRIORITY,
+          $assetStore.taskManager.seperatedDateGroup(dateGroup, () =>
+            assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
           ),
         top: INTERSECTION_ROOT_TOP,
         bottom: INTERSECTION_ROOT_BOTTOM,
@@ -189,7 +187,8 @@
                 style:left={box.left + 'px'}
               >
                 <Thumbnail
-                  delayIntersectionsDuringScroll={true}
+                  {dateGroup}
+                  {assetStore}
                   intersectionConfig={{
                     root: assetGridElement,
                     bottom: renderThumbsAtBottomMargin,

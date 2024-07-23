@@ -1,8 +1,8 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { getAssetRatio } from '$lib/utils/asset-utils';
+import { KeyedPriorityQueue } from '$lib/utils/keyed-priority-queue';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
-import { PriorityQueue } from '$lib/utils/priority-queue';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
@@ -214,6 +214,7 @@ export class AssetStore {
   /**
    * A promise that resolves once the store is initialized.
    */
+  taskManager = new AssetGridTaskManager();
   complete!: Promise<void>;
   initialized = false;
   timelineHeight = 0;
@@ -662,6 +663,9 @@ export class AssetStore {
     }
     const asset = await getAssetInfo({ id });
     if (asset) {
+      if (this.options.isArchived !== asset.isArchived) {
+        return;
+      }
       const bucket = await this.loadBucketAtTime(asset.localDateTime, { preventCancel: true, pending: true });
       if (bucket) {
         this.pendingScrollBucket = bucket;
@@ -673,22 +677,20 @@ export class AssetStore {
   }
 
   /* Must be paired with matching clearPendingScroll() call */
-  async scheduleScrollToAssetId(scrollTarget?: AssetGridRouteSearchParams | null) {
-    if (!scrollTarget) {
-      return false;
-    }
-
+  async scheduleScrollToAssetId(scrollTarget: AssetGridRouteSearchParams, onFailure: () => void) {
     try {
-      await this.complete;
       const { at: assetId } = scrollTarget;
       if (assetId) {
+        await this.complete;
         const bucket = await this.findAndLoadBucketAsPending(assetId);
-        return bucket;
+        if (bucket) {
+          return;
+        }
       }
     } catch {
-      return false;
+      // failure
     }
-    return true;
+    onFailure();
   }
 
   clearPendingScroll() {
@@ -860,13 +862,13 @@ export const lastScrollTime = writable<number>(0);
 
 type Task = () => void;
 
-const tasks = new PriorityQueue<Task>();
 let queueTimer: ReturnType<typeof setTimeout> | undefined;
 
 function drain() {
   let count = 0;
   for (let t = tasks.shift(); t; t = tasks.shift()) {
     t.value();
+
     if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
       scheduleDrain(TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS_DELAY_MS);
       break;
@@ -900,9 +902,16 @@ function scheduleDrain(delay: number = TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL
     }
   }, delay);
 }
+let uniqueId = 0;
+function generateDefaultId() {
+  uniqueId++;
+  return uniqueId.toString();
+}
+const tasks = new KeyedPriorityQueue<string, Task>();
+const seperatedQueue = new Map<string, Task>();
 
-export function queueScrollSensitiveTask(task: Task, priority: number = 10) {
-  tasks.push(task, priority);
+export function queueScrollSensitiveTask(task: Task, priority: number = 10, taskId: string = generateDefaultId()) {
+  tasks.push(taskId, task, priority);
   const lastTime = get(lastScrollTime);
   const delta = Date.now() - lastTime;
   if (lastTime != 0 && delta < TUNABLES.SCROLL_TASK_QUEUE.MIN_DELAY_MS) {
@@ -911,5 +920,250 @@ export function queueScrollSensitiveTask(task: Task, priority: number = 10) {
     // flush the queue early
     clearTimeout(queueTimer);
     drain();
+  }
+}
+let lastIdle: number;
+function scheduleDrainSeparatedQueue() {
+  cancelIdleCallback(lastIdle);
+  lastIdle = requestIdleCallback(
+    () => {
+      let count = 0;
+
+      let entry = seperatedQueue.entries().next().value;
+      while (entry) {
+        const [taskId, task] = entry;
+        seperatedQueue.delete(taskId);
+        task();
+        if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
+          break;
+        }
+        entry = seperatedQueue.entries().next().value;
+      }
+      if (seperatedQueue.size > 0) {
+        scheduleDrainSeparatedQueue();
+      }
+    },
+    { timeout: 1000 },
+  );
+}
+export function queueSeparateTask(task: Task, taskId: string) {
+  seperatedQueue.set(taskId, task);
+  scheduleDrainSeparatedQueue();
+}
+
+export function removeSeparateTask(taskId: string) {
+  const d = seperatedQueue.delete(taskId);
+  return d;
+}
+
+class AssetGridTaskManager {
+  tasks: Map<AssetBucket, BucketTask> = new Map();
+  private createBucketTask(bucket: AssetBucket) {
+    const bucketTask = new BucketTask(this, bucket);
+    this.tasks.set(bucket, bucketTask);
+    return bucketTask;
+  }
+  private createDateGroupTask(bucketTask: BucketTask, dateGroup: DateGroup) {
+    const dateGroupTask = new DateGroupTask(bucketTask, dateGroup);
+    bucketTask.dateTasks.set(dateGroup, dateGroupTask);
+    return dateGroupTask;
+  }
+  intersectedBucket(bucket: AssetBucket, task: Task) {
+    let bucketTask = this.tasks.get(bucket);
+    if (!bucketTask) {
+      bucketTask = this.createBucketTask(bucket);
+    }
+    bucketTask.scheduleIntersected(task);
+  }
+
+  seperatedBucket(bucket: AssetBucket, seperated: Task) {
+    let bucketTask = this.tasks.get(bucket);
+    if (!bucketTask) {
+      bucketTask = this.createBucketTask(bucket);
+    }
+    bucketTask.scheduleSeparated(seperated);
+  }
+
+  intersectedDateGroup(dateGroup: DateGroup, interested: Task) {
+    let bucketTask = this.tasks.get(dateGroup.bucket);
+    if (!bucketTask) {
+      bucketTask = this.createBucketTask(dateGroup.bucket);
+    }
+    bucketTask.intersectedDateGroup(dateGroup, interested);
+  }
+
+  seperatedDateGroup(dateGroup: DateGroup, seperated: Task) {
+    let bucketTask = this.tasks.get(dateGroup.bucket);
+    if (!bucketTask) {
+      bucketTask = this.createBucketTask(dateGroup.bucket);
+    }
+    bucketTask.separatedDateGroup(dateGroup, seperated);
+  }
+  intersectedThumbnail(dateGroup: DateGroup, asset: AssetResponseDto, intersected: Task) {
+    let bucketTask = this.tasks.get(dateGroup.bucket);
+    if (!bucketTask) {
+      bucketTask = this.createBucketTask(dateGroup.bucket);
+    }
+    let dateGroupTask = bucketTask.dateTasks.get(dateGroup);
+    if (!dateGroupTask) {
+      dateGroupTask = this.createDateGroupTask(bucketTask, dateGroup);
+    }
+    dateGroupTask.intersectedThumbnail(asset, intersected);
+  }
+  seperatedThumbnail(dateGroup: DateGroup, asset: AssetResponseDto, seperated: Task) {
+    let bucketTask = this.tasks.get(dateGroup.bucket);
+    if (!bucketTask) {
+      bucketTask = this.createBucketTask(dateGroup.bucket);
+    }
+    let dateGroupTask = bucketTask.dateTasks.get(dateGroup);
+    if (!dateGroupTask) {
+      dateGroupTask = this.createDateGroupTask(bucketTask, dateGroup);
+    }
+    dateGroupTask.separatedThumbnail(asset, seperated);
+  }
+}
+class BucketTask {
+  assetBucket: AssetBucket;
+  assetGridTaskManager: AssetGridTaskManager;
+  intersected: Task | undefined;
+  separated: Task | undefined;
+  // indexed by dateGroup's date
+  dateTasks: Map<DateGroup, DateGroupTask> = new Map();
+  constructor(parent: AssetGridTaskManager, assetBucket: AssetBucket) {
+    this.assetBucket = assetBucket;
+    this.assetGridTaskManager = parent;
+  }
+  removePendingSeparated() {
+    for (const dateGroupTask of this.dateTasks.values()) {
+      dateGroupTask.removePendingSeparated();
+    }
+    if (removeSeparateTask('b.s:' + this.assetBucket.bucketDate)) {
+      this.separated = undefined;
+    }
+  }
+  scheduleIntersected(intersected: Task) {
+    if (this.separated) {
+      this.removePendingSeparated();
+    }
+
+    this.intersected = intersected;
+    const wrapped = () => {
+      this.intersected?.();
+      this.intersected = undefined;
+    };
+    queueScrollSensitiveTask(wrapped, TUNABLES.BUCKET.PRIORITY, 'b.i:' + this.assetBucket.bucketDate);
+  }
+  scheduleSeparated(separated: Task) {
+    this.separated = separated;
+    const wrapped = () => {
+      this.separated?.();
+      this.separated = undefined;
+    };
+    queueSeparateTask(wrapped, 'b.s:' + this.assetBucket.bucketDate);
+  }
+
+  intersectedDateGroup(dateGroup: DateGroup, intersected: Task) {
+    let dateGroupTask = this.dateTasks.get(dateGroup);
+    if (!dateGroupTask) {
+      dateGroupTask = new DateGroupTask(this, dateGroup);
+      this.dateTasks.set(dateGroup, dateGroupTask);
+    }
+    dateGroupTask.scheduleIntersected(intersected);
+  }
+  separatedDateGroup(dateGroup: DateGroup, separated: Task) {
+    let dateGroupTask = this.dateTasks.get(dateGroup);
+    if (!dateGroupTask) {
+      dateGroupTask = new DateGroupTask(this, dateGroup);
+      this.dateTasks.set(dateGroup, dateGroupTask);
+    }
+    dateGroupTask.scheduleSeparated(separated);
+  }
+}
+class DateGroupTask {
+  dateGroup: DateGroup;
+  bucketTask: BucketTask;
+  intersected: Task | undefined;
+  separated: Task | undefined;
+  // indexed by thumbnail's asset
+  thumbnailTasks: Map<AssetResponseDto, ThumbnailTask> = new Map();
+  constructor(parent: BucketTask, date: DateGroup) {
+    this.dateGroup = date;
+    this.bucketTask = parent;
+  }
+  removePendingSeparated() {
+    for (const thumbnailTask of this.thumbnailTasks.values()) {
+      thumbnailTask.removePendingSeparated();
+    }
+    if (removeSeparateTask('dg.s:' + this.dateGroup.date.toString())) {
+      this.separated = undefined;
+    }
+  }
+  scheduleIntersected(intersected: Task) {
+    if (this.separated) {
+      this.removePendingSeparated();
+    }
+
+    this.intersected = intersected;
+    const wrapped = () => {
+      this.intersected?.();
+      this.intersected = undefined;
+    };
+    queueScrollSensitiveTask(wrapped, TUNABLES.DATEGROUP.PRIORITY, 'dg.i:' + this.dateGroup.date.toString());
+  }
+  scheduleSeparated(separated: Task) {
+    this.separated = separated;
+    const wrapped = () => {
+      this.separated?.();
+      this.separated = undefined;
+    };
+    queueSeparateTask(wrapped, 'dg.s:' + this.dateGroup.date.toString());
+  }
+
+  intersectedThumbnail(asset: AssetResponseDto, intersected: Task) {
+    let thumbnailTask = this.thumbnailTasks.get(asset);
+    if (!thumbnailTask) {
+      thumbnailTask = new ThumbnailTask(this, asset);
+      this.thumbnailTasks.set(asset, thumbnailTask);
+    }
+    thumbnailTask.scheduleIntersected(intersected);
+  }
+  separatedThumbnail(asset: AssetResponseDto, seperated: Task) {
+    let thumbnailTask = this.thumbnailTasks.get(asset);
+    if (!thumbnailTask) {
+      thumbnailTask = new ThumbnailTask(this, asset);
+      this.thumbnailTasks.set(asset, thumbnailTask);
+    }
+    thumbnailTask.scheduleSeperated(seperated);
+  }
+}
+class ThumbnailTask {
+  asset: AssetResponseDto;
+  dateGroupTask: DateGroupTask;
+  intersected: Task | undefined;
+  seperated: Task | undefined;
+  constructor(parent: DateGroupTask, asset: AssetResponseDto) {
+    this.asset = asset;
+    this.dateGroupTask = parent;
+  }
+  scheduleIntersected(intersected: Task) {
+    this.intersected = intersected;
+    const wrapped = () => {
+      this.intersected?.();
+      this.intersected = undefined;
+    };
+    queueScrollSensitiveTask(wrapped, TUNABLES.THUMBNAIL.PRIORITY, 't.i:' + this.asset.id);
+  }
+  scheduleSeperated(seperated: Task) {
+    this.seperated = seperated;
+    const wrapped = () => {
+      this.seperated?.();
+      this.seperated = undefined;
+    };
+    queueSeparateTask(wrapped, 't.s:' + this.asset.id);
+  }
+  removePendingSeparated() {
+    if (removeSeparateTask('t.s:' + this.asset.id)) {
+      this.seperated = undefined;
+    }
   }
 }

@@ -23,11 +23,14 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { queueScrollSensitiveTask } from '$lib/stores/assets.store';
-  import { thumbHashToDataURL } from 'thumbhash';
+  import { AssetStore, queueScrollSensitiveTask } from '$lib/stores/assets.store';
+  import { thumbHashToRGBA } from 'thumbhash';
   import { TUNABLES } from '$lib/utils/tunables';
+  import type { DateGroup } from '$lib/utils/timeline-util';
 
   export let asset: AssetResponseDto;
+  export let dateGroup: DateGroup | undefined = undefined;
+  export let assetStore: AssetStore | undefined = undefined;
   export let groupIndex = 0;
   export let thumbnailSize: number | undefined = undefined;
   export let thumbnailWidth: number | undefined = undefined;
@@ -46,7 +49,6 @@
     priority?: number;
   } = {};
 
-  export let delayIntersectionsDuringScroll = false;
   export let retrieveElement: boolean = false;
   export let onIntersected: (() => void) | undefined = undefined;
   export let onClick: ((asset: AssetResponseDto) => void) | undefined = undefined;
@@ -108,7 +110,7 @@
     onMouseEvent?.({ isMouseOver: true, selectedGroupIndex: groupIndex });
   };
   const onMouseEnter = () => {
-    if (delayIntersectionsDuringScroll) {
+    if (dateGroup) {
       queueScrollSensitiveTask(() => _onMouseEnter());
     } else {
       _onMouseEnter();
@@ -116,7 +118,7 @@
   };
 
   const onMouseLeave = () => {
-    if (delayIntersectionsDuringScroll) {
+    if (dateGroup) {
       queueScrollSensitiveTask(() => (mouseOver = false));
     } else {
       mouseOver = false;
@@ -128,18 +130,29 @@
     onIntersected?.();
   };
   const onIntersect = () => {
-    if (delayIntersectionsDuringScroll) {
-      queueScrollSensitiveTask(() => _onIntersect(), PRIORITY);
+    if (dateGroup && assetStore) {
+      assetStore.taskManager.intersectedThumbnail(dateGroup, asset, () => _onIntersect());
     } else {
       _onIntersect();
     }
   };
 
   const onSeparate = () => {
-    if (delayIntersectionsDuringScroll) {
-      queueScrollSensitiveTask(() => (intersecting = false), PRIORITY);
+    if (dateGroup && assetStore) {
+      assetStore.taskManager.seperatedThumbnail(dateGroup, asset, () => (intersecting = false));
     } else {
       intersecting = false;
+    }
+  };
+  const loadThumhash = (canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const { w, h, rgba } = thumbHashToRGBA(decodeBase64(asset.thumbhash!));
+      const pixels = ctx.createImageData(w, h);
+      canvas.width = w;
+      canvas.height = h;
+      pixels.data.set(rgba);
+      ctx.putImageData(pixels, 0, 0);
     }
   };
 </script>
@@ -159,14 +172,13 @@
     : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 >
   {#if !loaded && asset.thumbhash}
-    <!-- svelte-ignore a11y-missing-attribute -->
-    <img
+    <canvas
+      use:loadThumhash
       class="absolute object-cover z-10"
       style:width="{width}px"
       style:height="{height}px"
-      src={thumbHashToDataURL(decodeBase64(asset.thumbhash))}
       out:fade={{ duration: 150 }}
-    />
+    ></canvas>
   {/if}
   {#if display}
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
@@ -193,7 +205,7 @@
           style:width="{width}px"
           style:height="{height}px"
           href={currentUrlReplaceAssetId(asset.id)}
-          on:click={(evt) => (evt.stopPropagation(), evt.preventDefault)}
+          on:click={(evt) => evt.preventDefault()}
           tabindex={0}
           aria-hidden="true"
         >
@@ -284,7 +296,6 @@
             heightStyle="{height}px"
             curve={selected}
             onComplete={() => (loaded = true)}
-            thumbhash={asset.thumbhash}
           />
         {:else}
           <div class="flex h-full w-full items-center justify-center p-4">

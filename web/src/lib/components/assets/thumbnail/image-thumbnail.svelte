@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { decodeBase64 } from '$lib/utils';
   import { fade } from 'svelte/transition';
-  import { thumbHashToDataURL } from 'thumbhash';
+  import { thumbHashToRGBA } from 'thumbhash';
   import { mdiEyeOffOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -49,6 +49,17 @@
       img?.removeEventListener('error', _onerror);
     };
   });
+  const loadThumhash = (canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const { w, h, rgba } = thumbHashToRGBA(decodeBase64(thumbhash!));
+      const pixels = ctx.createImageData(w, h);
+      canvas.width = w;
+      canvas.height = h;
+      pixels.data.set(rgba);
+      ctx.putImageData(pixels, 0, 0);
+    }
+  };
 </script>
 
 <img
@@ -77,11 +88,11 @@
 {/if}
 
 {#if thumbhash && (!loaded || errored)}
-  <img
+  <canvas
+    use:loadThumhash
+    data-testid="thumbhash"
     style:width={widthStyle}
     style:height={heightStyle}
-    src={thumbHashToDataURL(decodeBase64(thumbhash))}
-    alt={altText}
     {title}
     class="absolute top-0 object-cover"
     class:rounded-xl={curve}

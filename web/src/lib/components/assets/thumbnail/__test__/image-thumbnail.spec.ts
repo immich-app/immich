@@ -16,9 +16,7 @@ describe('ImageThumbnail component', () => {
       widthStyle: '250px',
     });
 
-    const [_, thumbhash] = sut.getAllByRole('img');
-    expect(thumbhash.getAttribute('src')).toContain(
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAgCAYAAAD5VeO1AAAMRklEQVR4AQBdAKL/', // truncated
-    );
+    const thumbhash = sut.getByTestId('thumbhash');
+    expect(thumbhash).not.toBeFalsy();
   });
 });

@@ -13,7 +13,6 @@
     AssetStore,
     isSelectingAllAssets,
     lastScrollTime,
-    queueScrollSensitiveTask,
     type BucketListener,
     type ViewportXY,
   } from '$lib/stores/assets.store';
@@ -135,7 +134,10 @@
     }
 
     if ($gridScrollTarget?.at) {
-      void $assetStore.scheduleScrollToAssetId($gridScrollTarget);
+      void $assetStore.scheduleScrollToAssetId($gridScrollTarget, () => {
+        element.scrollTo({ top: 0 });
+        showSkeleton = false;
+      });
     } else {
       element.scrollTo({ top: 0 });
       showSkeleton = false;
@@ -236,8 +238,9 @@
   };
 
   onMount(() => {
-    $assetStore.connect();
-    void $assetStore.init({ bucketListener }).then(() => $assetStore.updateViewport(safeViewport));
+    void $assetStore
+      .init({ bucketListener })
+      .then(() => ($assetStore.connect(), $assetStore.updateViewport(safeViewport)));
     if (!participatesInRouting) {
       showSkeleton = false;
     }
@@ -494,21 +497,21 @@
       }
     }
   }
-  function intersectedHandler(bucketDate: string) {
-    queueScrollSensitiveTask(() => {
-      $assetStore.updateBucket(bucketDate, { intersecting: true });
-      let bucket = assetStore.getBucketByDate(bucketDate);
-      if (bucket) {
-        void loadIt(bucket);
-      }
-    }, PRIORITY);
+
+  function intersectedHandler(bucket: AssetBucket) {
+    const intersectedTask = () => {
+      $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
+      void loadIt(bucket);
+    };
+    $assetStore.taskManager.intersectedBucket(bucket, intersectedTask);
   }
 
-  function seperatedHandler(bucketDate: string) {
-    queueScrollSensitiveTask(() => {
-      $assetStore.updateBucket(bucketDate, { intersecting: false });
-      $assetStore.getBucketByDate(bucketDate)?.cancel();
-    }, PRIORITY);
+  function seperatedHandler(bucket: AssetBucket) {
+    const seperatedTask = () => {
+      $assetStore.updateBucket(bucket.bucketDate, { intersecting: false });
+      bucket.cancel();
+    };
+    $assetStore.taskManager.seperatedBucket(bucket, seperatedTask);
   }
 
   const handlePrevious = async () => {
@@ -536,8 +539,8 @@
   };
 
   const handleClose = async ({ detail: { asset } }: { detail: { asset: AssetResponseDto } }) => {
-    showSkeleton = true;
     assetViewingStore.showAssetViewer(false);
+    showSkeleton = true;
     $gridScrollTarget = { at: asset.id };
     await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
   };
@@ -797,13 +800,14 @@
         <div
           id="buck"
           use:intersectionObserver={{
-            onIntersect: () => intersectedHandler(bucket.bucketDate),
-            onSeparate: () => seperatedHandler(bucket.bucketDate),
+            onIntersect: () => intersectedHandler(bucket),
+            onSeparate: () => seperatedHandler(bucket),
             top: BUCKET_INTERSECTION_ROOT_TOP,
             bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
             root: element,
             priority: PRIORITY,
           }}
+          data-bucket-display={bucket.intersecting}
           data-bucket-date={bucket.bucketDate}
           style:height={bucket.bucketHeight + 'px'}
         >
