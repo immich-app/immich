@@ -207,9 +207,6 @@ export interface SystemConfig {
   user: {
     deleteDelay: number;
   };
-  license: {
-    showLicensePanel: boolean;
-  };
 }
 
 export const defaults = Object.freeze<SystemConfig>({
@@ -353,9 +350,6 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   user: {
     deleteDelay: 7,
-  },
-  license: {
-    showLicensePanel: true,
   },
 });
 

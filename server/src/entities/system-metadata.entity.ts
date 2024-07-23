@@ -27,9 +27,5 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
   [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
   [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
-  [SystemMetadataKey.LICENSE]: {
-    licenseKey: string;
-    activationKey: string;
-    activatedAt: Date;
-  };
+  [SystemMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: Date };
 }

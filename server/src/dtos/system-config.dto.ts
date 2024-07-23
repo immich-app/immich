@@ -508,11 +508,6 @@ class SystemConfigUserDto {
   deleteDelay!: number;
 }
 
-class SystemConfigLicenseDto {
-  @ValidateBoolean()
-  showLicensePanel!: boolean;
-}
-
 export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigFFmpegDto)
   @ValidateNested()
@@ -598,11 +593,6 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   user!: SystemConfigUserDto;
-
-  @Type(() => SystemConfigLicenseDto)
-  @ValidateNested()
-  @IsObject()
-  license!: SystemConfigLicenseDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {
