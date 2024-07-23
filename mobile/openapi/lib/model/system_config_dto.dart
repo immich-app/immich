@@ -17,7 +17,6 @@ class SystemConfigDto {
     required this.image,
     required this.job,
     required this.library_,
-    required this.license,
     required this.logging,
     required this.machineLearning,
     required this.map,
@@ -40,8 +39,6 @@ class SystemConfigDto {
   SystemConfigJobDto job;
 
   SystemConfigLibraryDto library_;
-
-  SystemConfigLicenseDto license;
 
   SystemConfigLoggingDto logging;
 
@@ -75,7 +72,6 @@ class SystemConfigDto {
     other.image == image &&
     other.job == job &&
     other.library_ == library_ &&
-    other.license == license &&
     other.logging == logging &&
     other.machineLearning == machineLearning &&
     other.map == map &&
@@ -97,7 +93,6 @@ class SystemConfigDto {
     (image.hashCode) +
     (job.hashCode) +
     (library_.hashCode) +
-    (license.hashCode) +
     (logging.hashCode) +
     (machineLearning.hashCode) +
     (map.hashCode) +
@@ -113,7 +108,7 @@ class SystemConfigDto {
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, license=$license, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -121,7 +116,6 @@ class SystemConfigDto {
       json[r'image'] = this.image;
       json[r'job'] = this.job;
       json[r'library'] = this.library_;
-      json[r'license'] = this.license;
       json[r'logging'] = this.logging;
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
@@ -150,7 +144,6 @@ class SystemConfigDto {
         image: SystemConfigImageDto.fromJson(json[r'image'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         library_: SystemConfigLibraryDto.fromJson(json[r'library'])!,
-        license: SystemConfigLicenseDto.fromJson(json[r'license'])!,
         logging: SystemConfigLoggingDto.fromJson(json[r'logging'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
@@ -215,7 +208,6 @@ class SystemConfigDto {
     'image',
     'job',
     'library',
-    'license',
     'logging',
     'machineLearning',
     'map',

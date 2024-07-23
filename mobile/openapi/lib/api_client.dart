@@ -416,6 +416,8 @@ class ApiClient {
           return PersonWithFacesResponseDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
+        case 'PurchaseResponse':
+          return PurchaseResponse.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'ReactionLevel':
@@ -490,8 +492,6 @@ class ApiClient {
           return SystemConfigLibraryScanDto.fromJson(value);
         case 'SystemConfigLibraryWatchDto':
           return SystemConfigLibraryWatchDto.fromJson(value);
-        case 'SystemConfigLicenseDto':
-          return SystemConfigLicenseDto.fromJson(value);
         case 'SystemConfigLoggingDto':
           return SystemConfigLoggingDto.fromJson(value);
         case 'SystemConfigMachineLearningDto':
