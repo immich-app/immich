@@ -102,7 +102,6 @@
   };
 
   const onEscape = () => {
-    clearSelection();
     closeDropdown();
     showFilter = false;
   };
