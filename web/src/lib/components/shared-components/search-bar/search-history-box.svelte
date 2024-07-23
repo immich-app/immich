@@ -75,7 +75,7 @@
   };
 </script>
 
-<div role="listbox" {id}>
+<div role="listbox" {id} aria-label={$t('recent_searches')}>
   {#if isOpen && isSearchSuggestions}
     <div
       transition:fly={{ y: 25, duration: 150 }}
@@ -111,6 +111,7 @@
               role="option"
               tabindex="-1"
               aria-selected={selectedIndex === index}
+              aria-label={savedSearchTerm}
             >
               <Icon path={mdiMagnify} size="1.5em" ariaHidden={true} />
               {savedSearchTerm}

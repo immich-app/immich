@@ -131,6 +131,7 @@
 
   const closeDropdown = () => {
     showSuggestions = false;
+    clearSelection();
   };
 </script>
 
@@ -173,8 +174,9 @@
         disabled={showFilter}
         role="combobox"
         aria-controls={listboxId}
-        aria-activedescendant={selectedId}
+        aria-activedescendant={selectedId ?? ''}
         aria-expanded={showSuggestions && isSearchSuggestions}
+        aria-autocomplete="list"
         use:shortcuts={[
           { shortcut: { key: 'Escape' }, onShortcut: onEscape },
           { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
