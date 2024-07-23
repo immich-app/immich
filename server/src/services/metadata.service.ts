@@ -316,7 +316,7 @@ export class MetadataService implements OnEvents {
       {
         Description: description,
         ImageDescription: description,
-        CreationDate: dateTimeOriginal,
+        DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
       },
