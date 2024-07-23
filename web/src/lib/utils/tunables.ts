@@ -20,6 +20,14 @@ export const TUNABLES = {
   SCROLL_TASK_QUEUE: {
     TRICKLE_BONUS_FACTOR: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_BONUS_FACTOR'), 25),
     TRICKLE_ACCELERATION_FACTOR: getFloat(localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_ACCELERATION_FACTOR'), 1.5),
+    TRICKLE_ACCELERATED_MIN_DELAY: getNumber(
+      localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_ACCELERATED_MIN_DELAY'),
+      8,
+    ),
+    TRICKLE_ACCELERATED_MAX_DELAY: getNumber(
+      localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_ACCELERATED_MAX_DELAY'),
+      2000,
+    ),
     DRAIN_MAX_TASKS: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS'), 15),
     DRAIN_MAX_TASKS_DELAY_MS: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS_DELAY_MS'), 16),
     MIN_DELAY_MS: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.MIN_DELAY_MS')!, 200),
@@ -31,7 +39,7 @@ export const TUNABLES = {
     THROTTLE: getBoolean(localStorage.getItem('INTERSECTION_OBSERVER_QUEUE.THROTTLE'), true),
   },
   ASSET_GRID: {
-    NAVIGATE_ON_ASSET_IN_VIEW: getBoolean(localStorage.getItem('ASSET_GRID.NAVIGATE_ON_ASSET_IN_VIEW'), true),
+    NAVIGATE_ON_ASSET_IN_VIEW: getBoolean(localStorage.getItem('ASSET_GRID.NAVIGATE_ON_ASSET_IN_VIEW'), false),
   },
   BUCKET: {
     PRIORITY: getNumber(localStorage.getItem('BUCKET.PRIORITY'), 2),

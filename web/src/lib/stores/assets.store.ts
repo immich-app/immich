@@ -886,10 +886,15 @@ function scheduleDrain(delay: number = TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL
         1,
         TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS * 2,
       );
-      const nextDelay =
+
+      const nextDelay = clamp(
         amount > 1
           ? Math.round(delay / TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_ACCELERATION_FACTOR)
-          : TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS;
+          : TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS,
+        TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_ACCELERATED_MIN_DELAY,
+        TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_ACCELERATED_MAX_DELAY,
+      );
+
       while (amount > 0) {
         tasks.shift()?.value();
         amount--;

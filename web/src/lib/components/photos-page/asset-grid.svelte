@@ -488,14 +488,16 @@
     // preventCancel here - we want to allow it to cancel, but only under the right conditions.
 
     // lets try 5 times, because we really want the bucket to load, we don't want any queues cancels interfering
-    let count = 5;
-    while (bucket.intersecting && count-- > 0) {
-      try {
-        await $assetStore.loadBucket(bucket.bucketDate);
-      } catch {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-    }
+    await $assetStore.loadBucket(bucket.bucketDate);
+
+    // let count = 5;
+    // while (bucket.intersecting && count-- > 0) {
+    //   try {
+    //     await $assetStore.loadBucket(bucket.bucketDate);
+    //   } catch {
+    //     await new Promise((resolve) => setTimeout(resolve, 100));
+    //   }
+    // }
   }
 
   function intersectedHandler(bucket: AssetBucket) {
