@@ -451,6 +451,7 @@ Class | Method | HTTP request | Description
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)
  - [ValidateLibraryResponseDto](doc//ValidateLibraryResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
+ - [VideoContainer](doc//VideoContainer.md)
 
 
 ## Documentation For Authorization

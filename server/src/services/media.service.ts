@@ -8,6 +8,7 @@ import {
   TranscodePolicy,
   TranscodeTarget,
   VideoCodec,
+  VideoContainer,
 } from 'src/config';
 import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -27,7 +28,7 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from 'src/interfaces/media.interface';
+import { AudioStreamInfo, IMediaRepository, VideoFormat, VideoStreamInfo } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -314,8 +315,7 @@ export class MediaService {
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
     const mainVideoStream = this.getMainStream(videoStreams);
     const mainAudioStream = this.getMainStream(audioStreams);
-    const containerExtension = format.formatName;
-    if (!mainVideoStream || !containerExtension) {
+    if (!mainVideoStream || !format.formatName) {
       return JobStatus.FAILED;
     }
 
@@ -326,7 +326,7 @@ export class MediaService {
 
     const { ffmpeg } = await this.configCore.getConfig({ withCache: true });
     const target = this.getTranscodeTarget(ffmpeg, mainVideoStream, mainAudioStream);
-    if (target === TranscodeTarget.NONE) {
+    if (target === TranscodeTarget.NONE && !this.isRemuxRequired(ffmpeg, format)) {
       if (asset.encodedVideoPath) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
         await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
@@ -454,6 +454,15 @@ export class MediaService {
         throw new Error(`Unsupported transcode policy: ${ffmpegConfig.transcode}`);
       }
     }
+  }
+
+  private isRemuxRequired(ffmpegConfig: SystemConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
+    if (ffmpegConfig.transcode === TranscodePolicy.DISABLED) {
+      return false;
+    }
+
+    const name = formatLongName === 'QuickTime / MOV' ? VideoContainer.MOV : (formatName as VideoContainer);
+    return name !== VideoContainer.MP4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
   isSRGB(asset: AssetEntity): boolean {

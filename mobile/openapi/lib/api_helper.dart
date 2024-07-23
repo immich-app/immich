@@ -148,6 +148,9 @@ String parameterToString(dynamic value) {
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();
   }
+  if (value is VideoContainer) {
+    return VideoContainerTypeTransformer().encode(value).toString();
+  }
   return value.toString();
 }
 
