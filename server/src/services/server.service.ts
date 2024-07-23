@@ -89,7 +89,7 @@ export class ServerService implements OnEvents {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications, license } =
+    const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications } =
       await this.configCore.getConfig({ withCache: false });
 
     return {
@@ -106,7 +106,6 @@ export class ServerService implements OnEvents {
       passwordLogin: passwordLogin.enabled,
       configFile: this.configCore.isUsingConfigFile(),
       email: notifications.smtp.enabled,
-      showLicensePanel: license.showLicensePanel,
     };
   }
 

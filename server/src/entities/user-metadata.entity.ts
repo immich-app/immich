@@ -46,7 +46,7 @@ export interface UserPreferences {
     archiveSize: number;
   };
   purchase: {
-    showBuyButton: boolean;
+    showPurchaseInfo: boolean;
     hideBuyButtonForever: boolean;
     lastTimeHide?: Date;
   };
@@ -74,7 +74,7 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
       archiveSize: HumanReadableSize.GiB * 4,
     },
     purchase: {
-      showBuyButton: false,
+      showPurchaseInfo: true,
       hideBuyButtonForever: false,
     },
   };

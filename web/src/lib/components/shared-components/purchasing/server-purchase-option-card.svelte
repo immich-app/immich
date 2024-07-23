@@ -7,7 +7,7 @@
   import { t } from 'svelte-i18n';
 </script>
 
-<!-- SERVER LICENSE -->
+<!-- SERVER Purchase Options -->
 <div class="border border-gray-300 dark:border-gray-800 w-[375px] p-8 rounded-3xl bg-gray-100 dark:bg-gray-900">
   <div class="text-immich-primary dark:text-immich-dark-primary">
     <Icon path={mdiServer} size="56" />

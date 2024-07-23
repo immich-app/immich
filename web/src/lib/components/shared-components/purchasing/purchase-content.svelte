@@ -1,8 +1,8 @@
 <script lang="ts">
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import ServerLicenseCard from './server-license-card.svelte';
-  import UserLicenseCard from './user-license-card.svelte';
+  import ServerLicenseCard from './server-purchase-option-card.svelte';
+  import UserLicenseCard from './individual-purchase-option-card.svelte';
   import { activateLicense, getActivationKey } from '$lib/utils/license-utils';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';

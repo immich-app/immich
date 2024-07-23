@@ -18,7 +18,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { handleError } from '$lib/utils/handle-error';
-  import LicenseContent from '$lib/components/shared-components/license/license-content.svelte';
+  import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import { t } from 'svelte-i18n';
   import { getAccountAge } from '$lib/utils/auth';
   const { isPurchased } = purchaseStore;

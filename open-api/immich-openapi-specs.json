@@ -9757,14 +9757,29 @@
             "format": "date-time",
             "type": "string"
           },
-          "showBuyButton": {
+          "showPurchaseInfo": {
             "type": "boolean"
           }
         },
         "required": [
           "hideBuyButtonForever",
-          "showBuyButton"
+          "showPurchaseInfo"
         ],
+        "type": "object"
+      },
+      "PurchaseUpdate": {
+        "properties": {
+          "hideBuyButtonForever": {
+            "type": "boolean"
+          },
+          "lastTimeHide": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "showPurchaseInfo": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "QueueStatusDto": {
@@ -11761,6 +11776,9 @@
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryUpdate"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseUpdate"
           }
         },
         "type": "object"

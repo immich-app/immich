@@ -418,6 +418,8 @@ class ApiClient {
           return PlacesResponseDto.fromJson(value);
         case 'PurchaseResponse':
           return PurchaseResponse.fromJson(value);
+        case 'PurchaseUpdate':
+          return PurchaseUpdate.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'ReactionLevel':

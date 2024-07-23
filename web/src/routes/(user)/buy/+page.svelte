@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LicenseActivationSuccess from '$lib/components/shared-components/license/license-activation-success.svelte';
-  import LicenseContent from '$lib/components/shared-components/license/license-content.svelte';
+  import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
+  import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';

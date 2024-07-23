@@ -367,6 +367,7 @@ Class | Method | HTTP request | Description
  - [PersonWithFacesResponseDto](doc//PersonWithFacesResponseDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
+ - [PurchaseUpdate](doc//PurchaseUpdate.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)

@@ -1,10 +1,10 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiClose, mdiInformation, mdiInformationOutline, mdiLicense } from '@mdi/js';
+  import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import LicenseModal from '$lib/components/shared-components/license/license-modal.svelte';
+  import LicenseModal from '$lib/components/shared-components/purchasing/purchase-modal.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
@@ -12,6 +12,8 @@
   import { getAccountAge } from '$lib/utils/auth';
   import { fade } from 'svelte/transition';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
 
   let showMessage = false;
   let isOpen = false;
@@ -19,7 +21,7 @@
   let hoverButton = false;
   const { isPurchased } = purchaseStore;
 
-  const openLicenseModal = () => {
+  const openPurchaseModal = () => {
     isOpen = true;
     showMessage = false;
   };
@@ -27,6 +29,34 @@
   const onButtonHover = () => {
     showMessage = true;
     hoverButton = true;
+  };
+
+  const hideBuyButtonPermanently = async () => {
+    try {
+      await updateMyPreferences({
+        userPreferencesUpdateDto: {
+          purchase: {
+            hideBuyButtonForever: true,
+          },
+        },
+      });
+    } catch (error) {
+      handleError(error, 'Error hiding buy button');
+    }
+  };
+
+  const hideBuyButtonFor30Days = async () => {
+    try {
+      await updateMyPreferences({
+        userPreferencesUpdateDto: {
+          purchase: {
+            hideBuyButtonForever: true,
+          },
+        },
+      });
+    } catch (error) {
+      handleError(error, 'Error hiding buy button');
+    }
   };
 
   $: if (showMessage && !hoverMessage && !hoverButton) {
@@ -44,7 +74,7 @@
 
 {#if getAccountAge() > 14}
   <div class="hidden md:block license-status pl-4 text-sm">
-    {#if !$isPurchased}
+    {#if $isPurchased}
       <button
         on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-license-settings`)}
         class="w-full"
@@ -62,7 +92,7 @@
     {:else}
       <button
         type="button"
-        on:click={openLicenseModal}
+        on:click={openPurchaseModal}
         on:mouseover={onButtonHover}
         on:mouseleave={() => (hoverButton = false)}
         on:focus={onButtonHover}
@@ -130,13 +160,16 @@
           services.
         </p>
         <br />
-        <p>That is why we ask you to pay for Immich.</p>
+        <p>
+          As we’re committed not to add paywalls, this purchase will not grant you any additional features in Immich. We
+          rely on users like you to support Immich’s ongoing development. That is why we ask you to pay for Immich.
+        </p>
       </div>
       <div class="mt-3 flex flex-col gap-1">
-        <Button size="sm" fullwidth on:click={openLicenseModal}>{$t('license_button_buy_license')}</Button>
+        <Button size="sm" fullwidth on:click={openPurchaseModal}>{$t('license_button_buy_license')}</Button>
         <hr class="my-2" />
-        <Button size="sm" fullwidth on:click={() => {}}>Never show again</Button>
-        <Button size="sm" fullwidth on:click={() => {}}>Remind me in 30 days</Button>
+        <Button size="sm" fullwidth on:click={hideBuyButtonPermanently}>Never show again</Button>
+        <Button size="sm" fullwidth on:click={hideBuyButtonFor30Days}>Remind me in 30 days</Button>
       </div>
     </div>
   {/if}
@@ -145,17 +178,17 @@
 <style>
   .supporter-border {
     position: relative;
-    border: 2px solid transparent;
+    border: 0px solid transparent;
     background-clip: padding-box;
     animation: gradient 10s ease infinite;
   }
 
   .supporter-border:hover:before {
     position: absolute;
-    top: -2px;
-    bottom: -2px;
-    left: -2px;
-    right: -2px;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
     background: linear-gradient(
       to right,
       rgba(16, 132, 254, 0.5),

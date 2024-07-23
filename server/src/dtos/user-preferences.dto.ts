@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
-import { Optional, ValidateBoolean } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 
 class AvatarUpdate {
   @Optional()
@@ -35,6 +35,17 @@ class DownloadUpdate {
   archiveSize?: number;
 }
 
+class PurchaseUpdate {
+  @ValidateBoolean({ optional: true })
+  showPurchaseInfo?: boolean;
+
+  @ValidateDate({ optional: true })
+  lastTimeHide?: Date;
+
+  @ValidateBoolean({ optional: true })
+  hideBuyButtonForever?: boolean;
+}
+
 export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
@@ -55,6 +66,11 @@ export class UserPreferencesUpdateDto {
   @ValidateNested()
   @Type(() => DownloadUpdate)
   download?: DownloadUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => PurchaseUpdate)
+  purchase?: PurchaseUpdate;
 }
 
 class AvatarResponse {
@@ -78,7 +94,7 @@ class DownloadResponse {
 }
 
 class PurchaseResponse {
-  showBuyButton!: boolean;
+  showPurchaseInfo!: boolean;
   hideBuyButtonForever!: boolean;
   lastTimeHide?: Date;
 }

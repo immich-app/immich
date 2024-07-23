@@ -121,11 +121,17 @@ export type EmailNotificationsUpdate = {
 export type MemoryUpdate = {
     enabled?: boolean;
 };
+export type PurchaseUpdate = {
+    hideBuyButtonForever?: boolean;
+    lastTimeHide?: string;
+    showPurchaseInfo?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
+    purchase?: PurchaseUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;

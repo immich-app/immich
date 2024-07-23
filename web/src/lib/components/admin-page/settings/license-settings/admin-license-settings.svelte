@@ -17,7 +17,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import LicenseContent from '$lib/components/shared-components/license/license-content.svelte';
+  import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { user } from '$lib/stores/user.store';
   import { getAccountAge } from '$lib/utils/auth';
@@ -107,21 +107,6 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
-        <SettingSwitch title={'Show license panel'} {disabled} bind:checked={config.license.showLicensePanel} />
-
-        <hr />
-
-        <SettingButtonsRow
-          onReset={(options) => onReset({ ...options, configKeys: ['license'] })}
-          onSave={() => onSave({ license: config.license })}
-          showResetToDefault={!isEqual(savedConfig.license, defaultConfig.license)}
-          {disabled}
-        />
-      </div>
-    </form>
-
     <section class="my-4">
       <hr class="my-4" />
       <div in:fade={{ duration: 500 }}>
@@ -173,19 +158,7 @@
             </div>
           {/if}
         {:else}
-          {#if accountAge > 14}
-            <div
-              class="text-center bg-gray-100 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-4 rounded-xl"
-            >
-              <p class="text-immich-dark-gray/80 dark:text-immich-gray text-balance">
-                {$t('license_trial_info_2')}
-                <span class="text-immich-primary dark:text-immich-dark-primary font-semibold">
-                  {$t('license_trial_info_3', { values: { accountAge } })}</span
-                >. {$t('license_trial_info_4')}
-              </p>
-            </div>
-          {/if}
-          <LicenseContent onActivate={onLicenseActivated} />
+          <LicenseContent onActivate={onLicenseActivated} showTitle={false} />
         {/if}
       </div>
     </section>
