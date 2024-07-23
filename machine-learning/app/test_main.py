@@ -212,7 +212,7 @@ class TestOrtSession:
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert session.provider_options == [
-            {"device_type": "GPU_FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
+            {"device_type": "GPU", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 

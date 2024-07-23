@@ -314,8 +314,9 @@ export class MetadataService implements OnEvents {
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
     const exif = _.omitBy<Tags>(
       {
+        Description: description,
         ImageDescription: description,
-        CreationDate: dateTimeOriginal,
+        DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
       },
@@ -512,7 +513,7 @@ export class MetadataService implements OnEvents {
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-      description: (tags.ImageDescription || tags.Description) ?? '',
+      description: (tags.ImageDescription || tags.Description || '').trim(),
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,

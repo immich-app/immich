@@ -263,6 +263,7 @@ part 'model/validate_library_dto.dart';
 part 'model/validate_library_import_path_response_dto.dart';
 part 'model/validate_library_response_dto.dart';
 part 'model/video_codec.dart';
+part 'model/video_container.dart';
 
 
 /// An [ApiClient] instance that uses the default values obtained from
