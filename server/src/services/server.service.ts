@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
@@ -164,8 +164,12 @@ export class ServerService implements OnEvents {
     await this.systemMetadataRepository.delete(SystemMetadataKey.LICENSE);
   }
 
-  async getLicense(): Promise<LicenseResponseDto | null> {
-    return this.systemMetadataRepository.get(SystemMetadataKey.LICENSE);
+  async getLicense(): Promise<LicenseResponseDto> {
+    const license = await this.systemMetadataRepository.get(SystemMetadataKey.LICENSE);
+    if (!license) {
+      throw new NotFoundException();
+    }
+    return license;
   }
 
   async setLicense(dto: LicenseKeyDto): Promise<LicenseResponseDto> {
