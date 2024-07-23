@@ -44,7 +44,7 @@
       <p>
         Building Immich takes a lot of time and effort, and we have full-time engineers working on it to make it as good
         as we possibly can. Our mission is for open-source software and ethical business practices to become a
-        sustainable income source for developers, and to create a privacy-respecting ecosystem with real alternatives to
+        sustainable income source for developers and to create a privacy-respecting ecosystem with real alternatives to
         exploitative cloud services.
       </p>
       <br />

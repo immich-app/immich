@@ -126,7 +126,7 @@
         <br />
         <p>
           Our mission is for open-source software and ethical business practices to become a sustainable income source
-          for developers, and to create a privacy-respecting ecosystem with real alternatives to exploitative cloud
+          for developers and to create a privacy-respecting ecosystem with real alternatives to exploitative cloud
           services.
         </p>
         <br />
