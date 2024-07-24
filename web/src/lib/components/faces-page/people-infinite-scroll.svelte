@@ -7,7 +7,7 @@
 
   let lastPersonContainer: HTMLElement | undefined;
 
-  const resizeObserver = new IntersectionObserver((entries) => {
+  const intersectionObserver = new IntersectionObserver((entries) => {
     const entry = entries.find((entry) => entry.target === lastPersonContainer);
     if (entry?.isIntersecting) {
       loadNextPage();
@@ -15,8 +15,8 @@
   });
 
   $: if (lastPersonContainer) {
-    resizeObserver.disconnect();
-    resizeObserver.observe(lastPersonContainer);
+    intersectionObserver.disconnect();
+    intersectionObserver.observe(lastPersonContainer);
   }
 </script>
 
