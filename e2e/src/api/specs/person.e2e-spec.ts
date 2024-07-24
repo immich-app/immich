@@ -65,6 +65,7 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
+        hasNextPage: false,
         total: 3,
         hidden: 1,
         people: [
@@ -80,12 +81,28 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
+        hasNextPage: false,
         total: 3,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'multiple_assets_person' }),
           expect.objectContaining({ name: 'visible_person' }),
         ],
+      });
+    });
+
+    it('should support pagination', async () => {
+      const { status, body } = await request(app)
+        .get('/people')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .query({ withHidden: true, page: 2, size: 1 });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        hasNextPage: true,
+        total: 3,
+        hidden: 1,
+        people: [expect.objectContaining({ name: 'visible_person' })],
       });
     });
   });
