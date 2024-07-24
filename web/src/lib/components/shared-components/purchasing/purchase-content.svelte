@@ -25,7 +25,7 @@
       onActivate();
       purchaseStore.setPurchaseStatus(true);
     } catch (error) {
-      handleError(error, $t('license_failed_activation'));
+      handleError(error, $t('purchase_failed_activation'));
     } finally {
       isLoading = false;
     }
@@ -36,7 +36,7 @@
   <div>
     {#if showTitle}
       <h1 class="text-4xl font-bold text-immich-primary dark:text-immich-dark-primary tracking-wider">
-        {$t('license_license_title')}
+        {$t('purchase_option_title')}
       </h1>
     {/if}
     <div class="mt-2 dark:text-immich-gray">
@@ -59,11 +59,11 @@
     </div>
 
     <div class="mt-6">
-      <p class="dark:text-immich-gray">{$t('license_input_suggestion')}</p>
+      <p class="dark:text-immich-gray">{$t('purchase_input_suggestion')}</p>
       <form class="mt-2 flex gap-2" on:submit={activate}>
         <input
           class="immich-form-input w-full"
-          id="licensekey"
+          id="purchaseKey"
           type="text"
           bind:value={productKey}
           required
@@ -74,7 +74,7 @@
           >{#if isLoading}
             <LoadingSpinner />
           {:else}
-            {$t('license_button_activate')}
+            {$t('purchase_button_activate')}
           {/if}</Button
         >
       </form>

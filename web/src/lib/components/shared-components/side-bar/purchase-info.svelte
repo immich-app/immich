@@ -77,7 +77,7 @@
 
 {#if getAccountAge() > 14}
   <div class="hidden md:block license-status pl-4 text-sm">
-    {#if $isPurchased}
+    {#if $isPurchased && $preferences.purchase.showSupportBadge}
       <button
         on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-license-settings`)}
         class="w-full"
@@ -126,7 +126,7 @@
 <Portal target="body">
   {#if showMessage}
     <div
-      class="w-96 absolute bottom-[75px] left-[255px] bg-white dark:bg-gray-800 dark:text-white text-black rounded-xl z-10 shadow-2xl px-4 py-5"
+      class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:text-white text-black rounded-xl z-10 shadow-2xl px-6 py-5"
       transition:fade={{ duration: 150 }}
       on:mouseover={() => (hoverMessage = true)}
       on:mouseleave={() => (hoverMessage = false)}
@@ -149,7 +149,7 @@
         />
       </div>
 
-      <h1 class="text-lg font-medium my-3">{$t('license_trial_info_1')}</h1>
+      <h1 class="text-lg font-medium my-3">{$t('purchase_panel_title')}</h1>
 
       <div class="text-gray-800 dark:text-white my-4">
         <p>
@@ -165,11 +165,11 @@
         <br />
         <p>
           As we’re committed not to add paywalls, this purchase will not grant you any additional features in Immich. We
-          rely on users like you to support Immich’s ongoing development. That is why we ask you to pay for Immich.
+          rely on users like you to support Immich’s ongoing development.
         </p>
       </div>
       <div class="mt-3 flex flex-col gap-1">
-        <Button size="sm" fullwidth on:click={openPurchaseModal}>{$t('license_button_buy_license')}</Button>
+        <Button size="sm" fullwidth on:click={openPurchaseModal}>{$t('purchase_button_buy_immich')}</Button>
         <hr class="my-2" />
         <Button size="sm" fullwidth on:click={() => hideButton(true)}>Never show again</Button>
         <Button size="sm" fullwidth on:click={() => hideButton(false)}>Remind me in 30 days</Button>

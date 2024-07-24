@@ -53,14 +53,6 @@
     <DownloadSettings />
   </SettingAccordion>
 
-  <SettingAccordion
-    key="user-purchase-settings"
-    title={$t('user_license_settings')}
-    subtitle={$t('user_license_settings_description')}
-  >
-    <UserPurchaseSettings />
-  </SettingAccordion>
-
   <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
     <MemoriesSettings />
   </SettingAccordion>
@@ -86,5 +78,13 @@
 
   <SettingAccordion key="partner-sharing" title={$t('partner_sharing')} subtitle={$t('manage_sharing_with_partners')}>
     <PartnerSettings user={$user} />
+  </SettingAccordion>
+
+  <SettingAccordion
+    key="user-purchase-settings"
+    title={$t('user_purchase_settings')}
+    subtitle={$t('user_purchase_settings_description')}
+  >
+    <UserPurchaseSettings />
   </SettingAccordion>
 </SettingAccordionState>

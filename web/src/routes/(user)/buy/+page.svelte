@@ -25,7 +25,7 @@
           role="alert"
         >
           <Icon path={mdiAlertCircleOutline} size="18" />
-          <p>{$t('license_failed_activation')}</p>
+          <p>{$t('purchase_failed_activation')}</p>
         </div>
       {/if}
 
@@ -35,7 +35,7 @@
           role="alert"
         >
           <Icon path={mdiLicense} size="24" />
-          <p>{$t('license_account_info')}</p>
+          <p>{$t('purchase_account_info')}</p>
         </div>
       {/if}
 
