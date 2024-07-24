@@ -9750,30 +9750,23 @@
       },
       "PurchaseResponse": {
         "properties": {
-          "hideUntil": {
+          "hideBuyButtonUntil": {
             "type": "string"
-          },
-          "showBuyButton": {
-            "type": "boolean"
           },
           "showSupportBadge": {
             "type": "boolean"
           }
         },
         "required": [
-          "showBuyButton",
+          "hideBuyButtonUntil",
           "showSupportBadge"
         ],
         "type": "object"
       },
       "PurchaseUpdate": {
         "properties": {
-          "hideUntil": {
-            "format": "date-time",
+          "hideBuyButtonUntil": {
             "type": "string"
-          },
-          "showBuyButton": {
-            "type": "boolean"
           },
           "showSupportBadge": {
             "type": "boolean"

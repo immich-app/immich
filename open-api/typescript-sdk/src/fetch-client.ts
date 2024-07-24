@@ -96,8 +96,7 @@ export type MemoryResponse = {
     enabled: boolean;
 };
 export type PurchaseResponse = {
-    hideUntil?: string;
-    showBuyButton: boolean;
+    hideBuyButtonUntil: string;
     showSupportBadge: boolean;
 };
 export type UserPreferencesResponseDto = {
@@ -122,8 +121,7 @@ export type MemoryUpdate = {
     enabled?: boolean;
 };
 export type PurchaseUpdate = {
-    hideUntil?: string;
-    showBuyButton?: boolean;
+    hideBuyButtonUntil?: string;
     showSupportBadge?: boolean;
 };
 export type UserPreferencesUpdateDto = {

@@ -42,7 +42,6 @@ export const getPreferencesPartial = (user: { email: string }, newPreferences: U
 export const mergePreferences = (user: UserEntity, dto: UserPreferencesUpdateDto) => {
   const preferences = getPreferences(user);
   for (const key of getKeysDeep(dto)) {
-    console.log('key', key);
     _.set(preferences, key, _.get(dto, key));
   }
 

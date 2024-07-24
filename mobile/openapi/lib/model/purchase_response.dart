@@ -13,47 +13,31 @@ part of openapi.api;
 class PurchaseResponse {
   /// Returns a new [PurchaseResponse] instance.
   PurchaseResponse({
-    this.hideUntil,
-    required this.showBuyButton,
+    required this.hideBuyButtonUntil,
     required this.showSupportBadge,
   });
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? hideUntil;
-
-  bool showBuyButton;
+  String hideBuyButtonUntil;
 
   bool showSupportBadge;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PurchaseResponse &&
-    other.hideUntil == hideUntil &&
-    other.showBuyButton == showBuyButton &&
+    other.hideBuyButtonUntil == hideBuyButtonUntil &&
     other.showSupportBadge == showSupportBadge;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (hideUntil == null ? 0 : hideUntil!.hashCode) +
-    (showBuyButton.hashCode) +
+    (hideBuyButtonUntil.hashCode) +
     (showSupportBadge.hashCode);
 
   @override
-  String toString() => 'PurchaseResponse[hideUntil=$hideUntil, showBuyButton=$showBuyButton, showSupportBadge=$showSupportBadge]';
+  String toString() => 'PurchaseResponse[hideBuyButtonUntil=$hideBuyButtonUntil, showSupportBadge=$showSupportBadge]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.hideUntil != null) {
-      json[r'hideUntil'] = this.hideUntil;
-    } else {
-    //  json[r'hideUntil'] = null;
-    }
-      json[r'showBuyButton'] = this.showBuyButton;
+      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil;
       json[r'showSupportBadge'] = this.showSupportBadge;
     return json;
   }
@@ -66,8 +50,7 @@ class PurchaseResponse {
       final json = value.cast<String, dynamic>();
 
       return PurchaseResponse(
-        hideUntil: mapValueOfType<String>(json, r'hideUntil'),
-        showBuyButton: mapValueOfType<bool>(json, r'showBuyButton')!,
+        hideBuyButtonUntil: mapValueOfType<String>(json, r'hideBuyButtonUntil')!,
         showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge')!,
       );
     }
@@ -116,7 +99,7 @@ class PurchaseResponse {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'showBuyButton',
+    'hideBuyButtonUntil',
     'showSupportBadge',
   };
 }

@@ -38,25 +38,22 @@
   };
 
   const hideButton = async (always: boolean) => {
-    const hideUntil = new Date();
+    const hideBuyButtonUntil = new Date();
 
     if (always) {
-      hideUntil.setFullYear(2124); // see ya in 100 years
+      hideBuyButtonUntil.setFullYear(2124); // see ya in 100 years
     } else {
-      hideUntil.setDate(hideUntil.getDate() + 30);
+      hideBuyButtonUntil.setDate(hideBuyButtonUntil.getDate() + 30);
     }
 
     try {
       const response = await updateMyPreferences({
         userPreferencesUpdateDto: {
           purchase: {
-            showBuyButton: false,
-            hideUntil: hideUntil.toISOString(),
+            hideBuyButtonUntil: hideBuyButtonUntil.toISOString(),
           },
         },
       });
-
-      console.log('pref res', response);
 
       const myPreferences = await getMyPreferences();
       preferences.set(myPreferences);

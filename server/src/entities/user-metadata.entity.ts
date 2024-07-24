@@ -47,8 +47,7 @@ export interface UserPreferences {
   };
   purchase: {
     showSupportBadge: boolean;
-    showBuyButton: boolean;
-    hideUntil?: string;
+    hideBuyButtonUntil: string;
   };
 }
 
@@ -75,7 +74,7 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     purchase: {
       showSupportBadge: true,
-      showBuyButton: true,
+      hideBuyButtonUntil: new Date(2022, 1, 12).toISOString(),
     },
   };
 };

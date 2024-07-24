@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
-import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
+import { Optional, ValidateBoolean } from 'src/validation';
 
 class AvatarUpdate {
   @Optional()
@@ -39,11 +39,9 @@ class PurchaseUpdate {
   @ValidateBoolean({ optional: true })
   showSupportBadge?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  showBuyButton?: boolean;
-
-  @ValidateDate({ optional: true })
-  hideUntil?: string;
+  @IsDateString()
+  @Optional()
+  hideBuyButtonUntil?: string;
 }
 
 export class UserPreferencesUpdateDto {
@@ -95,8 +93,7 @@ class DownloadResponse {
 
 class PurchaseResponse {
   showSupportBadge!: boolean;
-  showBuyButton!: boolean;
-  hideUntil?: string;
+  hideBuyButtonUntil!: string;
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {

@@ -13,8 +13,7 @@ part of openapi.api;
 class PurchaseUpdate {
   /// Returns a new [PurchaseUpdate] instance.
   PurchaseUpdate({
-    this.hideUntil,
-    this.showBuyButton,
+    this.hideBuyButtonUntil,
     this.showSupportBadge,
   });
 
@@ -24,15 +23,7 @@ class PurchaseUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? hideUntil;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? showBuyButton;
+  String? hideBuyButtonUntil;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -44,31 +35,24 @@ class PurchaseUpdate {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PurchaseUpdate &&
-    other.hideUntil == hideUntil &&
-    other.showBuyButton == showBuyButton &&
+    other.hideBuyButtonUntil == hideBuyButtonUntil &&
     other.showSupportBadge == showSupportBadge;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (hideUntil == null ? 0 : hideUntil!.hashCode) +
-    (showBuyButton == null ? 0 : showBuyButton!.hashCode) +
+    (hideBuyButtonUntil == null ? 0 : hideBuyButtonUntil!.hashCode) +
     (showSupportBadge == null ? 0 : showSupportBadge!.hashCode);
 
   @override
-  String toString() => 'PurchaseUpdate[hideUntil=$hideUntil, showBuyButton=$showBuyButton, showSupportBadge=$showSupportBadge]';
+  String toString() => 'PurchaseUpdate[hideBuyButtonUntil=$hideBuyButtonUntil, showSupportBadge=$showSupportBadge]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.hideUntil != null) {
-      json[r'hideUntil'] = this.hideUntil!.toUtc().toIso8601String();
+    if (this.hideBuyButtonUntil != null) {
+      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil;
     } else {
-    //  json[r'hideUntil'] = null;
-    }
-    if (this.showBuyButton != null) {
-      json[r'showBuyButton'] = this.showBuyButton;
-    } else {
-    //  json[r'showBuyButton'] = null;
+    //  json[r'hideBuyButtonUntil'] = null;
     }
     if (this.showSupportBadge != null) {
       json[r'showSupportBadge'] = this.showSupportBadge;
@@ -86,8 +70,7 @@ class PurchaseUpdate {
       final json = value.cast<String, dynamic>();
 
       return PurchaseUpdate(
-        hideUntil: mapDateTime(json, r'hideUntil', r''),
-        showBuyButton: mapValueOfType<bool>(json, r'showBuyButton'),
+        hideBuyButtonUntil: mapValueOfType<String>(json, r'hideBuyButtonUntil'),
         showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge'),
       );
     }
