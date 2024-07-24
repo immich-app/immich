@@ -40,10 +40,10 @@ class PurchaseUpdate {
   showSupportBadge?: boolean;
 
   @ValidateBoolean({ optional: true })
-  hideBuyButton?: boolean;
+  showBuyButton?: boolean;
 
   @ValidateDate({ optional: true })
-  hideUntil?: Date;
+  hideUntil?: string;
 }
 
 export class UserPreferencesUpdateDto {
@@ -95,8 +95,8 @@ class DownloadResponse {
 
 class PurchaseResponse {
   showSupportBadge!: boolean;
-  hideBuyButton!: boolean;
-  hideUntil?: Date;
+  showBuyButton!: boolean;
+  hideUntil?: string;
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
