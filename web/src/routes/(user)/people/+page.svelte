@@ -42,7 +42,7 @@
 
   $: people = data.people.people;
   $: visiblePeople = people.filter((people) => !people.isHidden);
-  $: countVisiblePeople = searchName ? searchedPeopleLocal.length : visiblePeople.length;
+  $: countVisiblePeople = searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden;
   $: showPeople = searchName ? searchedPeopleLocal : visiblePeople;
 
   let selectHidden = false;
@@ -414,6 +414,7 @@
   >
     <ManagePeopleVisibility
       bind:people
+      totalPeopleCount={data.people.total}
       titleId="manage-visibility-title"
       onClose={() => (selectHidden = false)}
       {loadNextPage}

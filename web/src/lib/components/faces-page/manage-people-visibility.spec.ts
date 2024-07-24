@@ -34,6 +34,7 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
         loadNextPage: vi.fn(),
       },
@@ -48,6 +49,7 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
         loadNextPage: vi.fn(),
       },
@@ -67,6 +69,7 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
         loadNextPage: vi.fn(),
       },
@@ -91,6 +94,7 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
         loadNextPage: vi.fn(),
       },

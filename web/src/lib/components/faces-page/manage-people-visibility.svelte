@@ -25,6 +25,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let people: PersonResponseDto[];
+  export let totalPeopleCount: number;
   export let titleId: string | undefined = undefined;
   export let onClose: () => void;
   export let loadNextPage: () => void;
@@ -123,7 +124,7 @@
     <CircleIconButton title={$t('close')} icon={mdiClose} on:click={onClose} />
     <div class="flex gap-2 items-center">
       <p id={titleId} class="ml-2">{$t('show_and_hide_people')}</p>
-      <p class="text-sm text-gray-400 dark:text-gray-600">({people.length.toLocaleString($locale)})</p>
+      <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
     </div>
   </div>
   <div class="flex items-center justify-end">
