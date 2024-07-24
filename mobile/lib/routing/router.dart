@@ -95,6 +95,7 @@ class AppRouter extends _$AppRouter {
     ),
     AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: ChangePasswordRoute.page),
+    
     CustomRoute(
       page: TabControllerRoute.page,
       guards: [_authGuard, _duplicateGuard],
@@ -135,6 +136,8 @@ class AppRouter extends _$AppRouter {
       page: CreateAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(page: EditImageRoute.page),
+    AutoRoute(page: CropImageRoute.page),
     AutoRoute(page: FavoritesRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AllVideosRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(

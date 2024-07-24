@@ -5,7 +5,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -141,12 +140,9 @@ class EditImagePage extends StatelessWidget {
                     : Icons.crop_rotate_rounded,
                 color: Colors.white,
               ),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CropImagePage(image: imageWidget),
-                ),
-              ),
+              onPressed: () {
+                context.pushRoute(CropImageRoute(image: imageWidget));
+              } 
             ),
           ],
         ),
