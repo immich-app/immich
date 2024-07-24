@@ -75,7 +75,7 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     purchase: {
       showSupportBadge: true,
-      showBuyButton: false,
+      showBuyButton: true,
     },
   };
 };

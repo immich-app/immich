@@ -46,12 +46,11 @@
       hideUntil.setDate(hideUntil.getDate() + 30);
     }
 
-    console.log(hideUntil.toISOString());
     try {
       const response = await updateMyPreferences({
         userPreferencesUpdateDto: {
           purchase: {
-            hideBuyButton: true,
+            showBuyButton: false,
             hideUntil: hideUntil.toISOString(),
           },
         },
