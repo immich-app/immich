@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ExifDateTime, Tags } from 'exiftool-vendored';
+import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
 import { Duration } from 'luxon';
@@ -47,17 +47,6 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'MediaCreateDate',
   'DateTimeCreated',
 ];
-
-interface DirectoryItem {
-  Length?: number;
-  Mime: string;
-  Padding?: number;
-  Semantic?: string;
-}
-
-interface DirectoryEntry {
-  Item: DirectoryItem;
-}
 
 export enum Orientation {
   Horizontal = '1',
@@ -362,13 +351,14 @@ export class MetadataService implements OnEvents {
       return;
     }
 
-    const rawDirectory = tags.Directory;
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
     const hasMotionPhotoVideo = tags.MotionPhotoVideo;
     const hasEmbeddedVideoFile = tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideoFile;
-    const directory = Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null;
+    const directory = Array.isArray(tags.ContainerDirectory)
+      ? (tags.ContainerDirectory as ContainerDirectoryItem[])
+      : null;
 
     let length = 0;
     let padding = 0;
