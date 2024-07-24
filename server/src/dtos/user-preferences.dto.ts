@@ -37,13 +37,13 @@ class DownloadUpdate {
 
 class PurchaseUpdate {
   @ValidateBoolean({ optional: true })
-  showPurchaseInfo?: boolean;
-
-  @ValidateDate({ optional: true })
-  lastTimeHide?: Date;
+  showSupportBadge?: boolean;
 
   @ValidateBoolean({ optional: true })
-  hideBuyButtonForever?: boolean;
+  hideBuyButton?: boolean;
+
+  @ValidateDate({ optional: true })
+  hideUntil?: Date;
 }
 
 export class UserPreferencesUpdateDto {
@@ -94,9 +94,9 @@ class DownloadResponse {
 }
 
 class PurchaseResponse {
-  showPurchaseInfo!: boolean;
-  hideBuyButtonForever!: boolean;
-  lastTimeHide?: Date;
+  showSupportBadge!: boolean;
+  hideBuyButton!: boolean;
+  hideUntil?: Date;
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {

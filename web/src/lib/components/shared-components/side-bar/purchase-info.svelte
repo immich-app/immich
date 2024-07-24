@@ -12,13 +12,19 @@
   import { getAccountAge } from '$lib/utils/auth';
   import { fade } from 'svelte/transition';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import { updateMyPreferences } from '@immich/sdk';
+  import { getMyPreferences, updateMyPreferences } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
+  import { preferences } from '$lib/stores/user.store';
+  import { getButtonVisibility } from '$lib/utils/purchase-utils';
 
   let showMessage = false;
   let isOpen = false;
   let hoverMessage = false;
   let hoverButton = false;
+
+  let showBuyButton = getButtonVisibility() > 30;
+  console.log($preferences);
+
   const { isPurchased } = purchaseStore;
 
   const openPurchaseModal = () => {
@@ -31,29 +37,30 @@
     hoverButton = true;
   };
 
-  const hideBuyButtonPermanently = async () => {
-    try {
-      await updateMyPreferences({
-        userPreferencesUpdateDto: {
-          purchase: {
-            hideBuyButtonForever: true,
-          },
-        },
-      });
-    } catch (error) {
-      handleError(error, 'Error hiding buy button');
-    }
-  };
+  const hideButton = async (always: boolean) => {
+    const hideUntil = new Date();
 
-  const hideBuyButtonFor30Days = async () => {
+    if (always) {
+      hideUntil.setFullYear(2124); // see ya in 100 years
+    } else {
+      hideUntil.setDate(hideUntil.getDate() + 30);
+    }
+
+    console.log(hideUntil.toISOString());
     try {
-      await updateMyPreferences({
+      const response = await updateMyPreferences({
         userPreferencesUpdateDto: {
           purchase: {
-            hideBuyButtonForever: true,
+            hideBuyButton: true,
+            hideUntil: hideUntil.toISOString(),
           },
         },
       });
+
+      console.log('pref res', response);
+
+      const myPreferences = await getMyPreferences();
+      preferences.set(myPreferences);
     } catch (error) {
       handleError(error, 'Error hiding buy button');
     }
@@ -90,6 +97,7 @@
         </div>
       </button>
     {:else}
+      {showBuyButton}
       <button
         type="button"
         on:click={openPurchaseModal}
@@ -168,8 +176,8 @@
       <div class="mt-3 flex flex-col gap-1">
         <Button size="sm" fullwidth on:click={openPurchaseModal}>{$t('license_button_buy_license')}</Button>
         <hr class="my-2" />
-        <Button size="sm" fullwidth on:click={hideBuyButtonPermanently}>Never show again</Button>
-        <Button size="sm" fullwidth on:click={hideBuyButtonFor30Days}>Remind me in 30 days</Button>
+        <Button size="sm" fullwidth on:click={() => hideButton(true)}>Never show again</Button>
+        <Button size="sm" fullwidth on:click={() => hideButton(false)}>Remind me in 30 days</Button>
       </div>
     </div>
   {/if}

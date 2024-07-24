@@ -9750,33 +9750,33 @@
       },
       "PurchaseResponse": {
         "properties": {
-          "hideBuyButtonForever": {
+          "hideBuyButton": {
             "type": "boolean"
           },
-          "lastTimeHide": {
+          "hideUntil": {
             "format": "date-time",
             "type": "string"
           },
-          "showPurchaseInfo": {
+          "showSupportBadge": {
             "type": "boolean"
           }
         },
         "required": [
-          "hideBuyButtonForever",
-          "showPurchaseInfo"
+          "hideBuyButton",
+          "showSupportBadge"
         ],
         "type": "object"
       },
       "PurchaseUpdate": {
         "properties": {
-          "hideBuyButtonForever": {
+          "hideBuyButton": {
             "type": "boolean"
           },
-          "lastTimeHide": {
+          "hideUntil": {
             "format": "date-time",
             "type": "string"
           },
-          "showPurchaseInfo": {
+          "showSupportBadge": {
             "type": "boolean"
           }
         },

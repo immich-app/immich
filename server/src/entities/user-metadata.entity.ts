@@ -46,9 +46,9 @@ export interface UserPreferences {
     archiveSize: number;
   };
   purchase: {
-    showPurchaseInfo: boolean;
-    hideBuyButtonForever: boolean;
-    lastTimeHide?: Date;
+    showSupportBadge: boolean;
+    hideBuyButton: boolean;
+    hideUntil?: Date;
   };
 }
 
@@ -74,8 +74,8 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
       archiveSize: HumanReadableSize.GiB * 4,
     },
     purchase: {
-      showPurchaseInfo: true,
-      hideBuyButtonForever: false,
+      showSupportBadge: true,
+      hideBuyButton: false,
     },
   };
 };

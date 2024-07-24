@@ -96,9 +96,9 @@ export type MemoryResponse = {
     enabled: boolean;
 };
 export type PurchaseResponse = {
-    hideBuyButtonForever: boolean;
-    lastTimeHide?: string;
-    showBuyButton: boolean;
+    hideBuyButton: boolean;
+    hideUntil?: string;
+    showSupportBadge: boolean;
 };
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
@@ -122,9 +122,9 @@ export type MemoryUpdate = {
     enabled?: boolean;
 };
 export type PurchaseUpdate = {
-    hideBuyButtonForever?: boolean;
-    lastTimeHide?: string;
-    showPurchaseInfo?: boolean;
+    hideBuyButton?: boolean;
+    hideUntil?: string;
+    showSupportBadge?: boolean;
 };
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;

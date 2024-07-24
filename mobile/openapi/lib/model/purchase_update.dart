@@ -13,9 +13,9 @@ part of openapi.api;
 class PurchaseUpdate {
   /// Returns a new [PurchaseUpdate] instance.
   PurchaseUpdate({
-    this.hideBuyButtonForever,
-    this.lastTimeHide,
-    this.showPurchaseInfo,
+    this.hideBuyButton,
+    this.hideUntil,
+    this.showSupportBadge,
   });
 
   ///
@@ -24,7 +24,7 @@ class PurchaseUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? hideBuyButtonForever;
+  bool? hideBuyButton;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -32,7 +32,7 @@ class PurchaseUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? lastTimeHide;
+  DateTime? hideUntil;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -40,40 +40,40 @@ class PurchaseUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? showPurchaseInfo;
+  bool? showSupportBadge;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PurchaseUpdate &&
-    other.hideBuyButtonForever == hideBuyButtonForever &&
-    other.lastTimeHide == lastTimeHide &&
-    other.showPurchaseInfo == showPurchaseInfo;
+    other.hideBuyButton == hideBuyButton &&
+    other.hideUntil == hideUntil &&
+    other.showSupportBadge == showSupportBadge;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (hideBuyButtonForever == null ? 0 : hideBuyButtonForever!.hashCode) +
-    (lastTimeHide == null ? 0 : lastTimeHide!.hashCode) +
-    (showPurchaseInfo == null ? 0 : showPurchaseInfo!.hashCode);
+    (hideBuyButton == null ? 0 : hideBuyButton!.hashCode) +
+    (hideUntil == null ? 0 : hideUntil!.hashCode) +
+    (showSupportBadge == null ? 0 : showSupportBadge!.hashCode);
 
   @override
-  String toString() => 'PurchaseUpdate[hideBuyButtonForever=$hideBuyButtonForever, lastTimeHide=$lastTimeHide, showPurchaseInfo=$showPurchaseInfo]';
+  String toString() => 'PurchaseUpdate[hideBuyButton=$hideBuyButton, hideUntil=$hideUntil, showSupportBadge=$showSupportBadge]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.hideBuyButtonForever != null) {
-      json[r'hideBuyButtonForever'] = this.hideBuyButtonForever;
+    if (this.hideBuyButton != null) {
+      json[r'hideBuyButton'] = this.hideBuyButton;
     } else {
-    //  json[r'hideBuyButtonForever'] = null;
+    //  json[r'hideBuyButton'] = null;
     }
-    if (this.lastTimeHide != null) {
-      json[r'lastTimeHide'] = this.lastTimeHide!.toUtc().toIso8601String();
+    if (this.hideUntil != null) {
+      json[r'hideUntil'] = this.hideUntil!.toUtc().toIso8601String();
     } else {
-    //  json[r'lastTimeHide'] = null;
+    //  json[r'hideUntil'] = null;
     }
-    if (this.showPurchaseInfo != null) {
-      json[r'showPurchaseInfo'] = this.showPurchaseInfo;
+    if (this.showSupportBadge != null) {
+      json[r'showSupportBadge'] = this.showSupportBadge;
     } else {
-    //  json[r'showPurchaseInfo'] = null;
+    //  json[r'showSupportBadge'] = null;
     }
     return json;
   }
@@ -86,9 +86,9 @@ class PurchaseUpdate {
       final json = value.cast<String, dynamic>();
 
       return PurchaseUpdate(
-        hideBuyButtonForever: mapValueOfType<bool>(json, r'hideBuyButtonForever'),
-        lastTimeHide: mapDateTime(json, r'lastTimeHide', r''),
-        showPurchaseInfo: mapValueOfType<bool>(json, r'showPurchaseInfo'),
+        hideBuyButton: mapValueOfType<bool>(json, r'hideBuyButton'),
+        hideUntil: mapDateTime(json, r'hideUntil', r''),
+        showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge'),
       );
     }
     return null;

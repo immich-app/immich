@@ -13,12 +13,12 @@ part of openapi.api;
 class PurchaseResponse {
   /// Returns a new [PurchaseResponse] instance.
   PurchaseResponse({
-    required this.hideBuyButtonForever,
-    this.lastTimeHide,
-    required this.showBuyButton,
+    required this.hideBuyButton,
+    this.hideUntil,
+    required this.showSupportBadge,
   });
 
-  bool hideBuyButtonForever;
+  bool hideBuyButton;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -26,35 +26,35 @@ class PurchaseResponse {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? lastTimeHide;
+  DateTime? hideUntil;
 
-  bool showBuyButton;
+  bool showSupportBadge;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PurchaseResponse &&
-    other.hideBuyButtonForever == hideBuyButtonForever &&
-    other.lastTimeHide == lastTimeHide &&
-    other.showBuyButton == showBuyButton;
+    other.hideBuyButton == hideBuyButton &&
+    other.hideUntil == hideUntil &&
+    other.showSupportBadge == showSupportBadge;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (hideBuyButtonForever.hashCode) +
-    (lastTimeHide == null ? 0 : lastTimeHide!.hashCode) +
-    (showBuyButton.hashCode);
+    (hideBuyButton.hashCode) +
+    (hideUntil == null ? 0 : hideUntil!.hashCode) +
+    (showSupportBadge.hashCode);
 
   @override
-  String toString() => 'PurchaseResponse[hideBuyButtonForever=$hideBuyButtonForever, lastTimeHide=$lastTimeHide, showBuyButton=$showBuyButton]';
+  String toString() => 'PurchaseResponse[hideBuyButton=$hideBuyButton, hideUntil=$hideUntil, showSupportBadge=$showSupportBadge]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'hideBuyButtonForever'] = this.hideBuyButtonForever;
-    if (this.lastTimeHide != null) {
-      json[r'lastTimeHide'] = this.lastTimeHide!.toUtc().toIso8601String();
+      json[r'hideBuyButton'] = this.hideBuyButton;
+    if (this.hideUntil != null) {
+      json[r'hideUntil'] = this.hideUntil!.toUtc().toIso8601String();
     } else {
-    //  json[r'lastTimeHide'] = null;
+    //  json[r'hideUntil'] = null;
     }
-      json[r'showBuyButton'] = this.showBuyButton;
+      json[r'showSupportBadge'] = this.showSupportBadge;
     return json;
   }
 
@@ -66,9 +66,9 @@ class PurchaseResponse {
       final json = value.cast<String, dynamic>();
 
       return PurchaseResponse(
-        hideBuyButtonForever: mapValueOfType<bool>(json, r'hideBuyButtonForever')!,
-        lastTimeHide: mapDateTime(json, r'lastTimeHide', r''),
-        showBuyButton: mapValueOfType<bool>(json, r'showBuyButton')!,
+        hideBuyButton: mapValueOfType<bool>(json, r'hideBuyButton')!,
+        hideUntil: mapDateTime(json, r'hideUntil', r''),
+        showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge')!,
       );
     }
     return null;
@@ -116,8 +116,8 @@ class PurchaseResponse {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'hideBuyButtonForever',
-    'showBuyButton',
+    'hideBuyButton',
+    'showSupportBadge',
   };
 }
 
