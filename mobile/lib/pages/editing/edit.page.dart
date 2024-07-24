@@ -9,7 +9,10 @@ import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
+
 
 /// A stateless widget that provides functionality for editing an image.
 /// 
@@ -19,6 +22,7 @@ import 'package:photo_manager/photo_manager.dart';
 /// It also includes a converstion method to convert an [Image] to a [Uint8List] to save the image on the user's phone
 /// They automatically navigate to the [HomePage] with the edited image saved and they eventually gets backed up to the server.
 @immutable
+@RoutePage()
 class EditImagePage extends StatelessWidget {
   final Asset? asset;
   final Image? image;
