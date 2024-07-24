@@ -41,7 +41,6 @@
   export let data: PageData;
 
   $: people = data.people.people;
-  $: nextPage = data.people.hasNextPage ? 2 : null;
   $: visiblePeople = people.filter((people) => !people.isHidden);
   $: countVisiblePeople = searchName ? searchedPeopleLocal.length : visiblePeople.length;
   $: showPeople = searchName ? searchedPeopleLocal : visiblePeople;
@@ -52,6 +51,7 @@
   let showSetBirthDateModal = false;
   let showMergeModal = false;
   let personName = '';
+  let nextPage = data.people.hasNextPage ? 2 : null;
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
@@ -339,11 +339,14 @@
   </svelte:fragment>
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
-    <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
+    <PeopleInfiniteScroll
+      people={showPeople}
+      hasNextPage={!!nextPage && !searchName}
+      {loadNextPage}
+      let:person
+      let:index
+    >
       <PeopleCard
-        slot="default"
-        let:person
-        let:index
         {person}
         preload={index < 20}
         on:change-name={() => handleChangeName(person)}
@@ -409,6 +412,11 @@
     aria-labelledby="manage-visibility-title"
     use:focusTrap
   >
-    <ManagePeopleVisibility bind:people titleId="manage-visibility-title" onClose={() => (selectHidden = false)} />
+    <ManagePeopleVisibility
+      bind:people
+      titleId="manage-visibility-title"
+      onClose={() => (selectHidden = false)}
+      {loadNextPage}
+    />
   </section>
 {/if}
