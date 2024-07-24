@@ -4,7 +4,7 @@ import { serverConfig } from '$lib/stores/server-config.store';
 import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 
-export const activateLicense = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
+export const activateProduct = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
   const isServerKey = licenseKey.search('IMSV') !== -1;
   const licenseKeyDto = { licenseKey, activationKey };
   return isServerKey ? setServerLicense({ licenseKeyDto }) : setUserLicense({ licenseKeyDto });

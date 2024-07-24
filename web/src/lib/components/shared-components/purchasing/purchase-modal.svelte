@@ -1,23 +1,23 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
-  import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
+  import PurchaseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
+  import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
 
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
   export let onClose: () => void;
 
-  let showLicenseActivated = false;
+  let showProductActivated = false;
 </script>
 
 <Portal>
   <FullScreenModal showLogo title={''} {onClose} width="wide">
-    {#if showLicenseActivated}
-      <LicenseActivationSuccess onDone={onClose} />
+    {#if showProductActivated}
+      <PurchaseActivationSuccess onDone={onClose} />
     {:else}
-      <LicenseContent
+      <PurchaseContent
         onActivate={() => {
-          showLicenseActivated = true;
+          showProductActivated = true;
         }}
       />
     {/if}

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import ServerLicenseCard from './server-purchase-option-card.svelte';
-  import UserLicenseCard from './individual-purchase-option-card.svelte';
-  import { activateLicense, getActivationKey } from '$lib/utils/license-utils';
+  import ServerPurchaseOptionCard from './server-purchase-option-card.svelte';
+  import UserPurchaseOptionCard from './individual-purchase-option-card.svelte';
+  import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
@@ -12,16 +11,16 @@
   export let onActivate: () => void;
 
   export let showTitle = true;
-  let licenseKey = '';
+  let productKey = '';
   let isLoading = false;
 
   const activate = async () => {
     try {
-      licenseKey = licenseKey.trim();
+      productKey = productKey.trim();
       isLoading = true;
 
-      const activationKey = await getActivationKey(licenseKey);
-      await activateLicense(licenseKey, activationKey);
+      const activationKey = await getActivationKey(productKey);
+      await activateProduct(productKey, activationKey);
 
       onActivate();
       purchaseStore.setPurchaseStatus(true);
@@ -55,8 +54,8 @@
       <div />
     </div>
     <div class="flex gap-6 mt-4 justify-between">
-      <ServerLicenseCard />
-      <UserLicenseCard />
+      <ServerPurchaseOptionCard />
+      <UserPurchaseOptionCard />
     </div>
 
     <div class="mt-6">
@@ -66,7 +65,7 @@
           class="immich-form-input w-full"
           id="licensekey"
           type="text"
-          bind:value={licenseKey}
+          bind:value={productKey}
           required
           placeholder="IMCL-0KEY-0CAN-00BE-FOUD-FROM-YOUR-EMAIL-INBX"
           disabled={isLoading}

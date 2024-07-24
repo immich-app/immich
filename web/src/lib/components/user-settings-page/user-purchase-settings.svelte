@@ -18,26 +18,26 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { handleError } from '$lib/utils/handle-error';
-  import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
+  import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import { t } from 'svelte-i18n';
   import { getAccountAge } from '$lib/utils/auth';
   const { isPurchased } = purchaseStore;
 
-  let isServerLicense = false;
-  let serverLicenseInfo: LicenseResponseDto | null = null;
+  let isServerProduct = false;
+  let serverProductInfo: LicenseResponseDto | null = null;
   const accountAge = getAccountAge();
 
   const checkLicenseInfo = async () => {
     const serverInfo = await getAboutInfo();
-    isServerLicense = serverInfo.licensed;
+    isServerProduct = serverInfo.licensed;
 
     const userInfo = await getMyUser();
     if (userInfo.license) {
       $user = { ...$user, license: userInfo.license };
     }
 
-    if (isServerLicense && $user.isAdmin) {
-      serverLicenseInfo = await getServerLicenseInfo();
+    if (isServerProduct && $user.isAdmin) {
+      serverProductInfo = await getServerLicenseInfo();
     }
   };
 
@@ -84,7 +84,7 @@
     try {
       const isConfirmed = await dialogController.show({
         title: 'Remove License',
-        prompt: 'Are you sure you want to remove the Server license?',
+        prompt: 'Are you sure you want to remove the Server product key?',
         confirmText: 'Remove',
         cancelText: 'Cancel',
       });
@@ -96,11 +96,11 @@
       await deleteServerLicense();
       purchaseStore.setPurchaseStatus(false);
     } catch (error) {
-      handleError(error, 'Failed to remove license');
+      handleError(error, 'Failed to remove product key');
     }
   };
 
-  const onLicenseActivated = async () => {
+  const onProductActivated = async () => {
     purchaseStore.setPurchaseStatus(true);
     await checkLicenseInfo();
   };
@@ -109,7 +109,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     {#if $isPurchased}
-      {#if isServerLicense}
+      {#if isServerProduct}
         <div
           class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
         >
@@ -118,9 +118,9 @@
           <div>
             <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Server License</p>
 
-            {#if $user.isAdmin && serverLicenseInfo?.activatedAt}
+            {#if $user.isAdmin && serverProductInfo?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
-                Activated on {new Date(serverLicenseInfo?.activatedAt).toLocaleDateString()}
+                Activated on {new Date(serverProductInfo?.activatedAt).toLocaleDateString()}
               </p>
             {:else}
               <p class="dark:text-white">Your license is managed by the admin</p>
@@ -166,7 +166,7 @@
           </p>
         </div>
       {/if}
-      <LicenseContent onActivate={onLicenseActivated} showTitle={false} />
+      <PurchaseContent onActivate={onProductActivated} showTitle={false} />
     {/if}
   </div>
 </section>

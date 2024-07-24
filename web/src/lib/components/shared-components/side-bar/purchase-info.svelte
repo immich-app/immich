@@ -12,7 +12,7 @@
   import { getAccountAge } from '$lib/utils/auth';
   import { fade } from 'svelte/transition';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import { getMyPreferences, updateMyPreferences } from '@immich/sdk';
+  import { updateMyPreferences } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
   import { preferences } from '$lib/stores/user.store';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
@@ -22,8 +22,7 @@
   let hoverMessage = false;
   let hoverButton = false;
 
-  let showBuyButton = getButtonVisibility() > 30;
-  console.log($preferences);
+  let showBuyButton = getButtonVisibility();
 
   const { isPurchased } = purchaseStore;
 
@@ -55,8 +54,9 @@
         },
       });
 
-      const myPreferences = await getMyPreferences();
-      preferences.set(myPreferences);
+      preferences.set(response);
+      showBuyButton = getButtonVisibility();
+      showMessage = false;
     } catch (error) {
       handleError(error, 'Error hiding buy button');
     }
@@ -92,8 +92,7 @@
           <p class="dark:text-gray-100">Supporter</p>
         </div>
       </button>
-    {:else}
-      {showBuyButton}
+    {:else if showBuyButton}
       <button
         type="button"
         on:click={openPurchaseModal}
