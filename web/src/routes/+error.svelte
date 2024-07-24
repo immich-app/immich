@@ -2,8 +2,10 @@
   import { page } from '$app/stores';
   import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { copyToClipboard } from '$lib/utils';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   const handleCopy = async () => {
     //
@@ -33,15 +35,15 @@
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
             <h1 class="font-medium text-immich-primary dark:text-immich-dark-primary">
-              🚨 Error - Something went wrong
+              🚨 {$t('error_title')}
             </h1>
             <div class="flex justify-end">
-              <button
+              <CircleIconButton
+                color="primary"
+                icon={mdiContentCopy}
+                title={$t('copy_error')}
                 on:click={() => handleCopy()}
-                class="rounded-full bg-immich-primary px-3 py-2 text-sm text-white shadow-md transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80"
-              >
-                <Icon path={mdiContentCopy} size={24} />
-              </button>
+              />
             </div>
           </div>
 
@@ -51,7 +53,7 @@
             <div class="flex w-full flex-col gap-2">
               <p class="text-red-500">{$page.error?.message} ({$page.error?.code})</p>
               {#if $page.error?.stack}
-                <label for="stacktrace">Stacktrace</label>
+                <label for="stacktrace">{$t('stacktrace')}</label>
                 <pre id="stacktrace" class="text-xs">{$page.error?.stack || 'No stack'}</pre>
               {/if}
             </div>
@@ -62,15 +64,15 @@
           <div class="flex place-content-center place-items-center justify-around">
             <!-- href="https://github.com/immich-app/immich/issues/new" -->
             <a
-              href="https://discord.com/invite/D8JsnBEuKb"
+              href="https://discord.immich.app"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiMessage} size={24} />
-                <p class="text-sm">Get Help</p>
-              </button>
+                <p class="text-sm">{$t('get_help')}</p>
+              </div>
             </a>
 
             <a
@@ -79,10 +81,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiPartyPopper} size={24} />
-                <p class="text-sm">Read Changelog</p>
-              </button>
+                <p class="text-sm">{$t('read_changelog')}</p>
+              </div>
             </a>
 
             <a
@@ -91,10 +93,10 @@
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
-              <button class="flex flex-col place-content-center place-items-center gap-2">
+              <div class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiCodeTags} size={24} />
-                <p class="text-sm">Check Logs</p>
-              </button>
+                <p class="text-sm">{$t('check_logs')}</p>
+              </div>
             </a>
           </div>
         </div>

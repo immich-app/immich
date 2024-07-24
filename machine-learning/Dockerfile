@@ -1,10 +1,8 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:e2ed446c899827ed992f8a5a8875fa0853fcab32581e61418b650322061aa3c4 as builder-cpu
+FROM python:3.11-bookworm@sha256:ef4b550f029a76b94f8e6cc6e4a8ed0e870fc6c5af1c4e9d77faaea50f41f6cd as builder-cpu
 
-FROM openvino/ubuntu22_runtime:2023.3.0@sha256:176646df619032ea6c10faf842867119c393e7497b7f88b5e307e932a0fd5aa8 as builder-openvino
-USER root
-RUN apt-get update && apt-get install -y --no-install-recommends python3-dev
+FROM builder-cpu as builder-openvino
 
 FROM builder-cpu as builder-cuda
 
@@ -13,7 +11,7 @@ FROM builder-cpu as builder-armnn
 ENV ARMNN_PATH=/opt/armnn
 COPY ann /opt/ann
 RUN mkdir /opt/armnn && \
-    curl -SL "https://github.com/ARM-software/armnn/releases/download/v23.11/ArmNN-linux-aarch64.tar.gz" | tar -zx -C /opt/armnn && \
+    curl -SL "https://github.com/ARM-software/armnn/releases/download/v24.05/ArmNN-linux-aarch64.tar.gz" | tar -zx -C /opt/armnn && \
     cd /opt/ann && \
     sh build.sh
 
@@ -36,12 +34,17 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:90f8795536170fd08236d2ceb74fe7065dbf74f738d8b84bfbf263656654dc9b as prod-cpu
+FROM python:3.11-slim-bookworm@sha256:ee317183d292ee6ed30e90bc325043ca3f7d2e8c79ac5019575490b5256ae244 as prod-cpu
 
-FROM openvino/ubuntu22_runtime:2023.3.0@sha256:176646df619032ea6c10faf842867119c393e7497b7f88b5e307e932a0fd5aa8 as prod-openvino
-USER root
+FROM prod-cpu as prod-openvino
 
-FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04@sha256:2d913b09e6be8387e1a10976933642c73c840c0b735f0bf3c28d97fc9bc422e0 as prod-cuda
+COPY scripts/configure-apt.sh ./
+RUN ./configure-apt.sh && \
+    apt-get update && \
+    apt-get install -t unstable --no-install-recommends -yqq intel-opencl-icd && \
+    rm configure-apt.sh
+
+FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04@sha256:fa44193567d1908f7ca1f3abf8623ce9c63bc8cba7bcfdb32702eb04d326f7a8 as prod-cuda
 
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
@@ -51,7 +54,7 @@ FROM prod-cpu as prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn
 
-RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd && \
+RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd libgomp1 && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir --parents /etc/OpenCL/vendors && \
     echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd && \
@@ -68,14 +71,16 @@ COPY --from=builder-armnn \
     /opt/armnn/
 
 FROM prod-${DEVICE} as prod
+ARG DEVICE
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini libmimalloc2.0 && \
+    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get autoremove -yqq && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
-ENV NODE_ENV=production \
-    TRANSFORMERS_CACHE=/cache \
+ENV TRANSFORMERS_CACHE=/cache \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
@@ -93,3 +98,5 @@ COPY start.sh log_conf.json ./
 COPY app .
 ENTRYPOINT ["tini", "--"]
 CMD ["./start.sh"]
+
+HEALTHCHECK CMD python3 healthcheck.py

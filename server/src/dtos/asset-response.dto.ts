@@ -1,18 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
-import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from 'src/dtos/person.dto';
+import {
+  AssetFaceWithoutPersonResponseDto,
+  PersonWithFacesResponseDto,
+  mapFacesWithoutPerson,
+  mapPerson,
+} from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
+import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
   id!: string;
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   thumbhash!: string | null;
+  originalMimeType?: string;
   resized!: boolean;
   localDateTime!: Date;
   duration!: string;
@@ -25,7 +33,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
-  libraryId!: string;
+  @PropertyLifecycle({ deprecatedAt: 'v1.106.0' })
+  libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
   fileCreatedAt!: Date;
@@ -35,18 +44,18 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
-  isExternal!: boolean;
-  isReadOnly!: boolean;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
+  unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
   stackParentId?: string | null;
   stack?: AssetResponseDto[];
   @ApiProperty({ type: 'integer' })
   stackCount!: number | null;
+  duplicateId?: string | null;
 }
 
 export type AssetMapOptions = {
@@ -80,6 +89,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
       id: entity.id,
       type: entity.type,
+      originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash?.toString('base64') ?? null,
       localDateTime: entity.localDateTime,
       resized: !!entity.previewPath,
@@ -100,6 +110,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
+    originalMimeType: mimeTypes.lookup(entity.originalFileName),
     resized: !!entity.previewPath,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
@@ -107,7 +118,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
-    isArchived: options.auth?.user.id === entity.ownerId ? entity.isArchived : false,
+    isArchived: entity.isArchived,
     isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
@@ -115,25 +126,22 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: peopleWithFaces(entity.faces),
+    unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
     stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
     stack: withStack
       ? entity.stack?.assets
-          .filter((a) => a.id !== entity.stack?.primaryAssetId)
-          .map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
+          ?.filter((a) => a.id !== entity.stack?.primaryAssetId)
+          ?.map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
       : undefined,
-    stackCount: entity.stack?.assets?.length ?? null,
-    isExternal: entity.isExternal,
+    stackCount: entity.stack?.assetCount ?? entity.stack?.assets?.length ?? null,
     isOffline: entity.isOffline,
-    isReadOnly: entity.isReadOnly,
     hasMetadata: true,
+    duplicateId: entity.duplicateId,
   };
 }
 
 export class MemoryLaneResponseDto {
-  @ApiProperty({ deprecated: true })
-  title!: string;
-
   @ApiProperty({ type: 'integer' })
   yearsAgo!: number;
 

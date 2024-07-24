@@ -1,17 +1,18 @@
+import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
+import { ImageFormat } from 'src/config';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { ImageFormat } from 'src/entities/system-config.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',
@@ -41,35 +42,37 @@ export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDE
 let instance: StorageCore | null;
 
 export class StorageCore {
-  private logger = new ImmichLogger(StorageCore.name);
   private configCore;
   private constructor(
     private assetRepository: IAssetRepository,
+    private cryptoRepository: ICryptoRepository,
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
-    private cryptoRepository: ICryptoRepository,
-    private repository: IStorageRepository,
-    systemConfigRepository: ISystemConfigRepository,
+    private storageRepository: IStorageRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
+    private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(systemConfigRepository);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   static create(
     assetRepository: IAssetRepository,
+    cryptoRepository: ICryptoRepository,
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
-    cryptoRepository: ICryptoRepository,
-    configRepository: ISystemConfigRepository,
-    repository: IStorageRepository,
+    storageRepository: IStorageRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
+    logger: ILoggerRepository,
   ) {
     if (!instance) {
       instance = new StorageCore(
         assetRepository,
+        cryptoRepository,
         moveRepository,
         personRepository,
-        cryptoRepository,
-        repository,
-        configRepository,
+        storageRepository,
+        systemMetadataRepository,
+        logger,
       );
     }
 
@@ -170,8 +173,8 @@ export class StorageCore {
     let move = await this.moveRepository.getByEntity(entityId, pathType);
     if (move) {
       this.logger.log(`Attempting to finish incomplete move: ${move.oldPath} => ${move.newPath}`);
-      const oldPathExists = await this.repository.checkFileExists(move.oldPath);
-      const newPathExists = await this.repository.checkFileExists(move.newPath);
+      const oldPathExists = await this.storageRepository.checkFileExists(move.oldPath);
+      const newPathExists = await this.storageRepository.checkFileExists(move.newPath);
       const newPathCheck = newPathExists ? move.newPath : null;
       const actualPath = oldPathExists ? move.oldPath : newPathCheck;
       if (!actualPath) {
@@ -205,7 +208,7 @@ export class StorageCore {
     if (move.oldPath !== newPath) {
       try {
         this.logger.debug(`Attempting to rename file: ${move.oldPath} => ${newPath}`);
-        await this.repository.rename(move.oldPath, newPath);
+        await this.storageRepository.rename(move.oldPath, newPath);
       } catch (error: any) {
         if (error.code !== 'EXDEV') {
           this.logger.warn(
@@ -214,19 +217,19 @@ export class StorageCore {
           return;
         }
         this.logger.debug(`Unable to rename file. Falling back to copy, verify and delete`);
-        await this.repository.copyFile(move.oldPath, newPath);
+        await this.storageRepository.copyFile(move.oldPath, newPath);
 
         if (!(await this.verifyNewPathContentsMatchesExpected(move.oldPath, newPath, assetInfo))) {
           this.logger.warn(`Skipping move due to file size mismatch`);
-          await this.repository.unlink(newPath);
+          await this.storageRepository.unlink(newPath);
           return;
         }
 
-        const { atime, mtime } = await this.repository.stat(move.oldPath);
-        await this.repository.utimes(newPath, atime, mtime);
+        const { atime, mtime } = await this.storageRepository.stat(move.oldPath);
+        await this.storageRepository.utimes(newPath, atime, mtime);
 
         try {
-          await this.repository.unlink(move.oldPath);
+          await this.storageRepository.unlink(move.oldPath);
         } catch (error: any) {
           this.logger.warn(`Unable to delete old file, it will now no longer be tracked by Immich: ${error.message}`);
         }
@@ -242,8 +245,8 @@ export class StorageCore {
     newPath: string,
     assetInfo?: { sizeInBytes: number; checksum: Buffer },
   ) {
-    const oldStat = await this.repository.stat(oldPath);
-    const newStat = await this.repository.stat(newPath);
+    const oldStat = await this.storageRepository.stat(oldPath);
+    const newStat = await this.storageRepository.stat(newPath);
     const oldPathSize = assetInfo ? assetInfo.sizeInBytes : oldStat.size;
     const newPathSize = newStat.size;
     this.logger.debug(`File size check: ${newPathSize} === ${oldPathSize}`);
@@ -251,7 +254,7 @@ export class StorageCore {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
     }
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: true });
     if (assetInfo && config.storageTemplate.hashVerificationEnabled) {
       const { checksum } = assetInfo;
       const newChecksum = await this.cryptoRepository.hashFile(newPath);
@@ -269,11 +272,11 @@ export class StorageCore {
   }
 
   ensureFolders(input: string) {
-    this.repository.mkdirSync(dirname(input));
+    this.storageRepository.mkdirSync(dirname(input));
   }
 
   removeEmptyDirs(folder: StorageFolder) {
-    return this.repository.removeEmptyDirs(StorageCore.getBaseFolder(folder));
+    return this.storageRepository.removeEmptyDirs(StorageCore.getBaseFolder(folder));
   }
 
   private savePath(pathType: PathType, id: string, newPath: string) {
@@ -305,5 +308,9 @@ export class StorageCore {
 
   static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
     return join(this.getNestedFolder(folder, ownerId, filename), filename);
+  }
+
+  static getTempPathInDir(dir: string): string {
+    return join(dir, `${randomUUID()}.tmp`);
   }
 }

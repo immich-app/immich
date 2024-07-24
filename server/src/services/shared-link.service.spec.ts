@@ -12,12 +12,13 @@ import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-lin
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
   let accessMock: IAccessRepositoryMock;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let shareMock: jest.Mocked<ISharedLinkRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let shareMock: Mocked<ISharedLinkRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -163,6 +164,36 @@ describe(SharedLinkService.name, () => {
         key: Buffer.from('random-bytes', 'utf8'),
       });
     });
+
+    it('should create a shared link with allowDownload set to false when showMetadata is false', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      shareMock.create.mockResolvedValue(sharedLinkStub.individual);
+
+      await sut.create(authStub.admin, {
+        type: SharedLinkType.INDIVIDUAL,
+        assetIds: [assetStub.image.id],
+        showMetadata: false,
+        allowDownload: true,
+        allowUpload: true,
+      });
+
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+      expect(shareMock.create).toHaveBeenCalledWith({
+        type: SharedLinkType.INDIVIDUAL,
+        userId: authStub.admin.user.id,
+        albumId: null,
+        allowDownload: false,
+        allowUpload: true,
+        assets: [{ id: assetStub.image.id }],
+        description: null,
+        expiresAt: null,
+        showExif: false,
+        key: Buffer.from('random-bytes', 'utf8'),
+      });
+    });
   });
 
   describe('update', () => {
@@ -270,7 +301,7 @@ describe(SharedLinkService.name, () => {
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '1 shared photos & videos',
         imageUrl:
-          '/api/asset/thumbnail/asset-id?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0',
+          '/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0',
         title: 'Public Share',
       });
       expect(shareMock.get).toHaveBeenCalled();

@@ -2,14 +2,18 @@
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
-    type Notification,
+    isComponentNotification,
     notificationController,
     NotificationType,
+    type ComponentNotification,
+    type Notification,
   } from '$lib/components/shared-components/notification/notification';
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
-  export let notification: Notification;
+  export let notification: Notification | ComponentNotification;
 
   $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
   $: hoverStyle = notification.action.type === 'discard' ? 'hover:cursor-pointer' : '';
@@ -75,18 +79,24 @@
     <div class="flex place-items-center gap-2">
       <Icon path={icon} color={primaryColor[notification.type]} size="20" />
       <h2 style:color={primaryColor[notification.type]} class="font-medium" data-testid="title">
-        {notification.type.toString()}
+        {#if notification.type == NotificationType.Error}{$t('error')}
+        {:else if notification.type == NotificationType.Warning}{$t('warning')}
+        {:else if notification.type == NotificationType.Info}{$t('info')}{/if}
       </h2>
     </div>
-    <button on:click|stopPropagation={discard}>
-      <Icon path={mdiWindowClose} size="20" />
-    </button>
+    <CircleIconButton
+      icon={mdiWindowClose}
+      title={$t('close')}
+      class="dark:text-immich-dark-gray"
+      size="20"
+      padding="2"
+      on:click={discard}
+    />
   </div>
 
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
-    {#if notification.html}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      {@html notification.message}
+    {#if isComponentNotification(notification)}
+      <svelte:component this={notification.component.type} {...notification.component.props} />
     {:else}
       {notification.message}
     {/if}
@@ -95,6 +105,7 @@
   {#if notification.button}
     <p class="pl-[28px] mt-2.5 text-sm">
       <button
+        type="button"
         class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
         on:click={handleButtonClick}
       >

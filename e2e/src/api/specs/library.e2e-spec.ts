@@ -1,23 +1,24 @@
 import {
   LibraryResponseDto,
-  LibraryType,
   LoginResponseDto,
   ScanLibraryDto,
   getAllLibraries,
+  removeOfflineFiles,
   scanLibrary,
 } from '@immich/sdk';
-import { existsSync, rmdirSync } from 'node:fs';
+import { cpSync, existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
+import { utimes } from 'utimes';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const scan = async (accessToken: string, id: string, dto: ScanLibraryDto = {}) =>
   scanLibrary({ id, scanLibraryDto: dto }, { headers: asBearerAuth(accessToken) });
 
-describe('/library', () => {
+describe('/libraries', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
   let library: LibraryResponseDto;
@@ -26,63 +27,43 @@ describe('/library', () => {
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
+    await utils.resetAdminConfig(admin.accessToken);
     user = await utils.userSetup(admin.accessToken, userDto.user1);
-    library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId, type: LibraryType.External });
+    library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
     websocket = await utils.connectWebsocket(admin.accessToken);
-  });
-
-  afterAll(() => {
-    utils.disconnectWebsocket(websocket);
-  });
-
-  beforeEach(() => {
-    utils.resetEvents();
-    const tempDir = `${testAssetDir}/temp`;
-    if (existsSync(tempDir)) {
-      rmdirSync(tempDir, { recursive: true });
-    }
     utils.createImageFile(`${testAssetDir}/temp/directoryA/assetA.png`);
     utils.createImageFile(`${testAssetDir}/temp/directoryB/assetB.png`);
   });
 
-  describe('GET /library', () => {
+  afterAll(() => {
+    utils.disconnectWebsocket(websocket);
+    utils.resetTempFolder();
+  });
+
+  beforeEach(() => {
+    utils.resetEvents();
+  });
+
+  describe('GET /libraries', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/library');
+      const { status, body } = await request(app).get('/libraries');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
-
-    it('should start with a default upload library', async () => {
-      const { status, body } = await request(app).get('/library').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(200);
-      expect(body).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            ownerId: admin.userId,
-            type: LibraryType.Upload,
-            name: 'Default Library',
-            refreshedAt: null,
-            assetCount: 0,
-            importPaths: [],
-            exclusionPatterns: [],
-          }),
-        ]),
-      );
-    });
   });
 
-  describe('POST /library', () => {
+  describe('POST /libraries', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/library').send({});
+      const { status, body } = await request(app).post('/libraries').send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should require admin authentication', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${user.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.External });
+        .send({ ownerId: admin.userId });
 
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.forbidden);
@@ -90,15 +71,14 @@ describe('/library', () => {
 
     it('should create an external library with defaults', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.External });
+        .send({ ownerId: admin.userId });
 
       expect(status).toBe(201);
       expect(body).toEqual(
         expect.objectContaining({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'New External Library',
           refreshedAt: null,
           assetCount: 0,
@@ -110,11 +90,10 @@ describe('/library', () => {
 
     it('should create an external library with options', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'My Awesome Library',
           importPaths: ['/path/to/import'],
           exclusionPatterns: ['**/Raw/**'],
@@ -131,11 +110,10 @@ describe('/library', () => {
 
     it('should not create an external library with duplicate import paths', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'My Awesome Library',
           importPaths: ['/path', '/path'],
           exclusionPatterns: ['**/Raw/**'],
@@ -147,11 +125,10 @@ describe('/library', () => {
 
     it('should not create an external library with duplicate exclusion patterns', async () => {
       const { status, body } = await request(app)
-        .post('/library')
+        .post('/libraries')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'My Awesome Library',
           importPaths: ['/path/to/import'],
           exclusionPatterns: ['**/Raw/**', '**/Raw/**'],
@@ -160,72 +137,18 @@ describe('/library', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(["All exclusionPatterns's elements must be unique"]));
     });
-
-    it('should create an upload library with defaults', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload });
-
-      expect(status).toBe(201);
-      expect(body).toEqual(
-        expect.objectContaining({
-          ownerId: admin.userId,
-          type: LibraryType.Upload,
-          name: 'New Upload Library',
-          refreshedAt: null,
-          assetCount: 0,
-          importPaths: [],
-          exclusionPatterns: [],
-        }),
-      );
-    });
-
-    it('should create an upload library with options', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload, name: 'My Awesome Library' });
-
-      expect(status).toBe(201);
-      expect(body).toEqual(
-        expect.objectContaining({
-          name: 'My Awesome Library',
-        }),
-      );
-    });
-
-    it('should not allow upload libraries to have import paths', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload, importPaths: ['/path/to/import'] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Upload libraries cannot have import paths'));
-    });
-
-    it('should not allow upload libraries to have exclusion patterns', async () => {
-      const { status, body } = await request(app)
-        .post('/library')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ownerId: admin.userId, type: LibraryType.Upload, exclusionPatterns: ['**/Raw/**'] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Upload libraries cannot have exclusion patterns'));
-    });
   });
 
-  describe('PUT /library/:id', () => {
+  describe('PUT /libraries/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/library/${uuidDto.notFound}`).send({});
+      const { status, body } = await request(app).put(`/libraries/${uuidDto.notFound}`).send({});
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should change the library name', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ name: 'New Library Name' });
 
@@ -239,7 +162,7 @@ describe('/library', () => {
 
     it('should not set an empty name', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ name: '' });
 
@@ -249,7 +172,7 @@ describe('/library', () => {
 
     it('should change the import paths', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ importPaths: [testAssetDirInternal] });
 
@@ -263,7 +186,7 @@ describe('/library', () => {
 
     it('should reject an empty import path', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ importPaths: [''] });
 
@@ -273,7 +196,7 @@ describe('/library', () => {
 
     it('should reject duplicate import paths', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ importPaths: ['/path', '/path'] });
 
@@ -283,7 +206,7 @@ describe('/library', () => {
 
     it('should change the exclusion pattern', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ exclusionPatterns: ['**/Raw/**'] });
 
@@ -297,7 +220,7 @@ describe('/library', () => {
 
     it('should reject duplicate exclusion patterns', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
 
@@ -307,7 +230,7 @@ describe('/library', () => {
 
     it('should reject an empty exclusion pattern', async () => {
       const { status, body } = await request(app)
-        .put(`/library/${library.id}`)
+        .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ exclusionPatterns: [''] });
 
@@ -316,9 +239,9 @@ describe('/library', () => {
     });
   });
 
-  describe('GET /library/:id', () => {
+  describe('GET /libraries/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/library/${uuidDto.notFound}`);
+      const { status, body } = await request(app).get(`/libraries/${uuidDto.notFound}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -326,27 +249,23 @@ describe('/library', () => {
 
     it('should require admin access', async () => {
       const { status, body } = await request(app)
-        .get(`/library/${uuidDto.notFound}`)
+        .get(`/libraries/${uuidDto.notFound}`)
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.forbidden);
     });
 
     it('should get library by id', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.External,
-      });
+      const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
 
       const { status, body } = await request(app)
-        .get(`/library/${library.id}`)
+        .get(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
           ownerId: admin.userId,
-          type: LibraryType.External,
           name: 'New External Library',
           refreshedAt: null,
           assetCount: 0,
@@ -357,130 +276,26 @@ describe('/library', () => {
     });
   });
 
-  describe('DELETE /library/:id', () => {
+  describe('GET /libraries/:id/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/library/${uuidDto.notFound}`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should not delete the last upload library', async () => {
-      const libraries = await getAllLibraries(
-        { $type: LibraryType.Upload },
-        { headers: asBearerAuth(admin.accessToken) },
-      );
-
-      const adminLibraries = libraries.filter((library) => library.ownerId === admin.userId);
-      expect(adminLibraries.length).toBeGreaterThanOrEqual(1);
-      const lastLibrary = adminLibraries.pop() as LibraryResponseDto;
-
-      // delete all but the last upload library
-      for (const library of adminLibraries) {
-        const { status } = await request(app)
-          .delete(`/library/${library.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`);
-        expect(status).toBe(204);
-      }
-
-      const { status, body } = await request(app)
-        .delete(`/library/${lastLibrary.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(body).toEqual(errorDto.noDeleteUploadLibrary);
-      expect(status).toBe(400);
-    });
-
-    it('should delete an external library', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.External,
-      });
-
-      const { status, body } = await request(app)
-        .delete(`/library/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(204);
-      expect(body).toEqual({});
-
-      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
-      expect(libraries).not.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: library.id,
-          }),
-        ]),
-      );
-    });
-
-    it('should delete an external library with assets', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.External,
-        importPaths: [`${testAssetDirInternal}/temp`],
-      });
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
-
-      const { status, body } = await request(app)
-        .delete(`/library/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(204);
-      expect(body).toEqual({});
-
-      const libraries = await getAllLibraries({}, { headers: asBearerAuth(admin.accessToken) });
-      expect(libraries).not.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: library.id,
-          }),
-        ]),
-      );
-
-      // ensure no files get deleted
-      expect(existsSync(`${testAssetDir}/temp/directoryA/assetA.png`)).toBe(true);
-      expect(existsSync(`${testAssetDir}/temp/directoryB/assetB.png`)).toBe(true);
-    });
-  });
-
-  describe('GET /library/:id/statistics', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/library/${uuidDto.notFound}/statistics`);
+      const { status, body } = await request(app).get(`/libraries/${uuidDto.notFound}/statistics`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
   });
 
-  describe('POST /library/:id/scan', () => {
+  describe('POST /libraries/:id/scan', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/library/${uuidDto.notFound}/scan`).send({});
+      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/scan`).send({});
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not scan an upload library', async () => {
+    it('should scan external library', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.Upload,
-      });
-
-      const { status, body } = await request(app)
-        .post(`/library/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Can only scan external libraries'));
-    });
-
-    it('should scan an external library', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp/directoryA`],
       });
 
@@ -496,7 +311,6 @@ describe('/library', () => {
     it('should scan external library with exclusion pattern', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
         exclusionPatterns: ['**/directoryA'],
       });
@@ -513,7 +327,6 @@ describe('/library', () => {
     it('should scan multiple import paths', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp/directoryA`, `${testAssetDirInternal}/temp/directoryB`],
       });
 
@@ -530,7 +343,6 @@ describe('/library', () => {
     it('should pick up new files', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        type: LibraryType.External,
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
@@ -549,21 +361,269 @@ describe('/library', () => {
       const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
       expect(newAssets.count).toBe(3);
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
+    });
+
+    it('should offline a missing file', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'assetB.png',
+          }),
+        ]),
+      );
+    });
+
+    it('should not try to delete offline files', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
+
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline1`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      expect(initialAssets).toEqual({
+        count: 1,
+        total: 1,
+        facets: [],
+        items: [expect.objectContaining({ originalFileName: 'assetA.png' })],
+        nextPage: null,
+      });
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+        isOffline: true,
+      });
+      expect(offlineAssets).toEqual({
+        count: 1,
+        total: 1,
+        facets: [],
+        items: [expect.objectContaining({ originalFileName: 'assetA.png' })],
+        nextPage: null,
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
+      await removeOfflineFiles({ id: library.id }, { headers: asBearerAuth(admin.accessToken) });
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForWebsocketEvent({ event: 'assetDelete', total: 1 });
+
+      expect(existsSync(`${testAssetDir}/temp/offline1/assetA.png`)).toBe(true);
+    });
+
+    it('should scan new files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            originalFileName: 'assetC.png',
+          }),
+        ]),
+      );
+    });
+
+    describe('with refreshModifiedFiles=true', () => {
+      it('should reimport modified files', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp`],
+        });
+
+        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+        const { assets } = await utils.metadataSearch(admin.accessToken, {
+          libraryId: library.id,
+          model: 'NIKON D750',
+        });
+        expect(assets.count).toBe(1);
+      });
+
+      it('should not reimport unmodified files', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp`],
+        });
+
+        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+        const { assets } = await utils.metadataSearch(admin.accessToken, {
+          libraryId: library.id,
+          model: 'NIKON D750',
+        });
+        expect(assets.count).toBe(0);
+      });
+    });
+
+    describe('with refreshAllFiles=true', () => {
+      it('should reimport all files', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp`],
+        });
+
+        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id, { refreshAllFiles: true });
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+        const { assets } = await utils.metadataSearch(admin.accessToken, {
+          libraryId: library.id,
+          model: 'NIKON D750',
+        });
+        expect(assets.count).toBe(1);
+      });
     });
   });
 
-  describe('POST /library/:id/removeOffline', () => {
+  describe('POST /libraries/:id/removeOffline', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/library/${uuidDto.notFound}/removeOffline`).send({});
+      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/removeOffline`).send({});
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
+
+    it('should remove offline files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline2`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/offline2/assetA.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+      });
+      expect(initialAssets.count).toBe(1);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline2/assetA.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+        isOffline: true,
+      });
+      expect(offlineAssets.count).toBe(1);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/removeOffline`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(0);
+    });
+
+    it('should not remove online files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: assetsBefore } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      expect(assetsBefore.count).toBeGreaterThan(1);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/removeOffline`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets).toEqual(assetsBefore);
+    });
   });
 
-  describe('POST /library/:id/validate', () => {
+  describe('POST /libraries/:id/validate', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/library/${uuidDto.notFound}/validate`).send({});
+      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/validate`).send({});
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -606,6 +666,65 @@ describe('/library', () => {
         isValid: false,
         message: `Not a directory`,
       });
+    });
+  });
+
+  describe('DELETE /libraries/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).delete(`/libraries/${uuidDto.notFound}`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should delete an external library', async () => {
+      const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
+
+      const { status, body } = await request(app)
+        .delete(`/libraries/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(204);
+      expect(body).toEqual({});
+
+      const libraries = await getAllLibraries({ headers: asBearerAuth(admin.accessToken) });
+      expect(libraries).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: library.id,
+          }),
+        ]),
+      );
+    });
+
+    it('should delete an external library with assets', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+
+      const { status, body } = await request(app)
+        .delete(`/libraries/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(204);
+      expect(body).toEqual({});
+
+      const libraries = await getAllLibraries({ headers: asBearerAuth(admin.accessToken) });
+      expect(libraries).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: library.id,
+          }),
+        ]),
+      );
+
+      // ensure no files get deleted
+      expect(existsSync(`${testAssetDir}/temp/directoryA/assetA.png`)).toBe(true);
+      expect(existsSync(`${testAssetDir}/temp/directoryB/assetB.png`)).toBe(true);
     });
   });
 });

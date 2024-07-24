@@ -1,10 +1,7 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { extname } from 'node:path';
-import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from 'src/cores/access.core';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
@@ -19,20 +16,17 @@ import {
   AssetJobsDto,
   AssetStatsDto,
   UpdateAssetDto,
-  UploadFieldName,
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerDto, MapMarkerResponseDto, MemoryLaneDto } from 'src/dtos/search.dto';
+import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryType } from 'src/entities/library.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetStackRepository } from 'src/interfaces/asset-stack.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
-  IAssetDeletionJob,
+  IAssetDeleteJob,
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
@@ -40,30 +34,15 @@ import {
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { IStackRepository } from 'src/interfaces/stack.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { ImmichLogger } from 'src/utils/logger';
-import { mimeTypes } from 'src/utils/mime-types';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
-export interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
-}
-
 export class AssetService {
-  private logger = new ImmichLogger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 
@@ -71,109 +50,29 @@ export class AssetService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(IStackRepository) private stackRepository: IStackRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
+    this.logger.setContext(AssetService.name);
     this.access = AccessCore.create(accessRepository);
-    this.configCore = SystemConfigCore.create(configRepository);
-  }
-
-  canUploadFile({ auth, fieldName, file }: UploadRequest): true {
-    this.access.requireUploadAccess(auth);
-
-    const filename = file.originalName;
-
-    switch (fieldName) {
-      case UploadFieldName.ASSET_DATA: {
-        if (mimeTypes.isAsset(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.LIVE_PHOTO_DATA: {
-        if (mimeTypes.isVideo(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.SIDECAR_DATA: {
-        if (mimeTypes.isSidecar(filename)) {
-          return true;
-        }
-        break;
-      }
-
-      case UploadFieldName.PROFILE_DATA: {
-        if (mimeTypes.isProfile(filename)) {
-          return true;
-        }
-        break;
-      }
-    }
-
-    this.logger.error(`Unsupported file type ${filename}`);
-    throw new BadRequestException(`Unsupported file type ${filename}`);
-  }
-
-  getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
-    this.access.requireUploadAccess(auth);
-
-    const originalExtension = extname(file.originalName);
-
-    const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExtension,
-      [UploadFieldName.LIVE_PHOTO_DATA]: '.mov',
-      [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExtension,
-    };
-
-    return sanitize(`${file.uuid}${lookup[fieldName]}`);
-  }
-
-  getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
-    auth = this.access.requireUploadAccess(auth);
-
-    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
-    if (fieldName === UploadFieldName.PROFILE_DATA) {
-      folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
-    }
-
-    this.storageRepository.mkdirSync(folder);
-
-    return folder;
-  }
-
-  async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    const userIds: string[] = [auth.user.id];
-    if (options.withPartners) {
-      const partners = await this.partnerRepository.getAll(auth.user.id);
-      const partnersIds = partners
-        .filter((partner) => partner.sharedBy && partner.sharedWith && partner.sharedById != auth.user.id)
-        .map((partner) => partner.sharedById);
-      userIds.push(...partnersIds);
-    }
-    return this.assetRepository.getMapMarkers(userIds, options);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const currentYear = new Date().getFullYear();
-
-    // get partners id
-    const userIds: string[] = [auth.user.id];
-    const partners = await this.partnerRepository.getAll(auth.user.id);
-    const partnersIds = partners
-      .filter((partner) => partner.sharedBy && partner.inTimeline)
-      .map((partner) => partner.sharedById);
-    userIds.push(...partnersIds);
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
+    const userIds = [auth.user.id, ...partnerIds];
 
     const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
     const groups: Record<number, AssetEntity[]> = {};
+    const currentYear = new Date().getFullYear();
     for (const asset of assets) {
       const yearsAgo = currentYear - asset.localDateTime.getFullYear();
       if (!groups[yearsAgo]) {
@@ -189,7 +88,7 @@ export class AssetService {
       .map((yearsAgo) => ({
         yearsAgo,
         // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
         assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
       }));
   }
@@ -211,21 +110,29 @@ export class AssetService {
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_READ, id);
 
-    const asset = await this.assetRepository.getById(id, {
-      exifInfo: true,
-      tags: true,
-      sharedLinks: true,
-      smartInfo: true,
-      owner: true,
-      faces: {
-        person: true,
-      },
-      stack: {
-        assets: {
-          exifInfo: true,
+    const asset = await this.assetRepository.getById(
+      id,
+      {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        owner: true,
+        faces: {
+          person: true,
+        },
+        stack: {
+          assets: {
+            exifInfo: true,
+          },
         },
       },
-    });
+      {
+        faces: {
+          boundingBoxX1: 'ASC',
+        },
+      },
+    );
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -304,14 +211,15 @@ export class AssetService {
       ids.push(...assetsWithChildren.flatMap((child) => child.stack!.assets.map((gChild) => gChild.id)));
 
       if (stack) {
-        await this.assetStackRepository.update({
+        await this.stackRepository.update({
           id: stack.id,
           primaryAssetId: primaryAsset.id,
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       } else {
-        stack = await this.assetStackRepository.create({
+        stack = await this.stackRepository.create({
           primaryAssetId: primaryAsset.id,
+          ownerId: primaryAsset.ownerId,
           assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       }
@@ -326,18 +234,16 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
-    const stackIdsToDelete = await Promise.all(
-      stackIdsToCheckForDelete.map((id) => this.assetStackRepository.getById(id)),
-    );
+    const stackIdsToDelete = await Promise.all(stackIdsToCheckForDelete.map((id) => this.stackRepository.getById(id)));
     const stacksToDelete = stackIdsToDelete
       .flatMap((stack) => (stack ? [stack] : []))
       .filter((stack) => stack.assets.length < 2);
-    await Promise.all(stacksToDelete.map((as) => this.assetStackRepository.delete(as.id)));
+    await Promise.all(stacksToDelete.map((as) => this.stackRepository.delete(as.id)));
     this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck(): Promise<JobStatus> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
     const trashedBefore = DateTime.now()
       .minus(Duration.fromObject({ days: trashedDays }))
@@ -348,15 +254,21 @@ export class AssetService {
 
     for await (const assets of assetPagination) {
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        assets.map((asset) => ({
+          name: JobName.ASSET_DELETION,
+          data: {
+            id: asset.id,
+            deleteOnDisk: true,
+          },
+        })),
       );
     }
 
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IAssetDeletionJob): Promise<JobStatus> {
-    const { id, fromExternal } = job;
+  async handleAssetDeletion(job: IAssetDeleteJob): Promise<JobStatus> {
+    const { id, deleteOnDisk } = job;
 
     const asset = await this.assetRepository.getById(id, {
       faces: {
@@ -371,36 +283,39 @@ export class AssetService {
       return JobStatus.FAILED;
     }
 
-    // Ignore requests that are not from external library job but is for an external asset
-    if (!fromExternal && (!asset.library || asset.library.type === LibraryType.EXTERNAL)) {
-      return JobStatus.SKIPPED;
-    }
-
     // Replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
       const stackAssetIds = asset.stack.assets.map((a) => a.id);
       if (stackAssetIds.length > 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
-        await this.assetStackRepository.update({
+        await this.stackRepository.update({
           id: asset.stack.id,
           primaryAssetId: newPrimaryAssetId,
         });
       } else {
-        await this.assetStackRepository.delete(asset.stack.id);
+        await this.stackRepository.delete(asset.stack.id);
       }
     }
 
     await this.assetRepository.remove(asset);
-    await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    if (!asset.libraryId) {
+      await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
+    }
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
-    // TODO refactor this to use cascades
+    // delete the motion if it is not used by another asset
     if (asset.livePhotoVideoId) {
-      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+      const count = await this.assetRepository.getLivePhotoCount(asset.livePhotoVideoId);
+      if (count === 0) {
+        await this.jobRepository.queue({
+          name: JobName.ASSET_DELETION,
+          data: { id: asset.livePhotoVideoId, deleteOnDisk },
+        });
+      }
     }
 
     const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
-    if (!(asset.isExternal || asset.isReadOnly)) {
+    if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 
@@ -415,7 +330,12 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
 
     if (force) {
-      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.ASSET_DELETION, data: { id } })));
+      await this.jobRepository.queueAll(
+        ids.map((id) => ({
+          name: JobName.ASSET_DELETION,
+          data: { id, deleteOnDisk: true },
+        })),
+      );
     } else {
       await this.assetRepository.softDeleteAll(ids);
       this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, ids);
@@ -444,7 +364,7 @@ export class AssetService {
       // Get all children of old parent
       childIds.push(oldParent.id, ...(oldParent.stack?.assets.map((a) => a.id) ?? []));
     }
-    await this.assetStackRepository.update({
+    await this.stackRepository.update({
       id: oldParent.stackId,
       primaryAssetId: newParentId,
     });

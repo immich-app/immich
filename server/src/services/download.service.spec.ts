@@ -1,16 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
-import { when } from 'jest-when';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
+import { Mocked, vitest } from 'vitest';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
@@ -25,8 +25,8 @@ const downloadResponse: DownloadResponseDto = {
 describe(DownloadService.name, () => {
   let sut: DownloadService;
   let accessMock: IAccessRepositoryMock;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let storageMock: Mocked<IStorageRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -40,50 +40,11 @@ describe(DownloadService.name, () => {
     sut = new DownloadService(accessMock, assetMock, storageMock);
   });
 
-  describe('downloadFile', () => {
-    it('should require the asset.download permission', async () => {
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-    });
-
-    it('should throw an error if the asset is not found', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-    });
-
-    it('should throw an error if the asset is offline', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.offline]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-    });
-
-    it('should download a file', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual(
-        new ImmichFileResponse({
-          path: '/original/path.jpg',
-          contentType: 'image/jpeg',
-          cacheControl: CacheControl.NONE,
-        }),
-      );
-    });
-
+  describe('downloadArchive', () => {
     it('should download an archive', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
         stream: new Readable(),
       };
 
@@ -105,8 +66,8 @@ describe(DownloadService.name, () => {
 
     it('should handle duplicate file names', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
         stream: new Readable(),
       };
 
@@ -128,8 +89,8 @@ describe(DownloadService.name, () => {
 
     it('should be deterministic', async () => {
       const archiveMock = {
-        addFile: jest.fn(),
-        finalize: jest.fn(),
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
         stream: new Readable(),
       };
 
@@ -179,7 +140,6 @@ describe(DownloadService.name, () => {
     });
 
     it('should return a list of archives (userId)', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
       assetMock.getByUserId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
@@ -195,8 +155,6 @@ describe(DownloadService.name, () => {
     });
 
     it('should split archives by size', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
-
       assetMock.getByUserId.mockResolvedValue({
         items: [
           { ...assetStub.image, id: 'asset-1' },
@@ -223,14 +181,15 @@ describe(DownloadService.name, () => {
 
     it('should include the video portion of a live photo', async () => {
       const assetIds = [assetStub.livePhotoStillAsset.id];
+      const assets = [assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset];
 
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
-      when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoStillAsset.id], { exifInfo: true })
-        .mockResolvedValue([assetStub.livePhotoStillAsset]);
-      when(assetMock.getByIds)
-        .calledWith([assetStub.livePhotoMotionAsset.id], { exifInfo: true })
-        .mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      assetMock.getByIds.mockImplementation(
+        (ids) =>
+          Promise.resolve(
+            ids.map((id) => assets.find((asset) => asset.id === id)).filter((asset) => !!asset),
+          ) as Promise<AssetEntity[]>,
+      );
 
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
         totalSize: 125_000,

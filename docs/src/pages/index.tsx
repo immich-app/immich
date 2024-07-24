@@ -10,7 +10,7 @@ function HomepageHeader() {
       <section className="text-center m-6 p-12 border border-red-400 rounded-[50px] bg-slate-200 dark:bg-immich-dark-gray">
         <img
           src={isDarkTheme ? 'img/immich-logo-stacked-dark.svg' : 'img/immich-logo-stacked-light.svg'}
-          className="md:h-60 h-44 mb-2 antialiased"
+          className="md:h-60 h-44 mb-2 antialiased rounded-none"
           alt="Immich logo"
         />
         <div className="sm:text-2xl text-lg md:text-4xl mb-12 sm:leading-tight">
@@ -34,14 +34,12 @@ function HomepageHeader() {
             Demo portal
           </Link>
 
-          <a
-            href="https://github.com/sponsors/immich-app"
-            target="_blank"
-            rel="noreferrer"
-            className="flex place-items-center place-content-center py-3 px-8 border bg-immich-sponsor rounded-full no-underline hover:no-underline text-white dark:text-immich-dark-bg dark:bg-immich-sponsor hover:text-white font-bold uppercase"
+          <Link
+            className="flex place-items-center place-content-center py-3 px-8 border bg-immich-dark-primary dark:bg-immich-primary  rounded-full hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
+            to="https://discord.immich.app"
           >
-            Sponsor
-          </a>
+            Discord
+          </Link>
         </div>
         <img src="/img/immich-screenshots.png" alt="screenshots" width={'70%'} />
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-4 gap-1">

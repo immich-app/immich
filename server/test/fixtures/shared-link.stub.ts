@@ -9,7 +9,6 @@ import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entit
 import { UserEntity } from 'src/entities/user.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { libraryStub } from 'test/fixtures/library.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
 const today = new Date();
@@ -53,13 +52,12 @@ const assetResponse: AssetResponseDto = {
   ownerId: 'user_id_1',
   deviceId: 'device_id_1',
   type: AssetType.VIDEO,
+  originalMimeType: 'image/jpeg',
   originalPath: 'fake_path/jpeg',
   originalFileName: 'asset_1.jpeg',
   resized: false,
   thumbhash: null,
   fileModifiedAt: today,
-  isExternal: false,
-  isReadOnly: false,
   isOffline: false,
   fileCreatedAt: today,
   localDateTime: today,
@@ -85,6 +83,7 @@ const assetResponse: AssetResponseDto = {
 const assetResponseWithoutMetadata = {
   id: 'id_1',
   type: AssetType.VIDEO,
+  originalMimeType: 'image/jpeg',
   resized: false,
   thumbhash: null,
   localDateTime: today,
@@ -102,7 +101,7 @@ const albumResponse: AlbumResponseDto = {
   id: 'album-123',
   ownerId: 'admin_id',
   owner: mapUser(userStub.admin),
-  sharedUsers: [],
+  albumUsers: [],
   shared: false,
   hasSharedLink: false,
   assets: [],
@@ -186,7 +185,7 @@ export const sharedLinkStub = {
       deletedAt: null,
       albumThumbnailAsset: null,
       albumThumbnailAssetId: null,
-      sharedUsers: [],
+      albumUsers: [],
       sharedLinks: [],
       isActivityEnabled: true,
       order: AssetOrder.DESC,
@@ -209,10 +208,7 @@ export const sharedLinkStub = {
           isFavorite: false,
           isArchived: false,
           isExternal: false,
-          isReadOnly: false,
           isOffline: false,
-          libraryId: 'library-id',
-          library: libraryStub.uploadLibrary1,
           smartInfo: {
             assetId: 'id_1',
             tags: [],
@@ -253,7 +249,6 @@ export const sharedLinkStub = {
             exposureTime: '1/16',
             fps: 100,
             asset: null as any,
-            exifTextSearchableColumn: '',
             profileDescription: 'sRGB',
             bitsPerSample: 8,
             colorspace: 'sRGB',
@@ -264,6 +259,7 @@ export const sharedLinkStub = {
           faces: [],
           sidecarPath: null,
           deletedAt: null,
+          duplicateId: null,
         },
       ],
     },

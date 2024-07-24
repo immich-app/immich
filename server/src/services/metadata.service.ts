@@ -5,16 +5,16 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
-import { Subscription } from 'rxjs';
+import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ClientEvent, IEventRepository, OnEvents } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -25,14 +25,15 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
-import { ImmichLogger } from 'src/utils/logger';
-import { handlePromiseError } from 'src/utils/misc';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { IUserRepository } from 'src/interfaces/user.interface';
 import { usePagination } from 'src/utils/pagination';
 
 /** look for a date from these tags (in order) */
@@ -69,10 +70,9 @@ export enum Orientation {
   Rotate270CW = '8',
 }
 
-type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
-  ExifEntity,
-  'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
-> & { dateTimeOriginal: Date };
+type ExifEntityWithoutGeocodeAndTypeOrm = Omit<ExifEntity, 'city' | 'state' | 'country' | 'description'> & {
+  dateTimeOriginal: Date;
+};
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
@@ -96,11 +96,9 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 };
 
 @Injectable()
-export class MetadataService {
-  private logger = new ImmichLogger(MetadataService.name);
+export class MetadataService implements OnEvents {
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
-  private subscription: Subscription | null = null;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -109,30 +107,42 @@ export class MetadataService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IMapRepository) private mapRepository: IMapRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(configRepository);
+    this.logger.setContext(MetadataService.name);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      cryptoRepository,
       moveRepository,
       personRepository,
-      cryptoRepository,
-      configRepository,
       storageRepository,
+      systemMetadataRepository,
+      this.logger,
     );
   }
 
-  async init() {
-    if (!this.subscription) {
-      this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init(), this.logger));
+  async onBootstrapEvent(app: 'api' | 'microservices') {
+    if (app !== 'microservices') {
+      return;
     }
+    const config = await this.configCore.getConfig({ withCache: false });
+    await this.init(config);
+  }
 
-    const { reverseGeocoding } = await this.configCore.getConfig();
+  async onConfigUpdateEvent({ newConfig }: { newConfig: SystemConfig }) {
+    await this.init(newConfig);
+  }
+
+  private async init({ reverseGeocoding }: SystemConfig) {
     const { enabled } = reverseGeocoding;
 
     if (!enabled) {
@@ -141,7 +151,7 @@ export class MetadataService {
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.repository.init());
+      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.mapRepository.init());
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder`);
@@ -150,8 +160,7 @@ export class MetadataService {
     }
   }
 
-  async teardown() {
-    this.subscription?.unsubscribe();
+  async onShutdownEvent() {
     await this.repository.teardown();
   }
 
@@ -305,8 +314,9 @@ export class MetadataService {
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
     const exif = _.omitBy<Tags>(
       {
+        Description: description,
         ImageDescription: description,
-        CreationDate: dateTimeOriginal,
+        DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
       },
@@ -328,12 +338,13 @@ export class MetadataService {
 
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
     const { latitude, longitude } = exifData;
-    if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
+    const { reverseGeocoding } = await this.configCore.getConfig({ withCache: true });
+    if (!reverseGeocoding.enabled || !longitude || !latitude) {
       return;
     }
 
     try {
-      const reverseGeocode = await this.repository.reverseGeocode({ latitude, longitude });
+      const reverseGeocode = await this.mapRepository.reverseGeocode({ latitude, longitude });
       if (!reverseGeocode) {
         return;
       }
@@ -405,18 +416,25 @@ export class MetadataService {
       }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
+      let motionAsset = await this.assetRepository.getByChecksum({
+        ownerId: asset.ownerId,
+        libraryId: asset.libraryId ?? undefined,
+        checksum,
+      });
       if (motionAsset) {
         this.logger.debug(
           `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
             'base64',
           )} already exists in the repository`,
         );
+
+        // Hide the motion photo video asset if it's not already hidden to prepare for linking
+        if (motionAsset.isVisible) {
+          await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
+          this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
+        }
       } else {
-        // We create a UUID in advance so that each extracted video can have a unique filename
-        // (allowing us to delete old ones if necessary)
         const motionAssetId = this.cryptoRepository.randomUUID();
-        const motionPath = StorageCore.getAndroidMotionPath(asset, motionAssetId);
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
@@ -427,26 +445,41 @@ export class MetadataService {
           localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: motionPath,
-          originalFileName: asset.originalFileName,
+          originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+          originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
           isVisible: false,
-          isReadOnly: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
 
-        this.storageCore.ensureFolders(motionPath);
-        await this.storageRepository.writeFile(motionAsset.originalPath, video);
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+        if (!asset.isExternal) {
+          await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
+        }
+      }
+
+      if (asset.livePhotoVideoId !== motionAsset.id) {
         await this.assetRepository.update({ id: asset.id, livePhotoVideoId: motionAsset.id });
 
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
-        // (if it did, getByChecksum() would've returned non-null)
+        // (if it did, getByChecksum() would've returned a motionAsset with the same ID as livePhotoVideoId)
+        // note asset.livePhotoVideoId is not motionAsset.id yet
         if (asset.livePhotoVideoId) {
-          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+          await this.jobRepository.queue({
+            name: JobName.ASSET_DELETION,
+            data: { id: asset.livePhotoVideoId, deleteOnDisk: true },
+          });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
+      }
+
+      // write extracted motion video to disk, especially if the encoded-video folder has been deleted
+      const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
+      if (!existsOnDisk) {
+        this.storageCore.ensureFolders(motionAsset.originalPath);
+        await this.storageRepository.writeFile(motionAsset.originalPath, video);
+        this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }
 
       this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
@@ -480,7 +513,7 @@ export class MetadataService {
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-      description: (tags.ImageDescription || tags.Description) ?? '',
+      description: (tags.ImageDescription || tags.Description || '').trim(),
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,

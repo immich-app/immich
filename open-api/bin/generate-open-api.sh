@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-OPENAPI_GENERATOR_VERSION=v7.2.0
+OPENAPI_GENERATOR_VERSION=v7.5.0
 
 # usage: ./bin/generate-open-api.sh
 
@@ -24,7 +24,8 @@ function typescript {
   npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
 }
 
-node ./bin/sync-spec-version.js
+# requires server to be built
+npm run sync:open-api --prefix=../server
 
 if [[ $1 == 'dart' ]]; then
   dart

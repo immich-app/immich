@@ -1,46 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
-import { vectorExt } from 'src/database.config';
+import semver from 'semver';
+import { getVectorExtension } from 'src/database.config';
 import {
   DatabaseExtension,
   DatabaseLock,
+  EXTENSION_NAMES,
   IDatabaseRepository,
   VectorExtension,
   VectorIndex,
   VectorUpdateResult,
-  extName,
 } from 'src/interfaces/database.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
-import { Version, VersionType } from 'src/utils/version';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
-  private logger = new ImmichLogger(DatabaseRepository.name);
   readonly asyncLock = new AsyncLock();
 
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
-
-  async getExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
-    const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);
-    const extVersion = res[0]?.['extversion'];
-    if (extVersion == null) {
-      return null;
-    }
-
-    const version = Version.fromString(extVersion);
-    if (version.isEqual(new Version(0, 1, 1))) {
-      return new Version(0, 1, 11);
-    }
-
-    return version;
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(DatabaseRepository.name);
   }
 
-  async getAvailableExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
+  async getExtensionVersion(extension: DatabaseExtension): Promise<string | undefined> {
+    const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);
+    return res[0]?.['extversion'];
+  }
+
+  async getAvailableExtensionVersion(extension: DatabaseExtension): Promise<string | undefined> {
     const res = await this.dataSource.query(
       `
     SELECT version FROM pg_available_extension_versions
@@ -48,45 +42,41 @@ export class DatabaseRepository implements IDatabaseRepository {
     ORDER BY version DESC`,
       [extension],
     );
-    const version = res[0]?.['version'];
-    return version == null ? null : Version.fromString(version);
+    return res[0]?.['version'];
   }
 
-  getPreferredVectorExtension(): VectorExtension {
-    return vectorExt;
-  }
-
-  async getPostgresVersion(): Promise<Version> {
-    const res = await this.dataSource.query(`SHOW server_version`);
-    return Version.fromString(res[0]['server_version']);
+  async getPostgresVersion(): Promise<string> {
+    const [{ server_version: version }] = await this.dataSource.query(`SHOW server_version`);
+    return version;
   }
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
   }
 
-  async updateExtension(extension: DatabaseExtension, version?: Version): Promise<void> {
+  async updateExtension(extension: DatabaseExtension, version?: string): Promise<void> {
     await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
-  async updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult> {
-    const curVersion = await this.getExtensionVersion(extension);
-    if (!curVersion) {
-      throw new Error(`${extName[extension]} extension is not installed`);
+  async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
+    const currentVersion = await this.getExtensionVersion(extension);
+    if (!currentVersion) {
+      throw new Error(`${EXTENSION_NAMES[extension]} extension is not installed`);
     }
 
-    const minorOrMajor = version && curVersion.isOlderThan(version) >= VersionType.MINOR;
     const isVectors = extension === DatabaseExtension.VECTORS;
     let restartRequired = false;
     await this.dataSource.manager.transaction(async (manager) => {
       await this.setSearchPath(manager);
-      if (minorOrMajor && isVectors) {
-        await this.updateVectorsSchema(manager, curVersion);
+
+      const isSchemaUpgrade = targetVersion && semver.satisfies(targetVersion, '0.1.1 || 0.1.11');
+      if (isSchemaUpgrade && isVectors) {
+        await this.updateVectorsSchema(manager, currentVersion);
       }
 
-      await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
+      await manager.query(`ALTER EXTENSION ${extension} UPDATE${targetVersion ? ` TO '${targetVersion}'` : ''}`);
 
-      if (!minorOrMajor) {
+      if (!isSchemaUpgrade) {
         return;
       }
 
@@ -106,9 +96,9 @@ export class DatabaseRepository implements IDatabaseRepository {
     try {
       await this.dataSource.query(`REINDEX INDEX ${index}`);
     } catch (error) {
-      if (vectorExt === DatabaseExtension.VECTORS) {
+      if (getVectorExtension() === DatabaseExtension.VECTORS) {
         this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
-        const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
+        const table = index === VectorIndex.CLIP ? 'smart_search' : 'face_search';
         const dimSize = await this.getDimSize(table);
         await this.dataSource.manager.transaction(async (manager) => {
           await this.setSearchPath(manager);
@@ -128,7 +118,7 @@ export class DatabaseRepository implements IDatabaseRepository {
   }
 
   async shouldReindex(name: VectorIndex): Promise<boolean> {
-    if (vectorExt !== DatabaseExtension.VECTORS) {
+    if (getVectorExtension() !== DatabaseExtension.VECTORS) {
       return false;
     }
 
@@ -156,10 +146,10 @@ export class DatabaseRepository implements IDatabaseRepository {
     await manager.query(`SET search_path TO "$user", public, vectors`);
   }
 
-  private async updateVectorsSchema(manager: EntityManager, curVersion: Version): Promise<void> {
+  private async updateVectorsSchema(manager: EntityManager, currentVersion: string): Promise<void> {
     await manager.query('CREATE SCHEMA IF NOT EXISTS vectors');
     await manager.query(`UPDATE pg_catalog.pg_extension SET extversion = $1 WHERE extname = $2`, [
-      curVersion.toString(),
+      currentVersion,
       DatabaseExtension.VECTORS,
     ]);
     await manager.query('UPDATE pg_catalog.pg_extension SET extrelocatable = true WHERE extname = $1', [

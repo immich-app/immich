@@ -1,18 +1,18 @@
 import { defineConfig } from 'vitest/config';
 
 // skip `docker compose up` if `make e2e` was already run
-const globalSetup: string[] = [];
+const globalSetup: string[] = ['src/setup/auth-server.ts'];
 try {
   await fetch('http://127.0.0.1:2283/api/server-info/ping');
 } catch {
-  globalSetup.push('src/setup.ts');
+  globalSetup.push('src/setup/docker-compose.ts');
 }
 
 export default defineConfig({
   test: {
-    include: ['src/{api,cli}/specs/*.e2e-spec.ts'],
+    include: ['src/{api,cli,immich-admin}/specs/*.e2e-spec.ts'],
     globalSetup,
-    testTimeout: 10_000,
+    testTimeout: 15_000,
     poolOptions: {
       threads: {
         singleThread: true,

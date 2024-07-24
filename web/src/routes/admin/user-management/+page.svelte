@@ -1,15 +1,15 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     NotificationType,
     notificationController,
@@ -18,34 +18,28 @@
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { asByteUnitString } from '$lib/utils/byte-units';
   import { copyToClipboard } from '$lib/utils';
-  import { UserStatus, getAllUsers, type UserResponseDto } from '@immich/sdk';
-  import {
-    mdiAccountEditOutline,
-    mdiClose,
-    mdiContentCopy,
-    mdiDeleteRestore,
-    mdiPencilOutline,
-    mdiTrashCanOutline,
-  } from '@mdi/js';
+  import { getByteUnitString } from '$lib/utils/byte-units';
+  import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { mdiInfinity, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 
-  let allUsers: UserResponseDto[] = [];
+  let allUsers: UserAdminResponseDto[] = [];
   let shouldShowEditUserForm = false;
   let shouldShowCreateUserForm = false;
   let shouldShowPasswordResetSuccess = false;
   let shouldShowDeleteConfirmDialog = false;
   let shouldShowRestoreDialog = false;
-  let selectedUser: UserResponseDto;
+  let selectedUser: UserAdminResponseDto;
   let newPassword: string;
 
   const refresh = async () => {
-    allUsers = await getAllUsers({ isAll: false });
+    allUsers = await searchUsersAdmin({ withDeleted: true });
   };
 
   const onDeleteSuccess = (userId: string) => {
@@ -54,7 +48,7 @@
       allUsers = allUsers.filter((user) => user.id !== userId);
       notificationController.show({
         type: NotificationType.Info,
-        message: `User ${user.email} has been successfully removed.`,
+        message: $t('admin.user_successfully_removed', { values: { email: user.email } }),
       });
     }
   };
@@ -65,16 +59,8 @@
     return websocketEvents.on('on_user_delete', onDeleteSuccess);
   });
 
-  const deleteDateFormat: Intl.DateTimeFormatOptions = {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  };
-
-  const getDeleteDate = (deletedAt: string): string => {
-    return DateTime.fromISO(deletedAt)
-      .plus({ days: $serverConfig.userDeleteDelay })
-      .toLocaleString(deleteDateFormat, { locale: $locale });
+  const getDeleteDate = (deletedAt: string): Date => {
+    return DateTime.fromISO(deletedAt).plus({ days: $serverConfig.userDeleteDelay }).toJSDate();
   };
 
   const onUserCreated = async () => {
@@ -82,7 +68,7 @@
     shouldShowCreateUserForm = false;
   };
 
-  const editUserHandler = (user: UserResponseDto) => {
+  const editUserHandler = (user: UserAdminResponseDto) => {
     selectedUser = user;
     shouldShowEditUserForm = true;
   };
@@ -98,7 +84,7 @@
     shouldShowPasswordResetSuccess = true;
   };
 
-  const deleteUserHandler = (user: UserResponseDto) => {
+  const deleteUserHandler = (user: UserAdminResponseDto) => {
     selectedUser = user;
     shouldShowDeleteConfirmDialog = true;
   };
@@ -108,7 +94,7 @@
     shouldShowDeleteConfirmDialog = false;
   };
 
-  const restoreUserHandler = (user: UserResponseDto) => {
+  const restoreUserHandler = (user: UserAdminResponseDto) => {
     selectedUser = user;
     shouldShowRestoreDialog = true;
   };
@@ -123,32 +109,22 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
-        <FullScreenModal
-          id="create-new-user-modal"
-          title="Create new user"
-          showLogo
+        <CreateUserForm
+          on:submit={onUserCreated}
+          on:cancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
-        >
-          <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
-        </FullScreenModal>
+        />
       {/if}
 
       {#if shouldShowEditUserForm}
-        <FullScreenModal
-          id="edit-user-modal"
-          title="Edit user"
-          icon={mdiAccountEditOutline}
+        <EditUserForm
+          user={selectedUser}
+          bind:newPassword
+          canResetPassword={selectedUser?.id !== $user.id}
+          on:editSuccess={onEditUserSuccess}
+          on:resetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}
-        >
-          <EditUserForm
-            user={selectedUser}
-            bind:newPassword
-            canResetPassword={selectedUser?.id !== $user.id}
-            on:editSuccess={onEditUserSuccess}
-            on:resetPasswordSuccess={onEditPasswordSuccess}
-            on:close={() => (shouldShowEditUserForm = false)}
-          />
-        </FullScreenModal>
+        />
       {/if}
 
       {#if shouldShowDeleteConfirmDialog}
@@ -170,18 +146,17 @@
       {/if}
 
       {#if shouldShowPasswordResetSuccess}
-        <ConfirmDialogue
-          id="password-reset-success-modal"
-          title="Password reset success"
-          confirmText="Done"
+        <ConfirmDialog
+          title={$t('password_reset_success')}
+          confirmText={$t('done')}
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}
-          onClose={() => (shouldShowPasswordResetSuccess = false)}
+          onCancel={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
           confirmColor="green"
         >
           <svelte:fragment slot="prompt">
             <div class="flex flex-col gap-4">
-              <p>The user's password has been reset:</p>
+              <p>{$t('admin.user_password_has_been_reset')}</p>
 
               <div class="flex justify-center gap-2">
                 <code
@@ -189,20 +164,17 @@
                 >
                   {newPassword}
                 </code>
-                <LinkButton on:click={() => copyToClipboard(newPassword)} title="Copy password">
+                <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
                   <div class="flex place-items-center gap-2 text-sm">
                     <Icon path={mdiContentCopy} size="18" />
                   </div>
                 </LinkButton>
               </div>
 
-              <p>
-                Please provide the temporary password to the user and inform them they will need to change the password
-                at their next login.
-              </p>
+              <p>{$t('admin.user_password_reset_description')}</p>
             </div>
           </svelte:fragment>
-        </ConfirmDialogue>
+        </ConfirmDialog>
       {/if}
 
       <table class="my-5 w-full text-left">
@@ -210,13 +182,15 @@
           class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
         >
           <tr class="flex w-full place-items-center">
-            <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium">Email</th>
-            <th class="hidden sm:block w-3/12 text-center text-sm font-medium">Name</th>
-            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Has quota</th>
-            <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
+            <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium"
+              >{$t('email')}</th
+            >
+            <th class="hidden sm:block w-3/12 text-center text-sm font-medium">{$t('name')}</th>
+            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">{$t('has_quota')}</th>
+            <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">{$t('action')}</th>
           </tr>
         </thead>
-        <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
             {#each allUsers as immichUser, index}
               <tr
@@ -233,37 +207,43 @@
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
                     {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
-                      {asByteUnitString(immichUser.quotaSizeInBytes, $locale)}
+                      {getByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
-                      <Icon path={mdiClose} size="16" />
+                      <Icon path={mdiInfinity} size="16" />
                     {/if}
                   </div>
                 </td>
-                <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm">
+                <td
+                  class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm"
+                >
                   {#if !immichUser.deletedAt}
-                    <button
+                    <CircleIconButton
+                      icon={mdiPencilOutline}
+                      title={$t('edit_user')}
+                      color="primary"
+                      size="16"
                       on:click={() => editUserHandler(immichUser)}
-                      class="rounded-full bg-immich-primary p-2 sm:p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 max-sm:mb-1"
-                    >
-                      <Icon path={mdiPencilOutline} size="16" />
-                    </button>
+                    />
                     {#if immichUser.id !== $user.id}
-                      <button
+                      <CircleIconButton
+                        icon={mdiTrashCanOutline}
+                        title={$t('delete_user')}
+                        color="primary"
+                        size="16"
                         on:click={() => deleteUserHandler(immichUser)}
-                        class="rounded-full bg-immich-primary p-2 sm:p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      >
-                        <Icon path={mdiTrashCanOutline} size="16" />
-                      </button>
+                      />
                     {/if}
                   {/if}
                   {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
-                    <button
+                    <CircleIconButton
+                      icon={mdiDeleteRestore}
+                      title={$t('admin.user_restore_scheduled_removal', {
+                        values: { date: getDeleteDate(immichUser.deletedAt) },
+                      })}
+                      color="primary"
+                      size="16"
                       on:click={() => restoreUserHandler(immichUser)}
-                      class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      title="scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
-                    >
-                      <Icon path={mdiDeleteRestore} size="16" />
-                    </button>
+                    />
                   {/if}
                 </td>
               </tr>
@@ -272,7 +252,7 @@
         </tbody>
       </table>
 
-      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>Create user</Button>
+      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>

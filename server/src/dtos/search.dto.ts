@@ -9,8 +9,8 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
+  @ValidateUUID({ optional: true, nullable: true })
+  libraryId?: string | null;
 
   @IsString()
   @IsNotEmpty()
@@ -33,9 +33,6 @@ class BaseSearchDto {
   isEncoded?: boolean;
 
   @ValidateBoolean({ optional: true })
-  isExternal?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -43,9 +40,6 @@ class BaseSearchDto {
 
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isReadOnly?: boolean;
 
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
@@ -163,18 +157,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   @Optional()
-  @ApiProperty({ deprecated: true })
-  resizePath?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  @ApiProperty({ deprecated: true })
-  webpPath?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
   previewPath?: string;
 
   @IsString()
@@ -197,53 +179,6 @@ export class SmartSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   query!: string;
-}
-
-// TODO: remove after implementing new search filters
-/** @deprecated */
-export class SearchDto {
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  q?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  query?: string;
-
-  @ValidateBoolean({ optional: true })
-  smart?: boolean;
-
-  /** @deprecated */
-  @ValidateBoolean({ optional: true })
-  clip?: boolean;
-
-  @IsEnum(AssetType)
-  @Optional()
-  type?: AssetType;
-
-  @ValidateBoolean({ optional: true })
-  recent?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  motion?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withArchived?: boolean;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @Optional()
-  page?: number;
-
-  @IsInt()
-  @Min(1)
-  @Max(1000)
-  @Type(() => Number)
-  @Optional()
-  size?: number;
 }
 
 export class SearchPlacesDto {
@@ -369,6 +304,9 @@ export class MapMarkerDto {
 
   @ValidateBoolean({ optional: true })
   withPartners?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withSharedAlbums?: boolean;
 }
 
 export class MemoryLaneDto {

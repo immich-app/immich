@@ -1,17 +1,19 @@
 import { authenticate } from '$lib/utils/auth';
-import { getAllAlbums, getPartners } from '@immich/sdk';
+import { getFormatter } from '$lib/utils/i18n';
+import { PartnerDirection, getAllAlbums, getPartners } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
   const sharedAlbums = await getAllAlbums({ shared: true });
-  const partners = await getPartners({ direction: 'shared-with' });
+  const partners = await getPartners({ direction: PartnerDirection.SharedWith });
+  const $t = await getFormatter();
 
   return {
     sharedAlbums,
     partners,
     meta: {
-      title: 'Sharing',
+      title: $t('sharing'),
     },
   };
 }) satisfies PageLoad;

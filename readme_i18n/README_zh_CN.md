@@ -1,7 +1,7 @@
 <p align="center"> 
   <br/>  
   <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
-  <a href="https://discord.gg/D8JsnBEuKb">
+  <a href="https://discord.immich.app">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
   </a>
   <br/>  
@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
-<h3 align="center">Immich - 高性能的自托管照片和视频备份方案</h3>
+<h3 align="center">高性能的照片和视频自托管解决方案</h3>
 <p align="center">  
 请注意: 此 README 不是由 Immich 团队维护, 而是依靠贡献者来更新的，这意味着它可能并不会被及时更新。感谢理解。
 </p>
@@ -20,8 +20,8 @@
 <img src="../design/immich-screenshots.png" title="界面截图">
 </a>
 <br/>
-
 <p align="center">
+
   <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_es_ES.md">Español</a>
@@ -33,6 +33,10 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_sv_SE.md">Svenska</a>
+  <a href="README_ar_JO.md">العربية</a>
+  
 </p>
 
 ## 免责声明
@@ -42,45 +46,36 @@
 - ⚠️ **不要把本软件作为您存储照片或视频的唯一方式。**
 - ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
 
+> [!NOTE]
+> 完整的项目文档以及安装教程请参见：https://immich.app/。
+
 ## 目录
 
 - [官方文档](https://immich.app/docs)
-- [路线图](https://github.com/orgs/immich-app/projects/1)
-- [示例](#示例)
+- [项目总览](https://immich.app/docs/overview/introduction)
+- [安装教程](https://immich.app/docs/install/requirements)
+- [路线图](https://immich.app/roadmap)
+- [在线演示](#示例)
 - [功能特性](#功能特性)
-- [介绍](https://immich.app/docs/overview/introduction)
-- [安装](https://immich.app/docs/install/requirements)
-- [贡献指南](https://immich.app/docs/overview/support-the-project)
-- [支持本项目](#支持本项目)
-
-## 官方文档
-
-您可以在 https://immich.app/ 找到官方文档（包含安装手册）。
+- [多语言](https://immich.app/docs/developer/tranlations)
+- [贡献者](https://immich.app/docs/overview/support-the-project)
 
 ## 示例
 
-您可以在 https://demo.immich.app  访问示例。
+您可以在[此处](https://demo.immich.app)访问在线演示网站。该示例网站运行的机器配置为：甲骨文免费虚拟机套餐——阿姆斯特丹 4核 2.4Ghz ARM64 CPU，24GB RAM。
 
-在移动端, 您可以使用 `https://demo.immich.app/api` 获取 `服务终端链接`
+在移动端，您可以使用 `https://demo.immich.app/api` 作为 `服务终端链接`
 
-```bash title="示例认证信息"
-认证信息
-邮箱: demo@immich.app
-密码: demo
-```
+### 登录认证信息
 
-```
-规格: 甲骨文免费虚拟机套餐——阿姆斯特丹 4核 2.4Ghz ARM64 CPU, 24GB RAM。
-```
+| 邮箱            | 密码     |
+| --------------- | -------- |
+| demo@immich.app | demo     |
 
-## 活跃度
-![活跃度](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
-
-# 功能特性
-
+## 功能特性
 
 | 功能特性                                    | 移动端 | 网页端 |
-|---------------------------------------------|--------|--------|
+| :------------------------------------------ | ------ | ------ |
 | 上传并查看照片和视频                        | 是     | 是     |
 | 软件运行时自动备份                          | 是     | N/A    |
 | 忽略重复的项目                              | 是     | 是     |
@@ -110,27 +105,17 @@
 | 只读相册                                    | 是     | 是     |
 | 照片堆叠                                    | 是     | 是     |
 
-# 支持本项目
+## 多语言
 
-我已经致力于本项目并且我将会持续更新文档、新增功能和修复问题。但是独木不成林，我需要您给予我坚持下去的动力。
+关于翻译的更多信息请参见[此处](https://immich.app/docs/developer/translations)。
 
-就像我在 [selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) 节目里说的一样，这是我和团队的一项艰巨任务。并且我希望某一天我能够全职开发本项目，在此我请求您能够助我梦想成真。
-
-如果您使用了本项目一段时间，并且觉得上面的话有道理，那么请您考虑通过下列任一方式支持我吧。
-
-## 捐赠
-
-- 通过 GitHub Sponsors [按月捐赠](https://github.com/sponsors/immich-app)
-- 通过 Github Sponsors [单次捐赠](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502)
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- 比特币: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
-
-## 贡献者
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="翻译进度" />
 </a>
+
+## 活跃度
+
+![活跃度](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
 ## Star增长曲线
 
@@ -140,4 +125,10 @@
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## 贡献者
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

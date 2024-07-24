@@ -1,7 +1,7 @@
 <p align="center"> 
   <br/>  
   <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
-  <a href="https://discord.gg/D8JsnBEuKb">
+  <a href="https://discord.immich.app">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
   </a>
   <br/>  
@@ -28,6 +28,10 @@
   <a href="README_de_DE.md">Deutsch</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_ru_RU.md">Русский</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_sv_SE.md">Svenska</a>
+  <a href="README_ar_JO.md">العربية</a>
 </p>
 
 ## Disclaimer
@@ -40,13 +44,12 @@
 ## Inhoud
 
 - [Officiële documentatie](https://immich.app/docs)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
+- [Toekomstplannen](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Functies](#functies)
 - [Introductie](https://immich.app/docs/overview/introduction)
 - [Installatie](https://immich.app/docs/install/requirements)
 - [Richtlijnen voor bijdragen](https://immich.app/docs/overview/support-the-project)
-- [Steun het project](#steun-het-project)
 
 ## Documentatie
 
@@ -54,19 +57,15 @@ De belangrijkste documentatie, inclusief installatie handleidingen, zijn te vind
 
 ## Demo
 
-De demo is te bekijken op https://demo.immich.app.
+Je kunt de demo [hier](https://demo.immich.app/) bekijken. De demo server is actief op een Free-tier Oracle VM in Amsterdam met een 2.4GHz quad-core ARM64 CPU en 24GB RAM.
 
-Voor de mobiele app kunt u gebruik maken van `https://demo.immich.app/api` voor de `Server Endpoint URL`
+Voor de mobiele app kun je gebruik maken van `https://demo.immich.app/api` voor de `Server Endpoint URL`
 
-```bash title="Demo Credential"
-De inloggegevens
-email: demo@immich.app
-wachtwoord: demo
-```
+### Login gegevens
 
-```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
-```
+| Email           | Wachtwoord |
+| --------------- | ---------- |
+| demo@immich.app | demo       |
 
 # Functies
 
@@ -74,6 +73,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 |-----------------------------------------------------|--------|-----|
 | Upload en bekijk video's en foto's                  | Ja     | Ja  |
 | Automatische back-up wanneer de app wordt geopend   | Ja     | NVT |
+| Duplicatie van bestanden voorkomen                  | Ja     | Ja  |
 | Selectieve album(s) voor back-up                    | Ja     | NVT |
 | Download foto's en video's naar een lokaal apparaat | Ja     | Ja  |
 | Ondersteuning voor meerdere gebruikers              | Ja     | Ja  |
@@ -88,6 +88,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | OAuth-ondersteuning                                 | Ja     | Ja  |
 | API-sleutels                                        | NVT    | Ja  |
 | LivePhoto-back-up en weergave                       | iOS    | Ja  |
+| Ondersteuning 360 Graden foto weergave              | Nee    | Ja  |
 | Door de gebruiker gedefinieerde opslagstructuur     | Ja     | Ja  |
 | Openbaar delen                                      | Nee    | Ja  |
 | Archief en Favorieten                               | Ja     | Ja  |
@@ -97,20 +98,28 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Herinneringen (x jaar geleden)                      | Ja     | Ja  |
 | Offline-ondersteuning                               | Ja     | Nee |
 | Alleen-lezen galerij                                | Ja     | Ja  |
+| Gestapelde foto's                                   | Ja     | Ja  |
 
-# Steun het project
+## Vertalingen
 
-Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp nodig om mij extra motivatie te geven om door te gaan.
+Je kunt [hier](https://immich.app/docs/developer/translations) meer over vertalingen lezen.
 
-Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-must-Neet-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) zeiden, dit is een enorme onderneming van wat het team en ik doen. En ik zou dit graag fulltime willen doen, ik vraag jouw hulp om dat mogelijk te maken.
+## Repository activiteit
 
-Als je denkt dat dit het juiste doel is en de app iets is dat je jezelf al heel lang ziet gebruiken, overweeg dan om het project te steunen met de onderstaande optie.
+![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
-## Doneren
+## Ster geschiedenis
 
-- [Maandelijkse donatie](https://github.com/sponsors/immich-app) via GitHub Sponsors
-- [Eenmalige donatie](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>
+
+## Contributie-leden
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>

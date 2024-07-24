@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { vectorExt } from 'src/database.config';
+import { getVectorExtension } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
@@ -8,7 +8,10 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
+  AssetDuplicateResult,
+  AssetDuplicateSearch,
   AssetSearchOptions,
   FaceEmbeddingSearch,
   FaceSearchResult,
@@ -18,7 +21,6 @@ import {
 } from 'src/interfaces/search.interface';
 import { asVector, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -27,7 +29,6 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 @Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
-  private logger = new ImmichLogger(SearchRepository.name);
   private faceColumns: string[];
   private assetsByCityQuery: string;
 
@@ -36,8 +37,10 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
-    @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
+    this.logger.setContext(SearchRepository.name);
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
       .ownColumns.map((column) => column.propertyName)
@@ -49,7 +52,7 @@ export class SearchRepository implements ISearchRepository {
         .innerJoinAndSelect('asset.exifInfo', 'exif')
         .withDeleted()
         .getQuery() +
-      ' INNER JOIN cte ON asset.id = cte."assetId"';
+      ' INNER JOIN cte ON asset.id = cte."assetId" ORDER BY exif.city';
   }
 
   async init(modelName: string): Promise<void> {
@@ -147,6 +150,49 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({
     params: [
       {
+        embedding: Array.from({ length: 512 }, Math.random),
+        maxDistance: 0.6,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchDuplicates({
+    assetId,
+    embedding,
+    maxDistance,
+    type,
+    userIds,
+  }: AssetDuplicateSearch): Promise<AssetDuplicateResult[]> {
+    const cte = this.assetRepository.createQueryBuilder('asset');
+    cte
+      .select('search.assetId', 'assetId')
+      .addSelect('asset.duplicateId', 'duplicateId')
+      .addSelect(`search.embedding <=> :embedding`, 'distance')
+      .innerJoin('asset.smartSearch', 'search')
+      .where('asset.ownerId IN (:...userIds )')
+      .andWhere('asset.id != :assetId')
+      .andWhere('asset.isVisible = :isVisible')
+      .andWhere('asset.type = :type')
+      .orderBy('search.embedding <=> :embedding')
+      .limit(64)
+      .setParameters({ assetId, embedding: asVector(embedding), isVisible: true, type, userIds });
+
+    const builder = this.assetRepository.manager
+      .createQueryBuilder()
+      .addCommonTableExpression(cte, 'cte')
+      .from('cte', 'res')
+      .select('res.*');
+
+    if (maxDistance) {
+      builder.where('res.distance <= :maxDistance', { maxDistance });
+    }
+
+    return builder.getRawMany() as Promise<AssetDuplicateResult[]>;
+  }
+
+  @GenerateSql({
+    params: [
+      {
         userIds: [DummyValue.UUID],
         embedding: Array.from({ length: 512 }, Math.random),
         numResults: 100,
@@ -172,10 +218,11 @@ export class SearchRepository implements ISearchRepository {
     await this.assetRepository.manager.transaction(async (manager) => {
       const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
-        .select('faces.embedding <=> :embedding', 'distance')
+        .select('search.embedding <=> :embedding', 'distance')
         .innerJoin('faces.asset', 'asset')
+        .innerJoin('faces.faceSearch', 'search')
         .where('asset.ownerId IN (:...userIds )')
-        .orderBy('faces.embedding <=> :embedding')
+        .orderBy('search.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
       cte.limit(numResults);
@@ -268,6 +315,7 @@ export class SearchRepository implements ISearchRepository {
     await this.smartSearchRepository.manager.transaction(async (manager) => {
       await manager.clear(SmartSearchEntity);
       await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
+      await manager.query(`REINDEX INDEX clip_index`);
     });
 
     this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);
@@ -295,7 +343,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   private getRuntimeConfig(numResults?: number): string {
-    if (vectorExt === DatabaseExtension.VECTOR) {
+    if (getVectorExtension() === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 

@@ -5,29 +5,6 @@ import { Paginated } from 'src/utils/pagination';
 
 export const ISearchRepository = 'ISearchRepository';
 
-export enum SearchStrategy {
-  SMART = 'SMART',
-  TEXT = 'TEXT',
-}
-
-export interface SearchFilter {
-  id?: string;
-  userId: string;
-  type?: AssetType;
-  isFavorite?: boolean;
-  isArchived?: boolean;
-  city?: string;
-  state?: string;
-  country?: string;
-  make?: string;
-  model?: string;
-  objects?: string[];
-  tags?: string[];
-  recent?: boolean;
-  motion?: boolean;
-  debug?: boolean;
-}
-
 export interface SearchResult<T> {
   /** total matches */
   total: number;
@@ -60,8 +37,6 @@ export interface SearchExploreItem<T> {
   items: SearchExploreItemSet<T>;
 }
 
-export type Embedding = number[];
-
 export interface SearchAssetIDOptions {
   checksum?: Buffer;
   deviceAssetId?: string;
@@ -70,7 +45,7 @@ export interface SearchAssetIDOptions {
 
 export interface SearchUserIdOptions {
   deviceId?: string;
-  libraryId?: string;
+  libraryId?: string | null;
   userIds?: string[];
 }
 
@@ -79,11 +54,9 @@ export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
 export interface SearchStatusOptions {
   isArchived?: boolean;
   isEncoded?: boolean;
-  isExternal?: boolean;
   isFavorite?: boolean;
   isMotion?: boolean;
   isOffline?: boolean;
-  isReadOnly?: boolean;
   isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;
@@ -131,7 +104,7 @@ export interface SearchExifOptions {
 }
 
 export interface SearchEmbeddingOptions {
-  embedding: Embedding;
+  embedding: number[];
   userIds: string[];
 }
 
@@ -177,15 +150,30 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   maxDistance?: number;
 }
 
+export interface AssetDuplicateSearch {
+  assetId: string;
+  embedding: number[];
+  maxDistance?: number;
+  type: AssetType;
+  userIds: string[];
+}
+
 export interface FaceSearchResult {
   distance: number;
   face: AssetFaceEntity;
+}
+
+export interface AssetDuplicateResult {
+  assetId: string;
+  duplicateId: string | null;
+  distance: number;
 }
 
 export interface ISearchRepository {
   init(modelName: string): Promise<void>;
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
+  searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(assetId: string, embedding: number[]): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;

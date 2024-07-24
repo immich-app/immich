@@ -8,19 +8,22 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Snowburst+One&display=swap');
 
 html,
 button {
   font-family: 'Overpass', sans-serif;
 }
 
+img {
+  border-radius: 15px;
+}
+
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #4250af;
   --ifm-color-primary-dark: #4250af;
-  --ifm-color-primary-darker: 4250af;
-  --ifm-color-primary-darkest: 4250af;
+  --ifm-color-primary-darker: #4250af;
+  --ifm-color-primary-darkest: #4250af;
   --ifm-color-primary-light: #4250af;
   --ifm-color-primary-lighter: #4250af;
   --ifm-color-primary-lightest: #4250af;
@@ -41,6 +44,6 @@ button {
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
-.navbar__brand .navbar__title {
-  @apply font-immich-title text-2xl font-normal text-immich-primary dark:text-immich-dark-primary;
+div[class^='announcementBar_'] {
+  min-height: 2rem;
 }

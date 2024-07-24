@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -17,7 +18,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { CLIPConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -29,7 +29,9 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/entities/system-config.entity';
+  VideoContainer,
+} from 'src/config';
+import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ValidateBoolean, validateCronExpression } from 'src/validation';
 
@@ -43,6 +45,7 @@ class CronValidator implements ValidatorConstraintInterface {
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
+const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 
 export class SystemConfigFFmpegDto {
   @IsInt()
@@ -76,6 +79,10 @@ export class SystemConfigFFmpegDto {
   @IsEnum(AudioCodec, { each: true })
   @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec, isArray: true })
   acceptedAudioCodecs!: AudioCodec[];
+
+  @IsEnum(VideoContainer, { each: true })
+  @ApiProperty({ enumName: 'VideoContainer', enum: VideoContainer, isArray: true })
+  acceptedContainers!: VideoContainer[];
 
   @IsString()
   targetResolution!: string;
@@ -129,6 +136,9 @@ export class SystemConfigFFmpegDto {
   @IsEnum(TranscodeHWAccel)
   @ApiProperty({ enumName: 'TranscodeHWAccel', enum: TranscodeHWAccel })
   accel!: TranscodeHWAccel;
+
+  @ValidateBoolean()
+  accelDecode!: boolean;
 
   @IsEnum(ToneMapping)
   @ApiProperty({ enumName: 'ToneMapping', enum: ToneMapping })
@@ -202,6 +212,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.LIBRARY]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.NOTIFICATION]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {
@@ -254,10 +270,15 @@ class SystemConfigMachineLearningDto {
   @IsObject()
   clip!: CLIPConfig;
 
-  @Type(() => RecognitionConfig)
+  @Type(() => DuplicateDetectionConfig)
   @ValidateNested()
   @IsObject()
-  facialRecognition!: RecognitionConfig;
+  duplicateDetection!: DuplicateDetectionConfig;
+
+  @Type(() => FacialRecognitionConfig)
+  @ValidateNested()
+  @IsObject()
+  facialRecognition!: FacialRecognitionConfig;
 }
 
 enum MapTheme {
@@ -334,6 +355,10 @@ class SystemConfigOAuthDto {
   signingAlgorithm!: string;
 
   @IsString()
+  @IsNotEmpty()
+  profileSigningAlgorithm!: string;
+
+  @IsString()
   storageLabelClaim!: string;
 
   @IsString()
@@ -356,6 +381,53 @@ class SystemConfigServerDto {
 
   @IsString()
   loginPageMessage!: string;
+}
+
+class SystemConfigSmtpTransportDto {
+  @IsBoolean()
+  ignoreCert!: boolean;
+
+  @IsNotEmpty()
+  @IsString()
+  host!: string;
+
+  @IsNumber()
+  @Min(0)
+  @Max(65_535)
+  port!: number;
+
+  @IsString()
+  username!: string;
+
+  @IsString()
+  password!: string;
+}
+
+export class SystemConfigSmtpDto {
+  @IsBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isEmailNotificationEnabled)
+  @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
+  from!: string;
+
+  @IsString()
+  replyTo!: string;
+
+  @ValidateIf(isEmailNotificationEnabled)
+  @Type(() => SystemConfigSmtpTransportDto)
+  @ValidateNested()
+  @IsObject()
+  transport!: SystemConfigSmtpTransportDto;
+}
+
+class SystemConfigNotificationsDto {
+  @Type(() => SystemConfigSmtpDto)
+  @ValidateNested()
+  @IsObject()
+  smtp!: SystemConfigSmtpDto;
 }
 
 class SystemConfigStorageTemplateDto {
@@ -417,6 +489,9 @@ class SystemConfigImageDto {
   @IsEnum(Colorspace)
   @ApiProperty({ enumName: 'Colorspace', enum: Colorspace })
   colorspace!: Colorspace;
+
+  @ValidateBoolean()
+  extractEmbedded!: boolean;
 }
 
 class SystemConfigTrashDto {
@@ -508,6 +583,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   library!: SystemConfigLibraryDto;
+
+  @Type(() => SystemConfigNotificationsDto)
+  @ValidateNested()
+  @IsObject()
+  notifications!: SystemConfigNotificationsDto;
 
   @Type(() => SystemConfigServerDto)
   @ValidateNested()

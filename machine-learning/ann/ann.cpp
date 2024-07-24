@@ -48,21 +48,22 @@ public:
              bool saveCachedNetwork,
              const char *cachedNetworkPath)
     {
-        INetworkPtr network = loadModel(modelPath);
-        IOptimizedNetworkPtr optNet = OptimizeNetwork(network.get(), fastMath, fp16, saveCachedNetwork, cachedNetworkPath);
-        const IOInfos infos = getIOInfos(optNet.get());
-        NetworkId netId;
-        mutex.lock();
-        Status status = runtime->LoadNetwork(netId, std::move(optNet));
-        mutex.unlock();
-        if (status != Status::Success)
+        NetworkId netId = -2;
+        while (netId == -2)
         {
-            return -1;
+            try
+            {
+                netId = loadInternal(modelPath, fastMath, fp16, saveCachedNetwork, cachedNetworkPath);
+            }
+            catch (InvalidArgumentException e)
+            {
+                // fp16 models do not support the forced fp16-turbo (runtime fp32->fp16 conversion)
+                if (fp16)
+                    fp16 = false;
+                else
+                    netId = -1;
+            }
         }
-        spinLock.lock();
-        ioInfos[netId] = infos;
-        mutexes.emplace(netId, std::make_unique<std::mutex>());
-        spinLock.unlock();
         return netId;
     }
 
@@ -117,6 +118,8 @@ public:
     Ann(int tuningLevel, const char *tuningFile)
     {
         IRuntime::CreationOptions runtimeOptions;
+        runtimeOptions.m_ProfilingOptions.m_EnableProfiling = false;
+        runtimeOptions.m_ProfilingOptions.m_TimelineEnabled = false;
         BackendOptions backendOptions{"GpuAcc",
                                       {
                                           {"TuningLevel", tuningLevel},
@@ -133,6 +136,30 @@ public:
     };
 
 private:
+    int loadInternal(const char *modelPath,
+                     bool fastMath,
+                     bool fp16,
+                     bool saveCachedNetwork,
+                     const char *cachedNetworkPath)
+    {
+        NetworkId netId = -1;
+        INetworkPtr network = loadModel(modelPath);
+        IOptimizedNetworkPtr optNet = OptimizeNetwork(network.get(), fastMath, fp16, saveCachedNetwork, cachedNetworkPath);
+        const IOInfos infos = getIOInfos(optNet.get());
+        mutex.lock();
+        Status status = runtime->LoadNetwork(netId, std::move(optNet));
+        mutex.unlock();
+        if (status != Status::Success)
+        {
+            return -1;
+        }
+        spinLock.lock();
+        ioInfos[netId] = infos;
+        mutexes.emplace(netId, std::make_unique<std::mutex>());
+        spinLock.unlock();
+        return netId;
+    }
+
     INetworkPtr loadModel(const char *modelPath)
     {
         const auto path = std::string(modelPath);
@@ -172,6 +199,8 @@ private:
         options.SetReduceFp32ToFp16(fp16);
         options.SetShapeInferenceMethod(shapeInferenceMethod);
         options.SetAllowExpandedDims(allowExpandedDims);
+        options.SetDebugToFileEnabled(false);
+        options.SetProfilingEnabled(false);
 
         BackendOptions gpuAcc("GpuAcc", {{"FastMathEnabled", fastMath}});
         if (cachedNetworkPath)
@@ -232,8 +261,8 @@ private:
     IRuntime *runtime;
     std::map<NetworkId, IOInfos> ioInfos;
     std::map<NetworkId, std::unique_ptr<std::mutex>> mutexes; // mutex per network to not execute the same the same network concurrently
-    std::mutex mutex; // global mutex for load/unload calls to the runtime
-    SpinLock spinLock; // fast spin lock to guard access to the ioInfos and mutexes maps
+    std::mutex mutex;                                         // global mutex for load/unload calls to the runtime
+    SpinLock spinLock;                                        // fast spin lock to guard access to the ioInfos and mutexes maps
 };
 
 extern "C" void *init(int logLevel, int tuningLevel, const char *tuningFile)

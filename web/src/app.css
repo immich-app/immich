@@ -40,11 +40,6 @@
   ascent-override: 100%;
 }
 
-@font-face {
-  font-family: 'Snowburst One';
-  src: url('$lib/assets/fonts/SnowburstOne-Regular.ttf') format('truetype');
-}
-
 :root {
   font-family: 'Overpass', sans-serif;
   /* Used by layouts to ensure proper spacing between navbar and content */
@@ -89,7 +84,7 @@ html::-webkit-scrollbar-thumb:hover {
 
 body {
   margin: 0;
-  color: #5f6368;
+  color: #3a3a3a;
 }
 
 input:focus-visible {

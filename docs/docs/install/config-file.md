@@ -7,6 +7,9 @@ A config file can be provided as an alternative to the UI configuration.
 In JSON format, create a new config file (e.g. `immich.json`) and put it in a location that can be accessed by Immich.
 The default configuration looks like this:
 
+<details>
+<summary>immich.json</summary>
+
 ```json
 {
   "ffmpeg": {
@@ -74,6 +77,10 @@ The default configuration looks like this:
       "enabled": true,
       "modelName": "ViT-B-32__openai"
     },
+    "duplicateDetection": {
+      "enabled": false,
+      "maxDistance": 0.03
+    },
     "facialRecognition": {
       "enabled": true,
       "modelName": "buffalo_l",
@@ -120,7 +127,8 @@ The default configuration looks like this:
     "previewFormat": "jpeg",
     "previewSize": 1440,
     "quality": 80,
-    "colorspace": "p3"
+    "colorspace": "p3",
+    "extractEmbedded": false
   },
   "newVersionCheck": {
     "enabled": true
@@ -149,12 +157,11 @@ The default configuration looks like this:
   "server": {
     "externalDomain": "",
     "loginPageMessage": ""
-  },
-  "user": {
-    "deleteDelay": 7
   }
 }
 ```
+
+</details>
 
 :::tip
 In Administration > Settings is a button to copy the current configuration to your clipboard.

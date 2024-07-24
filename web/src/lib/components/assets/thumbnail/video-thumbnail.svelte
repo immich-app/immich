@@ -71,6 +71,7 @@
     class:rounded-xl={curve}
     muted
     autoplay
+    loop
     src={url}
     on:play={() => {
       loading = false;

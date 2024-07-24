@@ -85,6 +85,8 @@ FROM
   LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
 WHERE
   (("AssetFaceEntity"."assetId" = $1))
+ORDER BY
+  "AssetFaceEntity"."boundingBoxX1" ASC
 
 -- PersonRepository.getFaceById
 SELECT DISTINCT
@@ -165,7 +167,6 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."isFavorite" AS "AssetFaceEntity__AssetFaceEntity_asset_isFavorite",
       "AssetFaceEntity__AssetFaceEntity_asset"."isArchived" AS "AssetFaceEntity__AssetFaceEntity_asset_isArchived",
       "AssetFaceEntity__AssetFaceEntity_asset"."isExternal" AS "AssetFaceEntity__AssetFaceEntity_asset_isExternal",
-      "AssetFaceEntity__AssetFaceEntity_asset"."isReadOnly" AS "AssetFaceEntity__AssetFaceEntity_asset_isReadOnly",
       "AssetFaceEntity__AssetFaceEntity_asset"."isOffline" AS "AssetFaceEntity__AssetFaceEntity_asset_isOffline",
       "AssetFaceEntity__AssetFaceEntity_asset"."checksum" AS "AssetFaceEntity__AssetFaceEntity_asset_checksum",
       "AssetFaceEntity__AssetFaceEntity_asset"."duration" AS "AssetFaceEntity__AssetFaceEntity_asset_duration",
@@ -173,7 +174,8 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
       "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
+      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId",
+      "AssetFaceEntity__AssetFaceEntity_asset"."duplicateId" AS "AssetFaceEntity__AssetFaceEntity_asset_duplicateId"
     FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
@@ -263,7 +265,6 @@ FROM
       "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
       "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
       "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-      "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
       "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
       "AssetEntity"."checksum" AS "AssetEntity_checksum",
       "AssetEntity"."duration" AS "AssetEntity_duration",
@@ -272,6 +273,7 @@ FROM
       "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
       "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
       "AssetEntity"."stackId" AS "AssetEntity_stackId",
+      "AssetEntity"."duplicateId" AS "AssetEntity_duplicateId",
       "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
       "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
       "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
@@ -393,7 +395,6 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."isFavorite" AS "AssetFaceEntity__AssetFaceEntity_asset_isFavorite",
   "AssetFaceEntity__AssetFaceEntity_asset"."isArchived" AS "AssetFaceEntity__AssetFaceEntity_asset_isArchived",
   "AssetFaceEntity__AssetFaceEntity_asset"."isExternal" AS "AssetFaceEntity__AssetFaceEntity_asset_isExternal",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isReadOnly" AS "AssetFaceEntity__AssetFaceEntity_asset_isReadOnly",
   "AssetFaceEntity__AssetFaceEntity_asset"."isOffline" AS "AssetFaceEntity__AssetFaceEntity_asset_isOffline",
   "AssetFaceEntity__AssetFaceEntity_asset"."checksum" AS "AssetFaceEntity__AssetFaceEntity_asset_checksum",
   "AssetFaceEntity__AssetFaceEntity_asset"."duration" AS "AssetFaceEntity__AssetFaceEntity_asset_duration",
@@ -401,7 +402,8 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
   "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
+  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId",
+  "AssetFaceEntity__AssetFaceEntity_asset"."duplicateId" AS "AssetFaceEntity__AssetFaceEntity_asset_duplicateId"
 FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"
@@ -432,3 +434,9 @@ WHERE
   (("AssetFaceEntity"."personId" = $1))
 LIMIT
   1
+
+-- PersonRepository.getLatestFaceDate
+SELECT
+  MAX("jobStatus"."facesRecognizedAt")::text AS "latestDate"
+FROM
+  "asset_job_status" "jobStatus"

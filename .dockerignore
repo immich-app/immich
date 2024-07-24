@@ -4,6 +4,7 @@
 
 design/
 docker/
+!docker/scripts
 docs/
 e2e/
 fastlane/
@@ -23,9 +24,9 @@ server/node_modules/
 server/upload/
 server/dist/
 server/www/
-server/test/assets/
 
 web/node_modules/
 web/coverage/
 web/.svelte-kit
 web/build/
+web/.env

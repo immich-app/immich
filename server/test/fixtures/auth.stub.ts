@@ -1,25 +1,8 @@
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { UserTokenEntity } from 'src/entities/user-token.entity';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
-
-export const adminSignupStub = {
-  name: 'Immich Admin',
-  email: 'admin@immich.app',
-  password: 'Password123',
-};
-
-export const userSignupStub = {
-  ...adminSignupStub,
-  memoriesEnabled: true,
-};
-
-export const loginStub = {
-  admin: {
-    email: 'admin@immich.app',
-    password: 'Password123',
-  },
-};
 
 export const authStub = {
   admin: Object.freeze<AuthDto>({
@@ -27,6 +10,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
   }),
   user1: Object.freeze<AuthDto>({
@@ -34,36 +18,40 @@ export const authStub = {
       id: 'user-id',
       email: 'immich@test.com',
       isAdmin: false,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
-    userToken: {
+    session: {
       id: 'token-id',
-    } as UserTokenEntity,
+    } as SessionEntity,
   }),
   user2: Object.freeze<AuthDto>({
     user: {
       id: 'user-2',
       email: 'user2@immich.app',
       isAdmin: false,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
-    userToken: {
+    session: {
       id: 'token-id',
-    } as UserTokenEntity,
+    } as SessionEntity,
   }),
   external1: Object.freeze<AuthDto>({
     user: {
       id: 'user-id',
       email: 'immich@test.com',
       isAdmin: false,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
-    userToken: {
+    session: {
       id: 'token-id',
-    } as UserTokenEntity,
+    } as SessionEntity,
   }),
   adminSharedLink: Object.freeze<AuthDto>({
     user: {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',
@@ -78,6 +66,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',
@@ -92,6 +81,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',
@@ -105,6 +95,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',
@@ -129,51 +120,21 @@ export const loginResponseStub = {
     },
   },
   user1oauth: {
-    response: {
-      accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'user-id',
-      userEmail: 'immich@test.com',
-      name: 'immich_name',
-      profileImagePath: '',
-      isAdmin: false,
-      shouldChangePassword: false,
-    },
-    cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
-      'immich_auth_type=oauth; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
-      'immich_is_authenticated=true; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
-    ],
+    accessToken: 'cmFuZG9tLWJ5dGVz',
+    userId: 'user-id',
+    userEmail: 'immich@test.com',
+    name: 'immich_name',
+    profileImagePath: '',
+    isAdmin: false,
+    shouldChangePassword: false,
   },
   user1password: {
-    response: {
-      accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'user-id',
-      userEmail: 'immich@test.com',
-      name: 'immich_name',
-      profileImagePath: '',
-      isAdmin: false,
-      shouldChangePassword: false,
-    },
-    cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
-      'immich_auth_type=password; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
-      'immich_is_authenticated=true; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
-    ],
-  },
-  user1insecure: {
-    response: {
-      accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'user-id',
-      userEmail: 'immich@test.com',
-      name: 'immich_name',
-      profileImagePath: '',
-      isAdmin: false,
-      shouldChangePassword: false,
-    },
-    cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;',
-      'immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;',
-      'immich_is_authenticated=true; Path=/; Max-Age=34560000; SameSite=Lax;',
-    ],
+    accessToken: 'cmFuZG9tLWJ5dGVz',
+    userId: 'user-id',
+    userEmail: 'immich@test.com',
+    name: 'immich_name',
+    profileImagePath: '',
+    isAdmin: false,
+    shouldChangePassword: false,
   },
 };

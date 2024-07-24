@@ -1,9 +1,10 @@
-import { defaults, getMyUserInfo, isHttpError } from '@immich/sdk';
-import { glob } from 'glob';
+import { getMyUser, init, isHttpError } from '@immich/sdk';
+import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { platform } from 'node:os';
+import { join, resolve } from 'node:path';
 import yaml from 'yaml';
 
 export interface BaseOptions {
@@ -46,10 +47,9 @@ export const connect = async (url: string, key: string) => {
     // noop
   }
 
-  defaults.baseUrl = url;
-  defaults.headers = { 'x-api-key': key };
+  init({ baseUrl: url, apiKey: key });
 
-  const [error] = await withError(getMyUserInfo());
+  const [error] = await withError(getMyUser());
   if (isHttpError(error)) {
     logError(error, 'Failed to connect to server');
     process.exit(1);
@@ -104,11 +104,16 @@ export interface CrawlOptions {
   pathsToCrawl: string[];
   recursive?: boolean;
   includeHidden?: boolean;
-  exclusionPatterns?: string[];
+  exclusionPattern?: string;
   extensions: string[];
 }
+
+const convertPathToPatternOnWin = (path: string) => {
+  return platform() === 'win32' ? convertPathToPattern(path) : path;
+};
+
 export const crawl = async (options: CrawlOptions): Promise<string[]> => {
-  const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPatterns, includeHidden } = options;
+  const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPattern, includeHidden } = options;
   const extensions = extensionsWithPeriod.map((extension) => extension.replace('.', ''));
 
   if (pathsToCrawl.length === 0) {
@@ -120,15 +125,16 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
 
   for await (const currentPath of pathsToCrawl) {
     try {
-      const stats = await stat(currentPath);
+      const absolutePath = resolve(currentPath);
+      const stats = await stat(absolutePath);
       if (stats.isFile() || stats.isSymbolicLink()) {
-        crawledFiles.push(currentPath);
+        crawledFiles.push(absolutePath);
       } else {
-        patterns.push(currentPath);
+        patterns.push(convertPathToPatternOnWin(absolutePath));
       }
     } catch (error: any) {
       if (error.code === 'ENOENT') {
-        patterns.push(currentPath);
+        patterns.push(convertPathToPatternOnWin(currentPath));
       } else {
         throw error;
       }
@@ -152,13 +158,13 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
 
   const globbedFiles = await glob(searchPattern, {
     absolute: true,
-    nocase: true,
-    nodir: true,
+    caseSensitiveMatch: false,
+    onlyFiles: true,
     dot: includeHidden,
-    ignore: exclusionPatterns,
+    ignore: [`**/${exclusionPattern}`],
   });
-
-  return [...crawledFiles, ...globbedFiles].sort();
+  globbedFiles.push(...crawledFiles);
+  return globbedFiles.sort();
 };
 
 export const sha1 = (filepath: string) => {

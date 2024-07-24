@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,7 +14,9 @@ class SystemConfigFFmpegDto {
   /// Returns a new [SystemConfigFFmpegDto] instance.
   SystemConfigFFmpegDto({
     required this.accel,
+    required this.accelDecode,
     this.acceptedAudioCodecs = const [],
+    this.acceptedContainers = const [],
     this.acceptedVideoCodecs = const [],
     required this.bframes,
     required this.cqMode,
@@ -37,26 +39,38 @@ class SystemConfigFFmpegDto {
 
   TranscodeHWAccel accel;
 
+  bool accelDecode;
+
   List<AudioCodec> acceptedAudioCodecs;
+
+  List<VideoContainer> acceptedContainers;
 
   List<VideoCodec> acceptedVideoCodecs;
 
+  /// Minimum value: -1
+  /// Maximum value: 16
   int bframes;
 
   CQMode cqMode;
 
+  /// Minimum value: 0
+  /// Maximum value: 51
   int crf;
 
+  /// Minimum value: 0
   int gopSize;
 
   String maxBitrate;
 
+  /// Minimum value: 0
   int npl;
 
   String preferredHwDevice;
 
   String preset;
 
+  /// Minimum value: 0
+  /// Maximum value: 6
   int refs;
 
   AudioCodec targetAudioCodec;
@@ -67,6 +81,7 @@ class SystemConfigFFmpegDto {
 
   bool temporalAQ;
 
+  /// Minimum value: 0
   int threads;
 
   ToneMapping tonemap;
@@ -78,7 +93,9 @@ class SystemConfigFFmpegDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
     other.accel == accel &&
+    other.accelDecode == accelDecode &&
     _deepEquality.equals(other.acceptedAudioCodecs, acceptedAudioCodecs) &&
+    _deepEquality.equals(other.acceptedContainers, acceptedContainers) &&
     _deepEquality.equals(other.acceptedVideoCodecs, acceptedVideoCodecs) &&
     other.bframes == bframes &&
     other.cqMode == cqMode &&
@@ -102,7 +119,9 @@ class SystemConfigFFmpegDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (accel.hashCode) +
+    (accelDecode.hashCode) +
     (acceptedAudioCodecs.hashCode) +
+    (acceptedContainers.hashCode) +
     (acceptedVideoCodecs.hashCode) +
     (bframes.hashCode) +
     (cqMode.hashCode) +
@@ -123,12 +142,14 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, acceptedAudioCodecs=$acceptedAudioCodecs, acceptedVideoCodecs=$acceptedVideoCodecs, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, npl=$npl, preferredHwDevice=$preferredHwDevice, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, accelDecode=$accelDecode, acceptedAudioCodecs=$acceptedAudioCodecs, acceptedContainers=$acceptedContainers, acceptedVideoCodecs=$acceptedVideoCodecs, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, npl=$npl, preferredHwDevice=$preferredHwDevice, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accel'] = this.accel;
+      json[r'accelDecode'] = this.accelDecode;
       json[r'acceptedAudioCodecs'] = this.acceptedAudioCodecs;
+      json[r'acceptedContainers'] = this.acceptedContainers;
       json[r'acceptedVideoCodecs'] = this.acceptedVideoCodecs;
       json[r'bframes'] = this.bframes;
       json[r'cqMode'] = this.cqMode;
@@ -159,7 +180,9 @@ class SystemConfigFFmpegDto {
 
       return SystemConfigFFmpegDto(
         accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
+        accelDecode: mapValueOfType<bool>(json, r'accelDecode')!,
         acceptedAudioCodecs: AudioCodec.listFromJson(json[r'acceptedAudioCodecs']),
+        acceptedContainers: VideoContainer.listFromJson(json[r'acceptedContainers']),
         acceptedVideoCodecs: VideoCodec.listFromJson(json[r'acceptedVideoCodecs']),
         bframes: mapValueOfType<int>(json, r'bframes')!,
         cqMode: CQMode.fromJson(json[r'cqMode'])!,
@@ -226,7 +249,9 @@ class SystemConfigFFmpegDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'accel',
+    'accelDecode',
     'acceptedAudioCodecs',
+    'acceptedContainers',
     'acceptedVideoCodecs',
     'bframes',
     'cqMode',

@@ -10,6 +10,7 @@
     "resolveJsonModule": true,
     "target": "es2022",
     "moduleResolution": "node16",
+    "lib": ["dom", "es2023"],
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
@@ -17,10 +18,8 @@
     "esModuleInterop": true,
     "preserveWatchOutput": true,
     "baseUrl": "./",
+    "jsx": "react",
+    "types": ["vitest/globals"]
   },
-  "exclude": [
-    "dist",
-    "node_modules",
-    "upload"
-  ],
+  "exclude": ["dist", "node_modules", "upload"]
 }

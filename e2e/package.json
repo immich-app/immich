@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.101.0",
+  "version": "1.109.2",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -21,9 +21,10 @@
   "devDependencies": {
     "@immich/cli": "file:../cli",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@playwright/test": "^1.41.2",
+    "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.14.11",
+    "@types/oidc-provider": "^8.5.1",
     "@types/pg": "^8.11.0",
     "@types/pngjs": "^6.0.4",
     "@types/supertest": "^6.0.2",
@@ -33,16 +34,22 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-unicorn": "^52.0.0",
-    "exiftool-vendored": "^24.5.0",
+    "eslint-plugin-unicorn": "^54.0.0",
+    "exiftool-vendored": "^27.0.0",
+    "jose": "^5.6.3",
     "luxon": "^3.4.4",
+    "oidc-provider": "^8.5.1",
     "pg": "^8.11.3",
     "pngjs": "^7.0.0",
     "prettier": "^3.2.5",
-    "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-organize-imports": "^4.0.0",
     "socket.io-client": "^4.7.4",
-    "supertest": "^6.3.4",
+    "supertest": "^7.0.0",
     "typescript": "^5.3.3",
+    "utimes": "^5.2.1",
     "vitest": "^1.3.0"
+  },
+  "volta": {
+    "node": "20.15.1"
   }
 }

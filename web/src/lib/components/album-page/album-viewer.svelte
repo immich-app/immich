@@ -4,29 +4,31 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
-  import { AssetStore } from '../../stores/assets.store';
-  import { downloadAlbum } from '../../utils/asset-utils';
+  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { downloadAlbum } from '$lib/utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
-  import { shortcut } from '$lib/utils/shortcut';
+  import { shortcut } from '$lib/actions/shortcut';
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
+  import { t } from 'svelte-i18n';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
 
   const album = sharedLink.album as AlbumResponseDto;
+  let innerWidth: number;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ albumId: album.id });
+  const assetStore = new AssetStore({ albumId: album.id, order: album.order });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -47,6 +49,7 @@
       }
     },
   }}
+  bind:innerWidth
 />
 
 <header>
@@ -64,22 +67,24 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a data-sveltekit-preload-data="hover" class="ml-4" href="/">
-          <ImmichLogo class="h-10" />
-        </a>
+        <ImmichLogoSmallLink width={innerWidth} />
       </svelte:fragment>
 
       <svelte:fragment slot="trailing">
         {#if sharedLink.allowUpload}
           <CircleIconButton
-            title="Add Photos"
-            on:click={() => openFileUploadDialog(album.id)}
+            title={$t('add_photos')}
+            on:click={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton title="Download" on:click={() => downloadAlbum(album)} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton
+            title={$t('download')}
+            on:click={() => downloadAlbum(album)}
+            icon={mdiFolderDownloadOutline}
+          />
         {/if}
 
         <ThemeButton />

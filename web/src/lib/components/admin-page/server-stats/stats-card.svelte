@@ -1,10 +1,11 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import { ByteUnit } from '$lib/utils/byte-units';
 
   export let icon: string;
   export let title: string;
   export let value: number;
-  export let unit: string | undefined = undefined;
+  export let unit: ByteUnit | undefined = undefined;
 
   $: zeros = () => {
     const maxLength = 13;

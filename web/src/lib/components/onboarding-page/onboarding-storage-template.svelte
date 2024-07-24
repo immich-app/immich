@@ -9,6 +9,8 @@
   import Button from '../elements/buttons/button.svelte';
   import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
+  import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -23,12 +25,14 @@
 </script>
 
 <OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">STORAGE TEMPLATE</p>
+  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">
+    {$t('admin.storage_template_settings').toUpperCase()}
+  </p>
 
   <p>
-    When enabled, this feature will auto-organize files based on a user-defined template. Due to stability issues the
-    feature has been turned off by default. For more information, please see the
-    <a class="underline" href="https://immich.app/docs/administration/storage-template">documentation</a>.
+    <FormatMessage key="admin.storage_template_onboarding_description" let:message>
+      <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
+    </FormatMessage>
   </p>
 
   {#if config && $user}
@@ -39,14 +43,14 @@
         {config}
         {defaultConfig}
         {savedConfig}
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
+        onSave={(config) => handleSave(config)}
+        onReset={(options) => handleReset(options)}
       >
         <div class="flex pt-4">
           <div class="w-full flex place-content-start">
             <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
               <Icon path={mdiArrowLeft} size="18" />
-              <p>Theme</p>
+              <p>{$t('theme')}</p>
             </Button>
           </div>
           <div class="flex w-full place-content-end">
@@ -57,7 +61,7 @@
               }}
             >
               <span class="flex place-content-center place-items-center gap-2">
-                Done
+                {$t('done')}
                 <Icon path={mdiCheck} size="18" />
               </span>
             </Button>

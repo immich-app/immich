@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
@@ -26,6 +26,21 @@ export class CryptoRepository implements ICryptoRepository {
 
   hashSha256(value: string) {
     return createHash('sha256').update(value).digest('base64');
+  }
+
+  verifySha256(value: string, encryptedValue: string, publicKey: string) {
+    const publicKeyBuffer = Buffer.from(publicKey, 'base64');
+    const cryptoPublicKey = createPublicKey({
+      key: publicKeyBuffer,
+      type: 'spki',
+      format: 'pem',
+    });
+
+    const verifier = createVerify('SHA256');
+    verifier.update(value);
+    verifier.end();
+    const encryptedValueBuffer = Buffer.from(encryptedValue, 'base64');
+    return verifier.verify(cryptoPublicKey, encryptedValueBuffer);
   }
 
   hashSha1(value: string | Buffer): Buffer {

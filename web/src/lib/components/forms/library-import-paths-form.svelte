@@ -8,6 +8,8 @@
   import { validate, type LibraryResponseDto } from '@immich/sdk';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
   export let library: LibraryResponseDto;
 
@@ -51,18 +53,13 @@
     if (failedPaths === 0) {
       if (notifyIfSuccessful) {
         notificationController.show({
-          message: `All paths validated successfully`,
+          message: $t('admin.paths_validated_successfully'),
           type: NotificationType.Info,
         });
       }
-    } else if (failedPaths === 1) {
-      notificationController.show({
-        message: `${failedPaths} path failed validation`,
-        type: NotificationType.Warning,
-      });
     } else {
       notificationController.show({
-        message: `${failedPaths} paths failed validation`,
+        message: $t('errors.paths_validation_failed', { values: { paths: failedPaths } }),
         type: NotificationType.Warning,
       });
     }
@@ -97,7 +94,7 @@
         await revalidate(false);
       }
     } catch (error) {
-      handleError(error, 'Unable to add import path');
+      handleError(error, $t('errors.unable_to_add_import_path'));
     } finally {
       addImportPath = false;
       importPathToAdd = null;
@@ -123,7 +120,7 @@
       }
     } catch (error) {
       editImportPath = null;
-      handleError(error, 'Unable to edit import path');
+      handleError(error, $t('errors.unable_to_edit_import_path'));
     } finally {
       editImportPath = null;
     }
@@ -143,7 +140,7 @@
       library.importPaths = library.importPaths.filter((path) => path != pathToDelete);
       await handleValidation();
     } catch (error) {
-      handleError(error, 'Unable to delete import path');
+      handleError(error, $t('errors.unable_to_delete_import_path'));
     } finally {
       editImportPath = null;
     }
@@ -152,8 +149,8 @@
 
 {#if addImportPath}
   <LibraryImportPathForm
-    title="Add import path"
-    submitText="Add"
+    title={$t('add_import_path')}
+    submitText={$t('add')}
     bind:importPath={importPathToAdd}
     {importPaths}
     on:submit={handleAddImportPath}
@@ -166,8 +163,8 @@
 
 {#if editImportPath != undefined}
   <LibraryImportPathForm
-    title="Edit import path"
-    submitText="Save"
+    title={$t('edit_import_path')}
+    submitText={$t('save')}
     isEditing={true}
     bind:importPath={editedImportPath}
     {importPaths}
@@ -209,17 +206,17 @@
           </td>
 
           <td class="w-4/5 text-ellipsis px-4 text-sm">{validatedPath.importPath}</td>
-          <td class="w-1/5 text-ellipsis px-4 text-sm flex flex-row">
-            <button
-              type="button"
+          <td class="w-1/5 text-ellipsis flex justify-center">
+            <CircleIconButton
+              color="primary"
+              icon={mdiPencilOutline}
+              title={$t('edit_import_path')}
+              size="16"
               on:click={() => {
                 editImportPath = listIndex;
                 editedImportPath = validatedPath.importPath;
               }}
-              class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-            >
-              <Icon path={mdiPencilOutline} size="16" />
-            </button>
+            />
           </td>
         </tr>
       {/each}
@@ -232,7 +229,7 @@
       >
         <td class="w-4/5 text-ellipsis px-4 text-sm">
           {#if importPaths.length === 0}
-            No paths added
+            {$t('admin.no_paths_added')}
           {/if}</td
         >
         <td class="w-1/5 text-ellipsis px-4 text-sm"
@@ -241,7 +238,7 @@
             size="sm"
             on:click={() => {
               addImportPath = true;
-            }}>Add path</Button
+            }}>{$t('add_path')}</Button
           ></td
         >
       </tr>
@@ -249,11 +246,13 @@
   </table>
   <div class="flex justify-between w-full">
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => revalidate()}><Icon path={mdiRefresh} size={20} />Validate</Button>
+      <Button size="sm" color="gray" on:click={() => revalidate()}
+        ><Icon path={mdiRefresh} size={20} />{$t('validate')}</Button
+      >
     </div>
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
-      <Button size="sm" type="submit">Save</Button>
+      <Button size="sm" color="gray" on:click={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button size="sm" type="submit">{$t('save')}</Button>
     </div>
   </div>
 </form>

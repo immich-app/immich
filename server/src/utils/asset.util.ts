@@ -2,7 +2,7 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { setDifference, setUnion } from 'src/utils/set';
+import { IPartnerRepository } from 'src/interfaces/partner.interface';
 
 export interface IBulkAsset {
   getAssetIds: (id: string, assetIds: string[]) => Promise<Set<string>>;
@@ -13,12 +13,12 @@ export interface IBulkAsset {
 export const addAssets = async (
   auth: AuthDto,
   repositories: { accessRepository: IAccessRepository; repository: IBulkAsset },
-  dto: { id: string; assetIds: string[] },
+  dto: { parentId: string; assetIds: string[] },
 ) => {
   const { accessRepository, repository } = repositories;
   const access = AccessCore.create(accessRepository);
 
-  const existingAssetIds = await repository.getAssetIds(dto.id, dto.assetIds);
+  const existingAssetIds = await repository.getAssetIds(dto.parentId, dto.assetIds);
   const notPresentAssetIds = dto.assetIds.filter((id) => !existingAssetIds.has(id));
   const allowedAssetIds = await access.checkAccess(auth, Permission.ASSET_SHARE, notPresentAssetIds);
 
@@ -36,12 +36,13 @@ export const addAssets = async (
       continue;
     }
 
+    existingAssetIds.add(assetId);
     results.push({ id: assetId, success: true });
   }
 
   const newAssetIds = results.filter(({ success }) => success).map(({ id }) => id);
   if (newAssetIds.length > 0) {
-    await repository.addAssetIds(dto.id, newAssetIds);
+    await repository.addAssetIds(dto.parentId, newAssetIds);
   }
 
   return results;
@@ -50,20 +51,17 @@ export const addAssets = async (
 export const removeAssets = async (
   auth: AuthDto,
   repositories: { accessRepository: IAccessRepository; repository: IBulkAsset },
-  dto: { id: string; assetIds: string[]; permissions: Permission[] },
+  dto: { parentId: string; assetIds: string[]; canAlwaysRemove: Permission },
 ) => {
   const { accessRepository, repository } = repositories;
   const access = AccessCore.create(accessRepository);
 
-  const existingAssetIds = await repository.getAssetIds(dto.id, dto.assetIds);
-  let allowedAssetIds = new Set<string>();
-  let remainingAssetIds = existingAssetIds;
-
-  for (const permission of dto.permissions) {
-    const newAssetIds = await access.checkAccess(auth, permission, setDifference(remainingAssetIds, allowedAssetIds));
-    remainingAssetIds = setDifference(remainingAssetIds, newAssetIds);
-    allowedAssetIds = setUnion(allowedAssetIds, newAssetIds);
-  }
+  // check if the user can always remove from the parent album, memory, etc.
+  const canAlwaysRemove = await access.checkAccess(auth, dto.canAlwaysRemove, [dto.parentId]);
+  const existingAssetIds = await repository.getAssetIds(dto.parentId, dto.assetIds);
+  const allowedAssetIds = canAlwaysRemove.has(dto.parentId)
+    ? existingAssetIds
+    : await access.checkAccess(auth, Permission.ASSET_SHARE, existingAssetIds);
 
   const results: BulkIdResponseDto[] = [];
   for (const assetId of dto.assetIds) {
@@ -79,13 +77,44 @@ export const removeAssets = async (
       continue;
     }
 
+    existingAssetIds.delete(assetId);
     results.push({ id: assetId, success: true });
   }
 
   const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
   if (removedIds.length > 0) {
-    await repository.removeAssetIds(dto.id, removedIds);
+    await repository.removeAssetIds(dto.parentId, removedIds);
   }
 
   return results;
+};
+
+export type PartnerIdOptions = {
+  userId: string;
+  repository: IPartnerRepository;
+  /** only include partners with `inTimeline: true` */
+  timelineEnabled?: boolean;
+};
+export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: PartnerIdOptions) => {
+  const partnerIds = new Set<string>();
+  const partners = await repository.getAll(userId);
+  for (const partner of partners) {
+    // ignore deleted users
+    if (!partner.sharedBy || !partner.sharedWith) {
+      continue;
+    }
+
+    // wrong direction
+    if (partner.sharedWithId !== userId) {
+      continue;
+    }
+
+    if (timelineEnabled && !partner.inTimeline) {
+      continue;
+    }
+
+    partnerIds.add(partner.sharedById);
+  }
+
+  return [...partnerIds];
 };

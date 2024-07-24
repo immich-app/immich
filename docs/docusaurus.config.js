@@ -92,17 +92,22 @@ const config = {
           alt: 'Immich Logo',
           src: 'img/immich-logo-inline-light.png',
           srcDark: 'img/immich-logo-inline-dark.png',
+          className: 'rounded-none',
         },
         items: [
+          {
+            type: 'custom-versionSwitcher',
+            position: 'right',
+          },
           {
             to: '/docs/overview/introduction',
             position: 'right',
             label: 'Docs',
           },
           {
-            to: '/milestones',
+            to: '/roadmap',
             position: 'right',
-            label: 'Milestones',
+            label: 'Roadmap',
           },
           {
             to: '/docs/api',
@@ -117,6 +122,11 @@ const config = {
           {
             href: 'https://github.com/immich-app/immich',
             label: 'GitHub',
+            position: 'right',
+          },
+          {
+            href: 'https://discord.immich.app',
+            label: 'Discord',
             position: 'right',
           },
         ],
@@ -142,7 +152,11 @@ const config = {
             items: [
               {
                 label: 'Discord',
-                href: 'https://discord.com/invite/D8JsnBEuKb',
+                href: 'https://discord.immich.app',
+              },
+              {
+                label: 'Reddit',
+                href: 'https://www.reddit.com/r/immich/',
               },
             ],
           },
@@ -156,6 +170,10 @@ const config = {
               {
                 label: 'GitHub',
                 href: 'https://github.com/immich-app/immich',
+              },
+              {
+                label: 'YouTube',
+                href: 'https://www.youtube.com/@immich-app',
               },
             ],
           },

@@ -1,9 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
-  import ConfirmDialogue from './confirm-dialogue.svelte';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import Combobox from './combobox.svelte';
   import DateInput from '../elements/date-input.svelte';
+  import { t } from 'svelte-i18n';
 
   export let initialDate: DateTime = DateTime.now();
 
@@ -11,7 +12,7 @@
     /**
      * Timezone name
      *
-     * e.g. Europe/Berlin
+     * e.g. Asia/Jerusalem (+03:00)
      */
     label: string;
 
@@ -23,10 +24,22 @@
     value: string;
   };
 
-  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone').map((zone: string) => ({
-    label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
-    value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
-  }));
+  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone')
+    .map((zone) => DateTime.local({ zone }))
+    .sort((zoneA, zoneB) => {
+      let numericallyCorrect = zoneA.offset - zoneB.offset;
+      if (numericallyCorrect != 0) {
+        return numericallyCorrect;
+      }
+      return zoneA.zoneName.localeCompare(zoneB.zoneName, undefined, { sensitivity: 'base' });
+    })
+    .map((zone) => {
+      const offset = zone.toFormat('ZZ');
+      return {
+        label: `${zone.zoneName} (${offset})`,
+        value: 'UTC' + offset,
+      };
+    });
 
   const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
 
@@ -53,44 +66,23 @@
       dispatch('confirm', value);
     }
   };
-
-  const handleKeydown = (event: KeyboardEvent) => {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      event.stopPropagation();
-    }
-  };
 </script>
 
-<div role="presentation" on:keydown={handleKeydown}>
-  <ConfirmDialogue
-    id="edit-date-time-modal"
-    confirmColor="primary"
-    cancelColor="secondary"
-    title="Edit date and time"
-    prompt="Please select a new date:"
-    disabled={!date.isValid}
-    onConfirm={handleConfirm}
-    onClose={handleCancel}
-  >
-    <div class="flex flex-col text-md px-4 text-center gap-2" slot="prompt">
-      <div class="flex flex-col">
-        <label for="datetime">Date and Time</label>
-        <DateInput
-          class="immich-form-input text-sm my-4 w-full"
-          id="datetime"
-          type="datetime-local"
-          bind:value={selectedDate}
-        />
-      </div>
-      <div class="flex flex-col w-full mt-2">
-        <Combobox
-          bind:selectedOption
-          id="settings-timezone"
-          label="Timezone"
-          options={timezones}
-          placeholder="Search timezone..."
-        />
-      </div>
+<ConfirmDialog
+  confirmColor="primary"
+  title={$t('edit_date_and_time')}
+  prompt="Please select a new date:"
+  disabled={!date.isValid}
+  onConfirm={handleConfirm}
+  onCancel={handleCancel}
+>
+  <div class="flex flex-col text-left gap-2" slot="prompt">
+    <div class="flex flex-col">
+      <label for="datetime">{$t('date_and_time')}</label>
+      <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
     </div>
-  </ConfirmDialogue>
-</div>
+    <div>
+      <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
+    </div>
+  </div>
+</ConfirmDialog>

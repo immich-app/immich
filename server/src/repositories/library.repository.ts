@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
-import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { EntityNotFoundError, IsNull, Not } from 'typeorm';
+import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository.js';
 
 @Instrumentation()
@@ -24,65 +24,9 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @GenerateSql({ params: [DummyValue.STRING] })
-  existsByName(name: string, withDeleted = false): Promise<boolean> {
-    return this.repository.exist({
-      where: {
-        name,
-      },
-      withDeleted,
-    });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getCountForUser(ownerId: string): Promise<number> {
-    return this.repository.countBy({ ownerId });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null> {
-    return this.repository.findOne({
-      where: {
-        ownerId: ownerId,
-        type: LibraryType.UPLOAD,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getUploadLibraryCount(ownerId: string): Promise<number> {
-    return this.repository.count({
-      where: {
-        ownerId: ownerId,
-        type: LibraryType.UPLOAD,
-      },
-    });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAllByUserId(ownerId: string, type?: LibraryType): Promise<LibraryEntity[]> {
-    return this.repository.find({
-      where: {
-        ownerId,
-        isVisible: true,
-        type,
-      },
-      relations: {
-        owner: true,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
-  }
-
   @GenerateSql({ params: [] })
-  getAll(withDeleted = false, type?: LibraryType): Promise<LibraryEntity[]> {
+  getAll(withDeleted = false): Promise<LibraryEntity[]> {
     return this.repository.find({
-      where: { type },
       relations: {
         owner: true,
       },
@@ -97,7 +41,6 @@ export class LibraryRepository implements ILibraryRepository {
   getAllDeleted(): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: {
-        isVisible: true,
         deletedAt: Not(IsNull()),
       },
       relations: {
@@ -127,7 +70,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
+  async getStatistics(id: string): Promise<LibraryStatsResponseDto | undefined> {
     const stats = await this.repository
       .createQueryBuilder('libraries')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
@@ -140,7 +83,7 @@ export class LibraryRepository implements ILibraryRepository {
       .getRawOne();
 
     if (!stats) {
-      throw new EntityNotFoundError(LibraryEntity, { where: { id } });
+      return;
     }
 
     return {
@@ -153,18 +96,18 @@ export class LibraryRepository implements ILibraryRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
-    let query = this.repository
+    const builder = this.repository
       .createQueryBuilder('library')
       .innerJoinAndSelect('library.assets', 'assets')
       .where('library.id = :id', { id: libraryId })
       .select('assets.id');
 
     if (withDeleted) {
-      query = query.withDeleted();
+      builder.withDeleted();
     }
 
     // Return all asset paths for a given library
-    const rawResults = await query.getRawMany();
+    const rawResults = await builder.getRawMany();
 
     const results: string[] = [];
 

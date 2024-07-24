@@ -14,6 +14,9 @@ mobile/gradle.properties
 mobile/openapi/pubspec.lock
 mobile/*.jks
 mobile/libisar.dylib
+mobile/openapi/test
+mobile/openapi/doc
+mobile/openapi/.openapi-generator/FILES
 
 open-api/typescript-sdk/build
 mobile/android/fastlane/report.xml

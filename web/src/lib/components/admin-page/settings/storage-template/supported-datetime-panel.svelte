@@ -2,6 +2,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
 
   export let options: SystemConfigTemplateStorageOptionDto;
 
@@ -11,17 +12,17 @@
 </script>
 
 <div class="mt-2 text-sm">
-  <h4>DATE & TIME</h4>
+  <h4>{$t('date_and_time').toUpperCase()}</h4>
 </div>
 
 <div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
   <div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
-    <p>Asset's creation timestamp is used for the datetime information</p>
-    <p>Sample time 2022-02-03T04:56:05.250</p>
+    <p>{$t('admin.storage_template_date_time_description')}</p>
+    <p>{$t('admin.storage_template_date_time_sample', { values: { date: '2022-02-03T04:56:05.250' } })}</p>
   </div>
   <div class="flex gap-[40px]">
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">YEAR</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('year').toUpperCase()}</p>
       <ul>
         {#each options.yearOptions as yearFormat}
           <li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
@@ -30,7 +31,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">MONTH</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('month').toUpperCase()}</p>
       <ul>
         {#each options.monthOptions as monthFormat}
           <li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
@@ -39,7 +40,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">WEEK</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('week').toUpperCase()}</p>
       <ul>
         {#each options.weekOptions as weekFormat}
           <li>{'{{'}{weekFormat}{'}}'} - {getLuxonExample(weekFormat)}</li>
@@ -48,7 +49,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">DAY</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('day').toUpperCase()}</p>
       <ul>
         {#each options.dayOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -57,7 +58,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">HOUR</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('hour').toUpperCase()}</p>
       <ul>
         {#each options.hourOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -66,7 +67,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">MINUTE</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('minute').toUpperCase()}</p>
       <ul>
         {#each options.minuteOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -75,7 +76,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">SECOND</p>
+      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('second').toUpperCase()}</p>
       <ul>
         {#each options.secondOptions as dayFormat}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>

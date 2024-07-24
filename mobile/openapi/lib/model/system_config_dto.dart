@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -21,6 +21,7 @@ class SystemConfigDto {
     required this.machineLearning,
     required this.map,
     required this.newVersionCheck,
+    required this.notifications,
     required this.oauth,
     required this.passwordLogin,
     required this.reverseGeocoding,
@@ -46,6 +47,8 @@ class SystemConfigDto {
   SystemConfigMapDto map;
 
   SystemConfigNewVersionCheckDto newVersionCheck;
+
+  SystemConfigNotificationsDto notifications;
 
   SystemConfigOAuthDto oauth;
 
@@ -73,6 +76,7 @@ class SystemConfigDto {
     other.machineLearning == machineLearning &&
     other.map == map &&
     other.newVersionCheck == newVersionCheck &&
+    other.notifications == notifications &&
     other.oauth == oauth &&
     other.passwordLogin == passwordLogin &&
     other.reverseGeocoding == reverseGeocoding &&
@@ -93,6 +97,7 @@ class SystemConfigDto {
     (machineLearning.hashCode) +
     (map.hashCode) +
     (newVersionCheck.hashCode) +
+    (notifications.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
@@ -103,7 +108,7 @@ class SystemConfigDto {
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -115,6 +120,7 @@ class SystemConfigDto {
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
       json[r'newVersionCheck'] = this.newVersionCheck;
+      json[r'notifications'] = this.notifications;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
@@ -142,6 +148,7 @@ class SystemConfigDto {
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
         newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
+        notifications: SystemConfigNotificationsDto.fromJson(json[r'notifications'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
@@ -205,6 +212,7 @@ class SystemConfigDto {
     'machineLearning',
     'map',
     'newVersionCheck',
+    'notifications',
     'oauth',
     'passwordLogin',
     'reverseGeocoding',

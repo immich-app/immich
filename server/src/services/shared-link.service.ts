@@ -84,7 +84,7 @@ export class SharedLinkService {
       password: dto.password,
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,
-      allowDownload: dto.allowDownload ?? true,
+      allowDownload: dto.showMetadata === false ? false : dto.allowDownload ?? true,
       showExif: dto.showMetadata ?? true,
     });
 
@@ -185,13 +185,13 @@ export class SharedLinkService {
 
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetCount = sharedLink.assets.length ?? sharedLink.album?.assets.length ?? 0;
+    const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;
 
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
       description: sharedLink.description || `${assetCount} shared photos & videos`,
       imageUrl: assetId
-        ? `/api/asset/thumbnail/${assetId}?key=${sharedLink.key.toString('base64url')}`
+        ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
         : '/feature-panel.png',
     };
   }

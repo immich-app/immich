@@ -1,4 +1,4 @@
-import { AssetFileUploadResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
+import { AssetMediaResponseDto, LoginResponseDto, SharedLinkType, TimeBucketSize } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -19,7 +19,7 @@ describe('/timeline', () => {
   let user: LoginResponseDto;
   let timeBucketUser: LoginResponseDto;
 
-  let userAssets: AssetFileUploadResponseDto[];
+  let userAssets: AssetMediaResponseDto[];
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -34,7 +34,6 @@ describe('/timeline', () => {
       utils.createAsset(user.accessToken),
       utils.createAsset(user.accessToken, {
         isFavorite: true,
-        isReadOnly: true,
         fileCreatedAt: yesterday.toISO(),
         fileModifiedAt: yesterday.toISO(),
         assetData: { filename: 'example.mp4' },

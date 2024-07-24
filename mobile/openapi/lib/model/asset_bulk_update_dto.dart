@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,6 +14,7 @@ class AssetBulkUpdateDto {
   /// Returns a new [AssetBulkUpdateDto] instance.
   AssetBulkUpdateDto({
     this.dateTimeOriginal,
+    this.duplicateId,
     this.ids = const [],
     this.isArchived,
     this.isFavorite,
@@ -30,6 +31,8 @@ class AssetBulkUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? dateTimeOriginal;
+
+  String? duplicateId;
 
   List<String> ids;
 
@@ -84,6 +87,7 @@ class AssetBulkUpdateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
     other.dateTimeOriginal == dateTimeOriginal &&
+    other.duplicateId == duplicateId &&
     _deepEquality.equals(other.ids, ids) &&
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
@@ -96,6 +100,7 @@ class AssetBulkUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
+    (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (ids.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
@@ -105,7 +110,7 @@ class AssetBulkUpdateDto {
     (stackParentId == null ? 0 : stackParentId!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -113,6 +118,11 @@ class AssetBulkUpdateDto {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal;
     } else {
     //  json[r'dateTimeOriginal'] = null;
+    }
+    if (this.duplicateId != null) {
+      json[r'duplicateId'] = this.duplicateId;
+    } else {
+    //  json[r'duplicateId'] = null;
     }
       json[r'ids'] = this.ids;
     if (this.isArchived != null) {
@@ -157,6 +167,7 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
+        duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],

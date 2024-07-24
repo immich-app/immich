@@ -1,23 +1,28 @@
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { StorageService } from 'src/services/storage.service';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(StorageService.name, () => {
   let sut: StorageService;
-  let storageMock: jest.Mocked<IStorageRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     storageMock = newStorageRepositoryMock();
-    sut = new StorageService(storageMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new StorageService(storageMock, loggerMock);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('init', () => {
+  describe('onBootstrapEvent', () => {
     it('should create the library folder on initialization', () => {
-      sut.init();
+      sut.onBootstrapEvent();
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/library');
     });
   });

@@ -1,25 +1,28 @@
+import { Inject, Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
-import { glob, globStream } from 'fast-glob';
+import { escapePath, glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DiskUsage,
   IStorageRepository,
   ImmichReadStream,
   ImmichZipStream,
-  StorageEventType,
   WatchEvents,
 } from 'src/interfaces/storage.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { ImmichLogger } from 'src/utils/logger';
 import { mimeTypes } from 'src/utils/mime-types';
 
 @Instrumentation()
+@Injectable()
 export class StorageRepository implements IStorageRepository {
-  private logger = new ImmichLogger(StorageRepository.name);
+  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+    this.logger.setContext(StorageRepository.name);
+  }
 
   readdir(folder: string): Promise<string[]> {
     return fs.readdir(folder);
@@ -173,17 +176,18 @@ export class StorageRepository implements IStorageRepository {
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
     const watcher = chokidar.watch(paths, options);
 
-    watcher.on(StorageEventType.READY, () => events.onReady?.());
-    watcher.on(StorageEventType.ADD, (path) => events.onAdd?.(path));
-    watcher.on(StorageEventType.CHANGE, (path) => events.onChange?.(path));
-    watcher.on(StorageEventType.UNLINK, (path) => events.onUnlink?.(path));
-    watcher.on(StorageEventType.ERROR, (error) => events.onError?.(error));
+    watcher.on('ready', () => events.onReady?.());
+    watcher.on('add', (path) => events.onAdd?.(path));
+    watcher.on('change', (path) => events.onChange?.(path));
+    watcher.on('unlink', (path) => events.onUnlink?.(path));
+    watcher.on('error', (error) => events.onError?.(error));
 
     return () => watcher.close();
   }
 
   private asGlob(pathsToCrawl: string[]): string {
-    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const escapedPaths = pathsToCrawl.map((path) => escapePath(path));
+    const base = escapedPaths.length === 1 ? escapedPaths[0] : `{${escapedPaths.join(',')}}`;
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
     return `${base}/**/${extensions}`;
   }

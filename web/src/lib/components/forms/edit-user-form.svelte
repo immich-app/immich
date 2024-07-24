@@ -1,28 +1,31 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
-  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
   import { handleError } from '$lib/utils/handle-error';
-  import { updateUser, type UserResponseDto } from '@immich/sdk';
+  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { mdiAccountEditOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
+  import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
 
-  export let user: UserResponseDto;
+  export let user: UserAdminResponseDto;
   export let canResetPassword = true;
   export let newPassword: string;
+  export let onClose: () => void;
 
   let error: string;
   let success: string;
-  let isShowResetPasswordConfirmation = false;
-  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
+  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null;
 
   const previousQutoa = user.quotaSizeInBytes;
 
   $: quotaSizeWarning =
-    previousQutoa !== convertToBytes(Number(quotaSize), 'GiB') &&
+    previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
     !!quotaSize &&
-    convertToBytes(Number(quotaSize), 'GiB') > $serverInfo.diskSizeRaw;
+    convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw;
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -33,29 +36,37 @@
   const editUser = async () => {
     try {
       const { id, email, name, storageLabel } = user;
-      await updateUser({
-        updateUserDto: {
-          id,
+      await updateUserAdmin({
+        id,
+        userAdminUpdateDto: {
           email,
           name,
           storageLabel: storageLabel || '',
-          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
+          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
         },
       });
 
       dispatch('editSuccess');
     } catch (error) {
-      handleError(error, 'Unable to update user');
+      handleError(error, $t('errors.unable_to_update_user'));
     }
   };
 
   const resetPassword = async () => {
+    const isConfirmed = await dialogController.show({
+      prompt: $t('admin.confirm_user_password_reset', { values: { user: user.name } }),
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
     try {
       newPassword = generatePassword();
 
-      await updateUser({
-        updateUserDto: {
-          id: user.id,
+      await updateUserAdmin({
+        id: user.id,
+        userAdminUpdateDto: {
           password: newPassword,
           shouldChangePassword: true,
         },
@@ -63,9 +74,7 @@
 
       dispatch('resetPasswordSuccess');
     } catch (error) {
-      handleError(error, 'Unable to reset password');
-    } finally {
-      isShowResetPasswordConfirmation = false;
+      handleError(error, $t('errors.unable_to_reset_password'));
     }
   };
 
@@ -87,72 +96,59 @@
   }
 </script>
 
-<form on:submit|preventDefault={editUser} autocomplete="off">
-  <div class="my-4 flex flex-col gap-2">
-    <label class="immich-form-label" for="email">Email</label>
-    <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
-  </div>
+<FullScreenModal title={$t('edit_user')} icon={mdiAccountEditOutline} {onClose}>
+  <form on:submit|preventDefault={editUser} autocomplete="off" id="edit-user-form">
+    <div class="my-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="email">{$t('email')}</label>
+      <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
+    </div>
 
-  <div class="my-4 flex flex-col gap-2">
-    <label class="immich-form-label" for="name">Name</label>
-    <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
-  </div>
+    <div class="my-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="name">{$t('name')}</label>
+      <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
+    </div>
 
-  <div class="my-4 flex flex-col gap-2">
-    <label class="flex items-center gap-2 immich-form-label" for="quotaSize"
-      >Quota Size (GiB) {#if quotaSizeWarning}
-        <p class="text-red-400 text-sm">You set a quota higher than the disk size</p>
-      {/if}</label
-    >
-    <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
-    <p>Note: Enter 0 for unlimited quota</p>
-  </div>
-
-  <div class="my-4 flex flex-col gap-2">
-    <label class="immich-form-label" for="storage-label">Storage Label</label>
-    <input
-      class="immich-form-input"
-      id="storage-label"
-      name="storage-label"
-      type="text"
-      bind:value={user.storageLabel}
-    />
-
-    <p>
-      Note: To apply the Storage Label to previously uploaded assets, run the
-      <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"> Storage Migration Job</a>
-    </p>
-  </div>
-
-  {#if error}
-    <p class="ml-4 text-sm text-red-400">{error}</p>
-  {/if}
-
-  {#if success}
-    <p class="ml-4 text-sm text-immich-primary">{success}</p>
-  {/if}
-  <div class="mt-8 flex w-full gap-4">
-    {#if canResetPassword}
-      <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
-        >Reset password</Button
+    <div class="my-4 flex flex-col gap-2">
+      <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
+        {$t('admin.quota_size_gib')}
+        {#if quotaSizeWarning}
+          <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
+        {/if}</label
       >
-    {/if}
-    <Button type="submit" fullwidth>Confirm</Button>
-  </div>
-</form>
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
+      <p>{$t('admin.note_unlimited_quota')}</p>
+    </div>
 
-{#if isShowResetPasswordConfirmation}
-  <ConfirmDialogue
-    id="reset-password-modal"
-    title="Reset password"
-    confirmText="Reset"
-    onConfirm={resetPassword}
-    onClose={() => (isShowResetPasswordConfirmation = false)}
-  >
-    <svelte:fragment slot="prompt">
+    <div class="my-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="storage-label">{$t('storage_label')}</label>
+      <input
+        class="immich-form-input"
+        id="storage-label"
+        name="storage-label"
+        type="text"
+        bind:value={user.storageLabel}
+      />
+
       <p>
-        Are you sure you want to reset <b>{user.name}</b>'s password?
+        {$t('admin.note_apply_storage_label_previous_assets')}
+        <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
+          {$t('admin.storage_template_migration_job')}
+        </a>
       </p>
-    </svelte:fragment>
-  </ConfirmDialogue>
-{/if}
+    </div>
+
+    {#if error}
+      <p class="ml-4 text-sm text-red-400">{error}</p>
+    {/if}
+
+    {#if success}
+      <p class="ml-4 text-sm text-immich-primary">{success}</p>
+    {/if}
+  </form>
+  <svelte:fragment slot="sticky-bottom">
+    {#if canResetPassword}
+      <Button color="light-red" fullwidth on:click={resetPassword}>{$t('reset_password')}</Button>
+    {/if}
+    <Button type="submit" fullwidth form="edit-user-form">{$t('confirm')}</Button>
+  </svelte:fragment>
+</FullScreenModal>

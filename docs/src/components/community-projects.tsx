@@ -10,7 +10,7 @@ interface CommunityProjectProps {
 const projects: CommunityProjectProps[] = [
   {
     title: 'immich-go',
-    description: `An alternative to the immich-CLI command that doesn't depend on nodejs installation. It tries its best for importing google photos takeout archives.`,
+    description: `An alternative to the immich-CLI that doesn't depend on nodejs. It specializes in importing Google Photos Takeout archives.`,
     url: 'https://github.com/simulot/immich-go',
   },
   {
@@ -25,13 +25,43 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'Remove offline files',
-    description: 'A Python script to remove offline files.',
-    url: 'https://gist.github.com/Thoroslives/ca5d8e1efd15111febc1e7b34ac72668',
+    description: 'A simple way to remove orphaned offline assets from the Immich database',
+    url: 'https://github.com/Thoroslives/immich_remove_offline_files',
   },
   {
     title: 'Create albums from folders',
     description: 'A Python script to create albums based on the folder structure of an external library.',
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
+  },
+  {
+    title: 'Immich-Tools',
+    description: 'Provides scripts for handling problems on the repair page.',
+    url: 'https://github.com/clumsyCoder00/Immich-Tools',
+  },
+  {
+    title: 'Lightroom Publisher: mi.Immich.Publisher',
+    description: 'Lightroom plugin to publish photos from Lightroom collections to Immich albums.',
+    url: 'https://github.com/midzelis/mi.Immich.Publisher',
+  },
+  {
+    title: 'Immich Duplicate Finder',
+    description: 'Webapp that uses machine learning to identify near-duplicate images.',
+    url: 'https://github.com/vale46n1/immich_duplicate_finder',
+  },
+  {
+    title: 'Immich-Tiktok-Remover',
+    description: 'Script to search for and remove TikTok videos from your Immich library.',
+    url: 'https://github.com/mxc2/immich-tiktok-remover',
+  },
+  {
+    title: 'Immich Android TV',
+    description: 'Unofficial Immich Android TV app.',
+    url: 'https://github.com/giejay/Immich-Android-TV',
+  },
+  {
+    title: 'Powershell Module PSImmich',
+    description: 'Powershell Module for the Immich API',
+    url: 'https://github.com/hanpq/PSImmich',
   },
 ];
 

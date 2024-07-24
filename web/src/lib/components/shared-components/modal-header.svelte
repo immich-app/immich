@@ -2,18 +2,15 @@
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { createEventDispatcher } from 'svelte';
   import { mdiClose } from '@mdi/js';
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  import { t } from 'svelte-i18n';
 
   /**
    * Unique identifier for the header text.
    */
   export let id: string;
   export let title: string;
+  export let onClose: () => void;
   /**
    * If true, the logo will be displayed next to the modal title.
    */
@@ -36,5 +33,5 @@
     </h1>
   </div>
 
-  <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} size={'20'} title="Close" />
+  <CircleIconButton on:click={onClose} icon={mdiClose} size={'20'} title={$t('close')} />
 </div>

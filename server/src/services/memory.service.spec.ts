@@ -7,10 +7,11 @@ import { memoryStub } from 'test/fixtures/memory.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newMemoryRepositoryMock } from 'test/repositories/memory.repository.mock';
+import { Mocked } from 'vitest';
 
 describe(MemoryService.name, () => {
   let accessMock: IAccessRepositoryMock;
-  let memoryMock: jest.Mocked<IMemoryRepository>;
+  let memoryMock: Mocked<IMemoryRepository>;
   let sut: MemoryService;
 
   beforeEach(() => {
@@ -188,15 +189,6 @@ describe(MemoryService.name, () => {
       accessMock.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
       await expect(sut.removeAssets(authStub.admin, 'memory1', { ids: ['not-found'] })).resolves.toEqual([
         { error: 'not_found', id: 'not-found', success: false },
-      ]);
-      expect(memoryMock.removeAssetIds).not.toHaveBeenCalled();
-    });
-
-    it('should require asset access', async () => {
-      accessMock.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
-      memoryMock.getAssetIds.mockResolvedValue(new Set(['asset1']));
-      await expect(sut.removeAssets(authStub.admin, 'memory1', { ids: ['asset1'] })).resolves.toEqual([
-        { error: 'no_permission', id: 'asset1', success: false },
       ]);
       expect(memoryMock.removeAssetIds).not.toHaveBeenCalled();
     });

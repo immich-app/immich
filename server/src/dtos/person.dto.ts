@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-validator';
+import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -71,6 +72,8 @@ export class PersonResponseDto {
   birthDate!: Date | null;
   thumbnailPath!: string;
   isHidden!: boolean;
+  @PropertyLifecycle({ addedAt: 'v1.107.0' })
+  updatedAt?: Date;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -138,6 +141,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     birthDate: person.birthDate,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
+    updatedAt: person.updatedAt,
   };
 }
 

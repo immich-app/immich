@@ -6,6 +6,7 @@
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
   import { isSelectingAllAssets } from '$lib/stores/assets.store';
+  import { t } from 'svelte-i18n';
 
   export let showBackButton = true;
   export let backIcon = mdiClose;
@@ -46,6 +47,8 @@
       document.removeEventListener('scroll', onScroll);
     }
   });
+
+  $: buttonClass = forceDark ? 'hover:text-immich-dark-gray' : undefined;
 </script>
 
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
@@ -57,15 +60,7 @@
   >
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton
-          title="Close"
-          on:click={handleClose}
-          icon={backIcon}
-          backgroundColor={'transparent'}
-          hoverColor={'#e2e7e9'}
-          size={'24'}
-          forceDark
-        />
+        <CircleIconButton title={$t('close')} on:click={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
       {/if}
       <slot name="leading" />
     </div>

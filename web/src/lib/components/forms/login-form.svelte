@@ -10,6 +10,7 @@
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
+  import { t } from 'svelte-i18n';
 
   export let onSuccess: () => unknown | Promise<unknown>;
   export let onFirstLogin: () => unknown | Promise<unknown>;
@@ -35,7 +36,7 @@
         return;
       } catch (error) {
         console.error('Error [login-form] [oauth.callback]', error);
-        oauthError = getServerErrorMessage(error) || 'Unable to complete OAuth login';
+        oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
         oauthLoading = false;
       }
     }
@@ -47,7 +48,7 @@
         return;
       }
     } catch (error) {
-      handleError(error, 'Unable to connect!');
+      handleError(error, $t('errors.unable_to_connect'));
     }
 
     oauthLoading = false;
@@ -73,7 +74,7 @@
       await onSuccess();
       return;
     } catch (error) {
-      errorMessage = getServerErrorMessage(error) || 'Incorrect email or password';
+      errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
       loading = false;
       return;
     }
@@ -85,7 +86,7 @@
     const success = await oauth.authorize(window.location);
     if (!success) {
       oauthLoading = false;
-      oauthError = 'Unable to login with OAuth';
+      oauthError = $t('errors.unable_to_login_with_oauth');
     }
   };
 </script>
@@ -99,7 +100,7 @@
     {/if}
 
     <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="email">Email</label>
+      <label class="immich-form-label" for="email">{$t('email')}</label>
       <input
         class="immich-form-input"
         id="email"
@@ -112,7 +113,7 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="password">Password</label>
+      <label class="immich-form-label" for="password">{$t('password')}</label>
       <PasswordField id="password" bind:password autocomplete="current-password" />
     </div>
 
@@ -123,7 +124,7 @@
             <LoadingSpinner />
           </span>
         {:else}
-          Login
+          {$t('to_login')}
         {/if}
       </Button>
     </div>
@@ -137,7 +138,7 @@
       <span
         class="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-immich-dark-gray dark:text-white"
       >
-        or
+        {$t('or')}
       </span>
     </div>
   {/if}
@@ -165,5 +166,5 @@
 {/if}
 
 {#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
-  <p class="p-4 text-center dark:text-immich-dark-fg">Login has been disabled.</p>
+  <p class="p-4 text-center dark:text-immich-dark-fg">{$t('login_has_been_disabled')}</p>
 {/if}

@@ -4,13 +4,9 @@
 
 Immich supports the creation of libraries which is a top-level asset container. Currently, there are two types of libraries: traditional upload libraries that can sync with a mobile device, and external libraries, that keeps up to date with files on disk. Libraries are different from albums in that an asset can belong to multiple albums but only one library, and deleting a library deletes all assets contained within. As of August 2023, this is a new feature and libraries have a lot of potential for future development beyond what is documented here. This document attempts to describe the current state of libraries.
 
-## The Upload Library
-
-Immich comes preconfigured with an upload library for each user. All assets uploaded to Immich are added to this library. This library can be renamed, but not deleted. The upload library is the only library that can be synced with a mobile device. No items in an upload library is allowed to have the same sha1 hash as another item in the same library in order to prevent duplicates.
-
 ## External Libraries
 
-External libraries tracks assets stored outside of immich, i.e. in the file system. Immich will only read data from the files, and will not modify them in any way. Therefore, the delete button is disabled for external assets. When the external library is scanned, immich will read the metadata from the file and create an asset in the library for each image or video file. These items will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc.
+External libraries tracks assets stored outside of Immich, i.e. in the file system. When the external library is scanned, Immich will read the metadata from the file and create an asset in the library for each image or video file. These items will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc.
 
 If a file is modified outside of Immich, the changes will not be reflected in immich until the library is scanned again. There are different ways to scan a library depending on the use case:
 
@@ -48,16 +44,16 @@ If the import paths are edited in a way that an external file is no longer in an
 
 ### Troubleshooting
 
-Sometimes, an external library will not scan correctly. This can happen if immich_server or immich_microservices can't access the files. Here are some things to check:
+Sometimes, an external library will not scan correctly. This can happen if Immich can't access the files. Here are some things to check:
 
 - In the docker-compose file, are the volumes mounted correctly?
-- Are the volumes identical between the `server` and `microservices` container?
+- Are the volumes also mounted to any worker containers?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
 - Make sure you don't use symlinks in your import libraries, and that you aren't linking across docker mounts.
 - Are the permissions set correctly?
 - Make sure you are using forward slashes (`/`) and not backward slashes.
 
-To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_microservices /bin/bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the `immich_server` container. If you cannot access this directory in both the `microservices` and `server` containers, Immich won't be able to import files.
+To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the same in any microservices containers.
 
 ### Exclusion Patterns
 
@@ -102,33 +98,25 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 
 ### Mount Docker Volumes
 
-`immich-server` and `immich-microservices` containers will need access to the gallery. Modify your docker compose file as follows
+The `immich-server` container will need access to the gallery. Modify your docker compose file as follows
 
 ```diff title="docker-compose.yml"
   immich-server:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
-+     - /home/user/old-pics:/mnt/media/old-pics:ro
++     - /mnt/nas/christmas-trip:/mnt/nas/christmas-trip:ro
++     - /home/user/old-pics:/home/user/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
-+     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
-
-
-  immich-microservices:
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
-+     - /home/user/old-pics:/mnt/media/old-pics:ro
-+     - /mnt/media/videos:/mnt/media/videos:ro
++     - /mnt/media/videos2:/mnt/media/videos2 # the files in this folder can be deleted, as it does not end with :ro
 +     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 ```
 
 :::tip
-The `ro` flag at the end only gives read-only access to the volumes. While Immich does not modify files, it's a good practice to mount read-only.
+The `ro` flag at the end only gives read-only access to the volumes. This will disallow the images from being deleted in the web UI.
 :::
 
 :::info
-_Remember to bring the container `docker compose down/up` to register the changes. Make sure you can see the mounted path in the container._
+_Remember to run `docker compose up -d` to register the changes. Make sure you can see the mounted path in the container._
 :::
 
 ### Create External Libraries
@@ -161,7 +149,7 @@ The christmas trip library will now be scanned in the background. In the meantim
 
 - Click on Create External Library.
 
-:::info Note
+:::note
 If you get an error here, please rename the other external library to something else. This is a bug that will be fixed in a future release.
 :::
 
@@ -175,3 +163,14 @@ If you get an error here, please rename the other external library to something 
 - Click on Scan Library Files
 
 Within seconds, the assets from the old-pics and videos folders should show up in the main timeline.
+
+### Set Custom Scan Interval
+
+:::note
+Only an admin can do this.
+:::
+
+You can define a custom interval for the trigger external library rescan under Administration -> Settings -> Library.  
+You can set the scanning interval using the preset or cron format. For more information you can refer to [Crontab Guru](https://crontab.guru/).
+
+<img src={require('./img/library-custom-scan-interval.png').default} width="75%" title='Set custom scan interval for external library' />

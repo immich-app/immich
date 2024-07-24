@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 
 final immichThemeProvider = StateProvider<ThemeMode>((ref) {
   var themeMode = ref
@@ -121,12 +121,12 @@ final ThemeData immichLightTheme = ThemeData(
   ),
   navigationBarTheme: NavigationBarThemeData(
     indicatorColor: Colors.indigo.withOpacity(0.15),
-    iconTheme: MaterialStatePropertyAll(
+    iconTheme: WidgetStatePropertyAll(
       IconThemeData(color: Colors.grey[700]),
     ),
     backgroundColor: immichBackgroundColor,
     surfaceTintColor: Colors.transparent,
-    labelTextStyle: MaterialStatePropertyAll(
+    labelTextStyle: WidgetStatePropertyAll(
       TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w500,
@@ -249,12 +249,12 @@ final ThemeData immichDarkTheme = ThemeData(
   ),
   navigationBarTheme: NavigationBarThemeData(
     indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.4),
-    iconTheme: MaterialStatePropertyAll(
+    iconTheme: WidgetStatePropertyAll(
       IconThemeData(color: Colors.grey[500]),
     ),
     backgroundColor: Colors.grey[900],
     surfaceTintColor: Colors.transparent,
-    labelTextStyle: MaterialStatePropertyAll(
+    labelTextStyle: WidgetStatePropertyAll(
       TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w500,

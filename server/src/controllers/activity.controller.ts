@@ -13,23 +13,25 @@ import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ActivityService } from 'src/services/activity.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Activity')
-@Controller('activity')
-@Authenticated()
+@ApiTags('Activities')
+@Controller('activities')
 export class ActivityController {
   constructor(private service: ActivityService) {}
 
   @Get()
+  @Authenticated()
   getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     return this.service.getAll(auth, dto);
   }
 
   @Get('statistics')
+  @Authenticated()
   getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
 
   @Post()
+  @Authenticated()
   async createActivity(
     @Auth() auth: AuthDto,
     @Body() dto: ActivityCreateDto,
@@ -44,6 +46,7 @@ export class ActivityController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated()
   deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

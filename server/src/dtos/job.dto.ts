@@ -74,6 +74,9 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.SEARCH]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
+  [QueueName.DUPLICATE_DETECTION]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
   [QueueName.FACE_DETECTION]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
@@ -84,4 +87,7 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.LIBRARY]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.NOTIFICATION]!: JobStatusDto;
 }

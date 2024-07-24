@@ -14,12 +14,14 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
@@ -30,7 +32,9 @@ export class AlbumService {
     @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IAlbumUserRepository) private albumUserRepository: IAlbumUserRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
   }
@@ -112,20 +116,25 @@ export class AlbumService {
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
-    for (const userId of dto.sharedWithUserIds || []) {
+    const albumUsers = dto.albumUsers || [];
+
+    for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});
       if (!exists) {
         throw new BadRequestException('User not found');
       }
     }
 
+    const allowedAssetIdsSet = await this.access.checkAccess(auth, Permission.ASSET_SHARE, new Set(dto.assetIds));
+    const assets = [...allowedAssetIdsSet].map((id) => ({ id }) as AssetEntity);
+
     const album = await this.albumRepository.create({
       ownerId: auth.user.id,
       albumName: dto.albumName,
       description: dto.description,
-      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value }) as UserEntity) ?? [],
-      assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
-      albumThumbnailAssetId: dto.assetIds?.[0] || null,
+      albumUsers: albumUsers.map((albumUser) => albumUser as AlbumUserEntity) ?? [],
+      assets,
+      albumThumbnailAssetId: assets[0]?.id || null,
     });
 
     return mapAlbumWithAssets(album);
@@ -137,8 +146,8 @@ export class AlbumService {
     const album = await this.findOrFail(id, { withAssets: true });
 
     if (dto.albumThumbnailAssetId) {
-      const valid = await this.albumRepository.hasAsset({ albumId: id, assetId: dto.albumThumbnailAssetId });
-      if (!valid) {
+      const results = await this.albumRepository.getAssetIds(id, [dto.albumThumbnailAssetId]);
+      if (results.size === 0) {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }
@@ -156,20 +165,17 @@ export class AlbumService {
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.access.requirePermission(auth, Permission.ALBUM_DELETE, id);
-
-    const album = await this.findOrFail(id, { withAssets: false });
-
-    await this.albumRepository.delete(album);
+    await this.albumRepository.delete(id);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id, { withAssets: false });
-    await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
+    await this.access.requirePermission(auth, Permission.ALBUM_ADD_ASSET, id);
 
     const results = await addAssets(
       auth,
       { accessRepository: this.accessRepository, repository: this.albumRepository },
-      { id, assetIds: dto.ids },
+      { parentId: id, assetIds: dto.ids },
     );
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
@@ -179,20 +185,21 @@ export class AlbumService {
         updatedAt: new Date(),
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
       });
+
+      await this.eventRepository.emit('onAlbumUpdateEvent', { id, updatedBy: auth.user.id });
     }
 
     return results;
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+    await this.access.requirePermission(auth, Permission.ALBUM_REMOVE_ASSET, id);
+
     const album = await this.findOrFail(id, { withAssets: false });
-
-    await this.access.requirePermission(auth, Permission.ALBUM_READ, id);
-
     const results = await removeAssets(
       auth,
       { accessRepository: this.accessRepository, repository: this.albumRepository },
-      { id, assetIds: dto.ids, permissions: [Permission.ASSET_SHARE, Permission.ALBUM_REMOVE_ASSET] },
+      { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.ALBUM_DELETE },
     );
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
@@ -206,17 +213,17 @@ export class AlbumService {
     return results;
   }
 
-  async addUsers(auth: AuthDto, id: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
+  async addUsers(auth: AuthDto, id: string, { albumUsers }: AddUsersDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
 
     const album = await this.findOrFail(id, { withAssets: false });
 
-    for (const userId of dto.sharedUserIds) {
+    for (const { userId, role } of albumUsers) {
       if (album.ownerId === userId) {
         throw new BadRequestException('Cannot be shared with owner');
       }
 
-      const exists = album.sharedUsers.find((user) => user.id === userId);
+      const exists = album.albumUsers.find(({ user: { id } }) => id === userId);
       if (exists) {
         throw new BadRequestException('User already added');
       }
@@ -226,16 +233,11 @@ export class AlbumService {
         throw new BadRequestException('User not found');
       }
 
-      album.sharedUsers.push({ id: userId } as UserEntity);
+      await this.albumUserRepository.create({ userId: userId, albumId: id, role });
+      await this.eventRepository.emit('onAlbumInviteEvent', { id, userId });
     }
 
-    return this.albumRepository
-      .update({
-        id: album.id,
-        updatedAt: new Date(),
-        sharedUsers: album.sharedUsers,
-      })
-      .then(mapAlbumWithoutAssets);
+    return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {
@@ -249,7 +251,7 @@ export class AlbumService {
       throw new BadRequestException('Cannot remove album owner');
     }
 
-    const exists = album.sharedUsers.find((user) => user.id === userId);
+    const exists = album.albumUsers.find(({ user: { id } }) => id === userId);
     if (!exists) {
       throw new BadRequestException('Album not shared with user');
     }
@@ -259,11 +261,13 @@ export class AlbumService {
       await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
     }
 
-    await this.albumRepository.update({
-      id: album.id,
-      updatedAt: new Date(),
-      sharedUsers: album.sharedUsers.filter((user) => user.id !== userId),
-    });
+    await this.albumUserRepository.delete({ albumId: id, userId });
+  }
+
+  async updateUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
+    await this.access.requirePermission(auth, Permission.ALBUM_SHARE, id);
+
+    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {

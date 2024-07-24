@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   import { createContext } from '$lib/utils/context';
+  import { t } from 'svelte-i18n';
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
@@ -13,7 +14,6 @@
 </script>
 
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -32,7 +32,7 @@
 
 <ControlAppBar on:close={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   <p class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
-    Selected {assets.size.toLocaleString($locale)}
+    {$t('selected_count', { values: { count: assets.size } })}
   </p>
   <slot slot="trailing" />
 </ControlAppBar>

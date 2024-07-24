@@ -1,8 +1,10 @@
 import { browser } from '$app/environment';
+import { licenseStore } from '$lib/stores/license.store';
 import { serverInfo } from '$lib/stores/server-info.store';
-import { user } from '$lib/stores/user.store';
-import { getMyUserInfo, getServerInfo } from '@immich/sdk';
+import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
+import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
+import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 import { AppRoute } from '../constants';
 
@@ -13,12 +15,21 @@ export interface AuthOptions {
 
 export const loadUser = async () => {
   try {
-    let loaded = get(user);
-    if (!loaded && hasAuthCookie()) {
-      loaded = await getMyUserInfo();
-      user.set(loaded);
+    let user = get(user$);
+    let preferences = get(preferences$);
+    let serverInfo;
+
+    if ((!user || !preferences) && hasAuthCookie()) {
+      [user, preferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
+      user$.set(user);
+      preferences$.set(preferences);
+
+      // Check for license status
+      if (serverInfo.licensed || user.license?.activatedAt) {
+        licenseStore.setLicenseStatus(true);
+      }
     }
-    return loaded;
+    return user;
   } catch {
     return null;
   }
@@ -57,8 +68,22 @@ export const authenticate = async (options?: AuthOptions) => {
 };
 
 export const requestServerInfo = async () => {
-  if (get(user)) {
-    const data = await getServerInfo();
+  if (get(user$)) {
+    const data = await getStorage();
     serverInfo.set(data);
   }
+};
+
+export const getAccountAge = (): number => {
+  const user = get(user$);
+
+  if (!user) {
+    return 0;
+  }
+
+  const createdDate = DateTime.fromISO(user.createdAt);
+  const now = DateTime.now();
+  const accountAge = now.diff(createdDate, 'days').days.toFixed(0);
+
+  return Number(accountAge);
 };

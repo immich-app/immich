@@ -63,10 +63,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.0.0
+        uses: docker/setup-qemu-action@v3.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.3.0
+        uses: docker/setup-buildx-action@v3.5.0
 
       - name: Login to Docker Hub
         # Only push to Docker Hub when making a release
@@ -115,7 +115,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v5.3.0
+        uses: docker/build-push-action@v6.5.0
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
@@ -124,7 +124,11 @@ jobs:
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
           cache-to: ${{ steps.cache-target.outputs.cache-to }}
-          build-args: |
-            DEVICE=${{ matrix.device }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          build-args: |
+            DEVICE=${{ matrix.device }}
+            BUILD_ID=${{ github.run_id }}
+            BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
+            BUILD_SOURCE_REF=${{ github.ref_name }}
+            BUILD_SOURCE_COMMIT=${{ github.sha }}

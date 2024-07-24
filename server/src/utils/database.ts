@@ -52,6 +52,11 @@ export function searchAssetBuilder(
   }
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
+
+  if (id.libraryId === null) {
+    id.libraryId = IsNull() as unknown as string;
+  }
+
   builder.andWhere(_.omitBy(id, _.isUndefined));
 
   if (options.userIds) {
@@ -67,7 +72,7 @@ export function searchAssetBuilder(
     });
   }
 
-  const status = _.pick(options, ['isExternal', 'isFavorite', 'isOffline', 'isReadOnly', 'isVisible', 'type']);
+  const status = _.pick(options, ['isFavorite', 'isOffline', 'isVisible', 'type']);
   const {
     isArchived,
     isEncoded,

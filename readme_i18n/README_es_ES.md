@@ -1,7 +1,7 @@
 <p align="center">
   <br/>
   <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="Licencia: MIT"></a>
-  <a href="https://discord.gg/D8JsnBEuKb">
+  <a href="https://discord.immich.app">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
   </a>
   <br/>
@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Iniciar sesión con URL personalizada">
 </p>
-<h3 align="center">Immich: Una solución Self-Hosted de copia de seguridad de fotos y videos de alto rendimiento</h3>
+<h3 align="center">Immich: Una solución Self-Hosted de alto rendimiento para la copia de seguridad de fotos y videos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="Captura de pantalla principal">
@@ -28,46 +28,50 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_ru_RU.md">Русский</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_sv_SE.md">Svenska</a>
+  <a href="README_ar_JO.md">العربية</a>
 </p>
 
-## Descargo de responsabilidad
+## Advertencia
 
-- ⚠️ El proyecto está en **desarrollo muy activo**.
+- ⚠️ El proyecto está en **activo desarrollo**.
 - ⚠️ Es probable que haya errores y cambios disruptivos.
 - ⚠️ **¡No utilices la aplicación como única forma de almacenar tus fotos y videos!**
+- ⚠️ Siempre sigue el plan de backups [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) para tus fotos y videos.
 
 ## Contenido
 
 - [Documentación oficial](https://immich.app/docs)
 - [Hoja de ruta](https://github.com/orgs/immich-app/projects/1)
-- [Demostración](#demo)
-- [Funciones](#features)
+- [Demo](#demo)
+- [Funciones](#funciones)
 - [Introducción](https://immich.app/docs/overview/introduction)
 - [Instalación](https://immich.app/docs/install/requirements)
 - [Directrices para contribuir](https://immich.app/docs/overview/support-the-project)
-- [Apoya el proyecto](#support-the-project)
 
 ## Documentación
 
-Puedes encontrar la documentación principal, incluidas las guías de instalación, en <https://immich.app/>.
+Puedes encontrar la documentación oficial, incluidas las guías de instalación, en <https://immich.app/>.
 
-## Demostración
+## Demo
 
 Puedes acceder a la demostración web en <https://demo.immich.app>
 
-Para la aplicación móvil, puedes usar `https://demo.immich.app/api` como `URL de la terminal del servidor`.
+Para la aplicación móvil, puedes usar `https://demo.immich.app/api` en la `URL de la terminal del servidor`.
 
-```bash title="Credenciales de la demostración"
-Las credenciales son
-correo electrónico: demo@immich.app
+```bash title="Credenciales de la demo"
+Las Credenciales
+correo: demo@immich.app
 contraseña: demo
 ```
 
 ```bash
-Especificaciones: VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cuatro núcleos a 2.4 GHz, 24 GB de RAM
+Especificaciones: Una VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cuatro núcleos a 2.4 GHz, 24 GB de RAM
 ```
 
-## Funcionalidades
+## Funciones
 
 | Funcionalidades                                       | Móvil | Web |
 | ----------------------------------------------------- | ------ | --- |
@@ -97,19 +101,18 @@ Especificaciones: VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cua
 | Soporte sin conexión                                 | Sí     | No  |
 | Galería de solo lectura                              | Sí     | Sí  |
 
-## Apoya el proyecto
+## Contribuidores
 
-Me he comprometido con este proyecto, y no me detendré. Continuaré actualizando la documentación, agregando nuevas funcionalidades y corrigiendo errores. Pero no puedo hacerlo solo. Por eso, necesito tu ayuda para darme una motivación adicional para seguir adelante.
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>
 
-Como dijeron nuestros anfitriones en [selfhosted.show - En el episodio 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418), esto es una gran tarea de lo que el equipo y yo estamos haciendo. Y me encantaría poder dedicarme a esto a tiempo completo algún día, así que te pido tu ayuda para que eso sea posible.
+## Historial de Estrellas
 
-Si consideras que esta es una causa justa y la aplicación es algo que te gustaría usar durante mucho tiempo, por favor, considera apoyar el proyecto con las siguientes opciones.
-
-## Donación
-
-- [Donación mensual](https://github.com/sponsors/immich-app) a través de GitHub Sponsors
-- [Donación única](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=alextran1502) a través de GitHub Sponsors
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
-- ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>

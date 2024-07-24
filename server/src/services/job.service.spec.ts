@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
-import { FeatureFlag, SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfig, SystemConfigKey, SystemConfigKeyPaths } from 'src/entities/system-config.entity';
+import { SystemConfig } from 'src/config';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -12,20 +12,23 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { JobService } from 'src/services/job.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
-import { newSystemConfigRepositoryMock } from 'test/repositories/system-config.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { Mocked, vitest } from 'vitest';
 
 const makeMockHandlers = (status: JobStatus) => {
-  const mock = jest.fn().mockResolvedValue(status);
+  const mock = vitest.fn().mockResolvedValue(status);
   return Object.fromEntries(Object.values(JobName).map((jobName) => [jobName, mock])) as unknown as Record<
     JobName,
     JobHandler
@@ -34,21 +37,23 @@ const makeMockHandlers = (status: JobStatus) => {
 
 describe(JobService.name, () => {
   let sut: JobService;
-  let assetMock: jest.Mocked<IAssetRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
-  let eventMock: jest.Mocked<IEventRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
-  let metricMock: jest.Mocked<IMetricRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let metricMock: Mocked<IMetricRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     personMock = newPersonRepositoryMock();
     metricMock = newMetricRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, configMock, personMock, metricMock);
+    loggerMock = newLoggerRepositoryMock();
+    sut = new JobService(assetMock, eventMock, jobMock, systemMock, personMock, metricMock, loggerMock);
   });
 
   it('should work', () => {
@@ -66,7 +71,8 @@ describe(JobService.name, () => {
         { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
         { name: JobName.CLEAN_OLD_AUDIT_LOGS },
         { name: JobName.USER_SYNC_USAGE },
-        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
+        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
+        { name: JobName.CLEAN_OLD_SESSION_TOKENS },
       ]);
     });
   });
@@ -103,6 +109,7 @@ describe(JobService.name, () => {
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
         [QueueName.BACKGROUND_TASK]: expectedJobStatus,
+        [QueueName.DUPLICATE_DETECTION]: expectedJobStatus,
         [QueueName.SMART_SEARCH]: expectedJobStatus,
         [QueueName.METADATA_EXTRACTION]: expectedJobStatus,
         [QueueName.SEARCH]: expectedJobStatus,
@@ -114,6 +121,7 @@ describe(JobService.name, () => {
         [QueueName.FACIAL_RECOGNITION]: expectedJobStatus,
         [QueueName.SIDECAR]: expectedJobStatus,
         [QueueName.LIBRARY]: expectedJobStatus,
+        [QueueName.NOTIFICATION]: expectedJobStatus,
       });
     });
   });
@@ -227,14 +235,14 @@ describe(JobService.name, () => {
   describe('init', () => {
     it('should register a handler for each queue', async () => {
       await sut.init(makeMockHandlers(JobStatus.SUCCESS));
-      expect(configMock.load).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
       expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
     });
 
     it('should subscribe to config changes', async () => {
       await sut.init(makeMockHandlers(JobStatus.FAILED));
 
-      SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
+      SystemConfigCore.create(newSystemMetadataRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
           [QueueName.SMART_SEARCH]: { concurrency: 10 },
@@ -246,6 +254,7 @@ describe(JobService.name, () => {
           [QueueName.MIGRATION]: { concurrency: 10 },
           [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
           [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
+          [QueueName.NOTIFICATION]: { concurrency: 5 },
         },
       } as SystemConfig);
 
@@ -357,33 +366,6 @@ describe(JobService.name, () => {
         await jobMock.addHandler.mock.calls[0][2](item);
 
         expect(jobMock.queueAll).not.toHaveBeenCalled();
-      });
-    }
-
-    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKeyPaths }> = [
-      {
-        queue: QueueName.SMART_SEARCH,
-        feature: FeatureFlag.SMART_SEARCH,
-        configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
-      },
-      {
-        queue: QueueName.FACE_DETECTION,
-        feature: FeatureFlag.FACIAL_RECOGNITION,
-        configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
-      },
-      {
-        queue: QueueName.FACIAL_RECOGNITION,
-        feature: FeatureFlag.FACIAL_RECOGNITION,
-        configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
-      },
-    ];
-
-    for (const { queue, feature, configKey } of featureTests) {
-      it(`should throw an error if attempting to queue ${queue} when ${feature} is disabled`, async () => {
-        configMock.load.mockResolvedValue([{ key: configKey, value: false }]);
-        jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
-
-        await expect(sut.handleCommand(queue, { command: JobCommand.START, force: false })).rejects.toThrow();
       });
     }
   });

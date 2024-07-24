@@ -1,8 +1,16 @@
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newSystemMetadataRepositoryMock = (): jest.Mocked<ISystemMetadataRepository> => {
+export const newSystemMetadataRepositoryMock = (reset = true): Mocked<ISystemMetadataRepository> => {
+  if (reset) {
+    SystemConfigCore.reset();
+  }
+
   return {
-    get: jest.fn(),
-    set: jest.fn(),
+    get: vitest.fn() as any,
+    set: vitest.fn(),
+    delete: vitest.fn(),
+    readFile: vitest.fn(),
   };
 };

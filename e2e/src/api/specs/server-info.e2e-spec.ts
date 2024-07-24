@@ -1,4 +1,4 @@
-import { LoginResponseDto, getServerConfig } from '@immich/sdk';
+import { LoginResponseDto } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
@@ -15,16 +15,50 @@ describe('/server-info', () => {
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
-  describe('GET /server-info', () => {
+  describe('GET /server-info/about', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/server-info');
+      const { status, body } = await request(app).get('/server-info/about');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should return about information', async () => {
+      const { status, body } = await request(app)
+        .get('/server-info/about')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        version: expect.any(String),
+        versionUrl: expect.any(String),
+        repository: 'immich-app/immich',
+        repositoryUrl: 'https://github.com/immich-app/immich',
+        build: '1234567890',
+        buildUrl: 'https://github.com/immich-app/immich/actions/runs/1234567890',
+        buildImage: 'e2e',
+        buildImageUrl: 'https://github.com/immich-app/immich/pkgs/container/immich-server',
+        sourceRef: 'e2e',
+        sourceCommit: 'e2eeeeeeeeeeeeeeeeee',
+        sourceUrl: 'https://github.com/immich-app/immich/commit/e2eeeeeeeeeeeeeeeeee',
+        nodejs: expect.any(String),
+        ffmpeg: expect.any(String),
+        imagemagick: expect.any(String),
+        libvips: expect.any(String),
+        exiftool: expect.any(String),
+        licensed: false,
+      });
+    });
+  });
+
+  describe('GET /server-info/storage', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/server-info/storage');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should return the disk information', async () => {
       const { status, body } = await request(app)
-        .get('/server-info')
+        .get('/server-info/storage')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -66,6 +100,7 @@ describe('/server-info', () => {
       expect(body).toEqual({
         smartSearch: false,
         configFile: false,
+        duplicateDetection: false,
         facialRecognition: false,
         map: true,
         reverseGeocoding: true,
@@ -75,6 +110,7 @@ describe('/server-info', () => {
         search: true,
         sidecar: true,
         trash: true,
+        email: false,
       });
     });
   });
@@ -160,21 +196,6 @@ describe('/server-info', () => {
       expect(body).toEqual({
         customCss: '',
       });
-    });
-  });
-
-  describe('POST /server-info/admin-onboarding', () => {
-    it('should set admin onboarding', async () => {
-      const config = await getServerConfig({});
-      expect(config.isOnboarded).toBe(false);
-
-      const { status } = await request(app)
-        .post('/server-info/admin-onboarding')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
-
-      const newConfig = await getServerConfig({});
-      expect(newConfig.isOnboarded).toBe(true);
     });
   });
 });
