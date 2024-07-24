@@ -59,7 +59,7 @@
   {disabled}
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
-  class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all hover:dark:text-immich-dark-gray {className} {mobileClass}"
+  class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all disabled:cursor-default hover:dark:text-immich-dark-gray {className} {mobileClass}"
   aria-haspopup={ariaHasPopup}
   aria-expanded={ariaExpanded}
   aria-controls={ariaControls}

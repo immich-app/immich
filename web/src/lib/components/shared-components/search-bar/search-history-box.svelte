@@ -21,6 +21,7 @@
   $: suggestionCount = showClearAll ? filteredSearchTerms.length + 1 : filteredSearchTerms.length;
 
   let selectedIndex: number | undefined = undefined;
+  let element: HTMLDivElement;
 
   export function moveSelection(increment: 1 | -1) {
     if (!isSearchSuggestions) {
@@ -44,12 +45,8 @@
     if (selectedIndex === undefined) {
       return;
     }
-    if (selectedIndex === 0 && showClearAll) {
-      handleClearAll();
-    } else {
-      const index = showClearAll ? selectedIndex - 1 : selectedIndex;
-      handleSelect(filteredSearchTerms[index]);
-    }
+    const selectedElement = element.querySelector(`#${getId(selectedIndex)}`) as HTMLElement;
+    selectedElement?.click();
   }
 
   const handleClearAll = () => {
@@ -75,7 +72,7 @@
   };
 </script>
 
-<div role="listbox" {id} aria-label={$t('recent_searches')}>
+<div role="listbox" {id} aria-label={$t('recent_searches')} bind:this={element}>
   {#if isOpen && isSearchSuggestions}
     <div
       transition:fly={{ y: 25, duration: 150 }}
