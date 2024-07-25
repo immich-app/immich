@@ -533,7 +533,7 @@ export class LibraryService implements OnEvents {
     return JobStatus.SUCCESS;
   }
 
-  // Check if an asset has no file or is outside of import paths, marking it as offline
+  // Checks if an online asset should be marked as offline, either due to missing path, or path outside of any import path
   async handleOfflineCheck(job: ILibraryOfflineJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
@@ -544,14 +544,19 @@ export class LibraryService implements OnEvents {
 
     const exists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
 
-    const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
+    if (exists) {
+      const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
 
-    if (exists && isInPath) {
-      this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
-    } else {
-      this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
-      await this.assetRepository.update({ id: asset.id, isOffline: true });
+      if (isInPath) {
+        // Asset path exists and is within an import path
+        this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
+        return JobStatus.SUCCESS;
+      }
     }
+
+    // Either asset path does not exist, or it is outside of any import path
+    this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
+    await this.assetRepository.update({ id: asset.id, isOffline: true });
 
     return JobStatus.SUCCESS;
   }
@@ -602,16 +607,31 @@ export class LibraryService implements OnEvents {
       exclusionPatterns: library.exclusionPatterns,
     });
 
+    let crawlDone = false;
+    let crawlCounter = 0;
+    let crawledAssetPaths: string[] = [];
+
+    // (Re-)import all assets found on disk
+    for await (const crawlResult of crawledAssets) {
+      crawledAssetPaths.push(crawlResult);
+
+      if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0 || crawlDone) {
+        // We have reached the batch size or the end of the generator, scan the batch
+        this.logger.log(`Queueing scan of ${crawledAssetPaths.length} crawled asset(s) in library ${library.id}...`);
+
+        await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
+        crawledAssetPaths = [];
+      }
+    }
+
+    let existingAssetsDone = false;
+    let existingAssetCounter = 0;
     const onlineAssets = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 
-    let crawlDone = false;
-    let existingAssetsDone = false;
-    let crawlCounter = 0;
-    let existingAssetCounter = 0;
-
-    const checkIfOnlineAssetsAreOffline = async () => {
+    // Check all existing online assets to see if they are still online
+    while (!existingAssetsDone) {
       const existingAssetPage = await onlineAssets.next();
       existingAssetsDone = existingAssetPage.done ?? true;
 
@@ -627,40 +647,10 @@ export class LibraryService implements OnEvents {
           })),
         );
       }
-    };
-
-    let crawledAssetPaths: string[] = [];
-
-    while (!crawlDone) {
-      const crawlResult = await crawledAssets.next();
-
-      crawlDone = crawlResult.done ?? true;
-
-      if (!crawlDone) {
-        crawledAssetPaths.push(crawlResult.value);
-        crawlCounter++;
-      }
-
-      if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0 || crawlDone) {
-        this.logger.log(`Queueing scan of ${crawledAssetPaths.length} asset path(s) in library ${library.id}...`);
-        // We have reached the batch size or the end of the generator, scan the assets
-        await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
-        crawledAssetPaths = [];
-
-        if (!existingAssetsDone) {
-          // Interweave the queuing of offline checks with the asset scanning (if any)
-          await checkIfOnlineAssetsAreOffline();
-        }
-      }
-    }
-
-    // If there are any remaining assets to check for offline status, do so
-    while (!existingAssetsDone) {
-      await checkIfOnlineAssetsAreOffline();
     }
 
     this.logger.log(
-      `Finished queuing scan of ${crawlCounter} crawled and ${existingAssetCounter} existing asset(s) in library ${library.id}`,
+      `Queued scan of ${crawlCounter} crawled and ${existingAssetCounter} existing asset(s) in library ${library.id}`,
     );
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
