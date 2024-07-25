@@ -1,7 +1,7 @@
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { activateLicense, getActivationKey } from '$lib/utils/license-utils';
+import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
@@ -18,7 +18,7 @@ export const load = (async ({ url }) => {
     }
 
     if (licenseKey && activationKey) {
-      const response = await activateLicense(licenseKey, activationKey);
+      const response = await activateProduct(licenseKey, activationKey);
       if (response.activatedAt !== '') {
         isActivated = true;
         purchaseStore.setPurchaseStatus(true);

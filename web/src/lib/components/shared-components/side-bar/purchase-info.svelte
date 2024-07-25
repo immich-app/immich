@@ -79,12 +79,12 @@
   <div class="hidden md:block license-status pl-4 text-sm">
     {#if $isPurchased && $preferences.purchase.showSupportBadge}
       <button
-        on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-license-settings`)}
+        on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
         class="w-full"
         type="button"
       >
         <div
-          class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 border supporter-border rounded-lg transition-all"
+          class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 border supporter-effect rounded-lg transition-all"
         >
           <div class="h-6 w-6">
             <ImmichLogo noText />
@@ -177,45 +177,3 @@
     </div>
   {/if}
 </Portal>
-
-<style>
-  .supporter-border {
-    position: relative;
-    border: 0px solid transparent;
-    background-clip: padding-box;
-    animation: gradient 10s ease infinite;
-  }
-
-  .supporter-border:hover:before {
-    position: absolute;
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    background: linear-gradient(
-      to right,
-      rgba(16, 132, 254, 0.5),
-      rgba(229, 125, 175, 0.5),
-      rgba(254, 36, 29, 0.5),
-      rgba(255, 183, 0, 0.5),
-      rgba(22, 193, 68, 0.5)
-    );
-    content: '';
-    z-index: -1;
-    border-radius: 8px;
-    animation: gradient 10s ease infinite;
-    background-size: 400% 400%;
-  }
-
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-</style>

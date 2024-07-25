@@ -10,6 +10,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAlertCircleOutline, mdiLicense } from '@mdi/js';
   import { purchaseStore } from '$lib/stores/purchase.store';
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
 
   export let data: PageData;
   let showLicenseActivated = false;
@@ -31,10 +32,11 @@
 
       {#if $isPurchased}
         <div
-          class="bg-immich-primary/10 text-immich-primary px-4 py-3 rounded-md flex place-items-center place-content-center gap-2 mb-5 dark:text-black dark:bg-immich-dark-primary"
-          role="alert"
+          class="flex gap-1 mt-2 place-items-center place-content-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 border rounded-lg dark:text-white supporter-effect"
         >
-          <Icon path={mdiLicense} size="24" />
+          <div class="h-8 w-8">
+            <ImmichLogo noText />
+          </div>
           <p>{$t('purchase_account_info')}</p>
         </div>
       {/if}
