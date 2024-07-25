@@ -263,10 +263,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.external],
-        hasNextPage: false,
-      });
+      assetMock.getById.mockResolvedValue(assetStub.external);
 
       await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
