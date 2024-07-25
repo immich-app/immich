@@ -567,6 +567,7 @@
     "failed_to_get_people": "Failed to get people",
     "failed_to_load_asset": "Failed to load asset",
     "failed_to_load_assets": "Failed to load assets",
+    "failed_to_load_people": "Failed to load people",
     "failed_to_stack_assets": "Failed to stack assets",
     "failed_to_unstack_assets": "Failed to un-stack assets",
     "import_path_already_exists": "This import path already exists.",

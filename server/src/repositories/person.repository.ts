@@ -16,7 +16,7 @@ import {
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Paginated, PaginationOptions, paginate } from 'src/utils/pagination';
+import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()
@@ -64,8 +64,8 @@ export class PersonRepository implements IPersonRepository {
     return paginate(this.personRepository, pagination, options);
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
+  @GenerateSql({ params: [{ take: 10, skip: 10 }, DummyValue.UUID] })
+  getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions): Paginated<PersonEntity> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
@@ -76,15 +76,18 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
+      .addOrderBy('person.createdAt')
       .andWhere("person.thumbnailPath != ''")
       .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
-      .groupBy('person.id')
-      .limit(500);
+      .groupBy('person.id');
     if (!options?.withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
 
-    return queryBuilder.getMany();
+    return paginatedBuilder(queryBuilder, {
+      mode: PaginationMode.LIMIT_OFFSET,
+      ...pagination,
+    });
   }
 
   @GenerateSql()
