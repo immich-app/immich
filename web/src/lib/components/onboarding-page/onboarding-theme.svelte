@@ -1,18 +1,14 @@
 <script lang="ts">
   import { mdiArrowRight } from '@mdi/js';
-  import Button from '../elements/buttons/button.svelte';
-  import Icon from '../elements/icon.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
-  import { createEventDispatcher } from 'svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
   import { Theme } from '$lib/constants';
   import { t } from 'svelte-i18n';
 
-  const dispatch = createEventDispatcher<{
-    done: void;
-    previous: void;
-  }>();
+  export let onDone: () => void;
 </script>
 
 <OnboardingCard>
@@ -51,8 +47,8 @@
 
   <div class="flex">
     <div class="w-full flex place-content-end">
-      <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
-        <p>{$t('admin.storage_template_settings')}</p>
+      <Button class="flex gap-2 place-content-center" on:click={() => onDone()}>
+        <p>{$t('privacy')}</p>
         <Icon path={mdiArrowRight} size="18" />
       </Button>
     </div>
