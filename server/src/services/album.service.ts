@@ -89,7 +89,7 @@ export class AlbumService {
       albums.map(async (album) => {
         const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
         return {
-          ...mapAlbumWithoutAssets(album),
+          ...mapAlbumWithAssets(album),
           sharedLinks: undefined,
           startDate: albumMetadata[album.id].startDate,
           endDate: albumMetadata[album.id].endDate,
