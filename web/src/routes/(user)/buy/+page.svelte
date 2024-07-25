@@ -8,7 +8,7 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAlertCircleOutline, mdiLicense } from '@mdi/js';
+  import { mdiAlertCircleOutline } from '@mdi/js';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
 

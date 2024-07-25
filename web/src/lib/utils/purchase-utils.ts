@@ -16,11 +16,7 @@ export const getButtonVisibility = (): boolean => {
   const hideUntilDate = DateTime.fromISO(purchase.hideBuyButtonUntil);
   const dayLeft = Number(now.diff(hideUntilDate, 'days').days.toFixed(0));
 
-  if (dayLeft <= 0) {
-    return false;
-  } else {
-    return true;
-  }
+  return dayLeft > 0;
 };
 
 export const setSupportBadgeVisibility = async (value: boolean) => {

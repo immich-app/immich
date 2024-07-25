@@ -31,7 +31,6 @@
   import { t } from 'svelte-i18n';
   import type { ComponentType, SvelteComponent } from 'svelte';
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
-  import AdminPurchaseSettings from '$lib/components/admin-page/settings/purchase-settings/admin-purchase-settings.svelte';
 
   export let data: PageData;
 
@@ -117,12 +116,6 @@
       title: $t('admin.notification_settings'),
       subtitle: $t('admin.notification_settings_description'),
       key: 'notifications',
-    },
-    {
-      component: AdminPurchaseSettings,
-      title: $t('admin.purchase_settings'),
-      subtitle: $t('admin.purchase_settings_description'),
-      key: 'purchase',
     },
     {
       component: ServerSettings,

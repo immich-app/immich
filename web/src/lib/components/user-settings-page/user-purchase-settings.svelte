@@ -12,7 +12,6 @@
     getServerLicense,
     isHttpError,
     type LicenseResponseDto,
-    updateMyPreferences,
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiLicense } from '@mdi/js';
