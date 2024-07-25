@@ -36,7 +36,7 @@ Face detection sends the generated preview image to the machine learning service
 
 ## How Facial Recognition Works
 
-The facial recognition algorithm we use is derived from DBSCAN, a popular clustering algorithm. It essentially treats each detected face as a point in a graph and aims to group points that are close to each other.
+The facial recognition algorithm we use is derived from [DBSCAN](https://www.youtube.com/watch?v=RDZUdRSDOok), a popular clustering algorithm. It essentially treats each detected face as a point in a graph and aims to group points that are close to each other.
 
 :::note
 An important concept is whether something is a _core point_. A core point has a minimum number of points around it within a certain distance. A non-core point can only be assigned to a cluster if it can reach a core point; a non-core point can't be used to extend a cluster even if it's part of one. In Immich, the _Minimum Recognized Faces_ setting controls the threshold to be considered a core point.
