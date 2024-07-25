@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsString, Max, MaxDate, Min, ValidateNested } from 'class-validator';
 import { PropertyLifecycle } from 'src/decorators';
@@ -64,13 +64,15 @@ export class PersonSearchDto {
   @ValidateBoolean({ optional: true })
   withHidden?: boolean;
 
-  @ApiProperty({ description: 'Page number for pagination', default: 1, required: false })
+  /** Page number for pagination */
+  @ApiPropertyOptional()
   @IsInt()
   @Min(1)
   @Type(() => Number)
   page: number = 1;
 
-  @ApiProperty({ description: 'Number of items per page', default: 500, required: false })
+  /** Number of items per page */
+  @ApiPropertyOptional()
   @IsInt()
   @Min(1)
   @Max(1000)
