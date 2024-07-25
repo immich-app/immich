@@ -235,7 +235,7 @@ const milestones: Item[] = [
     icon: mdiLicense,
     iconColor: 'gold',
     title: 'Licensing announcement',
-    description: 'The option to Purchase a license to support Immich!',
+    description: 'The option to purchase a license to support Immich!',
     release: 'v1.109.0',
   }),
   withRelease({
