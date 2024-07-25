@@ -4,7 +4,6 @@
   import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
   import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import { AppRoute } from '$lib/constants';
-  import { user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import Icon from '$lib/components/elements/icon.svelte';
