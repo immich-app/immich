@@ -612,14 +612,21 @@ export class LibraryService implements OnEvents {
     let crawledAssetPaths: string[] = [];
 
     // (Re-)import all assets found on disk
-    for await (const crawlResult of crawledAssets) {
-      crawledAssetPaths.push(crawlResult);
+    while (!crawlDone) {
+      const assetGenerator = await crawledAssets.next();
+      crawlDone = assetGenerator.done ?? true;
+
+      if (!crawlDone) {
+        crawledAssetPaths.push(assetGenerator.value);
+        crawlCounter++;
+      }
 
       if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0 || crawlDone) {
         // We have reached the batch size or the end of the generator, scan the batch
         this.logger.log(`Queueing scan of ${crawledAssetPaths.length} crawled asset(s) in library ${library.id}...`);
 
         await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
+        crawlCounter += crawledAssetPaths.length;
         crawledAssetPaths = [];
       }
     }
