@@ -12,14 +12,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-
 /// A stateless widget that provides functionality for editing an image.
-/// 
+///
 /// This widget allows users to edit an image provided either as an [Asset] or
 /// directly as an [Image]. It ensures that exactly one of these is provided.
-/// 
-/// It also includes a converstion method to convert an [Image] to a [Uint8List] to save the image on the user's phone
-/// They automatically navigate to the [HomePage] with the edited image saved and they eventually gets backed up to the server.
+///
+/// It also includes a conversion method to convert an [Image] to a [Uint8List] to save the image on the user's phone
+/// They automatically navigate to the [HomePage] with the edited image saved and they eventually get backed up to the server.
 @immutable
 @RoutePage()
 class EditImagePage extends StatelessWidget {
@@ -36,23 +35,26 @@ class EditImagePage extends StatelessWidget {
             'Must supply one of asset or image');
 
   Future<Uint8List> _imageToUint8List(Image image) async {
-  final Completer<Uint8List> completer = Completer();
-  image.image.resolve(const ImageConfiguration()).addListener(
-    ImageStreamListener(
-      (ImageInfo info, bool _) {
-        info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
-          if (byteData != null) {
-            completer.complete(byteData.buffer.asUint8List());
-          } else {
-            completer.completeError('Failed to convert image to bytes');
-          }
-        });
-      },
-      onError: (exception, stackTrace) => completer.completeError(exception),
-    ),
-  );
-  return completer.future;
-}
+    final Completer<Uint8List> completer = Completer();
+    image.image.resolve(const ImageConfiguration()).addListener(
+          ImageStreamListener(
+            (ImageInfo info, bool _) {
+              info.image
+                  .toByteData(format: ImageByteFormat.png)
+                  .then((byteData) {
+                if (byteData != null) {
+                  completer.complete(byteData.buffer.asUint8List());
+                } else {
+                  completer.completeError('Failed to convert image to bytes');
+                }
+              });
+            },
+            onError: (exception, stackTrace) =>
+                completer.completeError(exception),
+          ),
+        );
+    return completer.future;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +89,7 @@ class EditImagePage extends StatelessWidget {
                   msg: 'No edits made!',
                   gravity: ToastGravity.BOTTOM,
                 );
+                Navigator.of(context).popUntil((route) => route.isFirst);
               } else {
                 try {
                   final Uint8List imageData = await _imageToUint8List(image!);
@@ -96,8 +99,10 @@ class EditImagePage extends StatelessWidget {
                     msg: 'Image Saved!',
                     gravity: ToastGravity.BOTTOM,
                   );
+
                   ///Ignore the warning here, planning to modify this in future PRs
-                  final AssetEntity? entity = await PhotoManager.editor.saveImage(imageData, title: "_edited.jpg"); 
+                  final AssetEntity? entity = await PhotoManager.editor
+                      .saveImage(imageData, title: "_edited.jpg");
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 } catch (e) {
                   ImmichToast.show(
@@ -124,14 +129,15 @@ class EditImagePage extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: Container(
-        height: 60,
-        margin: const EdgeInsets.only(bottom: 50, right: 10, left: 10, top: 10),
+        height: 80, 
+        margin: const EdgeInsets.only(
+            bottom: 20, right: 10, left: 10, top: 10), 
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(30),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             IconButton(
               icon: Icon(
@@ -142,7 +148,11 @@ class EditImagePage extends StatelessWidget {
               ),
               onPressed: () {
                 context.pushRoute(CropImageRoute(image: imageWidget));
-              } 
+              },
+            ),
+            const Text(
+              'Crop',
+              style: TextStyle(color: Colors.white),
             ),
           ],
         ),
