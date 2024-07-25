@@ -19,7 +19,7 @@
 
 <UserPageLayout title={$t('buy')}>
   <section class="mx-4 flex place-content-center">
-    <div class={`w-full ${$user.isAdmin ? 'max-w-3xl' : 'max-w-xl'}`}>
+    <div class="w-full max-w-3xl">
       {#if data.isActivated === false}
         <div
           class="bg-red-100 text-red-700 px-4 py-3 rounded-md flex place-items-center place-content-center gap-2"
