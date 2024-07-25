@@ -3,7 +3,7 @@
 
   import { onMount } from 'svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import {
     deleteServerLicense as deleteServerProductKey,
     deleteUserLicense as deleteIndividualProductKey,
@@ -12,6 +12,7 @@
     getServerLicense,
     isHttpError,
     type LicenseResponseDto,
+    updateMyPreferences,
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiLicense } from '@mdi/js';
@@ -20,7 +21,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import { t } from 'svelte-i18n';
-  import { getAccountAge } from '$lib/utils/auth';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   const { isPurchased } = purchaseStore;
 
   let isServerProduct = false;
@@ -108,6 +110,17 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     {#if $isPurchased}
+      <!-- BADGE TOGGLE -->
+      <div class="mb-4">
+        <SettingSwitch
+          title={$t('show_supporter_badge')}
+          subtitle={$t('show_supporter_badge_description')}
+          bind:checked={$preferences.purchase.showSupportBadge}
+          on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
+        />
+      </div>
+
+      <!-- PRODUCT KEY INFO CARD -->
       {#if isServerProduct}
         <div
           class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
@@ -115,7 +128,9 @@
           <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
           <div>
-            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Server</p>
+            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">
+              {$t('purchase_server_title')}
+            </p>
 
             {#if $user.isAdmin && serverPurchaseInfo?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">

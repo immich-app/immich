@@ -92,7 +92,7 @@
           <p class="dark:text-gray-100">Supporter</p>
         </div>
       </button>
-    {:else if showBuyButton}
+    {:else if !$isPurchased && showBuyButton}
       <button
         type="button"
         on:click={openPurchaseModal}

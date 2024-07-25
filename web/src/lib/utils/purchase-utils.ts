@@ -1,4 +1,5 @@
 import { preferences } from '$lib/stores/user.store';
+import { updateMyPreferences } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 
@@ -20,4 +21,16 @@ export const getButtonVisibility = (): boolean => {
   } else {
     return true;
   }
+};
+
+export const setSupportBadgeVisibility = async (value: boolean) => {
+  const response = await updateMyPreferences({
+    userPreferencesUpdateDto: {
+      purchase: {
+        showSupportBadge: value,
+      },
+    },
+  });
+
+  preferences.set(response);
 };

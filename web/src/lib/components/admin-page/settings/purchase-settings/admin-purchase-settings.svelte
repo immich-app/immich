@@ -83,7 +83,7 @@
     try {
       const isConfirmed = await dialogController.show({
         title: 'Remove License',
-        prompt: 'Are you sure you want to remove the Server license?',
+        prompt: 'Are you sure you want to remove the Server key?',
         confirmText: 'Remove',
         cancelText: 'Cancel',
       });
@@ -95,7 +95,7 @@
       await deleteServerLicense();
       purchaseStore.setPurchaseStatus(false);
     } catch (error) {
-      handleError(error, 'Failed to remove license');
+      handleError(error, 'Failed to remove Server key');
     }
   };
 
@@ -118,7 +118,7 @@
               <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
               <div>
-                <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Server License</p>
+                <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Server Key</p>
 
                 {#if $user.isAdmin && serverLicenseInfo?.activatedAt}
                   <p class="dark:text-white text-sm mt-1 col-start-2">
