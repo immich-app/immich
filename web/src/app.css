@@ -142,4 +142,46 @@ input:focus-visible {
   .scrollbar-stable {
     scrollbar-gutter: stable both-edges;
   }
+
+  /* Supporter Effect */
+  .supporter-effect {
+    position: relative;
+    border: 0px solid transparent;
+    background-clip: padding-box;
+    animation: gradient 10s ease infinite;
+    z-index: 1;
+  }
+
+  .supporter-effect:hover:after {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    background: linear-gradient(
+      to right,
+      rgba(16, 132, 254, 0.25),
+      rgba(229, 125, 175, 0.25),
+      rgba(254, 36, 29, 0.25),
+      rgba(255, 183, 0, 0.25),
+      rgba(22, 193, 68, 0.25)
+    );
+    content: '';
+    border-radius: 8px;
+    animation: gradient 10s ease infinite;
+    background-size: 400% 400%;
+    z-index: -1;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }

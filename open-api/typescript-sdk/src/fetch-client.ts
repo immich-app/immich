@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.109.2
+ * 1.110.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -95,11 +95,16 @@ export type EmailNotificationsResponse = {
 export type MemoryResponse = {
     enabled: boolean;
 };
+export type PurchaseResponse = {
+    hideBuyButtonUntil: string;
+    showSupportBadge: boolean;
+};
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     memories: MemoryResponse;
+    purchase: PurchaseResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -115,11 +120,16 @@ export type EmailNotificationsUpdate = {
 export type MemoryUpdate = {
     enabled?: boolean;
 };
+export type PurchaseUpdate = {
+    hideBuyButtonUntil?: string;
+    showSupportBadge?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
+    purchase?: PurchaseUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -607,6 +617,8 @@ export type UpdatePartnerDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
+    /** This property was added in v1.110.0 */
+    hasNextPage?: boolean;
     hidden: number;
     people: PersonResponseDto[];
     total: number;
@@ -2173,13 +2185,17 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
-export function getAllPeople({ withHidden }: {
+export function getAllPeople({ page, size, withHidden }: {
+    page?: number;
+    size?: number;
     withHidden?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PeopleResponseDto;
     }>(`/people${QS.query(QS.explode({
+        page,
+        size,
         withHidden
     }))}`, {
         ...opts
