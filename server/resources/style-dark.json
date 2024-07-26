@@ -3175,6 +3175,6 @@
       }
     }
   ],
-  "sprite": "https://protomaps.github.io/basemaps-assets/sprites/v3/dark",
-  "glyphs": "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf"
+  "sprite": "https://static.immich.cloud/tiles/sprites/v1/dark",
+  "glyphs": "https://static.immich.cloud/tiles/fonts/{fontstack}/{range}.pbf"
 }
