@@ -43,9 +43,9 @@ export const ImmichLayout = ({ children, preview }: ImmichLayoutProps) => (
         />
       </Head>
       <Preview>{preview}</Preview>
-      <Body className="my-auto mx-auto px-2 font-sans text-base text-immich-primary">
+      <Body className="bg-[#F4F4f4] my-auto mx-auto px-2 font-sans text-base text-gray-800">
         <Container className="my-[40px] mx-auto max-w-[465px]">
-          <Section className="my-6 p-12 border border-red-400 rounded-[50px] bg-slate-200">
+          <Section className="my-6 p-12 border border-red-400 rounded-[50px] bg-gray-50">
             <Section className="flex justify-center mb-12">
               <Img
                 src="https://immich.app/img/immich-logo-inline-light.png"

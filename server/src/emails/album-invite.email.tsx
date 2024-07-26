@@ -13,7 +13,7 @@ export const AlbumInviteEmail = ({
   cid,
 }: AlbumInviteEmailProps) => (
   <ImmichLayout preview="You have been added to a shared album.">
-    <Text className="m-0 text-2xl">
+    <Text className="m-0">
       Hey <strong>{recipientName}</strong>!
     </Text>
 

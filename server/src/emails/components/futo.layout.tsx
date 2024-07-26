@@ -72,16 +72,7 @@ export const FutoLayout = ({ children, preview }: FutoLayoutProps) => (
 
           <Section className="flex justify-center my-6">
             <Link href="https://futo.org">
-              <Img
-                className="h-6"
-                src="https://futo.org/images/FutoMainLogo.svg"
-                alt="FUTO"
-                // style={{
-                //   height: '24px',
-                //   marginTop: '25px',
-                //   marginBottom: '25px',
-                // }}
-              />
+              <Img className="h-6" src="https://futo.org/images/FutoMainLogo.svg" alt="FUTO" />
             </Link>
           </Section>
 

@@ -5,7 +5,7 @@ import ImmichLayout from './components/immich.layout';
 
 export const TestEmail = ({ baseUrl, displayName }: TestEmailProps) => (
   <ImmichLayout preview="This is a test email from Immich.">
-    <Text className="m-0 text-2xl">
+    <Text className="m-0">
       Hey <strong>{displayName}</strong>!
     </Text>
 
