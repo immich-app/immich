@@ -1,7 +1,7 @@
 <script lang="ts">
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
-  import { onDestroy, tick } from 'svelte';
+  import { onDestroy } from 'svelte';
 
   const accordionState = getAccordionState();
 
