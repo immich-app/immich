@@ -88,7 +88,8 @@
     "sirv": "^2.0.4",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
-    "ua-parser-js": "^1.0.35"
+    "ua-parser-js": "^1.0.35",
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.1.16",
