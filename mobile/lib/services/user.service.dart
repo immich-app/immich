@@ -73,9 +73,9 @@ class UserService {
   Future<List<User>?> getUsersFromServer() async {
     final List<User>? users = await _getAllUsers();
     final List<User>? sharedBy =
-        await _partnerService.getPartners(PartnerDirection.sharedBy);
+        await _partnerService.getPartners(PartnerDirection.by);
     final List<User>? sharedWith =
-        await _partnerService.getPartners(PartnerDirection.sharedWith);
+        await _partnerService.getPartners(PartnerDirection.with_);
 
     if (users == null || sharedBy == null || sharedWith == null) {
       _log.warning("Failed to refresh users");

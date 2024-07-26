@@ -41,8 +41,7 @@
     {/if}
   </td>
   <td class="text-md text-ellipsis text-center sm:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]">
-    {album.assetCount}
-    {album.assetCount > 1 ? `items` : `item`}
+    {$t('items_count', { values: { count: album.assetCount } })}
   </td>
   <td class="text-md hidden text-ellipsis text-center sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]">
     {dateLocaleString(album.updatedAt)}

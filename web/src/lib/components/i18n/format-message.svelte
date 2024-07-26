@@ -1,5 +1,10 @@
+<script lang="ts" context="module">
+  import type { FormatXMLElementFn, PrimitiveType } from 'intl-messageformat';
+  export type InterpolationValues = Record<string, PrimitiveType | FormatXMLElementFn<unknown>>;
+</script>
+
 <script lang="ts">
-  import { IntlMessageFormat, type FormatXMLElementFn, type PrimitiveType } from 'intl-messageformat';
+  import { IntlMessageFormat } from 'intl-messageformat';
   import {
     TYPE,
     type MessageFormatElement,
@@ -7,8 +12,6 @@
     type SelectElement,
   } from '@formatjs/icu-messageformat-parser';
   import { locale as i18nLocale, json } from 'svelte-i18n';
-
-  type InterpolationValues = Record<string, PrimitiveType | FormatXMLElementFn<unknown>>;
 
   type MessagePart = {
     message: string;

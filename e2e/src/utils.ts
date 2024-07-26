@@ -50,11 +50,10 @@ type CommandResponse = { stdout: string; stderr: string; exitCode: number | null
 type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete' | 'assetHidden';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
-type AssetData = { bytes?: Buffer; filename: string };
+type FileData = { bytes?: Buffer; filename: string };
 
 const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
-const baseUrl = 'http://127.0.0.1:2283';
-
+export const baseUrl = 'http://127.0.0.1:2283';
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
@@ -292,7 +291,10 @@ export const utils = {
 
   createAsset: async (
     accessToken: string,
-    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData' | 'sidecarData'>> & {
+      assetData?: FileData;
+      sidecarData?: FileData;
+    },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -314,6 +316,10 @@ export const utils = {
       .attach('assetData', assetData, filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
+    if (dto?.sidecarData?.bytes) {
+      void builder.attach('sidecarData', dto.sidecarData.bytes, dto.sidecarData.filename);
+    }
+
     for (const [key, value] of Object.entries(_dto)) {
       void builder.field(key, String(value));
     }
@@ -326,7 +332,7 @@ export const utils = {
   replaceAsset: async (
     accessToken: string,
     assetId: string,
-    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: FileData },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',

@@ -254,7 +254,7 @@ describe('/server', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send(serverLicense);
       const { status } = await request(app).get('/server/license').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(200);
+      expect(status).toBe(404);
     });
   });
 
