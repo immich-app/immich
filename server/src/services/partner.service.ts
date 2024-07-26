@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { PartnerResponseDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
+import { PartnerResponseDto, PartnerSearchDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
@@ -38,7 +38,7 @@ export class PartnerService {
     await this.repository.remove(partner);
   }
 
-  async getAll(auth: AuthDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
+  async search(auth: AuthDto, { direction }: PartnerSearchDto): Promise<PartnerResponseDto[]> {
     const partners = await this.repository.getAll(auth.user.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners

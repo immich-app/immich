@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="app.alextran.immich"
   xmlns:tools="http://schemas.android.com/tools">
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
-    android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true">
+    android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"  android:largeHeap="true">
 
     <meta-data
       android:name="io.flutter.embedding.android.EnableImpeller"

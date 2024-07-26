@@ -14,9 +14,10 @@
     sidebarSettings,
   } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
+  import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
   import { onMount } from 'svelte';
+  import { locale as i18nLocale, t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { t, init } from 'svelte-i18n';
   import { invalidateAll } from '$app/navigation';
 
   let time = new Date();
@@ -37,6 +38,7 @@
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,
   };
+  $: closestLanguage = getClosestAvailableLocale([$lang], langCodes);
 
   onMount(() => {
     const interval = setInterval(() => {
@@ -78,13 +80,7 @@
   const handleLanguageChange = async (newLang: string | undefined) => {
     if (newLang) {
       $lang = newLang;
-
-      if (newLang === 'dev') {
-        // Reload required, because fallbackLocale cannot be cleared.
-        window.location.reload();
-      }
-
-      await init({ fallbackLocale: defaultLang.code, initialLocale: newLang });
+      await i18nLocale.set(newLang);
       await invalidateAll();
     }
   };
@@ -111,7 +107,7 @@
       <div class="ml-4">
         <SettingCombobox
           comboboxPlaceholder={$t('language')}
-          selectedOption={langOptions.find(({ value }) => value === $lang) || defaultLangOption}
+          selectedOption={langOptions.find(({ value }) => value === closestLanguage) || defaultLangOption}
           options={langOptions}
           title={$t('language')}
           subtitle={$t('language_setting_description')}

@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.7",
+  "version": "2.2.12",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
@@ -18,7 +18,7 @@
     "@types/cli-progress": "^3.11.0",
     "@types/lodash-es": "^4.17.12",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^20.14.9",
+    "@types/node": "^20.14.12",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vitest/coverage-v8": "^1.2.2",
@@ -31,11 +31,12 @@
     "eslint-plugin-unicorn": "^54.0.0",
     "mock-fs": "^5.2.0",
     "prettier": "^3.2.5",
-    "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-organize-imports": "^4.0.0",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^1.2.2",
+    "vitest-fetch-mock": "^0.2.2",
     "yaml": "^2.3.1"
   },
   "scripts": {
@@ -59,9 +60,10 @@
   },
   "dependencies": {
     "fast-glob": "^3.3.2",
+    "fastq": "^1.17.1",
     "lodash-es": "^4.17.21"
   },
   "volta": {
-    "node": "20.15.0"
+    "node": "20.15.1"
   }
 }

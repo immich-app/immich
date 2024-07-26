@@ -236,7 +236,7 @@
                     shadow
                     url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id])}
                     altText={selectedPersonToReassign[face.id].name}
-                    title={getPersonNameWithHiddenValue(
+                    title={$getPersonNameWithHiddenValue(
                       selectedPersonToReassign[face.id].name,
                       selectedPersonToReassign[face.id]?.isHidden,
                     )}
@@ -250,7 +250,7 @@
                     shadow
                     url={getPeopleThumbnailUrl(face.person)}
                     altText={face.person.name}
-                    title={getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
+                    title={$getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                     hidden={face.person.isHidden}

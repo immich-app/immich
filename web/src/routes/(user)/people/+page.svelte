@@ -1,13 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import { focusTrap } from '$lib/actions/focus-trap';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
+  import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
+  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
-  import ShowHide, { ToggleVisibilty } from '$lib/components/faces-page/show-hide.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
@@ -15,70 +18,48 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { locale } from '$lib/stores/preferences.store';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { clearQueryParam } from '$lib/utils/navigation';
   import {
+    getAllPeople,
     getPerson,
     mergePerson,
     searchPerson,
-    updatePeople,
     updatePerson,
-    type PeopleUpdateItem,
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
-  import type { PageData } from './$types';
-  import { locale } from '$lib/stores/preferences.store';
-  import { clearQueryParam } from '$lib/utils/navigation';
-  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { t } from 'svelte-i18n';
-  import { websocketEvents } from '$lib/stores/websocket';
+  import { quintOut } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
-  let people = data.people.people;
-  let countTotalPeople = data.people.total;
-  let countHiddenPeople = data.people.hidden;
+  $: people = data.people.people;
+  $: visiblePeople = people.filter((people) => !people.isHidden);
+  $: countVisiblePeople = searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden;
+  $: showPeople = searchName ? searchedPeopleLocal : visiblePeople;
 
   let selectHidden = false;
-  let initialHiddenValues: Record<string, boolean> = {};
-  let eyeColorMap: Record<string, 'black' | 'white'> = {};
-
   let searchName = '';
-
-  let showLoadingSpinner = false;
-  let toggleVisibility: ToggleVisibilty = ToggleVisibilty.VIEW_ALL;
-
   let showChangeNameModal = false;
   let showSetBirthDateModal = false;
   let showMergeModal = false;
   let personName = '';
+  let nextPage = data.people.hasNextPage ? 2 : null;
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
   let searchedPeopleLocal: PersonResponseDto[] = [];
   let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
-  let showPeople: PersonResponseDto[] = [];
-  let countVisiblePeople: number;
   let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
-
-  for (const person of people) {
-    initialHiddenValues[person.id] = person.isHidden;
-  }
-  $: {
-    if (searchName) {
-      showPeople = searchedPeopleLocal;
-      countVisiblePeople = searchedPeopleLocal.length;
-    } else {
-      showPeople = people.filter((person) => !person.isHidden);
-      countVisiblePeople = countTotalPeople - countHiddenPeople;
-    }
-  }
 
   onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -87,15 +68,30 @@
       handlePromiseError(handleSearchPeople(true, searchName));
     }
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
-      people.map((person) => {
+      for (const person of people) {
         if (person.id === personId) {
-          person.updatedAt = Date.now().toString();
+          person.updatedAt = new Date().toISOString();
         }
-      });
+      }
+
       // trigger reactivity
       people = people;
     });
   });
+
+  const loadNextPage = async () => {
+    if (!nextPage) {
+      return;
+    }
+
+    try {
+      const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
+      people = people.concat(newPeople);
+      nextPage = hasNextPage ? nextPage + 1 : null;
+    } catch (error) {
+      handleError(error, $t('errors.failed_to_load_people'));
+    }
+  };
 
   const handleSearch = async () => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -103,89 +99,6 @@
       $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
       await goto($page.url, { keepFocus: true });
     }
-  };
-
-  const handleCloseClick = () => {
-    for (const person of people) {
-      person.isHidden = initialHiddenValues[person.id];
-    }
-    // trigger reactivity
-    people = people;
-
-    // Reset variables used on the "Show & hide people"   modal
-    showLoadingSpinner = false;
-    selectHidden = false;
-    toggleVisibility = ToggleVisibilty.VIEW_ALL;
-  };
-
-  const handleResetVisibility = () => {
-    for (const person of people) {
-      person.isHidden = initialHiddenValues[person.id];
-    }
-
-    // trigger reactivity
-    people = people;
-  };
-
-  const handleToggleVisibility = (toggleVisibility: ToggleVisibilty) => {
-    for (const person of people) {
-      if (toggleVisibility == ToggleVisibilty.HIDE_ALL) {
-        person.isHidden = true;
-      }
-      if (toggleVisibility == ToggleVisibilty.VIEW_ALL) {
-        person.isHidden = false;
-      }
-      if (toggleVisibility == ToggleVisibilty.HIDE_UNNANEMD && !person.name) {
-        person.isHidden = true;
-      }
-    }
-
-    // trigger reactivity
-    people = people;
-  };
-
-  const handleDoneClick = async () => {
-    showLoadingSpinner = true;
-    let changed: PeopleUpdateItem[] = [];
-    try {
-      // Check if the visibility for each person has been changed
-      for (const person of people) {
-        if (person.isHidden !== initialHiddenValues[person.id]) {
-          changed.push({ id: person.id, isHidden: person.isHidden });
-          if (person.isHidden) {
-            countHiddenPeople++;
-          } else {
-            countHiddenPeople--;
-          }
-
-          // Update the initial hidden values
-          initialHiddenValues[person.id] = person.isHidden;
-        }
-      }
-
-      if (changed.length > 0) {
-        const results = await updatePeople({
-          peopleUpdateDto: { people: changed },
-        });
-        const count = results.filter(({ success }) => success).length;
-        if (results.length - count > 0) {
-          notificationController.show({
-            type: NotificationType.Error,
-            message: $t('errors.unable_to_change_visibility', { values: { count: results.length - count } }),
-          });
-        }
-        notificationController.show({
-          type: NotificationType.Info,
-          message: $t('visibility_changed', { values: { count: count } }),
-        });
-      }
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changed.length } }));
-    }
-    // Reset variables used on the "Show & hide people" modal
-    showLoadingSpinner = false;
-    selectHidden = false;
-    toggleVisibility = ToggleVisibilty.VIEW_ALL;
   };
 
   const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
@@ -205,10 +118,6 @@
 
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
-      if (personToMerge.isHidden) {
-        countHiddenPeople--;
-      }
-      countTotalPeople--;
       notificationController.show({
         message: $t('merge_people_successfully'),
         type: NotificationType.Info,
@@ -273,12 +182,7 @@
         return person;
       });
 
-      for (const person of people) {
-        initialHiddenValues[person.id] = person.isHidden;
-      }
-
       showChangeNameModal = false;
-      countHiddenPeople++;
       notificationController.show({
         message: $t('changed_visibility_successfully'),
         type: NotificationType.Info,
@@ -391,7 +295,7 @@
   };
 </script>
 
-<svelte:window bind:innerHeight use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: handleCloseClick }} />
+<svelte:window bind:innerHeight />
 
 {#if showMergeModal}
   <MergeSuggestionModal
@@ -409,7 +313,7 @@
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
   <svelte:fragment slot="buttons">
-    {#if countTotalPeople > 0}
+    {#if people.length > 0}
       <div class="flex gap-2 items-center justify-center">
         <div class="hidden sm:block">
           <div class="w-40 lg:w-80 h-10">
@@ -435,18 +339,22 @@
   </svelte:fragment>
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each showPeople as person, index (person.id)}
-        <PeopleCard
-          {person}
-          preload={index < 20}
-          on:change-name={() => handleChangeName(person)}
-          on:set-birth-date={() => handleSetBirthDate(person)}
-          on:merge-people={() => handleMergePeople(person)}
-          on:hide-person={() => handleHidePerson(person)}
-        />
-      {/each}
-    </div>
+    <PeopleInfiniteScroll
+      people={showPeople}
+      hasNextPage={!!nextPage && !searchName}
+      {loadNextPage}
+      let:person
+      let:index
+    >
+      <PeopleCard
+        {person}
+        preload={index < 20}
+        on:change-name={() => handleChangeName(person)}
+        on:set-birth-date={() => handleSetBirthDate(person)}
+        on:merge-people={() => handleMergePeople(person)}
+        on:hide-person={() => handleHidePerson(person)}
+      />
+    </PeopleInfiniteScroll>
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
@@ -494,42 +402,22 @@
     />
   {/if}
 </UserPageLayout>
+
 {#if selectHidden}
-  <ShowHide
-    onDone={handleDoneClick}
-    onClose={handleCloseClick}
-    onReset={handleResetVisibility}
-    onChange={handleToggleVisibility}
-    bind:showLoadingSpinner
-    bind:toggleVisibility
-    {countTotalPeople}
-    screenHeight={innerHeight}
+  <section
+    transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
+    class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="manage-visibility-title"
+    use:focusTrap
   >
-    <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each people as person, index (person.id)}
-        <button
-          type="button"
-          class="relative"
-          on:click={() => (person.isHidden = !person.isHidden)}
-          on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
-          on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
-        >
-          <ImageThumbnail
-            preload={searchName !== '' || index < 20}
-            bind:hidden={person.isHidden}
-            shadow
-            url={getPeopleThumbnailUrl(person)}
-            altText={person.name}
-            widthStyle="100%"
-            bind:eyeColor={eyeColorMap[person.id]}
-          />
-          {#if person.name}
-            <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
-              {person.name}
-            </span>
-          {/if}
-        </button>
-      {/each}
-    </div>
-  </ShowHide>
+    <ManagePeopleVisibility
+      bind:people
+      totalPeopleCount={data.people.total}
+      titleId="manage-visibility-title"
+      onClose={() => (selectHidden = false)}
+      {loadNextPage}
+    />
+  </section>
 {/if}

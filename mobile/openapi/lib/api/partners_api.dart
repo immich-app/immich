@@ -67,8 +67,8 @@ class PartnersApi {
   /// Performs an HTTP 'GET /partners' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] direction (required):
-  Future<Response> getPartnersWithHttpInfo(String direction,) async {
+  /// * [PartnerDirection] direction (required):
+  Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
     // ignore: prefer_const_declarations
     final path = r'/partners';
 
@@ -97,8 +97,8 @@ class PartnersApi {
 
   /// Parameters:
   ///
-  /// * [String] direction (required):
-  Future<List<PartnerResponseDto>?> getPartners(String direction,) async {
+  /// * [PartnerDirection] direction (required):
+  Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction,) async {
     final response = await getPartnersWithHttpInfo(direction,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));

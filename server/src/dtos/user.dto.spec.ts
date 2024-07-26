@@ -38,6 +38,22 @@ describe('create user DTO', () => {
     expect(errors).toHaveLength(0);
   });
 
+  it('validates invalid email type', async () => {
+    let dto = plainToInstance(UserAdminCreateDto, {
+      email: [],
+      password: 'some password',
+      name: 'some name',
+    });
+    expect(await validate(dto)).toHaveLength(1);
+
+    dto = plainToInstance(UserAdminCreateDto, {
+      email: {},
+      password: 'some password',
+      name: 'some name',
+    });
+    expect(await validate(dto)).toHaveLength(1);
+  });
+
   it('should allow emails without a tld', async () => {
     const someEmail = 'test@test';
 

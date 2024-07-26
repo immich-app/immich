@@ -3660,11 +3660,7 @@
             "required": true,
             "in": "query",
             "schema": {
-              "enum": [
-                "shared-by",
-                "shared-with"
-              ],
-              "type": "string"
+              "$ref": "#/components/schemas/PartnerDirection"
             }
           }
         ],
@@ -3828,6 +3824,29 @@
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 500,
+              "type": "number"
+            }
+          },
           {
             "name": "withHidden",
             "required": false,
@@ -5026,10 +5045,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/LicenseResponseDto"
                 }
               }
             },
+            "description": ""
+          },
+          "404": {
             "description": ""
           }
         },
@@ -7011,7 +7033,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.107.2",
+    "version": "1.110.0",
     "contact": {}
   },
   "tags": [],
@@ -9478,6 +9500,13 @@
         ],
         "type": "object"
       },
+      "PartnerDirection": {
+        "enum": [
+          "shared-by",
+          "shared-with"
+        ],
+        "type": "string"
+      },
       "PartnerResponseDto": {
         "properties": {
           "avatarColor": {
@@ -9530,6 +9559,10 @@
       },
       "PeopleResponseDto": {
         "properties": {
+          "hasNextPage": {
+            "description": "This property was added in v1.110.0",
+            "type": "boolean"
+          },
           "hidden": {
             "type": "integer"
           },
@@ -9745,6 +9778,32 @@
           "longitude",
           "name"
         ],
+        "type": "object"
+      },
+      "PurchaseResponse": {
+        "properties": {
+          "hideBuyButtonUntil": {
+            "type": "string"
+          },
+          "showSupportBadge": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hideBuyButtonUntil",
+          "showSupportBadge"
+        ],
+        "type": "object"
+      },
+      "PurchaseUpdate": {
+        "properties": {
+          "hideBuyButtonUntil": {
+            "type": "string"
+          },
+          "showSupportBadge": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "QueueStatusDto": {
@@ -10698,6 +10757,12 @@
             },
             "type": "array"
           },
+          "acceptedContainers": {
+            "items": {
+              "$ref": "#/components/schemas/VideoContainer"
+            },
+            "type": "array"
+          },
           "acceptedVideoCodecs": {
             "items": {
               "$ref": "#/components/schemas/VideoCodec"
@@ -10769,6 +10834,7 @@
           "accel",
           "accelDecode",
           "acceptedAudioCodecs",
+          "acceptedContainers",
           "acceptedVideoCodecs",
           "bframes",
           "cqMode",
@@ -11037,6 +11103,9 @@
           "mobileRedirectUri": {
             "type": "string"
           },
+          "profileSigningAlgorithm": {
+            "type": "string"
+          },
           "scope": {
             "type": "string"
           },
@@ -11061,6 +11130,7 @@
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
+          "profileSigningAlgorithm",
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
@@ -11708,13 +11778,17 @@
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryResponse"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
-          "memories"
+          "memories",
+          "purchase"
         ],
         "type": "object"
       },
@@ -11731,6 +11805,9 @@
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryUpdate"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseUpdate"
           }
         },
         "type": "object"
@@ -11848,6 +11925,15 @@
           "hevc",
           "vp9",
           "av1"
+        ],
+        "type": "string"
+      },
+      "VideoContainer": {
+        "enum": [
+          "mov",
+          "mp4",
+          "ogg",
+          "webm"
         ],
         "type": "string"
       }

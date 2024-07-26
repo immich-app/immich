@@ -21,20 +21,20 @@
     ? 'bg-immich-primary dark:bg-immich-dark-primary border-immich-primary dark:border-immich-dark-primary'
     : 'bg-gray-200 dark:bg-gray-800 border-gray-200 dark:border-gray-800'}"
 >
-  <div class="relative">
+  <div class="relative w-full">
     <button
       type="button"
       on:click={() => onSelectAsset(asset)}
-      class="block relative"
+      class="block relative w-full"
       aria-pressed={isSelected}
       aria-label={$t('keep')}
     >
       <!-- THUMBNAIL-->
       <img
         src={getAssetThumbnailUrl(asset.id)}
-        alt={getAltText(asset)}
+        alt={$getAltText(asset)}
         title={assetData}
-        class="h-60 object-cover rounded-t-xl"
+        class="h-60 object-cover rounded-t-xl w-full"
         draggable="false"
       />
 

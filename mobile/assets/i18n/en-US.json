@@ -531,5 +531,19 @@
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "viewer_remove_from_stack": "Remove from Stack",
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
-  "viewer_unstack": "Un-Stack"
+  "viewer_unstack": "Un-Stack",
+  "header_settings_header_name_input": "Header name",
+  "header_settings_header_value_input": "Header value",
+  "header_settings_page_title": "Proxy Headers",
+  "header_settings_add_header_tip": "Add Header",
+  "header_settings_field_validator_msg": "Value cannot be empty",
+  "client_cert_title": "SSL Client Certificate",
+  "client_cert_subtitle": "Supports PKCS12 (.p12, .pfx) format only. Certificate Import/Remove is available only before login",
+  "client_cert_import": "Import",
+  "client_cert_remove": "Remove",
+  "client_cert_remove_msg": "Client certificate is removed",
+  "client_cert_import_success_msg": "Client certificate is imported",
+  "client_cert_invalid_msg": "Invalid certificate file or wrong password",
+  "client_cert_dialog_msg_confirm": "OK",
+  "client_cert_enter_password": "Enter Password"
 }
