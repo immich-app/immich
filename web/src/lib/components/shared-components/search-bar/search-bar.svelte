@@ -162,7 +162,7 @@
         class="w-full transition-all border-2 px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg
         {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {(showSuggestions && isSearchSuggestions) || showFilter ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
-        {$isSearchEnabled ? 'border-gray-200 dark:border-gray-600 bg-white' : 'border-transparent'}"
+        {$isSearchEnabled ? 'border-gray-200 dark:border-gray-700 bg-white' : 'border-transparent'}"
         placeholder={$t('search_your_photos')}
         required
         pattern="^(?!m:$).*$"
