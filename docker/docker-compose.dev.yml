@@ -24,6 +24,7 @@ services:
       - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
       - /usr/src/app/node_modules
       - /etc/localtime:/etc/localtime:ro
+      - ../server/resources/v1.pmtiles:/usr/src/app/resources/v1.pmtiles
     env_file:
       - .env
     environment:

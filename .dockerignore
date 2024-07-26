@@ -25,6 +25,7 @@ server/upload/
 server/src/queries
 server/dist/
 server/www/
+server/resources/v1.pmtiles
 
 web/node_modules/
 web/coverage/

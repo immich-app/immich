@@ -5,7 +5,7 @@
   "sources": {
     "protomaps": {
       "type": "vector",
-      "url": "https://tiles.immich.cloud/v1.json"
+      "url": "http://localhost:2283/api/map/tiles.json"
     }
   },
   "layers": [

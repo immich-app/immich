@@ -3216,6 +3216,74 @@
         ]
       }
     },
+    "/map/tiles.json": {
+      "get": {
+        "operationId": "getTilesJson",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Map"
+        ]
+      }
+    },
+    "/map/tiles/{z}/{x}/{y}.{format}": {
+      "get": {
+        "operationId": "getTiles",
+        "parameters": [
+          {
+            "name": "format",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "y",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "z",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Map"
+        ]
+      }
+    },
     "/memories": {
       "get": {
         "operationId": "searchMemories",
