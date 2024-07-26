@@ -100,7 +100,7 @@
         on:mouseleave={() => (hoverButton = false)}
         on:focus={onButtonHover}
         on:blur={() => (hoverButton = false)}
-        class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/50 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 w-full"
+        class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/10 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 w-full"
       >
         <div class="flex justify-between w-full place-items-center place-content-center">
           <div class="flex place-items-center place-content-center gap-1">
@@ -126,7 +126,7 @@
 <Portal target="body">
   {#if showMessage}
     <div
-      class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:text-white text-black rounded-xl z-10 shadow-2xl px-6 py-5"
+      class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-gray-900 dark:text-white text-black rounded-xl z-10 shadow-2xl px-6 py-5"
       transition:fade={{ duration: 150 }}
       on:mouseover={() => (hoverMessage = true)}
       on:mouseleave={() => (hoverMessage = false)}
