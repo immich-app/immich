@@ -2,7 +2,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
-  import { mdiArrowLeft, mdiCheck } from '@mdi/js';
+  import { mdiArrowLeft, mdiCheck, mdiHarddisk } from '@mdi/js';
   import { onMount } from 'svelte';
   import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
@@ -22,11 +22,7 @@
   });
 </script>
 
-<OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">
-    {$t('admin.storage_template_settings').toUpperCase()}
-  </p>
-
+<OnboardingCard title={$t('admin.storage_template_settings')} icon={mdiHarddisk}>
   <p>
     <FormatMessage key="admin.storage_template_onboarding_description" let:message>
       <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
@@ -43,6 +39,7 @@
         {savedConfig}
         onSave={(config) => handleSave(config)}
         onReset={(options) => handleReset(options)}
+        duration={0}
       >
         <div class="flex pt-4">
           <div class="w-full flex place-content-start">

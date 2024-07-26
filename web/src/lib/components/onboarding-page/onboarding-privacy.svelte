@@ -1,7 +1,7 @@
 <script lang="ts">
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
-  import { mdiArrowLeft, mdiArrowRight } from '@mdi/js';
+  import { mdiArrowLeft, mdiArrowRight, mdiIncognito } from '@mdi/js';
   import { onMount } from 'svelte';
   import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -20,11 +20,7 @@
   });
 </script>
 
-<OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">
-    {$t('privacy').toUpperCase()}
-  </p>
-
+<OnboardingCard title={$t('privacy')} icon={mdiIncognito}>
   <p>
     {$t('onboarding_privacy_description')}
   </p>

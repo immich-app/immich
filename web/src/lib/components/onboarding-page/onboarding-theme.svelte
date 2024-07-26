@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { mdiArrowRight } from '@mdi/js';
+  import { mdiArrowRight, mdiThemeLightDark } from '@mdi/js';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
@@ -11,9 +11,7 @@
   export let onDone: () => void;
 </script>
 
-<OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">{$t('color_theme').toUpperCase()}</p>
-
+<OnboardingCard icon={mdiThemeLightDark} title={$t('color_theme')}>
   <div>
     <p class="pb-6 font-light">{$t('onboarding_theme_description')}</p>
   </div>
