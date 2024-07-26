@@ -14,7 +14,7 @@
     type LicenseResponseDto,
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiLicense } from '@mdi/js';
+  import { mdiKey } from '@mdi/js';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { handleError } from '$lib/utils/handle-error';
@@ -122,9 +122,9 @@
       <!-- PRODUCT KEY INFO CARD -->
       {#if isServerProduct}
         <div
-          class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
+          class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
         >
-          <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
+          <Icon path={mdiKey} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
           <div>
             <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">
@@ -133,27 +133,31 @@
 
             {#if $user.isAdmin && serverPurchaseInfo?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
-                Activated on {new Date(serverPurchaseInfo?.activatedAt).toLocaleDateString()}
+                {$t('purchase_activated_time', {
+                  values: { date: new Date(serverPurchaseInfo.activatedAt).toLocaleDateString() },
+                })}
               </p>
             {:else}
-              <p class="dark:text-white">Your product key is managed by the admin</p>
+              <p class="dark:text-white">{$t('purchase_settings_server_activated')}</p>
             {/if}
           </div>
         </div>
 
         {#if $user.isAdmin}
           <div class="text-right mt-4">
-            <Button size="sm" color="red" on:click={removeServerProductKey}>Remove key</Button>
+            <Button size="sm" color="red" on:click={removeServerProductKey}>{$t('purchase_button_remove_key')}</Button>
           </div>
         {/if}
       {:else}
         <div
-          class="bg-gray-50 border border-immich-dark-primary/50 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
+          class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pr-12 rounded-xl flex place-content-center gap-4"
         >
-          <Icon path={mdiLicense} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
+          <Icon path={mdiKey} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
 
           <div>
-            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">Individual</p>
+            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">
+              {$t('purchase_individual_title')}
+            </p>
             {#if $user.license?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
                 Activated on {new Date($user.license?.activatedAt).toLocaleDateString()}
@@ -163,7 +167,8 @@
         </div>
 
         <div class="text-right mt-4">
-          <Button size="sm" color="red" on:click={removeIndividualProductKey}>Remove key</Button>
+          <Button size="sm" color="red" on:click={removeIndividualProductKey}>{$t('purchase_button_remove_key')}</Button
+          >
         </div>
       {/if}
     {:else}

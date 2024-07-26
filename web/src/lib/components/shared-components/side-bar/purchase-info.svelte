@@ -107,7 +107,9 @@
             <div class="h-6 w-6">
               <ImmichLogo noText />
             </div>
-            <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">Buy immich</p>
+            <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
+              {$t('purchase_button_buy_immich')}
+            </p>
           </div>
 
           <div>
@@ -126,7 +128,7 @@
 <Portal target="body">
   {#if showMessage}
     <div
-      class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-gray-900 dark:text-white text-black rounded-xl z-10 shadow-2xl px-6 py-5"
+      class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       on:mouseover={() => (hoverMessage = true)}
       on:mouseleave={() => (hoverMessage = false)}
@@ -149,30 +151,24 @@
         />
       </div>
 
-      <h1 class="text-lg font-medium my-3">{$t('purchase_panel_title')}</h1>
+      <h1 class="text-lg font-medium my-3 dark:text-immich-dark-primary text-immich-primary">
+        {$t('purchase_panel_title')}
+      </h1>
 
       <div class="text-gray-800 dark:text-white my-4">
         <p>
-          Building Immich takes a lot of time and effort, and we have full-time engineers working on it to make it as
-          good as we possibly can.
+          {$t('purchase_panel_info_1')}
         </p>
         <br />
         <p>
-          Our mission is for open-source software and ethical business practices to become a sustainable income source
-          for developers and to create a privacy-respecting ecosystem with real alternatives to exploitative cloud
-          services.
-        </p>
-        <br />
-        <p>
-          As we’re committed not to add paywalls, this purchase will not grant you any additional features in Immich. We
-          rely on users like you to support Immich’s ongoing development.
+          {$t('purchase_panel_info_2')}
         </p>
       </div>
       <div class="mt-3 flex flex-col gap-1">
-        <Button size="sm" fullwidth on:click={openPurchaseModal}>{$t('purchase_button_buy_immich')}</Button>
+        <Button fullwidth on:click={openPurchaseModal}>{$t('purchase_button_buy_immich')}</Button>
         <hr class="my-2" />
-        <Button size="sm" fullwidth on:click={() => hideButton(true)}>Never show again</Button>
-        <Button size="sm" fullwidth on:click={() => hideButton(false)}>Remind me in 30 days</Button>
+        <Button size="sm" fullwidth on:click={() => hideButton(true)}>{$t('purchase_button_never_show_again')}</Button>
+        <Button size="sm" fullwidth on:click={() => hideButton(false)}>{$t('purchase_button_reminder')}</Button>
       </div>
     </div>
   {/if}

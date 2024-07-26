@@ -19,6 +19,7 @@
         onActivate={() => {
           showProductActivated = true;
         }}
+        showMessage={false}
       />
     {/if}
   </FullScreenModal>
