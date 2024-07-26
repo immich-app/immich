@@ -274,10 +274,22 @@ describe(UserService.name, () => {
   });
 
   describe('setLicense', () => {
-    it('should save license if valid', async () => {
+    it('should save client license if valid', async () => {
       userMock.upsertMetadata.mockResolvedValue();
 
       const license = { licenseKey: 'IMCL-license-key', activationKey: 'activation-key' };
+      await sut.setLicense(authStub.user1, license);
+
+      expect(userMock.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
+        key: UserMetadataKey.LICENSE,
+        value: expect.any(Object),
+      });
+    });
+
+    it('should save server license as client if valid', async () => {
+      userMock.upsertMetadata.mockResolvedValue();
+
+      const license = { licenseKey: 'IMSV-license-key', activationKey: 'activation-key' };
       await sut.setLicense(authStub.user1, license);
 
       expect(userMock.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {

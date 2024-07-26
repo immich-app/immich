@@ -4,7 +4,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { QueueOptions } from 'bullmq';
 import { Request, Response } from 'express';
 import { RedisOptions } from 'ioredis';
-import Joi from 'joi';
+import Joi, { Root } from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { ImmichHeader } from 'src/dtos/auth.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
@@ -35,6 +35,13 @@ export enum AudioCodec {
   MP3 = 'mp3',
   AAC = 'aac',
   LIBOPUS = 'libopus',
+}
+
+export enum VideoContainer {
+  MOV = 'mov',
+  MP4 = 'mp4',
+  OGG = 'ogg',
+  WEBM = 'webm',
 }
 
 export enum TranscodeHWAccel {
@@ -86,6 +93,7 @@ export interface SystemConfig {
     acceptedVideoCodecs: VideoCodec[];
     targetAudioCodec: AudioCodec;
     acceptedAudioCodecs: AudioCodec[];
+    acceptedContainers: VideoContainer[];
     targetResolution: string;
     maxBitrate: string;
     bframes: number;
@@ -218,6 +226,7 @@ export const defaults = Object.freeze<SystemConfig>({
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
     acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
+    acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
@@ -378,6 +387,20 @@ export const immichAppConfig: ConfigModuleOptions = {
     IMMICH_PORT: Joi.number().optional(),
     IMMICH_API_METRICS_PORT: Joi.number().optional(),
     IMMICH_MICROSERVICES_METRICS_PORT: Joi.number().optional(),
+
+    IMMICH_TRUSTED_PROXIES: Joi.extend((joi: Root) => ({
+      type: 'stringArray',
+      base: joi.array(),
+      coerce: (value) => (value.split ? value.split(',') : value),
+    }))
+      .stringArray()
+      .single()
+      .items(
+        Joi.string().ip({
+          version: ['ipv4', 'ipv6'],
+          cidr: 'optional',
+        }),
+      ),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
     IMMICH_HOST_METRICS: Joi.boolean().optional().default(false),

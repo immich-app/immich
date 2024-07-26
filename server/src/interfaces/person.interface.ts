@@ -37,7 +37,7 @@ export interface PeopleStatistics {
 
 export interface IPersonRepository {
   getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
-  getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
+  getAllForUser(pagination: PaginationOptions, userId: string, options: PersonSearchOptions): Paginated<PersonEntity>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
@@ -64,4 +64,5 @@ export interface IPersonRepository {
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  getLatestFaceDate(): Promise<string | undefined>;
 }

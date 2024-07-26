@@ -26,6 +26,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getFilenameExtension } from 'src/utils/file';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -274,7 +275,7 @@ export class NotificationService implements OnEvents {
     }
 
     return {
-      filename: 'album-thumbnail.jpg',
+      filename: `album-thumbnail${getFilenameExtension(albumThumbnail.thumbnailPath)}`,
       path: albumThumbnail.thumbnailPath,
       cid: 'album-thumbnail',
     };

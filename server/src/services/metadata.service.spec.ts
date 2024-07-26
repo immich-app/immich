@@ -710,6 +710,26 @@ describe(MetadataService.name, () => {
         }),
       );
     });
+
+    it('trims whitespace from description', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Description: '\t \v \f \n \r' });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '',
+        }),
+      );
+
+      metadataMock.readTags.mockResolvedValue({ ImageDescription: ' my\n description' });
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'my\n description',
+        }),
+      );
+    });
   });
 
   describe('handleQueueSidecar', () => {
@@ -889,8 +909,9 @@ describe(MetadataService.name, () => {
         }),
       ).resolves.toBe(JobStatus.SUCCESS);
       expect(metadataMock.writeTags).toHaveBeenCalledWith(assetStub.sidecar.sidecarPath, {
+        Description: description,
         ImageDescription: description,
-        CreationDate: date,
+        DateTimeOriginal: date,
         GPSLatitude: gps,
         GPSLongitude: gps,
       });

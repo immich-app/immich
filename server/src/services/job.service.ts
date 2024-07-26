@@ -210,7 +210,7 @@ export class JobService {
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       { name: JobName.USER_SYNC_USAGE },
-      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
+      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
       { name: JobName.CLEAN_OLD_SESSION_TOKENS },
     ]);
   }

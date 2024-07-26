@@ -472,6 +472,44 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
+    it('should update date time original when sidecar file contains DateTimeOriginal', async () => {
+      const sidecarData = `<?xpacket begin='?' id='W5M0MpCehiHzreSzNTczkc9d'?>
+<x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Image::ExifTool 12.40'>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+ <rdf:Description rdf:about=''
+  xmlns:exif='http://ns.adobe.com/exif/1.0/'>
+  <exif:ExifVersion>0220</exif:ExifVersion>  <exif:DateTimeOriginal>2024-07-11T10:32:52Z</exif:DateTimeOriginal>
+  <exif:GPSVersionID>2.3.0.0</exif:GPSVersionID>
+ </rdf:Description>
+</rdf:RDF>
+</x:xmpmeta>
+<?xpacket end='w'?>`;
+
+      const { id } = await utils.createAsset(user1.accessToken, {
+        sidecarData: {
+          bytes: Buffer.from(sidecarData),
+          filename: 'example.xmp',
+        },
+      });
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+      const assetInfo = await utils.getAssetInfo(user1.accessToken, id);
+      expect(assetInfo.exifInfo?.dateTimeOriginal).toBe('2024-07-11T10:32:52.000Z');
+
+      const { status, body } = await request(app)
+        .put(`/assets/${id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
+
+      expect(body).toMatchObject({
+        id,
+        exifInfo: expect.objectContaining({
+          dateTimeOriginal: '2023-11-20T01:11:00.000Z',
+        }),
+      });
+      expect(status).toEqual(200);
+    });
+
     it('should reject invalid gps coordinates', async () => {
       for (const test of [
         { latitude: 12 },
@@ -505,6 +543,22 @@ describe('/asset', () => {
         exifInfo: expect.objectContaining({ latitude: 12, longitude: 12 }),
       });
       expect(status).toEqual(200);
+    });
+
+    it.skip('should geocode country from gps data in the middle of nowhere', async () => {
+      const { status } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ latitude: 42, longitude: 69 });
+      expect(status).toEqual(200);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+      const asset = await getAssetInfo({ id: user1Assets[0].id }, { headers: asBearerAuth(user1.accessToken) });
+      expect(asset).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({ city: null, country: 'Kazakhstan' }),
+      });
     });
 
     it('should set the description', async () => {
@@ -1083,7 +1137,7 @@ describe('/asset', () => {
           type: AssetTypeEnum.Image,
           originalFileName: '14bit-uncompressed-(3_2).arw',
           resized: true,
-          fileCreatedAt: '2016-01-08T15:08:01.000Z',
+          fileCreatedAt: '2016-01-08T14:08:01.000Z',
           exifInfo: {
             make: 'SONY',
             model: 'ILCE-7M2',
@@ -1095,7 +1149,7 @@ describe('/asset', () => {
             iso: 100,
             lensModel: 'E 25mm F2',
             fileSizeInByte: 49_512_448,
-            dateTimeOriginal: '2016-01-08T15:08:01.000Z',
+            dateTimeOriginal: '2016-01-08T14:08:01.000Z',
             latitude: null,
             longitude: null,
             orientation: '1',
@@ -1170,16 +1224,24 @@ describe('/asset', () => {
     // into the test here.
     it.each([
       {
-        filepath: 'formats/motionphoto/Samsung One UI 5.jpg',
+        filepath: 'formats/motionphoto/samsung-one-ui-5.jpg',
         checksum: 'fr14niqCq6N20HB8rJYEvpsUVtI=',
       },
       {
-        filepath: 'formats/motionphoto/Samsung One UI 6.jpg',
+        filepath: 'formats/motionphoto/samsung-one-ui-6.jpg',
         checksum: 'lT9Uviw/FFJYCjfIxAGPTjzAmmw=',
       },
       {
-        filepath: 'formats/motionphoto/Samsung One UI 6.heic',
+        filepath: 'formats/motionphoto/samsung-one-ui-6.heic',
         checksum: '/ejgzywvgvzvVhUYVfvkLzFBAF0=',
+      },
+      {
+        filepath: 'formats/motionphoto/pixel-6-pro.jpg',
+        checksum: 'bFhLGbdK058PSk4FTfrSnoKWykc=',
+      },
+      {
+        filepath: 'formats/motionphoto/pixel-8a.jpg',
+        checksum: '7YdY+WF0h+CXHbiXpi0HiCMTTjs=',
       },
     ])(`should extract motionphoto video from $filepath`, async ({ filepath, checksum }) => {
       const response = await utils.createAsset(admin.accessToken, {

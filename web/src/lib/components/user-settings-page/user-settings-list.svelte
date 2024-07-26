@@ -18,6 +18,7 @@
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import { t } from 'svelte-i18n';
   import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
+  import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
   export let sessions: SessionResponseDto[] = [];
@@ -77,5 +78,13 @@
 
   <SettingAccordion key="partner-sharing" title={$t('partner_sharing')} subtitle={$t('manage_sharing_with_partners')}>
     <PartnerSettings user={$user} />
+  </SettingAccordion>
+
+  <SettingAccordion
+    key="user-purchase-settings"
+    title={$t('user_purchase_settings')}
+    subtitle={$t('user_purchase_settings_description')}
+  >
+    <UserPurchaseSettings />
   </SettingAccordion>
 </SettingAccordionState>
