@@ -50,6 +50,7 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                           |            `8081`            | server                   | api                |
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                           |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images |                              | server                   | microservices      |
+| `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies  |                              | server                   | api                |
 
 \*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
 It only need to be set if the Immich deployment method is changing.
