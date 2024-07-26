@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -17,8 +16,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div class="mt-2">
@@ -75,8 +74,8 @@
         >
 
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['map', 'reverseGeocoding'] })}
-          on:save={() => dispatch('save', { map: config.map, reverseGeocoding: config.reverseGeocoding })}
+          onReset={(options) => onReset({ ...options, configKeys: ['map', 'reverseGeocoding'] })}
+          onSave={() => onSave({ map: config.map, reverseGeocoding: config.reverseGeocoding })}
           showResetToDefault={!isEqual(
             { map: savedConfig.map, reverseGeocoding: savedConfig.reverseGeocoding },
             { map: defaultConfig.map, reverseGeocoding: defaultConfig.reverseGeocoding },

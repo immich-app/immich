@@ -91,15 +91,19 @@ class AppLogPage extends HookConsumerWidget {
               logMessages.value = [];
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.share_rounded,
-              color: context.primaryColor,
-              semanticLabel: "Share logs",
-              size: 20.0,
-            ),
-            onPressed: () {
-              immichLogger.shareLogs();
+          Builder(
+            builder: (BuildContext iconContext) {
+              return IconButton(
+                icon: Icon(
+                  Icons.share_rounded,
+                  color: context.primaryColor,
+                  semanticLabel: "Share logs",
+                  size: 20.0,
+                ),
+                onPressed: () {
+                  immichLogger.shareLogs(iconContext);
+                },
+              );
             },
           ),
         ],

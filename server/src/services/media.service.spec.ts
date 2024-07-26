@@ -296,6 +296,7 @@ describe(MediaService.name, () => {
         format,
         quality: 80,
         colorspace: Colorspace.SRGB,
+        processInvalidImages: false,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
     });
@@ -326,6 +327,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.JPEG,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       );
       expect(assetMock.update).toHaveBeenCalledWith({
@@ -468,6 +470,7 @@ describe(MediaService.name, () => {
           format,
           quality: 80,
           colorspace: Colorspace.SRGB,
+          processInvalidImages: false,
         });
         expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
       },
@@ -498,6 +501,7 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(assetMock.update).toHaveBeenCalledWith({
@@ -524,6 +528,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       ],
     ]);
@@ -548,6 +553,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       ],
     ]);
@@ -570,6 +576,7 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
@@ -590,9 +597,32 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+  });
+
+  it('should process invalid images if enabled', async () => {
+    vi.stubEnv('IMMICH_PROCESS_INVALID_IMAGES', 'true');
+
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+      assetStub.imageDng.originalPath,
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      {
+        format: ImageFormat.WEBP,
+        size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
+        processInvalidImages: true,
+      },
+    );
+    expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+    vi.unstubAllEnvs();
   });
 
   describe('handleGenerateThumbhash', () => {
@@ -927,6 +957,21 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should remux when input is not an accepted container', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamAvi);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v copy', '-c:a copy']),
+          twoPass: false,
+        },
+      );
+    });
+
     it('should throw an exception if transcode value is invalid', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: 'invalid' as any } });
@@ -937,6 +982,14 @@ describe(MediaService.name, () => {
 
     it('should not transcode if transcoding is disabled', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.DISABLED } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should not remux when input is not an accepted container and transcoding is disabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.DISABLED } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });

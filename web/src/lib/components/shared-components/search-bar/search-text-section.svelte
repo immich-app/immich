@@ -52,13 +52,13 @@
     bind:value={context}
   />
 {:else}
-  <label for="file-name-input" class="immich-form-label">Search by file name or extension</label>
+  <label for="file-name-input" class="immich-form-label">{$t('search_by_filename')}</label>
   <input
     class="immich-form-input hover:cursor-text w-full !mt-1"
     type="text"
     id="file-name-input"
     name="file-name"
-    placeholder="i.e. IMG_1234.JPG or PNG"
+    placeholder={$t('search_by_filename_example')}
     bind:value={filename}
     aria-labelledby="file-name-label"
   />

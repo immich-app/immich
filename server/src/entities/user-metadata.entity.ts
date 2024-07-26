@@ -45,6 +45,10 @@ export interface UserPreferences {
   download: {
     archiveSize: number;
   };
+  purchase: {
+    showSupportBadge: boolean;
+    hideBuyButtonUntil: string;
+  };
 }
 
 export const getDefaultPreferences = (user: { email: string }): UserPreferences => {
@@ -67,6 +71,10 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     download: {
       archiveSize: HumanReadableSize.GiB * 4,
+    },
+    purchase: {
+      showSupportBadge: true,
+      hideBuyButtonUntil: new Date(2022, 1, 12).toISOString(),
     },
   };
 };
