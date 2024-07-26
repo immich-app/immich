@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -17,7 +17,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
+  import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
@@ -61,12 +61,61 @@
   let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
 
+  let scrollSlot: HTMLDivElement;
+  beforeNavigate(({ to }) => {
+    // Save current scroll information when going into a person page.
+    if (to && to.url.pathname.startsWith(AppRoute.PEOPLE)) {
+      if (nextPage) sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, nextPage.toString());
+      sessionStorage.setItem(SessionStorageKey.SCROLL_POSITION, scrollSlot.scrollTop.toString());
+    } else {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+      sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
+    }
+  });
+
+  const restoreScrollPosition = () => {
+    let newScroll = sessionStorage.getItem(SessionStorageKey.SCROLL_POSITION);
+    if (newScroll)
+      scrollSlot.scroll({
+        top: parseFloat(newScroll),
+        behavior: 'instant',
+      });
+    sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
+  };
+
   onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
       handlePromiseError(handleSearchPeople(true, searchName));
     }
+
+    // Load up to previously loaded page when returning.
+    let newNextPage = sessionStorage.getItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    if (newNextPage && nextPage) {
+      let startingPage = nextPage,
+        pagesToLoad = parseInt(newNextPage) - nextPage;
+
+      if (pagesToLoad) {
+        handlePromiseError(
+          Promise.all(
+            Array(pagesToLoad).map((_, i) => {
+              return getAllPeople({ withHidden: true, page: startingPage + i });
+            }),
+          ).then((pages) => {
+            pages.forEach((page) => {
+              people = people.concat(page.people);
+            });
+            nextPage = pages[pages.length - 1].hasNextPage ? startingPage + pagesToLoad : null;
+            restoreScrollPosition(); // wait until extra pages are loaded
+          }),
+        );
+      } else {
+        restoreScrollPosition();
+      }
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    }
+
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
       for (const person of people) {
         if (person.id === personId) {
@@ -311,6 +360,7 @@
 <UserPageLayout
   title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+  bind:scrollSlot
 >
   <svelte:fragment slot="buttons">
     {#if people.length > 0}

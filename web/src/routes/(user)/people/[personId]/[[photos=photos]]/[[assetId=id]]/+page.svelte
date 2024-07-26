@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
@@ -25,7 +25,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -126,6 +126,14 @@
     });
   });
 
+  beforeNavigate(({ to }) => {
+    // Forget scroll position from people page if going somewhere else.
+    if (to && !to.url.pathname.startsWith(AppRoute.PEOPLE)) {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+      sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
+    }
+  });
+
   const handleEscape = async () => {
     if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
       return;
@@ -187,7 +195,7 @@
         type: NotificationType.Info,
       });
 
-      await goto(previousRoute, { replaceState: true });
+      await goto(previousRoute);
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }

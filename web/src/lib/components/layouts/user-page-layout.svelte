@@ -11,6 +11,8 @@
   export let scrollbar = true;
   export let admin = false;
 
+  export let scrollSlot: HTMLDivElement;
+
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden';
   $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
 </script>
@@ -49,7 +51,10 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto">
+    <div
+      class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto"
+      bind:this={scrollSlot}
+    >
       <slot />
     </div>
   </section>

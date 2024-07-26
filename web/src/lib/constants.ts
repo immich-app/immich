@@ -78,6 +78,11 @@ export enum QueryParameter {
   PAGE = 'page',
 }
 
+export enum SessionStorageKey {
+  INFINITE_SCROLL_PAGE = 'infiniteScrollPage',
+  SCROLL_POSITION = 'scrollPosition',
+}
+
 export enum OpenSettingQueryParameterValue {
   OAUTH = 'oauth',
   JOB = 'job',
