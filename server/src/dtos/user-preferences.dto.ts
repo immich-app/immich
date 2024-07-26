@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
 import { Optional, ValidateBoolean } from 'src/validation';
 
@@ -35,6 +35,15 @@ class DownloadUpdate {
   archiveSize?: number;
 }
 
+class PurchaseUpdate {
+  @ValidateBoolean({ optional: true })
+  showSupportBadge?: boolean;
+
+  @IsDateString()
+  @Optional()
+  hideBuyButtonUntil?: string;
+}
+
 export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
@@ -55,6 +64,11 @@ export class UserPreferencesUpdateDto {
   @ValidateNested()
   @Type(() => DownloadUpdate)
   download?: DownloadUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => PurchaseUpdate)
+  purchase?: PurchaseUpdate;
 }
 
 class AvatarResponse {
@@ -77,11 +91,17 @@ class DownloadResponse {
   archiveSize!: number;
 }
 
+class PurchaseResponse {
+  showSupportBadge!: boolean;
+  hideBuyButtonUntil!: string;
+}
+
 export class UserPreferencesResponseDto implements UserPreferences {
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
+  purchase!: PurchaseResponse;
 }
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {

@@ -37,9 +37,12 @@ ORDER BY
   "person"."isHidden" ASC,
   NULLIF("person"."name", '') IS NULL ASC,
   COUNT("face"."assetId") DESC,
-  NULLIF("person"."name", '') ASC NULLS LAST
+  NULLIF("person"."name", '') ASC NULLS LAST,
+  "person"."createdAt" ASC
 LIMIT
-  500
+  11
+OFFSET
+  10
 
 -- PersonRepository.getAllWithoutFaces
 SELECT
