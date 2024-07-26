@@ -192,6 +192,40 @@ describe(LibraryService.name, () => {
       ]);
     });
 
+    it('should queue offline check of existing online assets', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.walk.mockImplementation(async function* generator() {});
+      assetMock.getWith.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.LIBRARY_CHECK_OFFLINE,
+          data: { id: assetStub.external.id, importPaths: libraryStub.externalLibrary1.importPaths },
+        },
+      ]);
+    });
+
+    it("should fail when library can't be found", async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(null);
+
+      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.FAILED);
+    });
+
     it('should force queue new assets', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
