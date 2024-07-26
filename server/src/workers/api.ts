@@ -14,9 +14,18 @@ import { useSwagger } from 'src/utils/misc';
 
 const host = process.env.HOST;
 
+function parseTrustedProxy(input?: string) {
+  if (!input) {
+    return [];
+  }
+  // Split on ',' char to allow multiple IPs
+  return input.split(',');
+}
+
 async function bootstrap() {
   process.title = 'immich-api';
   const otelPort = Number.parseInt(process.env.IMMICH_API_METRICS_PORT ?? '8081');
+  const trustedProxies = parseTrustedProxy(process.env.IMMICH_TRUSTED_PROXIES ?? '');
 
   otelStart(otelPort);
 
@@ -27,7 +36,7 @@ async function bootstrap() {
   logger.setAppName('Api');
   logger.setContext('Bootstrap');
   app.useLogger(logger);
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal', ...trustedProxies]);
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));

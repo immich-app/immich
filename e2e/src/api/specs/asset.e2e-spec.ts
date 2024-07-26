@@ -1137,7 +1137,7 @@ describe('/asset', () => {
           type: AssetTypeEnum.Image,
           originalFileName: '14bit-uncompressed-(3_2).arw',
           resized: true,
-          fileCreatedAt: '2016-01-08T15:08:01.000Z',
+          fileCreatedAt: '2016-01-08T14:08:01.000Z',
           exifInfo: {
             make: 'SONY',
             model: 'ILCE-7M2',
@@ -1149,7 +1149,7 @@ describe('/asset', () => {
             iso: 100,
             lensModel: 'E 25mm F2',
             fileSizeInByte: 49_512_448,
-            dateTimeOriginal: '2016-01-08T15:08:01.000Z',
+            dateTimeOriginal: '2016-01-08T14:08:01.000Z',
             latitude: null,
             longitude: null,
             orientation: '1',

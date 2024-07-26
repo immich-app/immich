@@ -66,6 +66,7 @@ import {
   mdiVectorCombine,
   mdiVideo,
   mdiWeb,
+  mdiLicense,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
@@ -74,6 +75,7 @@ import { Item, Timeline } from '../components/timeline';
 const releases = {
   // TODO
   'v1.110.0': new Date(2024, 5, 11),
+  'v1.109.0': new Date(2024, 6, 18),
   'v1.106.1': new Date(2024, 5, 11),
   'v1.104.0': new Date(2024, 4, 13),
   'v1.103.0': new Date(2024, 3, 29),
@@ -229,6 +231,13 @@ const milestones: Item[] = [
     description: 'Reached 40K Stars on GitHub!',
     getDateLabel: withLanguage(new Date(2024, 6, 21)),
   },
+  withRelease({
+    icon: mdiLicense,
+    iconColor: 'gold',
+    title: 'Supporter Badge',
+    description: 'The option to buy Immich to support its development!',
+    release: 'v1.109.0',
+  }),
   withRelease({
     icon: mdiHistory,
     title: 'Versioned documentation',

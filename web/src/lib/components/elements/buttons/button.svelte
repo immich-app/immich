@@ -2,6 +2,7 @@
   export type Type = 'button' | 'submit' | 'reset';
   export type Color =
     | 'primary'
+    | 'primary-inversed'
     | 'secondary'
     | 'transparent-primary'
     | 'text-primary'
@@ -50,6 +51,8 @@
     'dark-gray':
       'dark:border-immich-dark-gray dark:bg-gray-500 enabled:dark:hover:bg-immich-dark-primary/50 enabled:hover:bg-immich-primary/10 dark:text-white',
     'overlay-primary': 'text-gray-500 enabled:hover:bg-gray-100',
+    'primary-inversed':
+      'bg-immich-dark-primary dark:bg-immich-primary text-black dark:text-white enabled:hover:bg-immich-dark-primary/80 enabled:dark:hover:bg-immich-primary/90',
   };
 
   const sizeClasses: Record<Size, string> = {

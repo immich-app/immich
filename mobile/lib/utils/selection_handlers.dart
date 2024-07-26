@@ -22,7 +22,10 @@ void handleShareAssets(
   showDialog(
     context: context,
     builder: (BuildContext buildContext) {
-      ref.watch(shareServiceProvider).shareAssets(selection.toList()).then(
+      ref
+          .watch(shareServiceProvider)
+          .shareAssets(selection.toList(), context)
+          .then(
         (bool status) {
           if (!status) {
             ImmichToast.show(
