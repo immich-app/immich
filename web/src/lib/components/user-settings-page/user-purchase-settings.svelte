@@ -160,7 +160,9 @@
             </p>
             {#if $user.license?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
-                Activated on {new Date($user.license?.activatedAt).toLocaleDateString()}
+                {$t('purchase_activated_time', {
+                  values: { date: new Date($user.license?.activatedAt).toLocaleDateString() },
+                })}
               </p>
             {/if}
           </div>
