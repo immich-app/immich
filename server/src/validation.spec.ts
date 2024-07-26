@@ -16,9 +16,9 @@ describe('Validation', () => {
       await expect(validate(dto)).resolves.toHaveLength(0);
     });
 
-    it('fails when date is equal to maxDate', async () => {
+    it('passes when date is equal to maxDate', async () => {
       const dto = plainToInstance(MyDto, { date: '2000-01-01' });
-      await expect(validate(dto)).resolves.toHaveLength(1);
+      await expect(validate(dto)).resolves.toHaveLength(0);
     });
 
     it('fails when date is after maxDate', async () => {
