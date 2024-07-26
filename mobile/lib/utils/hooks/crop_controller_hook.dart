@@ -4,7 +4,9 @@ import 'dart:ui'; // Import the dart:ui library for Rect
 
 /// A hook that provides a [CropController] instance.
 CropController useCropController() {
-  return useMemoized(() => CropController(
-    defaultCrop: const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9),
-  ));
+  return useMemoized(
+    () => CropController(
+      defaultCrop: const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9),
+    ),
+  );
 }

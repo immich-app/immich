@@ -23,7 +23,7 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 /// They automatically navigate to the [HomePage] with the edited image saved and they eventually get backed up to the server.
 @immutable
 @RoutePage()
-class EditImagePage extends ConsumerWidget  {
+class EditImagePage extends ConsumerWidget {
   final Asset? asset;
   final Image? image;
 
@@ -32,9 +32,9 @@ class EditImagePage extends ConsumerWidget  {
     this.image,
     this.asset,
   }) : assert(
-            (image != null && asset == null) ||
-                (image == null && asset != null),
-            'Must supply one of asset or image');
+          (image != null && asset == null) || (image == null && asset != null),
+          'Must supply one of asset or image',
+        );
 
   Future<Uint8List> _imageToUint8List(Image image) async {
     final Completer<Uint8List> completer = Completer();
@@ -60,7 +60,6 @@ class EditImagePage extends ConsumerWidget  {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    
     final ImageProvider provider = (asset != null)
         ? ImmichImage.imageProvider(asset: asset!)
         : (image != null)
@@ -92,9 +91,8 @@ class EditImagePage extends ConsumerWidget  {
                   msg: 'No edits made!',
                   gravity: ToastGravity.BOTTOM,
                 );
-              
+
                 Navigator.of(context).popUntil((route) => route.isFirst);
-                
               } else {
                 try {
                   final Uint8List imageData = await _imageToUint8List(image!);
@@ -105,12 +103,10 @@ class EditImagePage extends ConsumerWidget  {
                     gravity: ToastGravity.BOTTOM,
                   );
 
-                  ///Ignore the warning here, planning to modify this in future PRs
-                  final AssetEntity? entity = await PhotoManager.editor
+                  await PhotoManager.editor
                       .saveImage(imageData, title: "_edited.jpg");
                   await ref.read(albumProvider.notifier).getDeviceAlbums();
                   Navigator.of(context).popUntil((route) => route.isFirst);
-            
                 } catch (e) {
                   ImmichToast.show(
                     durationInSecond: 6,
@@ -136,9 +132,8 @@ class EditImagePage extends ConsumerWidget  {
         ],
       ),
       bottomNavigationBar: Container(
-        height: 80, 
-        margin: const EdgeInsets.only(
-            bottom: 20, right: 10, left: 10, top: 10), 
+        height: 80,
+        margin: const EdgeInsets.only(bottom: 20, right: 10, left: 10, top: 10),
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(30),

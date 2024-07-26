@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:crop_image/crop_image.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart'; 
+import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
 import 'edit.page.dart';
 import 'package:auto_route/auto_route.dart';
 
@@ -13,7 +13,6 @@ import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
 class CropImagePage extends HookWidget {
-  
   final Image image;
   const CropImagePage({super.key, required this.image});
 
@@ -66,20 +65,27 @@ class CropImagePage extends HookWidget {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(
-                              left: 20, right: 20, bottom: 10),
+                            left: 20,
+                            right: 20,
+                            bottom: 10,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.rotate_left,
-                                    color: Colors.white),
+                                icon: const Icon(
+                                  Icons.rotate_left,
+                                  color: Colors.white,
+                                ),
                                 onPressed: () {
                                   cropController.rotateLeft();
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.rotate_right,
-                                    color: Colors.white),
+                                icon: const Icon(
+                                  Icons.rotate_right,
+                                  color: Colors.white,
+                                ),
                                 onPressed: () {
                                   cropController.rotateRight();
                                 },
