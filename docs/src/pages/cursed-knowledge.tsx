@@ -49,7 +49,7 @@ const items: Item[] = [
     iconColor: 'greenyellow',
     title: 'JavaScript Date objects are cursed',
     description: 'JavaScript date objects are 1 indexed for years and days, but 0 indexed for months.',
-    link: { url: 'https://github.com/immich-app/immich/pulls/6787', text: '#6787' },
+    link: { url: 'https://github.com/immich-app/immich/pull/6787', text: '#6787' },
     date: new Date(2024, 0, 31),
   },
 ];

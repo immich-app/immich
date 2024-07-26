@@ -1,9 +1,8 @@
 <script lang="ts">
   import { Colorspace, ImageFormat, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
 
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -17,8 +16,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div>
@@ -114,8 +113,8 @@
 
       <div class="ml-4">
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['image'] })}
-          on:save={() => dispatch('save', { image: config.image })}
+          onReset={(options) => onReset({ ...options, configKeys: ['image'] })}
+          onSave={() => onSave({ image: config.image })}
           showResetToDefault={!isEqual(savedConfig.image, defaultConfig.image)}
           {disabled}
         />

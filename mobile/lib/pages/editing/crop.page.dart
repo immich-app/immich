@@ -1,191 +1,166 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:crop_image/crop_image.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart'; 
-import 'edit.page.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/widgets/common/immich_image.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 
-/// A widget for cropping an image.
-/// This widget uses [HookWidget] to manage its lifecycle and state. It allows
-/// users to crop an image and then navigate to the [EditImagePage] with the
-/// cropped image.
-
+/// A stateless widget that provides functionality for editing an image.
+///
+/// This widget allows users to edit an image provided either as an [Asset] or
+/// directly as an [Image]. It ensures that exactly one of these is provided.
+///
+/// It also includes a conversion method to convert an [Image] to a [Uint8List] to save the image on the user's phone
+/// They automatically navigate to the [HomePage] with the edited image saved and they eventually get backed up to the server.
+@immutable
 @RoutePage()
-class CropImagePage extends HookWidget {
-  
-  final Image image;
-  const CropImagePage({super.key, required this.image});
+class EditImagePage extends ConsumerWidget {
+  final Asset? asset;
+  final Image? image;
+
+  const EditImagePage({
+    super.key,
+    this.image,
+    this.asset,
+  }) : assert(
+            (image != null && asset == null) ||
+                (image == null && asset != null),
+            'Must supply one of asset or image');
+
+  Future<Uint8List> _imageToUint8List(Image image) async {
+    final Completer<Uint8List> completer = Completer();
+    image.image.resolve(const ImageConfiguration()).addListener(
+          ImageStreamListener(
+            (ImageInfo info, bool _) {
+              info.image
+                  .toByteData(format: ImageByteFormat.png)
+                  .then((byteData) {
+                if (byteData != null) {
+                  completer.complete(byteData.buffer.asUint8List());
+                } else {
+                  completer.completeError('Failed to convert image to bytes');
+                }
+              });
+            },
+            onError: (exception, stackTrace) =>
+                completer.completeError(exception),
+          ),
+        );
+    return completer.future;
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final cropController = useCropController();
-    final aspectRatio = useState<double?>(null);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ImageProvider provider = (asset != null)
+        ? ImmichImage.imageProvider(asset: asset!)
+        : (image != null)
+            ? image!.image
+            : throw Exception('Invalid image source type');
+
+    final Image imageWidget = (asset != null)
+        ? Image(image: ImmichImage.imageProvider(asset: asset!))
+        : (image != null)
+            ? image!
+            : throw Exception('Invalid image source type');
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).bottomAppBarTheme.color,
-        leading: CloseButton(color: Theme.of(context).iconTheme.color),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.done_rounded, color: Theme.of(context).iconTheme.color, size: 24),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        leading: IconButton(
+          icon: Icon(Icons.close_rounded,
+              color: Theme.of(context).iconTheme.color, size: 24),
+          onPressed: () =>
+              Navigator.of(context).popUntil((route) => route.isFirst),
+        ),
+        actions: <Widget>[
+          TextButton(
             onPressed: () async {
-              final croppedImage = await cropController.croppedImage();
-              context.pushRoute(EditImageRoute(image: croppedImage));
+              if (image == null) {
+                ImmichToast.show(
+                  durationInSecond: 1,
+                  context: context,
+                  msg: 'No edits made!',
+                  gravity: ToastGravity.BOTTOM,
+                );
+
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              } else {
+                try {
+                  final Uint8List imageData = await _imageToUint8List(image!);
+                  ImmichToast.show(
+                    durationInSecond: 3,
+                    context: context,
+                    msg: 'Image Saved!',
+                    gravity: ToastGravity.CENTER,
+                  );
+
+                  ///Ignore the warning here, planning to modify this in future PRs
+                  final AssetEntity? entity = await PhotoManager.editor
+                      .saveImage(imageData, title: "_edited.jpg");
+                  await ref.read(albumProvider.notifier).getDeviceAlbums();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                } catch (e) {
+                  ImmichToast.show(
+                    durationInSecond: 6,
+                    context: context,
+                    msg: 'Error: ${e.toString()}',
+                    gravity: ToastGravity.BOTTOM,
+                  );
+                }
+              }
             },
+            child: Text(
+              'Save to gallery',
+              style: Theme.of(context).textTheme.displayMedium,
+            ),
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.only(top: 20),
-                width: double.infinity,
-                height: constraints.maxHeight * 0.6,
-                child: CropImage(
-                  controller: cropController,
-                  image: image,
-                  gridColor: Colors.white,
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).bottomAppBarTheme.color,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 20, right: 20, bottom: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.rotate_left,
-                                    color: Theme.of(context).iconTheme.color),
-                                onPressed: () {
-                                  cropController.rotateLeft();
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.rotate_right,
-                                    color: Theme.of(context).iconTheme.color),
-                                onPressed: () {
-                                  cropController.rotateRight();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: null,
-                              label: 'Free',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 1.0,
-                              label: '1:1',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 16.0 / 9.0,
-                              label: '16:9',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 3.0 / 2.0,
-                              label: '3:2',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 7.0 / 5.0,
-                              label: '7:5',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _AspectRatioButton extends StatelessWidget {
-  final CropController cropController;
-  final ValueNotifier<double?> aspectRatio;
-  final double? ratio;
-  final String label;
-
-  const _AspectRatioButton({
-    required this.cropController,
-    required this.aspectRatio,
-    required this.ratio,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    IconData iconData;
-    switch (label) {
-      case 'Free':
-        iconData = Icons.crop_free_rounded;
-        break;
-      case '1:1':
-        iconData = Icons.crop_square_rounded;
-        break;
-      case '16:9':
-        iconData = Icons.crop_16_9_rounded;
-        break;
-      case '3:2':
-        iconData = Icons.crop_3_2_rounded;
-        break;
-      case '7:5':
-        iconData = Icons.crop_7_5_rounded;
-        break;
-      default:
-        iconData = Icons.crop_free_rounded;
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(
-            iconData,
-            color: aspectRatio.value == ratio ? Colors.indigo : Theme.of(context).iconTheme.color,
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: Image(image: provider),
           ),
-          onPressed: () {
-            aspectRatio.value = ratio;
-            cropController.aspectRatio = ratio;
-          },
+          Container(
+            height: 80,
+            color: Theme.of(context).bottomAppBarTheme.color,
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        height: 80,
+        margin: const EdgeInsets.only(bottom: 20, right: 10, left: 10, top: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).bottomAppBarTheme.color,
+          borderRadius: BorderRadius.circular(30),
         ),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
-      ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(
+                Platform.isAndroid
+                    ? Icons.crop_rotate_rounded
+                    : Icons.crop_rotate_rounded,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              onPressed: () {
+                context.pushRoute(CropImageRoute(image: imageWidget));
+              },
+            ),
+            Text('Crop', style: Theme.of(context).textTheme.displayMedium),
+          ],
+        ),
+      ),
     );
   }
 }

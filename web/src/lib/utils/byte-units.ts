@@ -1,12 +1,14 @@
-export enum ByteUnit {
-  'B' = 0,
-  'KiB' = 1,
-  'MiB' = 2,
-  'GiB' = 3,
-  'TiB' = 4,
-  'PiB' = 5,
-  'EiB' = 6,
+export const enum ByteUnit {
+  'B' = 'B',
+  'KiB' = 'KiB',
+  'MiB' = 'MiB',
+  'GiB' = 'GiB',
+  'TiB' = 'TiB',
+  'PiB' = 'PiB',
+  'EiB' = 'EiB',
 }
+
+const byteUnits = [ByteUnit.B, ByteUnit.KiB, ByteUnit.MiB, ByteUnit.GiB, ByteUnit.TiB, ByteUnit.PiB, ByteUnit.EiB];
 
 /**
  * Convert bytes to best human readable unit and number of that unit.
@@ -21,7 +23,7 @@ export enum ByteUnit {
 export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, ByteUnit] {
   const magnitude = Math.floor(Math.log(bytes === 0 ? 1 : bytes) / Math.log(1024));
 
-  return [Number.parseFloat((bytes / 1024 ** magnitude).toFixed(maxPrecision)), magnitude];
+  return [Number.parseFloat((bytes / 1024 ** magnitude).toFixed(maxPrecision)), byteUnits[magnitude]];
 }
 
 /**
@@ -37,7 +39,7 @@ export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, Byte
  */
 export function getByteUnitString(bytes: number, locale?: string, maxPrecision = 1): string {
   const [size, unit] = getBytesWithUnit(bytes, maxPrecision);
-  return `${size.toLocaleString(locale)} ${ByteUnit[unit]}`;
+  return `${size.toLocaleString(locale)} ${unit}`;
 }
 
 /**
@@ -50,7 +52,7 @@ export function getByteUnitString(bytes: number, locale?: string, maxPrecision =
  * @returns bytes (number)
  */
 export function convertToBytes(size: number, unit: ByteUnit): number {
-  return size * 1024 ** unit;
+  return size * 1024 ** byteUnits.indexOf(unit);
 }
 
 /**
@@ -63,5 +65,5 @@ export function convertToBytes(size: number, unit: ByteUnit): number {
  * @returns bytes (number)
  */
 export function convertFromBytes(bytes: number, unit: ByteUnit): number {
-  return bytes / 1024 ** unit;
+  return bytes / 1024 ** byteUnits.indexOf(unit);
 }

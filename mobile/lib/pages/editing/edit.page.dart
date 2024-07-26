@@ -32,9 +32,9 @@ class EditImagePage extends ConsumerWidget {
     this.image,
     this.asset,
   }) : assert(
-            (image != null && asset == null) ||
-                (image == null && asset != null),
-            'Must supply one of asset or image');
+          (image != null && asset == null) || (image == null && asset != null),
+          'Must supply one of asset or image',
+        );
 
   Future<Uint8List> _imageToUint8List(Image image) async {
     final Completer<Uint8List> completer = Completer();
@@ -103,8 +103,7 @@ class EditImagePage extends ConsumerWidget {
                     gravity: ToastGravity.CENTER,
                   );
 
-                  ///Ignore the warning here, planning to modify this in future PRs
-                  final AssetEntity? entity = await PhotoManager.editor
+                  await PhotoManager.editor
                       .saveImage(imageData, title: "_edited.jpg");
                   await ref.read(albumProvider.notifier).getDeviceAlbums();
                   Navigator.of(context).popUntil((route) => route.isFirst);

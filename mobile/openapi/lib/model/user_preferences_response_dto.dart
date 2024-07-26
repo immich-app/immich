@@ -17,6 +17,7 @@ class UserPreferencesResponseDto {
     required this.download,
     required this.emailNotifications,
     required this.memories,
+    required this.purchase,
   });
 
   AvatarResponse avatar;
@@ -27,12 +28,15 @@ class UserPreferencesResponseDto {
 
   MemoryResponse memories;
 
+  PurchaseResponse purchase;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
     other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
-    other.memories == memories;
+    other.memories == memories &&
+    other.purchase == purchase;
 
   @override
   int get hashCode =>
@@ -40,10 +44,11 @@ class UserPreferencesResponseDto {
     (avatar.hashCode) +
     (download.hashCode) +
     (emailNotifications.hashCode) +
-    (memories.hashCode);
+    (memories.hashCode) +
+    (purchase.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories]';
+  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -51,6 +56,7 @@ class UserPreferencesResponseDto {
       json[r'download'] = this.download;
       json[r'emailNotifications'] = this.emailNotifications;
       json[r'memories'] = this.memories;
+      json[r'purchase'] = this.purchase;
     return json;
   }
 
@@ -66,6 +72,7 @@ class UserPreferencesResponseDto {
         download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         memories: MemoryResponse.fromJson(json[r'memories'])!,
+        purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
       );
     }
     return null;
@@ -117,6 +124,7 @@ class UserPreferencesResponseDto {
     'download',
     'emailNotifications',
     'memories',
+    'purchase',
   };
 }
 

@@ -83,17 +83,21 @@ class OrtSession:
 
     @property
     def _provider_options_default(self) -> list[dict[str, Any]]:
-        options = []
+        provider_options = []
         for provider in self.providers:
             match provider:
                 case "CPUExecutionProvider" | "CUDAExecutionProvider":
-                    option = {"arena_extend_strategy": "kSameAsRequested"}
+                    options = {"arena_extend_strategy": "kSameAsRequested"}
                 case "OpenVINOExecutionProvider":
-                    option = {"device_type": "GPU_FP32", "cache_dir": (self.model_path.parent / "openvino").as_posix()}
+                    options = {
+                        "device_type": "GPU",
+                        "precision": "FP32",
+                        "cache_dir": (self.model_path.parent / "openvino").as_posix(),
+                    }
                 case _:
-                    option = {}
-            options.append(option)
-        return options
+                    options = {}
+            provider_options.append(options)
+        return provider_options
 
     @property
     def sess_options(self) -> ort.SessionOptions:

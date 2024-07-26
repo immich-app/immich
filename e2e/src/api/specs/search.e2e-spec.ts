@@ -49,9 +49,9 @@ describe('/search', () => {
       { filename: '/albums/nature/silver_fir.jpg' },
       { filename: '/formats/heic/IMG_2682.heic' },
       { filename: '/formats/jpg/el_torcal_rocks.jpg' },
-      { filename: '/formats/motionphoto/Samsung One UI 6.jpg' },
-      { filename: '/formats/motionphoto/Samsung One UI 6.heic' },
-      { filename: '/formats/motionphoto/Samsung One UI 5.jpg' },
+      { filename: '/formats/motionphoto/samsung-one-ui-6.jpg' },
+      { filename: '/formats/motionphoto/samsung-one-ui-6.heic' },
+      { filename: '/formats/motionphoto/samsung-one-ui-5.jpg' },
 
       { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { isArchived: true } },
 
@@ -315,7 +315,7 @@ describe('/search', () => {
       {
         should: 'should search by originalFilename with spaces',
         deferred: () => ({
-          dto: { originalFileName: 'Samsung One', type: 'IMAGE' },
+          dto: { originalFileName: 'samsung-one', type: 'IMAGE' },
           assets: [assetOneJpg5, assetOneJpg6, assetOneHeic6],
         }),
       },

@@ -37,9 +37,12 @@ ORDER BY
   "person"."isHidden" ASC,
   NULLIF("person"."name", '') IS NULL ASC,
   COUNT("face"."assetId") DESC,
-  NULLIF("person"."name", '') ASC NULLS LAST
+  NULLIF("person"."name", '') ASC NULLS LAST,
+  "person"."createdAt" ASC
 LIMIT
-  500
+  11
+OFFSET
+  10
 
 -- PersonRepository.getAllWithoutFaces
 SELECT
@@ -434,3 +437,9 @@ WHERE
   (("AssetFaceEntity"."personId" = $1))
 LIMIT
   1
+
+-- PersonRepository.getLatestFaceDate
+SELECT
+  MAX("jobStatus"."facesRecognizedAt")::text AS "latestDate"
+FROM
+  "asset_job_status" "jobStatus"

@@ -2,16 +2,18 @@
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
-    type Notification,
+    isComponentNotification,
     notificationController,
     NotificationType,
+    type ComponentNotification,
+    type Notification,
   } from '$lib/components/shared-components/notification/notification';
   import { onMount } from 'svelte';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let notification: Notification;
+  export let notification: Notification | ComponentNotification;
 
   $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
   $: hoverStyle = notification.action.type === 'discard' ? 'hover:cursor-pointer' : '';
@@ -93,9 +95,8 @@
   </div>
 
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
-    {#if notification.html}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      {@html notification.message}
+    {#if isComponentNotification(notification)}
+      <svelte:component this={notification.component.type} {...notification.component.props} />
     {:else}
       {notification.message}
     {/if}
