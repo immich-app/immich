@@ -169,6 +169,12 @@ def warning() -> Iterator[mock.Mock]:
 
 
 @pytest.fixture(scope="function")
+def exception() -> Iterator[mock.Mock]:
+    with mock.patch.object(log, "exception") as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
 def snapshot_download() -> Iterator[mock.Mock]:
     with mock.patch("app.models.base.snapshot_download") as mocked:
         yield mocked

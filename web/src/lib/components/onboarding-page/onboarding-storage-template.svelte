@@ -43,8 +43,8 @@
         {config}
         {defaultConfig}
         {savedConfig}
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
+        onSave={(config) => handleSave(config)}
+        onReset={(options) => handleReset(options)}
       >
         <div class="flex pt-4">
           <div class="w-full flex place-content-start">

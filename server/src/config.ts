@@ -37,6 +37,13 @@ export enum AudioCodec {
   LIBOPUS = 'libopus',
 }
 
+export enum VideoContainer {
+  MOV = 'mov',
+  MP4 = 'mp4',
+  OGG = 'ogg',
+  WEBM = 'webm',
+}
+
 export enum TranscodeHWAccel {
   NVENC = 'nvenc',
   QSV = 'qsv',
@@ -86,6 +93,7 @@ export interface SystemConfig {
     acceptedVideoCodecs: VideoCodec[];
     targetAudioCodec: AudioCodec;
     acceptedAudioCodecs: AudioCodec[];
+    acceptedContainers: VideoContainer[];
     targetResolution: string;
     maxBitrate: string;
     bframes: number;
@@ -146,6 +154,7 @@ export interface SystemConfig {
     mobileRedirectUri: string;
     scope: string;
     signingAlgorithm: string;
+    profileSigningAlgorithm: string;
     storageLabelClaim: string;
     storageQuotaClaim: string;
   };
@@ -217,6 +226,7 @@ export const defaults = Object.freeze<SystemConfig>({
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
     acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
+    acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
@@ -289,6 +299,7 @@ export const defaults = Object.freeze<SystemConfig>({
     mobileRedirectUri: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
+    profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
   },

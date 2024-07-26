@@ -21,7 +21,7 @@
   import { copyToClipboard } from '$lib/utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiInfinity, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
@@ -209,7 +209,7 @@
                     {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
                       {getByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
-                      <Icon path={mdiClose} size="16" />
+                      <Icon path={mdiInfinity} size="16" />
                     {/if}
                   </div>
                 </td>

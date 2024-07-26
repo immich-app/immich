@@ -1,8 +1,10 @@
+import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
 import type { PersonResponseDto } from '@immich/sdk';
 import { personFactory } from '@test-data/factories/person-factory';
 import { render } from '@testing-library/svelte';
+import { tick } from 'svelte';
 
 describe('ManagePeopleVisibility Component', () => {
   let personVisible: PersonResponseDto;
@@ -17,6 +19,7 @@ describe('ManagePeopleVisibility Component', () => {
   });
 
   beforeEach(() => {
+    vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
     personVisible = personFactory.build({ isHidden: false });
     personHidden = personFactory.build({ isHidden: true });
     personWithoutName = personFactory.build({ isHidden: false, name: undefined });
@@ -31,7 +34,9 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 
@@ -44,14 +49,14 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 
-    const toggleButton = getByTitle('toggle_visibility');
-    toggleButton.click();
-    const saveButton = getByText('done');
-    saveButton.click();
+    getByTitle('hide_unnamed_people').click();
+    getByText('done').click();
 
     expect(sdkMock.updatePeople).toHaveBeenCalledWith({
       peopleUpdateDto: {
@@ -60,19 +65,20 @@ describe('ManagePeopleVisibility Component', () => {
     });
   });
 
-  it('hides all people on second button press', () => {
+  it('hides all people on second button press', async () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 
-    const toggleButton = getByTitle('toggle_visibility');
-    toggleButton.click();
-    toggleButton.click();
-    const saveButton = getByText('done');
-    saveButton.click();
+    getByTitle('hide_unnamed_people').click();
+    await tick();
+    getByTitle('hide_all_people').click();
+    getByText('done').click();
 
     expect(sdkMock.updatePeople).toHaveBeenCalledWith({
       peopleUpdateDto: {
@@ -84,20 +90,22 @@ describe('ManagePeopleVisibility Component', () => {
     });
   });
 
-  it('shows all people on third button press', () => {
+  it('shows all people on third button press', async () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 
-    const toggleButton = getByTitle('toggle_visibility');
-    toggleButton.click();
-    toggleButton.click();
-    toggleButton.click();
-    const saveButton = getByText('done');
-    saveButton.click();
+    getByTitle('hide_unnamed_people').click();
+    await tick();
+    getByTitle('hide_all_people').click();
+    await tick();
+    getByTitle('show_all_people').click();
+    getByText('done').click();
 
     expect(sdkMock.updatePeople).toHaveBeenCalledWith({
       peopleUpdateDto: {
