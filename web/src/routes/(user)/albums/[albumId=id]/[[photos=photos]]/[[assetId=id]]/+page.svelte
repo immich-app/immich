@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto, onNavigate } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto, onNavigate } from '$app/navigation';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
@@ -32,7 +32,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, SessionStorageKey } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -137,6 +137,13 @@
     album.ownerId === $user.id;
 
   $: albumHasViewers = album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer);
+
+  beforeNavigate(({ to }) => {
+    // Forget scroll position from albums page if going somewhere else.
+    if (to && !to.url.pathname.startsWith(AppRoute.ALBUMS)) {
+      sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
+    }
+  });
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
