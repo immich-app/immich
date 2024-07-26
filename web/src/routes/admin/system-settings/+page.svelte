@@ -92,7 +92,6 @@
       subtitle: $t('admin.library_settings_description'),
       key: 'external-library',
     },
-
     {
       component: LoggingSettings,
       title: $t('admin.logging_settings'),
