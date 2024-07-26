@@ -78,6 +78,7 @@
     "jobs_failed": "{jobCount} fejlede",
     "library_created": "Skabte bibliotek: {library}",
     "library_cron_expression": "Cron-udtryk",
+    "library_cron_expression_description": "Sæt skannings interval ved at bruge cron formatet. For mere information se dokumentation her <link>Crontab Guru</link>",
     "library_cron_expression_presets": "Cron-udtryksforudindstillinger",
     "library_deleted": "Bibliotek slettet",
     "library_import_path_description": "Angiv en mappe, der skal importeres. Denne mappe, inklusive undermapper, vil blive scannet for billeder og videoer.",
