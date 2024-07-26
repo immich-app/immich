@@ -70,11 +70,11 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     );
   }
 
-  void showMessage(BuildContext context, String msg) {
+  void showMessage(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        content: Text(msg),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
@@ -85,11 +85,11 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     );
   }
 
-  void storeCert(BuildContext context, Uint8List data, String? passwd) {
-    if (passwd != null && passwd.isEmpty) {
-      passwd = null;
+  void storeCert(BuildContext context, Uint8List data, String? password) {
+    if (password != null && password.isEmpty) {
+      password = null;
     }
-    final cert = SSLClientCertStoreVal(data, passwd);
+    final cert = SSLClientCertStoreVal(data, password);
     // Test whether the certificate is valid
     final isCertValid = HttpSSLCertOverride.setClientCert(
       SecurityContext(withTrustedRoots: true),
@@ -108,13 +108,13 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
   }
 
   void setPassword(BuildContext context, Uint8List data) {
-    final passwd = TextEditingController();
+    final password = TextEditingController();
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         content: TextField(
-          controller: passwd,
+          controller: password,
           obscureText: true,
           obscuringCharacter: "*",
           decoration: InputDecoration(
@@ -123,7 +123,8 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         ),
         actions: [
           TextButton(
-            onPressed: () => {ctx.pop(), storeCert(context, data, passwd.text)},
+            onPressed: () =>
+                {ctx.pop(), storeCert(context, data, password.text)},
             child: Text("client_cert_dialog_msg_confirm".tr()),
           ),
         ],
