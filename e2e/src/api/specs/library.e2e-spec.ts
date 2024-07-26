@@ -402,7 +402,7 @@ describe('/libraries', () => {
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { status, body } = await request(app)
+      await request(app)
         .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ importPaths: [`${testAssetDirInternal}/temp/directoryA`] });
@@ -424,6 +424,8 @@ describe('/libraries', () => {
           }),
         ]),
       );
+
+      utils.removeImageFile(`${testAssetDir}/temp/directoryB/assetC.png`);
     });
 
     it('should not try to delete offline files', async () => {
