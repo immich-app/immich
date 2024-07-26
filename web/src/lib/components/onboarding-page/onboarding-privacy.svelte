@@ -17,7 +17,6 @@
 
   onMount(async () => {
     config = await getConfig();
-    console.log(config);
   });
 </script>
 
