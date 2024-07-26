@@ -617,6 +617,8 @@ export type UpdatePartnerDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
+    /** This property was added in v1.110.0 */
+    hasNextPage?: boolean;
     hidden: number;
     people: PersonResponseDto[];
     total: number;
@@ -2183,13 +2185,17 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
-export function getAllPeople({ withHidden }: {
+export function getAllPeople({ page, size, withHidden }: {
+    page?: number;
+    size?: number;
     withHidden?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PeopleResponseDto;
     }>(`/people${QS.query(QS.explode({
+        page,
+        size,
         withHidden
     }))}`, {
         ...opts

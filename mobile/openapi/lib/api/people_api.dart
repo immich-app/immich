@@ -66,8 +66,14 @@ class PeopleApi {
   /// Performs an HTTP 'GET /people' operation and returns the [Response].
   /// Parameters:
   ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  ///
   /// * [bool] withHidden:
-  Future<Response> getAllPeopleWithHttpInfo({ bool? withHidden, }) async {
+  Future<Response> getAllPeopleWithHttpInfo({ num? page, num? size, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final path = r'/people';
 
@@ -78,6 +84,12 @@ class PeopleApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
     if (withHidden != null) {
       queryParams.addAll(_queryParams('', 'withHidden', withHidden));
     }
@@ -98,9 +110,15 @@ class PeopleApi {
 
   /// Parameters:
   ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  ///
   /// * [bool] withHidden:
-  Future<PeopleResponseDto?> getAllPeople({ bool? withHidden, }) async {
-    final response = await getAllPeopleWithHttpInfo( withHidden: withHidden, );
+  Future<PeopleResponseDto?> getAllPeople({ num? page, num? size, bool? withHidden, }) async {
+    final response = await getAllPeopleWithHttpInfo( page: page, size: size, withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

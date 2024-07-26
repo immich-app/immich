@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsString, Max, MaxDate, Min, ValidateNested } from 'class-validator';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -63,6 +63,21 @@ export class MergePersonDto {
 export class PersonSearchDto {
   @ValidateBoolean({ optional: true })
   withHidden?: boolean;
+
+  /** Page number for pagination */
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page: number = 1;
+
+  /** Number of items per page */
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  size: number = 500;
 }
 
 export class PersonResponseDto {
@@ -132,6 +147,10 @@ export class PeopleResponseDto {
   @ApiProperty({ type: 'integer' })
   hidden!: number;
   people!: PersonResponseDto[];
+
+  // TODO: make required after a few versions
+  @PropertyLifecycle({ addedAt: 'v1.110.0' })
+  hasNextPage?: boolean;
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {
