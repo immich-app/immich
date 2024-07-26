@@ -3,11 +3,14 @@ import type { ImmichLicense } from '$lib/constants';
 import { serverConfig } from '$lib/stores/server-config.store';
 import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
+import { loadUser } from './auth';
 
 export const activateLicense = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
-  const isServerKey = licenseKey.search('IMSV') !== -1;
+  // Send server key to user activation if user is not admin
+  const user = await loadUser();
+  const isServerActivation = user?.isAdmin && licenseKey.search('IMSV') !== -1;
   const licenseKeyDto = { licenseKey, activationKey };
-  return isServerKey ? setServerLicense({ licenseKeyDto }) : setUserLicense({ licenseKeyDto });
+  return isServerActivation ? setServerLicense({ licenseKeyDto }) : setUserLicense({ licenseKeyDto });
 };
 
 export const getActivationKey = async (licenseKey: string): Promise<string> => {
