@@ -66,7 +66,7 @@ async function navigateAssetRoute(route: AssetRoute) {
   const { assetId } = route;
   const next = assetId ? currentUrlReplaceAssetId(assetId) : currentUrlWithoutAsset();
   if (next !== currentUrl()) {
-    await goto(next, { replaceState: false });
+    await goto(next, { replaceState: false, noScroll: true });
   }
 }
 
