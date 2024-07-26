@@ -24,11 +24,11 @@ class CropImagePage extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        leading: const CloseButton(color: Colors.white),
+        backgroundColor: Theme.of(context).bottomAppBarTheme.color,
+        leading: CloseButton(color: Theme.of(context).iconTheme.color),
         actions: [
           IconButton(
-            icon: const Icon(Icons.done_rounded, color: Colors.white, size: 24),
+            icon: Icon(Icons.done_rounded, color: Theme.of(context).iconTheme.color, size: 24),
             onPressed: () async {
               final croppedImage = await cropController.croppedImage();
               context.pushRoute(EditImageRoute(image: croppedImage));
@@ -42,7 +42,7 @@ class CropImagePage extends HookWidget {
             children: [
               Container(
                 padding: const EdgeInsets.only(top: 20),
-                width: constraints.maxWidth * 0.8,
+                width: double.infinity,
                 height: constraints.maxHeight * 0.6,
                 child: CropImage(
                   controller: cropController,
@@ -53,9 +53,9 @@ class CropImagePage extends HookWidget {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).bottomAppBarTheme.color,
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
                     ),
@@ -71,15 +71,15 @@ class CropImagePage extends HookWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.rotate_left,
-                                    color: Colors.white),
+                                icon: Icon(Icons.rotate_left,
+                                    color: Theme.of(context).iconTheme.color),
                                 onPressed: () {
                                   cropController.rotateLeft();
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.rotate_right,
-                                    color: Colors.white),
+                                icon: Icon(Icons.rotate_right,
+                                    color: Theme.of(context).iconTheme.color),
                                 onPressed: () {
                                   cropController.rotateRight();
                                 },
@@ -177,7 +177,7 @@ class _AspectRatioButton extends StatelessWidget {
         IconButton(
           icon: Icon(
             iconData,
-            color: aspectRatio.value == ratio ? Colors.indigo : Colors.white,
+            color: aspectRatio.value == ratio ? Colors.indigo : Theme.of(context).iconTheme.color,
           ),
           onPressed: () {
             aspectRatio.value = ratio;

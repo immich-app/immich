@@ -23,7 +23,7 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 /// They automatically navigate to the [HomePage] with the edited image saved and they eventually get backed up to the server.
 @immutable
 @RoutePage()
-class EditImagePage extends ConsumerWidget  {
+class EditImagePage extends ConsumerWidget {
   final Asset? asset;
   final Image? image;
 
@@ -60,7 +60,6 @@ class EditImagePage extends ConsumerWidget  {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    
     final ImageProvider provider = (asset != null)
         ? ImmichImage.imageProvider(asset: asset!)
         : (image != null)
@@ -75,15 +74,15 @@ class EditImagePage extends ConsumerWidget  {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
+          icon: Icon(Icons.close_rounded,
+              color: Theme.of(context).iconTheme.color, size: 24),
           onPressed: () =>
               Navigator.of(context).popUntil((route) => route.isFirst),
         ),
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.done_rounded, color: Colors.white, size: 24),
+          TextButton(
             onPressed: () async {
               if (image == null) {
                 ImmichToast.show(
@@ -92,17 +91,16 @@ class EditImagePage extends ConsumerWidget  {
                   msg: 'No edits made!',
                   gravity: ToastGravity.BOTTOM,
                 );
-              
+
                 Navigator.of(context).popUntil((route) => route.isFirst);
-                
               } else {
                 try {
                   final Uint8List imageData = await _imageToUint8List(image!);
                   ImmichToast.show(
-                    durationInSecond: 1,
+                    durationInSecond: 3,
                     context: context,
                     msg: 'Image Saved!',
-                    gravity: ToastGravity.BOTTOM,
+                    gravity: ToastGravity.CENTER,
                   );
 
                   ///Ignore the warning here, planning to modify this in future PRs
@@ -110,7 +108,6 @@ class EditImagePage extends ConsumerWidget  {
                       .saveImage(imageData, title: "_edited.jpg");
                   await ref.read(albumProvider.notifier).getDeviceAlbums();
                   Navigator.of(context).popUntil((route) => route.isFirst);
-            
                 } catch (e) {
                   ImmichToast.show(
                     durationInSecond: 6,
@@ -121,6 +118,10 @@ class EditImagePage extends ConsumerWidget  {
                 }
               }
             },
+            child: Text(
+              'Save to gallery',
+              style: Theme.of(context).textTheme.displayMedium,
+            ),
           ),
         ],
       ),
@@ -131,16 +132,15 @@ class EditImagePage extends ConsumerWidget  {
           ),
           Container(
             height: 80,
-            color: Colors.black,
+            color: Theme.of(context).bottomAppBarTheme.color,
           ),
         ],
       ),
       bottomNavigationBar: Container(
-        height: 80, 
-        margin: const EdgeInsets.only(
-            bottom: 20, right: 10, left: 10, top: 10), 
+        height: 80,
+        margin: const EdgeInsets.only(bottom: 20, right: 10, left: 10, top: 10),
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: Theme.of(context).bottomAppBarTheme.color,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Column(
@@ -151,16 +151,13 @@ class EditImagePage extends ConsumerWidget  {
                 Platform.isAndroid
                     ? Icons.crop_rotate_rounded
                     : Icons.crop_rotate_rounded,
-                color: Colors.white,
+                color: Theme.of(context).iconTheme.color,
               ),
               onPressed: () {
                 context.pushRoute(CropImageRoute(image: imageWidget));
               },
             ),
-            const Text(
-              'Crop',
-              style: TextStyle(color: Colors.white),
-            ),
+            Text('Crop', style: Theme.of(context).textTheme.displayMedium),
           ],
         ),
       ),
