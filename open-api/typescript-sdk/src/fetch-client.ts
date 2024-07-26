@@ -95,11 +95,16 @@ export type EmailNotificationsResponse = {
 export type MemoryResponse = {
     enabled: boolean;
 };
+export type PurchaseResponse = {
+    hideBuyButtonUntil: string;
+    showSupportBadge: boolean;
+};
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     memories: MemoryResponse;
+    purchase: PurchaseResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -115,11 +120,16 @@ export type EmailNotificationsUpdate = {
 export type MemoryUpdate = {
     enabled?: boolean;
 };
+export type PurchaseUpdate = {
+    hideBuyButtonUntil?: string;
+    showSupportBadge?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
+    purchase?: PurchaseUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;

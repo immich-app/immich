@@ -9775,6 +9775,32 @@
         ],
         "type": "object"
       },
+      "PurchaseResponse": {
+        "properties": {
+          "hideBuyButtonUntil": {
+            "type": "string"
+          },
+          "showSupportBadge": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hideBuyButtonUntil",
+          "showSupportBadge"
+        ],
+        "type": "object"
+      },
+      "PurchaseUpdate": {
+        "properties": {
+          "hideBuyButtonUntil": {
+            "type": "string"
+          },
+          "showSupportBadge": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "QueueStatusDto": {
         "properties": {
           "isActive": {
@@ -11742,13 +11768,17 @@
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryResponse"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
-          "memories"
+          "memories",
+          "purchase"
         ],
         "type": "object"
       },
@@ -11765,6 +11795,9 @@
           },
           "memories": {
             "$ref": "#/components/schemas/MemoryUpdate"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseUpdate"
           }
         },
         "type": "object"

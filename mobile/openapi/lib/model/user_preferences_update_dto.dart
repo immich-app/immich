@@ -17,6 +17,7 @@ class UserPreferencesUpdateDto {
     this.download,
     this.emailNotifications,
     this.memories,
+    this.purchase,
   });
 
   ///
@@ -51,12 +52,21 @@ class UserPreferencesUpdateDto {
   ///
   MemoryUpdate? memories;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PurchaseUpdate? purchase;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesUpdateDto &&
     other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
-    other.memories == memories;
+    other.memories == memories &&
+    other.purchase == purchase;
 
   @override
   int get hashCode =>
@@ -64,10 +74,11 @@ class UserPreferencesUpdateDto {
     (avatar == null ? 0 : avatar!.hashCode) +
     (download == null ? 0 : download!.hashCode) +
     (emailNotifications == null ? 0 : emailNotifications!.hashCode) +
-    (memories == null ? 0 : memories!.hashCode);
+    (memories == null ? 0 : memories!.hashCode) +
+    (purchase == null ? 0 : purchase!.hashCode);
 
   @override
-  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories]';
+  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +102,11 @@ class UserPreferencesUpdateDto {
     } else {
     //  json[r'memories'] = null;
     }
+    if (this.purchase != null) {
+      json[r'purchase'] = this.purchase;
+    } else {
+    //  json[r'purchase'] = null;
+    }
     return json;
   }
 
@@ -106,6 +122,7 @@ class UserPreferencesUpdateDto {
         download: DownloadUpdate.fromJson(json[r'download']),
         emailNotifications: EmailNotificationsUpdate.fromJson(json[r'emailNotifications']),
         memories: MemoryUpdate.fromJson(json[r'memories']),
+        purchase: PurchaseUpdate.fromJson(json[r'purchase']),
       );
     }
     return null;
