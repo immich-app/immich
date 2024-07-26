@@ -25,6 +25,6 @@
   </div>
 
   <div class="mt-6 w-full">
-    <Button fullwidth on:click={onDone}>OK</Button>
+    <Button fullwidth on:click={onDone}>{$t('ok')}</Button>
   </div>
 </div>

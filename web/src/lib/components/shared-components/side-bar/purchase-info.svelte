@@ -58,7 +58,7 @@
       showBuyButton = getButtonVisibility();
       showMessage = false;
     } catch (error) {
-      handleError(error, 'Error hiding buy button');
+      handleError(error, $t('errors.error_hiding_buy_button'));
     }
   };
 
@@ -89,7 +89,7 @@
           <div class="h-6 w-6">
             <ImmichLogo noText />
           </div>
-          <p class="dark:text-gray-100">Supporter</p>
+          <p class="dark:text-gray-100">{$t('purchase_account_info')}</p>
         </div>
       </button>
     {:else if !$isPurchased && showBuyButton}

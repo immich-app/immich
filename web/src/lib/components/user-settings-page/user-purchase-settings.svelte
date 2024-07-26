@@ -63,10 +63,10 @@
   const removeIndividualProductKey = async () => {
     try {
       const isConfirmed = await dialogController.show({
-        title: 'Remove Product Key',
-        prompt: 'Are you sure you want to remove the product key?',
-        confirmText: 'Remove',
-        cancelText: 'Cancel',
+        title: $t('purchase_remove_product_key'),
+        prompt: $t('purchase_remove_product_key_prompt'),
+        confirmText: $t('remove'),
+        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {
@@ -76,17 +76,17 @@
       await deleteIndividualProductKey();
       purchaseStore.setPurchaseStatus(false);
     } catch (error) {
-      handleError(error, 'Failed to remove product key');
+      handleError(error, $t('errors.failed_to_remove_product_key'));
     }
   };
 
   const removeServerProductKey = async () => {
     try {
       const isConfirmed = await dialogController.show({
-        title: 'Remove License',
-        prompt: 'Are you sure you want to remove the Server product key?',
-        confirmText: 'Remove',
-        cancelText: 'Cancel',
+        title: $t('purchase_remove_server_product_key'),
+        prompt: $t('purchase_remove_server_product_key_prompt'),
+        confirmText: $t('remove'),
+        cancelText: $t('cancel'),
       });
 
       if (!isConfirmed) {
@@ -96,7 +96,7 @@
       await deleteServerProductKey();
       purchaseStore.setPurchaseStatus(false);
     } catch (error) {
-      handleError(error, 'Failed to remove product key');
+      handleError(error, $t('errors.failed_to_remove_product_key'));
     }
   };
 
@@ -134,7 +134,7 @@
             {#if $user.isAdmin && serverPurchaseInfo?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
                 {$t('purchase_activated_time', {
-                  values: { date: new Date(serverPurchaseInfo.activatedAt).toLocaleDateString() },
+                  values: { date: new Date(serverPurchaseInfo.activatedAt) },
                 })}
               </p>
             {:else}
@@ -161,7 +161,7 @@
             {#if $user.license?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
                 {$t('purchase_activated_time', {
-                  values: { date: new Date($user.license?.activatedAt).toLocaleDateString() },
+                  values: { date: new Date($user.license?.activatedAt) },
                 })}
               </p>
             {/if}
