@@ -31,7 +31,11 @@
 
   {#if config && $user}
     <AdminSettings bind:config let:handleSave>
-      <SettingSwitch title={$t('admin.map_enable_description')} bind:checked={config.map.enabled} />
+      <SettingSwitch
+        title={$t('admin.map_enable_description')}
+        subtitle={$t('admin.map_implications')}
+        bind:checked={config.map.enabled}
+      />
       <SettingSwitch
         title={$t('admin.version_check_enabled_description')}
         bind:checked={config.newVersionCheck.enabled}
