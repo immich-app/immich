@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
@@ -11,6 +12,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 
 /// A stateless widget that provides functionality for editing an image.
 ///
@@ -21,7 +23,7 @@ import 'package:photo_manager/photo_manager.dart';
 /// They automatically navigate to the [HomePage] with the edited image saved and they eventually get backed up to the server.
 @immutable
 @RoutePage()
-class EditImagePage extends StatelessWidget {
+class EditImagePage extends ConsumerWidget  {
   final Asset? asset;
   final Image? image;
 
@@ -57,7 +59,8 @@ class EditImagePage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    
     final ImageProvider provider = (asset != null)
         ? ImmichImage.imageProvider(asset: asset!)
         : (image != null)
@@ -89,7 +92,9 @@ class EditImagePage extends StatelessWidget {
                   msg: 'No edits made!',
                   gravity: ToastGravity.BOTTOM,
                 );
+              
                 Navigator.of(context).popUntil((route) => route.isFirst);
+                
               } else {
                 try {
                   final Uint8List imageData = await _imageToUint8List(image!);
@@ -103,7 +108,9 @@ class EditImagePage extends StatelessWidget {
                   ///Ignore the warning here, planning to modify this in future PRs
                   final AssetEntity? entity = await PhotoManager.editor
                       .saveImage(imageData, title: "_edited.jpg");
+                  await ref.read(albumProvider.notifier).getDeviceAlbums();
                   Navigator.of(context).popUntil((route) => route.isFirst);
+            
                 } catch (e) {
                   ImmichToast.show(
                     durationInSecond: 6,
