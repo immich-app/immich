@@ -149,8 +149,20 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
   - Preview images (small thumbnails and large previews) for each asset and thumbnails for recognized faces.
   - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
+
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
+
+- **Postgres**
+
+  - The Immich database containing all the information to allow the system to function properly.  
+    **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
+  - Stored in `UPLOAD_LOCATION/postgres`.
+
+  :::danger
+  A backup of this folder does not constitute a backup of your database!
+  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  :::
 
 </TabItem>
   <TabItem value="Storage Template On" label="Storage Template On">
@@ -187,8 +199,19 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Files uploaded through mobile apps.
   - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
+- **Postgres**
+
+  - The Immich database containing all the information to allow the system to function properly.  
+    **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
+  - Stored in `UPLOAD_LOCATION/postgres`.
+
+  :::danger
+  A backup of this folder does not constitute a backup of your database!
+  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  :::
 
 </TabItem>
+
 </Tabs>
 
 :::danger
