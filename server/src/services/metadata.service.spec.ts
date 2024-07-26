@@ -911,7 +911,7 @@ describe(MetadataService.name, () => {
       expect(metadataMock.writeTags).toHaveBeenCalledWith(assetStub.sidecar.sidecarPath, {
         Description: description,
         ImageDescription: description,
-        CreationDate: date,
+        DateTimeOriginal: date,
         GPSLatitude: gps,
         GPSLongitude: gps,
       });

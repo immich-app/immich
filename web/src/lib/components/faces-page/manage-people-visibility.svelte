@@ -10,6 +10,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     notificationController,
@@ -24,8 +25,10 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let people: PersonResponseDto[];
-  export let onClose: () => void;
+  export let totalPeopleCount: number;
   export let titleId: string | undefined = undefined;
+  export let onClose: () => void;
+  export let loadNextPage: () => void;
 
   let toggleVisibility = ToggleVisibility.SHOW_ALL;
   let showLoadingSpinner = false;
@@ -121,7 +124,7 @@
     <CircleIconButton title={$t('close')} icon={mdiClose} on:click={onClose} />
     <div class="flex gap-2 items-center">
       <p id={titleId} class="ml-2">{$t('show_and_hide_people')}</p>
-      <p class="text-sm text-gray-400 dark:text-gray-600">({people.length.toLocaleString($locale)})</p>
+      <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
     </div>
   </div>
   <div class="flex items-center justify-end">
@@ -138,31 +141,29 @@
 </div>
 
 <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
-  <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-    {#each people as person, index (person.id)}
-      {@const hidden = personIsHidden[person.id]}
-      <button
-        type="button"
-        class="group relative"
-        on:click={() => (personIsHidden[person.id] = !hidden)}
-        aria-pressed={hidden}
-        aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
-      >
-        <ImageThumbnail
-          preload={index < 20}
-          {hidden}
-          shadow
-          url={getPeopleThumbnailUrl(person)}
-          altText={person.name}
-          widthStyle="100%"
-          hiddenIconClass="text-white group-hover:text-black transition-colors"
-        />
-        {#if person.name}
-          <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
-            {person.name}
-          </span>
-        {/if}
-      </button>
-    {/each}
-  </div>
+  <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage} let:person let:index>
+    {@const hidden = personIsHidden[person.id]}
+    <button
+      type="button"
+      class="group relative"
+      on:click={() => (personIsHidden[person.id] = !hidden)}
+      aria-pressed={hidden}
+      aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
+    >
+      <ImageThumbnail
+        preload={index < 20}
+        {hidden}
+        shadow
+        url={getPeopleThumbnailUrl(person)}
+        altText={person.name}
+        widthStyle="100%"
+        hiddenIconClass="text-white group-hover:text-black transition-colors"
+      />
+      {#if person.name}
+        <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+          {person.name}
+        </span>
+      {/if}
+    </button>
+  </PeopleInfiniteScroll>
 </div>
