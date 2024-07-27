@@ -166,12 +166,14 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
     CropImageRoute.name: (routeData) {
-      final args = routeData.argsAs<CropImageRouteArgs>();
+      final args = routeData.argsAs<CropImageRouteArgs>(
+          orElse: () => const CropImageRouteArgs());
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: CropImagePage(
           key: args.key,
           image: args.image,
+          asset: args.asset,
         ),
       );
     },
@@ -863,13 +865,15 @@ class CreateAlbumRouteArgs {
 class CropImageRoute extends PageRouteInfo<CropImageRouteArgs> {
   CropImageRoute({
     Key? key,
-    required Image image,
+    Image? image,
+    Asset? asset,
     List<PageRouteInfo>? children,
   }) : super(
           CropImageRoute.name,
           args: CropImageRouteArgs(
             key: key,
             image: image,
+            asset: asset,
           ),
           initialChildren: children,
         );
@@ -883,16 +887,19 @@ class CropImageRoute extends PageRouteInfo<CropImageRouteArgs> {
 class CropImageRouteArgs {
   const CropImageRouteArgs({
     this.key,
-    required this.image,
+    this.image,
+    this.asset,
   });
 
   final Key? key;
 
-  final Image image;
+  final Image? image;
+
+  final Asset? asset;
 
   @override
   String toString() {
-    return 'CropImageRouteArgs{key: $key, image: $image}';
+    return 'CropImageRouteArgs{key: $key, image: $image, asset: $asset}';
   }
 }
 

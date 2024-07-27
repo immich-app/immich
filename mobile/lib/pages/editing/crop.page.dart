@@ -23,18 +23,18 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 /// They automatically navigate to the [HomePage] with the edited image saved and they eventually get backed up to the server.
 @immutable
 @RoutePage()
-class EditImagePage extends ConsumerWidget {
+class CropImagePage extends ConsumerWidget {
   final Asset? asset;
   final Image? image;
 
-  const EditImagePage({
+  const CropImagePage({
     super.key,
     this.image,
     this.asset,
   }) : assert(
-            (image != null && asset == null) ||
-                (image == null && asset != null),
-            'Must supply one of asset or image');
+          (image != null && asset == null) || (image == null && asset != null),
+          'Must supply one of asset or image',
+        );
 
   Future<Uint8List> _imageToUint8List(Image image) async {
     final Completer<Uint8List> completer = Completer();
@@ -76,8 +76,11 @@ class EditImagePage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         leading: IconButton(
-          icon: Icon(Icons.close_rounded,
-              color: Theme.of(context).iconTheme.color, size: 24),
+          icon: Icon(
+            Icons.close_rounded,
+            color: Theme.of(context).iconTheme.color,
+            size: 24,
+          ),
           onPressed: () =>
               Navigator.of(context).popUntil((route) => route.isFirst),
         ),
@@ -104,7 +107,7 @@ class EditImagePage extends ConsumerWidget {
                   );
 
                   ///Ignore the warning here, planning to modify this in future PRs
-                  final AssetEntity? entity = await PhotoManager.editor
+                  await PhotoManager.editor
                       .saveImage(imageData, title: "_edited.jpg");
                   await ref.read(albumProvider.notifier).getDeviceAlbums();
                   Navigator.of(context).popUntil((route) => route.isFirst);
