@@ -14,17 +14,21 @@ export const groupDateFormat: Intl.DateTimeFormatOptions = {
   year: 'numeric',
 };
 
-export function formatGroupTitle(date: DateTime): string {
+export function formatGroupTitle(_date: DateTime): string {
+  if (!_date.isValid) {
+    return _date.toString();
+  }
+  const date: DateTime<true> = _date as DateTime<true>;
   const today = DateTime.now().startOf('day');
 
   // Today
   if (today.hasSame(date, 'day')) {
-    return date.toRelativeCalendar() || 'today';
+    return date.toRelativeCalendar();
   }
 
   // Yesterday
   if (today.minus({ days: 1 }).hasSame(date, 'day')) {
-    return date.toRelativeCalendar() || 'yesterday';
+    return date.toRelativeCalendar();
   }
 
   // Last week

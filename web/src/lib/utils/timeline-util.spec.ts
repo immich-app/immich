@@ -40,4 +40,10 @@ describe('formatGroupTitle', () => {
     expect(formatGroupTitle(date.setLocale('en'))).toBe('Wed, Jan 1, 2020');
     expect(formatGroupTitle(date.setLocale('ja'))).toBe('2020年1月1日(水)');
   });
+
+  it('returns "Invalid DateTime" when date is invalid', () => {
+    const date = DateTime.invalid('test');
+    expect(formatGroupTitle(date.setLocale('en'))).toBe('Invalid DateTime');
+    expect(formatGroupTitle(date.setLocale('es'))).toBe('Invalid DateTime');
+  });
 });
