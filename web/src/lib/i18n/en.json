@@ -127,7 +127,7 @@
     "map_enable_description": "Enable map features",
     "map_gps_settings": "Map & GPS Settings",
     "map_gps_settings_description": "Manage Map & GPS (Reverse Geocoding) Settings",
-    "map_implications": "Enabling the map implies clients (web and mobile apps) sending requests to a third-party map server in order to display the map. These requests include the client's IP address, the Immich instance URL, as well as the coordinates and zoom level of the requested map tiles. The default tile provider is cofractal.com",
+    "map_implications": "Enabling the map implies clients (web and mobile apps) sending requests to a third-party map server in order to display the map. These requests include the client's IP address, the Immich instance URL, as well as the coordinates and zoom level of the requested map tiles. The default tile provider is tiles.immich.cloud",
     "map_light_style": "Light style",
     "map_manage_reverse_geocoding_settings": "Manage <link>Reverse Geocoding</link> settings",
     "map_reverse_geocoding": "Reverse Geocoding",

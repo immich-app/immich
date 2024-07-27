@@ -129,7 +129,7 @@
     "map_enable_description": "Activer la carte",
     "map_gps_settings": "Paramètres de la carte et GPS",
     "map_gps_settings_description": "Gérer les paramètres de la Carte & GPS",
-    "map_implications": "Activer la carte implique l'envoi de requêtes vers un serveur de cartes tiers depuis les clients (web et applications mobiles) afin d'afficher la carte. Ces requêtes contiennent l'adresse IP du client, l'URL de l'instance Immich, ainsi que les coordonnées et le niveau de zoom des tuiles de carte demandées. Le founisseur de tuiles par défaut est cofractal.com",
+    "map_implications": "Activer la carte implique l'envoi de requêtes vers un serveur de cartes tiers depuis les clients (web et applications mobiles) afin d'afficher la carte. Ces requêtes contiennent l'adresse IP du client, l'URL de l'instance Immich, ainsi que les coordonnées et le niveau de zoom des tuiles de carte demandées. Le founisseur de tuiles par défaut est tiles.immich.cloud",
     "map_light_style": "Thème clair",
     "map_manage_reverse_geocoding_settings": "Gérer les <link> paramètres de géocodage inversé</link>",
     "map_reverse_geocoding": "Géocodage inversé",
