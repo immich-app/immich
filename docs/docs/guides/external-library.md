@@ -49,7 +49,7 @@ In the Immich web UI:
 - Click Add path
   <img src={require('./img/add-path-button.png').default} width="50%" title="Add Path button" />
 
-- Enter **/home/user/photos1** (or whatever the path is after the `:` in your docker compose file) as the path and click Add
+- Enter **/home/user/photos1** (or whatever the path is after the `:` and before the `:ro` in your docker compose file) as the path and click Add
   <img src={require('./img/add-path-field.png').default} width="50%" title="Add Path field" />
 
 - Save the new path
