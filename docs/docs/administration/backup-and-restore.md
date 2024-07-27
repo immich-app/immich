@@ -94,6 +94,10 @@ services:
       - database
 ```
 
+:::info
+For portainer, do not forgot to replace .env with stack.env that need to use environment variables in the web editor.
+:::
+
 Then you can restore with the same command but pointed at the latest dump.
 
 ```bash title='Automated Restore'
