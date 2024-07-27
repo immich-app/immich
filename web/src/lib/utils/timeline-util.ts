@@ -18,7 +18,7 @@ export function formatGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }
-  const date: DateTime<true> = _date as DateTime<true>;
+  const date = _date as DateTime<true>;
   const today = DateTime.now().startOf('day');
 
   // Today
