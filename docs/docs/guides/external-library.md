@@ -6,11 +6,19 @@ in a directory on the same machine.
 
 # Mount the directory into the containers.
 
-Edit `docker-compose.yml` to add one or more new mount points in the section `immich-server:` under `volumes:`.
-If you want Immich to be able to delete the images in the external library, remove `:ro` from the end of the mount point.
+Edit `docker-compose.yml` to add one or more new mount points in two sections:
+  - the section `immich-server:` under `volumes:`
+  - the section `immich-microservices` under `volumes:`
+If you want Immich to be able to delete the images in the external library, remove `:ro` from the end of the mount points. You must add it to both `immich-server` and `immich-microservices` for it to work. If you add it only to `immich-server`, the path will validate correctly, but **will not see your images**.
 
 ```diff
 immich-server:
+    volumes:
+        - ${UPLOAD_LOCATION}:/usr/src/app/upload
++       - /home/user/photos1:/home/user/photos1:ro
++       - /mnt/photos2:/mnt/photos2:ro # you can delete this line if you only have one mount point, or you can add more lines if you have more than two
+
+immich-microservices:
     volumes:
         - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +       - /home/user/photos1:/home/user/photos1:ro
@@ -41,7 +49,7 @@ In the Immich web UI:
 - Click Add path
   <img src={require('./img/add-path-button.png').default} width="50%" title="Add Path button" />
 
-- Enter **/usr/src/app/external** as the path and click Add
+- Enter **/home/user/photos1** (or whatever the path is after the `:` in your docker compose file) as the path and click Add
   <img src={require('./img/add-path-field.png').default} width="50%" title="Add Path field" />
 
 - Save the new path
