@@ -6,7 +6,7 @@ import ImmichLayout from './components/immich.layout';
 
 export const AlbumUpdateEmail = ({ baseUrl, albumName, recipientName, albumId, cid }: AlbumUpdateEmailProps) => (
   <ImmichLayout preview="New media has been added to a shared album.">
-    <Text className="m-0 text-2xl">
+    <Text className="m-0">
       Hey <strong>{recipientName}</strong>!
     </Text>
 

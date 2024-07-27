@@ -6,7 +6,7 @@ import ImmichLayout from './components/immich.layout';
 
 export const WelcomeEmail = ({ baseUrl, displayName, username, password }: WelcomeEmailProps) => (
   <ImmichLayout preview="You have been invited to a new Immich instance.">
-    <Text className="m-0 text-2xl">
+    <Text className="m-0">
       Hey <strong>{displayName}</strong>!
     </Text>
 

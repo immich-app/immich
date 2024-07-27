@@ -27,14 +27,14 @@ export const LicenseEmail = () => (
     <Text>Thank you for supporting Immich and open-source software</Text>
 
     <Text>
-      Your <strong>Immich</strong> license key is
+      Your <strong>Immich</strong> key is
     </Text>
 
     <Section className="my-2 bg-gray-200 rounded-2xl text-center p-4">
       <Text className="m-0 text-monospace font-bold text-immich-primary">{'{{LICENSEKEY}}'}</Text>
     </Section>
 
-    {/* <Text>
+    <Text>
       To activate your instance, you can click the following button or copy and paste the link below to your browser.
     </Text>
 
@@ -55,7 +55,7 @@ export const LicenseEmail = () => (
         https://my.immich.app/link?target=activate_license&licenseKey={'{{LICENSEKEY}}'}&activationKey=
         {'{{ACTIVATIONKEY}}'}
       </Link>
-    </Text> */}
+    </Text>
   </FutoLayout>
 );
 

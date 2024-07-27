@@ -13,10 +13,34 @@
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { mdiKeyboard } from '@mdi/js';
   import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let data: PageData;
+  export let isShowKeyboardShortcut = false;
+
+  interface Shortcuts {
+    general: ExplainedShortcut[];
+    actions: ExplainedShortcut[];
+  }
+  interface ExplainedShortcut {
+    key: string[];
+    action: string;
+    info?: string;
+  }
+
+  const duplicateShortcuts: Shortcuts = {
+    general: [],
+    actions: [
+      { key: ['a'], action: $t('select_all_duplicates') },
+      { key: ['s'], action: $t('view') },
+      { key: ['d'], action: $t('unselect_all_duplicates') },
+      { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
+    ],
+  };
 
   $: hasDuplicates = data.duplicates.length > 0;
 
@@ -132,6 +156,11 @@
         {$t('keep_all')}
       </div>
     </LinkButton>
+    <CircleIconButton
+      icon={mdiKeyboard}
+      title={$t('show_keyboard_shortcuts')}
+      on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+    />
   </div>
 
   <div class="mt-4">
@@ -153,3 +182,7 @@
     {/if}
   </div>
 </UserPageLayout>
+
+{#if isShowKeyboardShortcut}
+  <ShowShortcuts shortcuts={duplicateShortcuts} on:close={() => (isShowKeyboardShortcut = false)} />
+{/if}
