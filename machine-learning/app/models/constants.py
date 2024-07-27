@@ -38,7 +38,7 @@ _OPENCLIP_MODELS = {
     "ViT-L-16-SigLIP-384__webli",
     "ViT-SO400M-14-SigLIP-384__webli",
     "ViT-g-14__laion2b-s12b-b42k",
-    "XLM-Roberta-Large-ViT-B-32__laion5b_s13b_b90k",
+    "XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k",
     "XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k",
     "nllb-clip-base-siglip__mrl",
     "nllb-clip-base-siglip__v1",
