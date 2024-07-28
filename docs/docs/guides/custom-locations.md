@@ -20,7 +20,7 @@ In our `.env` file, we will define variables that will help us in the future whe
 ...
 ```
 
-After defining the locations for these files, we will edit the `docker-compose.yml` file accordingly and add the new variables to the `immich-server` and `immich-microservices` containers.
+After defining the locations for these files, we will edit the `docker-compose.yml` file accordingly and add the new variables to the `immich-server` container.
 
 ```diff title="docker-compose.yml"
 services:
