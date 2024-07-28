@@ -17,7 +17,7 @@ import {
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate } from 'src/utils/pagination';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository, IsNull } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -275,7 +275,12 @@ export class PersonRepository implements IPersonRepository {
       let query = builder.delete().where('assetId = :assetId', { assetId: assetId });
 
       if (sourceType !== undefined) {
-        query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (sourceType == null) {
+          query = query.andWhere({sourceType: IsNull() });
+        } else {
+          query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
+        }
       }
       await query.execute();
 

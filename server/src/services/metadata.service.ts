@@ -551,7 +551,7 @@ export class MetadataService implements OnEvents {
     this.logger.debug(`${faces.length} faces detected in ${asset.originalPath}`);
 
     for (const face of faces) {
-      const name = face.Name || '';
+      const name = face.Name || 'unknown';
       const matches = await this.personRepository.getByName(asset.ownerId, name, { withHidden: true });
 
       this.logger.verbose(`${matches.length} persons found for name=${name}: ${matches}`);
