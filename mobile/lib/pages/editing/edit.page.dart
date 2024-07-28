@@ -59,6 +59,7 @@ class EditImagePage extends ConsumerWidget {
   }
 
   @override
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ImageProvider provider = (asset != null)
         ? ImmichImage.imageProvider(asset: asset!)
@@ -82,18 +83,9 @@ class EditImagePage extends ConsumerWidget {
               Navigator.of(context).popUntil((route) => route.isFirst),
         ),
         actions: <Widget>[
-          TextButton(
-            onPressed: () async {
-              if (image == null) {
-                ImmichToast.show(
-                  durationInSecond: 1,
-                  context: context,
-                  msg: 'No edits made!',
-                  gravity: ToastGravity.BOTTOM,
-                );
-
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              } else {
+          if (image != null)
+            TextButton(
+              onPressed: () async {
                 try {
                   final Uint8List imageData = await _imageToUint8List(image!);
                   ImmichToast.show(
@@ -115,13 +107,12 @@ class EditImagePage extends ConsumerWidget {
                     gravity: ToastGravity.BOTTOM,
                   );
                 }
-              }
-            },
-            child: Text(
-              'Save to gallery',
-              style: Theme.of(context).textTheme.displayMedium,
+              },
+              child: Text(
+                'Save to gallery',
+                style: Theme.of(context).textTheme.displayMedium,
+              ),
             ),
-          ),
         ],
       ),
       body: Column(
