@@ -274,7 +274,7 @@ export class PersonRepository implements IPersonRepository {
       const builder = manager.createQueryBuilder(AssetFaceEntity, 'asset_faces');
       let query = builder.delete().where('assetId = :assetId', { assetId: assetId });
 
-      if (sourceType) {
+      if (sourceType !== undefined) {
         query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
       }
       await query.execute();
