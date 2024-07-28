@@ -3,10 +3,9 @@ import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-// eslint-disable-next-line unicorn/no-static-only-class
-export class SourceType {
-  static MACHINE_LEARNING = null;
-  static EXIF = 'exif';
+export const SourceTypeDefault = null // MACHINE_LEARNING
+export enum SourceType {
+  EXIF = 'exif',
 }
 
 @Entity('asset_faces', { synchronize: false })

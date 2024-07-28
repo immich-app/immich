@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Colorspace } from 'src/config';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
-import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity, SourceTypeDefault } from 'src/entities/asset-face.entity';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -673,7 +673,7 @@ describe(PersonService.name, () => {
 
       await sut.handleQueueRecognizeFaces({ force: true });
 
-      expect(personMock.deleteAllFaces).toHaveBeenCalledWith(SourceType.MACHINE_LEARNING);
+      expect(personMock.deleteAllFaces).toHaveBeenCalledWith(SourceTypeDefault);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
@@ -755,7 +755,7 @@ describe(PersonService.name, () => {
         boundingBoxY2: 200,
         imageHeight: 500,
         imageWidth: 400,
-        sourceType: SourceType.MACHINE_LEARNING,
+        sourceType: SourceTypeDefault,
         faceSearch: { faceId, embedding: [1, 2, 3, 4] },
       };
 
