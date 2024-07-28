@@ -256,6 +256,7 @@
     "transcoding_audio_codec": "Audio kodek",
     "transcoding_audio_codec_description": "Az Opus a legjobb minőségű opció (jobb minőség ugyanannyi helyet foglalva), de kevésbé kompatibilis a régi eszközökkel vagy szoftverekkel.",
     "transcoding_bitrate_description": "A maximum bitrátát meghaladó vagy nem megfelelő formátumú videókat",
+    "transcoding_codecs_learn_more": "Hogy többet tudjon meg az itt felhasznált kifejezésekről, látogassa meg az FFmpeg dokumentációt a <h264-link>H.264 kodekhez</h264-link>, a <hevc-link>HEVC kodekhez</hevc-link> és a <vp9-link>VP9 kodekhez</vp9-link>.",
     "transcoding_constant_quality_mode": "Állandó minőségi mód",
     "transcoding_constant_quality_mode_description": "Az ICQ jobb, mint a CQP, viszont nem minden hardver támogatja. A rendszer az itt beállított módszert részesíti előnyben. A NVENC ignorálja a beállítást, mivel nem támogatja az ICQ-t.",
     "transcoding_constant_rate_factor": "",
