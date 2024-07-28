@@ -110,5 +110,5 @@ DELETE FROM "person" WHERE "name" = 'PersonNameHere';
 ## Postgres internal
 
 ```sql title="Change DB_PASSWORD"
-ALTER USER postgres WITH ENCRYPTED PASSWORD 'newpasswordhere';
+ALTER USER <DB_USERNAME> WITH ENCRYPTED PASSWORD 'newpasswordhere';
 ```
