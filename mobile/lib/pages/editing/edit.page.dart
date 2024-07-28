@@ -77,8 +77,11 @@ class EditImagePage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         leading: IconButton(
-          icon: Icon(Icons.close_rounded,
-              color: Theme.of(context).iconTheme.color, size: 24),
+          icon: Icon(
+            Icons.close_rounded,
+            color: Theme.of(context).iconTheme.color,
+            size: 24,
+          ),
           onPressed: () =>
               Navigator.of(context).popUntil((route) => route.isFirst),
         ),
