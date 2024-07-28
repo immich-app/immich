@@ -5,14 +5,14 @@
     cropImageSize,
     cropSettings,
     type CropSettings,
+    type CropAspectRatio,
   } from '$lib/stores/asset-editor.store';
   import { onMount, afterUpdate } from 'svelte';
   import { get } from 'svelte/store';
 
   export let crop = get(cropSettings);
   export let asset;
-  export let aspectRatio = get(cropAspectRatio); // Possible values: '1:1', '16:9', '3:2', '7:5', 'free'
-
+  export let aspectRatio = get(cropAspectRatio);
   cropSettings.subscribe((value) => {
     crop = value;
   });
@@ -23,6 +23,7 @@
 
   let darkenLevel = 0.65; // Initial darkening level
   let animationFrame: ReturnType<typeof requestAnimationFrame>;
+  let canvasCursor: string;
   const getAssetUrl = (id: string, checksum: string) => {
     return `http://localhost:2283/api/assets/${id}/original?c=${checksum}`;
   };
@@ -344,7 +345,7 @@
     draw();
   };
 
-  function keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: string) {
+  function keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: CropAspectRatio) {
     switch (aspectRatio) {
       case '1:1': {
         return { newWidth: newHeight, newHeight };
@@ -364,6 +365,62 @@
     }
   }
 
+  /**Adjusts the dimensions of the crop area while maintaining the specified aspect ratio.
+   * This function takes the proposed new width and height of the crop area and ensures
+   * that the aspect ratio is maintained. If the proposed dimensions exceed the provided
+   * limits (xLimit and yLimit), the dimensions are adjusted to fit within these limits
+   * while still maintaining the aspect ratio.
+   */
+  function adjustDimensions(
+    newWidth: number,
+    newHeight: number,
+    aspectRatio: CropAspectRatio,
+    xLimit: number,
+    yLimit: number,
+  ) {
+    let w = newWidth,
+      h = newHeight;
+
+    let aspectMultiplier;
+    switch (aspectRatio) {
+      case '1:1': {
+        aspectMultiplier = 1;
+        break;
+      }
+      case '16:9': {
+        aspectMultiplier = 16 / 9;
+        break;
+      }
+      case '3:2': {
+        aspectMultiplier = 3 / 2;
+        break;
+      }
+      case '7:5': {
+        aspectMultiplier = 7 / 5;
+        break;
+      }
+      default: {
+        aspectMultiplier = newWidth / newHeight;
+      }
+    }
+
+    if (aspectRatio !== 'free') {
+      h = w / aspectMultiplier;
+    }
+
+    if (w > xLimit) {
+      w = xLimit;
+      h = w / aspectMultiplier;
+    }
+
+    if (h > yLimit) {
+      h = yLimit;
+      w = h * aspectMultiplier;
+    }
+
+    return { newWidth: w, newHeight: h };
+  }
+
   function resizeCrop(mouseX: number, mouseY: number) {
     if (!canvas) {
       return;
@@ -381,8 +438,8 @@
         if (newWidth >= minSize && mouseX >= 0) {
           const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
           crop.width = Math.min(w, canvas.width);
-          crop.x = Math.max(0, x + width - crop.width);
           crop.height = Math.min(h, canvas.height);
+          crop.x = Math.max(0, x + width - crop.width);
         }
         break;
       }
@@ -391,7 +448,7 @@
         newHeight = height;
         if (newWidth >= minSize && mouseX <= canvas.width) {
           const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.width = Math.min(w, canvas.width);
+          crop.width = Math.min(w, canvas.width - x);
           crop.height = Math.min(h, canvas.height);
         }
         break;
@@ -412,7 +469,7 @@
         newWidth = width;
         if (newHeight >= minSize && mouseY <= canvas.height) {
           const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.height = Math.min(h, canvas.height);
+          crop.height = Math.min(h, canvas.height - y);
           crop.width = Math.min(w, canvas.width);
         }
         break;
@@ -433,10 +490,16 @@
         newWidth = mouseX - x;
         newHeight = height + y - mouseY;
         if (newWidth >= minSize && newHeight >= minSize && mouseX <= canvas.width && mouseY >= 0) {
-          const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.width = Math.min(w, canvas.width);
-          crop.height = Math.min(h, canvas.height);
-          crop.y = Math.max(0, y + height - crop.height);
+          const { newWidth: w, newHeight: h } = adjustDimensions(
+            newWidth,
+            newHeight,
+            aspectRatio,
+            canvas.width - x,
+            y + height,
+          );
+          crop.width = w;
+          crop.height = h;
+          crop.y = y + height - h;
         }
         break;
       }
@@ -446,7 +509,7 @@
         if (newWidth >= minSize && newHeight >= minSize && mouseX >= 0 && mouseY <= canvas.height) {
           const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
           crop.width = Math.min(w, canvas.width);
-          crop.height = Math.min(h, canvas.height);
+          crop.height = Math.min(h, canvas.height - y);
           crop.x = Math.max(0, x + width - crop.width);
         }
         break;
@@ -455,9 +518,15 @@
         newWidth = mouseX - x;
         newHeight = mouseY - y;
         if (newWidth >= minSize && newHeight >= minSize && mouseX <= canvas.width && mouseY <= canvas.height) {
-          const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.width = Math.min(w, canvas.width);
-          crop.height = Math.min(h, canvas.height);
+          const { newWidth: w, newHeight: h } = adjustDimensions(
+            newWidth,
+            newHeight,
+            aspectRatio,
+            canvas.width - x,
+            canvas.height - y,
+          );
+          crop.width = w;
+          crop.height = h;
         }
         break;
       }
@@ -558,19 +627,25 @@
       onBottomLeftCorner,
       onBottomRightCorner,
     } = isOnCropBoundary(mouseX, mouseY);
-
     if (onTopLeftCorner || onBottomRightCorner) {
-      canvas.style.cursor = 'nwse-resize';
+      setCursor('nwse-resize');
     } else if (onTopRightCorner || onBottomLeftCorner) {
-      canvas.style.cursor = 'nesw-resize';
+      setCursor('nesw-resize');
     } else if (onLeftBoundary || onRightBoundary) {
-      canvas.style.cursor = 'ew-resize';
+      setCursor('ew-resize');
     } else if (onTopBoundary || onBottomBoundary) {
-      canvas.style.cursor = 'ns-resize';
+      setCursor('ns-resize');
     } else if (isInCropArea(mouseX, mouseY)) {
-      canvas.style.cursor = 'move';
+      setCursor('move');
     } else {
-      canvas.style.cursor = 'default';
+      setCursor('default');
+    }
+
+    function setCursor(cursorName: string) {
+      if (canvasCursor != cursorName) {
+        canvasCursor = cursorName;
+        canvas.style.cursor = canvasCursor;
+      }
     }
   };
 
