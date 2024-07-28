@@ -13,10 +13,10 @@ In our `.env` file, we will define variables that will help us in the future whe
 
 # Custom location where your uploaded, thumbnails, and transcoded video files are stored
 - UPLOAD_LOCATION=./library
-+ UPLOAD_LOCATION=/custom/location/on/your/system/immich/immich_files
-+ THUMB_LOCATION=/custom/location/on/your/system/immich/thumbs
-+ ENCODED_VIDEO_LOCATION=/custom/location/on/your/system/immich/encoded-video
-+ PROFILE_LOCATION=/custom/location/on/your/system/immich/profile
++ UPLOAD_LOCATION=/custom/path/immich/immich_files
++ THUMB_LOCATION=/custom/path/immich/thumbs
++ ENCODED_VIDEO_LOCATION=/custom/path/immich/encoded-video
++ PROFILE_LOCATION=/custom/path/immich/profile
 ...
 ```
 
@@ -31,22 +31,11 @@ services:
 +     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
 +     - ${PROFILE_LOCATION}:/usr/src/app/upload/profile
       - /etc/localtime:/etc/localtime:ro
-
-...
-
-  immich-microservices:
-      volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
-+     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
-+     - ${PROFILE_LOCATION}:/usr/src/app/upload/profile
-      - /etc/localtime:/etc/localtime:ro
 ```
 
 Restart Immich to register the changes.
 
 ```
-docker compose down
 docker compose up -d
 ```
 
