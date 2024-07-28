@@ -65,7 +65,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
     showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        _shareService.shareAsset(asset).then(
+        _shareService.shareAsset(asset, context).then(
           (bool status) {
             if (!status) {
               ImmichToast.show(

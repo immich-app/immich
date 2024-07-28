@@ -34,6 +34,7 @@ export enum AppRoute {
   MEMORY = '/memory',
   TRASH = '/trash',
   PARTNERS = '/partners',
+  BUY = '/buy',
 
   AUTH_LOGIN = '/auth/login',
   AUTH_REGISTER = '/auth/register',
@@ -309,3 +310,8 @@ export const langs = [
   },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];
+
+export enum ImmichProduct {
+  Client = 'immich-client',
+  Server = 'immich-server',
+}

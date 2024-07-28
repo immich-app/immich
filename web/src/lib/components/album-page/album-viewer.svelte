@@ -95,10 +95,10 @@
 
 <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   <AssetGrid {album} {assetStore} {assetInteractionStore}>
-    <section class="pt-24">
+    <section class="pt-8 md:pt-24">
       <!-- ALBUM TITLE -->
       <h1
-        class="bg-immich-bg text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
+        class="bg-immich-bg text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:bg-immich-dark-bg dark:text-immich-dark-primary"
       >
         {album.albumName}
       </h1>

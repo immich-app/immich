@@ -7,6 +7,7 @@
     TranscodeHWAccel,
     TranscodePolicy,
     VideoCodec,
+    VideoContainer,
     type SystemConfigDto,
   } from '@immich/sdk';
   import { mdiHelpCircleOutline } from '@mdi/js';
@@ -86,6 +87,22 @@
         />
 
         <SettingSelect
+          label={$t('admin.transcoding_video_codec')}
+          {disabled}
+          desc={$t('admin.transcoding_video_codec_description')}
+          bind:value={config.ffmpeg.targetVideoCodec}
+          options={[
+            { value: VideoCodec.H264, text: 'h264' },
+            { value: VideoCodec.Hevc, text: 'hevc' },
+            { value: VideoCodec.Vp9, text: 'vp9' },
+            { value: VideoCodec.Av1, text: 'av1' },
+          ]}
+          name="vcodec"
+          isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
+          on:select={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
+        />
+
+        <SettingSelect
           label={$t('admin.transcoding_audio_codec')}
           {disabled}
           desc={$t('admin.transcoding_audio_codec_description')}
@@ -104,6 +121,21 @@
         />
 
         <SettingCheckboxes
+          label={$t('admin.transcoding_accepted_video_codecs')}
+          {disabled}
+          desc={$t('admin.transcoding_accepted_video_codecs_description')}
+          bind:value={config.ffmpeg.acceptedVideoCodecs}
+          name="videoCodecs"
+          options={[
+            { value: VideoCodec.H264, text: 'H.264' },
+            { value: VideoCodec.Hevc, text: 'HEVC' },
+            { value: VideoCodec.Vp9, text: 'VP9' },
+            { value: VideoCodec.Av1, text: 'AV1' },
+          ]}
+          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedVideoCodecs), sortBy(savedConfig.ffmpeg.acceptedVideoCodecs))}
+        />
+
+        <SettingCheckboxes
           label={$t('admin.transcoding_accepted_audio_codecs')}
           {disabled}
           desc={$t('admin.transcoding_accepted_audio_codecs_description')}
@@ -117,35 +149,18 @@
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
         />
 
-        <SettingSelect
-          label={$t('admin.transcoding_video_codec')}
-          {disabled}
-          desc={$t('admin.transcoding_video_codec_description')}
-          bind:value={config.ffmpeg.targetVideoCodec}
-          options={[
-            { value: VideoCodec.H264, text: 'h264' },
-            { value: VideoCodec.Hevc, text: 'hevc' },
-            { value: VideoCodec.Vp9, text: 'vp9' },
-            { value: VideoCodec.Av1, text: 'av1' },
-          ]}
-          name="vcodec"
-          isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
-          on:select={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
-        />
-
         <SettingCheckboxes
-          label={$t('admin.transcoding_accepted_video_codecs')}
+          label={$t('admin.transcoding_accepted_containers')}
           {disabled}
-          desc={$t('admin.transcoding_accepted_video_codecs_description')}
-          bind:value={config.ffmpeg.acceptedVideoCodecs}
-          name="videoCodecs"
+          desc={$t('admin.transcoding_accepted_containers_description')}
+          bind:value={config.ffmpeg.acceptedContainers}
+          name="videoContainers"
           options={[
-            { value: VideoCodec.H264, text: 'H.264' },
-            { value: VideoCodec.Hevc, text: 'HEVC' },
-            { value: VideoCodec.Vp9, text: 'VP9' },
-            { value: VideoCodec.Av1, text: 'AV1' },
+            { value: VideoContainer.Mov, text: 'MOV' },
+            { value: VideoContainer.Ogg, text: 'Ogg' },
+            { value: VideoContainer.Webm, text: 'WebM' },
           ]}
-          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedVideoCodecs), sortBy(savedConfig.ffmpeg.acceptedVideoCodecs))}
+          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedContainers), sortBy(savedConfig.ffmpeg.acceptedContainers))}
         />
 
         <SettingSelect

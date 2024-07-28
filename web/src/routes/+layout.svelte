@@ -22,7 +22,6 @@
   import { t } from 'svelte-i18n';
 
   let showNavigationLoadingBar = false;
-
   $: changeTheme($colorTheme);
 
   $: if ($user) {

@@ -1,12 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { focusTrap } from '$lib/actions/focus-trap';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
+  import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -21,20 +23,26 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
-  import { getPerson, mergePerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import {
+    getAllPeople,
+    getPerson,
+    mergePerson,
+    searchPerson,
+    updatePerson,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import { focusTrap } from '$lib/actions/focus-trap';
 
   export let data: PageData;
 
   $: people = data.people.people;
   $: visiblePeople = people.filter((people) => !people.isHidden);
-  $: countVisiblePeople = searchName ? searchedPeopleLocal.length : visiblePeople.length;
+  $: countVisiblePeople = searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden;
   $: showPeople = searchName ? searchedPeopleLocal : visiblePeople;
 
   let selectHidden = false;
@@ -43,6 +51,7 @@
   let showSetBirthDateModal = false;
   let showMergeModal = false;
   let personName = '';
+  let nextPage = data.people.hasNextPage ? 2 : null;
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
@@ -69,6 +78,20 @@
       people = people;
     });
   });
+
+  const loadNextPage = async () => {
+    if (!nextPage) {
+      return;
+    }
+
+    try {
+      const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
+      people = people.concat(newPeople);
+      nextPage = hasNextPage ? nextPage + 1 : null;
+    } catch (error) {
+      handleError(error, $t('errors.failed_to_load_people'));
+    }
+  };
 
   const handleSearch = async () => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -316,18 +339,22 @@
   </svelte:fragment>
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
-      {#each showPeople as person, index (person.id)}
-        <PeopleCard
-          {person}
-          preload={index < 20}
-          on:change-name={() => handleChangeName(person)}
-          on:set-birth-date={() => handleSetBirthDate(person)}
-          on:merge-people={() => handleMergePeople(person)}
-          on:hide-person={() => handleHidePerson(person)}
-        />
-      {/each}
-    </div>
+    <PeopleInfiniteScroll
+      people={showPeople}
+      hasNextPage={!!nextPage && !searchName}
+      {loadNextPage}
+      let:person
+      let:index
+    >
+      <PeopleCard
+        {person}
+        preload={index < 20}
+        on:change-name={() => handleChangeName(person)}
+        on:set-birth-date={() => handleSetBirthDate(person)}
+        on:merge-people={() => handleMergePeople(person)}
+        on:hide-person={() => handleHidePerson(person)}
+      />
+    </PeopleInfiniteScroll>
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
@@ -385,6 +412,12 @@
     aria-labelledby="manage-visibility-title"
     use:focusTrap
   >
-    <ManagePeopleVisibility bind:people titleId="manage-visibility-title" onClose={() => (selectHidden = false)} />
+    <ManagePeopleVisibility
+      bind:people
+      totalPeopleCount={data.people.total}
+      titleId="manage-visibility-title"
+      onClose={() => (selectHidden = false)}
+      {loadNextPage}
+    />
   </section>
 {/if}

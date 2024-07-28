@@ -41,7 +41,7 @@ function HomepageHeader() {
             Discord
           </Link>
         </div>
-        <img src="/img/immich-screenshots.png" alt="screenshots" width={'70%'} />
+        <img src="/img/immich-screenshots.webp" alt="screenshots" width={'70%'} />
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-4 gap-1">
           <div className="h-24">
             <a href="https://play.google.com/store/apps/details?id=app.alextran.immich">
