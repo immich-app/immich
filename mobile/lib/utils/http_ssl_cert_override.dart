@@ -25,9 +25,7 @@ class HttpSSLCertOverride extends HttpOverrides {
     try {
       _log.info("Setting client certificate");
       ctx.usePrivateKeyBytes(cert.data, password: cert.password);
-      if (!Platform.isIOS) {
-        ctx.useCertificateChainBytes(cert.data, password: cert.password);
-      }
+      ctx.useCertificateChainBytes(cert.data, password: cert.password);
     } catch (e) {
       _log.severe("Failed to set SSL client cert: $e");
       return false;
