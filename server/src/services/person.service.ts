@@ -52,7 +52,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled, isImportFacesFromMetadataEnabled } from 'src/utils/misc';
+import { isFacialRecognitionEnabled, isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 
@@ -528,7 +528,7 @@ export class PersonService {
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
     const { machineLearning, importFaces, image } = await this.configCore.getConfig({ withCache: true });
-    if (![isFacialRecognitionEnabled(machineLearning), isImportFacesFromMetadataEnabled(importFaces)].includes(true)) {
+    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(importFaces)) {
       return JobStatus.SKIPPED;
     }
 
