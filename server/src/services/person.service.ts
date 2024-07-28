@@ -448,7 +448,7 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
-    if (face.sourceType != SourceType.MACHINE_LEARNING) {
+    if (face.sourceType) {
       this.logger.warn(`Face ${id} skippable source type ${face.sourceType}`);
       return JobStatus.SKIPPED;
     }

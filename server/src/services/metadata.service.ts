@@ -504,10 +504,14 @@ export class MetadataService implements OnEvents {
   private toPixels(region: MetadataRegion, unit: string): MetadataRegion {
     const pixelRegion: MetadataRegion = region;
     if (unit.toLowerCase() == 'normalized') {
-      pixelRegion.x1 = Math.floor(region.x1 * region.imageWidth);
-      pixelRegion.x2 = Math.floor(region.x2 * region.imageWidth);
-      pixelRegion.y1 = Math.floor(region.y1 * region.imageHeight);
-      pixelRegion.y2 = Math.floor(region.y2 * region.imageHeight);
+      return {
+        imageWidth: region.imageWidth,
+        imageHeight: region.imageHeight,
+        x1: Math.floor(region.x1 * region.imageWidth),
+        x2: Math.floor(region.x2 * region.imageWidth),
+        y1: Math.floor(region.y1 * region.imageHeight),
+        y2: Math.floor(region.y2 * region.imageHeight),
+      }
     }
     return pixelRegion;
   }
