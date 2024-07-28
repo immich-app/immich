@@ -59,7 +59,6 @@ class EditImagePage extends ConsumerWidget {
   }
 
   @override
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ImageProvider provider = (asset != null)
         ? ImmichImage.imageProvider(asset: asset!)
