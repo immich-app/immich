@@ -21,6 +21,7 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/pages/editing/edit.page.dart';
 
 class BottomGalleryBar extends ConsumerWidget {
   final Asset asset;
@@ -69,6 +70,12 @@ class BottomGalleryBar extends ConsumerWidget {
         label: 'control_bottom_app_bar_share'.tr(),
         tooltip: 'control_bottom_app_bar_share'.tr(),
       ),
+      if (asset.isImage)
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.edit_outlined),
+          label: 'control_bottom_app_bar_edit'.tr(),
+          tooltip: 'control_bottom_app_bar_edit'.tr(),
+        ),
       if (isOwner)
         asset.isArchived
             ? BottomNavigationBarItem(
@@ -280,6 +287,24 @@ class BottomGalleryBar extends ConsumerWidget {
       ref.read(imageViewerStateProvider.notifier).shareAsset(asset, context);
     }
 
+    void handleEdit() async {
+      if (asset.isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_edit_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              EditImagePage(asset: asset), // Send the Asset object
+        ),
+      );
+    }
+
     handleArchive() {
       ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
@@ -343,6 +368,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
     List<Function(int)> actionslist = [
       (_) => shareAsset(),
+      if (asset.isImage) (_) => handleEdit(),
       if (isOwner) (_) => handleArchive(),
       if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
       if (isOwner) (_) => handleDelete(),
