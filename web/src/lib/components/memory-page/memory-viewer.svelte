@@ -38,6 +38,7 @@
   import { tweened } from 'svelte/motion';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { locale } from '$lib/stores/preferences.store';
 
   const parseIndex = (s: string | null, max: number | null) =>
     Math.max(Math.min(Number.parseInt(s ?? '') || 0, max ?? 0), 0);
@@ -201,7 +202,7 @@
 
           <div>
             <p class="text-small">
-              {assetIndex + 1}/{currentMemory.assets.length}
+              {(assetIndex + 1).toLocaleString($locale)}/{currentMemory.assets.length.toLocaleString($locale)}
             </p>
           </div>
         </div>
