@@ -324,7 +324,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   return ids;
 };
 
-export const stackAssets = async (assets: AssetResponseDto[], parent?: AssetResponseDto, showGoToButton?: Boolean) => {
+export const stackAssets = async (assets: AssetResponseDto[], parent?: AssetResponseDto, showGoToButton?: boolean) => {
   if (assets.length < 2) {
     return false;
   }
@@ -365,7 +365,7 @@ export const stackAssets = async (assets: AssetResponseDto[], parent?: AssetResp
   parent.stack ??= [];
   parent.stack = parent.stack.concat(children, grandChildren);
   parent.stackCount = parent.stack.length + 1;
-  let notificationObject = {
+  const notificationObject = {
     message: $t('stacked_assets_count', { values: { count: parent.stackCount } }),
     type: NotificationType.Info,
   };

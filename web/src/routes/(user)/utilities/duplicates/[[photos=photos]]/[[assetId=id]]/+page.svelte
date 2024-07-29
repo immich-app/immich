@@ -14,7 +14,7 @@
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { mdiCheckOutline, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
+  import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
   import { stackAssets } from '$lib/utils/asset-utils';
   import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
