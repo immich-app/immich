@@ -682,7 +682,7 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
-          {:else if $isShowEditor && selectedEditType == 'crop'}
+          {:else if $isShowEditor && selectedEditType === 'crop'}
             <CropCanvas {asset} />
           {:else}
             <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
