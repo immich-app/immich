@@ -658,12 +658,12 @@
     fadeOverlay(true); // Darken the background
 
     setTimeout(() => {
-        let cropImageSizeParams = get(cropSettings)
-      let originalImgSize = get(cropImageSize).map(el=>el*get(cropImageScale))
-      let ch = Math.abs(originalImgSize[0]-cropImageSizeParams.width)>2 &&
-        Math.abs(originalImgSize[1]-cropImageSizeParams.height)>2
-      console.log('set', ch)
-      cropSettingsChanged.set(ch)
+      let cropImageSizeParams = get(cropSettings);
+      let originalImgSize = get(cropImageSize).map((el) => el * get(cropImageScale));
+      let changed =
+        Math.abs(originalImgSize[0] - cropImageSizeParams.width) > 2 &&
+        Math.abs(originalImgSize[1] - cropImageSizeParams.height) > 2;
+      cropSettingsChanged.set(changed);
     }, 1);
   };
 

@@ -1,7 +1,13 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { cropAspectRatio, cropImageScale, cropImageSize, cropSettings, type CropAspectRatio } from '$lib/stores/asset-editor.store';
+  import {
+    cropAspectRatio,
+    cropImageScale,
+    cropImageSize,
+    cropSettings,
+    type CropAspectRatio,
+  } from '$lib/stores/asset-editor.store';
   import { mdiBackupRestore, mdiCropFree, mdiSquareOutline } from '@mdi/js';
   import { get } from 'svelte/store';
 
@@ -38,7 +44,7 @@
     },
   ];
 
-  let selectedSize:CropAspectRatio = 'free';
+  let selectedSize: CropAspectRatio = 'free';
 
   function selectType(size: CropAspectRatio) {
     if (size == 'reset') {
