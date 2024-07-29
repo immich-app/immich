@@ -1,7 +1,7 @@
 <script lang="ts">
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiCropRotate, mdiTune } from '@mdi/js';
+  import { mdiClose, mdiCropRotate } from '@mdi/js';
   import { createEventDispatcher, onMount } from 'svelte';
   import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
@@ -51,6 +51,10 @@
     selectedType = name;
     dispatch('updateSelectedType', selectedType);
   }
+
+  function save() {
+    dispatch('close');
+  }
 </script>
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -61,7 +65,7 @@
   <section class="px-4 py-4">
     <ul class="editorul">
       <li>
-        <Button disabled={$hasChanges ? undefined : true} color={$hasChanges ? 'primary' : 'dark-gray'}
+        <Button disabled={$hasChanges ? undefined : true} color={$hasChanges ? 'primary' : 'dark-gray'} on:click={save}
           >{$t('save')}</Button
         >
       </li>
