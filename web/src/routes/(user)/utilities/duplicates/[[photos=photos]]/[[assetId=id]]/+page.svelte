@@ -9,7 +9,7 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteAssets, updateAssets, type AssetBulkStackDto } from '@immich/sdk';
+  import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
