@@ -84,7 +84,7 @@ export function handleMouseOut() {
   window.removeEventListener('mouseup', handleMouseUp);
 }
 
-function getMousePosition(e: MouseEvent, canvas: HTMLCanvasElement) {
+function getMousePosition(e: MouseEvent) {
   return { mouseX: e.offsetX, mouseY: e.offsetY };
 }
 
