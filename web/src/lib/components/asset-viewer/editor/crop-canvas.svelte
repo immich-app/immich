@@ -29,7 +29,7 @@
   };
 
   const draw = () => {
-    if (!ctx) {
+    if (!ctx || !canvas) {
       return;
     }
     cropSettings.set(crop);
