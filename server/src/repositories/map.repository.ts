@@ -297,7 +297,16 @@ export class MapRepository implements IMapRepository {
           admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
         }),
       resourcePaths.geodata.cities500,
-      { entityFilter: (lineSplit) => lineSplit[7] != 'PPLX' },
+      {
+        entityFilter: (lineSplit) => {
+          if (lineSplit[7] === 'PPLX') {
+            // Exclude populated subsections of cities that are not in Australia.
+            // Australia has a lot of PPLX areas, so we include them.
+            return lineSplit[8] === 'AU';
+          }
+          return true;
+        },
+      },
     );
   }
 
