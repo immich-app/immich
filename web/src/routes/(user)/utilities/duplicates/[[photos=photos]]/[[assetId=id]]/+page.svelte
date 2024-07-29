@@ -9,13 +9,13 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteAssets, updateAssets, stackAssets, type AssetBulkStackDto } from '@immich/sdk';
+  import { deleteAssets, updateAssets, type AssetBulkStackDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { mdiCheckOutline, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
-  import { stackAssetsUtil } from '$lib/utils/asset-utils';
+  import { stackAssets } from '$lib/utils/asset-utils';
   import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { mdiKeyboard } from '@mdi/js';
@@ -42,6 +42,7 @@
       { key: ['s'], action: $t('view') },
       { key: ['d'], action: $t('unselect_all_duplicates') },
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
+      { key: ['⇧', 'c'], action: $t('stack_duplicates') },
     ],
   };
 
@@ -95,8 +96,15 @@
     duplicateAssets: AssetResponseDto[],
     selectedAssets: AssetResponseDto[],
   ) => {
+    if (selectedAssets.length !== 1) {
+      notificationController.show({
+        message: $t('stack_select_one_photo'),
+        type: NotificationType.Error,
+      });
+      return;
+    }
     const ids = duplicateAssets.map((x) => x.id);
-    await stackAssetsUtil(duplicateAssets, selectedAssets[0]);
+    await stackAssets(duplicateAssets, selectedAssets[0], false);
     await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
     data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
   };
@@ -155,7 +163,8 @@
     );
   };
 
-  const handleStackAll = async () => {
+  // TODO: Implement stack all once the API is ready
+  /* const handleStackAll = async () => {
     const ids = data.duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
     let prompt, confirmText;
 
@@ -182,7 +191,7 @@
       prompt,
       confirmText,
     );
-  };
+  }; */
 </script>
 
 <UserPageLayout title={data.meta.title + ` (${data.duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
@@ -199,12 +208,15 @@
         {$t('keep_all')}
       </div>
     </LinkButton>
+    <!--
+    TODO: Implement stack all once the API is ready
     <LinkButton on:click={() => handleStackAll()} disabled={!hasDuplicates}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiImageMultipleOutline} size="18" />
         {$t('stack_all')}
       </div>
     </LinkButton>
+    -->
 
     <CircleIconButton
       icon={mdiKeyboard}
