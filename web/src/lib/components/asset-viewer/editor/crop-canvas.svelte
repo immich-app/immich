@@ -24,6 +24,8 @@
   let darkenLevel = 0.65; // Initial darkening level
   let animationFrame: ReturnType<typeof requestAnimationFrame>;
   let canvasCursor: string;
+  let isResizingOrDragging = false;
+
   const getAssetUrl = (id: string, checksum: string) => {
     return `http://localhost:2283/api/assets/${id}/original?c=${checksum}`;
   };
@@ -54,36 +56,61 @@
     ctx.strokeRect(crop.x, crop.y, crop.width, crop.height);
 
     // Set blend mode
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 1;
+    if (isResizingOrDragging) {
+      ctx.strokeStyle = isResizingOrDragging ? 'white' : 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1;
 
-    // Vertical lines
-    const thirdWidth = crop.width / 3;
-    ctx.beginPath();
-    ctx.moveTo(crop.x + thirdWidth, crop.y);
-    ctx.lineTo(crop.x + thirdWidth, crop.y + crop.height);
-    ctx.stroke();
+      // Vertical lines
+      const thirdWidth = crop.width / 3;
+      ctx.beginPath();
+      ctx.moveTo(crop.x + thirdWidth, crop.y);
+      ctx.lineTo(crop.x + thirdWidth, crop.y + crop.height);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(crop.x + 2 * thirdWidth, crop.y);
-    ctx.lineTo(crop.x + 2 * thirdWidth, crop.y + crop.height);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(crop.x + 2 * thirdWidth, crop.y);
+      ctx.lineTo(crop.x + 2 * thirdWidth, crop.y + crop.height);
+      ctx.stroke();
 
-    // Horizontal lines
-    const thirdHeight = crop.height / 3;
-    ctx.beginPath();
-    ctx.moveTo(crop.x, crop.y + thirdHeight);
-    ctx.lineTo(crop.x + crop.width, crop.y + thirdHeight);
-    ctx.stroke();
+      // Horizontal lines
+      const thirdHeight = crop.height / 3;
+      ctx.beginPath();
+      ctx.moveTo(crop.x, crop.y + thirdHeight);
+      ctx.lineTo(crop.x + crop.width, crop.y + thirdHeight);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(crop.x, crop.y + 2 * thirdHeight);
-    ctx.lineTo(crop.x + crop.width, crop.y + 2 * thirdHeight);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(crop.x, crop.y + 2 * thirdHeight);
+      ctx.lineTo(crop.x + crop.width, crop.y + 2 * thirdHeight);
+      ctx.stroke();
+    }
 
-    // Restore blend mode
+    // Draw circles on corners
     ctx.globalCompositeOperation = 'source-over';
+    const radius = 5; // Radius of the corner circles
+    ctx.fillStyle = 'white';
+
+    // Top-left corner
+    ctx.beginPath();
+    ctx.arc(crop.x, crop.y, radius, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Top-right corner
+    ctx.beginPath();
+    ctx.arc(crop.x + crop.width, crop.y, radius, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Bottom-left corner
+    ctx.beginPath();
+    ctx.arc(crop.x, crop.y + crop.height, radius, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Bottom-right corner
+    ctx.beginPath();
+    ctx.arc(crop.x + crop.width, crop.y + crop.height, radius, 0, 2 * Math.PI);
+    ctx.fill();
   };
+
   const drawOverlay = () => {
     ctx.fillStyle = `rgba(0, 0, 0, ${darkenLevel})`;
 
@@ -101,6 +128,8 @@
     const step = toDark ? 0.05 : -0.05;
     const minDarkness = 0.4;
     const maxDarkness = 0.65;
+
+    isResizingOrDragging = !toDark;
 
     const animate = () => {
       darkenLevel = Math.min(maxDarkness, Math.max(minDarkness, darkenLevel + step));
