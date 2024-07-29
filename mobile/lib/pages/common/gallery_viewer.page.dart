@@ -420,7 +420,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     showStack: showStack,
                     stackIndex: stackIndex.value,
                     asset: asset,
-                    assetIndex: currentIndex,
+                    assetIndex: currentIndex.value,
                     showVideoPlayerControls: !asset.isImage && !isMotionPhoto,
                   ),
                 ],

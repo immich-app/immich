@@ -95,7 +95,7 @@ export class ServerController {
 
   @Get('license')
   @Authenticated({ admin: true })
-  getServerLicense(): Promise<LicenseResponseDto | null> {
+  getServerLicense(): Promise<LicenseKeyDto | null> {
     return this.service.getLicense();
   }
 }

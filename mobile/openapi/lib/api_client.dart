@@ -216,8 +216,6 @@ class ApiClient {
           return AllJobStatusResponseDto.fromJson(value);
         case 'AssetBulkDeleteDto':
           return AssetBulkDeleteDto.fromJson(value);
-        case 'AssetBulkStackDto':
-          return AssetBulkStackDto.fromJson(value);
         case 'AssetBulkUpdateDto':
           return AssetBulkUpdateDto.fromJson(value);
         case 'AssetBulkUploadCheckDto':
@@ -260,8 +258,6 @@ class ApiClient {
           return AssetOrderTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
-        case 'AssetStackDto':
-          return AssetStackDto.fromJson(value);
         case 'AssetStatsResponseDto':
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':

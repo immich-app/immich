@@ -1689,74 +1689,6 @@
         ]
       }
     },
-    "/assets/stack": {
-      "delete": {
-        "operationId": "unstackAssets",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetStackDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      },
-      "put": {
-        "operationId": "stackAssets",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetBulkStackDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
     "/assets/stack/parent": {
       "put": {
         "operationId": "updateStackParent",
@@ -7075,7 +7007,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.109.2",
+    "version": "1.108.0",
     "contact": {}
   },
   "tags": [],
@@ -7496,20 +7428,6 @@
         },
         "required": [
           "ids"
-        ],
-        "type": "object"
-      },
-      "AssetBulkStackDto": {
-        "properties": {
-          "stacks": {
-            "items": {
-              "$ref": "#/components/schemas/AssetStackDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "stacks"
         ],
         "type": "object"
       },
@@ -8146,26 +8064,6 @@
           "thumbhash",
           "type",
           "updatedAt"
-        ],
-        "type": "object"
-      },
-      "AssetStackDto": {
-        "properties": {
-          "ids": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "stackParentId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "ids",
-          "stackParentId"
         ],
         "type": "object"
       },
@@ -11132,9 +11030,6 @@
           "mobileRedirectUri": {
             "type": "string"
           },
-          "profileSigningAlgorithm": {
-            "type": "string"
-          },
           "scope": {
             "type": "string"
           },
@@ -11159,7 +11054,6 @@
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
-          "profileSigningAlgorithm",
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",

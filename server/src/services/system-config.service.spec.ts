@@ -112,7 +112,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     mobileRedirectUri: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
-    profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
   },

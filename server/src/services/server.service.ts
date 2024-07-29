@@ -164,7 +164,7 @@ export class ServerService implements OnEvents {
     await this.systemMetadataRepository.delete(SystemMetadataKey.LICENSE);
   }
 
-  async getLicense(): Promise<LicenseResponseDto | null> {
+  async getLicense(): Promise<LicenseKeyDto | null> {
     return this.systemMetadataRepository.get(SystemMetadataKey.LICENSE);
   }
 

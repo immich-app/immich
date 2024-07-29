@@ -50,7 +50,7 @@ final class TestUtils {
         AndroidDeviceAssetSchema,
         IOSDeviceAssetSchema,
       ],
-      maxSizeMiB: 1024,
+      maxSizeMiB: 256,
       directory: "test/",
     );
 

@@ -120,20 +120,6 @@ export class AssetStatsResponseDto {
   total!: number;
 }
 
-export class AssetStackDto {
-  @ValidateUUID({ each: true })
-  ids!: string[];
-
-  @ValidateUUID()
-  stackParentId!: string;
-}
-
-export class AssetBulkStackDto {
-  @Type(() => AssetStackDto)
-  @IsNotEmpty()
-  stacks!: AssetStackDto[];
-}
-
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.IMAGE],

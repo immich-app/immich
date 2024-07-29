@@ -434,9 +434,3 @@ WHERE
   (("AssetFaceEntity"."personId" = $1))
 LIMIT
   1
-
--- PersonRepository.getLatestFaceDate
-SELECT
-  MAX("jobStatus"."facesRecognizedAt")::text AS "latestDate"
-FROM
-  "asset_job_status" "jobStatus"

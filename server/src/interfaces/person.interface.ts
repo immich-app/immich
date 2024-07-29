@@ -64,5 +64,4 @@ export interface IPersonRepository {
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
-  getLatestFaceDate(): Promise<string | undefined>;
 }

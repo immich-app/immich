@@ -45,8 +45,7 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
-    // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
-    const pipeline = sharp(input, { failOn: options.processInvalidImages ? 'none' : 'error', limitInputPixels: false })
+    const pipeline = sharp(input, { failOn: 'error', limitInputPixels: false })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .rotate();
 

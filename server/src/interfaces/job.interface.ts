@@ -153,10 +153,6 @@ export interface IDeferrableJob extends IEntityJob {
   deferred?: boolean;
 }
 
-export interface INightlyJob extends IBaseJob {
-  nightly?: boolean;
-}
-
 export interface IEmailJob {
   to: string;
   subject: string;
@@ -233,7 +229,7 @@ export type JobItem =
   // Facial Recognition
   | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
   | { name: JobName.FACE_DETECTION; data: IEntityJob }
-  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: INightlyJob }
+  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
   | { name: JobName.FACIAL_RECOGNITION; data: IDeferrableJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
 

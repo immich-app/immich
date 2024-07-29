@@ -43,7 +43,6 @@ export const resourcePaths = {
     admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
     admin2: join(folders.geodata, 'admin2Codes.txt'),
     cities500: join(folders.geodata, citiesFile),
-    naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
   },
   web: {
     root: folders.web,

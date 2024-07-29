@@ -165,7 +165,10 @@ export class AlbumService {
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.access.requirePermission(auth, Permission.ALBUM_DELETE, id);
-    await this.albumRepository.delete(id);
+
+    const album = await this.findOrFail(id, { withAssets: false });
+
+    await this.albumRepository.delete(album);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {

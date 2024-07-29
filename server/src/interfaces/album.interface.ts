@@ -30,6 +30,6 @@ export interface IAlbumRepository extends IBulkAsset {
   getAll(): Promise<AlbumEntity[]>;
   create(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
-  delete(id: string): Promise<void>;
+  delete(album: AlbumEntity): Promise<void>;
   updateThumbnails(): Promise<number | undefined>;
 }
