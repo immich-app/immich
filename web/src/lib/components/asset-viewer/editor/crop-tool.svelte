@@ -9,7 +9,6 @@
     type CropAspectRatio,
   } from '$lib/stores/asset-editor.store';
   import { mdiBackupRestore, mdiCropFree, mdiSquareOutline } from '@mdi/js';
-  import { get } from 'svelte/store';
 
   let sizes = [
     {
@@ -45,24 +44,24 @@
   ];
 
   let selectedSize: CropAspectRatio = 'free';
-  cropAspectRatio.set(selectedSize);
+  $cropAspectRatio = selectedSize;
 
   function selectType(size: CropAspectRatio) {
     if (size == 'reset') {
       selectedSize = 'free';
-      let cropImageSizeM = get(cropImageSize);
-      let cropImageScaleM = get(cropImageScale);
-      cropSettings.set({
+      let cropImageSizeM = $cropImageSize;
+      let cropImageScaleM = $cropImageScale;
+      $cropSettings = {
         x: 0,
         y: 0,
         width: cropImageSizeM[0] * cropImageScaleM - 1,
         height: cropImageSizeM[1] * cropImageScaleM - 1,
-      });
-      cropAspectRatio.set(selectedSize);
+      };
+      $cropAspectRatio = selectedSize;
       return;
     }
     selectedSize = size;
-    cropAspectRatio.set(size);
+    $cropAspectRatio = size;
   }
 </script>
 

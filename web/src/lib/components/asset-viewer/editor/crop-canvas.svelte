@@ -9,11 +9,10 @@
     cropSettingsChanged,
   } from '$lib/stores/asset-editor.store';
   import { onMount, afterUpdate } from 'svelte';
-  import { get } from 'svelte/store';
 
-  export let crop = get(cropSettings);
+  export let crop = $cropSettings;
   export let asset;
-  export let aspectRatio = get(cropAspectRatio);
+  export let aspectRatio = $cropAspectRatio;
   cropSettings.subscribe((value) => {
     crop = value;
   });
@@ -33,7 +32,7 @@
     if (!ctx || !canvas) {
       return;
     }
-    cropSettings.set(crop);
+    $cropSettings = crop;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     drawOverlay();
@@ -181,8 +180,8 @@
         }
       }
 
-      cropImageSize.set([img.width, img.height]);
-      cropImageScale.set(scale);
+      $cropImageSize = [img.width, img.height];
+      $cropImageScale = scale;
 
       crop = { x: 0, y: 0, width: img.width * scale - 1, height: img.height * scale - 1 };
 
@@ -683,12 +682,12 @@
     fadeOverlay(true); // Darken the background
 
     setTimeout(() => {
-      let cropImageSizeParams = get(cropSettings);
-      let originalImgSize = get(cropImageSize).map((el) => el * get(cropImageScale));
+      let cropImageSizeParams = $cropSettings;
+      let originalImgSize = $cropImageSize.map((el) => el * $cropImageScale);
       let changed =
         Math.abs(originalImgSize[0] - cropImageSizeParams.width) > 2 &&
         Math.abs(originalImgSize[1] - cropImageSizeParams.height) > 2;
-      cropSettingsChanged.set(changed);
+      $cropSettingsChanged = changed;
     }, 1);
   };
 
