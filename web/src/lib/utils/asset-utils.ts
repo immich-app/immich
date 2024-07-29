@@ -324,7 +324,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   return ids;
 };
 
-export const stackAssets = async (assets: AssetResponseDto[], parent : AssetResponseDto | undefined, showGoToButton: Boolean | undefined) => {
+export const stackAssets = async (assets: AssetResponseDto[], parent? : AssetResponseDto , showGoToButton?: Boolean) => {
   if (assets.length < 2) {
     return false;
   }

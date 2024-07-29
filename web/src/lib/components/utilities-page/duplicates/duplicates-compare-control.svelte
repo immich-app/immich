@@ -6,6 +6,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import { shortcuts } from '$lib/actions/shortcut';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { mdiCheck, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
