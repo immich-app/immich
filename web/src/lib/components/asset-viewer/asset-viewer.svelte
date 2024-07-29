@@ -62,7 +62,7 @@
   import { t } from 'svelte-i18n';
   import { focusTrap } from '$lib/actions/focus-trap';
   import EditorPanel from './editor/editor-panel.svelte';
-  import CropCanvas from './editor/crop-canvas.svelte';
+  import CropCanvas from './editor/crop-tool/crop-canvas.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -113,7 +113,7 @@
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
   $: isFullScreen = fullscreenElement !== null;
-  $: showNavbar = ![isShowEditor].some(Boolean) // can add another variables
+  $: showNavbar = ![isShowEditor].some(Boolean); // can add another variables
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -276,7 +276,7 @@
   };
 
   const toggleDetailPanel = () => {
-    if(!showNavbar){
+    if (!showNavbar) {
       return;
     }
     isShowActivity = false;
@@ -284,10 +284,9 @@
   };
 
   const closeViewer = async () => {
-    if(isShowEditor){
+    if (isShowEditor) {
       isShowEditor = false;
-    }
-    else if ($slideshowState === SlideshowState.None) {
+    } else if ($slideshowState === SlideshowState.None) {
       dispatch('close');
       await navigate({ targetRoute: 'current', assetId: null });
     } else {
@@ -312,7 +311,7 @@
   };
 
   const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
-    if(!showNavbar){
+    if (!showNavbar) {
       return;
     }
     if (!order) {
@@ -355,7 +354,7 @@
   };
 
   const trashOrDelete = async (force: boolean = false) => {
-    if(!showNavbar){
+    if (!showNavbar) {
       return;
     }
     if (force || !isTrashEnabled) {
@@ -404,7 +403,7 @@
   };
 
   const toggleFavorite = async () => {
-    if(!showNavbar){
+    if (!showNavbar) {
       return;
     }
     try {
@@ -462,7 +461,7 @@
   };
 
   const toggleAssetArchive = async () => {
-    if(!showNavbar){
+    if (!showNavbar) {
       return;
     }
     const updatedAsset = await toggleArchive(asset);
@@ -576,7 +575,7 @@
     { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
-    { shortcut: { key: 'd', shift: true }, onShortcut: () => showNavbar?downloadFile(asset):null },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => (showNavbar ? downloadFile(asset) : null) },
     { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
     { shortcut: { key: 'Escape' }, onShortcut: closeViewer },

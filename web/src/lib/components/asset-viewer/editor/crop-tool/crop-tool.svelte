@@ -10,7 +10,12 @@
   } from '$lib/stores/asset-editor.store';
   import { mdiBackupRestore, mdiCropFree, mdiSquareOutline } from '@mdi/js';
 
-  let sizes = [
+  interface Size {
+    icon: string;
+    name: CropAspectRatio;
+    viewBox: string;
+  }
+  let sizes: Size[] = [
     {
       icon: mdiCropFree,
       name: 'free',

@@ -5,7 +5,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import CropComponent from './crop-tool.svelte';
+  import CropComponent from './crop-tool/crop-tool.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { cropSettingsChanged } from '$lib/stores/asset-editor.store';
   import { derived } from 'svelte/store';
