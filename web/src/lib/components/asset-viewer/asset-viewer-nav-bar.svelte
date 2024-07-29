@@ -173,6 +173,7 @@
     {#if isOwner}
       <CircleIconButton
         color="opaque"
+        hideMobile={true}
         icon={mdiImageEditOutline}
         on:click={() => dispatch('showEditorHandler')}
         title={$t('editor')}
