@@ -19,6 +19,7 @@ class SplashScreenPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final apiService = ref.watch(apiServiceProvider);
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
+    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
     final log = Logger("SplashScreenPage");
 
@@ -26,30 +27,8 @@ class SplashScreenPage extends HookConsumerWidget {
       bool isSuccess = false;
       bool deviceIsOffline = false;
 
-      if (accessToken != null && serverUrl != null) {
-        try {
-          // Resolve API server endpoint from user provided serverUrl
-          await apiService.resolveAndSetEndpoint(serverUrl);
-        } on ApiException catch (error, stackTrace) {
-          log.severe(
-            "Failed to resolve endpoint [ApiException]",
-            error,
-            stackTrace,
-          );
-          // okay, try to continue anyway if offline
-          if (error.code == 503) {
-            deviceIsOffline = true;
-            log.warning("Device seems to be offline upon launch");
-          } else {
-            log.severe("Failed to resolve endpoint", error);
-          }
-        } catch (error, stackTrace) {
-          log.severe(
-            "Failed to resolve endpoint [Catch All]",
-            error,
-            stackTrace,
-          );
-        }
+      if (accessToken != null && serverUrl != null && endpoint != null) {
+        apiService.setEndpoint(endpoint);
 
         try {
           isSuccess = await ref
@@ -66,29 +45,30 @@ class SplashScreenPage extends HookConsumerWidget {
             stackTrace,
           );
         }
-      }
-
-      // If the device is offline and there is a currentUser stored locallly
-      // Proceed into the app
-      if (deviceIsOffline && Store.tryGet(StoreKey.currentUser) != null) {
-        context.replaceRoute(const TabControllerRoute());
-      } else if (isSuccess) {
-        // If device was able to login through the internet successfully
-        final hasPermission =
-            await ref.read(galleryPermissionNotifier.notifier).hasPermission;
-        if (hasPermission) {
-          // Resume backup (if enable) then navigate
-          ref.watch(backupProvider.notifier).resumeBackup();
-        }
-        context.replaceRoute(const TabControllerRoute());
       } else {
         log.severe(
-          'Unable to login through offline or online methods - logging out completely',
+          'Missing authentication and server information from the local storage',
         );
 
+        isSuccess = false;
+      }
+
+      if (!isSuccess) {
+        log.severe(
+          'Unable to login using offline or online methods - Logging out completely',
+        );
         ref.read(authenticationProvider.notifier).logout();
-        // User was unable to login through either offline or online methods
         context.replaceRoute(const LoginRoute());
+        return;
+      }
+
+      context.replaceRoute(const TabControllerRoute());
+
+      final hasPermission =
+          await ref.read(galleryPermissionNotifier.notifier).hasPermission;
+      if (hasPermission) {
+        // Resume backup (if enable) then navigate
+        ref.watch(backupProvider.notifier).resumeBackup();
       }
     }
 

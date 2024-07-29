@@ -64,7 +64,9 @@ class ApiService implements Authentication {
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
-    final endpoint = await _resolveEndpoint(serverUrl);
+    var endpoint = Store.tryGet(StoreKey.serverEndpoint);
+
+    endpoint ??= await _resolveEndpoint(serverUrl);
     setEndpoint(endpoint);
 
     // Save in hivebox for next startup
