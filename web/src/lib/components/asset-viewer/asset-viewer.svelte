@@ -113,6 +113,7 @@
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
   $: isFullScreen = fullscreenElement !== null;
+  $: showNavbar = ![isShowEditor].some(Boolean) // can add another variables
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -275,12 +276,18 @@
   };
 
   const toggleDetailPanel = () => {
+    if(!showNavbar){
+      return;
+    }
     isShowActivity = false;
     $isShowDetail = !$isShowDetail;
   };
 
   const closeViewer = async () => {
-    if ($slideshowState === SlideshowState.None) {
+    if(isShowEditor){
+      isShowEditor = false;
+    }
+    else if ($slideshowState === SlideshowState.None) {
       dispatch('close');
       await navigate({ targetRoute: 'current', assetId: null });
     } else {
@@ -305,6 +312,9 @@
   };
 
   const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
+    if(!showNavbar){
+      return;
+    }
     if (!order) {
       if ($slideshowState === SlideshowState.PlaySlideshow) {
         order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
@@ -345,6 +355,9 @@
   };
 
   const trashOrDelete = async (force: boolean = false) => {
+    if(!showNavbar){
+      return;
+    }
     if (force || !isTrashEnabled) {
       if ($showDeleteModal) {
         isShowDeleteConfirmation = true;
@@ -391,6 +404,9 @@
   };
 
   const toggleFavorite = async () => {
+    if(!showNavbar){
+      return;
+    }
     try {
       const data = await updateAsset({
         id: asset.id,
@@ -446,6 +462,9 @@
   };
 
   const toggleAssetArchive = async () => {
+    if(!showNavbar){
+      return;
+    }
     const updatedAsset = await toggleArchive(asset);
     if (updatedAsset) {
       dispatch('action', { type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: asset });
@@ -557,7 +576,7 @@
     { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
-    { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => showNavbar?downloadFile(asset):null },
     { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
     { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
@@ -574,7 +593,7 @@
   use:focusTrap
 >
   <!-- Top navigation bar -->
-  {#if $slideshowState === SlideshowState.None}
+  {#if $slideshowState === SlideshowState.None && !isShowEditor}
     <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}

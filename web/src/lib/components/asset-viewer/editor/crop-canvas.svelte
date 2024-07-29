@@ -752,8 +752,8 @@
   .canvas-container {
     width: 90%;
     margin: auto;
-    margin-top: 4rem;
-    height: calc(100% - 6rem);
+    margin-top: 2rem;
+    height: calc(100% - 4rem);
     display: flex;
     flex-direction: column;
     align-items: center;
