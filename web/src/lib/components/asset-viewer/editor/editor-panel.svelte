@@ -72,7 +72,7 @@
       {#each editTypes as etype (etype.name)}
         <li>
           <CircleIconButton
-            color={etype.name == selectedType ? 'primary' : 'opaque'}
+            color={etype.name === selectedType ? 'primary' : 'opaque'}
             icon={etype.icon}
             title={etype.name}
             on:click={() => selectType(etype.name)}

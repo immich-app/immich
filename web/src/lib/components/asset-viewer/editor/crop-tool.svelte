@@ -47,7 +47,7 @@
   $cropAspectRatio = selectedSize;
 
   function selectType(size: CropAspectRatio) {
-    if (size == 'reset') {
+    if (size === 'reset') {
       selectedSize = 'free';
       let cropImageSizeM = $cropImageSize;
       let cropImageScaleM = $cropImageScale;
@@ -70,7 +70,7 @@
     {#each sizes as size (size.name)}
       <li>
         <Button
-          color={selectedSize == size.name ? 'primary' : 'transparent-gray'}
+          color={selectedSize === size.name ? 'primary' : 'transparent-gray'}
           class="flex-col gap-1"
           size="sm"
           rounded="lg"
