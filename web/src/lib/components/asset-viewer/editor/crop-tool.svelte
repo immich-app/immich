@@ -83,9 +83,3 @@
     {/each}
   </ul>
 </div>
-
-<style>
-  li {
-    width: auto;
-  }
-</style>

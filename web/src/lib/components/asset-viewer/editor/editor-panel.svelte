@@ -63,7 +63,7 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('editor')}</p>
   </div>
   <section class="px-4 py-4">
-    <ul class="editorul">
+    <ul class="flex w-full justify-around">
       <li>
         <Button disabled={$hasChanges ? undefined : true} color={$hasChanges ? 'primary' : 'dark-gray'} on:click={save}
           >{$t('save')}</Button
@@ -85,11 +85,3 @@
     <svelte:component this={selectedTypeObj.component} />
   </section>
 </section>
-
-<style>
-  .editorul {
-    display: flex;
-    width: 100%;
-    justify-content: space-around;
-  }
-</style>

@@ -745,7 +745,6 @@
     on:mousemove={handleMouseMove}
     on:mouseup={handleMouseUp}
     on:blur={handleMouseOut}
-    class="border"
   ></canvas>
 </div>
 
@@ -762,6 +761,5 @@
   }
   canvas {
     cursor: default;
-    border: none;
   }
 </style>
