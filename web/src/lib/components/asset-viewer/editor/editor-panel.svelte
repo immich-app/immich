@@ -25,20 +25,18 @@
 
   let editTypes = [
     {
-      name: 'tune',
-      icon: mdiTune,
-      component: TuneComponent,
-    },
-    {
       name: 'crop',
       icon: mdiCropRotate,
       component: CropComponent,
     },
   ];
 
-  let selectedType: string = 'tune';
+  let selectedType: string = editTypes[0].name;
   $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
-
+  
+  setTimeout(() => {
+    dispatch('updateSelectedType', selectedType);
+  }, 1);
   function selectType(name: string) {
     selectedType = name;
     dispatch('updateSelectedType', selectedType);
