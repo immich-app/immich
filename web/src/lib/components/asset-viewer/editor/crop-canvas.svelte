@@ -460,10 +460,17 @@
         newHeight = height + y - mouseY;
         newWidth = width;
         if (newHeight >= minSize && mouseY >= 0) {
-          const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.height = Math.min(h, canvas.height);
-          crop.y = Math.max(0, y + height - crop.height);
-          crop.width = Math.min(w, canvas.width);
+          const { newWidth: w, newHeight: h } = adjustDimensions(
+            newWidth,
+            newHeight,
+            aspectRatio,
+            canvas.width,
+            canvas.height,
+          );
+          crop.y = Math.max(0, y + height - h);
+
+          crop.width = w;
+          crop.height = h;
         }
         break;
       }
@@ -471,9 +478,15 @@
         newHeight = mouseY - y;
         newWidth = width;
         if (newHeight >= minSize && mouseY <= canvas.height) {
-          const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.height = Math.min(h, canvas.height - y);
-          crop.width = Math.min(w, canvas.width);
+          const { newWidth: w, newHeight: h } = adjustDimensions(
+            newWidth,
+            newHeight,
+            aspectRatio,
+            canvas.width,
+            canvas.height - y,
+          );
+          crop.width = w;
+          crop.height = h;
         }
         break;
       }
@@ -481,9 +494,15 @@
         newWidth = width + x - mouseX;
         newHeight = height + y - mouseY;
         if (newWidth >= minSize && newHeight >= minSize && mouseX >= 0 && mouseY >= 0) {
-          const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.width = Math.min(w, canvas.width);
-          crop.height = Math.min(h, canvas.height);
+          const { newWidth: w, newHeight: h } = adjustDimensions(
+            newWidth,
+            newHeight,
+            aspectRatio,
+            canvas.width,
+            canvas.height,
+          );
+          crop.width = w;
+          crop.height = h;
           crop.x = Math.max(0, x + width - crop.width);
           crop.y = Math.max(0, y + height - crop.height);
         }
@@ -510,9 +529,15 @@
         newWidth = width + x - mouseX;
         newHeight = mouseY - y;
         if (newWidth >= minSize && newHeight >= minSize && mouseX >= 0 && mouseY <= canvas.height) {
-          const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
-          crop.width = Math.min(w, canvas.width);
-          crop.height = Math.min(h, canvas.height - y);
+          const { newWidth: w, newHeight: h } = adjustDimensions(
+            newWidth,
+            newHeight,
+            aspectRatio,
+            canvas.width,
+            canvas.height - y,
+          );
+          crop.width = w;
+          crop.height = h;
           crop.x = Math.max(0, x + width - crop.width);
         }
         break;

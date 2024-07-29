@@ -45,6 +45,7 @@
   ];
 
   let selectedSize: CropAspectRatio = 'free';
+  cropAspectRatio.set(selectedSize);
 
   function selectType(size: CropAspectRatio) {
     if (size == 'reset') {
