@@ -1,5 +1,8 @@
 <script lang="ts">
-  import CircleIconButton, { type Color } from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import CircleIconButton, {
+    type Color,
+    type Padding,
+  } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import {
     getContextMenuPositionFromBoundingRect,
@@ -24,7 +27,7 @@
   export let direction: 'left' | 'right' = 'right';
   export let color: Color = 'transparent';
   export let size: string | undefined = undefined;
-  export let padding: string | undefined = undefined;
+  export let padding: Padding | undefined = undefined;
   /**
    * Additional classes to apply to the button.
    */
@@ -114,9 +117,9 @@
       {padding}
       {size}
       {title}
-      ariaControls={menuId}
-      ariaExpanded={isOpen}
-      ariaHasPopup={true}
+      aria-controls={menuId}
+      aria-expanded={isOpen}
+      aria-haspopup={true}
       class={buttonClass}
       id={buttonId}
       on:click={handleClick}
