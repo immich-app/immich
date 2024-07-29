@@ -217,6 +217,7 @@
     } else if (isInCropArea(mouseX, mouseY)) {
       startDragging(mouseX, mouseY);
     }
+    window.addEventListener('mouseup', handleMouseUp);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -237,6 +238,7 @@
 
   const handleMouseOut = () => {
     stopInteraction();
+    window.removeEventListener('mouseup', handleMouseUp);
   };
 
   const getMousePosition = (e: MouseEvent) => {
