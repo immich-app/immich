@@ -101,7 +101,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     try {
       String? userEmail = Store.tryGet(StoreKey.currentUser)?.email;
 
-      _apiService.authenticationApi
+      await _apiService.authenticationApi
           .logout()
           .then((_) => log.info("Logout was successful for $userEmail"))
           .onError(
@@ -113,6 +113,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         clearAssetsAndAlbums(_db),
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
+        Store.delete(StoreKey.serverUrl),
+        Store.delete(StoreKey.serverEndpoint),
       ]);
       _ref.invalidate(albumProvider);
       _ref.invalidate(sharedAlbumProvider);
