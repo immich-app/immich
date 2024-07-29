@@ -355,6 +355,10 @@ class SystemConfigOAuthDto {
   signingAlgorithm!: string;
 
   @IsString()
+  @IsNotEmpty()
+  profileSigningAlgorithm!: string;
+
+  @IsString()
   storageLabelClaim!: string;
 
   @IsString()

@@ -16,8 +16,8 @@
 default_platform(:ios)
 
 platform :ios do
-  desc "iOS Beta"
-  lane :beta do
+  desc "iOS Release"
+  lane :release do
     increment_version_number(
       version_number: "1.110.0"
     )

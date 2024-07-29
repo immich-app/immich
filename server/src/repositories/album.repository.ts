@@ -5,7 +5,16 @@ import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsOrder,
+  FindOptionsRelations,
+  In,
+  IsNull,
+  Not,
+  Repository,
+} from 'typeorm';
 
 const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   if (album) {
@@ -255,24 +264,46 @@ export class AlbumRepository implements IAlbumRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
-    await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into('albums_assets_assets', ['albumsId', 'assetsId'])
-      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
-      .execute();
+    await this.addAssets(this.dataSource.manager, albumId, assetIds);
   }
 
   create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
-    return this.save(album);
+    return this.dataSource.transaction<AlbumEntity>(async (manager) => {
+      const { id } = await manager.save(AlbumEntity, { ...album, assets: [] });
+      const assetIds = (album.assets || []).map((asset) => asset.id);
+      await this.addAssets(manager, id, assetIds);
+      return manager.findOneOrFail(AlbumEntity, {
+        where: { id },
+        relations: {
+          owner: true,
+          albumUsers: { user: true },
+          sharedLinks: true,
+          assets: true,
+        },
+      });
+    });
   }
 
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
   }
 
-  async delete(album: AlbumEntity): Promise<void> {
-    await this.repository.remove(album);
+  async delete(id: string): Promise<void> {
+    await this.repository.delete({ id });
+  }
+
+  @Chunked({ paramIndex: 2, chunkSize: 30_000 })
+  private async addAssets(manager: EntityManager, albumId: string, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    await manager
+      .createQueryBuilder()
+      .insert()
+      .into('albums_assets_assets', ['albumsId', 'assetsId'])
+      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
+      .execute();
   }
 
   private async save(album: Partial<AlbumEntity>) {

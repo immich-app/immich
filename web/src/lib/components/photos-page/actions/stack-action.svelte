@@ -2,7 +2,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import { mdiImageMinusOutline, mdiImageMultipleOutline } from '@mdi/js';
-  import { stackAssetsUtil, unstackAssetsUtil } from '$lib/utils/asset-utils';
+  import { stackAssets, unstackAssets } from '$lib/utils/asset-utils';
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
   import { t } from 'svelte-i18n';
 
@@ -14,7 +14,7 @@
 
   const handleStack = async () => {
     const selectedAssets = [...getOwnedAssets()];
-    const ids = await stackAssetsUtil(selectedAssets);
+    const ids = await stackAssets(selectedAssets);
     if (ids) {
       onStack?.(ids);
       clearSelect();
@@ -31,7 +31,7 @@
       return;
     }
     const assets = [selectedAssets[0], ...stack];
-    const unstackedAssets = await unstackAssetsUtil(assets);
+    const unstackedAssets = await unstackAssets(assets);
     if (unstackedAssets) {
       onUnstack?.(unstackedAssets);
     }

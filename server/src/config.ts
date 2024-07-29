@@ -154,6 +154,7 @@ export interface SystemConfig {
     mobileRedirectUri: string;
     scope: string;
     signingAlgorithm: string;
+    profileSigningAlgorithm: string;
     storageLabelClaim: string;
     storageQuotaClaim: string;
   };
@@ -298,6 +299,7 @@ export const defaults = Object.freeze<SystemConfig>({
     mobileRedirectUri: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
+    profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
   },

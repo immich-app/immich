@@ -18,7 +18,7 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { archiveAssets, stackAssetsUtil } from '$lib/utils/asset-utils';
+  import { archiveAssets, stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { selectAllAssets } from '$lib/utils/asset-utils';
@@ -100,7 +100,7 @@
   };
 
   const onStackAssets = async () => {
-    const ids = await stackAssetsUtil(Array.from($selectedAssets));
+    const ids = await stackAssets(Array.from($selectedAssets));
     if (ids) {
       assetStore.removeAssets(ids);
       dispatch('escape');

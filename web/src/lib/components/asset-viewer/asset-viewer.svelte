@@ -15,7 +15,7 @@
     addAssetsToAlbum,
     addAssetsToNewAlbum,
     downloadFile,
-    unstackAssetsUtil,
+    unstackAssets,
     toggleArchive,
   } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -499,7 +499,7 @@
   };
 
   const handleUnstack = async () => {
-    const unstackedAssets = await unstackAssetsUtil($stackAssetsStore);
+    const unstackedAssets = await unstackAssets($stackAssetsStore);
     if (unstackedAssets) {
       for (const asset of unstackedAssets) {
         dispatch('action', {

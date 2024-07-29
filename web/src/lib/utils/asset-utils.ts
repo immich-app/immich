@@ -15,8 +15,6 @@ import {
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
-  stackAssets,
-  unstackAssets,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -326,22 +324,23 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   return ids;
 };
 
-export const stackAssetsUtil = async (assets: AssetResponseDto[], parent?: AssetResponseDto) => {
+export const stackAssets = async (assets: AssetResponseDto[]) => {
   if (assets.length < 2) {
     return false;
   }
-  if (!parent) {
-    parent = assets[0];
-  }
-  const children = assets.filter((asset) => asset.id !== parent.id);
+
+  const parent = assets[0];
+  const children = assets.slice(1);
   const ids = children.map(({ id }) => id);
-  const assetBulkStackDto = {
-    stacks: [{ ids, stackParentId: parent.id }],
-  };
-  console.log(assetBulkStackDto);
   const $t = get(t);
+
   try {
-    await stackAssets({ assetBulkStackDto });
+    await updateAssets({
+      assetBulkUpdateDto: {
+        ids,
+        stackParentId: parent.id,
+      },
+    });
   } catch (error) {
     handleError(error, $t('errors.failed_to_stack_assets'));
     return false;
@@ -377,14 +376,14 @@ export const stackAssetsUtil = async (assets: AssetResponseDto[], parent?: Asset
   return ids;
 };
 
-export const unstackAssetsUtil = async (assets: AssetResponseDto[]) => {
+export const unstackAssets = async (assets: AssetResponseDto[]) => {
   const ids = assets.map(({ id }) => id);
   const $t = get(t);
   try {
-    await unstackAssets({
-      assetStackDto: {
+    await updateAssets({
+      assetBulkUpdateDto: {
         ids,
-        stackParentId: ids[0],
+        removeParent: true,
       },
     });
   } catch (error) {

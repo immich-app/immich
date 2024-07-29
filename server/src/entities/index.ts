@@ -12,6 +12,7 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { MemoryEntity } from 'src/entities/memory.entity';
 import { MoveEntity } from 'src/entities/move.entity';
+import { NaturalEarthCountriesEntity } from 'src/entities/natural-earth-countries.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SessionEntity } from 'src/entities/session.entity';
@@ -36,6 +37,7 @@ export const entities = [
   ExifEntity,
   FaceSearchEntity,
   GeodataPlacesEntity,
+  NaturalEarthCountriesEntity,
   MemoryEntity,
   MoveEntity,
   PartnerEntity,

@@ -296,6 +296,7 @@ describe(MediaService.name, () => {
         format,
         quality: 80,
         colorspace: Colorspace.SRGB,
+        processInvalidImages: false,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
     });
@@ -326,6 +327,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.JPEG,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       );
       expect(assetMock.update).toHaveBeenCalledWith({
@@ -468,6 +470,7 @@ describe(MediaService.name, () => {
           format,
           quality: 80,
           colorspace: Colorspace.SRGB,
+          processInvalidImages: false,
         });
         expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
       },
@@ -498,6 +501,7 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(assetMock.update).toHaveBeenCalledWith({
@@ -524,6 +528,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       ],
     ]);
@@ -548,6 +553,7 @@ describe(MediaService.name, () => {
           size: 250,
           quality: 80,
           colorspace: Colorspace.P3,
+          processInvalidImages: false,
         },
       ],
     ]);
@@ -570,6 +576,7 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
@@ -590,9 +597,32 @@ describe(MediaService.name, () => {
         size: 250,
         quality: 80,
         colorspace: Colorspace.P3,
+        processInvalidImages: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+  });
+
+  it('should process invalid images if enabled', async () => {
+    vi.stubEnv('IMMICH_PROCESS_INVALID_IMAGES', 'true');
+
+    assetMock.getByIds.mockResolvedValue([assetStub.imageDng]);
+
+    await sut.handleGenerateThumbnail({ id: assetStub.image.id });
+
+    expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+      assetStub.imageDng.originalPath,
+      'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+      {
+        format: ImageFormat.WEBP,
+        size: 250,
+        quality: 80,
+        colorspace: Colorspace.P3,
+        processInvalidImages: true,
+      },
+    );
+    expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
+    vi.unstubAllEnvs();
   });
 
   describe('handleGenerateThumbhash', () => {
