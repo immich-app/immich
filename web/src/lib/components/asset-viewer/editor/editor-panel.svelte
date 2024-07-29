@@ -7,6 +7,9 @@
   import { t } from 'svelte-i18n';
   import CropComponent from './crop-tool.svelte';
   import TuneComponent from './tune-tool.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { cropSettingsChanged } from '$lib/stores/asset-editor.store';
+  import { derived } from 'svelte/store';
 
   export let asset: AssetResponseDto;
 
@@ -28,11 +31,19 @@
       name: 'crop',
       icon: mdiCropRotate,
       component: CropComponent,
+      changesFlag: cropSettingsChanged
     },
   ];
 
   let selectedType: string = editTypes[0].name;
   $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
+  
+  const hasChanges = derived(
+    editTypes.map(t => t.changesFlag),
+    ($changesFlags, set) => {
+      set($changesFlags.some(flag => flag));
+    }
+  );
   
   setTimeout(() => {
     dispatch('updateSelectedType', selectedType);
@@ -50,6 +61,9 @@
   </div>
   <section class="px-4 py-4">
     <ul class="editorul">
+      <li>
+        <Button disabled={$hasChanges?undefined:true} color={$hasChanges?'primary':"dark-gray"}>{$t('save')}</Button>
+      </li>
       {#each editTypes as etype (etype.name)}
         <li>
           <CircleIconButton
