@@ -6,12 +6,12 @@ import { ValidateBoolean, ValidateDate } from 'src/validation';
 export class MapReverseGeocodeDto {
   @ApiProperty({ format: 'double' })
   @Type(() => Number)
-  @IsLatitude()
+  @IsLatitude({ message: ({ property }) => `${property} must be a number between -90 and 90` })
   lat!: number;
 
   @ApiProperty({ format: 'double' })
   @Type(() => Number)
-  @IsLongitude()
+  @IsLongitude({ message: ({ property }) => `${property} must be a number between -180 and 180` })
   lon!: number;
 }
 

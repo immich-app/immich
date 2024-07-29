@@ -172,7 +172,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lon=123')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lat must be a latitude string or number']));
+      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
     });
 
     it('should throw an error if a lat is not a number', async () => {
@@ -180,7 +180,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lat=abc&lon=123.456')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lat must be a latitude string or number']));
+      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
     });
 
     it('should throw an error if a lat is out of range', async () => {
@@ -188,7 +188,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lat=91&lon=123.456')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lat must be a latitude string or number']));
+      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
     });
 
     it('should throw an error if a lon is not provided', async () => {
@@ -196,7 +196,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lat=75')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lon must be a longitude string or number']));
+      expect(body).toEqual(errorDto.badRequest(['lon must be a number between -180 and 180']));
     });
 
     const reverseGeocodeTestCases = [
