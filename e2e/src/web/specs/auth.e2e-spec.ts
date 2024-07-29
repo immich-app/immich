@@ -13,7 +13,7 @@ test.describe('Registration', () => {
   test('admin registration', async ({ page }) => {
     // welcome
     await page.goto('/');
-    await page.getByRole('button', { name: 'Getting Started' }).click();
+    await page.getByRole('link', { name: 'Getting Started' }).click();
 
     // register
     await expect(page).toHaveTitle(/Admin Registration/);

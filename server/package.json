@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.109.2",
+  "version": "1.110.0",
   "description": "",
   "author": "",
   "private": true,
@@ -60,7 +60,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
-    "exiftool-vendored": "26.0.0",
+    "exiftool-vendored": "^28.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
@@ -86,6 +86,7 @@
     "semver": "^7.6.2",
     "sharp": "^0.33.0",
     "sirv": "^2.0.4",
+    "tailwindcss-preset-email": "^1.3.2",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
     "ua-parser-js": "^1.0.35"
@@ -106,9 +107,9 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.12",
     "@types/nodemailer": "^6.4.14",
-    "@types/picomatch": "^2.3.3",
+    "@types/picomatch": "^3.0.0",
     "@types/semver": "^7.5.8",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
@@ -129,9 +130,10 @@
     "typescript": "^5.3.3",
     "unplugin-swc": "^1.4.5",
     "utimes": "^5.2.1",
-    "vitest": "^1.5.0"
+    "vitest": "^1.6.0",
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "volta": {
-    "node": "20.15.1"
+    "node": "20.16.0"
   }
 }

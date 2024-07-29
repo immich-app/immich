@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.11",
+  "version": "2.2.12",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
@@ -18,11 +18,11 @@
     "@types/cli-progress": "^3.11.0",
     "@types/lodash-es": "^4.17.12",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.12",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vitest/coverage-v8": "^1.2.2",
-    "byte-size": "^8.1.1",
+    "byte-size": "^9.0.0",
     "cli-progress": "^3.12.0",
     "commander": "^12.0.0",
     "eslint": "^8.56.0",
@@ -64,6 +64,6 @@
     "lodash-es": "^4.17.21"
   },
   "volta": {
-    "node": "20.15.1"
+    "node": "20.16.0"
   }
 }

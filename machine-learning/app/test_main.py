@@ -212,7 +212,7 @@ class TestOrtSession:
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert session.provider_options == [
-            {"device_type": "GPU_FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
+            {"device_type": "GPU", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -268,9 +268,9 @@ class TestAnnSession:
 
         AnnSession(model_path, cache_dir)
 
-        ann_session.assert_called_once_with(tuning_level=3, tuning_file=(cache_dir / "gpu-tuning.ann").as_posix())
+        ann_session.assert_called_once_with(tuning_level=2, tuning_file=(cache_dir / "gpu-tuning.ann").as_posix())
         ann_session.return_value.load.assert_called_once_with(
-            model_path.as_posix(), cached_network_path=model_path.with_suffix(".anncache").as_posix()
+            model_path.as_posix(), cached_network_path=model_path.with_suffix(".anncache").as_posix(), fp16=False
         )
         info.assert_has_calls(
             [

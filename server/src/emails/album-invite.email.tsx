@@ -1,21 +1,8 @@
-import {
-  Body,
-  Button,
-  Column,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Row,
-  Section,
-  Text,
-} from '@react-email/components';
-import * as CSS from 'csstype';
+import { Img, Link, Section, Text } from '@react-email/components';
 import * as React from 'react';
 import { AlbumInviteEmailProps } from 'src/interfaces/notification.interface';
+import { ImmichButton } from './components/button.component';
+import ImmichLayout from './components/immich.layout';
 
 export const AlbumInviteEmail = ({
   baseUrl,
@@ -25,122 +12,37 @@ export const AlbumInviteEmail = ({
   albumId,
   cid,
 }: AlbumInviteEmailProps) => (
-  <Html>
-    <Head />
-    <Preview>You have been added to a shared album.</Preview>
-    <Body
-      style={{
-        margin: 0,
-        padding: 0,
-        backgroundColor: '#ffffff',
-        color: 'rgb(28,28,28)',
-        fontFamily: 'Overpass, sans-serif',
-        fontSize: '18px',
-        lineHeight: '24px',
-      }}
-    >
-      <Container
-        style={{
-          width: '540px',
-          maxWidth: '100%',
-          padding: '10px',
-          margin: '0 auto',
-        }}
-      >
-        <Section
+  <ImmichLayout preview="You have been added to a shared album.">
+    <Text className="m-0">
+      Hey <strong>{recipientName}</strong>!
+    </Text>
+
+    <Text>
+      {senderName} has added you to the album <strong>{albumName}</strong>.
+    </Text>
+
+    {cid && (
+      <Section className="flex justify-center my-0">
+        <Img
+          className="max-w-[300px] w-full rounded-lg"
+          src={`cid:${cid}`}
           style={{
-            padding: '36px',
-            tableLayout: 'fixed',
-            backgroundColor: 'rgb(226, 232, 240)',
-            border: 'solid 0px rgb(248 113 113)',
-            borderRadius: '50px',
-            textAlign: 'center' as const,
+            boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
           }}
-        >
-          <Img
-            src="https://immich.app/img/immich-logo-inline-light.png"
-            alt="Immich"
-            style={{
-              height: 'auto',
-              margin: '0 auto 48px auto',
-              width: '50%',
-              alignSelf: 'center',
-              color: 'white',
-            }}
-          />
+        />
+      </Section>
+    )}
 
-          <Text style={text}>Hey {recipientName}!</Text>
+    <Section className="flex justify-center my-6">
+      <ImmichButton href={`${baseUrl}/albums/${albumId}`}>View Album</ImmichButton>
+    </Section>
 
-          <Text style={text}>
-            {senderName} has added you to the album <strong>{albumName}</strong>.
-          </Text>
-
-          {cid && (
-            <Row>
-              <Column align="center">
-                <Img
-                  src={`cid:${cid}`}
-                  width="300"
-                  style={{
-                    borderRadius: '20px',
-                    boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
-                  }}
-                />
-              </Column>
-            </Row>
-          )}
-
-          <Row style={{ marginBottom: '36px', marginTop: '36px' }}>
-            <Text style={{ ...text }}>To view the album, open the link in a browser, or click the button below.</Text>
-          </Row>
-          <Row>
-            <Column align="center">
-              <Link style={{ marginTop: '50px' }} href={`${baseUrl}/albums/${albumId}`}>
-                {baseUrl}/albums/{albumId}
-              </Link>
-            </Column>
-          </Row>
-          <Row>
-            <Column align="center">
-              <Button style={button} href={`${baseUrl}/albums/${albumId}`}>
-                View album
-              </Button>
-            </Column>
-          </Row>
-        </Section>
-
-        <Hr style={{ color: 'rgb(66, 80, 175)', marginTop: '24px' }} />
-
-        <Section style={{ textAlign: 'center' }}>
-          <Row>
-            <Column align="center">
-              <Link href="https://play.google.com/store/apps/details?id=app.alextran.immich">
-                <Img src={`https://immich.app/img/google-play-badge.png`} height="96px" alt="Immich" />
-              </Link>
-              <Link href="https://apps.apple.com/sg/app/immich/id1613945652">
-                <Img
-                  src={`https://immich.app/img/ios-app-store-badge.png`}
-                  alt="Immich"
-                  style={{ height: '72px', padding: '14px' }}
-                />
-              </Link>
-            </Column>
-          </Row>
-        </Section>
-
-        <Text
-          style={{
-            color: '#6a737d',
-            fontSize: '0.8rem',
-            textAlign: 'center' as const,
-            marginTop: '12px',
-          }}
-        >
-          <Link href="https://immich.app">Immich</Link> project is available under GNU AGPL v3 license.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
+    <Text className="text-xs">
+      If you cannot click the button use the link below to view the album.
+      <br />
+      <Link href={`${baseUrl}/albums/${albumId}`}>{`${baseUrl}/albums/${albumId}`}</Link>
+    </Text>
+  </ImmichLayout>
 );
 
 AlbumInviteEmail.PreviewProps = {
@@ -148,27 +50,7 @@ AlbumInviteEmail.PreviewProps = {
   albumName: 'Trip to Europe',
   albumId: 'b63f6dae-e1c9-401b-9a85-9dbbf5612539',
   senderName: 'Owner User',
-  recipientName: 'Guest User',
-  cid: '',
+  recipientName: 'Alan Turing',
 } as AlbumInviteEmailProps;
 
 export default AlbumInviteEmail;
-
-const text = {
-  margin: '0 0 24px 0',
-  textAlign: 'left' as const,
-  fontSize: '18px',
-  lineHeight: '24px',
-};
-
-const button: CSS.Properties = {
-  backgroundColor: 'rgb(66, 80, 175)',
-  margin: '1em 0',
-  padding: '0.75em 3em',
-  color: '#fff',
-  fontSize: '1em',
-  fontWeight: 700,
-  lineHeight: 1.5,
-  textTransform: 'uppercase',
-  borderRadius: '9999px',
-};

@@ -13,6 +13,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/widgets/settings/ssl_client_cert_settings.dart';
 import 'package:logging/logging.dart';
 
 class AdvancedSettings extends HookConsumerWidget {
@@ -64,6 +65,7 @@ class AdvancedSettings extends HookConsumerWidget {
         onChanged: (_) => HttpOverrides.global = HttpSSLCertOverride(),
       ),
       const CustomeProxyHeaderSettings(),
+      SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);

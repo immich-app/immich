@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { getClientLicensePublicKey } from 'src/config';
+import { getClientLicensePublicKey, getServerLicensePublicKey } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -138,16 +138,23 @@ export class UserService {
   }
 
   async setLicense(auth: AuthDto, license: LicenseKeyDto): Promise<LicenseResponseDto> {
-    if (!license.licenseKey.startsWith('IMCL-')) {
+    if (!license.licenseKey.startsWith('IMCL-') && !license.licenseKey.startsWith('IMSV-')) {
       throw new BadRequestException('Invalid license key');
     }
-    const licenseValid = this.cryptoRepository.verifySha256(
+
+    const clientLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
       getClientLicensePublicKey(),
     );
 
-    if (!licenseValid) {
+    const serverLicenseValid = this.cryptoRepository.verifySha256(
+      license.licenseKey,
+      license.activationKey,
+      getServerLicensePublicKey(),
+    );
+
+    if (!clientLicenseValid && !serverLicenseValid) {
       throw new BadRequestException('Invalid license key');
     }
 

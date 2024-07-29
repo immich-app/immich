@@ -50,6 +50,7 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                           |            `8081`            | server                   | api                |
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                           |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images |                              | server                   | microservices      |
+| `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies  |                              | server                   | api                |
 
 \*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
 It only need to be set if the Immich deployment method is changing.
@@ -156,18 +157,21 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                          |                Default                | Containers       |
-| :----------------------------------------------- | :------------------------------------------------------------------- | :-----------------------------------: | :--------------- |
-| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0)   |                 `300`                 | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)    |                 `10`                  | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                                |               `/cache`                | machine learning |
-| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)          |          number of CPU cores          | machine learning |
-| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                  |                  `1`                  | machine learning |
-| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                           |                  `2`                  | machine learning |
-| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                  |                  `1`                  | machine learning |
-| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed       | `120` (`300` if using OpenVINO image) | machine learning |
-| `MACHINE_LEARNING_PRELOAD__CLIP`                 | Name of a CLIP model to be preloaded and kept in cache               |                                       | machine learning |
-| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`   | Name of a facial recognition model to be preloaded and kept in cache |                                       | machine learning |
+| Variable                                         | Description                                                                                         |                Default                | Containers       |
+| :----------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-----------------------------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0)                                  |                 `300`                 | machine learning |
+| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)                                   |                 `10`                  | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                                                               |               `/cache`                | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)                                         |          number of CPU cores          | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                                                 |                  `1`                  | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                                                          |                  `2`                  | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                                                 |                  `1`                  | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed                                      | `120` (`300` if using OpenVINO image) | machine learning |
+| `MACHINE_LEARNING_PRELOAD__CLIP`                 | Name of a CLIP model to be preloaded and kept in cache                                              |                                       | machine learning |
+| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`   | Name of a facial recognition model to be preloaded and kept in cache                                |                                       | machine learning |
+| `MACHINE_LEARNING_ANN`                           | Enable ARM-NN hardware acceleration if supported                                                    |                `True`                 | machine learning |
+| `MACHINE_LEARNING_ANN_FP16_TURBO`                | Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN) |                `False`                | machine learning |
+| `MACHINE_LEARNING_ANN_TUNING_LEVEL`              | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                        |                  `2`                  | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 

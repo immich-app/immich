@@ -5,7 +5,7 @@ Keep in mind that mucking around in the database might set the moon on fire. Avo
 :::
 
 :::tip
-Run `docker exec -it immich_postgres psql immich <DB_USERNAME>` to connect to the database via the container directly.
+Run `docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME>` to connect to the database via the container directly.
 
 (Replace `<DB_USERNAME>` with the value from your [`.env` file](/docs/install/environment-variables#database)).
 :::
@@ -105,4 +105,10 @@ SELECT "key", "value" FROM "system_metadata" WHERE "key" = 'system-config';
 
 ```sql title="Delete person and unset it for the faces it was associated with"
 DELETE FROM "person" WHERE "name" = 'PersonNameHere';
+```
+
+## Postgres internal
+
+```sql title="Change DB_PASSWORD"
+ALTER USER <DB_USERNAME> WITH ENCRYPTED PASSWORD 'newpasswordhere';
 ```

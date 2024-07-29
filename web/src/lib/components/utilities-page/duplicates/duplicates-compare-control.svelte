@@ -70,8 +70,14 @@
 
 <svelte:window
   use:shortcuts={[
-    { shortcut: { key: 'k', shift: true }, onShortcut: onSelectAll },
-    { shortcut: { key: 't', shift: true }, onShortcut: onSelectNone },
+    { shortcut: { key: 'a' }, onShortcut: onSelectAll },
+    {
+      shortcut: { key: 's' },
+      onShortcut: () => {
+        setAsset(assets[0]);
+      },
+    },
+    { shortcut: { key: 'd' }, onShortcut: onSelectNone },
     { shortcut: { key: 'c', shift: true }, onShortcut: handleResolve },
     { shortcut: { key: 's', shift: true }, onShortcut: handleStack },
   ]}

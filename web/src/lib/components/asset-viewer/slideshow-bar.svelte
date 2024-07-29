@@ -109,7 +109,7 @@
       buttonSize="50"
       icon={mdiCog}
       on:click={() => (showSettings = !showSettings)}
-      title={$t('next')}
+      title={$t('slideshow_settings')}
     />
     {#if !isFullScreen}
       <CircleIconButton

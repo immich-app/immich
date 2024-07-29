@@ -9,6 +9,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { mdiCog, mdiWindowMinimize, mdiCancel, mdiCloudUploadOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { locale } from '$lib/stores/preferences.store';
 
   let showDetail = false;
   let showOptions = false;
@@ -54,7 +55,7 @@
       }
       uploadAssetsStore.resetStore();
     }}
-    class="absolute bottom-6 right-6 z-[10000]"
+    class="fixed bottom-6 right-6 z-[10000]"
   >
     {#if showDetail}
       <div
@@ -73,9 +74,14 @@
               })}
             </p>
             <p class="immich-form-label text-xs">
-              {$t('upload_status_uploaded')} <span class="text-immich-success">{$successCounter}</span> -
-              {$t('upload_status_errors')} <span class="text-immich-error">{$errorCounter}</span> -
-              {$t('upload_status_duplicates')} <span class="text-immich-warning">{$duplicateCounter}</span>
+              {$t('upload_status_uploaded')}
+              <span class="text-immich-success">{$successCounter.toLocaleString($locale)}</span>
+              -
+              {$t('upload_status_errors')}
+              <span class="text-immich-error">{$errorCounter.toLocaleString($locale)}</span>
+              -
+              {$t('upload_status_duplicates')}
+              <span class="text-immich-warning">{$duplicateCounter.toLocaleString($locale)}</span>
             </p>
           </div>
           <div class="flex flex-col items-end">
@@ -139,7 +145,7 @@
           on:click={() => (showDetail = true)}
           class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
         >
-          {$remainingUploads}
+          {$remainingUploads.toLocaleString($locale)}
         </button>
         {#if $hasError}
           <button
@@ -148,7 +154,7 @@
             on:click={() => (showDetail = true)}
             class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
           >
-            {$errorCounter}
+            {$errorCounter.toLocaleString($locale)}
           </button>
         {/if}
         <button
