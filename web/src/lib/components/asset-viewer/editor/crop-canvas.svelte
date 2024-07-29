@@ -8,7 +8,10 @@
     type CropAspectRatio,
     cropSettingsChanged,
   } from '$lib/stores/asset-editor.store';
+  import { getAssetOriginalUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { onMount, afterUpdate } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   export let crop = $cropSettings;
   export let asset;
@@ -25,10 +28,6 @@
   let animationFrame: ReturnType<typeof requestAnimationFrame>;
   let canvasCursor: string;
   let isResizingOrDragging = false;
-
-  const getAssetUrl = (id: string, checksum: string) => {
-    return `http://localhost:2283/api/assets/${id}/original?c=${checksum}`;
-  };
 
   const draw = () => {
     if (!ctx || !canvas) {
@@ -722,11 +721,11 @@
 
   onMount(() => {
     img = new Image();
-    img.src = getAssetUrl(asset.id, asset.checksum);
+    img.src = getAssetOriginalUrl({ id: asset.id, checksum: asset.checksum })
 
     img.addEventListener('load', onImageLoad);
-    img.addEventListener('error', () => {
-      console.error('Failed to load image');
+    img.addEventListener('error', (error) => {
+      handleError(error, $t('error_loading_image'));
     });
   });
 
