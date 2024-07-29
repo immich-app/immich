@@ -8,7 +8,14 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { IJobRepository, ILibraryFileJob, ILibraryRefreshJob, JobName, JobStatus } from 'src/interfaces/job.interface';
+import {
+  IJobRepository,
+  ILibraryFileJob,
+  ILibraryOfflineJob,
+  ILibraryRefreshJob,
+  JobName,
+  JobStatus,
+} from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -154,12 +161,14 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleQueueAssetRefresh', () => {
-    it('should queue new assets', async () => {
+    it('should queue refresh of a new asset', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
         refreshModifiedFiles: false,
         refreshAllFiles: false,
       };
+
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -183,6 +192,40 @@ describe(LibraryService.name, () => {
       ]);
     });
 
+    it('should queue offline check of existing online assets', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.walk.mockImplementation(async function* generator() {});
+      assetMock.getWith.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.LIBRARY_CHECK_OFFLINE,
+          data: { id: assetStub.external.id, importPaths: libraryStub.externalLibrary1.importPaths },
+        },
+      ]);
+    });
+
+    it("should fail when library can't be found", async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: false,
+      };
+
+      libraryMock.get.mockResolvedValue(null);
+
+      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.FAILED);
+    });
+
     it('should force queue new assets', async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
@@ -190,6 +233,7 @@ describe(LibraryService.name, () => {
         refreshAllFiles: true,
       };
 
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
@@ -225,6 +269,8 @@ describe(LibraryService.name, () => {
 
       storageMock.checkFileExists.mockResolvedValue(true);
 
+      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
+
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibraryWithImportPaths1.id,
         refreshModifiedFiles: false,
@@ -241,49 +287,36 @@ describe(LibraryService.name, () => {
         exclusionPatterns: [],
       });
     });
+  });
 
+  describe('handleOfflineCheck', () => {
     it('should set missing assets offline', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.external],
-        hasNextPage: false,
-      });
+      assetMock.getById.mockResolvedValue(assetStub.external);
 
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.image.id], { isOffline: true });
-      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: false });
-      expect(jobMock.queueAll).not.toHaveBeenCalled();
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
 
-    it('should set crawled assets that were previously offline back online', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
+    it('should set an asset outside of import paths as offline', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/data/user2'],
       };
 
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      // eslint-disable-next-line @typescript-eslint/require-await
-      storageMock.walk.mockImplementation(async function* generator() {
-        yield assetStub.externalOffline.originalPath;
-      });
-      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({
-        items: [assetStub.externalOffline],
-        hasNextPage: false,
-      });
+      assetMock.getById.mockResolvedValue(assetStub.external);
 
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
+      storageMock.checkFileExists.mockResolvedValue(true);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.externalOffline.id], { isOffline: false });
-      expect(assetMock.updateAll).not.toHaveBeenCalledWith(expect.anything(), { isOffline: true });
-      expect(jobMock.queueAll).not.toHaveBeenCalled();
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
   });
 

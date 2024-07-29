@@ -364,7 +364,7 @@ describe('/libraries', () => {
       utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
     });
 
-    it('should offline missing files', async () => {
+    it('should offline a file missing from disk', async () => {
       utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
@@ -389,6 +389,43 @@ describe('/libraries', () => {
           }),
         ]),
       );
+    });
+
+    it('should offline a file outside of import paths', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.png`);
+      utils.createImageFile(`${testAssetDir}/temp/directoryB/assetC.png`);
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      await request(app)
+        .put(`/libraries/${library.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ importPaths: [`${testAssetDirInternal}/temp/directoryA`] });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: false,
+            originalFileName: 'assetB.png',
+          }),
+          expect.objectContaining({
+            isOffline: true,
+            originalFileName: 'assetC.png',
+          }),
+        ]),
+      );
+
+      utils.removeImageFile(`${testAssetDir}/temp/directoryB/assetC.png`);
     });
 
     it('should not try to delete offline files', async () => {
