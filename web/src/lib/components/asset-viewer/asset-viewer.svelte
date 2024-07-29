@@ -5,7 +5,7 @@
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import { isShowDetail, isShowEditor, showDeleteModal } from '$lib/stores/preferences.store';
+  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
@@ -105,6 +105,7 @@
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
+  let isShowEditor = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
@@ -340,7 +341,7 @@
     if (isShowActivity) {
       isShowActivity = false;
     }
-    $isShowEditor = !$isShowEditor;
+    isShowEditor = !isShowEditor;
   };
 
   const trashOrDelete = async (force: boolean = false) => {
@@ -612,7 +613,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !$isShowEditor}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <NavigationArea onClick={(e) => navigateAsset('previous', e)} label={$t('view_previous_asset')}>
         <Icon path={mdiChevronLeft} size="36" ariaHidden />
@@ -682,7 +683,7 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
-          {:else if $isShowEditor && selectedEditType === 'crop'}
+          {:else if isShowEditor && selectedEditType === 'crop'}
             <CropCanvas {asset} />
           {:else}
             <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
@@ -713,7 +714,7 @@
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !$isShowEditor}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NavigationArea onClick={(e) => navigateAsset('next', e)} label={$t('view_next_asset')}>
         <Icon path={mdiChevronRight} size="36" ariaHidden />
@@ -732,7 +733,7 @@
     </div>
   {/if}
 
-  {#if $isShowEditor}
+  {#if isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
@@ -742,7 +743,7 @@
       <EditorPanel
         {asset}
         on:updateSelectedType={handleUpdateSelectedEditType}
-        on:close={() => ($isShowEditor = false)}
+        on:close={() => (isShowEditor = false)}
       />
     </div>
   {/if}
