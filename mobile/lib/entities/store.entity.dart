@@ -19,6 +19,7 @@ class Store {
 
   /// Initializes the store (call exactly once per app start)
   static void init(Isar db) {
+    print("Initializing store");
     _db = db;
     _populateCache();
     _db.storeValues.where().build().watch().listen(_onChangeListener);
@@ -59,6 +60,9 @@ class Store {
   /// Removes the value synchronously from the cache and asynchronously from the DB
   static Future<void> delete<T>(StoreKey<T> key) {
     if (_cache[key.id] == null) return Future.value();
+    if(key.id == StoreKey.serverEndpoint.id) {
+      _log.info("Server endpoint changed to null");
+    }
     _cache[key.id] = null;
     return _db.writeTxn(() => _db.storeValues.delete(key.id));
   }
@@ -76,12 +80,12 @@ class Store {
   /// updates the state if a value is updated in any isolate
   static void _onChangeListener(List<StoreValue>? data) {
     if (data != null) {
+      final dbValues = _db.txnSync(() => _db.storeValues.getAllSync(data.map((e) => e.id).toList()));
       for (StoreValue value in data) {
-        final key = StoreKey.values.firstWhereOrNull((e) => e.id == value.id);
-        if (key != null) {
-          _cache[value.id] = value._extract(key);
-        } else {
-          _log.warning("No key available for value id - ${value.id}");
+        final dbValue = dbValues.firstWhere((e) => e?.id == value.id, orElse: () => null)?._extract(StoreKey.values[value.id]);
+        _cache[value.id] = dbValue;
+        if(value.id == StoreKey.serverEndpoint.id) {
+          _log.info("Server endpoint changed to ${value.strValue}");
         }
       }
     }
@@ -96,7 +100,8 @@ class StoreValue {
   int? intValue;
   String? strValue;
 
-  T? _extract<T>(StoreKey<T> key) {
+  T? _extract<T>(StoreKey<T>? key) {
+    if (key == null) return null;
     switch (key.type) {
       case const (int):
         return intValue as T?;
