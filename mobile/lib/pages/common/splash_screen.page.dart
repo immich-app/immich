@@ -70,11 +70,7 @@ class SplashScreenPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (serverUrl != null && accessToken != null) {
-          performLoggingIn();
-        } else {
-          context.replaceRoute(const LoginRoute());
-        }
+        performLoggingIn();
         return null;
       },
       [],
