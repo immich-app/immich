@@ -24,19 +24,17 @@ class SplashScreenPage extends HookConsumerWidget {
     final log = Logger("SplashScreenPage");
 
     void performLoggingIn() async {
-      bool isSuccess = false;
-      bool deviceIsOffline = false;
+      bool isAuthSuccess = false;
 
       if (accessToken != null && serverUrl != null && endpoint != null) {
         apiService.setEndpoint(endpoint);
 
         try {
-          isSuccess = await ref
+          isAuthSuccess = await ref
               .read(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: accessToken,
                 serverUrl: serverUrl,
-                offlineLogin: deviceIsOffline,
               );
         } catch (error, stackTrace) {
           log.severe(
@@ -46,14 +44,13 @@ class SplashScreenPage extends HookConsumerWidget {
           );
         }
       } else {
+        isAuthSuccess = false;
         log.severe(
-          'Missing authentication and server information from the local storage',
+          'Missing authentication, server, or endpoint info from the local store',
         );
-
-        isSuccess = false;
       }
 
-      if (!isSuccess) {
+      if (!isAuthSuccess) {
         log.severe(
           'Unable to login using offline or online methods - Logging out completely',
         );
