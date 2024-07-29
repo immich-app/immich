@@ -37,8 +37,6 @@
       </div>
     </div>
 
-    <a href={getProductLink(ImmichProduct.Client)}>
-      <Button fullwidth>{$t('purchase_button_select')}</Button>
-    </a>
+    <Button href={getProductLink(ImmichProduct.Client)} fullwidth>{$t('purchase_button_select')}</Button>
   </div>
 </div>

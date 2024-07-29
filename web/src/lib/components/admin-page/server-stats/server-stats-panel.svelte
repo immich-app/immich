@@ -108,7 +108,10 @@
               {/if}
               <span class="text-immich-primary dark:text-immich-dark-primary">
                 {#if user.quotaSizeInBytes}
-                  ({((user.usage / user.quotaSizeInBytes) * 100).toFixed(0)}%)
+                  ({(user.usage / user.quotaSizeInBytes).toLocaleString($locale, {
+                    style: 'percent',
+                    maximumFractionDigits: 0,
+                  })})
                 {:else}
                   ({$t('unlimited')})
                 {/if}

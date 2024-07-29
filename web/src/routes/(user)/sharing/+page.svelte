@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import empty2Url from '$lib/assets/empty-2.svg';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -43,7 +42,7 @@
       </div>
     </LinkButton>
 
-    <LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
+    <LinkButton href={AppRoute.SHARED_LINKS}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <Icon path={mdiLink} size="18" class="shrink-0" />
         <span class="leading-none max-sm:text-xs">{$t('shared_links')}</span>

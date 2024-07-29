@@ -18,6 +18,7 @@
   import { mdiKeyboard } from '@mdi/js';
   import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
   export let isShowKeyboardShortcut = false;
@@ -142,7 +143,7 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title + ` (${data.duplicates.length})`} scrollbar={true}>
+<UserPageLayout title={data.meta.title + ` (${data.duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   <div class="flex place-items-center gap-2" slot="buttons">
     <LinkButton on:click={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
       <div class="flex place-items-center gap-2 text-sm">
