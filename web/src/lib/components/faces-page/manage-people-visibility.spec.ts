@@ -1,3 +1,4 @@
+import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
 import type { PersonResponseDto } from '@immich/sdk';
@@ -18,6 +19,7 @@ describe('ManagePeopleVisibility Component', () => {
   });
 
   beforeEach(() => {
+    vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
     personVisible = personFactory.build({ isHidden: false });
     personHidden = personFactory.build({ isHidden: true });
     personWithoutName = personFactory.build({ isHidden: false, name: undefined });
@@ -32,7 +34,9 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 
@@ -45,7 +49,9 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 
@@ -63,7 +69,9 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 
@@ -86,7 +94,9 @@ describe('ManagePeopleVisibility Component', () => {
     const { getByText, getByTitle } = render(ManagePeopleVisibility, {
       props: {
         people: [personVisible, personHidden, personWithoutName],
+        totalPeopleCount: 3,
         onClose: vi.fn(),
+        loadNextPage: vi.fn(),
       },
     });
 

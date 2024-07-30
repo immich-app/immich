@@ -1,5 +1,25 @@
 [
   {
+    "label": "v1.111.0",
+    "url": "https://v1.111.0.archive.immich.app"
+  },
+  {
+    "label": "v1.110.0",
+    "url": "https://v1.110.0.archive.immich.app"
+  },
+  {
+    "label": "v1.109.2",
+    "url": "https://v1.109.2.archive.immich.app"
+  },
+  {
+    "label": "v1.109.1",
+    "url": "https://v1.109.1.archive.immich.app"
+  },
+  {
+    "label": "v1.109.0",
+    "url": "https://v1.109.0.archive.immich.app"
+  },
+  {
     "label": "v1.108.0",
     "url": "https://v1.108.0.archive.immich.app"
   },

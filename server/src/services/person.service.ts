@@ -91,15 +91,22 @@ export class PersonService {
   }
 
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
+    const { withHidden = false, page, size } = dto;
+    const pagination = {
+      take: size,
+      skip: (page - 1) * size,
+    };
+
     const { machineLearning } = await this.configCore.getConfig({ withCache: false });
-    const people = await this.repository.getAllForUser(auth.user.id, {
+    const { items, hasNextPage } = await this.repository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
-      withHidden: dto.withHidden || false,
+      withHidden,
     });
     const { total, hidden } = await this.repository.getNumberOfPeople(auth.user.id);
 
     return {
-      people: people.map((person) => mapPerson(person)),
+      people: items.map((person) => mapPerson(person)),
+      hasNextPage,
       total,
       hidden,
     };
@@ -571,6 +578,7 @@ export class PersonService {
       colorspace: image.colorspace,
       quality: image.quality,
       crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
+      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
     } as const;
 
     await this.mediaRepository.generateThumbnail(inputPath, thumbnailPath, thumbnailOptions);

@@ -2,11 +2,11 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.108.0+148
+version: 1.111.0+152
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.22.2
+  flutter: 3.22.3
 
 dependencies:
   flutter:
@@ -62,12 +62,15 @@ dependencies:
   thumbhash: 0.1.0+1
   async: ^2.11.0
 
+  #image editing packages
+  crop_image: ^1.0.13
   openapi:
     path: openapi
 
   # easy to remove packages:
   image_picker: ^1.0.7 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
   logging: ^1.2.0
+  file_picker: ^8.0.0+1
 
 # This is uncommented in F-Droid build script
 # Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105

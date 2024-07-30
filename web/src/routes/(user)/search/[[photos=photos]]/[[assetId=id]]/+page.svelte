@@ -230,7 +230,7 @@
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="w-full flex-1 pl-4">
-          <SearchBar grayTheme={false} searchQuery={terms} />
+          <SearchBar grayTheme={false} value={terms.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>

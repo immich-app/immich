@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
+import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
@@ -19,10 +21,11 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/pages/editing/edit.page.dart';
 
 class BottomGalleryBar extends ConsumerWidget {
   final Asset asset;
-  final int assetIndex;
+  final ValueNotifier<int> assetIndex;
   final bool showStack;
   final int stackIndex;
   final ValueNotifier<int> totalAssets;
@@ -57,6 +60,7 @@ class BottomGalleryBar extends ConsumerWidget {
     final isFromTrash = isTrashEnabled &&
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
+    final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
     // !!!! itemsList and actionlist should always be in sync
     final itemsList = [
       BottomNavigationBarItem(
@@ -66,6 +70,12 @@ class BottomGalleryBar extends ConsumerWidget {
         label: 'control_bottom_app_bar_share'.tr(),
         tooltip: 'control_bottom_app_bar_share'.tr(),
       ),
+      if (asset.isImage)
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.tune_outlined),
+          label: 'control_bottom_app_bar_edit'.tr(),
+          tooltip: 'control_bottom_app_bar_edit'.tr(),
+        ),
       if (isOwner)
         asset.isArchived
             ? BottomNavigationBarItem(
@@ -84,7 +94,7 @@ class BottomGalleryBar extends ConsumerWidget {
           label: 'control_bottom_app_bar_stack'.tr(),
           tooltip: 'control_bottom_app_bar_stack'.tr(),
         ),
-      if (isOwner)
+      if (isOwner && !isInAlbum)
         BottomNavigationBarItem(
           icon: const Icon(Icons.delete_outline),
           label: 'control_bottom_app_bar_delete'.tr(),
@@ -95,6 +105,12 @@ class BottomGalleryBar extends ConsumerWidget {
           icon: const Icon(Icons.download_outlined),
           label: 'download'.tr(),
           tooltip: 'download'.tr(),
+        ),
+      if (isInAlbum)
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.remove_circle_outline),
+          label: 'album_viewer_appbar_share_remove'.tr(),
+          tooltip: 'album_viewer_appbar_share_remove'.tr(),
         ),
     ];
 
@@ -118,7 +134,8 @@ class BottomGalleryBar extends ConsumerWidget {
 
           // `assetIndex == totalAssets.value - 1` handle the case of removing the last asset
           // to not throw the error when the next preCache index is called
-          if (totalAssets.value == 1 || assetIndex == totalAssets.value - 1) {
+          if (totalAssets.value == 1 ||
+              assetIndex.value == totalAssets.value - 1) {
             // Handle only one asset
             context.maybePop();
           }
@@ -270,6 +287,24 @@ class BottomGalleryBar extends ConsumerWidget {
       ref.read(imageViewerStateProvider.notifier).shareAsset(asset, context);
     }
 
+    void handleEdit() async {
+      if (asset.isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_edit_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              EditImagePage(asset: asset), // Send the Asset object
+        ),
+      );
+    }
+
     handleArchive() {
       ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
@@ -299,12 +334,46 @@ class BottomGalleryBar extends ConsumerWidget {
           );
     }
 
+    handleRemoveFromAlbum() async {
+      final album = ref.read(currentAlbumProvider);
+      final bool isSuccess = album != null &&
+          await ref
+              .read(sharedAlbumProvider.notifier)
+              .removeAssetFromAlbum(album, [asset]);
+
+      if (isSuccess) {
+        // Workaround for asset remaining in the gallery
+        renderList.deleteAsset(asset);
+
+        if (totalAssets.value == 1) {
+          // Handle empty viewer
+          await context.maybePop();
+        } else {
+          // changing this also for the last asset causes the parent to rebuild with an error
+          totalAssets.value -= 1;
+        }
+        if (assetIndex.value == totalAssets.value && assetIndex.value > 0) {
+          // handle the case of removing the last asset in the list
+          assetIndex.value -= 1;
+        }
+      } else {
+        ImmichToast.show(
+          context: context,
+          msg: "album_viewer_appbar_share_err_remove".tr(),
+          toastType: ToastType.error,
+          gravity: ToastGravity.BOTTOM,
+        );
+      }
+    }
+
     List<Function(int)> actionslist = [
       (_) => shareAsset(),
+      if (asset.isImage) (_) => handleEdit(),
       if (isOwner) (_) => handleArchive(),
       if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
       if (isOwner) (_) => handleDelete(),
       if (!isOwner) (_) => handleDownload(),
+      if (isInAlbum) (_) => handleRemoveFromAlbum(),
     ];
 
     return IgnorePointer(
@@ -322,10 +391,22 @@ class BottomGalleryBar extends ConsumerWidget {
               backgroundColor: Colors.black.withOpacity(0.4),
               unselectedIconTheme: const IconThemeData(color: Colors.white),
               selectedIconTheme: const IconThemeData(color: Colors.white),
-              unselectedLabelStyle: const TextStyle(color: Colors.black),
-              selectedLabelStyle: const TextStyle(color: Colors.black),
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
+              unselectedLabelStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                height: 2.3,
+              ),
+              selectedLabelStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                height: 2.3,
+              ),
+              unselectedFontSize: 14,
+              selectedFontSize: 14,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
               items: itemsList,
               onTap: (index) {
                 if (index < actionslist.length) {

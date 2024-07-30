@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.108.0
+ * 1.111.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -95,11 +95,16 @@ export type EmailNotificationsResponse = {
 export type MemoryResponse = {
     enabled: boolean;
 };
+export type PurchaseResponse = {
+    hideBuyButtonUntil: string;
+    showSupportBadge: boolean;
+};
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     memories: MemoryResponse;
+    purchase: PurchaseResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -115,11 +120,16 @@ export type EmailNotificationsUpdate = {
 export type MemoryUpdate = {
     enabled?: boolean;
 };
+export type PurchaseUpdate = {
+    hideBuyButtonUntil?: string;
+    showSupportBadge?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
+    purchase?: PurchaseUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -546,6 +556,11 @@ export type MapMarkerResponseDto = {
     lon: number;
     state: string | null;
 };
+export type MapReverseGeocodeResponseDto = {
+    city: string | null;
+    country: string | null;
+    state: string | null;
+};
 export type OnThisDayDto = {
     year: number;
 };
@@ -609,6 +624,8 @@ export type UpdatePartnerDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
+    /** This property was added in v1.110.0 */
+    hasNextPage?: boolean;
     hidden: number;
     people: PersonResponseDto[];
     total: number;
@@ -883,12 +900,12 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
-export type LicenseKeyDto = {
+export type LicenseResponseDto = {
+    activatedAt: string;
     activationKey: string;
     licenseKey: string;
 };
-export type LicenseResponseDto = {
-    activatedAt: string;
+export type LicenseKeyDto = {
     activationKey: string;
     licenseKey: string;
 };
@@ -963,6 +980,7 @@ export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     accelDecode: boolean;
     acceptedAudioCodecs: AudioCodec[];
+    acceptedContainers: VideoContainer[];
     acceptedVideoCodecs: VideoCodec[];
     bframes: number;
     cqMode: CQMode;
@@ -1985,6 +2003,20 @@ export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived,
         ...opts
     }));
 }
+export function reverseGeocode({ lat, lon }: {
+    lat: number;
+    lon: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MapReverseGeocodeResponseDto[];
+    }>(`/map/reverse-geocode${QS.query(QS.explode({
+        lat,
+        lon
+    }))}`, {
+        ...opts
+    }));
+}
 export function getMapStyle({ key, theme }: {
     key?: string;
     theme: MapTheme;
@@ -2179,13 +2211,17 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
-export function getAllPeople({ withHidden }: {
+export function getAllPeople({ page, size, withHidden }: {
+    page?: number;
+    size?: number;
     withHidden?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PeopleResponseDto;
     }>(`/people${QS.query(QS.explode({
+        page,
+        size,
         withHidden
     }))}`, {
         ...opts
@@ -2517,7 +2553,9 @@ export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
 export function getServerLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: object;
+        data: LicenseResponseDto;
+    } | {
+        status: 404;
     }>("/server/license", {
         ...opts
     }));
@@ -3184,6 +3222,12 @@ export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
     Libopus = "libopus"
+}
+export enum VideoContainer {
+    Mov = "mov",
+    Mp4 = "mp4",
+    Ogg = "ogg",
+    Webm = "webm"
 }
 export enum VideoCodec {
     H264 = "h264",

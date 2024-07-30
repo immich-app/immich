@@ -101,7 +101,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     try {
       String? userEmail = Store.tryGet(StoreKey.currentUser)?.email;
 
-      _apiService.authenticationApi
+      await _apiService.authenticationApi
           .logout()
           .then((_) => log.info("Logout was successful for $userEmail"))
           .onError(
@@ -156,7 +156,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<bool> setSuccessLoginInfo({
     required String accessToken,
     required String serverUrl,
-    bool offlineLogin = false,
   }) async {
     _apiService.setAccessToken(accessToken);
 
@@ -165,57 +164,56 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
     bool shouldChangePassword = false;
-    User? user;
+    User? user = Store.tryGet(StoreKey.currentUser);
 
-    bool retResult = false;
-    User? offlineUser = Store.tryGet(StoreKey.currentUser);
-
-    // If the user is offline and there is a user saved on the device,
-    // if not try an online login
-    if (offlineLogin && offlineUser != null) {
-      user = offlineUser;
-      retResult = false;
-    } else {
-      UserAdminResponseDto? userResponseDto;
-      UserPreferencesResponseDto? userPreferences;
-      try {
-        userResponseDto = await _apiService.usersApi.getMyUser();
-        userPreferences = await _apiService.usersApi.getMyPreferences();
-      } on ApiException catch (error, stackTrace) {
-        _log.severe(
-          "Error getting user information from the server [API EXCEPTION]",
-          error,
-          stackTrace,
-        );
-        if (error.innerException is SocketException) {
-          state = state.copyWith(isAuthenticated: true);
-        }
-      } catch (error, stackTrace) {
-        _log.severe(
-          "Error getting user information from the server [CATCH ALL]",
-          error,
-          stackTrace,
-        );
-      }
-
-      if (userResponseDto != null) {
-        Store.put(StoreKey.deviceId, deviceId);
-        Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
-        Store.put(
-          StoreKey.currentUser,
-          User.fromUserDto(userResponseDto, userPreferences),
-        );
-        Store.put(StoreKey.serverUrl, serverUrl);
-        Store.put(StoreKey.accessToken, accessToken);
-
-        shouldChangePassword = userResponseDto.shouldChangePassword;
-        user = User.fromUserDto(userResponseDto, userPreferences);
-
-        retResult = true;
-      } else {
-        _log.severe("Unable to get user information from the server.");
+    UserAdminResponseDto? userResponse;
+    UserPreferencesResponseDto? userPreferences;
+    try {
+      final responses = await Future.wait([
+        _apiService.usersApi.getMyUser(),
+        _apiService.usersApi.getMyPreferences(),
+      ]);
+      userResponse = responses[0] as UserAdminResponseDto;
+      userPreferences = responses[1] as UserPreferencesResponseDto;
+    } on ApiException catch (error, stackTrace) {
+      if (error.code == 401) {
+        _log.severe("Unauthorized access, token likely expired. Logging out.");
         return false;
       }
+      _log.severe(
+        "Error getting user information from the server [API EXCEPTION]",
+        stackTrace,
+      );
+    } catch (error, stackTrace) {
+      _log.severe(
+        "Error getting user information from the server [CATCH ALL]",
+        error,
+        stackTrace,
+      );
+    }
+
+    // If the user information is successfully retrieved, update the store
+    // Due to the flow of the code, this will always happen on first login
+    if (userResponse != null) {
+      Store.put(StoreKey.deviceId, deviceId);
+      Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
+      Store.put(
+        StoreKey.currentUser,
+        User.fromUserDto(userResponse, userPreferences),
+      );
+      Store.put(StoreKey.serverUrl, serverUrl);
+      Store.put(StoreKey.accessToken, accessToken);
+
+      shouldChangePassword = userResponse.shouldChangePassword;
+      user = User.fromUserDto(userResponse, userPreferences);
+    } else {
+      _log.severe("Unable to get user information from the server.");
+    }
+
+    // If the user is null, the login was not successful
+    // and we don't have a local copy of the user from a prior successful login
+    if (user == null) {
+      return false;
     }
 
     state = state.copyWith(
@@ -229,7 +227,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       deviceId: deviceId,
     );
 
-    return retResult;
+    return true;
   }
 }
 

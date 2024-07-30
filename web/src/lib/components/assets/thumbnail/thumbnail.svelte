@@ -6,7 +6,7 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
-  import { playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl } from '$lib/utils';
   import {
     mdiArchiveArrowDownOutline,
@@ -177,7 +177,7 @@
               : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
           >
             <span class="pr-2 pt-2 flex place-items-center gap-1">
-              <p>{asset.stackCount}</p>
+              <p>{asset.stackCount.toLocaleString($locale)}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>
           </div>

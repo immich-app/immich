@@ -33,7 +33,7 @@ export const getKeysDeep = (target: unknown, path: string[] = []) => {
       continue;
     }
 
-    if (_.isObject(value) && !_.isArray(value)) {
+    if (_.isObject(value) && !_.isArray(value) && !_.isDate(value)) {
       properties.push(...getKeysDeep(value, [...path, key]));
       continue;
     }

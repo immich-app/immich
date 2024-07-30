@@ -1,7 +1,7 @@
 import { locale } from '$lib/stores/preferences.store';
 import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, sortBy } from 'lodash-es';
-import { DateTime, Interval } from 'luxon';
+import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 
 export const fromLocalDateTime = (localDateTime: string) =>
@@ -14,21 +14,25 @@ export const groupDateFormat: Intl.DateTimeFormatOptions = {
   year: 'numeric',
 };
 
-export function formatGroupTitle(date: DateTime): string {
+export function formatGroupTitle(_date: DateTime): string {
+  if (!_date.isValid) {
+    return _date.toString();
+  }
+  const date = _date as DateTime<true>;
   const today = DateTime.now().startOf('day');
 
   // Today
   if (today.hasSame(date, 'day')) {
-    return 'Today';
+    return date.toRelativeCalendar();
   }
 
   // Yesterday
-  if (Interval.fromDateTimes(date, today).length('days') == 1) {
-    return 'Yesterday';
+  if (today.minus({ days: 1 }).hasSame(date, 'day')) {
+    return date.toRelativeCalendar();
   }
 
   // Last week
-  if (Interval.fromDateTimes(date, today).length('weeks') < 1) {
+  if (date >= today.minus({ days: 6 })) {
     return date.toLocaleString({ weekday: 'long' });
   }
 

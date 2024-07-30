@@ -362,6 +362,8 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MapMarkerResponseDto':
           return MapMarkerResponseDto.fromJson(value);
+        case 'MapReverseGeocodeResponseDto':
+          return MapReverseGeocodeResponseDto.fromJson(value);
         case 'MapTheme':
           return MapThemeTypeTransformer().decode(value);
         case 'MemoryCreateDto':
@@ -416,6 +418,10 @@ class ApiClient {
           return PersonWithFacesResponseDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
+        case 'PurchaseResponse':
+          return PurchaseResponse.fromJson(value);
+        case 'PurchaseUpdate':
+          return PurchaseUpdate.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'ReactionLevel':
@@ -582,6 +588,8 @@ class ApiClient {
           return ValidateLibraryResponseDto.fromJson(value);
         case 'VideoCodec':
           return VideoCodecTypeTransformer().decode(value);
+        case 'VideoContainer':
+          return VideoContainerTypeTransformer().decode(value);
         default:
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {

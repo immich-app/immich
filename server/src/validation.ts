@@ -16,11 +16,15 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  ValidateBy,
   ValidateIf,
   ValidationOptions,
+  buildMessage,
   isDateString,
+  maxDate,
 } from 'class-validator';
 import { CronJob } from 'cron';
+import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
 
 @Injectable()
@@ -165,3 +169,46 @@ export const isValidInteger = (value: number, options: { min?: number; max?: num
   const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
   return Number.isInteger(value) && value >= min && value <= max;
 };
+
+export function isDateStringFormat(value: unknown, format: string) {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  return DateTime.fromFormat(value, format, { zone: 'utc' }).isValid;
+}
+
+export function IsDateStringFormat(format: string, validationOptions?: ValidationOptions) {
+  return ValidateBy(
+    {
+      name: 'isDateStringFormat',
+      constraints: [format],
+      validator: {
+        validate(value: unknown) {
+          return isDateStringFormat(value, format);
+        },
+        defaultMessage: () => `$property must be a string in the format ${format}`,
+      },
+    },
+    validationOptions,
+  );
+}
+
+export function MaxDateString(date: Date | (() => Date), validationOptions?: ValidationOptions): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'maxDateString',
+      constraints: [date],
+      validator: {
+        validate: (value, args) => {
+          const date = DateTime.fromISO(value, { zone: 'utc' }).toJSDate();
+          return maxDate(date, args?.constraints[0]);
+        },
+        defaultMessage: buildMessage(
+          (eachPrefix) => 'maximal allowed date for ' + eachPrefix + '$property is $constraint1',
+          validationOptions,
+        ),
+      },
+    },
+    validationOptions,
+  );
+}

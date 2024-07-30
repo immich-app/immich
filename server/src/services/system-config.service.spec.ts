@@ -10,6 +10,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
+  VideoContainer,
   defaults,
 } from 'src/config';
 import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
@@ -54,6 +55,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
+    acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     maxBitrate: '0',
     bframes: -1,
     refs: 0,
