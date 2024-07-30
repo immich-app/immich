@@ -169,7 +169,7 @@
     "oauth_client_secret": "Клиентска тайна",
     "oauth_enable_description": "",
     "oauth_issuer_url": "",
-    "oauth_mobile_redirect_uri": "",
+    "oauth_mobile_redirect_uri": "URI за мобилно пренасочване",
     "oauth_mobile_redirect_uri_override": "",
     "oauth_mobile_redirect_uri_override_description": "Разреши когато 'app.immich:/' е невалиден пренасочвар адрес/URI.",
     "oauth_profile_signing_algorithm": "Алгоритъм за създаване на профили",

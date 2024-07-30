@@ -35,6 +35,7 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -335,7 +336,7 @@
                   </td>
                 {:else}
                   <td class=" text-ellipsis px-4 text-sm">
-                    {totalCount[index]}
+                    {totalCount[index].toLocaleString($locale)}
                   </td>
                   <td class=" text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
                 {/if}

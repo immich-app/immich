@@ -62,6 +62,8 @@ dependencies:
   thumbhash: 0.1.0+1
   async: ^2.11.0
 
+  #image editing packages
+  crop_image: ^1.0.13
   openapi:
     path: openapi
 

@@ -165,6 +165,28 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    CropImageRoute.name: (routeData) {
+      final args = routeData.argsAs<CropImageRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: CropImagePage(
+          key: args.key,
+          image: args.image,
+        ),
+      );
+    },
+    EditImageRoute.name: (routeData) {
+      final args = routeData.argsAs<EditImageRouteArgs>(
+          orElse: () => const EditImageRouteArgs());
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: EditImagePage(
+          key: args.key,
+          image: args.image,
+          asset: args.asset,
+        ),
+      );
+    },
     FailedBackupStatusRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -833,6 +855,87 @@ class CreateAlbumRouteArgs {
   @override
   String toString() {
     return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum, initialAssets: $initialAssets}';
+  }
+}
+
+/// generated route for
+/// [CropImagePage]
+class CropImageRoute extends PageRouteInfo<CropImageRouteArgs> {
+  CropImageRoute({
+    Key? key,
+    required Image image,
+    List<PageRouteInfo>? children,
+  }) : super(
+          CropImageRoute.name,
+          args: CropImageRouteArgs(
+            key: key,
+            image: image,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'CropImageRoute';
+
+  static const PageInfo<CropImageRouteArgs> page =
+      PageInfo<CropImageRouteArgs>(name);
+}
+
+class CropImageRouteArgs {
+  const CropImageRouteArgs({
+    this.key,
+    required this.image,
+  });
+
+  final Key? key;
+
+  final Image image;
+
+  @override
+  String toString() {
+    return 'CropImageRouteArgs{key: $key, image: $image}';
+  }
+}
+
+/// generated route for
+/// [EditImagePage]
+class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
+  EditImageRoute({
+    Key? key,
+    Image? image,
+    Asset? asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+          EditImageRoute.name,
+          args: EditImageRouteArgs(
+            key: key,
+            image: image,
+            asset: asset,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'EditImageRoute';
+
+  static const PageInfo<EditImageRouteArgs> page =
+      PageInfo<EditImageRouteArgs>(name);
+}
+
+class EditImageRouteArgs {
+  const EditImageRouteArgs({
+    this.key,
+    this.image,
+    this.asset,
+  });
+
+  final Key? key;
+
+  final Image? image;
+
+  final Asset? asset;
+
+  @override
+  String toString() {
+    return 'EditImageRouteArgs{key: $key, image: $image, asset: $asset}';
   }
 }
 

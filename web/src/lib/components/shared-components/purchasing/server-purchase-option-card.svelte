@@ -37,8 +37,6 @@
       </div>
     </div>
 
-    <a href={getLicenseLink(ImmichProduct.Server)}>
-      <Button fullwidth>{$t('purchase_button_select')}</Button>
-    </a>
+    <Button href={getLicenseLink(ImmichProduct.Server)} fullwidth>{$t('purchase_button_select')}</Button>
   </div>
 </div>
