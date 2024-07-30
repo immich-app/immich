@@ -52,7 +52,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled, isFaceImportEnabled } from 'src/utils/misc';
+import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 

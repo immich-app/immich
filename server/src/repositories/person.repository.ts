@@ -17,7 +17,7 @@ import {
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate } from 'src/utils/pagination';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository, IsNull } from 'typeorm';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, IsNull, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -194,6 +194,29 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING], { withHidden: true }] })
+  getManyByName(
+    userId: string,
+    personNames: string[],
+    { withHidden }: PersonNameSearchOptions,
+  ): Promise<PersonEntity[]> {
+    const queryBuilder = this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .where('person.ownerId = :userId AND (LOWER(person.name) IN (:...names))', {
+        userId,
+        names: personNames.map((n) => n.toLowerCase()),
+      })
+      .groupBy('person.id')
+      .orderBy('COUNT(face.assetId)', 'DESC')
+      .limit(100);
+
+    if (!withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+    return queryBuilder.getMany();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(personId: string): Promise<PersonStatistics> {
     const items = await this.assetFaceRepository
@@ -264,6 +287,10 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
+  createMany(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
+    return this.personRepository.save(entities);
+  }
+
   async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
     const res = await this.assetFaceRepository.save(entities);
     return res.map((row) => row.id);
@@ -277,7 +304,7 @@ export class PersonRepository implements IPersonRepository {
       if (sourceType !== undefined) {
         // eslint-disable-next-line unicorn/prefer-ternary
         if (sourceType == null) {
-          query = query.andWhere({sourceType: IsNull() });
+          query = query.andWhere({ sourceType: IsNull() });
         } else {
           query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
         }
@@ -292,6 +319,10 @@ export class PersonRepository implements IPersonRepository {
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     const { id } = await this.personRepository.save(entity);
     return this.personRepository.findOneByOrFail({ id });
+  }
+
+  async updateMany(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
+    return await this.personRepository.save(entities);
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })

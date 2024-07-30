@@ -10,9 +10,12 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
     getAllWithoutFaces: vitest.fn(),
 
     getByName: vitest.fn(),
+    getManyByName: vitest.fn(),
 
     create: vitest.fn(),
+    createMany: vitest.fn(),
     update: vitest.fn(),
+    updateMany: vitest.fn(),
     deleteAll: vitest.fn(),
     delete: vitest.fn(),
     deleteAllFaces: vitest.fn(),

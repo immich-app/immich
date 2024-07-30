@@ -511,7 +511,7 @@ export class MetadataService implements OnEvents {
         x2: Math.floor(region.x2 * region.imageWidth),
         y1: Math.floor(region.y1 * region.imageHeight),
         y2: Math.floor(region.y2 * region.imageHeight),
-      }
+      };
     }
     return pixelRegion;
   }
@@ -519,17 +519,23 @@ export class MetadataService implements OnEvents {
   private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
     this.logger.debug(`Extracting face metadata from (${asset.id})`);
 
-    const faceSet = new Set<MetadataFaceResult>();
-    const peopleSet = new Set<PersonEntity>();
-    const discoveredFaces: Partial<AssetFaceEntity>[] = [];
-
     if (!tags.RegionInfo) {
       return true;
     }
 
+    // Stores all face regions
+    const faceSet = new Set<MetadataFaceResult>();
+
+    // Stores all face names
+    const nameSet = new Set<string>();
+
+    // Stores AssetFace entities
+    const discoveredFaces: Partial<AssetFaceEntity>[] = [];
+
     for (const region of tags.RegionInfo?.RegionList) {
+      const faceResultName = region.Name || 'unknown';
       const faceResult: MetadataFaceResult = {
-        Name: region.Name,
+        Name: faceResultName,
         Type: region.Type,
         Region: this.toPixels(
           {
@@ -543,57 +549,77 @@ export class MetadataService implements OnEvents {
           region.Area.Unit,
         ),
       };
-
       faceSet.add(faceResult);
+      nameSet.add(faceResultName);
+    }
+    this.logger.debug(`${faceSet.size} faces detected in ${asset.originalPath}`);
+
+    if (nameSet.size === 0) {
+      return true;
     }
 
-    const faces = [...faceSet];
-    this.logger.debug(`${faces.length} faces detected in ${asset.originalPath}`);
+    // Find all person entries matching the face names we have
+    const matches = await this.personRepository.getManyByName(asset.ownerId, [...nameSet], { withHidden: true });
 
-    for (const face of faces) {
-      const name = face.Name || 'unknown';
-      const matches = await this.personRepository.getByName(asset.ownerId, name, { withHidden: true });
+    // Identify which names are not in our inventory yet
+    const matchesNames = new Set(matches.map((m) => m.name.toLowerCase()));
+    const missing = new Set([...nameSet].filter((item) => !matchesNames.has(item.toLowerCase())));
 
-      this.logger.verbose(`${matches.length} persons found for name=${name}: ${matches}`);
+    if (missing.size > 0) {
+      this.logger.debug(`Creating missing persons: ${[...missing]}`);
+    }
 
-      const person = matches[0] || null;
-      let newPerson: PersonEntity | null = null;
+    const newPersons = await this.personRepository.createMany(
+      [...missing].map((name) => ({ ownerId: asset.ownerId, name: name })),
+    );
+    if (!newPersons) {
+      this.logger.error(`Something went wrong creating persons`);
+    }
 
-      if (!person) {
-        this.logger.debug('No matches, creating a new person.');
-        newPerson = await this.personRepository.create({ ownerId: asset.ownerId, name: name });
-        if (!newPerson) {
-          this.logger.error(`Something went wrong creating person=${name}`);
-        }
+    // All persons, initially found matching face names in this asset and newly created ones
+    const persons = [...matches, ...newPersons];
+
+    // Loop to build all required faceAssets elements
+    for (const face of faceSet) {
+      const facePerson = persons.find((fp) => fp.name.toLowerCase() == face.Name);
+      if (facePerson) {
+        discoveredFaces.push({
+          id: this.cryptoRepository.randomUUID(),
+          personId: facePerson.id,
+          assetId: asset.id,
+          imageHeight: face.Region.imageHeight,
+          imageWidth: face.Region.imageWidth,
+          boundingBoxX1: face.Region.x1,
+          boundingBoxY1: face.Region.y1,
+          boundingBoxX2: face.Region.x2,
+          boundingBoxY2: face.Region.y2,
+          sourceType: SourceType.EXIF,
+        });
       }
-
-      const currentPerson = newPerson || person;
-      peopleSet.add(currentPerson);
-
-      const newFaceId = this.cryptoRepository.randomUUID();
-      discoveredFaces.push({
-        id: newFaceId,
-        personId: currentPerson.id,
-        assetId: asset.id,
-        imageHeight: face.Region.imageHeight,
-        imageWidth: face.Region.imageWidth,
-        boundingBoxX1: face.Region.x1,
-        boundingBoxY1: face.Region.y1,
-        boundingBoxX2: face.Region.x2,
-        boundingBoxY2: face.Region.y2,
-        sourceType: SourceType.EXIF,
-      });
     }
 
+    // Update or create faces
     const faceIds = await this.personRepository.upsertFaces(asset.id, discoveredFaces, SourceType.EXIF);
-
     this.logger.debug(`Created ${faceIds.length} faceIds: ${faceIds}`);
 
-    // Updates Person when faceAssetId has not been asigned yet
-    const jobs: JobItem[] = [];
+    // Updates faceAssetId of the newly created persons
+    for (const person of newPersons) {
+      if (!person.faceAssetId) {
+        const faceId = discoveredFaces.find((df) => df.personId == person.id)?.id;
+        if (faceId) {
+          this.logger.debug(`Updating person ${person.id} faceAssetId to ${faceId}`);
+          person.faceAssetId = faceId;
+        }
+      }
+    }
 
-    jobs.push(...(await this.updatePersonsFaceAsset([...peopleSet])));
-    await this.jobRepository.queueAll(jobs);
+    // Updates new Person's faceAssetId
+    await this.personRepository.updateMany(
+      newPersons.map((person) => ({ id: person.id, faceAssetId: person.faceAssetId })),
+    );
+
+    // Update new Person's thumbnail
+    await this.updatePersonsFaceAsset([...newPersons]);
 
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
@@ -603,21 +629,12 @@ export class MetadataService implements OnEvents {
     return true;
   }
 
-  async updatePersonsFaceAsset(people: PersonEntity[]): Promise<JobItem[]> {
+  async updatePersonsFaceAsset(people: PersonEntity[]) {
     const jobs: JobItem[] = [];
     for (const person of people) {
-      if (!person.faceAssetId) {
-        const face = await this.personRepository.getRandomFace(person.id);
-        if (!face) {
-          continue;
-        }
-
-        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
-      }
-
       jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
-    return jobs;
+    await this.jobRepository.queueAll(jobs);
   }
 
   private async exifData(

@@ -41,10 +41,12 @@ export interface IPersonRepository {
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
+  getManyByName(userId: string, personNames: string[], options: PersonNameSearchOptions): Promise<PersonEntity[]>;
 
   getAssets(personId: string): Promise<AssetEntity[]>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  createMany(entity: Partial<PersonEntity>[]): Promise<PersonEntity[]>;
   createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
@@ -65,5 +67,6 @@ export interface IPersonRepository {
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  updateMany(entity: Partial<PersonEntity>[]): Promise<PersonEntity[]>;
   getLatestFaceDate(): Promise<string | undefined>;
 }
