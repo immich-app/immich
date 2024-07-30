@@ -576,6 +576,7 @@
     "error_adding_users_to_album": "Помилка додавання користувачів до альбому",
     "error_deleting_shared_user": "Помилка під час видалення користувача зі загальним доступом",
     "error_downloading": "Помилка завантаження {filename}",
+    "error_hiding_buy_button": "Помилка при спробі приховати кнопку покупки",
     "error_removing_assets_from_album": "Помилка видалення ресурсів з альбому, перевірте консоль для отримання додаткових відомостей",
     "error_selecting_all_assets": "Помилка вибору всіх ресурсів",
     "exclusion_pattern_already_exists": "Цей шаблон виключення вже існує.",
