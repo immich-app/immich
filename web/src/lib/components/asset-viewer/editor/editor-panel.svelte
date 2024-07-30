@@ -6,9 +6,7 @@
   import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
   import CropComponent from './crop-tool/crop-tool.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import { cropSettingsChanged } from '$lib/stores/asset-editor.store';
-  import { derived } from 'svelte/store';
 
   export let asset: AssetResponseDto;
 
@@ -35,23 +33,12 @@
   let selectedType: string = editTypes[0].name;
   $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
 
-  const hasChanges = derived(
-    editTypes.map((t) => t.changesFlag),
-    ($changesFlags, set) => {
-      set($changesFlags.some(Boolean));
-    },
-  );
-
   setTimeout(() => {
     onUpdateSelectedType(selectedType);
   }, 1);
   function selectType(name: string) {
     selectedType = name;
     onUpdateSelectedType(selectedType);
-  }
-
-  function save() {
-    onClose();
   }
 </script>
 
@@ -62,11 +49,6 @@
   </div>
   <section class="px-4 py-4">
     <ul class="flex w-full justify-around">
-      <li>
-        <Button disabled={$hasChanges ? undefined : true} color={$hasChanges ? 'primary' : 'dark-gray'} on:click={save}
-          >{$t('save')}</Button
-        >
-      </li>
       {#each editTypes as etype (etype.name)}
         <li>
           <CircleIconButton

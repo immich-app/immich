@@ -170,7 +170,7 @@
         title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
       />
     {/if}
-    {#if isOwner}
+    {#if isOwner && asset.type === AssetTypeEnum.Image}
       <CircleIconButton
         color="opaque"
         hideMobile={true}

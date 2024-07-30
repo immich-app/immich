@@ -57,11 +57,11 @@ export function handleMouseDown(e: MouseEvent) {
     startDragging(mouseX, mouseY);
   }
 
-  document.body.style.userSelect = 'none'
+  document.body.style.userSelect = 'none';
   window.addEventListener('mouseup', handleMouseUp);
 }
 
-export function handleMouseMove(e: MouseEvent, fromCanvas:boolean = false) {
+export function handleMouseMove(e: MouseEvent, fromCanvas: boolean = false) {
   const canvas = get(canvasElement);
   if (!canvas) {
     return;
@@ -81,7 +81,7 @@ export function handleMouseMove(e: MouseEvent, fromCanvas:boolean = false) {
 
 export function handleMouseUp() {
   window.removeEventListener('mouseup', handleMouseUp);
-  document.body.style.userSelect = ''
+  document.body.style.userSelect = '';
   stopInteraction();
 }
 

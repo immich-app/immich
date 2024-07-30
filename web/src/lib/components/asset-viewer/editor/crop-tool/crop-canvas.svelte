@@ -40,11 +40,11 @@
       handleError(error, $t('error_loading_image'));
     });
 
-    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', handleMouseMove);
   });
 
   onDestroy(() => {
-    window.removeEventListener('mousemove', handleMouseMove)
+    window.removeEventListener('mousemove', handleMouseMove);
     resetCropStore();
     resetGlobalCropStore();
   });
@@ -55,11 +55,7 @@
 </script>
 
 <div class="canvas-container">
-  <canvas
-    bind:this={canvas}
-    on:mousedown={handleMouseDown}
-    on:mouseup={handleMouseUp}
-    on:blur={handleMouseOut}
+  <canvas bind:this={canvas} on:mousedown={handleMouseDown} on:mouseup={handleMouseUp} on:blur={handleMouseOut}
   ></canvas>
 </div>
 
