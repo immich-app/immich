@@ -289,26 +289,6 @@ export class SearchExploreResponseDto {
   items!: SearchExploreItem[];
 }
 
-export class MapMarkerDto {
-  @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
-
-  @ValidateDate({ optional: true })
-  fileCreatedAfter?: Date;
-
-  @ValidateDate({ optional: true })
-  fileCreatedBefore?: Date;
-
-  @ValidateBoolean({ optional: true })
-  withPartners?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withSharedAlbums?: boolean;
-}
-
 export class MemoryLaneDto {
   @IsInt()
   @Type(() => Number)
@@ -323,23 +303,4 @@ export class MemoryLaneDto {
   @Min(1)
   @ApiProperty({ type: 'integer' })
   month!: number;
-}
-export class MapMarkerResponseDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty({ format: 'double' })
-  lat!: number;
-
-  @ApiProperty({ format: 'double' })
-  lon!: number;
-
-  @ApiProperty()
-  city!: string | null;
-
-  @ApiProperty()
-  state!: string | null;
-
-  @ApiProperty()
-  country!: string | null;
 }
