@@ -169,7 +169,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     UserAdminResponseDto? userResponse;
     UserPreferencesResponseDto? userPreferences;
     try {
-      var responses = await Future.wait([
+      final responses = await Future.wait([
         _apiService.usersApi.getMyUser(),
         _apiService.usersApi.getMyPreferences(),
       ]);
