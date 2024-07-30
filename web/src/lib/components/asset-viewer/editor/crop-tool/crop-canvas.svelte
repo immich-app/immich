@@ -39,9 +39,12 @@
     $imgElement.addEventListener('error', (error) => {
       handleError(error, $t('error_loading_image'));
     });
+
+    window.addEventListener('mousemove', handleMouseMove)
   });
 
   onDestroy(() => {
+    window.removeEventListener('mousemove', handleMouseMove)
     resetCropStore();
     resetGlobalCropStore();
   });
@@ -55,7 +58,6 @@
   <canvas
     bind:this={canvas}
     on:mousedown={handleMouseDown}
-    on:mousemove={handleMouseMove}
     on:mouseup={handleMouseUp}
     on:blur={handleMouseOut}
   ></canvas>
@@ -63,7 +65,7 @@
 
 <style>
   .canvas-container {
-    width: 90%;
+    width: calc(100% - 4rem);
     margin: auto;
     margin-top: 2rem;
     height: calc(100% - 4rem);

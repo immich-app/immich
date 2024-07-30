@@ -1,8 +1,9 @@
 import { cropImageScale, cropImageSize, cropSettings } from '$lib/stores/asset-editor.store';
 import { get } from 'svelte/store';
 import { draw } from './canvas-drawing';
-import { canvasElement, context2D, imgElement } from './crop-store';
+import { canvasElement, context2D, imgElement, padding } from './crop-store';
 
+const mPadding = get(padding);
 export function onImageLoad() {
   const img = get(imgElement);
   const canvas = get(canvasElement);
@@ -74,8 +75,8 @@ export function resizeCanvas() {
     }
   }
 
-  canvas.width = img.width * scale;
-  canvas.height = img.height * scale;
+  canvas.width = img.width * scale + 2 * mPadding;
+  canvas.height = img.height * scale + 2 * mPadding;
 
   draw(canvas, get(cropSettings));
 }

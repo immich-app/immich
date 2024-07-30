@@ -1,5 +1,8 @@
 import type { CropAspectRatio, CropSettings } from '$lib/stores/asset-editor.store';
+import { get } from 'svelte/store';
+import { padding } from './crop-store';
 
+const mPadding = get(padding);
 export function recalculateCrop(
   crop: CropSettings,
   canvas: HTMLCanvasElement,
@@ -12,15 +15,17 @@ export function recalculateCrop(
   const { width, height, x, y } = crop;
   let newWidth = width;
   let newHeight = height;
+  const canvasW = canvas.width - mPadding * 2;
+  const canvasH = canvas.height - mPadding * 2;
 
   const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
 
-  if (w > canvas.width) {
-    newWidth = canvas.width;
-    newHeight = canvas.width / (w / h);
-  } else if (h > canvas.height) {
-    newHeight = canvas.height;
-    newWidth = canvas.height * (w / h);
+  if (w > canvasW) {
+    newWidth = canvasW;
+    newHeight = canvasW / (w / h);
+  } else if (h > canvasH) {
+    newHeight = canvasH;
+    newWidth = canvasH * (w / h);
   } else {
     newWidth = w;
     newHeight = h;
@@ -35,11 +40,11 @@ export function recalculateCrop(
     y: Math.max(0, y + (height - newHeight) / 2),
   };
 
-  if (newCrop.x + newWidth > canvas.width) {
-    newCrop.x = canvas.width - newWidth;
+  if (newCrop.x + newWidth > canvasW) {
+    newCrop.x = canvasW - newWidth;
   }
-  if (newCrop.y + newHeight > canvas.height) {
-    newCrop.y = canvas.height - newHeight;
+  if (newCrop.y + newHeight > canvasH) {
+    newCrop.y = canvasH - newHeight;
   }
 
   if (returnNewCrop) {
@@ -138,12 +143,16 @@ export function adjustDimensions(
 
   if (w > xLimit) {
     w = xLimit;
-    h = w / aspectMultiplier;
+    if (aspectRatio !== 'free') {
+      h = w / aspectMultiplier;
+    }
   }
 
   if (h > yLimit) {
     h = yLimit;
-    w = h * aspectMultiplier;
+    if (aspectRatio !== 'free') {
+      w = h * aspectMultiplier;
+    }
   }
 
   return { newWidth: w, newHeight: h };

@@ -290,8 +290,8 @@
   };
 
   const closeEditor = () => {
-    isShowEditor = false
-  }
+    isShowEditor = false;
+  };
 
   const navigateAssetRandom = async () => {
     if (!assetStore) {
@@ -563,10 +563,10 @@
     { shortcut: { key: 'a', shift: true }, onShortcut: () => showNavbar && toggleAssetArchive() },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => showNavbar && navigateAsset('previous') },
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => showNavbar && navigateAsset('next') },
-    { shortcut: { key: 'd', shift: true }, onShortcut: () => (showNavbar && downloadFile(asset)) },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => showNavbar && downloadFile(asset) },
     { shortcut: { key: 'Delete' }, onShortcut: () => showNavbar && trashOrDelete(asset.isTrashed) },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => showNavbar && trashOrDelete(true) },
-    { shortcut: { key: 'Escape' }, onShortcut: () => isShowEditor ? closeEditor() : closeViewer() },
+    { shortcut: { key: 'Escape' }, onShortcut: () => (isShowEditor ? closeEditor() : closeViewer()) },
     { shortcut: { key: 'f' }, onShortcut: () => showNavbar && toggleFavorite() },
     { shortcut: { key: 'i' }, onShortcut: () => showNavbar && toggleDetailPanel() },
   ]}
@@ -746,11 +746,7 @@
       class="z-[1002] row-start-1 row-span-4 w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
-      <EditorPanel
-        {asset}
-        onUpdateSelectedType={handleUpdateSelectedEditType}
-        onClose={closeEditor}
-      />
+      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
     </div>
   {/if}
 

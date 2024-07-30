@@ -17,8 +17,10 @@ import {
   dragOffset,
   isDragging,
   isResizingOrDragging,
+  padding,
   resizeSide,
 } from './crop-store';
+const mPadding = get(padding);
 
 export function handleMouseDown(e: MouseEvent) {
   const canvas = get(canvasElement);
@@ -54,10 +56,12 @@ export function handleMouseDown(e: MouseEvent) {
   } else if (isInCropArea(mouseX, mouseY, crop)) {
     startDragging(mouseX, mouseY);
   }
+
+  document.body.style.userSelect = 'none'
   window.addEventListener('mouseup', handleMouseUp);
 }
 
-export function handleMouseMove(e: MouseEvent) {
+export function handleMouseMove(e: MouseEvent, fromCanvas:boolean = false) {
   const canvas = get(canvasElement);
   if (!canvas) {
     return;
@@ -76,16 +80,41 @@ export function handleMouseMove(e: MouseEvent) {
 }
 
 export function handleMouseUp() {
+  window.removeEventListener('mouseup', handleMouseUp);
+  document.body.style.userSelect = ''
   stopInteraction();
 }
 
 export function handleMouseOut() {
-  stopInteraction();
-  window.removeEventListener('mouseup', handleMouseUp);
+  // stopInteraction();
+  // window.removeEventListener('mouseup', handleMouseUp);
 }
 
 function getMousePosition(e: MouseEvent) {
-  return { mouseX: e.offsetX, mouseY: e.offsetY };
+  let offsetX = e.clientX - mPadding;
+  let offsetY = e.clientY - mPadding;
+  const clienRect = getBoundingClientRectCached(get(canvasElement));
+
+  offsetX -= clienRect?.left ?? 0;
+  offsetY -= clienRect?.top ?? 0;
+
+  return { mouseX: offsetX, mouseY: offsetY };
+}
+
+type BoundingClientRect = ReturnType<HTMLElement['getBoundingClientRect']>;
+let getBoundingClientRectCache: { data: BoundingClientRect | null; time: number } = {
+  data: null,
+  time: 0,
+};
+
+function getBoundingClientRectCached(el: HTMLElement | null) {
+  if (Date.now() - getBoundingClientRectCache.time > 5000 || getBoundingClientRectCache.data === null) {
+    getBoundingClientRectCache = {
+      time: Date.now(),
+      data: el?.getBoundingClientRect() ?? null,
+    };
+  }
+  return getBoundingClientRectCache.data;
 }
 
 function isOnCropBoundary(mouseX: number, mouseY: number, crop: CropSettings) {
@@ -174,8 +203,8 @@ function startDragging(mouseX: number, mouseY: number) {
   isDragging.set(true);
   const crop = get(cropSettings);
   isResizingOrDragging.set(true);
-  dragOffset.set({ x: mouseX - crop.x, y: mouseY - crop.y });
-  fadeOverlay(false); // Lighten the background
+  dragOffset.set({ x: mouseX - crop.x - mPadding, y: mouseY - crop.y - mPadding });
+  fadeOverlay(false);
 }
 
 function moveCrop(mouseX: number, mouseY: number) {
@@ -190,12 +219,12 @@ function moveCrop(mouseX: number, mouseY: number) {
   let newX = mouseX - x;
   let newY = mouseY - y;
 
-  newX = Math.max(0, Math.min(canvas.width - crop.width, newX));
-  newY = Math.max(0, Math.min(canvas.height - crop.height, newY));
+  newX = Math.max(mPadding, Math.min(canvas.width - crop.width - mPadding, newX));
+  newY = Math.max(mPadding, Math.min(canvas.height - crop.height - mPadding, newY));
 
   cropSettings.update((crop) => {
-    crop.x = newX;
-    crop.y = newY;
+    crop.x = newX - mPadding;
+    crop.y = newY - mPadding;
     return crop;
   });
 
@@ -214,7 +243,8 @@ function resizeCrop(mouseX: number, mouseY: number) {
   const { x, y, width, height } = crop;
   const minSize = 10;
   let newWidth, newHeight;
-
+  const canvasW = canvas.width - mPadding * 2;
+  const canvasH = canvas.height - mPadding * 2;
   switch (resizeSideValue) {
     case 'left': {
       newWidth = width + x - mouseX;
@@ -222,8 +252,8 @@ function resizeCrop(mouseX: number, mouseY: number) {
       if (newWidth >= minSize && mouseX >= 0) {
         const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, get(cropAspectRatio));
         cropSettings.update((crop) => {
-          crop.width = Math.min(w, canvas.width);
-          crop.height = Math.min(h, canvas.height);
+          crop.width = Math.min(w, canvasW);
+          crop.height = Math.min(h, canvasH);
           crop.x = Math.max(0, x + width - crop.width);
           return crop;
         });
@@ -233,11 +263,11 @@ function resizeCrop(mouseX: number, mouseY: number) {
     case 'right': {
       newWidth = mouseX - x;
       newHeight = height;
-      if (newWidth >= minSize && mouseX <= canvas.width) {
+      if (newWidth >= minSize && mouseX <= canvasW) {
         const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, get(cropAspectRatio));
         cropSettings.update((crop) => {
-          crop.width = Math.min(w, canvas.width - x);
-          crop.height = Math.min(h, canvas.height);
+          crop.width = Math.min(w, canvasW - x);
+          crop.height = Math.min(h, canvasH);
           return crop;
         });
       }
@@ -251,8 +281,8 @@ function resizeCrop(mouseX: number, mouseY: number) {
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvas.width,
-          canvas.height,
+          canvasW,
+          canvasH,
         );
         cropSettings.update((crop) => {
           crop.y = Math.max(0, y + height - h);
@@ -266,13 +296,13 @@ function resizeCrop(mouseX: number, mouseY: number) {
     case 'bottom': {
       newHeight = mouseY - y;
       newWidth = width;
-      if (newHeight >= minSize && mouseY <= canvas.height) {
+      if (newHeight >= minSize && mouseY <= canvasH) {
         const { newWidth: w, newHeight: h } = adjustDimensions(
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvas.width,
-          canvas.height - y,
+          canvasW,
+          canvasH - y,
         );
         cropSettings.update((crop) => {
           crop.width = w;
@@ -283,15 +313,15 @@ function resizeCrop(mouseX: number, mouseY: number) {
       break;
     }
     case 'top-left': {
-      newWidth = width + x - mouseX;
-      newHeight = height + y - mouseY;
-      if (newWidth >= minSize && newHeight >= minSize && mouseX >= 0 && mouseY >= 0) {
+      newWidth = width + x - Math.max(mouseX, 0);
+      newHeight = height + y - Math.max(mouseY, 0);
+      if (newWidth >= minSize && newHeight >= minSize) {
         const { newWidth: w, newHeight: h } = adjustDimensions(
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvas.width,
-          canvas.height,
+          canvasW,
+          canvasH,
         );
         cropSettings.update((crop) => {
           crop.width = w;
@@ -304,14 +334,14 @@ function resizeCrop(mouseX: number, mouseY: number) {
       break;
     }
     case 'top-right': {
-      newWidth = mouseX - x;
-      newHeight = height + y - mouseY;
-      if (newWidth >= minSize && newHeight >= minSize && mouseX <= canvas.width && mouseY >= 0) {
+      newWidth = Math.max(mouseX, 0) - x;
+      newHeight = height + y - Math.max(mouseY, 0);
+      if (newWidth >= minSize && newHeight >= minSize) {
         const { newWidth: w, newHeight: h } = adjustDimensions(
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvas.width - x,
+          canvasW - x,
           y + height,
         );
         cropSettings.update((crop) => {
@@ -324,15 +354,15 @@ function resizeCrop(mouseX: number, mouseY: number) {
       break;
     }
     case 'bottom-left': {
-      newWidth = width + x - mouseX;
-      newHeight = mouseY - y;
-      if (newWidth >= minSize && newHeight >= minSize && mouseX >= 0 && mouseY <= canvas.height) {
+      newWidth = width + x - Math.max(mouseX, 0);
+      newHeight = Math.max(mouseY, 0) - y;
+      if (newWidth >= minSize && newHeight >= minSize) {
         const { newWidth: w, newHeight: h } = adjustDimensions(
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvas.width,
-          canvas.height - y,
+          canvasW,
+          canvasH - y,
         );
         cropSettings.update((crop) => {
           crop.width = w;
@@ -344,15 +374,15 @@ function resizeCrop(mouseX: number, mouseY: number) {
       break;
     }
     case 'bottom-right': {
-      newWidth = mouseX - x;
-      newHeight = mouseY - y;
-      if (newWidth >= minSize && newHeight >= minSize && mouseX <= canvas.width && mouseY <= canvas.height) {
+      newWidth = Math.max(mouseX, 0) - x;
+      newHeight = Math.max(mouseY, 0) - y;
+      if (newWidth >= minSize && newHeight >= minSize) {
         const { newWidth: w, newHeight: h } = adjustDimensions(
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvas.width - x,
-          canvas.height - y,
+          canvasW - x,
+          canvasH - y,
         );
         cropSettings.update((crop) => {
           crop.width = w;
@@ -365,8 +395,8 @@ function resizeCrop(mouseX: number, mouseY: number) {
   }
 
   cropSettings.update((crop) => {
-    crop.x = Math.max(0, Math.min(crop.x, canvas.width - crop.width));
-    crop.y = Math.max(0, Math.min(crop.y, canvas.height - crop.height));
+    crop.x = Math.max(0, Math.min(crop.x, canvasW - crop.width));
+    crop.y = Math.max(0, Math.min(crop.y, canvasH - crop.height));
     return crop;
   });
 
@@ -408,6 +438,7 @@ function updateCursor(mouseX: number, mouseY: number) {
   function setCursor(cursorName: string) {
     if (get(canvasCursor) != cursorName && canvas) {
       canvasCursor.set(cursorName);
+      document.body.style.cursor = cursorName;
       canvas.style.cursor = cursorName;
     }
   }
