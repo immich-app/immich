@@ -146,6 +146,7 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | 
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | 
 *MapApi* | [**getMapStyle**](doc//MapApi.md#getmapstyle) | **GET** /map/style.json | 
+*MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | 
 *MemoriesApi* | [**addMemoryAssets**](doc//MemoriesApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | 
 *MemoriesApi* | [**createMemory**](doc//MemoriesApi.md#creatememory) | **POST** /memories | 
 *MemoriesApi* | [**deleteMemory**](doc//MemoriesApi.md#deletememory) | **DELETE** /memories/{id} | 
@@ -339,6 +340,7 @@ Class | Method | HTTP request | Description
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
+ - [MapReverseGeocodeResponseDto](doc//MapReverseGeocodeResponseDto.md)
  - [MapTheme](doc//MapTheme.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)

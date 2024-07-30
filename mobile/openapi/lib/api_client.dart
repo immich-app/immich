@@ -362,6 +362,8 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MapMarkerResponseDto':
           return MapMarkerResponseDto.fromJson(value);
+        case 'MapReverseGeocodeResponseDto':
+          return MapReverseGeocodeResponseDto.fromJson(value);
         case 'MapTheme':
           return MapThemeTypeTransformer().decode(value);
         case 'MemoryCreateDto':
