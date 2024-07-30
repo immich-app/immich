@@ -27,7 +27,7 @@ export function handleMouseDown(e: MouseEvent) {
   }
 
   const crop = get(cropSettings);
-  const { mouseX, mouseY } = getMousePosition(e, canvas);
+  const { mouseX, mouseY } = getMousePosition(e);
 
   const {
     onLeftBoundary,
@@ -64,7 +64,7 @@ export function handleMouseMove(e: MouseEvent) {
   }
 
   const resizeSideValue = get(resizeSide);
-  const { mouseX, mouseY } = getMousePosition(e, canvas);
+  const { mouseX, mouseY } = getMousePosition(e);
 
   if (get(isDragging)) {
     moveCrop(mouseX, mouseY);
