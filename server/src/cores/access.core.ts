@@ -292,6 +292,18 @@ export class AccessCore {
         return await this.repository.partner.checkUpdateAccess(auth.user.id, ids);
       }
 
+      case Permission.STACK_READ: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_UPDATE: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_DELETE: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
+      }
+
       default: {
         return new Set();
       }

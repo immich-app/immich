@@ -107,6 +107,11 @@ export enum Permission {
   SHARED_LINK_UPDATE = 'sharedLink.update',
   SHARED_LINK_DELETE = 'sharedLink.delete',
 
+  STACK_CREATE = 'stack.create',
+  STACK_READ = 'stack.read',
+  STACK_UPDATE = 'stack.update',
+  STACK_DELETE = 'stack.delete',
+
   SYSTEM_CONFIG_READ = 'systemConfig.read',
   SYSTEM_CONFIG_UPDATE = 'systemConfig.update',
 
