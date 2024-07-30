@@ -561,8 +561,8 @@
 
   let selectedEditType: string = '';
 
-  function handleUpdateSelectedEditType(event: CustomEvent) {
-    selectedEditType = event.detail;
+  function handleUpdateSelectedEditType(type: string) {
+    selectedEditType = type;
   }
 
   $: if (!$user) {
@@ -760,8 +760,8 @@
     >
       <EditorPanel
         {asset}
-        on:updateSelectedType={handleUpdateSelectedEditType}
-        on:close={() => (isShowEditor = false)}
+        onUpdateSelectedType={handleUpdateSelectedEditType}
+        onClose={() => (isShowEditor = false)}
       />
     </div>
   {/if}

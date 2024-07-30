@@ -2,7 +2,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiClose, mdiCropRotate } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
   import CropComponent from './crop-tool/crop-tool.svelte';
@@ -20,10 +20,8 @@
     });
   });
 
-  const dispatch = createEventDispatcher<{
-    updateSelectedType: string;
-    close: void;
-  }>();
+  export let onUpdateSelectedType: (type: string) => void;
+  export let onClose: () => void;
 
   let editTypes = [
     {
@@ -45,21 +43,21 @@
   );
 
   setTimeout(() => {
-    dispatch('updateSelectedType', selectedType);
+    onUpdateSelectedType(selectedType);
   }, 1);
   function selectType(name: string) {
     selectedType = name;
-    dispatch('updateSelectedType', selectedType);
+    onUpdateSelectedType(selectedType);
   }
 
   function save() {
-    dispatch('close');
+    onClose();
   }
 </script>
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={() => dispatch('close')} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('editor')}</p>
   </div>
   <section class="px-4 py-4">
