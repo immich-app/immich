@@ -3109,6 +3109,60 @@
         ]
       }
     },
+    "/map/reverse-geocode": {
+      "get": {
+        "operationId": "reverseGeocode",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "lon",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "double",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapReverseGeocodeResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
+        ]
+      }
+    },
     "/map/style.json": {
       "get": {
         "operationId": "getMapStyle",
@@ -9124,6 +9178,28 @@
           "id",
           "lat",
           "lon",
+          "state"
+        ],
+        "type": "object"
+      },
+      "MapReverseGeocodeResponseDto": {
+        "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "country",
           "state"
         ],
         "type": "object"

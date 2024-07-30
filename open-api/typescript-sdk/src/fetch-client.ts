@@ -554,6 +554,11 @@ export type MapMarkerResponseDto = {
     lon: number;
     state: string | null;
 };
+export type MapReverseGeocodeResponseDto = {
+    city: string | null;
+    country: string | null;
+    state: string | null;
+};
 export type OnThisDayDto = {
     year: number;
 };
@@ -1987,6 +1992,20 @@ export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived,
         isFavorite,
         withPartners,
         withSharedAlbums
+    }))}`, {
+        ...opts
+    }));
+}
+export function reverseGeocode({ lat, lon }: {
+    lat: number;
+    lon: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MapReverseGeocodeResponseDto[];
+    }>(`/map/reverse-geocode${QS.query(QS.explode({
+        lat,
+        lon
     }))}`, {
         ...opts
     }));
