@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder } from 'src/entities/album.entity';
@@ -75,27 +76,28 @@ class BaseSearchDto {
   takenAfter?: Date;
 
   @IsString()
-  @Optional({ nullable: true })
+  @Optional({ nullable: true, emptyToNull: true })
   city?: string | null;
 
   @IsString()
-  @Optional({ nullable: true })
+  @Optional({ nullable: true, emptyToNull: true })
   state?: string | null;
 
   @IsString()
-  @Optional({ nullable: true })
+  @IsNotEmpty()
+  @Optional({ nullable: true, emptyToNull: true })
   country?: string | null;
 
   @IsString()
-  @Optional({ nullable: true })
+  @Optional({ nullable: true, emptyToNull: true })
   make?: string;
 
   @IsString()
-  @Optional({ nullable: true })
+  @Optional({ nullable: true, emptyToNull: true })
   model?: string | null;
 
   @IsString()
-  @Optional({ nullable: true })
+  @Optional({ nullable: true, emptyToNull: true })
   lensModel?: string | null;
 
   @IsInt()
@@ -236,6 +238,10 @@ export class SearchSuggestionRequestDto {
   @IsString()
   @Optional()
   model?: string;
+
+  @ValidateBoolean({ optional: true })
+  @PropertyLifecycle({ addedAt: 'v111.0.0' })
+  includeNull?: boolean;
 }
 
 class SearchFacetCountResponseDto {

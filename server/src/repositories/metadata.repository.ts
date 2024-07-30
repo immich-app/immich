@@ -61,11 +61,11 @@ export class MetadataRepository implements IMetadataRepository {
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
       .where('asset.ownerId = :userId', { userId })
-      .select('exif.country', 'exif_country')
+      .select('exif.country', 'country')
       .distinctOn(['exif.country'])
-      .getRawMany<{ exif_country: string }>();
+      .getRawMany<{ country: string }>();
 
-    return results.map((e) => e.exif_country ?? '');
+    return results.map(({ country }) => country).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
@@ -74,16 +74,16 @@ export class MetadataRepository implements IMetadataRepository {
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
       .where('asset.ownerId = :userId', { userId })
-      .select('exif.state', 'exif_state')
+      .select('exif.state', 'state')
       .distinctOn(['exif.state']);
 
     if (country) {
       query.andWhere('exif.country = :country', { country });
     }
 
-    const result = await query.getRawMany<{ exif_state: string }>();
+    const result = await query.getRawMany<{ state: string }>();
 
-    return result.map((result) => result.exif_state ?? '');
+    return result.map(({ state }) => state).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
@@ -92,7 +92,7 @@ export class MetadataRepository implements IMetadataRepository {
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
       .where('asset.ownerId = :userId', { userId })
-      .select('exif.city', 'exif_city')
+      .select('exif.city', 'city')
       .distinctOn(['exif.city']);
 
     if (country) {
@@ -103,9 +103,9 @@ export class MetadataRepository implements IMetadataRepository {
       query.andWhere('exif.state = :state', { state });
     }
 
-    const results = await query.getRawMany<{ exif_city: string }>();
+    const results = await query.getRawMany<{ city: string }>();
 
-    return results.map((result) => result.exif_city ?? '');
+    return results.map(({ city }) => city).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
@@ -114,15 +114,15 @@ export class MetadataRepository implements IMetadataRepository {
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
       .where('asset.ownerId = :userId', { userId })
-      .select('exif.make', 'exif_make')
+      .select('exif.make', 'make')
       .distinctOn(['exif.make']);
 
     if (model) {
       query.andWhere('exif.model = :model', { model });
     }
 
-    const results = await query.getRawMany<{ exif_make: string }>();
-    return results.map((result) => result.exif_make ?? '');
+    const results = await query.getRawMany<{ make: string }>();
+    return results.map(({ make }) => make).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
@@ -131,15 +131,14 @@ export class MetadataRepository implements IMetadataRepository {
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
       .where('asset.ownerId = :userId', { userId })
-      .andWhere('exif.model IS NOT NULL')
-      .select('exif.model', 'exif_model')
+      .select('exif.model', 'model')
       .distinctOn(['exif.model']);
 
     if (make) {
       query.andWhere('exif.make = :make', { make });
     }
 
-    const results = await query.getRawMany<{ exif_model: string }>();
-    return results.map((result) => result.exif_model ?? '');
+    const results = await query.getRawMany<{ model: string }>();
+    return results.map(({ model }) => model).filter((item) => item !== '');
   }
 }

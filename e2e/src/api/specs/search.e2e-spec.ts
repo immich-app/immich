@@ -1,4 +1,4 @@
-import { AssetMediaResponseDto, LoginResponseDto, deleteAssets, getMapMarkers, updateAsset } from '@immich/sdk';
+import { AssetMediaResponseDto, LoginResponseDto, deleteAssets, updateAsset } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -32,9 +32,6 @@ describe('/search', () => {
   let assetOneJpg5: AssetMediaResponseDto;
   let assetSprings: AssetMediaResponseDto;
   let assetLast: AssetMediaResponseDto;
-  let cities: string[];
-  let states: string[];
-  let countries: string[];
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -108,7 +105,7 @@ describe('/search', () => {
     );
 
     await Promise.all(updates);
-    for (let i = 0; i < coordinates.length; i++) {
+    for (const [i] of coordinates.entries()) {
       await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: assets[i].id });
     }
 
@@ -136,12 +133,6 @@ describe('/search', () => {
     assetLast = assets.at(-1) as AssetMediaResponseDto;
 
     await deleteAssets({ assetBulkDeleteDto: { ids: [assetSilver.id] } }, { headers: asBearerAuth(admin.accessToken) });
-
-    const mapMarkers = await getMapMarkers({}, { headers: asBearerAuth(admin.accessToken) });
-    const nonTrashed = mapMarkers.filter((mark) => mark.id !== assetSilver.id);
-    cities = [...new Set(nonTrashed.map((mark) => mark.city).filter((entry): entry is string => !!entry))].sort();
-    states = [...new Set(nonTrashed.map((mark) => mark.state).filter((entry): entry is string => !!entry))].sort();
-    countries = [...new Set(nonTrashed.map((mark) => mark.country).filter((entry): entry is string => !!entry))].sort();
   }, 30_000);
 
   afterAll(async () => {
@@ -320,47 +311,120 @@ describe('/search', () => {
       },
       {
         should: 'should search by city',
-        deferred: () => ({ dto: { city: 'Accra' }, assets: [assetHeic] }),
+        deferred: () => ({
+          dto: {
+            city: 'Accra',
+            includeNull: true,
+          },
+          assets: [assetHeic],
+        }),
       },
       {
         should: "should search city ('')",
-        deferred: () => ({ dto: { city: '', isVisible: true }, assets: [assetLast] }),
+        deferred: () => ({
+          dto: {
+            city: '',
+            isVisible: true,
+            includeNull: true,
+          },
+          assets: [assetLast],
+        }),
       },
       {
         should: 'should search city (null)',
-        deferred: () => ({ dto: { city: null, isVisible: true }, assets: [assetLast] }),
+        deferred: () => ({
+          dto: {
+            city: null,
+            isVisible: true,
+            includeNull: true,
+          },
+          assets: [assetLast],
+        }),
       },
       {
         should: 'should search by state',
-        deferred: () => ({ dto: { state: 'New York' }, assets: [assetDensity] }),
+        deferred: () => ({
+          dto: {
+            state: 'New York',
+            includeNull: true,
+          },
+          assets: [assetDensity],
+        }),
       },
       {
         should: "should search state ('')",
-        deferred: () => ({ dto: { state: '', isVisible: true, withExif: true }, assets: [assetLast, assetNotocactus] }),
+        deferred: () => ({
+          dto: {
+            state: '',
+            isVisible: true,
+            withExif: true,
+            includeNull: true,
+          },
+          assets: [assetLast, assetNotocactus],
+        }),
       },
       {
         should: 'should search state (null)',
-        deferred: () => ({ dto: { state: null, isVisible: true }, assets: [assetLast, assetNotocactus] }),
+        deferred: () => ({
+          dto: {
+            state: null,
+            isVisible: true,
+            includeNull: true,
+          },
+          assets: [assetLast, assetNotocactus],
+        }),
       },
       {
         should: 'should search by country',
-        deferred: () => ({ dto: { country: 'France' }, assets: [assetFalcon] }),
+        deferred: () => ({
+          dto: {
+            country: 'France',
+            includeNull: true,
+          },
+          assets: [assetFalcon],
+        }),
       },
       {
         should: "should search country ('')",
-        deferred: () => ({ dto: { country: '', isVisible: true }, assets: [assetLast] }),
+        deferred: () => ({
+          dto: {
+            country: '',
+            isVisible: true,
+            includeNull: true,
+          },
+          assets: [assetLast],
+        }),
       },
       {
         should: 'should search country (null)',
-        deferred: () => ({ dto: { country: null, isVisible: true }, assets: [assetLast] }),
+        deferred: () => ({
+          dto: {
+            country: null,
+            isVisible: true,
+            includeNull: true,
+          },
+          assets: [assetLast],
+        }),
       },
       {
         should: 'should search by make',
-        deferred: () => ({ dto: { make: 'Canon' }, assets: [assetFalcon, assetDenali] }),
+        deferred: () => ({
+          dto: {
+            make: 'Canon',
+            includeNull: true,
+          },
+          assets: [assetFalcon, assetDenali],
+        }),
       },
       {
         should: 'should search by model',
-        deferred: () => ({ dto: { model: 'Canon EOS 7D' }, assets: [assetDenali] }),
+        deferred: () => ({
+          dto: {
+            model: 'Canon EOS 7D',
+            includeNull: true,
+          },
+          assets: [assetDenali],
+        }),
       },
       {
         should: 'should allow searching the upload library (libraryId: null)',
@@ -473,31 +537,79 @@ describe('/search', () => {
 
     it('should get suggestions for country', async () => {
       const { status, body } = await request(app)
-        .get('/search/suggestions?type=country')
+        .get('/search/suggestions?type=country&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual([...countries, '']);
+      expect(body).toEqual([
+        'Cuba',
+        'France',
+        'Georgia',
+        'Germany',
+        'Ghana',
+        'Japan',
+        'Morocco',
+        "People's Republic of China",
+        'Russian Federation',
+        'Singapore',
+        'Spain',
+        'Switzerland',
+        'United States of America',
+        null,
+      ]);
       expect(status).toBe(200);
     });
 
     it('should get suggestions for state', async () => {
       const { status, body } = await request(app)
-        .get('/search/suggestions?type=state')
+        .get('/search/suggestions?type=state&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual(expect.arrayContaining([...states, '']));
+      expect(body).toEqual([
+        'Andalusia',
+        'Berlin',
+        'Glarus',
+        'Greater Accra',
+        'Havana',
+        'Île-de-France',
+        'Marrakesh-Safi',
+        'Mississippi',
+        'New York',
+        'Shanghai',
+        'St.-Petersburg',
+        'Tbilisi',
+        'Tokyo',
+        'Virginia',
+        null,
+      ]);
       expect(status).toBe(200);
     });
 
     it('should get suggestions for city', async () => {
       const { status, body } = await request(app)
-        .get('/search/suggestions?type=city')
+        .get('/search/suggestions?type=city&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(body).toEqual([...cities, '']);
+      expect(body).toEqual([
+        'Accra',
+        'Berlin',
+        'Glarus',
+        'Havana',
+        'Marrakesh',
+        'Montalbán de Córdoba',
+        'New York City',
+        'Novena',
+        'Paris',
+        'Philadelphia',
+        'Saint Petersburg',
+        'Shanghai',
+        'Stanley',
+        'Tbilisi',
+        'Tokyo',
+        null,
+      ]);
       expect(status).toBe(200);
     });
 
     it('should get suggestions for camera make', async () => {
       const { status, body } = await request(app)
-        .get('/search/suggestions?type=camera-make')
+        .get('/search/suggestions?type=camera-make&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
         'Apple',
@@ -507,14 +619,14 @@ describe('/search', () => {
         'PENTAX Corporation',
         'samsung',
         'SONY',
-        '',
+        null,
       ]);
       expect(status).toBe(200);
     });
 
     it('should get suggestions for camera model', async () => {
       const { status, body } = await request(app)
-        .get('/search/suggestions?type=camera-model')
+        .get('/search/suggestions?type=camera-model&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([
         'Canon EOS 7D',
@@ -529,6 +641,7 @@ describe('/search', () => {
         'SM-F711N',
         'SM-S906U',
         'SM-T970',
+        null,
       ]);
       expect(status).toBe(200);
     });

@@ -2399,8 +2399,9 @@ export function searchSmart({ smartSearchDto }: {
         body: smartSearchDto
     })));
 }
-export function getSearchSuggestions({ country, make, model, state, $type }: {
+export function getSearchSuggestions({ country, includeNull, make, model, state, $type }: {
     country?: string;
+    includeNull?: boolean;
     make?: string;
     model?: string;
     state?: string;
@@ -2411,6 +2412,7 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         data: string[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
+        includeNull,
         make,
         model,
         state,

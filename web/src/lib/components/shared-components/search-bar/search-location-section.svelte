@@ -25,21 +25,41 @@
   $: handlePromiseError(updateCities(countryFilter, stateFilter));
 
   async function updateCountries() {
-    countries = await getSearchSuggestions({ $type: SearchSuggestionType.Country });
+    const results: Array<string | null> = await getSearchSuggestions({
+      $type: SearchSuggestionType.Country,
+      includeNull: true,
+    });
+
+    countries = results.map((result) => result ?? '');
+
     if (filters.country && !countries.includes(filters.country)) {
       filters.country = undefined;
     }
   }
 
   async function updateStates(country?: string) {
-    states = await getSearchSuggestions({ $type: SearchSuggestionType.State, country });
+    const results: Array<string | null> = await getSearchSuggestions({
+      $type: SearchSuggestionType.State,
+      country,
+      includeNull: true,
+    });
+
+    states = results.map((result) => result ?? '');
+
     if (filters.state && !states.includes(filters.state)) {
       filters.state = undefined;
     }
   }
 
   async function updateCities(country?: string, state?: string) {
-    cities = await getSearchSuggestions({ $type: SearchSuggestionType.City, country, state });
+    const results: Array<string | null> = await getSearchSuggestions({
+      $type: SearchSuggestionType.City,
+      country,
+      state,
+    });
+
+    cities = results.map((result) => result ?? '');
+
     if (filters.city && !cities.includes(filters.city)) {
       filters.city = undefined;
     }

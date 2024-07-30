@@ -2,7 +2,7 @@
 
 -- MetadataRepository.getCountries
 SELECT DISTINCT
-  ON ("exif"."country") "exif"."country" AS "exif_country"
+  ON ("exif"."country") "exif"."country" AS "country"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
@@ -12,7 +12,7 @@ WHERE
 
 -- MetadataRepository.getStates
 SELECT DISTINCT
-  ON ("exif"."state") "exif"."state" AS "exif_state"
+  ON ("exif"."state") "exif"."state" AS "state"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
@@ -23,7 +23,7 @@ WHERE
 
 -- MetadataRepository.getCities
 SELECT DISTINCT
-  ON ("exif"."city") "exif"."city" AS "exif_city"
+  ON ("exif"."city") "exif"."city" AS "city"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
@@ -35,7 +35,7 @@ WHERE
 
 -- MetadataRepository.getCameraMakes
 SELECT DISTINCT
-  ON ("exif"."make") "exif"."make" AS "exif_make"
+  ON ("exif"."make") "exif"."make" AS "make"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
@@ -46,12 +46,11 @@ WHERE
 
 -- MetadataRepository.getCameraModels
 SELECT DISTINCT
-  ON ("exif"."model") "exif"."model" AS "exif_model"
+  ON ("exif"."model") "exif"."model" AS "model"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" = $1
-  AND "exif"."model" IS NOT NULL
   AND "exif"."make" = $2
