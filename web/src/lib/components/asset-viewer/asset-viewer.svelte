@@ -276,23 +276,22 @@
   };
 
   const toggleDetailPanel = () => {
-    if (!showNavbar) {
-      return;
-    }
     isShowActivity = false;
     $isShowDetail = !$isShowDetail;
   };
 
   const closeViewer = async () => {
-    if (isShowEditor) {
-      isShowEditor = false;
-    } else if ($slideshowState === SlideshowState.None) {
+    if ($slideshowState === SlideshowState.None) {
       dispatch('close');
       await navigate({ targetRoute: 'current', assetId: null });
     } else {
       $slideshowState = SlideshowState.StopSlideshow;
     }
   };
+
+  const closeEditor = () => {
+    isShowEditor = false
+  }
 
   const navigateAssetRandom = async () => {
     if (!assetStore) {
@@ -311,9 +310,6 @@
   };
 
   const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
-    if (!showNavbar) {
-      return;
-    }
     if (!order) {
       if ($slideshowState === SlideshowState.PlaySlideshow) {
         order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
@@ -354,9 +350,6 @@
   };
 
   const trashOrDelete = async (force: boolean = false) => {
-    if (!showNavbar) {
-      return;
-    }
     if (force || !isTrashEnabled) {
       if ($showDeleteModal) {
         isShowDeleteConfirmation = true;
@@ -403,9 +396,6 @@
   };
 
   const toggleFavorite = async () => {
-    if (!showNavbar) {
-      return;
-    }
     try {
       const data = await updateAsset({
         id: asset.id,
@@ -461,9 +451,6 @@
   };
 
   const toggleAssetArchive = async () => {
-    if (!showNavbar) {
-      return;
-    }
     const updatedAsset = await toggleArchive(asset);
     if (updatedAsset) {
       dispatch('action', { type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: asset });
@@ -568,19 +555,20 @@
   $: if (!$user) {
     shouldShowShareModal = false;
   }
+  //TODO: refactor shortcut conditions
 </script>
 
 <svelte:window
   use:shortcuts={[
-    { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
-    { shortcut: { key: 'd', shift: true }, onShortcut: () => (showNavbar ? downloadFile(asset) : null) },
-    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
-    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-    { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
-    { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
-    { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
+    { shortcut: { key: 'a', shift: true }, onShortcut: () => showNavbar && toggleAssetArchive() },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => showNavbar && navigateAsset('previous') },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: () => showNavbar && navigateAsset('next') },
+    { shortcut: { key: 'd', shift: true }, onShortcut: () => (showNavbar && downloadFile(asset)) },
+    { shortcut: { key: 'Delete' }, onShortcut: () => showNavbar && trashOrDelete(asset.isTrashed) },
+    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => showNavbar && trashOrDelete(true) },
+    { shortcut: { key: 'Escape' }, onShortcut: () => isShowEditor ? closeEditor() : closeViewer() },
+    { shortcut: { key: 'f' }, onShortcut: () => showNavbar && toggleFavorite() },
+    { shortcut: { key: 'i' }, onShortcut: () => showNavbar && toggleDetailPanel() },
   ]}
 />
 
@@ -761,7 +749,7 @@
       <EditorPanel
         {asset}
         onUpdateSelectedType={handleUpdateSelectedEditType}
-        onClose={() => (isShowEditor = false)}
+        onClose={closeEditor}
       />
     </div>
   {/if}
