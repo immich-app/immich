@@ -72,7 +72,7 @@ class BottomGalleryBar extends ConsumerWidget {
       ),
       if (asset.isImage)
         BottomNavigationBarItem(
-          icon: const Icon(Icons.edit_outlined),
+          icon: const Icon(Icons.tune_outlined),
           label: 'control_bottom_app_bar_edit'.tr(),
           tooltip: 'control_bottom_app_bar_edit'.tr(),
         ),
@@ -94,7 +94,7 @@ class BottomGalleryBar extends ConsumerWidget {
           label: 'control_bottom_app_bar_stack'.tr(),
           tooltip: 'control_bottom_app_bar_stack'.tr(),
         ),
-      if (isOwner)
+      if (isOwner && !isInAlbum)
         BottomNavigationBarItem(
           icon: const Icon(Icons.delete_outline),
           label: 'control_bottom_app_bar_delete'.tr(),
@@ -391,10 +391,22 @@ class BottomGalleryBar extends ConsumerWidget {
               backgroundColor: Colors.black.withOpacity(0.4),
               unselectedIconTheme: const IconThemeData(color: Colors.white),
               selectedIconTheme: const IconThemeData(color: Colors.white),
-              unselectedLabelStyle: const TextStyle(color: Colors.black),
-              selectedLabelStyle: const TextStyle(color: Colors.black),
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
+              unselectedLabelStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                height: 2.3,
+              ),
+              selectedLabelStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                height: 2.3,
+              ),
+              unselectedFontSize: 14,
+              selectedFontSize: 14,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
               items: itemsList,
               onTap: (index) {
                 if (index < actionslist.length) {
