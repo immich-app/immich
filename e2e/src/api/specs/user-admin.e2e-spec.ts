@@ -1,11 +1,11 @@
 import {
   LoginResponseDto,
+  createStack,
   deleteUserAdmin,
   getMyUser,
   getUserAdmin,
   getUserPreferencesAdmin,
   login,
-  updateAssets,
 } from '@immich/sdk';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
@@ -321,8 +321,8 @@ describe('/admin/users', () => {
         utils.createAsset(user.accessToken),
       ]);
 
-      await updateAssets(
-        { assetBulkUpdateDto: { stackParentId: asset1.id, ids: [asset2.id] } },
+      await createStack(
+        { stackCreateDto: { assetIds: [asset1.id, asset2.id] } },
         { headers: asBearerAuth(user.accessToken) },
       );
 

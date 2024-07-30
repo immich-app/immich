@@ -170,14 +170,14 @@
 
         <!-- Stacked asset -->
 
-        {#if asset.stackCount && showStackedIcon}
+        {#if asset.stack && showStackedIcon}
           <div
             class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == undefined
               ? 'top-0 right-0'
               : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
           >
             <span class="pr-2 pt-2 flex place-items-center gap-1">
-              <p>{asset.stackCount.toLocaleString($locale)}</p>
+              <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>
           </div>

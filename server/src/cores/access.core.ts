@@ -46,6 +46,10 @@ export enum Permission {
   PERSON_REASSIGN = 'person.reassign',
 
   PARTNER_UPDATE = 'partner.update',
+
+  STACK_READ = 'stack.read',
+  STACK_WRITE = 'stack.write',
+  STACK_DELETE = 'stack.delete',
 }
 
 let instance: AccessCore | null;
@@ -333,6 +337,18 @@ export class AccessCore {
 
       case Permission.PARTNER_UPDATE: {
         return await this.repository.partner.checkUpdateAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_READ: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_WRITE: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_DELETE: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
       }
 
       default: {

@@ -30,6 +30,8 @@
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
+    getStack,
+    type StackResponseDto,
   } from '@immich/sdk';
   import { mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
@@ -72,7 +74,6 @@
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
-  let stackedAssets: AssetResponseDto[] = [];
   let shouldPlayMotionPhoto = false;
   let sharedLink = getSharedLink();
   let enableDetailPanel = asset.hasMetadata;
@@ -89,22 +90,28 @@
 
   $: isFullScreen = fullscreenElement !== null;
 
-  $: {
-    if (asset.stackCount && asset.stack) {
-      stackedAssets = asset.stack;
-      stackedAssets = [...stackedAssets, asset].sort(
-        (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
-      );
+  let stack: StackResponseDto | null = null;
 
-      // if its a stack, add the next stack image in addition to the next asset
-      if (asset.stackCount > 1) {
-        preloadAssets.push(stackedAssets[1]);
-      }
+  const refreshStack = async () => {
+    if (isSharedLink()) {
+      return;
     }
 
-    if (!stackedAssets.map((a) => a.id).includes(asset.id)) {
-      stackedAssets = [];
+    if (asset.stack) {
+      stack = await getStack({ id: asset.stack.id });
     }
+
+    if (!stack?.assets.some(({ id }) => id === asset.id)) {
+      stack = null;
+    }
+
+    if (stack && stack?.assets.length > 1) {
+      preloadAssets.push(stack.assets[1]);
+    }
+  };
+
+  $: if (asset) {
+    handlePromiseError(refreshStack());
   }
 
   $: {
@@ -205,15 +212,6 @@
 
     if (!sharedLink) {
       await handleGetAllAlbums();
-    }
-
-    if (asset.stackCount && asset.stack) {
-      stackedAssets = asset.stack;
-      stackedAssets = [...stackedAssets, asset].sort(
-        (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
-      );
-    } else {
-      stackedAssets = [];
     }
   });
 
@@ -367,8 +365,10 @@
         await handleGetAllAlbums();
         break;
       }
+
       case AssetAction.UNSTACK: {
         await closeViewer();
+        break;
       }
     }
 
@@ -389,10 +389,9 @@
       <AssetViewerNavBar
         {asset}
         {album}
-        {stackedAssets}
+        {stack}
         showDetailButton={enableDetailPanel}
         showSlideshow={!!assetStore}
-        hasStackChildren={stackedAssets.length > 0}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
         onAction={handleAction}
@@ -524,7 +523,8 @@
     </div>
   {/if}
 
-  {#if stackedAssets.length > 0 && withStacked}
+  {#if stack && withStacked}
+    {@const stackedAssets = stack.assets}
     <div
       id="stack-slideshow"
       class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
