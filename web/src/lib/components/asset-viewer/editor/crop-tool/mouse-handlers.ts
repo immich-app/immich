@@ -61,7 +61,7 @@ export function handleMouseDown(e: MouseEvent) {
   window.addEventListener('mouseup', handleMouseUp);
 }
 
-export function handleMouseMove(e: MouseEvent, fromCanvas: boolean = false) {
+export function handleMouseMove(e: MouseEvent) {
   const canvas = get(canvasElement);
   if (!canvas) {
     return;

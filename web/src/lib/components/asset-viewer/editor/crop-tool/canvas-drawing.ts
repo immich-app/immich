@@ -54,24 +54,42 @@ export function drawCropRect(crop: CropSettings) {
   }
 
   ctx.globalCompositeOperation = 'source-over';
-  const radius = 5;
-  ctx.fillStyle = 'white';
+  //dynamic corners size
+  const minSide = Math.min(crop.height, crop.width);
+  const length = minSide > 18 * 5 ? 18 : Math.min(18, minSide / 5);
+
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = mPadding * 2;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
 
   ctx.beginPath();
-  ctx.arc(crop.x + mPadding, crop.y + mPadding, radius, 0, 2 * Math.PI);
-  ctx.fill();
+  ctx.moveTo(crop.x + mPadding, crop.y + mPadding);
+  ctx.lineTo(crop.x + mPadding + length, crop.y + mPadding);
+  ctx.moveTo(crop.x + mPadding, crop.y + mPadding);
+  ctx.lineTo(crop.x + mPadding, crop.y + mPadding + length);
+  ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(crop.x + crop.width + mPadding, crop.y + mPadding, radius, 0, 2 * Math.PI);
-  ctx.fill();
+  ctx.moveTo(crop.x + crop.width + mPadding, crop.y + mPadding);
+  ctx.lineTo(crop.x + crop.width + mPadding - length, crop.y + mPadding);
+  ctx.moveTo(crop.x + crop.width + mPadding, crop.y + mPadding);
+  ctx.lineTo(crop.x + crop.width + mPadding, crop.y + mPadding + length);
+  ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(crop.x + mPadding, crop.y + crop.height + mPadding, radius, 0, 2 * Math.PI);
-  ctx.fill();
+  ctx.moveTo(crop.x + mPadding, crop.y + crop.height + mPadding);
+  ctx.lineTo(crop.x + mPadding + length, crop.y + crop.height + mPadding);
+  ctx.moveTo(crop.x + mPadding, crop.y + crop.height + mPadding);
+  ctx.lineTo(crop.x + mPadding, crop.y + crop.height + mPadding - length);
+  ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(crop.x + crop.width + mPadding, crop.y + crop.height + mPadding, radius, 0, 2 * Math.PI);
-  ctx.fill();
+  ctx.moveTo(crop.x + crop.width + mPadding, crop.y + crop.height + mPadding);
+  ctx.lineTo(crop.x + crop.width + mPadding - length, crop.y + crop.height + mPadding);
+  ctx.moveTo(crop.x + crop.width + mPadding, crop.y + crop.height + mPadding);
+  ctx.lineTo(crop.x + crop.width + mPadding, crop.y + crop.height + mPadding - length);
+  ctx.stroke();
 }
 
 export function drawOverlay(canvas: HTMLCanvasElement, crop: CropSettings) {

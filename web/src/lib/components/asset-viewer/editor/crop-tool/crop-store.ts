@@ -10,7 +10,7 @@ export const imgElement = writable<HTMLImageElement | null>(null);
 export const canvasElement = writable<HTMLCanvasElement | null>(null);
 export const context2D = writable<CanvasRenderingContext2D | null>(null);
 export const isDragging = writable<boolean>(false);
-export const padding = writable<number>(5);
+export const padding = writable<number>(2.5);
 
 export function resetCropStore() {
   darkenLevel.set(0.65);

@@ -55,11 +55,15 @@
   export let onCopyImage: () => void;
 
   $: isOwner = $user && asset.ownerId === $user?.id;
-  $: showEditorButton = isOwner && asset.type === AssetTypeEnum.Image && !(asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
-            .toLowerCase()
-            .endsWith('.insp'))) && !(asset.originalPath && asset.originalPath
-          .toLowerCase()
-          .endsWith('.gif')) && !showMotionPlayButton
+  $: showEditorButton =
+    isOwner &&
+    asset.type === AssetTypeEnum.Image &&
+    !(
+      asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+      (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+    ) &&
+    !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
+    !showMotionPlayButton;
 
   type EventTypes = {
     back: void;
