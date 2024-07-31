@@ -318,7 +318,7 @@
     isShowEditor = !isShowEditor;
   };
 
-    const handleRunJob = async (name: AssetJobName) => {
+  const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
       notificationController.show({ type: NotificationType.Info, message: $getAssetJobMessage(name) });
@@ -415,7 +415,7 @@
         onCopyImage={copyImage}
         onAction={handleAction}
         onRunJob={handleRunJob}
-        showEditorHandler={showEditorHandler}
+        {showEditorHandler}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
@@ -545,7 +545,7 @@
     </div>
   {/if}
 
-    {#if isShowEditor}
+  {#if isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"

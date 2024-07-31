@@ -56,7 +56,7 @@
 
   $: isOwner = $user && asset.ownerId === $user?.id;
   $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
-    $: showEditorButton =
+  $: showEditorButton =
     isOwner &&
     asset.type === AssetTypeEnum.Image &&
     !(
