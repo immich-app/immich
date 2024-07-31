@@ -3,11 +3,11 @@ import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from huggingface_hub import create_repo, upload_folder
-from models.optimize import optimize
-from models import mclip, openclip
-from rich.progress import Progress
 import torch
+from huggingface_hub import create_repo, upload_folder
+from models import mclip, openclip
+from models.optimize import optimize
+from rich.progress import Progress
 
 models = [
     "M-CLIP/LABSE-Vit-L-14",
