@@ -38,6 +38,7 @@ def to_onnx(
         assert visual_path is not None, "Visual model export failed"
     return visual_path, textual_path
 
+
 def export_text_encoder(model: MultilingualCLIP, output_path: Path | str) -> None:
     output_path = Path(output_path)
 

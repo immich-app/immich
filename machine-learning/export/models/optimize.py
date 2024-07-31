@@ -14,6 +14,7 @@ def save_onnx(model: onnx.ModelProto, output_path: Path | str) -> None:
         else:
             raise e
 
+
 def optimize_onnxsim(model_path: Path | str, output_path: Path | str) -> None:
     model_path = Path(model_path)
     output_path = Path(output_path)
