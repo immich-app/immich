@@ -3,8 +3,8 @@ import { render } from '@testing-library/svelte';
 
 describe('ImageThumbnail component', () => {
   beforeAll(() => {
-    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
-      value: vi.fn(),
+    Object.defineProperty(HTMLImageElement.prototype, 'complete', {
+      value: true,
     });
   });
 
@@ -16,9 +16,7 @@ describe('ImageThumbnail component', () => {
       widthStyle: '250px',
     });
 
-    const [_, thumbhash] = sut.getAllByRole('img');
-    expect(thumbhash.getAttribute('src')).toContain(
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAgCAYAAAD5VeO1AAAMRklEQVR4AQBdAKL/', // truncated
-    );
+    const thumbhash = sut.getByTestId('thumbhash');
+    expect(thumbhash).not.toBeFalsy();
   });
 });

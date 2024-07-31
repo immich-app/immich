@@ -1,8 +1,8 @@
 <script lang="ts">
-  import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
+  import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { decodeBase64, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -18,18 +18,19 @@
     mdiMotionPlayOutline,
     mdiRotate360,
   } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
+
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-
-  const dispatch = createEventDispatcher<{
-    select: { asset: AssetResponseDto };
-    'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
-  }>();
+  import { AssetStore, queueScrollSensitiveTask } from '$lib/stores/assets.store';
+  import { thumbHashToRGBA } from 'thumbhash';
+  import { TUNABLES } from '$lib/utils/tunables';
+  import type { DateGroup } from '$lib/utils/timeline-util';
 
   export let asset: AssetResponseDto;
+  export let dateGroup: DateGroup | undefined = undefined;
+  export let assetStore: AssetStore | undefined = undefined;
   export let groupIndex = 0;
   export let thumbnailSize: number | undefined = undefined;
   export let thumbnailWidth: number | undefined = undefined;
@@ -40,72 +41,176 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
-  export let onClick: ((asset: AssetResponseDto, event: Event) => void) | undefined = undefined;
+  export let intersectionConfig: {
+    root?: HTMLElement;
+    bottom?: string;
+    top?: string;
+    left?: string;
+    priority?: number;
+  } = {};
+
+  export let retrieveElement: boolean = false;
+  export let onIntersected: (() => void) | undefined = undefined;
+  export let onClick: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onRetrieveElement: ((elment: HTMLElement) => void) | undefined = undefined;
+  export let onSelect: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onMouseEvent: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined =
+    undefined;
 
   let className = '';
   export { className as class };
 
+  let element: HTMLElement | undefined;
   let mouseOver = false;
+  let intersecting = false;
+  let lastRetrievedElement: HTMLElement | undefined;
+  let loaded = false;
 
-  $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
+  $: if (!retrieveElement) {
+    lastRetrievedElement = undefined;
+  }
+  $: if (retrieveElement && element && lastRetrievedElement !== element) {
+    lastRetrievedElement = element;
+    onRetrieveElement?.(element);
+  }
 
-  $: [width, height] = ((): [number, number] => {
-    if (thumbnailSize) {
-      return [thumbnailSize, thumbnailSize];
-    }
+  $: width = thumbnailSize || thumbnailWidth || 235;
+  $: height = thumbnailSize || thumbnailHeight || 235;
+  $: display = intersecting;
 
-    if (thumbnailWidth && thumbnailHeight) {
-      return [thumbnailWidth, thumbnailHeight];
-    }
-
-    return [235, 235];
-  })();
-
-  const onIconClickedHandler = (e: MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const {
+    THUMBNAIL: { PRIORITY },
+  } = TUNABLES;
+  const onIconClickedHandler = (e?: MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (!disabled) {
-      dispatch('select', { asset });
+      onSelect?.(asset);
     }
   };
 
+  const callClickHandlers = () => {
+    if (selected) {
+      onIconClickedHandler();
+      return;
+    }
+    onClick?.(asset);
+  };
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       return;
     }
-
-    if (selected) {
-      onIconClickedHandler(e);
-      return;
-    }
-
-    onClick?.(asset, e);
+    e.stopPropagation();
+    e.preventDefault();
+    callClickHandlers();
   };
 
-  const onMouseEnter = () => {
+  const _onMouseEnter = () => {
     mouseOver = true;
+    onMouseEvent?.({ isMouseOver: true, selectedGroupIndex: groupIndex });
+  };
+  const onMouseEnter = () => {
+    if (dateGroup) {
+      queueScrollSensitiveTask(() => _onMouseEnter());
+    } else {
+      _onMouseEnter();
+    }
   };
 
   const onMouseLeave = () => {
-    mouseOver = false;
+    if (dateGroup) {
+      queueScrollSensitiveTask(() => (mouseOver = false));
+    } else {
+      mouseOver = false;
+    }
+  };
+
+  const _onIntersect = () => {
+    intersecting = true;
+    onIntersected?.();
+  };
+  const onIntersect = () => {
+    if (dateGroup && assetStore) {
+      assetStore.taskManager.intersectedThumbnail(dateGroup, asset, () => _onIntersect());
+    } else {
+      _onIntersect();
+    }
+  };
+
+  const onSeparate = () => {
+    if (dateGroup && assetStore) {
+      assetStore.taskManager.seperatedThumbnail(dateGroup, asset, () => (intersecting = false));
+    } else {
+      intersecting = false;
+    }
+  };
+  const loadThumhash = (canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const { w, h, rgba } = thumbHashToRGBA(decodeBase64(asset.thumbhash!));
+      const pixels = ctx.createImageData(w, h);
+      canvas.width = w;
+      canvas.height = h;
+      pixels.data.set(rgba);
+      ctx.putImageData(pixels, 0, 0);
+    }
   };
 </script>
 
-<IntersectionObserver once={false} on:intersected let:intersecting>
-  <a
-    href={currentUrlReplaceAssetId(asset.id)}
-    style:width="{width}px"
-    style:height="{height}px"
-    class="group focus-visible:outline-none flex overflow-hidden {disabled
-      ? 'bg-gray-300'
-      : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
-    class:cursor-not-allowed={disabled}
-    on:mouseenter={onMouseEnter}
-    on:mouseleave={onMouseLeave}
-    tabindex={0}
-    on:click={handleClick}
-  >
-    {#if intersecting}
+<div
+  bind:this={element}
+  use:intersectionObserver={{
+    ...intersectionConfig,
+    onIntersect,
+    onSeparate,
+    priority: PRIORITY,
+  }}
+  style:width="{width}px"
+  style:height="{height}px"
+  class="group focus-visible:outline-none flex overflow-hidden {disabled
+    ? 'bg-gray-300'
+    : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
+>
+  {#if !loaded && asset.thumbhash}
+    <canvas
+      use:loadThumhash
+      class="absolute object-cover z-10"
+      style:width="{width}px"
+      style:height="{height}px"
+      out:fade={{ duration: 150 }}
+    ></canvas>
+  {/if}
+  {#if display}
+    <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
+     the navigation url on scroll. Replace this with button for now. -->
+    <div
+      class:cursor-not-allowed={disabled}
+      class:cursor-pointer={!disabled}
+      on:mouseenter={onMouseEnter}
+      on:mouseleave={onMouseLeave}
+      on:keypress={(evt) => {
+        if (evt.key === 'Enter') {
+          callClickHandlers();
+        }
+      }}
+      tabindex={0}
+      on:click={handleClick}
+      role="link"
+    >
+      {#if mouseOver}
+        <!-- lazy show the url on mouse over-->
+        <a
+          class="absolute z-30 {className} top-[41px]"
+          style:cursor="unset"
+          style:width="{width}px"
+          style:height="{height}px"
+          href={currentUrlReplaceAssetId(asset.id)}
+          on:click={(evt) => evt.preventDefault()}
+          tabindex={0}
+          aria-hidden="true"
+        >
+        </a>
+      {/if}
       <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
@@ -189,8 +294,8 @@
             altText={$getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"
-            thumbhash={asset.thumbhash}
             curve={selected}
+            onComplete={() => (loaded = true)}
           />
         {:else}
           <div class="flex h-full w-full items-center justify-center p-4">
@@ -230,6 +335,6 @@
           out:fade={{ duration: 100 }}
         />
       {/if}
-    {/if}
-  </a>
-</IntersectionObserver>
+    </div>
+  {/if}
+</div>

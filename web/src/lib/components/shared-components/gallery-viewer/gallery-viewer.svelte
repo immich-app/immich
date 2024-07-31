@@ -2,10 +2,10 @@
   import Portal from '../portal/portal.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets.store';
   import { handleError } from '$lib/utils/handle-error';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import justifiedLayout from 'justified-layout';
   import { getAssetRatio } from '$lib/utils/asset-utils';
@@ -14,14 +14,14 @@
   import { AppRoute, AssetAction } from '$lib/constants';
   import { goto } from '$app/navigation';
   import { t } from 'svelte-i18n';
-
-  const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
+  import { handlePromiseError } from '$lib/utils';
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
   export let viewport: Viewport;
+  export let onIntersected: (() => void) | undefined = undefined;
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
@@ -124,18 +124,15 @@
         <Thumbnail
           {asset}
           readonly={disableAssetSelect}
-          onClick={async (asset, e) => {
-            e.preventDefault();
-
+          onClick={(asset) => {
             if (isMultiSelectionMode) {
               selectAssetHandler(asset);
               return;
             }
-            await viewAssetHandler(asset);
+            void viewAssetHandler(asset);
           }}
-          on:select={(e) => selectAssetHandler(e.detail.asset)}
-          on:intersected={(event) =>
-            i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
+          onSelect={(asset) => selectAssetHandler(asset)}
+          onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           selected={selectedAssets.has(asset)}
           {showArchiveIcon}
           thumbnailWidth={geometry.boxes[i].width}
@@ -154,6 +151,10 @@
       on:action={({ detail: action }) => handleAction(action.type, action.asset)}
       on:previous={handlePrevious}
       on:next={handleNext}
+      on:close={() => {
+        assetViewingStore.showAssetViewer(false);
+        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+      }}
     />
   </Portal>
 {/if}

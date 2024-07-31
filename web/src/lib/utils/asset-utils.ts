@@ -4,7 +4,7 @@ import { NotificationType, notificationController } from '$lib/components/shared
 import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
+import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
@@ -411,7 +411,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
 
   try {
     for (const bucket of assetStore.buckets) {
-      await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+      await assetStore.loadBucket(bucket.bucketDate);
 
       if (!get(isSelectingAllAssets)) {
         break; // Cancelled
