@@ -37,13 +37,13 @@ export class LibraryEntity {
   exclusionPatterns!: string[];
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: string;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: string;
 
   @DeleteDateColumn({ type: 'timestamptz' })
-  deletedAt?: Date;
+  deletedAt?: string;
 
   @Column({ type: 'timestamptz', nullable: true })
   refreshedAt!: Date | null;

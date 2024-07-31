@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { Optional } from 'src/validation';
 export class APIKeyCreateDto {
@@ -21,6 +22,8 @@ export class APIKeyCreateResponseDto {
 export class APIKeyResponseDto {
   id!: string;
   name!: string;
-  createdAt!: Date;
-  updatedAt!: Date;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  createdAt!: string;
+  @ApiProperty({ type: 'string', format: 'date-time' })
+  updatedAt!: string;
 }

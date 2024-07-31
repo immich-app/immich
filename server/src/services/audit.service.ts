@@ -59,7 +59,7 @@ export class AuditService {
       action: DatabaseAction.DELETE,
     });
 
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.after));
+    const duration = DateTime.now().diff(DateTime.fromISO(dto.after));
 
     return {
       needsFullSync: duration > AUDIT_LOG_MAX_DURATION,

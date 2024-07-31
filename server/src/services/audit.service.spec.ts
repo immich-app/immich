@@ -58,7 +58,7 @@ describe(AuditService.name, () => {
     it('should require full sync if the request is older than 100 days', async () => {
       auditMock.getAfter.mockResolvedValue([]);
 
-      const date = new Date(2022, 0, 1);
+      const date = new Date(2022, 0, 1).toISOString();
       await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
         needsFullSync: true,
         ids: [],

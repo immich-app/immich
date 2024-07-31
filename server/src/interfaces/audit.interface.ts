@@ -9,6 +9,6 @@ export interface AuditSearch {
 }
 
 export interface IAuditRepository {
-  getAfter(since: Date, options: AuditSearch): Promise<string[]>;
+  getAfter(since: string, options: AuditSearch): Promise<string[]>;
   removeBefore(before: Date): Promise<void>;
 }

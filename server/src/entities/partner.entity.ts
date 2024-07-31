@@ -18,10 +18,10 @@ export class PartnerEntity {
   sharedWith!: UserEntity;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: string;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: string;
 
   @Column({ type: 'boolean', default: false })
   inTimeline!: boolean;

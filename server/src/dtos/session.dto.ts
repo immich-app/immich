@@ -11,8 +11,8 @@ export class SessionResponseDto {
 
 export const mapSession = (entity: SessionEntity, currentId?: string): SessionResponseDto => ({
   id: entity.id,
-  createdAt: entity.createdAt.toISOString(),
-  updatedAt: entity.updatedAt.toISOString(),
+  createdAt: entity.createdAt,
+  updatedAt: entity.updatedAt,
   current: currentId === entity.id,
   deviceOS: entity.deviceOS,
   deviceType: entity.deviceType,

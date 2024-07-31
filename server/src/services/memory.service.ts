@@ -74,7 +74,7 @@ export class MemoryService {
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
-      await this.repository.update({ id, updatedAt: new Date() });
+      await this.repository.update({ id, updatedAt: new Date().toISOString() });
     }
 
     return results;
@@ -92,7 +92,7 @@ export class MemoryService {
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
-      await this.repository.update({ id, updatedAt: new Date() });
+      await this.repository.update({ id, updatedAt: new Date().toISOString() });
     }
 
     return results;

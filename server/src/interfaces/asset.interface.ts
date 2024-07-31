@@ -123,13 +123,13 @@ export interface AssetExploreOptions extends AssetExploreFieldOptions {
 export interface AssetFullSyncOptions {
   ownerId: string;
   lastId?: string;
-  updatedUntil: Date;
+  updatedUntil: string;
   limit: number;
 }
 
 export interface AssetDeltaSyncOptions {
   userIds: string[];
-  updatedAfter: Date;
+  updatedAfter: string;
   limit: number;
 }
 

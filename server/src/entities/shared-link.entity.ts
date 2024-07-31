@@ -38,7 +38,7 @@ export class SharedLinkEntity {
   type!: SharedLinkType;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: string;
 
   @Column({ type: 'timestamptz', nullable: true })
   expiresAt!: Date | null;

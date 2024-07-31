@@ -30,5 +30,5 @@ export class AuditEntity {
   ownerId!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: string;
 }

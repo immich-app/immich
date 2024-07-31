@@ -182,7 +182,7 @@ export class AlbumService {
     if (firstNewAssetId) {
       await this.albumRepository.update({
         id,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
       });
 
@@ -204,7 +204,7 @@ export class AlbumService {
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
     if (removedIds.length > 0) {
-      await this.albumRepository.update({ id, updatedAt: new Date() });
+      await this.albumRepository.update({ id, updatedAt: new Date().toISOString() });
       if (album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
         await this.albumRepository.updateThumbnails();
       }

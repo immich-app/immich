@@ -265,7 +265,7 @@ describe(AssetService.name, () => {
         ids: [],
         stackParentId: 'parent',
       }),
-        expect(assetMock.updateAll).toHaveBeenCalledWith(['parent'], { updatedAt: expect.any(Date) });
+        expect(assetMock.updateAll).toHaveBeenCalledWith(['parent'], { updatedAt: expect.any(String) });
     });
 
     it('should update parent asset when children are removed', async () => {
@@ -285,7 +285,7 @@ describe(AssetService.name, () => {
       });
       expect(assetMock.updateAll).toHaveBeenCalledWith(expect.arrayContaining(['child-1']), { stack: null });
       expect(assetMock.updateAll).toHaveBeenCalledWith(expect.arrayContaining(['parent']), {
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       });
       expect(stackMock.delete).toHaveBeenCalledWith('stack-1');
     });
@@ -316,7 +316,7 @@ describe(AssetService.name, () => {
         ]),
         primaryAsset: undefined,
       });
-      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2', 'parent'], { updatedAt: expect.any(Date) });
+      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2', 'parent'], { updatedAt: expect.any(String) });
     });
 
     it('remove stack for removed children', async () => {
@@ -354,7 +354,7 @@ describe(AssetService.name, () => {
         primaryAssetId: 'parent',
       });
       expect(assetMock.updateAll).toBeCalledWith(['child-1', 'parent', 'child-1', 'child-2'], {
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       });
     });
 
@@ -555,7 +555,7 @@ describe(AssetService.name, () => {
 
       expect(stackMock.update).toBeCalledWith({ id: 'stack-1', primaryAssetId: 'new' });
       expect(assetMock.updateAll).toBeCalledWith([assetStub.image.id, 'new', assetStub.image.id], {
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       });
     });
   });
