@@ -1,6 +1,7 @@
 <script lang="ts">
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction } from '$lib/components/asset-viewer/actions/action';
+  import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -31,7 +32,6 @@
     type AssetResponseDto,
   } from '@immich/sdk';
   import { mdiImageBrokenVariant } from '@mdi/js';
-  import { canCopyImagesToClipboard } from 'copy-image-clipboard';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -75,7 +75,6 @@
   let stackedAssets: AssetResponseDto[] = [];
   let shouldPlayMotionPhoto = false;
   let sharedLink = getSharedLink();
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let enableDetailPanel = asset.hasMetadata;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
@@ -387,25 +386,23 @@
         {asset}
         {album}
         {stackedAssets}
-        isMotionPhotoPlaying={shouldPlayMotionPhoto}
-        showCopyButton={canCopyImagesToClipboard() && asset.type === AssetTypeEnum.Image}
-        showZoomButton={asset.type === AssetTypeEnum.Image}
-        showMotionPlayButton={!!asset.livePhotoVideoId}
-        showDownloadButton={shouldShowDownloadButton}
         showDetailButton={enableDetailPanel}
         showSlideshow={!!assetStore}
         hasStackChildren={stackedAssets.length > 0}
-        showShareButton={!asset.isTrashed && !!$user}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
         onAction={handleAction}
+        onRunJob={handleRunJob}
+        onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
-        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-        on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-      />
+      >
+        <MotionPhotoAction
+          slot="motion-photo"
+          isPlaying={shouldPlayMotionPhoto}
+          onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
+        />
+      </AssetViewerNavBar>
     </div>
   {/if}
 
