@@ -91,7 +91,6 @@
   let copyImage: () => Promise<void>;
 
   $: isFullScreen = fullscreenElement !== null;
-  $: showNavbar = ![isShowEditor].some(Boolean); // can add another variables
 
   $: {
     if (asset.stackCount && asset.stack) {
