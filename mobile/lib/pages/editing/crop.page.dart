@@ -192,6 +192,7 @@ class _AspectRatioButton extends StatelessWidget {
                 : Theme.of(context).iconTheme.color,
           ),
           onPressed: () {
+            cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
             aspectRatio.value = ratio;
             cropController.aspectRatio = ratio;
           },
