@@ -89,23 +89,14 @@ export function animateCropChange(crop: CropSettings, newCrop: CropSettings, dra
 }
 
 export function keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: CropAspectRatio) {
-  switch (aspectRatio) {
-    case '1:1': {
-      return { newWidth: newHeight, newHeight };
-    }
-    case '16:9': {
-      return { newWidth: (newHeight * 16) / 9, newHeight };
-    }
-    case '3:2': {
-      return { newWidth: (newHeight * 3) / 2, newHeight };
-    }
-    case '7:5': {
-      return { newWidth: (newHeight * 7) / 5, newHeight };
-    }
-    default: {
-      return { newWidth, newHeight };
-    }
+  const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
+
+  if (widthRatio && heightRatio) {
+    const calculatedWidth = (newHeight * widthRatio) / heightRatio;
+    return { newWidth: calculatedWidth, newHeight };
   }
+
+  return { newWidth, newHeight };
 }
 
 export function adjustDimensions(
@@ -119,26 +110,12 @@ export function adjustDimensions(
     h = newHeight;
 
   let aspectMultiplier;
-  switch (aspectRatio) {
-    case '1:1': {
-      aspectMultiplier = 1;
-      break;
-    }
-    case '16:9': {
-      aspectMultiplier = 16 / 9;
-      break;
-    }
-    case '3:2': {
-      aspectMultiplier = 3 / 2;
-      break;
-    }
-    case '7:5': {
-      aspectMultiplier = 7 / 5;
-      break;
-    }
-    default: {
-      aspectMultiplier = newWidth / newHeight;
-    }
+
+  if (aspectRatio === 'free') {
+    aspectMultiplier = newWidth / newHeight;
+  } else {
+    const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
+    aspectMultiplier = widthRatio && heightRatio ? widthRatio / heightRatio : newWidth / newHeight;
   }
 
   if (aspectRatio !== 'free') {

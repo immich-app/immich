@@ -21,9 +21,9 @@ export const editTypes = [
 
 export function closeEditorCofirm(closeCallback: CallableFunction) {
   if (get(hasChanges)) {
-    showCancelConfirmDialog.set(closeCallback)
+    showCancelConfirmDialog.set(closeCallback);
   } else {
-    closeCallback()
+    closeCallback();
   }
 }
 
@@ -40,10 +40,21 @@ export function resetGlobalCropStore() {
   cropImageScale.set(1);
   cropAspectRatio.set('free');
   cropSettingsChanged.set(false);
-  showCancelConfirmDialog.set(false)
+  showCancelConfirmDialog.set(false);
 }
 
-export type CropAspectRatio = '1:1' | '16:9' | '3:2' | '7:5' | 'free' | 'reset';
+export type CropAspectRatio =
+  | '1:1'
+  | '16:9'
+  | '4:3'
+  | '3:2'
+  | '7:5'
+  | '9:16'
+  | '3:4'
+  | '2:3'
+  | '5:7'
+  | 'free'
+  | 'reset';
 
 export type CropSettings = {
   x: number;

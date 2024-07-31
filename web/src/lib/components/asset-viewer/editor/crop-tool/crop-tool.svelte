@@ -10,10 +10,15 @@
   } from '$lib/stores/asset-editor.store';
   import { mdiBackupRestore, mdiCropFree, mdiSquareOutline } from '@mdi/js';
 
+  const icon_16_9 = `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`;
+  const icon_4_3 = `M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H5V7h14v10z`;
+  const icon_3_2 = `M200-240q-33 0-56.5-23.5T120-320v-320q0-33 23.5-56.5T200-720h560q33 0 56.5 23.5T840-640v320q0 33-23.5 56.5T760-240H200Zm0-80h560v-320H200v320Zm0 0v-320 320Z`;
+  const icon_7_5 = `M200-200q-33 0-56.5-23.5T120-280v-400q0-33 23.5-56.5T200-760h560q33 0 56.5 23.5T840-680v400q0 33-23.5 56.5T760-200H200Zm0-80h560v-400H200v400Zm0 0v-400 400Z`;
   interface Size {
     icon: string;
     name: CropAspectRatio;
     viewBox: string;
+    rotate?: boolean;
   }
   let sizes: Size[] = [
     {
@@ -28,18 +33,47 @@
     },
     {
       name: '16:9',
-      icon: `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`,
+      icon: icon_16_9,
       viewBox: '50 -700 840 400',
     },
     {
+      name: '4:3',
+      icon: icon_4_3,
+      viewBox: '0 0 24 24',
+    },
+    {
       name: '3:2',
-      icon: `M200-240q-33 0-56.5-23.5T120-320v-320q0-33 23.5-56.5T200-720h560q33 0 56.5 23.5T840-640v320q0 33-23.5 56.5T760-240H200Zm0-80h560v-320H200v320Zm0 0v-320 320Z`,
+      icon: icon_3_2,
       viewBox: '50 -720 840 480',
     },
     {
       name: '7:5',
-      icon: `M200-200q-33 0-56.5-23.5T120-280v-400q0-33 23.5-56.5T200-760h560q33 0 56.5 23.5T840-680v400q0 33-23.5 56.5T760-200H200Zm0-80h560v-400H200v400Zm0 0v-400 400Z`,
+      icon: icon_7_5,
       viewBox: '50 -760 840 560',
+    },
+    {
+      name: '9:16',
+      icon: icon_16_9,
+      viewBox: '50 -700 840 400',
+      rotate: true,
+    },
+    {
+      name: '3:4',
+      icon: icon_4_3,
+      viewBox: '0 0 24 24',
+      rotate: true,
+    },
+    {
+      name: '2:3',
+      icon: icon_3_2,
+      viewBox: '50 -720 840 480',
+      rotate: true,
+    },
+    {
+      name: '5:7',
+      icon: icon_7_5,
+      viewBox: '50 -760 840 560',
+      rotate: true,
     },
     {
       name: 'reset',
@@ -81,7 +115,7 @@
           rounded="lg"
           on:click={() => selectType(size.name)}
         >
-          <Icon size="1.75em" path={size.icon} viewBox={size.viewBox} />
+          <Icon size="1.75em" path={size.icon} viewBox={size.viewBox} class={size.rotate ? 'rotate-90' : ''} />
           <span>{size.name}</span>
         </Button>
       </li>
