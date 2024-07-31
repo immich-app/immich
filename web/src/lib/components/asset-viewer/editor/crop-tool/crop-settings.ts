@@ -1,6 +1,7 @@
 import type { CropAspectRatio, CropSettings } from '$lib/stores/asset-editor.store';
 import { get } from 'svelte/store';
 import { padding } from './crop-store';
+import { checkEdits } from './mouse-handlers';
 
 const mPadding = get(padding);
 export function recalculateCrop(
@@ -48,6 +49,9 @@ export function recalculateCrop(
   }
 
   if (returnNewCrop) {
+    setTimeout(() => {
+      checkEdits();
+    }, 1);
     return newCrop;
   } else {
     crop.width = newWidth;

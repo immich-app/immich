@@ -1300,5 +1300,7 @@
   "years_ago": "{years, plural, one {# год} few {# года} many {# лет} other {# года}} назад",
   "yes": "Да",
   "you_dont_have_any_shared_links": "У вас нет общих ссылок",
-  "zoom_image": "Увеличить"
+  "zoom_image": "Увеличить",
+  "editor_close_without_save_title": "Закрыть редактор?",
+  "editor_close_without_save_prompt": "Изменения не будут сохранены"
 }

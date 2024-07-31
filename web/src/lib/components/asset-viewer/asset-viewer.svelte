@@ -63,6 +63,7 @@
   import { focusTrap } from '$lib/actions/focus-trap';
   import EditorPanel from './editor/editor-panel.svelte';
   import CropCanvas from './editor/crop-tool/crop-canvas.svelte';
+  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -290,7 +291,9 @@
   };
 
   const closeEditor = () => {
-    isShowEditor = false;
+    closeEditorCofirm(() => {
+      isShowEditor = false;
+    });
   };
 
   const navigateAssetRandom = async () => {

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiCropRotate } from '@mdi/js';
+  import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import CropComponent from './crop-tool/crop-tool.svelte';
-  import { cropSettingsChanged } from '$lib/stores/asset-editor.store';
+  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
 
   export let asset: AssetResponseDto;
 
@@ -20,15 +20,6 @@
 
   export let onUpdateSelectedType: (type: string) => void;
   export let onClose: () => void;
-
-  let editTypes = [
-    {
-      name: 'crop',
-      icon: mdiCropRotate,
-      component: CropComponent,
-      changesFlag: cropSettingsChanged,
-    },
-  ];
 
   let selectedType: string = editTypes[0].name;
   $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
@@ -45,7 +36,7 @@
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
-    <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('editor')}</p>
+    <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
   </div>
   <section class="px-4 py-4">
     <ul class="flex w-full justify-around">
@@ -65,3 +56,18 @@
     <svelte:component this={selectedTypeObj.component} />
   </section>
 </section>
+
+{#if $showCancelConfirmDialog}
+  <ConfirmDialog
+    title={$t('editor_close_without_save_title')}
+    prompt={$t('editor_close_without_save_prompt')}
+    cancelText={$t('no')}
+    cancelColor="secondary"
+    confirmColor="red"
+    confirmText={$t('close')}
+    onCancel={() => {
+      $showCancelConfirmDialog = false;
+    }}
+    onConfirm={() => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog())}
+  />
+{/if}

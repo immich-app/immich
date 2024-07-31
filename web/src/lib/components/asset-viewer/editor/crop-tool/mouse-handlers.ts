@@ -4,6 +4,7 @@ import {
   cropImageSize,
   cropSettings,
   cropSettingsChanged,
+  showCancelConfirmDialog,
   type CropSettings,
 } from '$lib/stores/asset-editor.store';
 import { get } from 'svelte/store';
@@ -436,7 +437,7 @@ function updateCursor(mouseX: number, mouseY: number) {
   }
 
   function setCursor(cursorName: string) {
-    if (get(canvasCursor) != cursorName && canvas) {
+    if (get(canvasCursor) != cursorName && canvas && !get(showCancelConfirmDialog)) {
       canvasCursor.set(cursorName);
       document.body.style.cursor = cursorName;
       canvas.style.cursor = cursorName;
