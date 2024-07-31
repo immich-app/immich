@@ -26,7 +26,7 @@ export type ActivityResponseDto = {
     comment?: string | null;
     createdAt: string;
     id: string;
-    "type": Type;
+    "type": ReactionType;
     user: UserResponseDto;
 };
 export type ActivityCreateDto = {
@@ -572,7 +572,7 @@ export type MemoryResponseDto = {
     memoryAt: string;
     ownerId: string;
     seenAt?: string;
-    "type": Type2;
+    "type": MemoryType;
     updatedAt: string;
 };
 export type MemoryCreateDto = {
@@ -3065,10 +3065,6 @@ export enum ReactionType {
     Comment = "comment",
     Like = "like"
 }
-export enum Type {
-    Comment = "comment",
-    Like = "like"
-}
 export enum UserAvatarColor {
     Primary = "primary",
     Pink = "pink",
@@ -3163,9 +3159,6 @@ export enum JobCommand {
 export enum MapTheme {
     Light = "light",
     Dark = "dark"
-}
-export enum Type2 {
-    OnThisDay = "on_this_day"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
