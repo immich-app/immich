@@ -376,7 +376,7 @@ class SystemConfigReverseGeocodingDto {
 }
 
 class SystemConfigServerDto {
-  @IsString()
+  @IsUrl()
   externalDomain!: string;
 
   @IsString()
