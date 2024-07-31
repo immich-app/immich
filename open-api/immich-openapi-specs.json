@@ -7216,11 +7216,7 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "comment",
-              "like"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/ReactionType"
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -9311,10 +9307,7 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "on_this_day"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/MemoryType"
           },
           "updatedAt": {
             "format": "date-time",
