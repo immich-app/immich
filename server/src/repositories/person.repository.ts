@@ -205,14 +205,10 @@ export class PersonRepository implements IPersonRepository {
   ): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId AND (LOWER(person.name) IN (:...names))', {
         userId,
         names: personNames.map((n) => n.toLowerCase()),
-      })
-      .groupBy('person.id')
-      .orderBy('COUNT(face.assetId)', 'DESC')
-      .limit(100);
+      });
 
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
@@ -300,13 +296,10 @@ export class PersonRepository implements IPersonRepository {
       const builder = manager.createQueryBuilder(AssetFaceEntity, 'asset_faces');
       let query = builder.delete().where('assetId = :assetId', { assetId: assetId });
 
-      if (sourceType !== undefined) {
-        // eslint-disable-next-line unicorn/prefer-ternary
-        if (sourceType == null) {
-          query = query.andWhere({ sourceType: IsNull() });
-        } else {
-          query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
-        }
+      if (sourceType) {
+        query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
+      } else if (sourceType == null) {
+        query = query.andWhere({ sourceType: IsNull() });
       }
       await query.execute();
 
