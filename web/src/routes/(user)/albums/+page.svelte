@@ -26,11 +26,12 @@
   });
   onMount(() => {
     let newScroll = sessionStorage.getItem(SessionStorageKey.SCROLL_POSITION);
-    if (newScroll)
+    if (newScroll) {
       scrollSlot.scroll({
-        top: parseFloat(newScroll),
+        top: Number.parseFloat(newScroll),
         behavior: 'instant',
       });
+    }
     sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
   });
 

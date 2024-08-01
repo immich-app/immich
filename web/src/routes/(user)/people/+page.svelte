@@ -65,7 +65,9 @@
   beforeNavigate(({ to }) => {
     // Save current scroll information when going into a person page.
     if (to && to.url.pathname.startsWith(AppRoute.PEOPLE)) {
-      if (nextPage) sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, nextPage.toString());
+      if (nextPage) {
+        sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, nextPage.toString());
+      }
       sessionStorage.setItem(SessionStorageKey.SCROLL_POSITION, scrollSlot.scrollTop.toString());
     } else {
       sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
@@ -75,11 +77,12 @@
 
   const restoreScrollPosition = () => {
     let newScroll = sessionStorage.getItem(SessionStorageKey.SCROLL_POSITION);
-    if (newScroll)
+    if (newScroll) {
       scrollSlot.scroll({
-        top: parseFloat(newScroll),
+        top: Number.parseFloat(newScroll),
         behavior: 'instant',
       });
+    }
     sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
   };
 
@@ -94,19 +97,19 @@
     let newNextPage = sessionStorage.getItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
     if (newNextPage && nextPage) {
       let startingPage = nextPage,
-        pagesToLoad = parseInt(newNextPage) - nextPage;
+        pagesToLoad = Number.parseInt(newNextPage) - nextPage;
 
       if (pagesToLoad) {
         handlePromiseError(
           Promise.all(
-            Array(pagesToLoad).map((_, i) => {
+            Array.from({ length: pagesToLoad }).map((_, i) => {
               return getAllPeople({ withHidden: true, page: startingPage + i });
             }),
           ).then((pages) => {
-            pages.forEach((page) => {
+            for (const page of pages) {
               people = people.concat(page.people);
-            });
-            nextPage = pages[pages.length - 1].hasNextPage ? startingPage + pagesToLoad : null;
+            }
+            nextPage = pages.at(-1)?.hasNextPage ? startingPage + pagesToLoad : null;
             restoreScrollPosition(); // wait until extra pages are loaded
           }),
         );
