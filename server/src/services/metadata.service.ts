@@ -515,7 +515,7 @@ export class MetadataService implements OnEvents {
     }
 
     // Stores all face regions
-    const faceSet = new Set<MetadataFaceResult>();
+    const faceList: MetadataFaceResult[] = [];
 
     // Stores all face names
     const nameSet = new Set<string>();
@@ -540,10 +540,10 @@ export class MetadataService implements OnEvents {
           region.Area.Unit,
         ),
       };
-      faceSet.add(faceResult);
+      faceList.push(faceResult);
       nameSet.add(faceResultName);
     }
-    this.logger.debug(`${faceSet.size} faces detected in ${asset.originalPath}`);
+    this.logger.debug(`${faceList.length} faces detected in ${asset.originalPath}`);
 
     if (nameSet.size === 0) {
       return true;
@@ -571,7 +571,7 @@ export class MetadataService implements OnEvents {
     const persons = [...matches, ...newPersons];
 
     // Loop to build all required faceAssets elements
-    for (const face of faceSet) {
+    for (const face of faceList) {
       const facePerson = persons.find((fp) => fp.name.toLowerCase() == face.Name);
       if (facePerson) {
         discoveredFaces.push({
