@@ -524,7 +524,11 @@ export class MetadataService implements OnEvents {
     const discoveredFaces: Partial<AssetFaceEntity>[] = [];
 
     for (const region of tags.RegionInfo?.RegionList) {
-      const faceResultName = region.Name || 'unknown';
+      if (!region.Name) {
+        // Skip regions without Name defined
+        continue
+      }
+      const faceResultName = region.Name;
       const faceResult: MetadataFaceResult = {
         Name: faceResultName,
         Type: region.Type,
