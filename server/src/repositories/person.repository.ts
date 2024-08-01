@@ -286,11 +286,7 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
-  create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    return this.personRepository.save(entity);
-  }
-
-  createMany(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
+  create(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
     return this.personRepository.save(entities);
   }
 
@@ -319,12 +315,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
-  async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    const { id } = await this.personRepository.save(entity);
-    return this.personRepository.findOneByOrFail({ id });
-  }
-
-  async updateMany(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
+  async update(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
     return await this.personRepository.save(entities);
   }
 

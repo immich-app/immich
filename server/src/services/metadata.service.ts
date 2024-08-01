@@ -560,7 +560,7 @@ export class MetadataService implements OnEvents {
       this.logger.debug(`Creating missing persons: ${[...missing]}`);
     }
 
-    const newPersons = await this.personRepository.createMany(
+    const newPersons = await this.personRepository.create(
       [...missing].map((name) => ({ ownerId: asset.ownerId, name: name })),
     );
     if (!newPersons) {
@@ -605,7 +605,7 @@ export class MetadataService implements OnEvents {
     }
 
     // Updates new Person's faceAssetId
-    await this.personRepository.updateMany(
+    await this.personRepository.update(
       newPersons.map((person) => ({ id: person.id, faceAssetId: person.faceAssetId })),
     );
 
