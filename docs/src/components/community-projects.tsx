@@ -63,6 +63,16 @@ const projects: CommunityProjectProps[] = [
     description: 'Powershell Module for the Immich API',
     url: 'https://github.com/hanpq/PSImmich',
   },
+  {
+    title: 'Support mTLS with Home Assistant',
+    description: 'Allows access to Immich from public IP that did mTLS with Home Assistant.',
+    url: 'https://github.com/Tomasinjo/gatekeeper',
+  },
+  {
+    title: 'lrc-immich-plugin',
+    description: 'Export images from Lightroom Classic directly to Immich.',
+    url: 'https://github.com/Tomasinjo/gatekeeper',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
