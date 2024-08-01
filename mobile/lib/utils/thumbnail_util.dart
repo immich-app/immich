@@ -11,8 +11,8 @@ String getAltText(ExifInfo? exifInfo, DateTime fileCreatedAt) {
 
   if (hasLocation) {
     String location = '${exifInfo!.city}, ${exifInfo.country}';
-    return 'thumbnail_alt_text_date_and_location'.tr(args: [location, date]);
+    return 'image_alt_text_date_place'.tr(args: [location, date]);
   }
 
-  return 'thumbnail_alt_text_date'.tr(args: [date]);
+  return 'image_alt_text_date'.tr(args: [date]);
 }
