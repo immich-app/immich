@@ -40,7 +40,7 @@ class Asset {
             remote.stackParentId == remote.id ? null : remote.stackParentId,
         stackCount = remote.stackCount,
         thumbhash = remote.thumbhash {
-    altText = getAltText(exifInfo, fileCreatedAt);
+    altText = getAltText(exifInfo, fileCreatedAt, type);
   }
 
   Asset.local(AssetEntity local, List<int> hash)
@@ -66,7 +66,7 @@ class Asset {
     if (local.latitude != null) {
       exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
     }
-    altText = getAltText(exifInfo, fileCreatedAt);
+    altText = getAltText(exifInfo, fileCreatedAt, type);
     _local = local;
     assert(hash.length == 20, "invalid SHA1 hash");
   }
