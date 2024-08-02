@@ -708,8 +708,8 @@ export type SearchExploreResponseDto = {
 };
 export type MetadataSearchDto = {
     checksum?: string;
-    city?: string;
-    country?: string;
+    city?: string | null;
+    country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceAssetId?: string;
@@ -723,10 +723,10 @@ export type MetadataSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string;
+    lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
-    model?: string;
+    model?: string | null;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -734,7 +734,7 @@ export type MetadataSearchDto = {
     personIds?: string[];
     previewPath?: string;
     size?: number;
-    state?: string;
+    state?: string | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -782,8 +782,8 @@ export type PlacesResponseDto = {
     name: string;
 };
 export type SmartSearchDto = {
-    city?: string;
-    country?: string;
+    city?: string | null;
+    country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
@@ -794,15 +794,15 @@ export type SmartSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string;
+    lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
-    model?: string;
+    model?: string | null;
     page?: number;
     personIds?: string[];
     query: string;
     size?: number;
-    state?: string;
+    state?: string | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -2418,8 +2418,9 @@ export function searchSmart({ smartSearchDto }: {
         body: smartSearchDto
     })));
 }
-export function getSearchSuggestions({ country, make, model, state, $type }: {
+export function getSearchSuggestions({ country, includeNull, make, model, state, $type }: {
     country?: string;
+    includeNull?: boolean;
     make?: string;
     model?: string;
     state?: string;
@@ -2430,6 +2431,7 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         data: string[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
+        includeNull,
         make,
         model,
         state,
