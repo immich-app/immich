@@ -520,7 +520,7 @@ export class MetadataService implements OnEvents {
   private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
     this.logger.debug(`Extracting face metadata from (${asset.id})`);
 
-    if (!tags.RegionInfo) {
+    if (!tags.RegionInfo || !tags.RegionInfo?.AppliedToDimensions) {
       return true;
     }
 
@@ -543,8 +543,8 @@ export class MetadataService implements OnEvents {
         Type: region.Type,
         Region: this.toPixels(
           {
-            imageWidth: tags.RegionInfo?.AppliedToDimensions?.W,
-            imageHeight: tags.RegionInfo?.AppliedToDimensions?.H,
+            imageWidth: tags.RegionInfo.AppliedToDimensions.W,
+            imageHeight: tags.RegionInfo.AppliedToDimensions.H,
             x1: region.Area.X - region.Area.W / 2,
             y1: region.Area.Y - region.Area.H / 2,
             x2: region.Area.X + region.Area.W / 2,
