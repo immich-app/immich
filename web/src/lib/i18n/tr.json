@@ -142,7 +142,7 @@
     "migration_job_description": "Varlık önizlemelerini en yeni klasör yapısına aktar",
     "no_paths_added": "Yol eklenmedi",
     "no_pattern_added": "Desen eklenmedi",
-    "note_apply_storage_label_previous_assets": "",
+    "note_apply_storage_label_previous_assets": "Not: Depolama adresini daha önce yüklenmiş dosyalara uygulamak için",
     "note_cannot_be_changed_later": "NOT: Bu daha sonra değiştirilemez!",
     "note_unlimited_quota": "NOT: Sınırsız kota için 0 yazın",
     "notification_email_from_address": "Şu adresten",
