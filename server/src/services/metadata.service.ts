@@ -492,6 +492,7 @@ export class MetadataService implements OnEvents {
     return this.personRepository.getByName(ownerId, dto.name, { withHidden: dto.withHidden });
   }
 
+  // Helper function to process EXIF face regions
   private toPixels(region: MetadataRegion, unit: string): MetadataRegion {
     const pixelRegion: MetadataRegion = region;
     if (unit.toLowerCase() == 'normalized') {
@@ -507,6 +508,15 @@ export class MetadataService implements OnEvents {
     return pixelRegion;
   }
 
+  // Helper function to track persons during EXIF faces import
+  private updatePersonMap(personMap: Map<string, Partial<PersonEntity>>, persons: Partial<PersonEntity>[]): void {
+    for (const person of persons) {
+      if (person.name) {
+        personMap.set(person.name.toLowerCase(), person);
+      }
+    }
+  }
+
   private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
     this.logger.debug(`Extracting face metadata from (${asset.id})`);
 
@@ -517,8 +527,8 @@ export class MetadataService implements OnEvents {
     // Stores all face regions
     const faceList: MetadataFaceResult[] = [];
 
-    // Stores all face names
-    const nameSet = new Set<string>();
+    // Maps person name and its entity
+    const personMap = new Map<string, Partial<PersonEntity>>();
 
     // Stores AssetFace entities
     const discoveredFaces: Partial<AssetFaceEntity>[] = [];
@@ -526,11 +536,10 @@ export class MetadataService implements OnEvents {
     for (const region of tags.RegionInfo?.RegionList) {
       if (!region.Name) {
         // Skip regions without Name defined
-        continue
+        continue;
       }
-      const faceResultName = region.Name;
       const faceResult: MetadataFaceResult = {
-        Name: faceResultName,
+        Name: region.Name,
         Type: region.Type,
         Region: this.toPixels(
           {
@@ -545,38 +554,49 @@ export class MetadataService implements OnEvents {
         ),
       };
       faceList.push(faceResult);
-      nameSet.add(faceResultName);
+      this.updatePersonMap(personMap, [{ ownerId: asset.ownerId, name: faceResult.Name }]);
     }
     this.logger.debug(`${faceList.length} faces detected in ${asset.originalPath}`);
 
-    if (nameSet.size === 0) {
+    if (personMap.size === 0) {
       return true;
     }
 
     // Find all person entries matching the face names we have
-    const matches = await this.personRepository.getManyByName(asset.ownerId, [...nameSet], { withHidden: true });
+    const matches = await this.personRepository.getManyByName(asset.ownerId, [...personMap.keys()], {
+      withHidden: true,
+    });
+
+    // Update personMap with the found entities
+    this.updatePersonMap(personMap, matches);
 
     // Identify which names are not in our inventory yet
-    const matchesNames = new Set(matches.map((m) => m.name.toLowerCase()));
-    const missing = new Set([...nameSet].filter((item) => !matchesNames.has(item.toLowerCase())));
+    const missing: Partial<PersonEntity>[] = [];
+    for (const p of personMap.values()) {
+      if (!p.id) {
+        // Entries without id need to be created
+        missing.push(p);
+      }
+    }
 
-    if (missing.size > 0) {
+    if (missing.length > 0) {
       this.logger.debug(`Creating missing persons: ${[...missing]}`);
     }
 
-    const newPersons = await this.personRepository.create(
-      [...missing].map((name) => ({ ownerId: asset.ownerId, name: name })),
-    );
+    const newPersons: PersonEntity[] = await this.personRepository.create(missing);
     if (!newPersons) {
       this.logger.error(`Something went wrong creating persons`);
     }
 
-    // All persons, initially found matching face names in this asset and newly created ones
-    const persons = [...matches, ...newPersons];
+    // All persons: the initially found matching face names in this asset and newly created ones
+    this.updatePersonMap(personMap, newPersons);
 
     // Loop to build all required faceAssets elements
     for (const face of faceList) {
-      const facePerson = persons.find((fp) => fp.name.toLowerCase() == face.Name);
+      if (!face.Name) {
+        continue;
+      }
+      const facePerson = personMap.get(face.Name.toLowerCase());
       if (facePerson) {
         discoveredFaces.push({
           id: this.cryptoRepository.randomUUID(),
