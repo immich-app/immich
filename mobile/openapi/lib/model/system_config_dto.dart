@@ -30,6 +30,7 @@ class SystemConfigDto {
     required this.storageTemplate,
     required this.theme,
     required this.trash,
+    required this.user,
   });
 
   SystemConfigFFmpegDto ffmpeg;
@@ -58,13 +59,15 @@ class SystemConfigDto {
 
   SystemConfigReverseGeocodingDto reverseGeocoding;
 
-  Object server;
+  SystemConfigServerDto server;
 
   SystemConfigStorageTemplateDto storageTemplate;
 
   SystemConfigThemeDto theme;
 
   SystemConfigTrashDto trash;
+
+  SystemConfigUserDto user;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
@@ -84,7 +87,8 @@ class SystemConfigDto {
     other.server == server &&
     other.storageTemplate == storageTemplate &&
     other.theme == theme &&
-    other.trash == trash;
+    other.trash == trash &&
+    other.user == user;
 
   @override
   int get hashCode =>
@@ -105,10 +109,11 @@ class SystemConfigDto {
     (server.hashCode) +
     (storageTemplate.hashCode) +
     (theme.hashCode) +
-    (trash.hashCode);
+    (trash.hashCode) +
+    (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, importFaces=$importFaces, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, importFaces=$importFaces, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -129,6 +134,7 @@ class SystemConfigDto {
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'theme'] = this.theme;
       json[r'trash'] = this.trash;
+      json[r'user'] = this.user;
     return json;
   }
 
@@ -153,10 +159,11 @@ class SystemConfigDto {
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
-        server: mapValueOfType<Object>(json, r'server')!,
+        server: SystemConfigServerDto.fromJson(json[r'server'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
+        user: SystemConfigUserDto.fromJson(json[r'user'])!,
       );
     }
     return null;
@@ -221,6 +228,7 @@ class SystemConfigDto {
     'storageTemplate',
     'theme',
     'trash',
+    'user',
   };
 }
 

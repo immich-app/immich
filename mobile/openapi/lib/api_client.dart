@@ -514,6 +514,8 @@ class ApiClient {
           return SystemConfigPasswordLoginDto.fromJson(value);
         case 'SystemConfigReverseGeocodingDto':
           return SystemConfigReverseGeocodingDto.fromJson(value);
+        case 'SystemConfigServerDto':
+          return SystemConfigServerDto.fromJson(value);
         case 'SystemConfigSmtpDto':
           return SystemConfigSmtpDto.fromJson(value);
         case 'SystemConfigSmtpTransportDto':
@@ -526,6 +528,8 @@ class ApiClient {
           return SystemConfigThemeDto.fromJson(value);
         case 'SystemConfigTrashDto':
           return SystemConfigTrashDto.fromJson(value);
+        case 'SystemConfigUserDto':
+          return SystemConfigUserDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
