@@ -69,15 +69,18 @@
   };
 
   const handleSearchPlaces = () => {
-    if (searchWord === '') {
-      return;
-    }
-
     if (latestSearchTimeout) {
       clearTimeout(latestSearchTimeout);
     }
     showLoadingSpinner = true;
+
     const searchTimeout = window.setTimeout(() => {
+      if (searchWord === '') {
+        places = [];
+        showLoadingSpinner = false;
+        return;
+      }
+
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening

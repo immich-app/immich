@@ -61,6 +61,7 @@ export class MemoryResponseDto {
   memoryAt!: Date;
   seenAt?: Date;
   ownerId!: string;
+  @ApiProperty({ enumName: 'MemoryType', enum: MemoryType })
   type!: MemoryType;
   data!: MemoryData;
   isSaved!: boolean;

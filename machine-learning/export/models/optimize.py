@@ -5,13 +5,26 @@ import onnxruntime as ort
 import onnxsim
 
 
+def save_onnx(model: onnx.ModelProto, output_path: Path | str) -> None:
+    try:
+        onnx.save(model, output_path)
+    except ValueError as e:
+        if "The proto size is larger than the 2 GB limit." in str(e):
+            onnx.save(model, output_path, save_as_external_data=True, size_threshold=1_000_000)
+        else:
+            raise e
+
+
 def optimize_onnxsim(model_path: Path | str, output_path: Path | str) -> None:
     model_path = Path(model_path)
     output_path = Path(output_path)
     model = onnx.load(model_path.as_posix())
-    model, check = onnxsim.simplify(model, skip_shape_inference=True)
+    model, check = onnxsim.simplify(model)
     assert check, "Simplified ONNX model could not be validated"
-    onnx.save(model, output_path.as_posix())
+    for file in model_path.parent.iterdir():
+        if file.name.startswith("Constant") or "onnx" in file.name or file.suffix == ".weight":
+            file.unlink()
+    save_onnx(model, output_path)
 
 
 def optimize_ort(
@@ -33,6 +46,4 @@ def optimize(model_path: Path | str) -> None:
     model_path = Path(model_path)
 
     optimize_ort(model_path, model_path)
-    # onnxsim serializes large models as a blob, which uses much more memory when loading the model at runtime
-    if not any(file.name.startswith("Constant") for file in model_path.parent.iterdir()):
-        optimize_onnxsim(model_path, model_path)
+    optimize_onnxsim(model_path, model_path)
