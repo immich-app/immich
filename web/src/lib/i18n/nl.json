@@ -988,7 +988,7 @@
   "profile_image_of_user": "Profielfoto van {user}",
   "profile_picture_set": "Profielfoto ingesteld.",
   "public_album": "Openbaar album",
-  "public_share": "Publieke deellink",
+  "public_share": "Openbare deellink",
   "purchase_account_info": "Supporter",
   "purchase_activated_subtitle": "Bedankt voor het ondersteunen van Immich en open-source software",
   "purchase_activated_time": "Geactiveerd op {date, date}",
