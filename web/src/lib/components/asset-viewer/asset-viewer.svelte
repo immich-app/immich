@@ -1,25 +1,21 @@
 <script lang="ts">
+  import { focusTrap } from '$lib/actions/focus-trap';
+  import type { Action, OnAction } from '$lib/components/asset-viewer/actions/action';
+  import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
+  import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
+  import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import { user } from '$lib/stores/user.store';
+  import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
-  import {
-    addAssetsToAlbum,
-    addAssetsToNewAlbum,
-    downloadFile,
-    unstackAssets,
-    toggleArchive,
-  } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { navigate } from '$lib/utils/navigation';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -27,49 +23,37 @@
     ReactionType,
     createActivity,
     deleteActivity,
-    deleteAssets,
     getActivities,
     getActivityStatistics,
     getAllAlbums,
     runAssetJobs,
-    restoreAssets,
-    updateAsset,
-    updateAlbumInfo,
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
   } from '@immich/sdk';
-  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
+  import { mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
-  import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
-  import NavigationArea from './navigation-area.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-  import { navigate } from '$lib/utils/navigation';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { canCopyImagesToClipboard } from 'copy-image-clipboard';
-  import { t } from 'svelte-i18n';
-  import { focusTrap } from '$lib/actions/focus-trap';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
   export let showNavigation = true;
-  $: isTrashEnabled = $featureFlags.trash;
   export let withStacked = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
+  export let onAction: OnAction | undefined = undefined;
 
   let reactions: ActivityResponseDto[] = [];
 
@@ -82,23 +66,16 @@
   } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
-    action: { type: AssetAction; asset: AssetResponseDto };
     close: void;
     next: void;
     previous: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
-  let isShowAlbumPicker = false;
-  let isShowDeleteConfirmation = false;
-  let isShowShareModal = false;
-  let addToSharedAlbum = true;
+  let stackedAssets: AssetResponseDto[] = [];
   let shouldPlayMotionPhoto = false;
-  let isShowProfileImageCrop = false;
   let sharedLink = getSharedLink();
-  let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let enableDetailPanel = asset.hasMetadata;
-  let shouldShowShareModal = !asset.isTrashed;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
@@ -109,23 +86,24 @@
   let unsubscribe: () => void;
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
+
   $: isFullScreen = fullscreenElement !== null;
 
   $: {
     if (asset.stackCount && asset.stack) {
-      $stackAssetsStore = asset.stack;
-      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+      stackedAssets = asset.stack;
+      stackedAssets = [...stackedAssets, asset].sort(
         (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
       );
 
       // if its a stack, add the next stack image in addition to the next asset
       if (asset.stackCount > 1) {
-        preloadAssets.push($stackAssetsStore[1]);
+        preloadAssets.push(stackedAssets[1]);
       }
     }
 
-    if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
-      $stackAssetsStore = [];
+    if (!stackedAssets.map((a) => a.id).includes(asset.id)) {
+      stackedAssets = [];
     }
   }
 
@@ -230,12 +208,12 @@
     }
 
     if (asset.stackCount && asset.stack) {
-      $stackAssetsStore = asset.stack;
-      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+      stackedAssets = asset.stack;
+      stackedAssets = [...stackedAssets, asset].sort(
         (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
       );
     } else {
-      $stackAssetsStore = [];
+      stackedAssets = [];
     }
   });
 
@@ -277,12 +255,8 @@
   };
 
   const closeViewer = async () => {
-    if ($slideshowState === SlideshowState.None) {
-      dispatch('close');
-      await navigate({ targetRoute: 'current', assetId: null });
-    } else {
-      $slideshowState = SlideshowState.StopSlideshow;
-    }
+    dispatch('close');
+    await navigate({ targetRoute: 'current', assetId: null });
   };
 
   const navigateAssetRandom = async () => {
@@ -326,121 +300,6 @@
 
     e?.stopPropagation();
     dispatch(order);
-  };
-
-  const showDetailInfoHandler = () => {
-    if (isShowActivity) {
-      isShowActivity = false;
-    }
-    $isShowDetail = !$isShowDetail;
-  };
-
-  const trashOrDelete = async (force: boolean = false) => {
-    if (force || !isTrashEnabled) {
-      if ($showDeleteModal) {
-        isShowDeleteConfirmation = true;
-        return;
-      }
-      await deleteAsset();
-      return;
-    }
-
-    await trashAsset();
-    return;
-  };
-
-  const trashAsset = async () => {
-    try {
-      await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
-
-      dispatch('action', { type: AssetAction.TRASH, asset });
-
-      notificationController.show({
-        message: $t('moved_to_trash'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_trash_asset'));
-    }
-  };
-
-  const deleteAsset = async () => {
-    try {
-      await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
-
-      dispatch('action', { type: AssetAction.DELETE, asset });
-
-      notificationController.show({
-        message: $t('permanently_deleted_asset'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_asset'));
-    } finally {
-      isShowDeleteConfirmation = false;
-    }
-  };
-
-  const toggleFavorite = async () => {
-    try {
-      const data = await updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          isFavorite: !asset.isFavorite,
-        },
-      });
-
-      asset.isFavorite = data.isFavorite;
-      dispatch('action', { type: data.isFavorite ? AssetAction.FAVORITE : AssetAction.UNFAVORITE, asset: data });
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: asset.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
-    }
-  };
-
-  const openAlbumPicker = (shared: boolean) => {
-    isShowAlbumPicker = true;
-    addToSharedAlbum = shared;
-  };
-
-  const handleAddToNewAlbum = async (albumName: string) => {
-    isShowAlbumPicker = false;
-
-    await addAssetsToNewAlbum(albumName, [asset.id]);
-  };
-
-  const handleAddToAlbum = async (album: AlbumResponseDto) => {
-    isShowAlbumPicker = false;
-
-    await addAssetsToAlbum(album.id, [asset.id]);
-    await handleGetAllAlbums();
-  };
-
-  const handleRestoreAsset = async () => {
-    try {
-      await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
-      asset.isTrashed = false;
-
-      dispatch('action', { type: AssetAction.RESTORE, asset });
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('restored_asset'),
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_restore_assets'));
-    }
-  };
-
-  const toggleAssetArchive = async () => {
-    const updatedAsset = await toggleArchive(asset);
-    if (updatedAsset) {
-      dispatch('action', { type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: asset });
-    }
   };
 
   const handleRunJob = async (name: AssetJobName) => {
@@ -498,58 +357,20 @@
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
-  const handleUnstack = async () => {
-    const unstackedAssets = await unstackAssets($stackAssetsStore);
-    if (unstackedAssets) {
-      for (const asset of unstackedAssets) {
-        dispatch('action', {
-          type: AssetAction.ADD,
-          asset,
-        });
+  const handleAction = async (action: Action) => {
+    switch (action.type) {
+      case AssetAction.ADD_TO_ALBUM: {
+        await handleGetAllAlbums();
+        break;
       }
-      await closeViewer();
+      case AssetAction.UNSTACK: {
+        await closeViewer();
+      }
     }
-  };
 
-  const handleUpdateThumbnail = async () => {
-    if (!album) {
-      return;
-    }
-    try {
-      await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          albumThumbnailAssetId: asset.id,
-        },
-      });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('album_cover_updated'),
-        timeout: 1500,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_album_cover'));
-    }
+    onAction?.(action);
   };
-
-  $: if (!$user) {
-    shouldShowShareModal = false;
-  }
 </script>
-
-<svelte:window
-  use:shortcuts={[
-    { shortcut: { key: 'a', shift: true }, onShortcut: toggleAssetArchive },
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: () => navigateAsset('previous') },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: () => navigateAsset('next') },
-    { shortcut: { key: 'd', shift: true }, onShortcut: () => downloadFile(asset) },
-    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
-    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-    { shortcut: { key: 'Escape' }, onShortcut: closeViewer },
-    { shortcut: { key: 'f' }, onShortcut: toggleFavorite },
-    { shortcut: { key: 'i' }, onShortcut: toggleDetailPanel },
-  ]}
-/>
 
 <svelte:document bind:fullscreenElement />
 
@@ -564,44 +385,30 @@
       <AssetViewerNavBar
         {asset}
         {album}
-        isMotionPhotoPlaying={shouldPlayMotionPhoto}
-        showCopyButton={canCopyImagesToClipboard() && asset.type === AssetTypeEnum.Image}
-        showZoomButton={asset.type === AssetTypeEnum.Image}
-        showMotionPlayButton={!!asset.livePhotoVideoId}
-        showDownloadButton={shouldShowDownloadButton}
+        {stackedAssets}
         showDetailButton={enableDetailPanel}
         showSlideshow={!!assetStore}
-        hasStackChildren={$stackAssetsStore.length > 0}
-        showShareButton={shouldShowShareModal}
+        hasStackChildren={stackedAssets.length > 0}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
-        on:back={closeViewer}
-        on:showDetail={showDetailInfoHandler}
-        on:download={() => downloadFile(asset)}
-        on:delete={() => trashOrDelete()}
-        on:permanentlyDelete={() => trashOrDelete(true)}
-        on:favorite={toggleFavorite}
-        on:addToAlbum={() => openAlbumPicker(false)}
-        on:restoreAsset={() => handleRestoreAsset()}
-        on:addToSharedAlbum={() => openAlbumPicker(true)}
-        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-        on:toggleArchive={toggleAssetArchive}
-        on:asProfileImage={() => (isShowProfileImageCrop = true)}
-        on:setAsAlbumCover={handleUpdateThumbnail}
-        on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-        on:unstack={handleUnstack}
-        on:showShareModal={() => (isShowShareModal = true)}
-      />
+        onAction={handleAction}
+        onRunJob={handleRunJob}
+        onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
+        onShowDetail={toggleDetailPanel}
+        onClose={closeViewer}
+      >
+        <MotionPhotoAction
+          slot="motion-photo"
+          isPlaying={shouldPlayMotionPhoto}
+          onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
+        />
+      </AssetViewerNavBar>
     </div>
   {/if}
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
-      <NavigationArea onClick={(e) => navigateAsset('previous', e)} label={$t('view_previous_asset')}>
-        <Icon path={mdiChevronLeft} size="36" ariaHidden />
-      </NavigationArea>
+      <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
   {/if}
 
@@ -698,9 +505,7 @@
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
     <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
-      <NavigationArea onClick={(e) => navigateAsset('next', e)} label={$t('view_next_asset')}>
-        <Icon path={mdiChevronRight} size="36" ariaHidden />
-      </NavigationArea>
+      <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
@@ -715,13 +520,13 @@
     </div>
   {/if}
 
-  {#if $stackAssetsStore.length > 0 && withStacked}
+  {#if stackedAssets.length > 0 && withStacked}
     <div
       id="stack-slideshow"
       class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
     >
       <div class="relative w-full whitespace-nowrap transition-all">
-        {#each $stackAssetsStore as stackedAsset, index (stackedAsset.id)}
+        {#each stackedAssets as stackedAsset, index (stackedAsset.id)}
           <div
             class="{stackedAsset.id == asset.id
               ? '-translate-y-[1px]'
@@ -735,7 +540,7 @@
               onClick={(stackedAsset, event) => {
                 event.preventDefault();
                 asset = stackedAsset;
-                preloadAssets = index + 1 >= $stackAssetsStore.length ? [] : [$stackAssetsStore[index + 1]];
+                preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
               on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
               readonly
@@ -776,27 +581,6 @@
         on:close={() => (isShowActivity = false)}
       />
     </div>
-  {/if}
-
-  {#if isShowAlbumPicker}
-    <AlbumSelectionModal
-      shared={addToSharedAlbum}
-      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-      on:album={({ detail }) => handleAddToAlbum(detail)}
-      onClose={() => (isShowAlbumPicker = false)}
-    />
-  {/if}
-
-  {#if isShowDeleteConfirmation}
-    <DeleteAssetDialog size={1} on:cancel={() => (isShowDeleteConfirmation = false)} on:confirm={() => deleteAsset()} />
-  {/if}
-
-  {#if isShowProfileImageCrop}
-    <ProfileImageCropper {asset} onClose={() => (isShowProfileImageCrop = false)} />
-  {/if}
-
-  {#if isShowShareModal}
-    <CreateSharedLinkModal assetIds={[asset.id]} onClose={() => (isShowShareModal = false)} />
   {/if}
 </section>
 

@@ -62,6 +62,7 @@ export class SearchController {
   @Get('suggestions')
   @Authenticated()
   getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
-    return this.service.getSearchSuggestions(auth, dto);
+    // TODO fix open api generation to indicate that results can be nullable
+    return this.service.getSearchSuggestions(auth, dto) as Promise<string[]>;
   }
 }

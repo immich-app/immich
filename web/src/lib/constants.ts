@@ -7,6 +7,8 @@ export enum AssetAction {
   DELETE = 'delete',
   RESTORE = 'restore',
   ADD = 'add',
+  ADD_TO_ALBUM = 'add-to-album',
+  UNSTACK = 'unstack',
 }
 
 export enum AppRoute {

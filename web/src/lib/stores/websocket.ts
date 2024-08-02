@@ -26,7 +26,7 @@ export interface Events {
   on_new_release: (newRelase: ReleaseEvent) => void;
 }
 
-const websocket: Socket<Events> = io('', {
+const websocket: Socket<Events> = io({
   path: '/api/socket.io',
   transports: ['websocket'],
   reconnection: true,

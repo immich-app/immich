@@ -1,5 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -7,8 +9,10 @@
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
+  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { navigate } from '$lib/utils/navigation';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -18,17 +22,18 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import { archiveAssets, stackAssets } from '$lib/utils/asset-utils';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-  import { handlePromiseError } from '$lib/utils';
-  import { selectAllAssets } from '$lib/utils/asset-utils';
-  import { navigate } from '$lib/utils/navigation';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
-  export let removeAction: AssetAction | null = null;
+  export let removeAction:
+    | AssetAction.UNARCHIVE
+    | AssetAction.ARCHIVE
+    | AssetAction.FAVORITE
+    | AssetAction.UNFAVORITE
+    | null = null;
   export let withStacked = false;
   export let showArchiveIcon = false;
   export let isShared = false;
@@ -193,8 +198,8 @@
 
   const handleClose = () => assetViewingStore.showAssetViewer(false);
 
-  const handleAction = async (action: AssetAction, asset: AssetResponseDto) => {
-    switch (action) {
+  const handleAction = async (action: Action) => {
+    switch (action.type) {
       case removeAction:
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
@@ -203,7 +208,7 @@
         (await handleNext()) || (await handlePrevious()) || handleClose();
 
         // delete after find the next one
-        assetStore.removeAssets([asset.id]);
+        assetStore.removeAssets([action.asset.id]);
         break;
       }
 
@@ -211,13 +216,17 @@
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
       case AssetAction.UNFAVORITE: {
-        assetStore.updateAssets([asset]);
+        assetStore.updateAssets([action.asset]);
         break;
       }
 
       case AssetAction.ADD: {
-        assetStore.addAssets([asset]);
+        assetStore.addAssets([action.asset]);
         break;
+      }
+
+      case AssetAction.UNSTACK: {
+        assetStore.addAssets(action.assets);
       }
     }
   };
@@ -501,10 +510,10 @@
         preloadAssets={$preloadAssets}
         {isShared}
         {album}
+        onAction={handleAction}
         on:previous={handlePrevious}
         on:next={handleNext}
         on:close={handleClose}
-        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
       />
     {/await}
   {/if}

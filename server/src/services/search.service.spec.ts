@@ -1,4 +1,5 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
+import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
@@ -93,6 +94,24 @@ describe(SearchService.name, () => {
       const result = await sut.getExploreData(authStub.user1);
 
       expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  describe('getSearchSuggestions', () => {
+    it('should return search suggestions (including null)', async () => {
+      metadataMock.getCountries.mockResolvedValue(['USA', null]);
+      await expect(
+        sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.COUNTRY }),
+      ).resolves.toEqual(['USA', null]);
+      expect(metadataMock.getCountries).toHaveBeenCalledWith(authStub.user1.user.id);
+    });
+
+    it('should return search suggestions (without null)', async () => {
+      metadataMock.getCountries.mockResolvedValue(['USA', null]);
+      await expect(
+        sut.getSearchSuggestions(authStub.user1, { includeNull: false, type: SearchSuggestionType.COUNTRY }),
+      ).resolves.toEqual(['USA']);
+      expect(metadataMock.getCountries).toHaveBeenCalledWith(authStub.user1.user.id);
     });
   });
 });
