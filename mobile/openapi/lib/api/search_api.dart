@@ -111,15 +111,12 @@ class SearchApi {
   ///
   /// * [String] country:
   ///
-  /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
-  ///
   /// * [String] make:
   ///
   /// * [String] model:
   ///
   /// * [String] state:
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? make, String? model, String? state, }) async {
+  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search/suggestions';
 
@@ -132,9 +129,6 @@ class SearchApi {
 
     if (country != null) {
       queryParams.addAll(_queryParams('', 'country', country));
-    }
-    if (includeNull != null) {
-      queryParams.addAll(_queryParams('', 'includeNull', includeNull));
     }
     if (make != null) {
       queryParams.addAll(_queryParams('', 'make', make));
@@ -167,16 +161,13 @@ class SearchApi {
   ///
   /// * [String] country:
   ///
-  /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
-  ///
   /// * [String] make:
   ///
   /// * [String] model:
   ///
   /// * [String] state:
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? make, String? model, String? state, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, make: make, model: model, state: state, );
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, make: make, model: model, state: state, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
