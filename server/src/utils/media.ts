@@ -167,7 +167,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       return [
         `-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-bufsize ${bitrates.max * 2}${bitrates.unit}`,
+        `-bufsize ${bitrates.max * 4}${bitrates.unit}`,
       ];
     } else {
       return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`];
@@ -255,7 +255,7 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   getBitrateUnit() {
     const maxBitrate = this.getMaxBitrateValue();
-    return this.config.maxBitrate.trim().slice(maxBitrate.toString().length); // use inputted unit if provided
+    return this.config.maxBitrate.trim().slice(maxBitrate.toString().length) || 'k'; // use inputted unit if provided
   }
 
   getMaxBitrateValue() {
@@ -575,14 +575,14 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
       return [
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-bufsize ${bitrates.target}${bitrates.unit}`,
+        `-bufsize ${bitrates.max * 4}${bitrates.unit}`,
         '-multipass 2',
       ];
     } else if (bitrates.max > 0) {
       return [
         `-cq:v ${this.config.crf}`,
         `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-bufsize ${bitrates.target}${bitrates.unit}`,
+        `-bufsize ${bitrates.max * 4}${bitrates.unit}`,
       ];
     } else {
       return [`-cq:v ${this.config.crf}`];
@@ -689,13 +689,16 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
   }
 
   getBitrateOptions() {
-    const options = [];
-    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality:v'} ${this.config.crf}`);
-    const bitrates = this.getBitrateDistribution();
-    if (bitrates.max > 0) {
-      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
-    }
-    return options;
+    const { max, min, unit, target } = this.getBitrateDistribution();
+    return max > 0
+      ? [
+          `-b:v ${target}${unit}`,
+          `-maxrate ${max}${unit}`,
+          `-minrate ${min}${unit}`,
+          `-bufsize ${max * 4}${unit}`,
+          '-rc_mode 3',
+        ] // QVBR is buggy, so use VBR instead
+      : [`-${this.useCQP() ? 'q:v' : 'global_quality:v'} ${this.config.crf}`];
   }
 
   getSupportedCodecs() {
@@ -823,7 +826,7 @@ export class VAAPIConfig extends BaseHWConfig {
   }
 
   getBitrateOptions() {
-    const bitrates = this.getBitrateDistribution();
+    const { max, min, unit, target } = this.getBitrateDistribution();
     const options = [];
 
     if (this.config.targetVideoCodec === VideoCodec.VP9) {
@@ -831,11 +834,12 @@ export class VAAPIConfig extends BaseHWConfig {
     }
 
     // VAAPI doesn't allow setting both quality and max bitrate
-    if (bitrates.max > 0) {
+    if (max > 0) {
       options.push(
-        `-b:v ${bitrates.target}${bitrates.unit}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-minrate ${bitrates.min}${bitrates.unit}`,
+        `-b:v ${target}${unit}`,
+        `-maxrate ${max}${unit}`,
+        `-minrate ${min}${unit}`,
+        `-bufsize ${max * 4}${unit}`,
         '-rc_mode 3',
       ); // variable bitrate
     } else if (this.useCQP()) {
