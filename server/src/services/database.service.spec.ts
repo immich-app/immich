@@ -38,6 +38,10 @@ describe(DatabaseService.name, () => {
     delete process.env.DB_VECTOR_EXTENSION;
   });
 
+  it('should work', () => {
+    expect(sut).toBeDefined();
+  });
+
   it('should throw an error if PostgreSQL version is below minimum supported version', async () => {
     databaseMock.getPostgresVersion.mockResolvedValueOnce('13.10.0');
 
@@ -52,10 +56,6 @@ describe(DatabaseService.name, () => {
   ])('should work with $extensionName', ({ extension, extensionName }) => {
     beforeEach(() => {
       process.env.DB_VECTOR_EXTENSION = extensionName;
-    });
-
-    it('should work', () => {
-      expect(sut).toBeDefined();
     });
 
     it(`should start up successfully with ${extension}`, async () => {
