@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
 import 'package:isar/isar.dart';
@@ -42,8 +43,8 @@ class ThumbnailImage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetContainerColor = context.isDarkTheme
-        ? Colors.blueGrey
-        : context.themeData.primaryColorLight;
+        ? context.primaryColor.darken(amount: 0.5)
+        : context.primaryColor.lighten(amount: 0.5);
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = asset.id == Isar.autoIncrement;
 
@@ -192,8 +193,8 @@ class ThumbnailImage extends ConsumerWidget {
             bottom: 5,
             child: Icon(
               storageIcon(asset),
-              color: Colors.white,
-              size: 18,
+              color: Colors.white.withOpacity(.8),
+              size: 16,
             ),
           ),
         if (asset.isFavorite)

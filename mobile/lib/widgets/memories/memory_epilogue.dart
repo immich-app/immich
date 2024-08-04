@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class MemoryEpilogue extends StatefulWidget {
@@ -49,24 +48,26 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.check_circle_outline_sharp,
-                  color: immichDarkThemePrimaryColor,
+                  color: context.isDarkTheme
+                      ? context.colorScheme.primary
+                      : context.colorScheme.inversePrimary,
                   size: 64.0,
                 ),
                 const SizedBox(height: 16.0),
                 Text(
                   "memories_all_caught_up",
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                      ),
+                  style: context.textTheme.headlineMedium?.copyWith(
+                    color: Colors.white,
+                  ),
                 ).tr(),
                 const SizedBox(height: 16.0),
                 Text(
                   "memories_check_back_tomorrow",
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white,
-                      ),
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                  ),
                 ).tr(),
                 const SizedBox(height: 16.0),
                 TextButton(
@@ -74,7 +75,9 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                   child: Text(
                     "memories_start_over",
                     style: context.textTheme.displayMedium?.copyWith(
-                      color: immichDarkThemePrimaryColor,
+                      color: context.isDarkTheme
+                          ? context.colorScheme.primary
+                          : context.colorScheme.inversePrimary,
                     ),
                   ).tr(),
                 ),
@@ -108,9 +111,9 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                   ),
                   Text(
                     "memories_swipe_to_close",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
-                        ),
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                    ),
                   ).tr(),
                 ],
               ),
