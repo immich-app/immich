@@ -28,6 +28,11 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   vectors: 'pgvecto.rs',
 } as const;
 
+export interface ExtensionVersion {
+  availableVersion: string | null;
+  installedVersion: string | null;
+}
+
 export interface VectorUpdateResult {
   restartRequired: boolean;
 }
@@ -35,8 +40,7 @@ export interface VectorUpdateResult {
 export const IDatabaseRepository = 'IDatabaseRepository';
 
 export interface IDatabaseRepository {
-  getExtensionVersion(extensionName: string): Promise<string | undefined>;
-  getAvailableExtensionVersion(extension: DatabaseExtension): Promise<string | undefined>;
+  getExtensionVersion(extensionName: string): Promise<ExtensionVersion>;
   getPostgresVersion(): Promise<string>;
   createExtension(extension: DatabaseExtension): Promise<void>;
   updateExtension(extension: DatabaseExtension, version?: string): Promise<void>;
