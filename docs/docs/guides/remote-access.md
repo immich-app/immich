@@ -11,13 +11,13 @@ Never forward port 2283 directly to the internet without additional configuratio
 
 You may use a VPN service to open an encrypted connection to your Immich instance. OpenVPN and Wireguard are two popular VPN solutions. Here is a guide on setting up VPN access to your server - [Pihole documentation](https://docs.pi-hole.net/guides/vpn/wireguard/overview/)
 
-### Pros:
+### Pros
 
 - Simple to set up and very secure.
 - Single point of potential failure, i.e., the VPN software itself. Even if there is a zero-day vulnerability on Immich, you will not be at risk.
 - Both Wireguard and OpenVPN are independently security-audited, so the risk of serious zero-day exploits are minimal.
 
-### Cons:
+### Cons
 
 - If you don't have a static IP address, you would need to set up a [Dynamic DNS](https://www.cloudflare.com/learning/dns/glossary/dynamic-dns/). [DuckDNS](https://www.duckdns.org/) is a free DDNS provider.
 - VPN software needs to be installed and active on both server-side and client-side.
@@ -26,6 +26,10 @@ You may use a VPN service to open an encrypted connection to your Immich instanc
 ## Option 2: Tailscale
 
 If you are unable to open a port on your router for Wireguard or OpenVPN to your server, [Tailscale](https://tailscale.com/) is a good option. Tailscale mediates a peer-to-peer wireguard tunnel between your server and remote device, even if one or both of them are behind a [NAT firewall](https://en.wikipedia.org/wiki/Network_address_translation).
+
+:::tip Video toturial
+You can learn how to set up Tailscale together with Immich with the [tutorial video](https://www.youtube.com/watch?v=Vt4PDUXB_fg) they created.
+:::
 
 ### Pros
 
@@ -57,3 +61,4 @@ A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn
 
 - Complex configuration
 - Depending on your configuration, both the Immich web interface and API may be exposed to the internet. Immich is under very active development and the existence of severe security vulnerabilities cannot be ruled out.
+- Reverse proxy [can weaken the privacy](https://www.youtube.com/results?search_query=cloudflare+privacy) of your information.
