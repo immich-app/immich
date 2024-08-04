@@ -1,5 +1,3 @@
-import semver from 'semver';
-import { VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DatabaseExtension, EXTENSION_NAMES, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
@@ -11,11 +9,42 @@ describe(DatabaseService.name, () => {
   let sut: DatabaseService;
   let databaseMock: Mocked<IDatabaseRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
-  let versionRange: string;
+  let extensionRange: string;
   let versionBelowRange: string;
   let minVersionInRange: string;
-  let patchUpgradeInRange: string;
+  let updateInRange: string;
   let versionAboveRange: string;
+
+  beforeEach(() => {
+    databaseMock = newDatabaseRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
+    sut = new DatabaseService(databaseMock, loggerMock);
+
+    extensionRange = '0.2.x';
+    databaseMock.getExtensionVersionRange.mockReturnValue(extensionRange);
+
+    versionBelowRange = '0.1.0';
+    minVersionInRange = '0.2.0';
+    updateInRange = '0.2.1';
+    versionAboveRange = '0.3.0';
+    databaseMock.getExtensionVersion.mockResolvedValue({
+      installedVersion: minVersionInRange,
+      availableVersion: minVersionInRange,
+    });
+  });
+
+  afterEach(() => {
+    delete process.env.DB_SKIP_MIGRATIONS;
+    delete process.env.DB_VECTOR_EXTENSION;
+  });
+
+  it('should throw an error if PostgreSQL version is below minimum supported version', async () => {
+    databaseMock.getPostgresVersion.mockResolvedValueOnce('13.10.0');
+
+    await expect(sut.onBootstrapEvent()).rejects.toThrow('Invalid PostgreSQL version. Found 13.10.0');
+
+    expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
+  });
 
   describe.each([
     { extension: DatabaseExtension.VECTOR, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTOR] },
@@ -23,31 +52,6 @@ describe(DatabaseService.name, () => {
   ])('should work with $extensionName', ({ extension, extensionName }) => {
     beforeEach(() => {
       process.env.DB_VECTOR_EXTENSION = extensionName;
-      databaseMock = newDatabaseRepositoryMock();
-      loggerMock = newLoggerRepositoryMock();
-      sut = new DatabaseService(databaseMock, loggerMock);
-
-      let minVersion;
-      if (extension === DatabaseExtension.VECTOR) {
-        minVersion = semver.minVersion(VECTOR_VERSION_RANGE)!;
-        versionRange = VECTOR_VERSION_RANGE;
-      } else {
-        minVersion = semver.minVersion(VECTORS_VERSION_RANGE)!;
-        versionRange = VECTORS_VERSION_RANGE;
-      }
-      versionBelowRange = `${minVersion.major}.${minVersion.minor - 1}.${minVersion.patch}`;
-      minVersionInRange = minVersion.version;
-      patchUpgradeInRange = minVersion.inc('patch')!.version;
-      versionAboveRange = minVersion.inc('major')!.version;
-      databaseMock.getExtensionVersion.mockResolvedValue({
-        installedVersion: minVersionInRange,
-        availableVersion: minVersionInRange,
-      });
-    });
-
-    afterEach(() => {
-      delete process.env.DB_SKIP_MIGRATIONS;
-      delete process.env.DB_VECTOR_EXTENSION;
     });
 
     it('should work', () => {
@@ -88,7 +92,7 @@ describe(DatabaseService.name, () => {
       });
 
       await expect(sut.onBootstrapEvent()).rejects.toThrow(
-        `The ${extensionName} extension version is ${versionBelowRange}, but Immich only supports ${versionRange}`,
+        `The ${extensionName} extension version is ${versionBelowRange}, but Immich only supports ${extensionRange}`,
       );
 
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
@@ -106,36 +110,16 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
 
-    it(`should throw error if ${extension} extension could not be created`, async () => {
-      databaseMock.getExtensionVersion.mockResolvedValue({
-        installedVersion: null,
-        availableVersion: minVersionInRange,
-      });
-      databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: false });
-      databaseMock.createExtension.mockRejectedValue(new Error('Failed to create extension'));
-
-      await expect(sut.onBootstrapEvent()).rejects.toThrow('Failed to create extension');
-
-      const other = extension === DatabaseExtension.VECTOR ? DatabaseExtension.VECTORS : DatabaseExtension.VECTOR;
-      expect(loggerMock.fatal).toHaveBeenCalledTimes(1);
-      expect(loggerMock.fatal.mock.calls[0][0]).toContain(
-        `Alternatively, if your Postgres instance has ${EXTENSION_NAMES[other]}, you may use this instead`,
-      );
-      expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
-      expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
-      expect(databaseMock.runMigrations).not.toHaveBeenCalled();
-    });
-
     it(`should do in-range update for ${extension} extension`, async () => {
       databaseMock.getExtensionVersion.mockResolvedValue({
-        availableVersion: patchUpgradeInRange,
+        availableVersion: updateInRange,
         installedVersion: minVersionInRange,
       });
       databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: false });
 
       await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
 
-      expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(extension, patchUpgradeInRange);
+      expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(extension, updateInRange);
       expect(databaseMock.updateVectorExtension).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalled();
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
@@ -186,11 +170,11 @@ describe(DatabaseService.name, () => {
     it('should throw error if available version is below installed version', async () => {
       databaseMock.getExtensionVersion.mockResolvedValue({
         availableVersion: minVersionInRange,
-        installedVersion: patchUpgradeInRange,
+        installedVersion: updateInRange,
       });
 
       await expect(sut.onBootstrapEvent()).rejects.toThrow(
-        `The database currently has ${extensionName} ${patchUpgradeInRange} activated, but the Postgres instance only has ${minVersionInRange} available.`,
+        `The database currently has ${extensionName} ${updateInRange} activated, but the Postgres instance only has ${minVersionInRange} available.`,
       );
 
       expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
@@ -200,7 +184,7 @@ describe(DatabaseService.name, () => {
 
     it(`should raise error if ${extension} extension upgrade failed`, async () => {
       databaseMock.getExtensionVersion.mockResolvedValue({
-        availableVersion: patchUpgradeInRange,
+        availableVersion: updateInRange,
         installedVersion: minVersionInRange,
       });
       databaseMock.updateVectorExtension.mockRejectedValue(new Error('Failed to update extension'));
@@ -208,16 +192,16 @@ describe(DatabaseService.name, () => {
       await expect(sut.onBootstrapEvent()).rejects.toThrow('Failed to update extension');
 
       expect(loggerMock.warn.mock.calls[0][0]).toContain(
-        `The ${extensionName} extension can be updated to ${patchUpgradeInRange}.`,
+        `The ${extensionName} extension can be updated to ${updateInRange}.`,
       );
       expect(loggerMock.fatal).not.toHaveBeenCalled();
-      expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(extension, patchUpgradeInRange);
+      expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(extension, updateInRange);
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
 
     it(`should warn if ${extension} extension update requires restart`, async () => {
       databaseMock.getExtensionVersion.mockResolvedValue({
-        availableVersion: patchUpgradeInRange,
+        availableVersion: updateInRange,
         installedVersion: minVersionInRange,
       });
       databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: true });
@@ -226,7 +210,7 @@ describe(DatabaseService.name, () => {
 
       expect(loggerMock.warn).toHaveBeenCalledTimes(1);
       expect(loggerMock.warn.mock.calls[0][0]).toContain(extensionName);
-      expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(extension, patchUpgradeInRange);
+      expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(extension, updateInRange);
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
       expect(loggerMock.fatal).not.toHaveBeenCalled();
     });
@@ -260,5 +244,44 @@ describe(DatabaseService.name, () => {
 
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
+  });
+
+  it(`should throw error if pgvector extension could not be created`, async () => {
+    process.env.DB_VECTOR_EXTENSION = 'pgvector';
+    databaseMock.getExtensionVersion.mockResolvedValue({
+      installedVersion: null,
+      availableVersion: minVersionInRange,
+    });
+    databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: false });
+    databaseMock.createExtension.mockRejectedValue(new Error('Failed to create extension'));
+
+    await expect(sut.onBootstrapEvent()).rejects.toThrow('Failed to create extension');
+
+    expect(loggerMock.fatal).toHaveBeenCalledTimes(1);
+    expect(loggerMock.fatal.mock.calls[0][0]).toContain(
+      `Alternatively, if your Postgres instance has pgvecto.rs, you may use this instead`,
+    );
+    expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
+    expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
+    expect(databaseMock.runMigrations).not.toHaveBeenCalled();
+  });
+
+  it(`should throw error if pgvecto.rs extension could not be created`, async () => {
+    databaseMock.getExtensionVersion.mockResolvedValue({
+      installedVersion: null,
+      availableVersion: minVersionInRange,
+    });
+    databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: false });
+    databaseMock.createExtension.mockRejectedValue(new Error('Failed to create extension'));
+
+    await expect(sut.onBootstrapEvent()).rejects.toThrow('Failed to create extension');
+
+    expect(loggerMock.fatal).toHaveBeenCalledTimes(1);
+    expect(loggerMock.fatal.mock.calls[0][0]).toContain(
+      `Alternatively, if your Postgres instance has pgvector, you may use this instead`,
+    );
+    expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
+    expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
+    expect(databaseMock.runMigrations).not.toHaveBeenCalled();
   });
 });

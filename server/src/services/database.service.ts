@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import semver from 'semver';
-import { POSTGRES_VERSION_RANGE, VECTORS_VERSION_RANGE, VECTOR_VERSION_RANGE } from 'src/constants';
 import { getVectorExtension } from 'src/database.config';
 import { EventHandlerOptions } from 'src/decorators';
 import {
@@ -20,11 +19,6 @@ type RestartRequiredArgs = { name: string; availableVersion: string };
 type NightlyVersionArgs = { name: string; extension: string; version: string };
 type OutOfRangeArgs = { name: string; extension: string; version: string; range: string };
 type InvalidDowngradeArgs = { name: string; extension: string; installedVersion: string; availableVersion: string };
-
-const EXTENSION_RANGES = {
-  [DatabaseExtension.VECTOR]: VECTOR_VERSION_RANGE,
-  [DatabaseExtension.VECTORS]: VECTORS_VERSION_RANGE,
-};
 
 const messages = {
   notInstalled: (name: string) =>
@@ -79,16 +73,17 @@ export class DatabaseService implements OnEvents {
   async onBootstrapEvent() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);
-    if (!current || !semver.satisfies(current, POSTGRES_VERSION_RANGE)) {
+    const postgresRange = this.databaseRepository.getPostgresVersionRange();
+    if (!current || !semver.satisfies(current, postgresRange)) {
       throw new Error(
-        `Invalid PostgreSQL version. Found ${version}, but needed ${POSTGRES_VERSION_RANGE}. Please use a supported version.`,
+        `Invalid PostgreSQL version. Found ${version}, but needed ${postgresRange}. Please use a supported version.`,
       );
     }
 
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
       const extension = getVectorExtension();
       const name = EXTENSION_NAMES[extension];
-      const extensionRange = EXTENSION_RANGES[extension];
+      const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
       const { availableVersion, installedVersion } = await this.databaseRepository.getExtensionVersion(extension);
       if (!availableVersion) {

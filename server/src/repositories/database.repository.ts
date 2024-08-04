@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import semver from 'semver';
+import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { getVectorExtension } from 'src/database.config';
 import {
   DatabaseExtension,
@@ -40,9 +41,17 @@ export class DatabaseRepository implements IDatabaseRepository {
     return res ?? { availableVersion: null, installedVersion: null };
   }
 
+  getExtensionVersionRange(extension: VectorExtension): string {
+    return extension === DatabaseExtension.VECTORS ? VECTORS_VERSION_RANGE : VECTOR_VERSION_RANGE;
+  }
+
   async getPostgresVersion(): Promise<string> {
     const [{ server_version: version }] = await this.dataSource.query(`SHOW server_version`);
     return version;
+  }
+
+  getPostgresVersionRange(): string {
+    return POSTGRES_VERSION_RANGE;
   }
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
