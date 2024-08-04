@@ -13,13 +13,13 @@ import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
+import { ExifOrientation, IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { MetadataService, Orientation } from 'src/services/metadata.service';
+import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -356,7 +356,7 @@ describe(MetadataService.name, () => {
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({ orientation: Orientation.Rotate270CW }),
+        expect.objectContaining({ orientation: ExifOrientation.Rotate270CW }),
       );
     });
 

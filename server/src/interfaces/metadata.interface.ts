@@ -7,6 +7,17 @@ export interface ExifDuration {
   Scale?: number;
 }
 
+export enum ExifOrientation {
+  Horizontal = '1',
+  MirrorHorizontal = '2',
+  Rotate180 = '3',
+  MirrorVertical = '4',
+  MirrorHorizontalRotate270CW = '5',
+  Rotate90CW = '6',
+  MirrorHorizontalRotate90CW = '7',
+  Rotate270CW = '8',
+}
+
 export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;

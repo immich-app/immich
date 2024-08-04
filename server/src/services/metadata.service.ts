@@ -28,7 +28,7 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
+import { ExifOrientation, IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -47,17 +47,6 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'MediaCreateDate',
   'DateTimeCreated',
 ];
-
-export enum Orientation {
-  Horizontal = '1',
-  MirrorHorizontal = '2',
-  Rotate180 = '3',
-  MirrorVertical = '4',
-  MirrorHorizontalRotate270CW = '5',
-  Rotate90CW = '6',
-  MirrorHorizontalRotate90CW = '7',
-  Rotate270CW = '8',
-}
 
 type ExifEntityWithoutGeocodeAndTypeOrm = Omit<ExifEntity, 'city' | 'state' | 'country' | 'description'> & {
   dateTimeOriginal: Date;
@@ -554,19 +543,19 @@ export class MetadataService implements OnEvents {
     if (videoStreams[0]) {
       switch (videoStreams[0].rotation) {
         case -90: {
-          exifData.orientation = Orientation.Rotate90CW;
+          exifData.orientation = ExifOrientation.Rotate90CW;
           break;
         }
         case 0: {
-          exifData.orientation = Orientation.Horizontal;
+          exifData.orientation = ExifOrientation.Horizontal;
           break;
         }
         case 90: {
-          exifData.orientation = Orientation.Rotate270CW;
+          exifData.orientation = ExifOrientation.Rotate270CW;
           break;
         }
         case 180: {
-          exifData.orientation = Orientation.Rotate180;
+          exifData.orientation = ExifOrientation.Rotate180;
           break;
         }
       }

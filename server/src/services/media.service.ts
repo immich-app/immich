@@ -29,6 +29,7 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AudioStreamInfo, IMediaRepository, VideoFormat, VideoStreamInfo } from 'src/interfaces/media.interface';
+import { ExifOrientation } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -212,25 +213,30 @@ export class MediaService {
 
           if (asset.exifInfo?.orientation) {
             switch (asset.exifInfo.orientation) {
-              case '1':
-              case '2':
+              case ExifOrientation.Horizontal:
+              case ExifOrientation.MirrorHorizontal:
                 imageOptions.angle = 0;
                 break;
-              case '3':
-              case '4':
+              case ExifOrientation.Rotate180:
+              case ExifOrientation.MirrorVertical:
                 imageOptions.angle = 180;
                 break;
-              case '6':
-              case '7':
+              case ExifOrientation.Rotate90CW:
+              case ExifOrientation.MirrorHorizontalRotate90CW:
                 imageOptions.angle = 90;
                 break;
-              case '5':
-              case '8':
+              case ExifOrientation.MirrorHorizontalRotate270CW:
+              case ExifOrientation.Rotate270CW:
                 imageOptions.angle = 270;
                 break;
             }
 
-            if (['2', '4', '5', '7'].includes(asset.exifInfo.orientation)) {
+            if ([
+              ExifOrientation.MirrorHorizontal,
+              ExifOrientation.MirrorVertical,
+              ExifOrientation.MirrorHorizontalRotate90CW,
+              ExifOrientation.MirrorHorizontalRotate270CW,
+            ].includes(asset.exifInfo.orientation as ExifOrientation)) {
               imageOptions.mirror = true;
             }
           }
