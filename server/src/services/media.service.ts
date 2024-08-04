@@ -206,7 +206,34 @@ export class MediaService {
             colorspace,
             quality: image.quality,
             processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+            angle: 0,
+            mirror: false
           };
+
+          if (asset.exifInfo?.orientation) {
+            switch (asset.exifInfo.orientation) {
+              case '1':
+              case '2':
+                imageOptions.angle = 0;
+                break;
+              case '3':
+              case '4':
+                imageOptions.angle = 180;
+                break;
+              case '6':
+              case '7':
+                imageOptions.angle = 90;
+                break;
+              case '5':
+              case '8':
+                imageOptions.angle = 270;
+                break;
+            }
+
+            if (['2', '4', '5', '7'].includes(asset.exifInfo.orientation)) {
+              imageOptions.mirror = true;
+            }
+          }
 
           const outputPath = useExtracted ? extractedPath : asset.originalPath;
           await this.mediaRepository.generateThumbnail(outputPath, path, imageOptions);

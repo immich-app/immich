@@ -16,6 +16,8 @@ export interface ThumbnailOptions {
   colorspace: string;
   quality: number;
   crop?: CropOptions;
+  angle?: number;
+  mirror?: boolean;
   processInvalidImages: boolean;
 }
 
