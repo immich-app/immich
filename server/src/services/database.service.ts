@@ -19,6 +19,7 @@ type UpdateFailedArgs = { name: string; extension: string; availableVersion: str
 type RestartRequiredArgs = { name: string; availableVersion: string };
 type NightlyVersionArgs = { name: string; extension: string; version: string };
 type OutOfRangeArgs = { name: string; extension: string; version: string; range: string };
+type InvalidDowngradeArgs = { name: string; extension: string; installedVersion: string; availableVersion: string };
 
 const EXTENSION_RANGES = {
   [DatabaseExtension.VECTOR]: VECTOR_VERSION_RANGE,
@@ -59,6 +60,10 @@ const messages = {
   restartRequired: ({ name, availableVersion }: RestartRequiredArgs) =>
     `The ${name} extension has been updated to ${availableVersion}.
     Please restart the Postgres instance to complete the update.`,
+  invalidDowngrade: ({ name, installedVersion, availableVersion }: InvalidDowngradeArgs) =>
+    `The database currently has ${name} ${installedVersion} activated, but the Postgres instance only has ${availableVersion} available.
+    This most likely means the extension was downgraded.
+    If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
 };
 
 @Injectable()
@@ -106,6 +111,8 @@ export class DatabaseService implements OnEvents {
         await this.updateExtension(extension, availableVersion);
       } else if (installedVersion && !semver.satisfies(installedVersion, extensionRange)) {
         throw new Error(messages.outOfRange({ name, extension, version: installedVersion, range: extensionRange }));
+      } else if (installedVersion && semver.lt(availableVersion, installedVersion)) {
+        throw new Error(messages.invalidDowngrade({ name, extension, availableVersion, installedVersion }));
       }
 
       await this.checkReindexing();

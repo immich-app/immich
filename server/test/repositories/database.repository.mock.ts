@@ -4,7 +4,6 @@ import { Mocked, vitest } from 'vitest';
 export const newDatabaseRepositoryMock = (): Mocked<IDatabaseRepository> => {
   return {
     getExtensionVersion: vitest.fn(),
-    getAvailableExtensionVersion: vitest.fn(),
     getPostgresVersion: vitest.fn().mockResolvedValue('14.10 (Debian 14.10-1.pgdg120+1)'),
     createExtension: vitest.fn().mockResolvedValue(void 0),
     updateExtension: vitest.fn(),
