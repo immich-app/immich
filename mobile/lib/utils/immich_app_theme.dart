@@ -179,6 +179,8 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
         fontWeight: FontWeight.bold,
         fontSize: 18,
       ),
+      backgroundColor:
+          isDark ? colorScheme.surfaceContainer : colorScheme.surface,
       foregroundColor: primaryColor,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -234,8 +236,10 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
     ),
-    navigationBarTheme: const NavigationBarThemeData(
-      labelTextStyle: WidgetStatePropertyAll(
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor:
+          isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+      labelTextStyle: const WidgetStatePropertyAll(
         TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w500,
