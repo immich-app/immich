@@ -70,6 +70,9 @@ class _MobileLayout extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   s.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ).tr(),
               ),
               onTap: () => context.pushRoute(SettingsSubRoute(section: s)),
