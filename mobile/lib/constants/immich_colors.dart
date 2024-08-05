@@ -17,13 +17,18 @@ enum ImmichColorPreset {
 const ImmichColorPreset defaultColorPreset = ImmichColorPreset.indigo;
 const String defaultColorPresetName = "indigo";
 
+const Color immichBrandColorLight = Color(0xFF4150AF);
+const Color immichBrandColorDark = Color(0xFFACCBFA);
+
 final Map<ImmichColorPreset, ImmichTheme> _themePresetsMap = {
   ImmichColorPreset.indigo: ImmichTheme(
-    light: ColorScheme.fromSeed(seedColor: const Color(0xFF4251B0)),
+    light: ColorScheme.fromSeed(
+      seedColor: immichBrandColorLight,
+    ).copyWith(primary: immichBrandColorLight),
     dark: ColorScheme.fromSeed(
-      seedColor: const Color(0xFFACCBFA),
+      seedColor: immichBrandColorDark,
       brightness: Brightness.dark,
-    ),
+    ).copyWith(primary: immichBrandColorDark),
   ),
   ImmichColorPreset.deepPurple: ImmichTheme(
     light: ColorScheme.fromSeed(seedColor: const Color(0xFF6F43C0)),
