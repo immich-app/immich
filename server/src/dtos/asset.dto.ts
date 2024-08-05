@@ -46,6 +46,9 @@ export class UpdateAssetBase {
   @IsLongitude()
   @IsNotEmpty()
   longitude?: number;
+
+  @Optional()
+  rating?: number;
 }
 
 export class AssetBulkUpdateDto extends UpdateAssetBase {

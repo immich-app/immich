@@ -7544,6 +7544,9 @@
           "longitude": {
             "type": "number"
           },
+          "rating": {
+            "type": "number"
+          },
           "removeParent": {
             "type": "boolean"
           },
@@ -8666,6 +8669,11 @@
             "type": "string"
           },
           "longitude": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
+          },
+          "rating": {
             "default": null,
             "nullable": true,
             "type": "number"
@@ -11558,6 +11566,9 @@
             "type": "number"
           },
           "longitude": {
+            "type": "number"
+          },
+          "rating": {
             "type": "number"
           }
         },

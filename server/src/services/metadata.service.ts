@@ -294,7 +294,7 @@ export class MetadataService implements OnEvents {
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
-    const { id, description, dateTimeOriginal, latitude, longitude } = job;
+    const { id, description, dateTimeOriginal, latitude, longitude, rating } = job;
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -308,6 +308,7 @@ export class MetadataService implements OnEvents {
         DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
+        Rating: rating,
       },
       _.isUndefined,
     );
@@ -524,6 +525,7 @@ export class MetadataService implements OnEvents {
       profileDescription: tags.ProfileDescription || null,
       projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
       timeZone: tags.tz ?? null,
+      rating: tags.Rating ?? null,
     };
 
     if (exifData.latitude === 0 && exifData.longitude === 0) {

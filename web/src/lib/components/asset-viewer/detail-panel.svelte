@@ -42,6 +42,7 @@
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import { t } from 'svelte-i18n';
+  import StarRating from '@ernane/svelte-star-rating';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -139,6 +140,43 @@
       handleError(error, $t('errors.unable_to_change_date'));
     }
   }
+
+  $: myRating = asset.exifInfo?.rating || 0;
+  $: svelteStarRatingConfig.score = myRating;
+  $: svelteStarRatingConfig.readOnly = !isOwner;
+
+  // Svelte-Star-Rating Config
+  let svelteStarRatingConfig = {
+    readOnly: false,
+    countStars: 5,
+    range: {
+      min: 0,
+      max: 5,
+      step: 1,
+    },
+    score: 0,
+    showScore: false,
+    name: '',
+    starConfig: {
+      size: 30,
+      fillColor: '#F9ED4F',
+      strokeColor: '#BB8511',
+      unfilledColor: '#FFF',
+      strokeUnfilledColor: '#000',
+    },
+  };
+
+  async function handleUpdateRating(rating: number) {
+    try {
+      await updateAsset({ id: asset.id, updateAssetDto: { rating } });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_change_date'));
+    }
+  }
+
+  const changeSliderInput = () => {
+    void handleUpdateRating(svelteStarRatingConfig.score);
+  };
 </script>
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -266,6 +304,8 @@
     {:else}
       <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
     {/if}
+
+    <StarRating bind:config={svelteStarRatingConfig} on:change={changeSliderInput} />
 
     {#if asset.exifInfo?.dateTimeOriginal}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
