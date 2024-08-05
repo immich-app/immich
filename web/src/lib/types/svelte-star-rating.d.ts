@@ -1,1 +1,0 @@
-declare module '@ernane/svelte-star-rating';
