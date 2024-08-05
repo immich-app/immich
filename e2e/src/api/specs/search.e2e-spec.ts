@@ -171,7 +171,7 @@ describe('/search', () => {
         should: 'should reject size as a string',
         dto: { size: 'abc' },
         expected: [
-          'size must not be greater than 1000',
+          'size must not be greater than 5000',
           'size must not be less than 1',
           'size must be an integer number',
         ],

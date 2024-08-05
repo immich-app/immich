@@ -2,7 +2,6 @@ import { Body, Controller, Get, Inject, Next, Param, Post, Put, Query, Res } fro
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceUpdateDto,

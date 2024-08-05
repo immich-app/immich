@@ -5,7 +5,6 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceResponseDto,
