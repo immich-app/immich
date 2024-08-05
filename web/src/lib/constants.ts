@@ -9,6 +9,7 @@ export enum AssetAction {
   ADD = 'add',
   ADD_TO_ALBUM = 'add-to-album',
   UNSTACK = 'unstack',
+  ROTATE = 'rotate',
 }
 
 export enum AppRoute {

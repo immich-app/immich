@@ -11596,6 +11596,19 @@
           "longitude": {
             "type": "number"
           },
+          "orientation": {
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8"
+            ],
+            "type": "string"
+          },
           "rating": {
             "maximum": 5,
             "minimum": 0,

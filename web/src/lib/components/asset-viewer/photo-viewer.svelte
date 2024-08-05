@@ -26,6 +26,7 @@
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   export let copyImage: (() => Promise<void>) | null = null;
   export let zoomToggle: (() => void) | null = null;
+  export let setRotation: ((rotation: number) => void) | null = null;
 
   const { slideshowState, slideshowLook } = slideshowStore;
 
@@ -101,6 +102,13 @@
     $zoomed = $zoomed ? false : true;
   };
 
+  setRotation = (rotation: number) => {
+    photoZoomState.update((state) => {
+      state.currentRotation = rotation;
+      return state;
+    });
+  };
+
   const onCopyShortcut = (event: KeyboardEvent) => {
     if (window.getSelection()?.type === 'Range') {
       return;
@@ -132,7 +140,11 @@
       <LoadingSpinner />
     </div>
   {:else if !imageError}
-    <div use:zoomImageAction class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+    <div
+      use:zoomImageAction
+      class="h-full w-full duration-500"
+      transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
+    >
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
           src={assetFileUrl}

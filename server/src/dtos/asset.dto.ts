@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
   IsLatitude,
   IsLongitude,
@@ -74,6 +75,10 @@ export class UpdateAssetDto extends UpdateAssetBase {
   @Optional()
   @IsString()
   description?: string;
+
+  @Optional()
+  @IsIn(['1', '2', '3', '4', '5', '6', '7', '8'])
+  orientation?: string;
 }
 
 export class RandomAssetsDto {

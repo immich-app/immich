@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
+import { ContainerDirectoryItem, ExifDateTime, Tags, WriteTags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
 import { Duration } from 'luxon';
@@ -262,20 +262,21 @@ export class MetadataService implements OnEvents {
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
-    const { id, description, dateTimeOriginal, latitude, longitude, rating } = job;
+    const { id, description, dateTimeOriginal, latitude, longitude, orientation, rating } = job;
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
     }
 
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
-    const exif = _.omitBy<Tags>(
+    const exif = _.omitBy<WriteTags>(
       {
         Description: description,
         ImageDescription: description,
         DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
+        'Orientation#': Number.parseInt(orientation ?? '1', 10),
         Rating: rating,
       },
       _.isUndefined,

@@ -89,6 +89,7 @@
   let unsubscribes: (() => void)[] = [];
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
+  let setRotation = (_: number) => void 0;
 
   $: isFullScreen = fullscreenElement !== null;
 
@@ -431,6 +432,7 @@
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
+        onSetRotation={setRotation}
       >
         <MotionPhotoAction
           slot="motion-photo"
@@ -512,7 +514,15 @@
           {:else if isShowEditor && selectedEditType === 'crop'}
             <CropArea {asset} />
           {:else}
-            <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
+            <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
+              bind:setRotation
+              {asset}
+              {preloadAssets}
+              on:close={closeViewer}
+              {sharedLink}
+            />
           {/if}
         {:else}
           <VideoViewer

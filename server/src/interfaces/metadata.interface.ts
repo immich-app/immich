@@ -1,4 +1,4 @@
-import { BinaryField, Tags } from 'exiftool-vendored';
+import { BinaryField, Tags, WriteTags } from 'exiftool-vendored';
 
 export const IMetadataRepository = 'IMetadataRepository';
 
@@ -39,7 +39,7 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Des
 export interface IMetadataRepository {
   teardown(): Promise<void>;
   readTags(path: string): Promise<ImmichTags | null>;
-  writeTags(path: string, tags: Partial<Tags>): Promise<void>;
+  writeTags(path: string, tags: Partial<WriteTags>): Promise<void>;
   extractBinaryTag(tagName: string, path: string): Promise<Buffer>;
   getCountries(userId: string): Promise<Array<string | null>>;
   getStates(userId: string, country?: string): Promise<Array<string | null>>;

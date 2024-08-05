@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
+import { DefaultReadTaskOptions, ExifTool, Tags, WriteTags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -47,7 +47,7 @@ export class MetadataRepository implements IMetadataRepository {
     return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
-  async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+  async writeTags(path: string, tags: Partial<WriteTags>): Promise<void> {
     try {
       await this.exiftool.write(path, tags);
     } catch (error) {
