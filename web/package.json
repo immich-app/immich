@@ -41,7 +41,7 @@
     "@vitest/coverage-v8": "^2.0.5",
     "autoprefixer": "^10.4.17",
     "dotenv": "^16.4.5",
-    "eslint": "^8.57.0",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.35.1",
     "eslint-plugin-unicorn": "^55.0.0",
