@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -62,7 +61,6 @@ class PersonService {
         currentPage++;
       }
     } catch (error, stack) {
-      debugPrint("$error");
       _log.severe("Error while fetching person assets", error, stack);
     }
 
