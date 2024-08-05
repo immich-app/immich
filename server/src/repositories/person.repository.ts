@@ -199,7 +199,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAssets(personId: string): Promise<AssetEntity[]> {
+  async getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
         faces: {
@@ -217,8 +217,6 @@ export class PersonRepository implements IPersonRepository {
       order: {
         fileCreatedAt: 'desc',
       },
-      // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
-      take: 1000,
     });
   }
 
