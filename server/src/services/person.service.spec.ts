@@ -204,23 +204,6 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('getAssets', () => {
-    it('should require person.read permission', async () => {
-      personMock.getAssets.mockResolvedValue([assetStub.image, assetStub.video]);
-      await expect(sut.getAssets(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
-      expect(personMock.getAssets).not.toHaveBeenCalled();
-      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-
-    it("should return a person's assets", async () => {
-      personMock.getAssets.mockResolvedValue([assetStub.image, assetStub.video]);
-      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await sut.getAssets(authStub.admin, 'person-1');
-      expect(personMock.getAssets).toHaveBeenCalledWith('person-1');
-      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-  });
-
   describe('update', () => {
     it('should require person.write permission', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
@@ -242,7 +225,6 @@ describe(PersonService.name, () => {
 
     it("should update a person's name", async () => {
       personMock.update.mockResolvedValue(personStub.withName);
-      personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).resolves.toEqual(responseDto);
@@ -253,7 +235,6 @@ describe(PersonService.name, () => {
 
     it("should update a person's date of birth", async () => {
       personMock.update.mockResolvedValue(personStub.withBirthDate);
-      personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { birthDate: '1976-06-30' })).resolves.toEqual({
@@ -272,7 +253,6 @@ describe(PersonService.name, () => {
 
     it('should update a person visibility', async () => {
       personMock.update.mockResolvedValue(personStub.withName);
-      personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
