@@ -22,9 +22,6 @@ Future<List<PersonResponseDto>> getAllPeople(
 Future<RenderList> personAssets(PersonAssetsRef ref, String personId) async {
   final PersonService personService = ref.read(personServiceProvider);
   final assets = await personService.getPersonAssets(personId);
-  if (assets == null) {
-    return RenderList.empty();
-  }
 
   final settings = ref.read(appSettingsServiceProvider);
   final groupBy =
