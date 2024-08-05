@@ -63,6 +63,11 @@ const projects: CommunityProjectProps[] = [
     description: 'Powershell Module for the Immich API',
     url: 'https://github.com/hanpq/PSImmich',
   },
+  {
+    title: 'Immich Distribution',
+    description: 'Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.',
+    url: 'https://immich-distribution.nsg.cc',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
