@@ -82,18 +82,33 @@
   let paused = false;
 
   // Play or pause progress when the paused state changes.
-  $: paused ? handlePromiseError(pause()) : handlePromiseError(play());
+  $: {
+    if (paused) {
+      handlePromiseError(pause());
+    } else {
+      handlePromiseError(play());
+    }
+  }
 
   // Progress should be paused when it's no longer possible to advance.
   $: paused ||= !canGoForward || galleryInView;
 
   // Advance to the next asset or memory when progress is complete.
-  $: $progress === 1 && handlePromiseError(toNext());
+  $: {
+    if ($progress === 1) {
+      handlePromiseError(toNext());
+    }
+  }
 
   // Progress should be resumed when reset and not paused.
-  $: !$progress && !paused && handlePromiseError(play());
+  $: {
+    if (!$progress && !paused) {
+      handlePromiseError(play());
+    }
+  }
 
   // Progress should be reset when the current memory or asset changes.
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   $: memoryIndex, assetIndex, handlePromiseError(reset());
 
   let selectedAssets: Set<AssetResponseDto> = new Set();

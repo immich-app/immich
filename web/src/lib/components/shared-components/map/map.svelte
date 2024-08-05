@@ -188,7 +188,9 @@
         asButton
         let:feature
         on:click={(event) => {
-          $$slots.popup || handleAssetClick(event.detail.feature.properties?.id, map);
+          if (!$$slots.popup) {
+            handleAssetClick(event.detail.feature.properties?.id, map);
+          }
         }}
       >
         {#if useLocationPin}

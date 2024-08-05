@@ -36,7 +36,9 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  $: $featureFlags.map || handlePromiseError(goto(AppRoute.PHOTOS));
+  $: if (!$featureFlags.map) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
   const omit = (obj: MapSettings, key: string) => {
     return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
   };
