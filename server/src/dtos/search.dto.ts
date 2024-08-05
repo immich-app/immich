@@ -108,7 +108,7 @@ class BaseSearchDto {
 
   @IsInt()
   @Min(1)
-  @Max(1000)
+  @Max(5000)
   @Type(() => Number)
   @Optional()
   size?: number;

@@ -158,7 +158,7 @@ class SmartSearchDto {
   String query;
 
   /// Minimum value: 1
-  /// Maximum value: 1000
+  /// Maximum value: 5000
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

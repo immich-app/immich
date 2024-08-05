@@ -81,12 +81,6 @@ export class PersonController {
     await sendFile(res, next, () => this.service.getThumbnail(auth, id), this.logger);
   }
 
-  @Get(':id/assets')
-  @Authenticated()
-  getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
-    return this.service.getAssets(auth, id);
-  }
-
   @Put(':id/reassign')
   @Authenticated()
   reassignFaces(

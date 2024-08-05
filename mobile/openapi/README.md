@@ -167,7 +167,6 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**createPerson**](doc//PeopleApi.md#createperson) | **POST** /people | 
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
-*PeopleApi* | [**getPersonAssets**](doc//PeopleApi.md#getpersonassets) | **GET** /people/{id}/assets | 
 *PeopleApi* | [**getPersonStatistics**](doc//PeopleApi.md#getpersonstatistics) | **GET** /people/{id}/statistics | 
 *PeopleApi* | [**getPersonThumbnail**](doc//PeopleApi.md#getpersonthumbnail) | **GET** /people/{id}/thumbnail | 
 *PeopleApi* | [**mergePerson**](doc//PeopleApi.md#mergeperson) | **POST** /people/{id}/merge | 

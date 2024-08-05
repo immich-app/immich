@@ -4113,51 +4113,6 @@
         ]
       }
     },
-    "/people/{id}/assets": {
-      "get": {
-        "operationId": "getPersonAssets",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "People"
-        ]
-      }
-    },
     "/people/{id}/merge": {
       "post": {
         "operationId": "mergePerson",
@@ -9476,7 +9431,7 @@
             "type": "string"
           },
           "size": {
-            "maximum": 1000,
+            "maximum": 5000,
             "minimum": 1,
             "type": "number"
           },
@@ -10695,7 +10650,7 @@
             "type": "string"
           },
           "size": {
-            "maximum": 1000,
+            "maximum": 5000,
             "minimum": 1,
             "type": "number"
           },

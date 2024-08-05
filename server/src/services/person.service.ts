@@ -210,12 +210,6 @@ export class PersonService {
     });
   }
 
-  async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
-    const assets = await this.repository.getAssets(id);
-    return assets.map((asset) => mapAsset(asset));
-  }
-
   create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
     return this.repository.create({
       ownerId: auth.user.id,
