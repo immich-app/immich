@@ -42,6 +42,7 @@
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -441,6 +442,7 @@
         zoom={15}
         simplified
         useLocationPin
+        onOpenInMapView={() => goto(`${AppRoute.MAP}#15/${latlng.lat}/${latlng.lng}`)}
       >
         <svelte:fragment slot="popup" let:marker>
           {@const { lat, lon } = marker}
