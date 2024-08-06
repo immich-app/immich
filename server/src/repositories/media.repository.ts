@@ -76,6 +76,7 @@ export class MediaRepository implements IMediaRepository {
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
+        .filter((stream) => !stream.disposition?.attached_pic)
         .map((stream) => ({
           index: stream.index,
           height: stream.height || 0,
