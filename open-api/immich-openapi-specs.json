@@ -9482,7 +9482,7 @@
             "type": "string"
           },
           "size": {
-            "maximum": 5000,
+            "maximum": 1000,
             "minimum": 1,
             "type": "number"
           },
@@ -10701,7 +10701,7 @@
             "type": "string"
           },
           "size": {
-            "maximum": 5000,
+            "maximum": 1000,
             "minimum": 1,
             "type": "number"
           },
