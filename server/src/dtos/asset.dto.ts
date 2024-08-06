@@ -4,6 +4,8 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  Max,
+  Min,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
@@ -48,6 +50,9 @@ export class UpdateAssetBase {
   longitude?: number;
 
   @Optional()
+  @IsInt()
+  @Max(5)
+  @Min(0)
   rating?: number;
 }
 
