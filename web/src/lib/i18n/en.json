@@ -1116,6 +1116,8 @@
   "sort_title": "Title",
   "source": "Source",
   "stack": "Stack",
+  "stack_duplicates": "Stack duplicates",
+  "stack_select_one_photo": "Select one main photo for the stack",
   "stack_selected_photos": "Stack selected photos",
   "stacked_assets_count": "Stacked {count, plural, one {# asset} other {# assets}}",
   "stacktrace": "Stacktrace",
