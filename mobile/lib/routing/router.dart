@@ -5,7 +5,6 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
