@@ -81,7 +81,7 @@ class BackupControllerPage extends HookConsumerWidget {
     useEffect(
       () {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 10), () {
+          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
             isScreenDarkened.value = true;
           });
         } else {
@@ -287,7 +287,7 @@ class BackupControllerPage extends HookConsumerWidget {
           darkenScreenTimer.value?.cancel();
         }
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 10), () {
+          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
             isScreenDarkened.value = true;
           });
         }
