@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -73,7 +74,6 @@ class _DateTimePicker extends HookWidget {
   // returns a list of location<name> along with it's offset in duration
   List<_TimeZoneOffset> getAllTimeZones() {
     return tz.timeZoneDatabase.locations.values
-        .where((l) => !l.currentTimeZone.abbreviation.contains("0"))
         .map(_TimeZoneOffset.fromLocation)
         .sorted()
         .toList();
@@ -146,42 +146,44 @@ class _DateTimePicker extends HookWidget {
             "edit_date_time_dialog_timezone",
             textAlign: TextAlign.center,
           ).tr(),
-          DropdownMenu(
-            menuHeight: 300,
-            width: 280,
-            inputDecorationTheme: const InputDecorationTheme(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-            ),
-            trailingIcon: Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: Icon(
-                Icons.arrow_drop_down,
-                color: context.primaryColor,
+          DropdownSearch<_TimeZoneOffset>(
+            popupProps: const PopupProps.menu(
+              showSelectedItems: true,
+              showSearchBox: true,
+              constraints: BoxConstraints(
+                maxHeight: 300,
+                maxWidth: 280,
               ),
             ),
-            textStyle: context.textTheme.bodyLarge?.copyWith(
-              color: context.primaryColor,
-            ),
-            menuStyle: const MenuStyle(
-              fixedSize: WidgetStatePropertyAll(Size.fromWidth(350)),
-              alignment: Alignment(-1.25, 0.5),
-            ),
-            onSelected: (value) => tzOffset.value = value!,
-            initialSelection: tzOffset.value,
-            dropdownMenuEntries: timeZones
+            compareFn: (item1, item2) => item1 == item2,
+            itemAsString: (item) => item.display,
+            dropdownBuilder: (context, selectedItem) {
+              return Text(
+                selectedItem?.display ?? "",
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: context.primaryColor,
+                ),
+              );
+            },
+            items: timeZones
                 .map(
-                  (t) => DropdownMenuEntry<_TimeZoneOffset>(
-                    value: t,
-                    label: t.display,
-                    style: ButtonStyle(
-                      textStyle: WidgetStatePropertyAll(
-                        context.textTheme.bodyMedium,
-                      ),
-                    ),
+                  (t) => _TimeZoneOffset(
+                    display: t.display,
+                    location: t.location,
                   ),
                 )
                 .toList(),
+            dropdownDecoratorProps: const DropDownDecoratorProps(
+              textAlign: TextAlign.center,
+              textAlignVertical: TextAlignVertical.center,
+              dropdownSearchDecoration: InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                focusedBorder: InputBorder.none,
+              ),
+            ),
+            onChanged: (value) => tzOffset.value = value!,
+            selectedItem: tzOffset.value,
           ),
         ],
       ),
