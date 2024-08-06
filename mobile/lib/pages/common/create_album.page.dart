@@ -114,11 +114,11 @@ class CreateAlbumPage extends HookConsumerWidget {
               style: FilledButton.styleFrom(
                 alignment: Alignment.centerLeft,
                 padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                    const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                backgroundColor: context.colorScheme.surfaceContainerHighest,
+                backgroundColor: context.colorScheme.surfaceContainerHigh,
               ),
               onPressed: onSelectPhotosButtonPressed,
               icon: Icon(
@@ -130,7 +130,8 @@ class CreateAlbumPage extends HookConsumerWidget {
                 child: Text(
                   'create_shared_album_page_share_select_photos',
                   style: context.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.normal,
+                    fontWeight: FontWeight.w600,
+                    color: context.primaryColor,
                   ),
                 ).tr(),
               ),
@@ -146,7 +147,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       return Padding(
         padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
         child: SizedBox(
-          height: 30,
+          height: 42,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
@@ -262,7 +263,7 @@ class CreateAlbumPage extends HookConsumerWidget {
               pinned: true,
               floating: false,
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(66.0),
+                preferredSize: const Size.fromHeight(96.0),
                 child: Column(
                   children: [
                     buildTitleInputField(),
