@@ -79,43 +79,8 @@ class BackupControllerPage extends HookConsumerWidget {
     useEffect(
       () {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          // Show the dialog
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text(
-                    'backup_controller_page_darken_screen_dialog_title',
-                  ).tr(),
-                  content: const Text(
-                    'backup_controller_page_darken_screen_dialog_text',
-                  ).tr(),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        darkenScreenTimer.value =
-                            Timer(const Duration(seconds: 5), () {
-                          isScreenDarkened.value = true;
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text(
-                        'backup_controller_page_darken_screen_dialog_button_accept',
-                      ).tr(),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text(
-                        'backup_controller_page_darken_screen_dialog_button_dismiss',
-                      ).tr(),
-                    ),
-                  ],
-                );
-              },
-            );
+          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
+            isScreenDarkened.value = true;
           });
         }
 
@@ -317,9 +282,10 @@ class BackupControllerPage extends HookConsumerWidget {
       onTap: () {
         if (isScreenDarkened.value) {
           isScreenDarkened.value = false;
+          darkenScreenTimer.value?.cancel();
         }
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 10), () {
+          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
             isScreenDarkened.value = true;
           });
         }
