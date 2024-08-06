@@ -4,7 +4,7 @@
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
-  import { mdiHeart, mdiMagnifyPlus } from '@mdi/js';
+  import { mdiHeart, mdiMagnifyPlus, mdiImageMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
@@ -14,6 +14,7 @@
 
   $: isFromExternalLibrary = !!asset.libraryId;
   $: assetData = JSON.stringify(asset, null, 2);
+  $: stackCount = asset.stackCount;
 </script>
 
 <div
@@ -54,12 +55,22 @@
         {isSelected ? $t('keep') : $t('to_trash')}
       </div>
 
-      <!-- EXTERNAL LIBRARY CHIP-->
-      {#if isFromExternalLibrary}
-        <div class="absolute top-2 right-3 bg-immich-primary/90 px-4 py-1 rounded-xl text-xs text-white">
-          {$t('external')}
-        </div>
-      {/if}
+      <!-- EXTERNAL LIBRARY / STACK COUNT CHIP-->
+      <div class="absolute top-2 right-3">
+        {#if isFromExternalLibrary}
+          <div class="bg-immich-primary/90 px-2 py-1 rounded-xl text-xs text-white">
+            {$t('external')}
+          </div>
+        {/if}
+        {#if stackCount != null && stackCount != 0}
+          <div class="bg-immich-primary/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
+            <div class="flex items-center justify-center">
+              <div class="mr-1">{stackCount}</div>
+              <Icon path={mdiImageMultipleOutline} size="18" />
+            </div>
+          </div>
+        {/if}
+      </div>
     </button>
 
     <button

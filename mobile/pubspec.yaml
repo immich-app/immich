@@ -23,7 +23,7 @@ dependencies:
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
   intl: ^0.19.0
-  auto_route: ^8.0.2
+  auto_route: ^9.2.0
   fluttertoast: ^8.2.4
   video_player: ^2.8.2
   chewie: ^1.7.4
@@ -36,12 +36,12 @@ dependencies:
   geolocator: ^11.0.0 # used to move to current location in map view
   flutter_udid: ^3.0.0
   flutter_svg: ^2.0.9
-  package_info_plus: ^5.0.1
+  package_info_plus: ^8.0.1
   url_launcher: ^6.2.4
   http: ^0.13.6
   cancellation_token_http: ^2.0.0
   easy_localization: ^3.0.3
-  share_plus: ^7.2.2
+  share_plus: ^10.0.0
   flutter_displaymode: ^0.6.0
   scrollable_positioned_list: ^0.3.8
   path: ^1.8.3
@@ -61,9 +61,11 @@ dependencies:
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
   async: ^2.11.0
+  dynamic_color: ^1.7.0 #package to apply system theme
 
   #image editing packages
   crop_image: ^1.0.13
+
   openapi:
     path: openapi
 
@@ -92,7 +94,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   build_runner: ^2.4.8
-  auto_route_generator: ^8.0.0
+  auto_route_generator: ^9.0.0
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.9
   isar_generator: ^3.1.0+1

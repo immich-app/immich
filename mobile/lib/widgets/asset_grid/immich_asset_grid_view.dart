@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_drag_region.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
@@ -266,7 +267,9 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
-            backgroundColor: context.themeData.hintColor,
+            backgroundColor: context.isDarkTheme
+                ? context.colorScheme.primary.darken(amount: .5)
+                : context.colorScheme.primary,
             labelTextBuilder: _labelBuilder,
             padding: appBarOffset()
                 ? const EdgeInsets.only(top: 60)

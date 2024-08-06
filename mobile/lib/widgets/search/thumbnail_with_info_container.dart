@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class ThumbnailWithInfoContainer extends StatelessWidget {
   const ThumbnailWithInfoContainer({
@@ -25,7 +26,14 @@ class ThumbnailWithInfoContainer extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
-              color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[100],
+              gradient: LinearGradient(
+                colors: [
+                  context.colorScheme.surfaceContainer,
+                  context.colorScheme.surfaceContainer.darken(amount: .1),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
             foregroundDecoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
@@ -34,7 +42,7 @@ class ThumbnailWithInfoContainer extends StatelessWidget {
                 begin: FractionalOffset.topCenter,
                 end: FractionalOffset.bottomCenter,
                 colors: [
-                  Colors.grey.withOpacity(0.0),
+                  Colors.transparent,
                   label == ''
                       ? Colors.black.withOpacity(0.1)
                       : Colors.black.withOpacity(0.5),

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
@@ -82,22 +83,20 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     Widget buildAssetInfoTable() {
       return Table(
         border: TableBorder.all(
-          color: context.themeData.primaryColorLight,
+          color: context.colorScheme.outlineVariant,
           width: 1,
         ),
         children: [
           TableRow(
-            decoration: const BoxDecoration(
-                // color: Colors.grey[100],
-                ),
             children: [
               TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
-                  child: const Text(
+                  child: Text(
                     'backup_controller_page_filename',
                     style: TextStyle(
+                      color: context.colorScheme.onSurfaceSecondary,
                       fontWeight: FontWeight.bold,
                       fontSize: 10.0,
                     ),
@@ -109,17 +108,15 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
             ],
           ),
           TableRow(
-            decoration: const BoxDecoration(
-                // color: Colors.grey[200],
-                ),
             children: [
               TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
-                  child: const Text(
+                  child: Text(
                     "backup_controller_page_created",
                     style: TextStyle(
+                      color: context.colorScheme.onSurfaceSecondary,
                       fontWeight: FontWeight.bold,
                       fontSize: 10.0,
                     ),
@@ -131,16 +128,14 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
             ],
           ),
           TableRow(
-            decoration: const BoxDecoration(
-                // color: Colors.grey[100],
-                ),
             children: [
               TableCell(
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
-                  child: const Text(
+                  child: Text(
                     "backup_controller_page_id",
                     style: TextStyle(
+                      color: context.colorScheme.onSurfaceSecondary,
                       fontWeight: FontWeight.bold,
                       fontSize: 10.0,
                     ),
@@ -181,8 +176,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                 child: LinearProgressIndicator(
                   minHeight: 10.0,
                   value: uploadProgress / 100.0,
-                  backgroundColor: Colors.grey,
-                  color: context.primaryColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                 ),
               ),
               Text(
@@ -214,8 +208,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
               child: LinearProgressIndicator(
                 minHeight: 10.0,
                 value: uploadProgress / 100.0,
-                backgroundColor: Colors.grey,
-                color: context.primaryColor,
+                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
               ),
             ),
             Text(
