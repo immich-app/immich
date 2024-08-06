@@ -30,6 +30,7 @@ class BackupControllerPage extends HookConsumerWidget {
     final hasAnyAlbum = backupState.selectedBackupAlbums.isNotEmpty;
     final didGetBackupInfo = useState(false);
     final isScreenDarkened = useState(false);
+    final darkenScreenTimer = useRef<Timer?>(null);
 
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
@@ -76,8 +77,6 @@ class BackupControllerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        Timer? darkenScreenTimer;
-
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
           // Show the dialog
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -85,18 +84,32 @@ class BackupControllerPage extends HookConsumerWidget {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Screen Darkening'),
-                  content: Text('The screen will darken in a few seconds.'),
+                  title: const Text(
+                    'backup_controller_page_darken_screen_dialog_title',
+                  ).tr(),
+                  content: const Text(
+                    'backup_controller_page_darken_screen_dialog_text',
+                  ).tr(),
                   actions: [
                     TextButton(
                       onPressed: () {
-                        darkenScreenTimer =
+                        darkenScreenTimer.value =
                             Timer(const Duration(seconds: 5), () {
                           isScreenDarkened.value = true;
                         });
                         Navigator.of(context).pop();
                       },
-                      child: Text('OK'),
+                      child: const Text(
+                        'backup_controller_page_darken_screen_dialog_button_accept',
+                      ).tr(),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        'backup_controller_page_darken_screen_dialog_button_dismiss',
+                      ).tr(),
                     ),
                   ],
                 );
@@ -104,14 +117,10 @@ class BackupControllerPage extends HookConsumerWidget {
             );
           });
         }
-/*         // Dismiss the dialog after 3 seconds and start the timer to darken the screen
-        Future.delayed(const Duration(seconds: 3), () {
-          Navigator.of(context).pop();
-        });
- */
+
         return () {
           isScreenDarkened.value = false;
-          darkenScreenTimer?.cancel();
+          darkenScreenTimer.value?.cancel();
         };
       },
       [backupState.backupProgress],
@@ -308,11 +317,11 @@ class BackupControllerPage extends HookConsumerWidget {
         if (isScreenDarkened.value) {
           isScreenDarkened.value = false;
         }
-        /*  if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 1), () {
+        if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
+          darkenScreenTimer.value = Timer(const Duration(seconds: 10), () {
             isScreenDarkened.value = true;
           });
-        } */
+        }
       },
       child: AnimatedOpacity(
         opacity: isScreenDarkened.value ? 0.0 : 1.0,
