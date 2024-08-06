@@ -259,8 +259,8 @@ export class PersonService {
           name: person.name,
           birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
-        }),
-          results.push({ id: person.id, success: true });
+        });
+        results.push({ id: person.id, success: true });
       } catch (error: Error | any) {
         this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
         results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });

@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
@@ -102,7 +103,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       }
 
       showModalBottomSheet(
-        backgroundColor: context.scaffoldBackgroundColor,
+        backgroundColor: context.colorScheme.surfaceContainer,
         isScrollControlled: false,
         context: context,
         builder: (context) {
@@ -131,7 +132,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         ),
         subtitle: Text(
           album.owner.value?.email ?? "",
-          style: TextStyle(color: Colors.grey[600]),
+          style: TextStyle(color: context.colorScheme.onSurfaceSecondary),
         ),
         trailing: Text(
           "shared_album_section_people_owner_label",
@@ -160,7 +161,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
             ),
             subtitle: Text(
               user.email,
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(
+                color: context.colorScheme.onSurfaceSecondary,
+              ),
             ),
             trailing: userId == user.id || isOwner
                 ? const Icon(Icons.more_horiz_rounded)
@@ -214,7 +217,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
               subtitle: Text(
                 "shared_album_activity_setting_subtitle",
                 style: context.textTheme.labelLarge?.copyWith(
-                  color: context.textTheme.labelLarge?.color?.withAlpha(175),
+                  color: context.colorScheme.onSurfaceSecondary,
                 ),
               ).tr(),
             ),

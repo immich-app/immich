@@ -228,7 +228,11 @@
     unsubscribe?.();
   });
 
-  $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
+  $: {
+    if (asset.id && !sharedLink) {
+      handlePromiseError(handleGetAllAlbums());
+    }
+  }
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {
@@ -330,7 +334,7 @@
 
   const handlePlaySlideshow = async () => {
     try {
-      await assetViewerHtmlElement.requestFullscreen();
+      await assetViewerHtmlElement.requestFullscreen?.();
     } catch (error) {
       handleError(error, $t('errors.unable_to_enter_fullscreen'));
       $slideshowState = SlideshowState.StopSlideshow;
@@ -418,7 +422,7 @@
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
           {isFullScreen}
-          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen()}
+          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen?.()}
           onPrevious={() => navigateAsset('previous')}
           onNext={() => navigateAsset('next')}
           onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}

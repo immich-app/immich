@@ -61,9 +61,11 @@ dependencies:
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
   async: ^2.11.0
+  dynamic_color: ^1.7.0 #package to apply system theme
 
   #image editing packages
   crop_image: ^1.0.13
+
   openapi:
     path: openapi
 

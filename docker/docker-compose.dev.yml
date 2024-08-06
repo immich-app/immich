@@ -46,6 +46,8 @@ services:
     depends_on:
       - redis
       - database
+    healthcheck:
+      disable: false
 
   immich-web:
     container_name: immich_web
@@ -91,6 +93,8 @@ services:
     depends_on:
       - database
     restart: unless-stopped
+    healthcheck:
+      disable: false
 
   redis:
     container_name: immich_redis
