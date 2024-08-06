@@ -5,6 +5,7 @@ import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceResponseDto,
@@ -209,6 +210,12 @@ export class PersonService {
     });
   }
 
+  async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
+    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    const assets = await this.repository.getAssets(id);
+    return assets.map((asset) => mapAsset(asset));
+  }
+
   create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
     return this.repository.create({
       ownerId: auth.user.id,
@@ -252,8 +259,8 @@ export class PersonService {
           name: person.name,
           birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
-        }),
-          results.push({ id: person.id, success: true });
+        });
+        results.push({ id: person.id, success: true });
       } catch (error: Error | any) {
         this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
         results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });

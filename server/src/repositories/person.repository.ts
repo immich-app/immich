@@ -199,6 +199,30 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getAssets(personId: string): Promise<AssetEntity[]> {
+    return this.assetRepository.find({
+      where: {
+        faces: {
+          personId,
+        },
+        isVisible: true,
+        isArchived: false,
+      },
+      relations: {
+        faces: {
+          person: true,
+        },
+        exifInfo: true,
+      },
+      order: {
+        fileCreatedAt: 'desc',
+      },
+      // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
+      take: 1000,
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
     const items = await this.personRepository
       .createQueryBuilder('person')

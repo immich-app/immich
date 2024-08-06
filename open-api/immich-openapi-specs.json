@@ -4113,6 +4113,57 @@
         ]
       }
     },
+    "/people/{id}/assets": {
+      "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.113.0",
+        "operationId": "getPersonAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.113.0"
+        }
+      }
+    },
     "/people/{id}/merge": {
       "post": {
         "operationId": "mergePerson",

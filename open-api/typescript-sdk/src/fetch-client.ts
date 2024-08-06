@@ -2267,6 +2267,19 @@ export function updatePerson({ id, personUpdateDto }: {
         body: personUpdateDto
     })));
 }
+/**
+ * This property was deprecated in v1.113.0
+ */
+export function getPersonAssets({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/people/${encodeURIComponent(id)}/assets`, {
+        ...opts
+    }));
+}
 export function mergePerson({ id, mergePersonDto }: {
     id: string;
     mergePersonDto: MergePersonDto;

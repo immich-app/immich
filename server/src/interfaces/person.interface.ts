@@ -1,4 +1,5 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
@@ -40,6 +41,9 @@ export interface IPersonRepository {
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
+
+  getAssets(personId: string): Promise<AssetEntity[]>;
+
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
