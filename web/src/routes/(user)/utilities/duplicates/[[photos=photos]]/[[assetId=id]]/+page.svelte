@@ -6,6 +6,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteAssets, updateAssets } from '@immich/sdk';
@@ -13,10 +14,11 @@
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { stackAssets } from '$lib/utils/asset-utils';
   import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { mdiKeyboard } from '@mdi/js';
-  import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
 
@@ -40,6 +42,7 @@
       { key: ['s'], action: $t('view') },
       { key: ['d'], action: $t('unselect_all_duplicates') },
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
+      { key: ['⇧', 'c'], action: $t('stack_duplicates') },
     ],
   };
 
@@ -86,6 +89,13 @@
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
     );
+  };
+
+  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
+    await stackAssets(assets, false);
+    const duplicateAssetIds = assets.map((asset) => asset.id);
+    await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+    data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
   };
 
   const handleDeduplicateAll = async () => {
@@ -174,6 +184,7 @@
           assets={data.duplicates[0].assets}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(data.duplicates[0].duplicateId, assets)}
         />
       {/key}
     {:else}

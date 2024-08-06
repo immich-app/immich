@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
-class AlbumActionOutlinedButton extends StatelessWidget {
+class AlbumActionFilledButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String labelText;
   final IconData iconData;
 
-  const AlbumActionOutlinedButton({
+  const AlbumActionFilledButton({
     super.key,
     this.onPressed,
     required this.labelText,
@@ -17,18 +17,13 @@ class AlbumActionOutlinedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 16.0),
-      child: OutlinedButton.icon(
-        style: OutlinedButton.styleFrom(
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
-          side: BorderSide(
-            width: 1,
-            color: context.isDarkTheme
-                ? const Color.fromARGB(255, 63, 63, 63)
-                : const Color.fromARGB(255, 206, 206, 206),
-          ),
+          backgroundColor: context.colorScheme.surfaceContainerHigh,
         ),
         icon: Icon(
           iconData,

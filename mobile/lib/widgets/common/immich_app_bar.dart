@@ -111,7 +111,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     buildBackupIndicator() {
       final indicatorIcon = getBackupBadgeIcon();
-      final badgeBackground = isDarkTheme ? Colors.blueGrey[800] : Colors.white;
+      final badgeBackground = context.colorScheme.surfaceContainer;
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
@@ -123,7 +123,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               color: badgeBackground,
               border: Border.all(
-                color: isDarkTheme ? Colors.black : Colors.grey,
+                color: context.colorScheme.outline.withOpacity(.3),
               ),
               borderRadius: BorderRadius.circular(widgetSize / 2),
             ),
