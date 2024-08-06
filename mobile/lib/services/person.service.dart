@@ -41,7 +41,7 @@ class PersonService {
           MetadataSearchDto(
             personIds: [id],
             page: currentPage,
-            size: 5000,
+            size: 1000,
           ),
         );
 
