@@ -170,7 +170,6 @@ export interface AssetDuplicateResult {
 }
 
 export interface ISearchRepository {
-  init(modelName: string): Promise<void>;
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
   searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
@@ -179,4 +178,6 @@ export interface ISearchRepository {
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
   getAssetsByCity(userIds: string[]): Promise<AssetEntity[]>;
   deleteAllSearchEmbeddings(): Promise<void>;
+  getDimensionSize(): Promise<number>;
+  setDimensionSize(dimSize: number): Promise<void>;
 }

@@ -228,7 +228,11 @@
     unsubscribe?.();
   });
 
-  $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
+  $: {
+    if (asset.id && !sharedLink) {
+      handlePromiseError(handleGetAllAlbums());
+    }
+  }
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {

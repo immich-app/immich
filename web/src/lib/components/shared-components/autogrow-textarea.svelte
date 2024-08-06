@@ -12,9 +12,13 @@
   let textarea: HTMLTextAreaElement;
   $: newContent = content;
 
-  $: if (textarea) {
+  $: {
+    // re-visit with svelte 5. runes will make this better.
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     newContent;
-    void tick().then(() => autoGrowHeight(textarea));
+    if (textarea) {
+      void tick().then(() => autoGrowHeight(textarea));
+    }
   }
 
   const updateContent = () => {
