@@ -59,18 +59,21 @@ class AlbumTitleTextField extends ConsumerWidget {
                 splashRadius: 10,
               )
             : null,
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.transparent),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.transparent),
+          borderRadius: BorderRadius.circular(10),
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.transparent),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.transparent),
+          borderRadius: BorderRadius.circular(10),
         ),
         hintText: 'share_add_title'.tr(),
         hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
           fontSize: 28,
+          fontWeight: FontWeight.bold,
         ),
         focusColor: Colors.grey[300],
-        fillColor: context.scaffoldBackgroundColor,
+        fillColor: context.colorScheme.surfaceContainerHigh,
         filled: isAlbumTitleTextFieldFocus.value,
       ),
     );

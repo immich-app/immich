@@ -19,7 +19,7 @@ class AlbumActionFilledButton extends StatelessWidget {
       padding: const EdgeInsets.only(right: 16.0),
       child: FilledButton.icon(
         style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
