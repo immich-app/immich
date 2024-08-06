@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -17,6 +18,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:immich_mobile/widgets/backup/current_backup_asset_info_box.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 class BackupControllerPage extends HookConsumerWidget {
@@ -27,6 +29,8 @@ class BackupControllerPage extends HookConsumerWidget {
     BackUpState backupState = ref.watch(backupProvider);
     final hasAnyAlbum = backupState.selectedBackupAlbums.isNotEmpty;
     final didGetBackupInfo = useState(false);
+    final isScreenDarkened = useState(false);
+
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
     bool shouldBackup = backupState.allUniqueAssets.length -
@@ -48,7 +52,12 @@ class BackupControllerPage extends HookConsumerWidget {
         ref
             .watch(websocketProvider.notifier)
             .stopListenToEvent('on_upload_success');
-        return null;
+
+        WakelockPlus.enable();
+
+        return () {
+          WakelockPlus.disable();
+        };
       },
       [],
     );
@@ -61,6 +70,24 @@ class BackupControllerPage extends HookConsumerWidget {
           didGetBackupInfo.value = true;
         }
         return null;
+      },
+      [backupState.backupProgress],
+    );
+
+    useEffect(
+      () {
+        Timer? darkenScreenTimer;
+        if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
+          isScreenDarkened.value = true;
+          darkenScreenTimer = Timer(const Duration(seconds: 2), () {
+            isScreenDarkened.value = true;
+          });
+        }
+
+        return () {
+          isScreenDarkened.value = false;
+          darkenScreenTimer?.cancel();
+        };
       },
       [backupState.backupProgress],
     );
@@ -251,72 +278,104 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        title: const Text(
-          "backup_controller_page_backup",
-        ).tr(),
-        leading: IconButton(
-          onPressed: () {
-            ref.watch(websocketProvider.notifier).listenUploadEvent();
-            context.maybePop(true);
-          },
-          splashRadius: 24,
-          icon: const Icon(
-            Icons.arrow_back_ios_rounded,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              onPressed: () => context.pushRoute(const BackupOptionsRoute()),
+    return GestureDetector(
+      onTap: () {
+        if (isScreenDarkened.value) {
+          isScreenDarkened.value = false;
+        }
+        /*  if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
+          darkenScreenTimer.value = Timer(const Duration(seconds: 1), () {
+            isScreenDarkened.value = true;
+          });
+        } */
+      },
+      child: AnimatedOpacity(
+        opacity: isScreenDarkened.value ? 0.0 : 1.0,
+        duration: const Duration(seconds: 1),
+        child: Scaffold(
+          appBar: AppBar(
+            elevation: 0,
+            title: const Text(
+              "backup_controller_page_backup",
+            ).tr(),
+            leading: IconButton(
+              onPressed: () {
+                ref.watch(websocketProvider.notifier).listenUploadEvent();
+                context.maybePop(true);
+              },
               splashRadius: 24,
               icon: const Icon(
-                Icons.settings_outlined,
+                Icons.arrow_back_ios_rounded,
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  onPressed: () =>
+                      context.pushRoute(const BackupOptionsRoute()),
+                  splashRadius: 24,
+                  icon: const Icon(
+                    Icons.settings_outlined,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 32),
-        child: ListView(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          children: hasAnyAlbum
-              ? [
-                  buildFolderSelectionTile(),
-                  BackupInfoCard(
-                    title: "backup_controller_page_total".tr(),
-                    subtitle: "backup_controller_page_total_sub".tr(),
-                    info: ref.watch(backupProvider).availableAlbums.isEmpty
-                        ? "..."
-                        : "${backupState.allUniqueAssets.length}",
-                  ),
-                  BackupInfoCard(
-                    title: "backup_controller_page_backup".tr(),
-                    subtitle: "backup_controller_page_backup_sub".tr(),
-                    info: ref.watch(backupProvider).availableAlbums.isEmpty
-                        ? "..."
-                        : "${backupState.selectedAlbumsBackupAssetsIds.length}",
-                  ),
-                  BackupInfoCard(
-                    title: "backup_controller_page_remainder".tr(),
-                    subtitle: "backup_controller_page_remainder_sub".tr(),
-                    info: ref.watch(backupProvider).availableAlbums.isEmpty
-                        ? "..."
-                        : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
-                  ),
-                  const Divider(),
-                  const CurrentUploadingAssetInfoBox(),
-                  if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
-                  buildBackupButton(),
-                ]
-              : [
-                  buildFolderSelectionTile(),
-                  if (!didGetBackupInfo.value) buildLoadingIndicator(),
-                ],
+          body: Stack(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.only(left: 16.0, right: 16, bottom: 32),
+                child: ListView(
+                  // crossAxisAlignment: CrossAxisAlignment.start,
+                  children: hasAnyAlbum
+                      ? [
+                          buildFolderSelectionTile(),
+                          BackupInfoCard(
+                            title: "backup_controller_page_total".tr(),
+                            subtitle: "backup_controller_page_total_sub".tr(),
+                            info: ref
+                                    .watch(backupProvider)
+                                    .availableAlbums
+                                    .isEmpty
+                                ? "..."
+                                : "${backupState.allUniqueAssets.length}",
+                          ),
+                          BackupInfoCard(
+                            title: "backup_controller_page_backup".tr(),
+                            subtitle: "backup_controller_page_backup_sub".tr(),
+                            info: ref
+                                    .watch(backupProvider)
+                                    .availableAlbums
+                                    .isEmpty
+                                ? "..."
+                                : "${backupState.selectedAlbumsBackupAssetsIds.length}",
+                          ),
+                          BackupInfoCard(
+                            title: "backup_controller_page_remainder".tr(),
+                            subtitle:
+                                "backup_controller_page_remainder_sub".tr(),
+                            info: ref
+                                    .watch(backupProvider)
+                                    .availableAlbums
+                                    .isEmpty
+                                ? "..."
+                                : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
+                          ),
+                          const Divider(),
+                          const CurrentUploadingAssetInfoBox(),
+                          if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
+                          buildBackupButton(),
+                        ]
+                      : [
+                          buildFolderSelectionTile(),
+                          if (!didGetBackupInfo.value) buildLoadingIndicator(),
+                        ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
