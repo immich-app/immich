@@ -21,6 +21,7 @@ class ImmichTitleText extends StatelessWidget {
       ),
       width: fontSize * 4,
       filterQuality: FilterQuality.high,
+      color: context.primaryColor,
     );
   }
 }

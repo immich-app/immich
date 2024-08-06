@@ -20,8 +20,6 @@ class AlbumTitleTextField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkTheme = context.isDarkTheme;
-
     return TextField(
       onChanged: (v) {
         if (v.isEmpty) {
@@ -35,7 +33,7 @@ class AlbumTitleTextField extends ConsumerWidget {
       focusNode: albumTitleTextFieldFocusNode,
       style: TextStyle(
         fontSize: 28,
-        color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
+        color: context.colorScheme.onSurface,
         fontWeight: FontWeight.bold,
       ),
       controller: albumTitleController,
@@ -61,24 +59,18 @@ class AlbumTitleTextField extends ConsumerWidget {
                 splashRadius: 10,
               )
             : null,
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.circular(10),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.circular(10),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent),
         ),
         hintText: 'share_add_title'.tr(),
-        hintStyle: TextStyle(
+        hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
           fontSize: 28,
-          color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
-          fontWeight: FontWeight.bold,
         ),
         focusColor: Colors.grey[300],
-        fillColor: isDarkTheme
-            ? const Color.fromARGB(255, 32, 33, 35)
-            : Colors.grey[200],
+        fillColor: context.scaffoldBackgroundColor,
         filled: isAlbumTitleTextFieldFocus.value,
       ),
     );

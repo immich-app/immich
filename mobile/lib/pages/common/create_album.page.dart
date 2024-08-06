@@ -10,7 +10,7 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/widgets/album/album_action_outlined_button.dart';
+import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_title_text_field.dart';
 import 'package:immich_mobile/widgets/album/shared_album_thumbnail_image.dart';
 
@@ -109,20 +109,16 @@ class CreateAlbumPage extends HookConsumerWidget {
       if (selectedAssets.value.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.only(top: 16, left: 18, right: 18),
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
                 alignment: Alignment.centerLeft,
                 padding:
-                    const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
-                side: BorderSide(
-                  color: context.isDarkTheme
-                      ? const Color.fromARGB(255, 63, 63, 63)
-                      : const Color.fromARGB(255, 129, 129, 129),
-                ),
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                backgroundColor: context.colorScheme.surfaceContainerHighest,
               ),
               onPressed: onSelectPhotosButtonPressed,
               icon: Icon(
@@ -134,7 +130,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 child: Text(
                   'create_shared_album_page_share_select_photos',
                   style: context.textTheme.titleMedium?.copyWith(
-                    color: context.primaryColor,
+                    fontWeight: FontWeight.normal,
                   ),
                 ).tr(),
               ),
@@ -154,7 +150,7 @@ class CreateAlbumPage extends HookConsumerWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              AlbumActionOutlinedButton(
+              AlbumActionFilledButton(
                 iconData: Icons.add_photo_alternate_outlined,
                 onPressed: onSelectPhotosButtonPressed,
                 labelText: "share_add_photos".tr(),
