@@ -111,7 +111,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     buildBackupIndicator() {
       final indicatorIcon = getBackupBadgeIcon();
-      final badgeBackground = context.colorScheme.surfaceContainerHighest;
+      final badgeBackground = context.colorScheme.surfaceContainer;
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
@@ -123,7 +123,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               color: badgeBackground,
               border: Border.all(
-                color: context.colorScheme.outline.withOpacity(.6),
+                color: context.colorScheme.outline.withOpacity(.3),
               ),
               borderRadius: BorderRadius.circular(widgetSize / 2),
             ),
@@ -170,20 +170,11 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   }
                   return Padding(
                     padding: const EdgeInsets.only(top: 3.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/immich-logo.svg',
-                          height: 28,
-                        ),
-                        const SizedBox(width: 8),
-                        Image.asset(
-                          'assets/immich-text-dark.png',
-                          height: 20,
-                          color: context.primaryColor,
-                        ),
-                      ],
+                    child: SvgPicture.asset(
+                      context.isDarkTheme
+                          ? 'assets/immich-logo-inline-dark.svg'
+                          : 'assets/immich-logo-inline-light.svg',
+                      height: 40,
                     ),
                   );
                 },

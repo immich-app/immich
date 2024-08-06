@@ -43,8 +43,8 @@ class ThumbnailImage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.5)
-        : context.primaryColor.lighten(amount: 0.5);
+        ? context.primaryColor.darken(amount: 0.6)
+        : context.primaryColor.lighten(amount: 0.8);
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = asset.id == Isar.autoIncrement;
 

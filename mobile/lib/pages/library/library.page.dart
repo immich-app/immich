@@ -115,7 +115,7 @@ class LibraryPage extends HookConsumerWidget {
                     width: cardSize,
                     height: cardSize,
                     decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainerHigh,
+                      color: context.colorScheme.surfaceContainer,
                       borderRadius: const BorderRadius.all(Radius.circular(20)),
                     ),
                     child: Center(
@@ -166,7 +166,7 @@ class LibraryPage extends HookConsumerWidget {
           style: FilledButton.styleFrom(
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            backgroundColor: context.colorScheme.surfaceContainerHigh,
+            backgroundColor: context.colorScheme.surfaceContainer,
             alignment: Alignment.centerLeft,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20)),
