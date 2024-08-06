@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
-import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
+import 'package:immich_mobile/widgets/settings/photo_grid_settings/photo_grid_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
@@ -32,7 +32,7 @@ enum SettingSection {
         SettingSection.languages => const LanguageSettings(),
         SettingSection.preferences => const PreferenceSetting(),
         SettingSection.backup => const BackupSettings(),
-        SettingSection.timeline => const AssetListSettings(),
+        SettingSection.timeline => const PhotoGridSettings(),
         SettingSection.viewer => const AssetViewerSettings(),
         SettingSection.advanced => const AdvancedSettings(),
       };

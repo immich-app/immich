@@ -224,6 +224,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const LibraryPage(),
       );
     },
+    LocalAlbumPickerRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const LocalAlbumPickerPage(),
+      );
+    },
     LoginRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -275,9 +281,13 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
     PermissionOnboardingRoute.name: (routeData) {
+      final args = routeData.argsAs<PermissionOnboardingRouteArgs>();
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const PermissionOnboardingPage(),
+        child: PermissionOnboardingPage(
+          key: args.key,
+          nextRoute: args.nextRoute,
+        ),
       );
     },
     PersonResultRoute.name: (routeData) {
@@ -1049,6 +1059,20 @@ class LibraryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LocalAlbumPickerPage]
+class LocalAlbumPickerRoute extends PageRouteInfo<void> {
+  const LocalAlbumPickerRoute({List<PageRouteInfo>? children})
+      : super(
+          LocalAlbumPickerRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'LocalAlbumPickerRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute({List<PageRouteInfo>? children})
@@ -1210,16 +1234,41 @@ class PartnerRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [PermissionOnboardingPage]
-class PermissionOnboardingRoute extends PageRouteInfo<void> {
-  const PermissionOnboardingRoute({List<PageRouteInfo>? children})
-      : super(
+class PermissionOnboardingRoute
+    extends PageRouteInfo<PermissionOnboardingRouteArgs> {
+  PermissionOnboardingRoute({
+    Key? key,
+    required PageRouteInfo<dynamic> nextRoute,
+    List<PageRouteInfo>? children,
+  }) : super(
           PermissionOnboardingRoute.name,
+          args: PermissionOnboardingRouteArgs(
+            key: key,
+            nextRoute: nextRoute,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'PermissionOnboardingRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static const PageInfo<PermissionOnboardingRouteArgs> page =
+      PageInfo<PermissionOnboardingRouteArgs>(name);
+}
+
+class PermissionOnboardingRouteArgs {
+  const PermissionOnboardingRouteArgs({
+    this.key,
+    required this.nextRoute,
+  });
+
+  final Key? key;
+
+  final PageRouteInfo<dynamic> nextRoute;
+
+  @override
+  String toString() {
+    return 'PermissionOnboardingRouteArgs{key: $key, nextRoute: $nextRoute}';
+  }
 }
 
 /// generated route for

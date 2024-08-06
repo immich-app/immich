@@ -68,10 +68,9 @@ class SyncService {
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
   Future<bool> syncLocalAlbumAssetsToDb(
-    List<AssetPathEntity> onDevice, [
-    Set<String>? excludedAssets,
-  ]) =>
-      _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice, excludedAssets));
+    List<AssetPathEntity> onDevice,
+  ) =>
+      _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice));
 
   /// returns all Asset IDs that are not contained in the existing list
   List<int> sharedAssetsToRemove(
@@ -492,9 +491,8 @@ class SyncService {
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
   Future<bool> _syncLocalAlbumAssetsToDb(
-    List<AssetPathEntity> onDevice, [
-    Set<String>? excludedAssets,
-  ]) async {
+    List<AssetPathEntity> onDevice,
+  ) async {
     onDevice.sort((a, b) => a.id.compareTo(b.id));
     final inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
@@ -510,10 +508,8 @@ class SyncService {
         album,
         deleteCandidates,
         existing,
-        excludedAssets,
       ),
-      onlyFirst: (AssetPathEntity ape) =>
-          _addAlbumFromDevice(ape, existing, excludedAssets),
+      onlyFirst: (AssetPathEntity ape) => _addAlbumFromDevice(ape, existing),
       onlySecond: (Album a) => _removeAlbumFromDb(a, deleteCandidates),
     );
     _log.fine(
@@ -545,16 +541,13 @@ class SyncService {
     Album album,
     List<Asset> deleteCandidates,
     List<Asset> existing, [
-    Set<String>? excludedAssets,
     bool forceRefresh = false,
   ]) async {
     if (!forceRefresh && !await _hasAssetPathEntityChanged(ape, album)) {
       _log.fine("Local album ${ape.name} has not changed. Skipping sync.");
       return false;
     }
-    if (!forceRefresh &&
-        excludedAssets == null &&
-        await _syncDeviceAlbumFast(ape, album)) {
+    if (!forceRefresh && await _syncDeviceAlbumFast(ape, album)) {
       return true;
     }
 
@@ -566,8 +559,7 @@ class SyncService {
         .findAll();
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
     final int assetCountOnDevice = await ape.assetCountAsync;
-    final List<Asset> onDevice =
-        await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
+    final List<Asset> onDevice = await _hashService.getHashedAssets(ape);
     _removeDuplicates(onDevice);
     // _removeDuplicates sorts `onDevice` by checksum
     final (toAdd, toUpdate, toDelete) = _diffAssets(onDevice, inDb);
@@ -678,13 +670,11 @@ class SyncService {
   /// assets already existing in the database to the list of `existing` assets
   Future<void> _addAlbumFromDevice(
     AssetPathEntity ape,
-    List<Asset> existing, [
-    Set<String>? excludedAssets,
-  ]) async {
+    List<Asset> existing,
+  ) async {
     _log.info("Syncing a new local album to DB: ${ape.name}");
     final Album a = Album.local(ape);
-    final assets =
-        await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
+    final assets = await _hashService.getHashedAssets(ape);
     _removeDuplicates(assets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(assets);
     _log.info(

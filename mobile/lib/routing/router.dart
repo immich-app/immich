@@ -25,6 +25,7 @@ import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
 import 'package:immich_mobile/pages/common/create_album.page.dart';
 import 'package:immich_mobile/pages/common/gallery_viewer.page.dart';
 import 'package:immich_mobile/pages/common/headers_settings.page.dart';
+import 'package:immich_mobile/pages/common/local_album_picker.page.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_controller.page.dart';
@@ -57,7 +58,7 @@ import 'package:immich_mobile/pages/sharing/sharing.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
-import 'package:immich_mobile/routing/backup_permission_guard.dart';
+import 'package:immich_mobile/routing/local_gallery_permission_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -72,15 +73,22 @@ part 'router.gr.dart';
 class AppRouter extends _$AppRouter {
   late final AuthGuard _authGuard;
   late final DuplicateGuard _duplicateGuard;
-  late final BackupPermissionGuard _backupPermissionGuard;
-
+  late final LocalGalleryPermissionGuard _backupPermissionGuard;
+  late final LocalGalleryPermissionGuard _localAlbumPermissionGuard;
   AppRouter(
     ApiService apiService,
     GalleryPermissionNotifier galleryPermissionNotifier,
   ) {
     _authGuard = AuthGuard(apiService);
     _duplicateGuard = DuplicateGuard();
-    _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
+    _backupPermissionGuard = LocalGalleryPermissionGuard(
+      galleryPermissionNotifier,
+      nextRoute: const BackupControllerRoute(),
+    );
+    _localAlbumPermissionGuard = LocalGalleryPermissionGuard(
+      galleryPermissionNotifier,
+      nextRoute: const LocalAlbumPickerRoute(),
+    );
   }
 
   @override
@@ -231,6 +239,10 @@ class AppRouter extends _$AppRouter {
     AutoRoute(
       page: HeaderSettingsRoute.page,
       guards: [_duplicateGuard],
+    ),
+    AutoRoute(
+      page: LocalAlbumPickerRoute.page,
+      guards: [_duplicateGuard, _localAlbumPermissionGuard],
     ),
   ];
 }

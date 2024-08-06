@@ -60,6 +60,11 @@ enum AppSettingsEnum<T> {
     false,
   ),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
+  albumOnTimelineIds<List<String>>(
+    StoreKey.albumOnTimelineIds,
+    null,
+    [],
+  ),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

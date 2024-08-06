@@ -4,21 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 @RoutePage()
 class PermissionOnboardingPage extends HookConsumerWidget {
-  const PermissionOnboardingPage({super.key});
+  final PageRouteInfo nextRoute;
+  const PermissionOnboardingPage({super.key, required this.nextRoute});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final PermissionStatus permission = ref.watch(galleryPermissionNotifier);
 
     // Navigate to the main Tab Controller when permission is granted
-    void goToBackup() => context.replaceRoute(const BackupControllerRoute());
+    void goToNextRoute() => context.replaceRoute(nextRoute);
 
     // When the permission is denied, we show a request permission page
     buildRequestPermission() {
@@ -40,7 +40,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
               if (permission.isGranted) {
                 // If permission is limited, we will show the limited
                 // permission page
-                goToBackup();
+                goToNextRoute();
               }
             }),
             child: const Text(
@@ -65,7 +65,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
           ).tr(),
           const SizedBox(height: 18),
           ElevatedButton(
-            onPressed: () => goToBackup(),
+            onPressed: () => goToNextRoute(),
             child: const Text('permission_onboarding_get_started').tr(),
           ),
         ],
@@ -100,7 +100,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
           ),
           const SizedBox(height: 8.0),
           TextButton(
-            onPressed: () => goToBackup(),
+            onPressed: () => goToNextRoute(),
             child: const Text(
               'permission_onboarding_continue_anyway',
             ).tr(),
