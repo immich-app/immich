@@ -77,13 +77,38 @@ class BackupControllerPage extends HookConsumerWidget {
     useEffect(
       () {
         Timer? darkenScreenTimer;
+
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          isScreenDarkened.value = true;
-          darkenScreenTimer = Timer(const Duration(seconds: 2), () {
-            isScreenDarkened.value = true;
+          // Show the dialog
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Screen Darkening'),
+                  content: Text('The screen will darken in a few seconds.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        darkenScreenTimer =
+                            Timer(const Duration(seconds: 5), () {
+                          isScreenDarkened.value = true;
+                        });
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
           });
         }
-
+/*         // Dismiss the dialog after 3 seconds and start the timer to darken the screen
+        Future.delayed(const Duration(seconds: 3), () {
+          Navigator.of(context).pop();
+        });
+ */
         return () {
           isScreenDarkened.value = false;
           darkenScreenTimer?.cancel();
@@ -291,7 +316,7 @@ class BackupControllerPage extends HookConsumerWidget {
       },
       child: AnimatedOpacity(
         opacity: isScreenDarkened.value ? 0.0 : 1.0,
-        duration: const Duration(seconds: 1),
+        duration: const Duration(seconds: 2),
         child: Scaffold(
           appBar: AppBar(
             elevation: 0,
