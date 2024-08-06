@@ -59,6 +59,8 @@ class BackupControllerPage extends HookConsumerWidget {
 
         return () {
           WakelockPlus.disable();
+          darkenScreenTimer.value?.cancel();
+          isScreenDarkened.value = false;
         };
       },
       [],
@@ -79,15 +81,15 @@ class BackupControllerPage extends HookConsumerWidget {
     useEffect(
       () {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
+          darkenScreenTimer.value = Timer(const Duration(seconds: 10), () {
             isScreenDarkened.value = true;
           });
-        }
-
-        return () {
+        } else {
           isScreenDarkened.value = false;
           darkenScreenTimer.value?.cancel();
-        };
+        }
+
+        return null;
       },
       [backupState.backupProgress],
     );
@@ -285,7 +287,7 @@ class BackupControllerPage extends HookConsumerWidget {
           darkenScreenTimer.value?.cancel();
         }
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
+          darkenScreenTimer.value = Timer(const Duration(seconds: 10), () {
             isScreenDarkened.value = true;
           });
         }
