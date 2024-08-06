@@ -324,17 +324,13 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   return ids;
 };
 
-export const stackAssets = async (assets: AssetResponseDto[], parent?: AssetResponseDto, showGoToButton?: boolean) => {
+export const stackAssets = async (assets: AssetResponseDto[], showNotification = true) => {
   if (assets.length < 2) {
     return false;
   }
-  let children = assets.slice(1);
-  if (parent === undefined) {
-    parent = assets[0];
-  } else {
-    children = assets.filter((asset) => asset.id !== parent.id);
-  }
 
+  const parent = assets[0];
+  const children = assets.slice(1);
   const ids = children.map(({ id }) => id);
   const $t = get(t);
 
@@ -365,19 +361,19 @@ export const stackAssets = async (assets: AssetResponseDto[], parent?: AssetResp
   parent.stack ??= [];
   parent.stack = parent.stack.concat(children, grandChildren);
   parent.stackCount = parent.stack.length + 1;
-  const notificationObject = {
-    message: $t('stacked_assets_count', { values: { count: parent.stackCount } }),
-    type: NotificationType.Info,
-  };
-  if (showGoToButton === true || showGoToButton === undefined) {
-    notificationObject.button = {
-      text: $t('view_stack'),
-      onClick() {
-        return assetViewingStore.setAssetId(assets[0].id);
+
+  if (showNotification) {
+    notificationController.show({
+      message: $t('stacked_assets_count', { values: { count: parent.stackCount } }),
+      type: NotificationType.Info,
+      button: {
+        text: $t('view_stack'),
+        onClick() {
+          return assetViewingStore.setAssetId(parent.id);
+        },
       },
-    };
+    });
   }
-  notificationController.show(notificationObject);
 
   return ids;
 };

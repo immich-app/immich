@@ -13,7 +13,7 @@
 
   export let assets: AssetResponseDto[];
   export let onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
-  export let onStack: (assets: AssetResponseDto[], selectedAssets: AssetResponseDto[]) => void;
+  export let onStack: (assets: AssetResponseDto[]) => void;
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
@@ -62,9 +62,7 @@
   };
 
   const handleStack = () => {
-    const selectedAssets = assets.filter((asset) => selectedAssetIds.has(asset.id));
-    const duplicateAssets = assets;
-    onStack(duplicateAssets, selectedAssets);
+    onStack(assets);
   };
 </script>
 

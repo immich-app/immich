@@ -91,21 +91,10 @@
     );
   };
 
-  const handleStack = async (
-    duplicateId: string,
-    duplicateAssets: AssetResponseDto[],
-    selectedAssets: AssetResponseDto[],
-  ) => {
-    if (selectedAssets.length !== 1) {
-      notificationController.show({
-        message: $t('stack_select_one_photo'),
-        type: NotificationType.Error,
-      });
-      return;
-    }
-    const ids = duplicateAssets.map((x) => x.id);
-    await stackAssets(duplicateAssets, selectedAssets[0], false);
-    await updateAssets({ assetBulkUpdateDto: { ids, duplicateId: null } });
+  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
+    await stackAssets(assets, false);
+    const duplicateAssetIds = assets.map((asset) => asset.id);
+    await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
     data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
   };
 
@@ -162,36 +151,6 @@
       $t('confirm'),
     );
   };
-
-  // TODO: Implement stack all once the API is ready
-  /* const handleStackAll = async () => {
-    const ids = data.duplicates.flatMap((group) => group.assets.map((asset) => asset.id));
-    let prompt, confirmText;
-
-    const stacks = data.duplicates.map((group) => ({
-      ids: group.assets.map((asset) => asset.id),
-      stackParentId: group.assets[0].id,
-    }));
-
-    const stackDto: AssetBulkStackDto = { stacks: stacks };
-    prompt = $t('bulk_stack_duplicates_confirmation', { values: { count: ids.length } });
-    confirmText = $t('confirm');
-
-    return withConfirmation(
-      async () => {
-        await stackAssets({ assetBulkStackDto: stackDto });
-        await updateAssets({
-          assetBulkUpdateDto: { ids, duplicateId: null },
-        });
-        notificationController.show({
-          message: $t('resolved_all_duplicates'),
-          type: NotificationType.Info,
-        });
-      },
-      prompt,
-      confirmText,
-    );
-  }; */
 </script>
 
 <UserPageLayout title={data.meta.title + ` (${data.duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
@@ -208,16 +167,6 @@
         {$t('keep_all')}
       </div>
     </LinkButton>
-    <!--
-    TODO: Implement stack all once the API is ready
-    <LinkButton on:click={() => handleStackAll()} disabled={!hasDuplicates}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiImageMultipleOutline} size="18" />
-        {$t('stack_all')}
-      </div>
-    </LinkButton>
-    -->
-
     <CircleIconButton
       icon={mdiKeyboard}
       title={$t('show_keyboard_shortcuts')}
@@ -235,8 +184,7 @@
           assets={data.duplicates[0].assets}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(duplicateAssets, selectedAssets) =>
-            handleStack(data.duplicates[0].duplicateId, duplicateAssets, selectedAssets)}
+          onStack={(assets) => handleStack(data.duplicates[0].duplicateId, assets)}
         />
       {/key}
     {:else}
