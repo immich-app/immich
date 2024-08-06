@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:immich_mobile/widgets/backup/current_backup_asset_info_box.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 class BackupControllerPage extends HookConsumerWidget {
@@ -49,7 +50,11 @@ class BackupControllerPage extends HookConsumerWidget {
         ref
             .watch(websocketProvider.notifier)
             .stopListenToEvent('on_upload_success');
-        return null;
+
+        WakelockPlus.enable();
+        return () {
+          WakelockPlus.disable();
+        };
       },
       [],
     );
