@@ -15,6 +15,11 @@ export interface PersonNameSearchOptions {
   withHidden?: boolean;
 }
 
+export interface PersonNameResponse {
+  id: string;
+  name: string;
+}
+
 export interface AssetFaceId {
   assetId: string;
   personId: string;
@@ -35,13 +40,17 @@ export interface PeopleStatistics {
   hidden: number;
 }
 
+export interface DeleteAllFacesOptions {
+  sourceType?: string | null;
+}
+
 export interface IPersonRepository {
   getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
   getAllForUser(pagination: PaginationOptions, userId: string, options: PersonSearchOptions): Paginated<PersonEntity>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
-  getManyByName(userId: string, personNames: string[], options: PersonNameSearchOptions): Promise<PersonEntity[]>;
+  getDistinctNames(userId: string, options: PersonNameSearchOptions): Promise<PersonNameResponse[]>;
 
   getAssets(personId: string): Promise<AssetEntity[]>;
 
@@ -49,7 +58,7 @@ export interface IPersonRepository {
   createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
-  deleteAllFaces(sourceType?: string | null): Promise<void>;
+  deleteAllFaces(options: DeleteAllFacesOptions): Promise<void>;
   upsertFaces(assetId: string, entities: Partial<AssetFaceEntity>[], sourceType?: string): Promise<string[]>;
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;

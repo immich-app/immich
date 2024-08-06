@@ -8,8 +8,10 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import {
   AssetFaceId,
+  DeleteAllFacesOptions,
   IPersonRepository,
   PeopleStatistics,
+  PersonNameResponse,
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
@@ -49,7 +51,7 @@ export class PersonRepository implements IPersonRepository {
     await this.personRepository.clear();
   }
 
-  async deleteAllFaces(sourceType?: string | null): Promise<void> {
+  async deleteAllFaces({ sourceType }: DeleteAllFacesOptions): Promise<void> {
     // eslint-disable-next-line unicorn/prefer-ternary
     if (sourceType === undefined) {
       await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
@@ -63,7 +65,7 @@ export class PersonRepository implements IPersonRepository {
       await this.assetFaceRepository
         .createQueryBuilder('asset_faces')
         .delete()
-        .andWhere('sourceType = :sourceType', { sourceType: sourceType })
+        .andWhere('sourceType = :sourceType', { sourceType })
         .execute();
     }
   }
@@ -197,18 +199,13 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING], { withHidden: true }] })
-  getManyByName(
-    userId: string,
-    personNames: string[],
-    { withHidden }: PersonNameSearchOptions,
-  ): Promise<PersonEntity[]> {
+  @GenerateSql({ params: [DummyValue.UUID, { withHidden: true }] })
+  getDistinctNames(userId: string, { withHidden }: PersonNameSearchOptions): Promise<PersonNameResponse[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .where('person.ownerId = :userId AND (LOWER(person.name) IN (:...names))', {
-        userId,
-        names: personNames.map((n) => n.toLowerCase()),
-      });
+      .select(['id', 'name'])
+      .distinctOn(['lower(person.name)'])
+      .where(`person.ownerId = :userId AND person.name != ''`, { userId });
 
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');

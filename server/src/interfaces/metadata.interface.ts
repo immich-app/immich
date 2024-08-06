@@ -20,20 +20,16 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Reg
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
 
-  // Extended properties for image Regions (e.g.: faces)
-  /** ☆☆☆☆ ✔ Example: {"AppliedToDimensions":{"H":3552,"W":2000},"RegionList":[…ace"}]} */
+  // Extended properties for image regions, such as faces
   RegionInfo?: {
-    /** ☆☆☆☆ ✔ Example: {"H": 640, "Unit": "pixel", "W": 800} */
     AppliedToDimensions: {
       W: number;
       H: number;
       Unit: string;
     };
-    /** ☆☆☆☆ ✔ Example: [{"Area":{},"Name":"John Doe","Type":"Face"}] */
     RegionList: {
       Area: {
         // (X,Y) // center of the rectancle
-        // W & H: rectangle width and height
         X: number;
         Y: number;
         W: number;

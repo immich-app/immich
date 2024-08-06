@@ -3,7 +3,6 @@ import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-export const SourceTypeDefault = null; // MACHINE_LEARNING
 export enum SourceType {
   EXIF = 'exif',
 }

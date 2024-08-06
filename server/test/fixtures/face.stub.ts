@@ -1,4 +1,4 @@
-import { AssetFaceEntity, SourceTypeDefault } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { personStub } from 'test/fixtures/person.stub';
 
@@ -129,7 +129,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
-    sourceType: SourceTypeDefault,
+    sourceType: null,
     faceSearch: { faceId: 'assetFaceId9', embedding: [1, 2, 3, 4] },
   }),
 };

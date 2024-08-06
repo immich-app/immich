@@ -22,7 +22,7 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/dtos/person.dto';
-import { AssetFaceEntity, SourceTypeDefault } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -298,7 +298,7 @@ export class PersonService {
     }
 
     if (force) {
-      await this.repository.deleteAllFaces(SourceTypeDefault);
+      await this.repository.deleteAllFaces({ sourceType: null });
       await this.handlePersonCleanup();
     }
 
@@ -339,14 +339,7 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
-    const ml_faces = asset.faces?.filter((face) => {
-      face.sourceType == SourceTypeDefault;
-    });
-    if (ml_faces?.length > 0) {
-      return JobStatus.FAILED;
-    }
-
-    if (!asset.isVisible) {
+    if (!asset.isVisible || asset.faces.length > 0) {
       return JobStatus.SKIPPED;
     }
 
@@ -372,7 +365,7 @@ export class PersonService {
           boundingBoxY1: face.boundingBox.y1,
           boundingBoxX2: face.boundingBox.x2,
           boundingBoxY2: face.boundingBox.y2,
-          sourceType: SourceTypeDefault,
+          sourceType: null,
           faceSearch: { faceId, embedding: face.embedding },
         });
       }
@@ -412,7 +405,7 @@ export class PersonService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
-      await this.repository.deleteAllFaces(SourceTypeDefault);
+      await this.repository.deleteAllFaces({ sourceType: null });
       await this.handlePersonCleanup();
     } else if (waiting) {
       this.logger.debug(
