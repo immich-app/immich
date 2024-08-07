@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -83,10 +84,12 @@ class BackupControllerPage extends HookConsumerWidget {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
           darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
             isScreenDarkened.value = true;
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
           });
         } else {
           isScreenDarkened.value = false;
           darkenScreenTimer.value?.cancel();
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         }
 
         return null;
@@ -285,10 +288,12 @@ class BackupControllerPage extends HookConsumerWidget {
         if (isScreenDarkened.value) {
           isScreenDarkened.value = false;
           darkenScreenTimer.value?.cancel();
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         }
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
           darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
             isScreenDarkened.value = true;
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
           });
         }
       },
@@ -298,6 +303,7 @@ class BackupControllerPage extends HookConsumerWidget {
         child: Scaffold(
           appBar: AppBar(
             elevation: 0,
+            toolbarOpacity: 1.0,
             title: const Text(
               "backup_controller_page_backup",
             ).tr(),
