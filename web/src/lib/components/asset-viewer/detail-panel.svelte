@@ -163,7 +163,7 @@
   {/if}
 
   <DetailPanelDescription {asset} {isOwner} />
-  {#if $preferences?.app_settings?.rating}
+  {#if !isSharedLink() && $preferences?.app_settings?.rating}
     <DetailPanelRating {asset} {isOwner} />
   {/if}
 
