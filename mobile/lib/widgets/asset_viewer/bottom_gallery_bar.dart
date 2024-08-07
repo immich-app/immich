@@ -145,12 +145,12 @@ class BottomGalleryBar extends ConsumerWidget {
                         size: 24,
                       ),
                       onTap: () async {
-                        await ref
-                            .read(assetStackServiceProvider)
-                            .updateStackParent(
-                              asset,
-                              stackElements.elementAt(stackIndex),
-                            );
+                        // await ref
+                        //     .read(assetStackServiceProvider)
+                        //     .updateStackParent(
+                        //       asset,
+                        //       stackElements.elementAt(stackIndex),
+                        //     );
                         ctx.pop();
                         context.maybePop();
                       },
@@ -166,13 +166,13 @@ class BottomGalleryBar extends ConsumerWidget {
                     ),
                     onTap: () async {
                       if (isParent) {
-                        await ref
-                            .read(assetStackServiceProvider)
-                            .updateStackParent(
-                              asset,
-                              stackElements
-                                  .elementAt(1), // Next asset as parent
-                            );
+                        // await ref
+                        //     .read(assetStackServiceProvider)
+                        //     .updateStackParent(
+                        //       asset,
+                        //       stackElements
+                        //           .elementAt(1), // Next asset as parent
+                        //     );
                         // Remove itself from stack
                         await ref.read(assetStackServiceProvider).updateStack(
                           stackElements.elementAt(1),

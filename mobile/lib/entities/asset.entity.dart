@@ -36,8 +36,8 @@ class Asset {
         // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
         stackParentId =
-            remote.stackParentId == remote.id ? null : remote.stackParentId,
-        stackCount = remote.stackCount,
+            remote.stack?.id == remote.id ? null : remote.stack?.id,
+        stackCount = remote.stack?.assetCount ?? 0,
         thumbhash = remote.thumbhash;
 
   Asset.local(AssetEntity local, List<int> hash)
