@@ -18,7 +18,7 @@
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { rating: currentRating } });
     } catch (error) {
-      handleError(error, $t('cant_apply_changes'));
+      handleError(error, $t('errors.cant_apply_changes'));
     }
     rating = currentRating;
   };
