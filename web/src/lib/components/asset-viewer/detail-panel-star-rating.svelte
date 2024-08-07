@@ -7,7 +7,7 @@
   export let asset: AssetResponseDto;
   export let isOwner: boolean;
 
-  const countStars = 6;
+  const countStars = 5;
 
   $: rating = asset.exifInfo?.rating || 0;
   let currentRating = rating;
@@ -15,6 +15,11 @@
   const handleChangeRating = async (clickedId: CustomEvent<number>) => {
     currentRating = clickedId.detail;
     if (currentRating === asset.exifInfo?.rating) {
+      try {
+        await updateAsset({ id: asset.id, updateAssetDto: { rating: 0 } });
+      } catch (error) {
+        handleError(error, $t('errors.cant_apply_changes'));
+      }
       return;
     }
     try {
