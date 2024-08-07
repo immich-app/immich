@@ -7,7 +7,7 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'RegionInfo'> {
+export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription' | 'RegionInfo'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
@@ -55,6 +55,9 @@ export interface MetadataRegion {
 export interface MetadataFaceResult {
   Name?: string;
   Type?: string;
+  // Type is wrong, can also be number.
+  Description?: string | number;
+  ImageDescription?: string | number;
   Region: MetadataRegion;
 }
 

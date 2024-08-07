@@ -36,7 +36,9 @@
     return 'bg-immich-primary dark:bg-immich-dark-primary';
   };
 
-  $: $user && onUpdate();
+  $: if ($user) {
+    onUpdate();
+  }
 
   onMount(async () => {
     await requestServerInfo();

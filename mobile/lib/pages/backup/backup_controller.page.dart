@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:immich_mobile/widgets/backup/current_backup_asset_info_box.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 class BackupControllerPage extends HookConsumerWidget {
@@ -48,7 +50,11 @@ class BackupControllerPage extends HookConsumerWidget {
         ref
             .watch(websocketProvider.notifier)
             .stopListenToEvent('on_upload_success');
-        return null;
+
+        WakelockPlus.enable();
+        return () {
+          WakelockPlus.disable();
+        };
       },
       [],
     );
@@ -130,9 +136,7 @@ class BackupControllerPage extends HookConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(
-              color: context.isDarkTheme
-                  ? const Color.fromARGB(255, 56, 56, 56)
-                  : Colors.black12,
+              color: context.colorScheme.outlineVariant,
               width: 1,
             ),
           ),
@@ -151,7 +155,9 @@ class BackupControllerPage extends HookConsumerWidget {
                 children: [
                   Text(
                     "backup_controller_page_to_backup",
-                    style: context.textTheme.bodyMedium,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.colorScheme.onSurfaceSecondary,
+                    ),
                   ).tr(),
                   buildSelectedAlbumName(),
                   buildExcludedAlbumName(),

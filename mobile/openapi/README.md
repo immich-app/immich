@@ -117,6 +117,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeprecatedApi* | [**getAboutInfo**](doc//DeprecatedApi.md#getaboutinfo) | **GET** /server-info/about | 
+*DeprecatedApi* | [**getPersonAssets**](doc//DeprecatedApi.md#getpersonassets) | **GET** /people/{id}/assets | 
 *DeprecatedApi* | [**getServerConfig**](doc//DeprecatedApi.md#getserverconfig) | **GET** /server-info/config | 
 *DeprecatedApi* | [**getServerFeatures**](doc//DeprecatedApi.md#getserverfeatures) | **GET** /server-info/features | 
 *DeprecatedApi* | [**getServerStatistics**](doc//DeprecatedApi.md#getserverstatistics) | **GET** /server-info/statistics | 

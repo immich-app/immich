@@ -45,14 +45,14 @@ describe(AlbumService.name, () => {
 
   describe('getCount', () => {
     it('should get the album count', async () => {
-      albumMock.getOwned.mockResolvedValue([]),
-        albumMock.getShared.mockResolvedValue([]),
-        albumMock.getNotShared.mockResolvedValue([]),
-        await expect(sut.getCount(authStub.admin)).resolves.toEqual({
-          owned: 0,
-          shared: 0,
-          notShared: 0,
-        });
+      albumMock.getOwned.mockResolvedValue([]);
+      albumMock.getShared.mockResolvedValue([]);
+      albumMock.getNotShared.mockResolvedValue([]);
+      await expect(sut.getCount(authStub.admin)).resolves.toEqual({
+        owned: 0,
+        shared: 0,
+        notShared: 0,
+      });
 
       expect(albumMock.getOwned).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(albumMock.getShared).toHaveBeenCalledWith(authStub.admin.user.id);

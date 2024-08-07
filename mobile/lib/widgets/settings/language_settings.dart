@@ -40,9 +40,7 @@ class LanguageSettings extends HookConsumerWidget {
                   ),
                 ),
                 backgroundColor: WidgetStatePropertyAll<Color>(
-                  context.isDarkTheme
-                      ? Colors.grey[900]!
-                      : context.scaffoldBackgroundColor,
+                  context.colorScheme.surfaceContainer,
                 ),
               ),
               menuHeight: context.height * 0.5,

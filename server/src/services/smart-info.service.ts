@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { SystemConfig } from 'src/config';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
@@ -16,7 +17,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { isSmartSearchEnabled } from 'src/utils/misc';
+import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -36,24 +37,67 @@ export class SmartInfoService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async init() {
-    await this.jobRepository.pause(QueueName.SMART_SEARCH);
+  async onBootstrapEvent(app: 'api' | 'microservices') {
+    if (app !== 'microservices') {
+      return;
+    }
 
-    await this.jobRepository.waitForQueueCompletion(QueueName.SMART_SEARCH);
+    const config = await this.configCore.getConfig({ withCache: false });
+    await this.init(config);
+  }
 
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
-
-    await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, () =>
-      this.repository.init(machineLearning.clip.modelName),
-    );
-
-    await this.jobRepository.resume(QueueName.SMART_SEARCH);
+  onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
+    try {
+      getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
+    } catch {
+      throw new Error(
+        `Unknown CLIP model: ${newConfig.machineLearning.clip.modelName}. Please check the model name for typos and confirm this is a supported model.`,
+      );
+    }
   }
 
   async onConfigUpdateEvent({ oldConfig, newConfig }: SystemConfigUpdateEvent) {
-    if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
-      await this.repository.init(newConfig.machineLearning.clip.modelName);
+    await this.init(newConfig, oldConfig);
+  }
+
+  private async init(newConfig: SystemConfig, oldConfig?: SystemConfig) {
+    if (!isSmartSearchEnabled(newConfig.machineLearning)) {
+      return;
     }
+
+    await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, async () => {
+      const { dimSize } = getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
+      const dbDimSize = await this.repository.getDimensionSize();
+      this.logger.verbose(`Current database CLIP dimension size is ${dbDimSize}`);
+
+      const modelChange =
+        oldConfig && oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName;
+      const dimSizeChange = dbDimSize !== dimSize;
+      if (!modelChange && !dimSizeChange) {
+        return;
+      }
+
+      const { isPaused } = await this.jobRepository.getQueueStatus(QueueName.SMART_SEARCH);
+      if (!isPaused) {
+        await this.jobRepository.pause(QueueName.SMART_SEARCH);
+      }
+      await this.jobRepository.waitForQueueCompletion(QueueName.SMART_SEARCH);
+
+      if (dimSizeChange) {
+        this.logger.log(
+          `Dimension size of model ${newConfig.machineLearning.clip.modelName} is ${dimSize}, but database expects ${dbDimSize}.`,
+        );
+        this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
+        await this.repository.setDimensionSize(dimSize);
+        this.logger.log(`Successfully updated database CLIP dimension size from ${dbDimSize} to ${dimSize}.`);
+      } else {
+        await this.repository.deleteAllSearchEmbeddings();
+      }
+
+      if (!isPaused) {
+        await this.jobRepository.resume(QueueName.SMART_SEARCH);
+      }
+    });
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {

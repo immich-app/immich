@@ -22,7 +22,7 @@ class ExifBottomSheet extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetWithExif = ref.watch(assetDetailProvider(asset));
-    var textColor = context.isDarkTheme ? Colors.white : Colors.black;
+    var textColor = context.colorScheme.onSurface;
     final ExifInfo? exifInfo = (assetWithExif.value ?? asset).exifInfo;
     // Format the date time with the timezone
     final (dt, timeZone) =

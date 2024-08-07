@@ -220,28 +220,7 @@ export class MetadataService implements OnEvents {
     const { exifData, tags } = await this.exifData(asset);
 
     if (asset.type === AssetType.VIDEO) {
-      const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
-
-      if (videoStreams[0]) {
-        switch (videoStreams[0].rotation) {
-          case -90: {
-            exifData.orientation = Orientation.Rotate90CW;
-            break;
-          }
-          case 0: {
-            exifData.orientation = Orientation.Horizontal;
-            break;
-          }
-          case 90: {
-            exifData.orientation = Orientation.Rotate270CW;
-            break;
-          }
-          case 180: {
-            exifData.orientation = Orientation.Rotate180;
-            break;
-          }
-        }
-      }
+      await this.applyVideoMetadata(asset, exifData);
     }
 
     await this.applyMotionPhotos(asset, tags);
@@ -258,7 +237,7 @@ export class MetadataService implements OnEvents {
     }
     await this.assetRepository.update({
       id: asset.id,
-      duration: tags.Duration ? this.getDuration(tags.Duration) : null,
+      duration: asset.duration,
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
@@ -568,7 +547,7 @@ export class MetadataService implements OnEvents {
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-      description: (tags.ImageDescription || tags.Description || '').trim(),
+      description: String(tags.ImageDescription || tags.Description || '').trim(),
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,
@@ -632,16 +611,33 @@ export class MetadataService implements OnEvents {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: ImmichTags['Duration']): string {
-    let _seconds = seconds as number;
+  private async applyVideoMetadata(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
+    const { videoStreams, format } = await this.mediaRepository.probe(asset.originalPath);
 
-    if (typeof seconds === 'object') {
-      _seconds = seconds.Value * (seconds?.Scale || 1);
-    } else if (typeof seconds === 'string') {
-      _seconds = Duration.fromISOTime(seconds).as('seconds');
+    if (videoStreams[0]) {
+      switch (videoStreams[0].rotation) {
+        case -90: {
+          exifData.orientation = Orientation.Rotate90CW;
+          break;
+        }
+        case 0: {
+          exifData.orientation = Orientation.Horizontal;
+          break;
+        }
+        case 90: {
+          exifData.orientation = Orientation.Rotate270CW;
+          break;
+        }
+        case 180: {
+          exifData.orientation = Orientation.Rotate180;
+          break;
+        }
+      }
     }
 
-    return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
+    if (format.duration) {
+      asset.duration = Duration.fromObject({ seconds: format.duration }).toFormat('hh:mm:ss.SSS');
+    }
   }
 
   private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
