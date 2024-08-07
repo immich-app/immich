@@ -294,6 +294,12 @@ You need to enable WebSockets on your reverse proxy.
 
 Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/docs/guides/docker-help.md).
 
+### How can I reduce the log verbosity of Redis?
+
+To decrease Redis logs, you can add the following line to the `redis:` section of the `docker-compose.yml`:
+
+`    command: redis-server --loglevel warning`
+
 ### How can I run Immich as a non-root user?
 
 You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
