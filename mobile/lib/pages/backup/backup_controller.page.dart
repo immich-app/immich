@@ -89,7 +89,13 @@ class BackupControllerPage extends HookConsumerWidget {
         } else {
           isScreenDarkened.value = false;
           darkenScreenTimer.value?.cancel();
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          SystemChrome.setEnabledSystemUIMode(
+            SystemUiMode.manual,
+            overlays: [
+              SystemUiOverlay.top,
+              SystemUiOverlay.bottom,
+            ],
+          );
         }
 
         return null;
@@ -288,7 +294,13 @@ class BackupControllerPage extends HookConsumerWidget {
         if (isScreenDarkened.value) {
           isScreenDarkened.value = false;
           darkenScreenTimer.value?.cancel();
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          SystemChrome.setEnabledSystemUIMode(
+            SystemUiMode.manual,
+            overlays: [
+              SystemUiOverlay.top,
+              SystemUiOverlay.bottom,
+            ],
+          );
         }
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
           darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
