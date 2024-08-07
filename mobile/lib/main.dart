@@ -5,6 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -39,7 +40,6 @@ import 'package:path_provider/path_provider.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-
   final db = await loadDb();
   await initApp();
   await migrateDatabaseIfNeeded(db);
@@ -79,6 +79,7 @@ Future<void> initApp() async {
       "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
       details.stack,
     );
+    debugPrint("FlutterError - Catch all: ${details.exception}");
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
