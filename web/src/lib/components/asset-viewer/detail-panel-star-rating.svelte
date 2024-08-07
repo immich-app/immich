@@ -9,22 +9,18 @@
   const countStars = 5;
 
   $: rating = asset.exifInfo?.rating || 0;
-  $: currentRating = rating;
+  let currentRating = rating;
 
-  const handleChangeRating = async (newRating: number) => {
+  const handleChangeRating = async () => {
+    if (currentRating === asset.exifInfo?.rating) {
+      return;
+    }
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { rating: newRating } });
+      await updateAsset({ id: asset.id, updateAssetDto: { rating: currentRating } });
     } catch (error) {
       handleError(error, $t('cant_apply_changes'));
     }
     rating = currentRating;
-  };
-
-  const onChangeRating = () => {
-    if (currentRating === asset.exifInfo?.rating) {
-      return;
-    }
-    void handleChangeRating(currentRating);
   };
 </script>
 
@@ -81,7 +77,7 @@
         min="0"
         max={countStars}
         step="1"
-        on:change={onChangeRating}
+        on:change={handleChangeRating}
         on:click
         bind:value={currentRating}
       />

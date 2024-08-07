@@ -41,7 +41,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
-  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-rating.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
