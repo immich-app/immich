@@ -72,13 +72,13 @@ Future<void> initApp() async {
   var log = Logger("ImmichErrorLogger");
 
   FlutterError.onError = (details) {
+    debugPrint("FlutterError - Catch all: ${details}");
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
       "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
       details.stack,
     );
-    debugPrint("FlutterError - Catch all: ${details.exception}");
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
