@@ -482,7 +482,7 @@ export class MetadataService implements OnEvents {
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-      description: (tags.ImageDescription || tags.Description || '').trim(),
+      description: String(tags.ImageDescription || tags.Description || '').trim(),
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,
