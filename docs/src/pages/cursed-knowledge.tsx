@@ -1,5 +1,6 @@
 import {
   mdiCalendarToday,
+  mdiCrosshairsOff,
   mdiLeadPencil,
   mdiLockOff,
   mdiLockOutline,
@@ -38,6 +39,18 @@ const items: Item[] = [
       text: 'Cloudflare',
     },
     date: new Date(2024, 7, 7),
+  },
+  {
+    icon: mdiCrosshairsOff,
+    iconColor: 'gray',
+    title: 'GPS sharing on mobile is cursed',
+    description:
+      'Some phones will silently strip GPS data from images when apps without location permission try to access them.',
+    link: {
+      url: 'https://github.com/immich-app/immich/discussions/11268',
+      text: '#11268',
+    },
+    date: new Date(2024, 6, 21),
   },
   {
     icon: mdiLeadPencil,
