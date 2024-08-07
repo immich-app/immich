@@ -753,6 +753,18 @@ describe(MetadataService.name, () => {
         }),
       );
     });
+
+    it('handles a numeric description', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Description: 1000 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '1000',
+        }),
+      );
+    });
   });
 
   describe('handleQueueSidecar', () => {
