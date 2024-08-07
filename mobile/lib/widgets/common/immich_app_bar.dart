@@ -132,7 +132,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           backgroundColor: Colors.transparent,
           alignment: Alignment.bottomRight,
           isLabelVisible: indicatorIcon != null,
-          offset: const Offset(2, 2),
+          offset: const Offset(-2, -12),
           child: Icon(
             Icons.backup_rounded,
             size: widgetSize,

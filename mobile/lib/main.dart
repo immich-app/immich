@@ -39,7 +39,6 @@ import 'package:path_provider/path_provider.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-
   final db = await loadDb();
   await initApp();
   await migrateDatabaseIfNeeded(db);
@@ -73,6 +72,7 @@ Future<void> initApp() async {
   var log = Logger("ImmichErrorLogger");
 
   FlutterError.onError = (details) {
+    debugPrint("FlutterError - Catch all: $details");
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
