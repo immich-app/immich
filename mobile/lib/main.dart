@@ -72,7 +72,7 @@ Future<void> initApp() async {
   var log = Logger("ImmichErrorLogger");
 
   FlutterError.onError = (details) {
-    debugPrint("FlutterError - Catch all: ${details}");
+    debugPrint("FlutterError - Catch all: $details");
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
