@@ -19,6 +19,13 @@
   import { locale as i18nLocale, t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { invalidateAll } from '$app/navigation';
+  import { preferences } from '$lib/stores/user.store';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { handleError } from '../../utils/handle-error';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
 
   let time = new Date();
 
@@ -88,6 +95,21 @@
   const handleLocaleChange = (newLocale: string | undefined) => {
     if (newLocale) {
       $locale = newLocale;
+    }
+  };
+
+  let ratingEnabled = $preferences?.app_settings?.rating;
+
+  const handleRatingChange = async (newRating: CustomEvent<boolean>) => {
+    try {
+      const data = await updateMyPreferences({
+        userPreferencesUpdateDto: { app_settings: { rating: newRating.detail } },
+      });
+      $preferences.app_settings.rating = data.app_settings.rating;
+
+      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_settings'));
     }
   };
 </script>
@@ -183,6 +205,14 @@
           title={$t('sharing')}
           subtitle={$t('sharing_sidebar_description')}
           bind:checked={$sidebarSettings.sharing}
+        />
+      </div>
+      <div class="ml-4">
+        <SettingSwitch
+          title={$t('rating')}
+          subtitle={$t('show_rating_details_panel')}
+          bind:checked={ratingEnabled}
+          on:toggle={handleRatingChange}
         />
       </div>
     </div>

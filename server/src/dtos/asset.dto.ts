@@ -4,13 +4,13 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
-  Max,
-  Min,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
   IsPositive,
   IsString,
+  Max,
+  Min,
   ValidateIf,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';

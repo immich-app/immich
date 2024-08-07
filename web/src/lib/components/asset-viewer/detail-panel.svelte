@@ -7,6 +7,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
+  import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
@@ -162,8 +163,9 @@
   {/if}
 
   <DetailPanelDescription {asset} {isOwner} />
-
-  <DetailPanelRating {asset} {isOwner} />
+  {#if $preferences?.app_settings?.rating}
+    <DetailPanelRating {asset} {isOwner} />
+  {/if}
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
     <section class="px-4 py-4 text-sm">
