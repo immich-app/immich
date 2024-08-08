@@ -8,13 +8,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ExifMap extends StatelessWidget {
   final ExifInfo exifInfo;
-  final String formattedDateTime;
   final String? markerId;
 
   const ExifMap({
     super.key,
     required this.exifInfo,
-    required this.formattedDateTime,
     this.markerId = 'marker',
   });
 
@@ -37,7 +35,7 @@ class ExifMap extends StatelessWidget {
           host: '$latitude,$longitude',
           queryParameters: {
             'z': '$zoomLevel',
-            'q': '$latitude,$longitude($formattedDateTime)',
+            'q': '$latitude,$longitude',
           },
         );
         if (await canLaunchUrl(uri)) {
@@ -46,7 +44,7 @@ class ExifMap extends StatelessWidget {
       } else if (Platform.isIOS) {
         var params = {
           'll': '$latitude,$longitude',
-          'q': formattedDateTime,
+          'q': '$latitude,$longitude',
           'z': '$zoomLevel',
         };
         Uri uri = Uri.https('maps.apple.com', '/', params);

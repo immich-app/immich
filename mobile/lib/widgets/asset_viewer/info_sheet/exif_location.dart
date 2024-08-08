@@ -9,14 +9,12 @@ class ExifLocation extends StatelessWidget {
   final Asset asset;
   final ExifInfo? exifInfo;
   final void Function() editLocation;
-  final String formattedDateTime;
 
   const ExifLocation({
     super.key,
     required this.asset,
     required this.exifInfo,
     required this.editLocation,
-    required this.formattedDateTime,
   });
 
   @override
@@ -67,7 +65,6 @@ class ExifLocation extends StatelessWidget {
             ),
             ExifMap(
               exifInfo: exifInfo!,
-              formattedDateTime: formattedDateTime,
               markerId: asset.remoteId,
             ),
             RichText(

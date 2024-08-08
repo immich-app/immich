@@ -25,13 +25,6 @@ class InfoSheet extends HookConsumerWidget {
     final assetWithExif = ref.watch(assetDetailProvider(asset));
     var textColor = context.colorScheme.onSurface;
     final ExifInfo? exifInfo = (assetWithExif.value ?? asset).exifInfo;
-    // Format the date time with the timezone
-    final (dt, timeZone) =
-        (assetWithExif.value ?? asset).getTZAdjustedTimeAndOffset();
-    final date = DateFormat.yMMMEd().format(dt);
-    final time = DateFormat.jm().format(dt);
-
-    String formattedDateTime = '$date • $time GMT${timeZone.formatAsOffset()}';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(
@@ -81,7 +74,6 @@ class InfoSheet extends HookConsumerWidget {
                               context,
                               [assetWithExif.value ?? asset],
                             ),
-                            formattedDateTime: formattedDateTime,
                           ),
                         ),
                       ),
@@ -123,7 +115,6 @@ class InfoSheet extends HookConsumerWidget {
                           context,
                           [assetWithExif.value ?? asset],
                         ),
-                        formattedDateTime: formattedDateTime,
                       ),
                     ),
                   ],
