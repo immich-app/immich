@@ -21,7 +21,6 @@ import {
   ValidationOptions,
   buildMessage,
   isDateString,
-  maxDate,
 } from 'class-validator';
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
@@ -203,14 +202,21 @@ export function IsDateStringFormat(format: string, validationOptions?: Validatio
   );
 }
 
-export function MaxDateString(date: Date | (() => Date), validationOptions?: ValidationOptions): PropertyDecorator {
+function maxDate(date: DateTime, maxDate: DateTime | (() => DateTime)) {
+  return date <= (maxDate instanceof DateTime ? maxDate : maxDate());
+}
+
+export function MaxDateString(
+  date: DateTime | (() => DateTime),
+  validationOptions?: ValidationOptions,
+): PropertyDecorator {
   return ValidateBy(
     {
       name: 'maxDateString',
       constraints: [date],
       validator: {
         validate: (value, args) => {
-          const date = DateTime.fromISO(value, { zone: 'utc' }).toJSDate();
+          const date = DateTime.fromISO(value, { zone: 'utc' });
           return maxDate(date, args?.constraints[0]);
         },
         defaultMessage: buildMessage(

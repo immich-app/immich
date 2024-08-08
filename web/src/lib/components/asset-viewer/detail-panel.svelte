@@ -439,17 +439,17 @@
           },
         ]}
         center={latlng}
-        zoom={15}
+        zoom={12.5}
         simplified
         useLocationPin
-        onOpenInMapView={() => goto(`${AppRoute.MAP}#15/${latlng.lat}/${latlng.lng}`)}
+        onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
         <svelte:fragment slot="popup" let:marker>
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
             <a
-              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
               class="font-medium text-immich-primary"
             >
