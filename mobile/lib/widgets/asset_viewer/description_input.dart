@@ -101,6 +101,11 @@ class DescriptionInput extends HookConsumerWidget {
         hintText: 'description_input_hint_text'.tr(),
         border: InputBorder.none,
         suffixIcon: suffixIcon,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
       ),
     );
   }

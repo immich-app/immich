@@ -5,6 +5,7 @@ import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/widgets/asset_viewer/description_input.dart';
+import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/asset_date_time.dart';
 import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_detail.dart';
 import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_image_properties.dart';
 import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_location.dart';
@@ -32,29 +33,6 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     String formattedDateTime = '$date • $time GMT${timeZone.formatAsOffset()}';
 
-    final dateWidget = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          formattedDateTime,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-        if (asset.isRemote)
-          IconButton(
-            onPressed: () => handleEditDateTime(
-              ref,
-              context,
-              [assetWithExif.value ?? asset],
-            ),
-            icon: const Icon(Icons.edit_outlined),
-            iconSize: 20,
-          ),
-      ],
-    );
-
     return SingleChildScrollView(
       padding: const EdgeInsets.only(
         bottom: 50,
@@ -72,7 +50,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Column(
                     children: [
-                      dateWidget,
+                      AssetDateTime(asset: asset),
                       if (asset.isRemote)
                         DescriptionInput(asset: asset, exifInfo: exifInfo),
                     ],
@@ -132,7 +110,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                 ),
                 child: Column(
                   children: [
-                    dateWidget,
+                    AssetDateTime(asset: asset),
                     if (asset.isRemote)
                       DescriptionInput(asset: asset, exifInfo: exifInfo),
                     Padding(
