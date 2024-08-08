@@ -14,7 +14,7 @@
   <p class="dark:text-gray-100">{$t('purchase_account_info')}</p>
 </div>
 
-<style>
+<style lang="postcss">
   .supporter-effect::after {
     @apply absolute inset-0 rounded-lg opacity-0 transition-opacity content-[''];
   }
