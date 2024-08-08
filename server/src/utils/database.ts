@@ -71,8 +71,14 @@ export function searchAssetBuilder(
     builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
   }
 
-  const path = _.pick(options, ['encodedVideoPath', 'originalPath', 'previewPath', 'thumbnailPath']);
+  const path = _.pick(options, ['encodedVideoPath', 'previewPath', 'thumbnailPath']);
   builder.andWhere(_.omitBy(path, _.isUndefined));
+
+  if (options.originalPath) {
+    builder.andWhere(`f_unaccent(${builder.alias}.originalPath) ILIKE f_unaccent(:originalPath)`, {
+      originalPath: `%${options.originalPath}%`,
+    });
+  }
 
   if (options.originalFileName) {
     builder.andWhere(`f_unaccent(${builder.alias}.originalFileName) ILIKE f_unaccent(:originalFileName)`, {
