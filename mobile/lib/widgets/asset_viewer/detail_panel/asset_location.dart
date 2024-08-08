@@ -1,25 +1,31 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 
-class AssetLocation extends StatelessWidget {
+class AssetLocation extends ConsumerWidget {
   final Asset asset;
-  final ExifInfo? exifInfo;
-  final void Function() editLocation;
 
   const AssetLocation({
     super.key,
     required this.asset,
-    required this.exifInfo,
-    required this.editLocation,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final assetWithExif = ref.watch(assetDetailProvider(asset));
+    final ExifInfo? exifInfo = (assetWithExif.value ?? asset).exifInfo;
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
+
+    void editLocation() {
+      handleEditLocation(ref, context, [assetWithExif.value ?? asset]);
+    }
+
     // Guard no lat/lng
     if (!hasCoordinates) {
       return asset.isRemote
@@ -44,8 +50,8 @@ class AssetLocation extends StatelessWidget {
         return const SizedBox.shrink();
       }
 
-      final cityName = exifInfo?.city;
-      final stateName = exifInfo?.state;
+      final cityName = exifInfo.city;
+      final stateName = exifInfo.state;
 
       bool hasLocationName = (cityName != null && stateName != null);
 
@@ -88,7 +94,7 @@ class AssetLocation extends StatelessWidget {
           const SizedBox(height: 16),
           getLocationName(),
           Text(
-            "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}",
+            "${exifInfo.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
             style: context.textTheme.labelMedium?.copyWith(
               color: context.textTheme.labelMedium?.color?.withAlpha(150),
             ),

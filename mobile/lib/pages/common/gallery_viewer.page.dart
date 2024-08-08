@@ -148,11 +148,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.viewInsetsOf(context).bottom,
               ),
-              child: ref
-                      .watch(appSettingsServiceProvider)
-                      .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
-                  ? AdvancedBottomSheet(assetDetail: asset)
-                  : DetailPanel(asset: asset),
+              child: DetailPanel(asset: asset),
             ),
           );
         },

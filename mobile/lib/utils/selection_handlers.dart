@@ -96,7 +96,7 @@ Future<void> handleFavoriteAssets(
   }
 }
 
-Future<String?> handleEditDateTime(
+Future<void> handleEditDateTime(
   WidgetRef ref,
   BuildContext context,
   List<Asset> selection,
@@ -120,12 +120,10 @@ Future<String?> handleEditDateTime(
   );
 
   if (dateTime == null) {
-    return null;
+    return;
   }
 
   ref.read(assetServiceProvider).changeDateTime(selection.toList(), dateTime);
-
-  return dateTime;
 }
 
 Future<void> handleEditLocation(
@@ -145,10 +143,12 @@ Future<void> handleEditLocation(
       );
     }
   }
+
   final location = await showLocationPicker(
     context: context,
     initialLatLng: initialLatLng,
   );
+
   if (location == null) {
     return;
   }

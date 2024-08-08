@@ -14,7 +14,7 @@ class AssetDateTime extends ConsumerWidget {
   const AssetDateTime({super.key, required this.asset});
 
   String getDateTimeString(Asset a) {
-    final (deltaTime, timeZone) = (a).getTZAdjustedTimeAndOffset();
+    final (deltaTime, timeZone) = a.getTZAdjustedTimeAndOffset();
     final date = DateFormat.yMMMEd().format(deltaTime);
     final time = DateFormat.jm().format(deltaTime);
     return '$date • $time GMT${timeZone.formatAsOffset()}';
@@ -25,7 +25,7 @@ class AssetDateTime extends ConsumerWidget {
     final watchedAsset = ref.watch(assetDetailProvider(asset));
     String formattedDateTime = getDateTimeString(asset);
 
-    void changeDateTime() async {
+    void editDateTime() async {
       await handleEditDateTime(ref, context, [asset]);
 
       if (watchedAsset.value != null) {
@@ -44,7 +44,7 @@ class AssetDateTime extends ConsumerWidget {
         ),
         if (asset.isRemote)
           IconButton(
-            onPressed: changeDateTime,
+            onPressed: editDateTime,
             icon: const Icon(Icons.edit_outlined),
             iconSize: 20,
           ),
