@@ -22,98 +22,35 @@ class InfoSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetWithExif = ref.watch(assetDetailProvider(asset));
-    var textColor = context.colorScheme.onSurface;
-    final ExifInfo? exifInfo = (assetWithExif.value ?? asset).exifInfo;
-
+    print("Exif Info: ${asset.exifInfo}");
     return SingleChildScrollView(
       padding: const EdgeInsets.only(
         bottom: 50,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final horizontalPadding = constraints.maxWidth > 600 ? 24.0 : 16.0;
-          if (constraints.maxWidth > 600) {
-            // Two column
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Column(
-                    children: [
-                      AssetDateTime(asset: asset),
-                      if (asset.isRemote)
-                        DescriptionInput(asset: asset, exifInfo: exifInfo),
-                    ],
-                  ),
-                ),
-                ExifPeople(
-                  asset: asset,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: horizontalPadding,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: horizontalPadding,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: ExifLocation(
-                            asset: asset,
-                            exifInfo: exifInfo,
-                            editLocation: () => handleEditLocation(
-                              ref,
-                              context,
-                              [assetWithExif.value ?? asset],
-                            ),
-                          ),
-                        ),
-                      ),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: ExifDetail(asset: asset, exifInfo: exifInfo),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }
+          const horizontalPadding = 16.0;
 
-          // One column
           return Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: horizontalPadding,
                 ),
                 child: Column(
                   children: [
                     AssetDateTime(asset: asset),
-                    if (asset.isRemote)
-                      DescriptionInput(asset: asset, exifInfo: exifInfo),
+                    if (asset.isRemote) DescriptionInput(asset: asset),
                     Padding(
                       padding: EdgeInsets.only(top: asset.isRemote ? 0 : 16.0),
                       child: ExifLocation(
                         asset: asset,
-                        exifInfo: exifInfo,
                         editLocation: () => handleEditLocation(
                           ref,
                           context,
-                          [assetWithExif.value ?? asset],
+                          [asset],
                         ),
                       ),
                     ),
@@ -124,13 +61,14 @@ class InfoSheet extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: ExifPeople(
                   asset: asset,
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     horizontal: horizontalPadding,
                   ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -146,28 +84,28 @@ class InfoSheet extends HookConsumerWidget {
                       ).tr(),
                     ),
                     ExifImageProperties(asset: asset),
-                    if (exifInfo?.make != null)
-                      ListTile(
-                        contentPadding: const EdgeInsets.all(0),
-                        dense: true,
-                        leading: Icon(
-                          Icons.camera,
-                          color: textColor.withAlpha(200),
-                        ),
-                        title: Text(
-                          "${exifInfo!.make} ${exifInfo.model}",
-                          style: context.textTheme.labelLarge,
-                        ),
-                        subtitle: exifInfo.f != null ||
-                                exifInfo.exposureSeconds != null ||
-                                exifInfo.mm != null ||
-                                exifInfo.iso != null
-                            ? Text(
-                                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
-                                style: context.textTheme.bodySmall,
-                              )
-                            : null,
-                      ),
+                    // if (exifInfo?.make != null)
+                    //   ListTile(
+                    //     contentPadding: const EdgeInsets.all(0),
+                    //     dense: true,
+                    //     leading: Icon(
+                    //       Icons.camera,
+                    //       color: context.colorScheme.onSurface.withAlpha(200),
+                    //     ),
+                    //     title: Text(
+                    //       "${exifInfo!.make} ${exifInfo.model}",
+                    //       style: context.textTheme.labelLarge,
+                    //     ),
+                    //     subtitle: exifInfo.f != null ||
+                    //             exifInfo.exposureSeconds != null ||
+                    //             exifInfo.mm != null ||
+                    //             exifInfo.iso != null
+                    //         ? Text(
+                    //             "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
+                    //             style: context.textTheme.bodySmall,
+                    //           )
+                    //         : null,
+                    //   ),
                   ],
                 ),
               ),
