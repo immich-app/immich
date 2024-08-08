@@ -5,12 +5,12 @@ import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_map.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 
-class ExifLocation extends StatelessWidget {
+class AssetLocation extends StatelessWidget {
   final Asset asset;
   final ExifInfo? exifInfo;
   final void Function() editLocation;
 
-  const ExifLocation({
+  const AssetLocation({
     super.key,
     required this.asset,
     required this.exifInfo,
@@ -39,6 +39,24 @@ class ExifLocation extends StatelessWidget {
           : const SizedBox.shrink();
     }
 
+    Widget getLocationName() {
+      if (exifInfo == null) {
+        return const SizedBox.shrink();
+      }
+
+      final cityName = exifInfo?.city;
+      final stateName = exifInfo?.state;
+
+      bool hasLocationName = (cityName != null && stateName != null);
+
+      return hasLocationName
+          ? Text(
+              "$cityName, $stateName",
+              style: context.textTheme.labelLarge,
+            )
+          : const SizedBox.shrink();
+    }
+
     return Column(
       children: [
         // Location
@@ -63,31 +81,15 @@ class ExifLocation extends StatelessWidget {
                   ),
               ],
             ),
+            asset.isRemote
+                ? const SizedBox.shrink()
+                : const SizedBox(height: 16),
             ExifMap(
               exifInfo: exifInfo!,
               markerId: asset.remoteId,
             ),
-            RichText(
-              text: TextSpan(
-                style: context.textTheme.labelLarge,
-                children: [
-                  if (exifInfo != null && exifInfo?.city != null)
-                    TextSpan(
-                      text: exifInfo!.city,
-                    ),
-                  if (exifInfo != null &&
-                      exifInfo?.city != null &&
-                      exifInfo?.state != null)
-                    const TextSpan(
-                      text: ", ",
-                    ),
-                  if (exifInfo != null && exifInfo?.state != null)
-                    TextSpan(
-                      text: exifInfo!.state,
-                    ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 16),
+            getLocationName(),
             Text(
               "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}",
               style: context.textTheme.labelMedium?.copyWith(

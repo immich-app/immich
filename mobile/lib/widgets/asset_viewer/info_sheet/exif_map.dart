@@ -61,32 +61,29 @@ class ExifMap extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return MapThumbnail(
-            centre: LatLng(
-              exifInfo.latitude ?? 0,
-              exifInfo.longitude ?? 0,
-            ),
-            height: 150,
-            width: constraints.maxWidth,
-            zoom: 12.0,
-            assetMarkerRemoteId: markerId,
-            onTap: (tapPosition, latLong) async {
-              Uri? uri = await createCoordinatesUri();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return MapThumbnail(
+          centre: LatLng(
+            exifInfo.latitude ?? 0,
+            exifInfo.longitude ?? 0,
+          ),
+          height: 150,
+          width: constraints.maxWidth,
+          zoom: 12.0,
+          assetMarkerRemoteId: markerId,
+          onTap: (tapPosition, latLong) async {
+            Uri? uri = await createCoordinatesUri();
 
-              if (uri == null) {
-                return;
-              }
+            if (uri == null) {
+              return;
+            }
 
-              debugPrint('Opening Map Uri: $uri');
-              launchUrl(uri);
-            },
-          );
-        },
-      ),
+            debugPrint('Opening Map Uri: $uri');
+            launchUrl(uri);
+          },
+        );
+      },
     );
   }
 }

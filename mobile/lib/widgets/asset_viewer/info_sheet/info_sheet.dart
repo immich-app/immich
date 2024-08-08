@@ -8,8 +8,8 @@ import 'package:immich_mobile/widgets/asset_viewer/description_input.dart';
 import 'package:immich_mobile/widgets/asset_viewer/info_sheet/asset_date_time.dart';
 import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_detail.dart';
 import 'package:immich_mobile/widgets/asset_viewer/info_sheet/asset_name_and_size.dart';
-import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_location.dart';
-import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_people.dart';
+import 'package:immich_mobile/widgets/asset_viewer/info_sheet/asset_location.dart';
+import 'package:immich_mobile/widgets/asset_viewer/info_sheet/people_info.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
@@ -33,6 +33,14 @@ class InfoSheet extends HookConsumerWidget {
       return DescriptionInput(asset: asset, exifInfo: exifInfo);
     }
 
+    void editLocation() {
+      handleEditLocation(
+        ref,
+        context,
+        [assetWithExif.value ?? asset],
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         const horizontalPadding = 16.0;
@@ -48,28 +56,16 @@ class InfoSheet extends HookConsumerWidget {
                 children: [
                   AssetDateTime(asset: asset),
                   getDescriptionInput(),
-                  Padding(
-                    padding: EdgeInsets.only(top: asset.isRemote ? 0 : 16.0),
-                    child: ExifLocation(
-                      asset: asset,
-                      exifInfo: exifInfo,
-                      editLocation: () => handleEditLocation(
-                        ref,
-                        context,
-                        [assetWithExif.value ?? asset],
-                      ),
-                    ),
+                  PeopleInfo(asset: asset),
+                  AssetLocation(
+                    asset: asset,
+                    exifInfo: exifInfo,
+                    editLocation: editLocation,
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            ExifPeople(
-              asset: asset,
-              padding: const EdgeInsets.symmetric(
-                horizontal: horizontalPadding,
-              ),
-            ),
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: horizontalPadding),
