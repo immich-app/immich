@@ -444,6 +444,38 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     duplicateId: string;
 };
+export type EditorCropRegion = {
+    height: number;
+    left: number;
+    top: number;
+    width: number;
+};
+export type EditorActionCrop = {
+    action: EditorActionType;
+    region: EditorCropRegion;
+};
+export type EditorActionRotate = {
+    action: EditorActionType;
+    angle: number;
+};
+export type EditorActionBlur = {
+    action: EditorActionType;
+};
+export type EditorActionAdjust = {
+    action: EditorActionType;
+    brightness: number;
+    hue: number;
+    lightness: number;
+    saturation: number;
+};
+export type EditorCreateAssetDto = {
+    /** list of edits */
+    edits: (EditorActionCrop | EditorActionRotate | EditorActionBlur | EditorActionAdjust)[];
+    /** Source asset id */
+    id: string;
+    /** Stack the edit and the original */
+    stack?: boolean;
+};
 export type PersonResponseDto = {
     birthDate: string | null;
     id: string;
@@ -1836,6 +1868,18 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function createAssetFromEdits({ editorCreateAssetDto }: {
+    editorCreateAssetDto: EditorCreateAssetDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AssetResponseDto;
+    }>("/editor", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: editorCreateAssetDto
+    })));
+}
 export function getFaces({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3137,6 +3181,12 @@ export enum AssetMediaSize {
 export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
+}
+export enum EditorActionType {
+    Crop = "crop",
+    Rotate = "rotate",
+    Blur = "blur",
+    Adjust = "adjust"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",

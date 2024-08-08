@@ -129,6 +129,7 @@ Class | Method | HTTP request | Description
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
+*EditorApi* | [**createAssetFromEdits**](doc//EditorApi.md#createassetfromedits) | **POST** /editor | 
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | 
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | 
 *FileReportsApi* | [**fixAuditFiles**](doc//FileReportsApi.md#fixauditfiles) | **POST** /reports/fix | 
@@ -314,6 +315,14 @@ Class | Method | HTTP request | Description
  - [DownloadUpdate](doc//DownloadUpdate.md)
  - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
+ - [EditorActionAdjust](doc//EditorActionAdjust.md)
+ - [EditorActionBlur](doc//EditorActionBlur.md)
+ - [EditorActionCrop](doc//EditorActionCrop.md)
+ - [EditorActionRotate](doc//EditorActionRotate.md)
+ - [EditorActionType](doc//EditorActionType.md)
+ - [EditorCreateAssetDto](doc//EditorCreateAssetDto.md)
+ - [EditorCreateAssetDtoEditsInner](doc//EditorCreateAssetDtoEditsInner.md)
+ - [EditorCropRegion](doc//EditorCropRegion.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
  - [EntityType](doc//EntityType.md)

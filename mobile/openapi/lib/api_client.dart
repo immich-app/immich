@@ -308,6 +308,22 @@ class ApiClient {
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
+        case 'EditorActionAdjust':
+          return EditorActionAdjust.fromJson(value);
+        case 'EditorActionBlur':
+          return EditorActionBlur.fromJson(value);
+        case 'EditorActionCrop':
+          return EditorActionCrop.fromJson(value);
+        case 'EditorActionRotate':
+          return EditorActionRotate.fromJson(value);
+        case 'EditorActionType':
+          return EditorActionTypeTypeTransformer().decode(value);
+        case 'EditorCreateAssetDto':
+          return EditorCreateAssetDto.fromJson(value);
+        case 'EditorCreateAssetDtoEditsInner':
+          return EditorCreateAssetDtoEditsInner.fromJson(value);
+        case 'EditorCropRegion':
+          return EditorCropRegion.fromJson(value);
         case 'EmailNotificationsResponse':
           return EmailNotificationsResponse.fromJson(value);
         case 'EmailNotificationsUpdate':

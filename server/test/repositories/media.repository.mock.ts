@@ -9,5 +9,6 @@ export const newMediaRepositoryMock = (): Mocked<IMediaRepository> => {
     probe: vitest.fn(),
     transcode: vitest.fn(),
     getImageDimensions: vitest.fn(),
+    applyEdits: vitest.fn(),
   };
 };

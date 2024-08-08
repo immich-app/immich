@@ -250,7 +250,7 @@ export class JobService {
       }
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
-        if (item.data.source === 'upload' || item.data.source === 'copy') {
+        if (item.data.source === 'upload' || item.data.source === 'copy' || item.data.source === 'editor') {
           await this.jobRepository.queue({ name: JobName.GENERATE_PREVIEW, data: item.data });
         }
         break;
@@ -271,7 +271,7 @@ export class JobService {
           { name: JobName.GENERATE_THUMBHASH, data: item.data },
         ];
 
-        if (item.data.source === 'upload') {
+        if (item.data.source === 'upload' || item.data.source === 'editor') {
           jobs.push({ name: JobName.SMART_SEARCH, data: item.data }, { name: JobName.FACE_DETECTION, data: item.data });
 
           const [asset] = await this.assetRepository.getByIds([item.data.id]);
@@ -289,7 +289,7 @@ export class JobService {
       }
 
       case JobName.GENERATE_THUMBNAIL: {
-        if (item.data.source !== 'upload') {
+        if (item.data.source !== 'upload' && item.data.source !== 'editor') {
           break;
         }
 

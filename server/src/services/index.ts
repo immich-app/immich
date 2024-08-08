@@ -10,6 +10,7 @@ import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
+import { EditorService } from 'src/services/editor.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MapService } from 'src/services/map.service';
@@ -50,6 +51,7 @@ export const services = [
   DatabaseService,
   DownloadService,
   DuplicateService,
+  EditorService,
   JobService,
   LibraryService,
   MapService,

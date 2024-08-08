@@ -8,8 +8,9 @@ import sharp from 'sharp';
 import { Colorspace } from 'src/config';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
-  IMediaRepository,
   ImageDimensions,
+  IMediaRepository,
+  MediaEdits,
   ThumbnailOptions,
   TranscodeCommand,
   VideoInfo,
@@ -42,6 +43,41 @@ export class MediaRepository implements IMediaRepository {
     }
 
     return true;
+  }
+
+  async applyEdits(input: string, output: string, edits: MediaEdits) {
+    const pipeline = sharp(input, { failOn: 'error', limitInputPixels: false }).keepMetadata();
+
+    for (const edit of edits) {
+      switch (edit.action) {
+        case 'crop': {
+          pipeline.extract(edit.region);
+          break;
+        }
+
+        case 'rotate': {
+          pipeline.rotate(edit.angle);
+          break;
+        }
+
+        case 'blur': {
+          pipeline.blur(true);
+          break;
+        }
+
+        case 'modulate': {
+          pipeline.modulate({
+            brightness: edit.brightness,
+            saturation: edit.saturation,
+            hue: edit.hue,
+            lightness: edit.lightness,
+          });
+          break;
+        }
+      }
+    }
+
+    await pipeline.toFile(output);
   }
 
   async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {

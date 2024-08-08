@@ -2469,6 +2469,48 @@
         ]
       }
     },
+    "/editor": {
+      "post": {
+        "operationId": "createAssetFromEdits",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditorCreateAssetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Editor"
+        ]
+      }
+    },
     "/faces": {
       "get": {
         "operationId": "getFaces",
@@ -8559,6 +8601,144 @@
         "required": [
           "assets",
           "duplicateId"
+        ],
+        "type": "object"
+      },
+      "EditorActionAdjust": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/EditorActionType"
+          },
+          "brightness": {
+            "type": "integer"
+          },
+          "hue": {
+            "type": "integer"
+          },
+          "lightness": {
+            "type": "integer"
+          },
+          "saturation": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "brightness",
+          "hue",
+          "lightness",
+          "saturation"
+        ],
+        "type": "object"
+      },
+      "EditorActionBlur": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/EditorActionType"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "type": "object"
+      },
+      "EditorActionCrop": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/EditorActionType"
+          },
+          "region": {
+            "$ref": "#/components/schemas/EditorCropRegion"
+          }
+        },
+        "required": [
+          "action",
+          "region"
+        ],
+        "type": "object"
+      },
+      "EditorActionRotate": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/EditorActionType"
+          },
+          "angle": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "angle"
+        ],
+        "type": "object"
+      },
+      "EditorActionType": {
+        "enum": [
+          "crop",
+          "rotate",
+          "blur",
+          "adjust"
+        ],
+        "type": "string"
+      },
+      "EditorCreateAssetDto": {
+        "properties": {
+          "edits": {
+            "description": "list of edits",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EditorActionCrop"
+                },
+                {
+                  "$ref": "#/components/schemas/EditorActionRotate"
+                },
+                {
+                  "$ref": "#/components/schemas/EditorActionBlur"
+                },
+                {
+                  "$ref": "#/components/schemas/EditorActionAdjust"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Source asset id",
+            "format": "uuid",
+            "type": "string"
+          },
+          "stack": {
+            "description": "Stack the edit and the original",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "edits",
+          "id"
+        ],
+        "type": "object"
+      },
+      "EditorCropRegion": {
+        "properties": {
+          "height": {
+            "type": "integer"
+          },
+          "left": {
+            "type": "integer"
+          },
+          "top": {
+            "type": "integer"
+          },
+          "width": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "height",
+          "left",
+          "top",
+          "width"
         ],
         "type": "object"
       },
