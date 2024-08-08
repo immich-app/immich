@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_map.dart';
+import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 
@@ -57,48 +57,44 @@ class AssetLocation extends StatelessWidget {
           : const SizedBox.shrink();
     }
 
-    return Column(
-      children: [
-        // Location
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "exif_bottom_sheet_location",
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ).tr(),
-                if (asset.isRemote)
-                  IconButton(
-                    onPressed: editLocation,
-                    icon: const Icon(Icons.edit_outlined),
-                    iconSize: 20,
-                  ),
-              ],
+    return Padding(
+      padding: EdgeInsets.only(top: asset.isRemote ? 16.0 : 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "exif_bottom_sheet_location",
+                style: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                  fontWeight: FontWeight.w600,
+                ),
+              ).tr(),
+              if (asset.isRemote)
+                IconButton(
+                  onPressed: editLocation,
+                  icon: const Icon(Icons.edit_outlined),
+                  iconSize: 20,
+                ),
+            ],
+          ),
+          asset.isRemote ? const SizedBox.shrink() : const SizedBox(height: 16),
+          ExifMap(
+            exifInfo: exifInfo!,
+            markerId: asset.remoteId,
+          ),
+          const SizedBox(height: 16),
+          getLocationName(),
+          Text(
+            "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}",
+            style: context.textTheme.labelMedium?.copyWith(
+              color: context.textTheme.labelMedium?.color?.withAlpha(150),
             ),
-            asset.isRemote
-                ? const SizedBox.shrink()
-                : const SizedBox(height: 16),
-            ExifMap(
-              exifInfo: exifInfo!,
-              markerId: asset.remoteId,
-            ),
-            const SizedBox(height: 16),
-            getLocationName(),
-            Text(
-              "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}",
-              style: context.textTheme.labelMedium?.copyWith(
-                color: context.textTheme.labelMedium?.color?.withAlpha(150),
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
