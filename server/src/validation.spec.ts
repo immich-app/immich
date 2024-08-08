@@ -1,10 +1,11 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { DateTime } from 'luxon';
 import { IsDateStringFormat, MaxDateString } from 'src/validation';
 
 describe('Validation', () => {
   describe('MaxDateString', () => {
-    const maxDate = new Date(2000, 0, 1);
+    const maxDate = DateTime.fromISO('2000-01-01', { zone: 'utc' });
 
     class MyDto {
       @MaxDateString(maxDate)
