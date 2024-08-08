@@ -62,8 +62,12 @@ class SyncService {
     List<AlbumResponseDto> remote, {
     required bool isShared,
     required FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
-  }) =>
-      _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
+  }) async {
+    _log.info('syncRemoteAlbumsToDb waiting for lock');
+    var r = await _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
+    _log.info('syncRemoteAlbumsToDb finished');
+    return r;
+  }
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
@@ -287,7 +291,10 @@ class SyncService {
     bool isShared,
     FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   ) async {
+    _log.info('_syncRemoteAlbumsToDb started');
+
     remote.sortBy((e) => e.id);
+    _log.info('_syncRemoteAlbumsToDb sorted remote');
 
     final baseQuery = _db.albums.where().remoteIdIsNotNull().filter();
     final QueryBuilder<Album, Album, QAfterFilterCondition> query;
@@ -297,12 +304,16 @@ class SyncService {
       final User me = Store.get(StoreKey.currentUser);
       query = baseQuery.owner((q) => q.isarIdEqualTo(me.isarId));
     }
+
+    _log.info('_syncRemoteAlbumsToDb starting findAll');
     final List<Album> dbAlbums = await query.sortByRemoteId().findAll();
+    _log.info('_syncRemoteAlbumsToDb done findAll');
     assert(dbAlbums.isSortedBy((e) => e.remoteId!), "dbAlbums not sorted!");
 
     final List<Asset> toDelete = [];
     final List<Asset> existing = [];
 
+    _log.info('_syncRemoteAlbumsToDb computing changes');
     final bool changes = await diffSortedLists(
       remote,
       dbAlbums,
@@ -316,6 +327,7 @@ class SyncService {
 
     if (isShared && toDelete.isNotEmpty) {
       final List<int> idsToRemove = sharedAssetsToRemove(toDelete, existing);
+      _log.info('_syncRemoteAlbumsToDb removing assets');
       if (idsToRemove.isNotEmpty) {
         await _db.writeTxn(() async {
           await _db.assets.deleteAll(idsToRemove);

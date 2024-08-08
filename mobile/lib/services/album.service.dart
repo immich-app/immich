@@ -15,6 +15,7 @@ import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:isar/isar.dart';
@@ -150,24 +151,35 @@ class AlbumService {
     final Stopwatch sw = Stopwatch()..start();
     bool changes = false;
     try {
-      await _userService.refreshUsers();
-      final List<AlbumResponseDto>? serverAlbums = await _apiService.albumsApi
-          .getAllAlbums(shared: isShared ? true : null);
-      if (serverAlbums == null) {
-        return false;
-      }
-      changes = await _syncService.syncRemoteAlbumsToDb(
-        serverAlbums,
-        isShared: isShared,
-        loadDetails: (dto) async => dto.assetCount == dto.assets.length
-            ? dto
-            : (await _apiService.albumsApi.getAlbumInfo(dto.id)) ?? dto,
-      );
+      changes = await dbIso.dispatch("refreshRemoteAlbums", isShared);
     } finally {
       _remoteCompleter.complete(changes);
     }
     debugPrint("refreshRemoteAlbums took ${sw.elapsedMilliseconds}ms");
     return changes;
+  }
+
+  /// Checks remote albums (owned if `isShared` is false) for changes,
+  /// updates the local database and returns `true` if there were any changes
+  Future<bool> refreshRemoteAlbumsBackground({required bool isShared}) async {
+    _log.info('refreshRemoteAlbumsBackground started');
+
+    await _userService.refreshUsers();
+    _log.info('refreshRemoteAlbumsBackground refreshUsers done');
+
+    final List<AlbumResponseDto>? serverAlbums = await _apiService.albumsApi
+        .getAllAlbums(shared: isShared ? true : null);
+    _log.info('refreshRemoteAlbumsBackground getAllAlbums done');
+    if (serverAlbums == null) {
+      return false;
+    }
+    return await _syncService.syncRemoteAlbumsToDb(
+      serverAlbums,
+      isShared: isShared,
+      loadDetails: (dto) async => dto.assetCount == dto.assets.length
+          ? dto
+          : (await _apiService.albumsApi.getAlbumInfo(dto.id)) ?? dto,
+    );
   }
 
   Future<Album?> createAlbum(
