@@ -9,7 +9,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAlertCircleOutline } from '@mdi/js';
   import { purchaseStore } from '$lib/stores/purchase.store';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
 
   export let data: PageData;
   let showLicenseActivated = false;
@@ -30,14 +30,7 @@
       {/if}
 
       {#if $isPurchased}
-        <div
-          class="flex gap-1 mt-2 place-items-center place-content-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 border rounded-lg dark:text-white supporter-effect"
-        >
-          <div class="h-8 w-8">
-            <ImmichLogo noText />
-          </div>
-          <p>{$t('purchase_account_info')}</p>
-        </div>
+        <SupporterBadge logoSize="lg" centered />
       {/if}
 
       {#if showLicenseActivated || data.isActivated === true}
