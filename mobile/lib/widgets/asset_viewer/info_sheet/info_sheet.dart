@@ -5,20 +5,20 @@ import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/widgets/asset_viewer/description_input.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/asset_date_time.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_detail.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_image_properties.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_location.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_people.dart';
+import 'package:immich_mobile/widgets/asset_viewer/info_sheet/asset_date_time.dart';
+import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_detail.dart';
+import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_image_properties.dart';
+import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_location.dart';
+import 'package:immich_mobile/widgets/asset_viewer/info_sheet/exif_people.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 
-class ExifBottomSheet extends HookConsumerWidget {
+class InfoSheet extends HookConsumerWidget {
   final Asset asset;
 
-  const ExifBottomSheet({super.key, required this.asset});
+  const InfoSheet({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
