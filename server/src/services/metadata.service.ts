@@ -33,12 +33,13 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMetadataRepository, ImmichTags, MetadataFaceResult, MetadataRegion } from 'src/interfaces/metadata.interface';
+import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 /** look for a date from these tags (in order) */
@@ -247,7 +248,7 @@ export class MetadataService implements OnEvents {
       metadataExtractedAt: new Date(),
     });
 
-    if (importFaces) {
+    if (isFaceImportEnabled(importFaces)) {
       await this.applyTaggedFaces(asset, tags);
     }
 
@@ -478,8 +479,9 @@ export class MetadataService implements OnEvents {
 
     const discoveredFaces: Partial<AssetFaceEntity>[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
-    const existingNameMap = new Map(existingNames.map(({ id, name }) => [name, id]));
+    const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
     const missing: Partial<PersonEntity>[] = [];
+    const missingWithFaceAsset: Partial<PersonEntity>[] = [];
     for (const region of tags.RegionInfo.RegionList) {
       if (!region.Name) {
         continue;
@@ -492,31 +494,34 @@ export class MetadataService implements OnEvents {
 
       const face = {
         id: this.cryptoRepository.randomUUID(),
-        personId,
+        personId: personId,
         assetId: asset.id,
-        imageWidth,
-        imageHeight,
-        boundingBoxX1: Math.floor(region.Area.X - region.Area.W / 2) * imageWidth,
-        boundingBoxY1: Math.floor(region.Area.Y - region.Area.H / 2) * imageWidth,
-        boundingBoxX2: Math.floor(region.Area.X + region.Area.W / 2) * imageWidth,
-        boundingBoxY2: Math.floor(region.Area.Y + region.Area.H / 2) * imageWidth,
+        imageWidth: imageWidth,
+        imageHeight: imageHeight,
+        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
         sourceType: SourceType.EXIF,
       };
 
       discoveredFaces.push(face);
       if (!existingNameMap.has(loweredName)) {
-        missing.push({ id: personId, faceAssetId: face.id, ownerId: asset.ownerId, name: region.Name });
+        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
+        missingWithFaceAsset.push({ id: personId, faceAssetId: face.id });
       }
     }
 
     if (missing.length > 0) {
-      this.logger.debug(`Creating missing persons: ${missing}`);
+      this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
     }
 
     const newPersons: PersonEntity[] = await this.personRepository.create(missing);
 
     const faceIds = await this.personRepository.upsertFaces(asset.id, discoveredFaces, SourceType.EXIF);
     this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
+
+    await this.personRepository.update(missingWithFaceAsset);
 
     const jobs = newPersons.map((person) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } }));
     await this.jobRepository.queueAll(jobs as JobItem[]);

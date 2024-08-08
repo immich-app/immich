@@ -7,7 +7,8 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription' | 'RegionInfo'> {
+export interface ImmichTags
+  extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription' | 'RegionInfo'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
@@ -20,6 +21,10 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Des
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
 
+  // Type is wrong, can also be number.
+  Description?: string | number;
+  ImageDescription?: string | number;
+
   // Extended properties for image regions, such as faces
   RegionInfo?: {
     AppliedToDimensions: {
@@ -29,7 +34,7 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Des
     };
     RegionList: {
       Area: {
-        // (X,Y) // center of the rectancle
+        // (X,Y) // center of the rectangle
         X: number;
         Y: number;
         W: number;
@@ -41,24 +46,6 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Des
       Name?: string;
     }[];
   };
-}
-
-export interface MetadataRegion {
-  imageWidth: number;
-  imageHeight: number;
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-}
-
-export interface MetadataFaceResult {
-  Name?: string;
-  Type?: string;
-  // Type is wrong, can also be number.
-  Description?: string | number;
-  ImageDescription?: string | number;
-  Region: MetadataRegion;
 }
 
 export interface IMetadataRepository {

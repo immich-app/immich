@@ -52,7 +52,6 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async deleteAllFaces({ sourceType }: DeleteAllFacesOptions): Promise<void> {
-    // eslint-disable-next-line unicorn/prefer-ternary
     if (sourceType === undefined) {
       await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
     } else if (sourceType === null) {
@@ -203,7 +202,7 @@ export class PersonRepository implements IPersonRepository {
   getDistinctNames(userId: string, { withHidden }: PersonNameSearchOptions): Promise<PersonNameResponse[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .select(['id', 'name'])
+      .select(['person.id', 'person.name'])
       .distinctOn(['lower(person.name)'])
       .where(`person.ownerId = :userId AND person.name != ''`, { userId });
 
