@@ -7,19 +7,19 @@ import 'package:immich_mobile/entities/exif_info.entity.dart';
 
 class ExifLocation extends StatelessWidget {
   final Asset asset;
+  final ExifInfo? exifInfo;
   final void Function() editLocation;
 
   const ExifLocation({
     super.key,
     required this.asset,
+    required this.exifInfo,
     required this.editLocation,
   });
 
   @override
   Widget build(BuildContext context) {
-    final exifInfo = asset.exifInfo;
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
-
     // Guard no lat/lng
     if (!hasCoordinates) {
       return asset.isRemote
@@ -71,23 +71,25 @@ class ExifLocation extends StatelessWidget {
               text: TextSpan(
                 style: context.textTheme.labelLarge,
                 children: [
-                  if (exifInfo.city != null)
+                  if (exifInfo != null && exifInfo?.city != null)
                     TextSpan(
-                      text: exifInfo.city,
+                      text: exifInfo!.city,
                     ),
-                  if (exifInfo.city != null && exifInfo.state != null)
+                  if (exifInfo != null &&
+                      exifInfo?.city != null &&
+                      exifInfo?.state != null)
                     const TextSpan(
                       text: ", ",
                     ),
-                  if (exifInfo.state != null)
+                  if (exifInfo != null && exifInfo?.state != null)
                     TextSpan(
-                      text: exifInfo.state,
+                      text: exifInfo!.state,
                     ),
                 ],
               ),
             ),
             Text(
-              "${exifInfo.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
+              "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}",
               style: context.textTheme.labelMedium?.copyWith(
                 color: context.textTheme.labelMedium?.color?.withAlpha(150),
               ),
