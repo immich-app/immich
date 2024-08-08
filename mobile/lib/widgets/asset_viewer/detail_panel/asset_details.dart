@@ -20,6 +20,7 @@ class AssetDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print("==================== AssetDetails build");
     final assetWithExif = ref.watch(assetDetailProvider(asset));
     final ExifInfo? exifInfo = (assetWithExif.value ?? asset).exifInfo;
 
