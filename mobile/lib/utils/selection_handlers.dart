@@ -96,7 +96,7 @@ Future<void> handleFavoriteAssets(
   }
 }
 
-Future<void> handleEditDateTime(
+Future<String?> handleEditDateTime(
   WidgetRef ref,
   BuildContext context,
   List<Asset> selection,
@@ -118,11 +118,14 @@ Future<void> handleEditDateTime(
     initialTZ: timeZone,
     initialTZOffset: offset,
   );
+
   if (dateTime == null) {
-    return;
+    return null;
   }
 
   ref.read(assetServiceProvider).changeDateTime(selection.toList(), dateTime);
+
+  return dateTime;
 }
 
 Future<void> handleEditLocation(

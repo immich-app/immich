@@ -5,6 +5,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class AssetDateTime extends ConsumerWidget {
@@ -12,12 +13,25 @@ class AssetDateTime extends ConsumerWidget {
 
   const AssetDateTime({super.key, required this.asset});
 
+  String getDateTimeString(Asset a) {
+    final (deltaTime, timeZone) = (a).getTZAdjustedTimeAndOffset();
+    final date = DateFormat.yMMMEd().format(deltaTime);
+    final time = DateFormat.jm().format(deltaTime);
+    return '$date • $time GMT${timeZone.formatAsOffset()}';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final (dt, timeZone) = (asset).getTZAdjustedTimeAndOffset();
-    final date = DateFormat.yMMMEd().format(dt);
-    final time = DateFormat.jm().format(dt);
-    String formattedDateTime = '$date • $time GMT${timeZone.formatAsOffset()}';
+    final watchedAsset = ref.watch(assetDetailProvider(asset));
+    String formattedDateTime = getDateTimeString(asset);
+
+    void changeDateTime() async {
+      await handleEditDateTime(ref, context, [asset]);
+
+      if (watchedAsset.value != null) {
+        formattedDateTime = getDateTimeString(watchedAsset.value!);
+      }
+    }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -30,11 +44,7 @@ class AssetDateTime extends ConsumerWidget {
         ),
         if (asset.isRemote)
           IconButton(
-            onPressed: () => handleEditDateTime(
-              ref,
-              context,
-              [asset],
-            ),
+            onPressed: changeDateTime,
             icon: const Icon(Icons.edit_outlined),
             iconSize: 20,
           ),

@@ -58,7 +58,7 @@ class AssetLocation extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.only(top: asset.isRemote ? 16.0 : 0),
+      padding: EdgeInsets.only(top: asset.isRemote ? 0 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
