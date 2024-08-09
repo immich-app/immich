@@ -550,6 +550,8 @@
   "edit_user": "Редактировать пользователя",
   "edited": "Отредактировано",
   "editor": "Редактор",
+  "editor_close_without_save_prompt": "Изменения не будут сохранены",
+  "editor_close_without_save_title": "Закрыть редактор?",
   "email": "Электронная почта",
   "empty": "",
   "empty_album": "Пустой альбом",
