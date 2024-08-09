@@ -238,7 +238,7 @@ describe('/asset', () => {
       expect(status).toBe(200);
       expect(body).toMatchObject({
         id: ratingAsset.id,
-        exifInfo: expect.objectContaining({ rating: 3}),
+        exifInfo: expect.objectContaining({ rating: 3 }),
       });
     });
 
@@ -618,11 +618,7 @@ describe('/asset', () => {
     });
 
     it('should reject invalid rating', async () => {
-      for (const test of [
-        { rating: 7 },
-        { rating: 3.5 },
-        { rating: null }
-      ]) {
+      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: null }]) {
         const { status, body } = await request(app)
           .put(`/assets/${user1Assets[0].id}`)
           .send(test)
