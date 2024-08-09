@@ -1,4 +1,5 @@
 import { Writable } from 'node:stream';
+import { Region } from 'sharp';
 import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/config';
 
 export const IMediaRepository = 'IMediaRepository';
@@ -71,6 +72,20 @@ export interface BitrateDistribution {
   unit: string;
 }
 
+export type MediaEditItem =
+  | { action: 'crop'; region: Region }
+  | { action: 'rotate'; angle: number }
+  | { action: 'blur' }
+  | {
+      action: 'modulate';
+      brightness?: number;
+      saturation?: number;
+      hue?: number;
+      lightness?: number;
+    };
+
+export type MediaEdits = MediaEditItem[];
+
 export interface VideoCodecSWConfig {
   getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeCommand;
 }
@@ -89,4 +104,7 @@ export interface IMediaRepository {
   // video
   probe(input: string): Promise<VideoInfo>;
   transcode(input: string, output: string | Writable, command: TranscodeCommand): Promise<void>;
+
+  // editor
+  applyEdits(input: string, output: string, edits: MediaEditItem[]): Promise<void>;
 }

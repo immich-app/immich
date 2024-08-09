@@ -82,6 +82,9 @@ String parameterToString(dynamic value) {
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
+  if (value is EditorActionType) {
+    return EditorActionTypeTypeTransformer().encode(value).toString();
+  }
   if (value is EntityType) {
     return EntityTypeTypeTransformer().encode(value).toString();
   }
