@@ -12,70 +12,96 @@ The database is saved to your Immich upload folder in the `database-backup` subd
 - (Optional) To run this sript as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
 - To run this script non-interactively, set up [passwordless ssh](https://www.redhat.com/sysadmin/passwordless-ssh) to your remote machine from your server. If you skipped the previous step, make sure this step is done from your root account.
 
-To initialize the borg repository, run the following commands once.
-
-```bash title='Borg set-up'
-UPLOAD_LOCATION="/path/to/immich/directory"       # Immich database location, as set in your .env file
-BACKUP_PATH="/path/to/local/backup/directory"
-
-mkdir "$UPLOAD_LOCATION/database-backup"
-borg init --encryption=none "$BACKUP_PATH/immich-borg"
-
-## Remote set up
-REMOTE_HOST="remote_host@IP"
-REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
-
-borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg"
-```
-
 Edit the following script as necessary and add it to your crontab. Note that this script assumes there are no `:`, `@`, or `"` characters in your paths. If these characters exist, you will need to escape and/or rename the paths.
 
 ```bash title='Borg backup template'
 #!/bin/sh
 
+### init Borg setup
+_init_setup() {
+    if [ ! -d "$UPLOAD_LOCATION/database-backup" ]; then
+        mkdir "$UPLOAD_LOCATION/database-backup" || return 1
+    fi
+    if [ ! -d "$BACKUP_PATH" ]; then
+        borg init --encryption=none "$BACKUP_PATH" || return 1
+    fi
+    ssh_opt="ssh -o StrictHostKeyChecking=no -oConnectTimeout=10"
+    if ${ssh_opt} "$REMOTE_HOST" "true"; then
+        echo "OK. ssh remote host $REMOTE_HOST"
+        if ${ssh_opt} "$REMOTE_HOST" "test -d \"$REMOTE_BACKUP_PATH\""; then
+            echo "OK. Found $REMOTE_BACKUP_PATH on remote host."
+        else
+            echo "Not found $REMOTE_BACKUP_PATH on remote host, borg init begin..."
+            borg init --encryption=none "$REMOTE_HOST:$REMOTE_BACKUP_PATH" || return 1
+        fi
+    else
+        echo "FAIL. ssh remote host $REMOTE_HOST"
+        return 1
+    fi
+}
+
+_backup() {
+    ### Local
+    # Backup Immich database
+    docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres >"$UPLOAD_LOCATION"/database-backup/immich-database.sql
+    # For deduplicating backup programs such as Borg or Restic, compressing the content can increase backup size by making it harder to deduplicate. If you are using a different program or still prefer to compress, you can use the following command instead:
+    # docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
+
+    ### Append to local Borg repository
+    borg create "$BACKUP_PATH::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+    borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"
+    borg compact "$BACKUP_PATH"
+
+    ### Append to remote Borg repository
+    borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
+    borg prune --keep-weekly=4 --keep-monthly=3 "$REMOTE_HOST:$REMOTE_BACKUP_PATH"
+    borg compact "$REMOTE_HOST:$REMOTE_BACKUP_PATH"
+}
+
+_restore() {
+    tmp_dir=$(mktemp -d)
+    if [ "$1" = local ]; then
+        borg mount "$BACKUP_PATH" "$tmp_dir"
+    elif [ "$1" = remote ]; then
+        borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH" "$tmp_dir"
+    fi
+    echo "You can find available snapshots in seperate sub-directories at directory: $tmp_dir"
+    echo "    cd $tmp_dir"
+    echo "Restore the files you need, and unmount the Borg repository using:"
+    echo "    borg umount $tmp_dir"
+}
+
 # Paths
 UPLOAD_LOCATION="/path/to/immich/directory"
-BACKUP_PATH="/path/to/local/backup/directory"
+BACKUP_PATH="/path/to/local/backup/immich-borg"
 REMOTE_HOST="remote_host@IP"
-REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
+REMOTE_BACKUP_PATH="/path/to/remote/backup/immich-borg"
 
-
-### Local
-
-# Backup Immich database
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres > "$UPLOAD_LOCATION"/database-backup/immich-database.sql
-# For deduplicating backup programs such as Borg or Restic, compressing the content can increase backup size by making it harder to deduplicate. If you are using a different program or still prefer to compress, you can use the following command instead:
-# docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz
-
-### Append to local Borg repository
-borg create "$BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
-borg prune --keep-weekly=4 --keep-monthly=3 "$BACKUP_PATH"/immich-borg
-borg compact "$BACKUP_PATH"/immich-borg
-
-
-### Append to remote Borg repository
-borg create "$REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now}" "$UPLOAD_LOCATION" --exclude "$UPLOAD_LOCATION"/thumbs/ --exclude "$UPLOAD_LOCATION"/encoded-video/
-borg prune --keep-weekly=4 --keep-monthly=3 "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
-borg compact "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg
+case "$1" in
+init)
+    if _init_setup; then
+        echo "init setup OK."
+    else
+        echo "init setup Fail, exit 1"
+        exit 1
+    fi
+    ;;
+backup)
+    _backup
+    ;;
+restore_local)
+    _restore local
+    ;;
+restore_remote)
+    _restore remote
+    ;;
+*)
+    echo "Usage: "
+    echo "    $0 init, borg init setup"
+    echo "    $0 backup, borg backup"
+    echo "    $0 restore_local, borg restore from local"
+    echo "    $0 restore_remote, borg restore from remote"
+    ;;
+esac
 ```
 
-### Restoring
-
-To restore from a backup, use the `borg mount` command.
-
-```bash title='Restore from local backup'
-BACKUP_PATH="/path/to/local/backup/directory"
-mkdir /tmp/immich-mountpoint
-borg mount "$BACKUP_PATH"/immich-borg /tmp/immich-mountpoint
-cd /tmp/immich-mountpoint
-```
-
-```bash title='Restore from remote backup'
-REMOTE_HOST="remote_host@IP"
-REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
-mkdir /tmp/immich-mountpoint
-borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg /tmp/immich-mountpoint
-cd /tmp/immich-mountpoint
-```
-
-You can find available snapshots in seperate sub-directories at `/tmp/immich-mountpoint`. Restore the files you need, and unmount the Borg repository using `borg umount /tmp/immich-mountpoint`
