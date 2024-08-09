@@ -31,6 +31,9 @@ export enum UserAvatarColor {
 }
 
 export interface UserPreferences {
+  rating: {
+    enabled: boolean;
+  };
   memories: {
     enabled: boolean;
   };
@@ -58,6 +61,9 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
   );
 
   return {
+    rating: {
+      enabled: false,
+    },
     memories: {
       enabled: true,
     },

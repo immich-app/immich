@@ -16,6 +16,11 @@ class MemoryUpdate {
   enabled?: boolean;
 }
 
+class RatingUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+}
+
 class EmailNotificationsUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
@@ -47,6 +52,11 @@ class PurchaseUpdate {
 export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
+  @Type(() => RatingUpdate)
+  rating?: RatingUpdate;
+
+  @Optional()
+  @ValidateNested()
   @Type(() => AvatarUpdate)
   avatar?: AvatarUpdate;
 
@@ -76,6 +86,10 @@ class AvatarResponse {
   color!: UserAvatarColor;
 }
 
+class RatingResponse {
+  enabled!: boolean;
+}
+
 class MemoryResponse {
   enabled!: boolean;
 }
@@ -97,6 +111,7 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
+  rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;

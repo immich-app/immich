@@ -7550,6 +7550,11 @@
           "longitude": {
             "type": "number"
           },
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number"
+          },
           "removeParent": {
             "type": "boolean"
           },
@@ -8701,6 +8706,11 @@
             "default": null,
             "nullable": true,
             "type": "string"
+          },
+          "rating": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
           },
           "state": {
             "default": null,
@@ -9903,6 +9913,25 @@
           "isActive",
           "isPaused"
         ],
+        "type": "object"
+      },
+      "RatingResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "RatingUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "ReactionLevel": {
@@ -11565,6 +11594,11 @@
           },
           "longitude": {
             "type": "number"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number"
           }
         },
         "type": "object"
@@ -11865,6 +11899,9 @@
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/RatingResponse"
           }
         },
         "required": [
@@ -11872,7 +11909,8 @@
           "download",
           "emailNotifications",
           "memories",
-          "purchase"
+          "purchase",
+          "rating"
         ],
         "type": "object"
       },
@@ -11892,6 +11930,9 @@
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/RatingUpdate"
           }
         },
         "type": "object"

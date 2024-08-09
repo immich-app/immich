@@ -95,6 +95,9 @@ export class ExifEntity {
   @Column({ type: 'integer', nullable: true })
   bitsPerSample!: number | null;
 
+  @Column({ type: 'integer', nullable: true })
+  rating!: number | null;
+
   /* Video info */
   @Column({ type: 'float8', nullable: true })
   fps?: number | null;
