@@ -7,10 +7,11 @@ export const canvasCursor = writable('default');
 export const dragOffset = writable({ x: 0, y: 0 });
 export const resizeSide = writable('');
 export const imgElement = writable<HTMLImageElement | null>(null);
-export const canvasElement = writable<HTMLCanvasElement | null>(null);
-export const context2D = writable<CanvasRenderingContext2D | null>(null);
+export const cropAreaEl = writable<HTMLElement | null>(null);
 export const isDragging = writable<boolean>(false);
-export const padding = writable<number>(2.5);
+
+export const overlayEl = writable<HTMLElement | null>(null);
+export const cropFrame = writable<HTMLElement | null>(null);
 
 export function resetCropStore() {
   darkenLevel.set(0.65);
@@ -20,7 +21,7 @@ export function resetCropStore() {
   dragOffset.set({ x: 0, y: 0 });
   resizeSide.set('');
   imgElement.set(null);
-  canvasElement.set(null);
-  context2D.set(null);
+  cropAreaEl.set(null);
   isDragging.set(false);
+  overlayEl.set(null);
 }

@@ -1,23 +1,19 @@
 import type { CropAspectRatio, CropSettings } from '$lib/stores/asset-editor.store';
 import { get } from 'svelte/store';
-import { padding } from './crop-store';
+import { cropAreaEl } from './crop-store';
 import { checkEdits } from './mouse-handlers';
 
-const mPadding = get(padding);
 export function recalculateCrop(
   crop: CropSettings,
-  canvas: HTMLCanvasElement,
+  canvas: HTMLElement,
   aspectRatio: CropAspectRatio,
   returnNewCrop = false,
 ): CropSettings | null {
-  if (!canvas) {
-    return null;
-  }
-  const { width, height, x, y } = crop;
-  let newWidth = width;
-  let newHeight = height;
-  const canvasW = canvas.width - mPadding * 2;
-  const canvasH = canvas.height - mPadding * 2;
+  const canvasW = canvas.clientWidth;
+  const canvasH = canvas.clientHeight;
+
+  let newWidth = crop.width;
+  let newHeight = crop.height;
 
   const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, aspectRatio);
 
@@ -31,22 +27,16 @@ export function recalculateCrop(
     newWidth = w;
     newHeight = h;
   }
-  newWidth -= 1;
-  newHeight -= 1;
+
+  const newX = Math.max(0, Math.min(crop.x, canvasW - newWidth));
+  const newY = Math.max(0, Math.min(crop.y, canvasH - newHeight));
 
   const newCrop = {
     width: newWidth,
     height: newHeight,
-    x: Math.max(0, x + (width - newWidth) / 2),
-    y: Math.max(0, y + (height - newHeight) / 2),
+    x: newX,
+    y: newY,
   };
-
-  if (newCrop.x + newWidth > canvasW) {
-    newCrop.x = canvasW - newWidth;
-  }
-  if (newCrop.y + newHeight > canvasH) {
-    newCrop.y = canvasH - newHeight;
-  }
 
   if (returnNewCrop) {
     setTimeout(() => {
@@ -56,16 +46,23 @@ export function recalculateCrop(
   } else {
     crop.width = newWidth;
     crop.height = newHeight;
-    crop.x = newCrop.x;
-    crop.y = newCrop.y;
+    crop.x = newX;
+    crop.y = newY;
     return null;
   }
 }
 
 export function animateCropChange(crop: CropSettings, newCrop: CropSettings, draw: () => void, duration = 100) {
-  if (!newCrop) {
+  const cropArea = get(cropAreaEl);
+  if (!cropArea) {
     return;
   }
+
+  const cropFrame = cropArea.querySelector('.crop-frame') as HTMLElement;
+  if (!cropFrame) {
+    return;
+  }
+
   const startTime = performance.now();
   const initialCrop = { ...crop };
 
@@ -128,7 +125,6 @@ export function adjustDimensions(
       h = w / aspectMultiplier;
     }
   }
-
   if (h > yLimit) {
     h = yLimit;
     if (aspectRatio !== 'free') {

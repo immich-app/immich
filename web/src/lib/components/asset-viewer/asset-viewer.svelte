@@ -46,7 +46,7 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
-  import CropCanvas from './editor/crop-tool/crop-canvas.svelte';
+  import CropArea from './editor/crop-tool/crop-area.svelte';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -502,7 +502,7 @@
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
           {:else if isShowEditor && selectedEditType === 'crop'}
-            <CropCanvas {asset} />
+            <CropArea {asset} />
           {:else}
             <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
           {/if}

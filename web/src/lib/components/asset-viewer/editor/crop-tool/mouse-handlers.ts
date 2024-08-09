@@ -8,23 +8,20 @@ import {
   type CropSettings,
 } from '$lib/stores/asset-editor.store';
 import { get } from 'svelte/store';
-import { draw } from './canvas-drawing';
 import { adjustDimensions, keepAspectRatio } from './crop-settings';
 import {
-  animationFrame,
   canvasCursor,
-  canvasElement,
-  darkenLevel,
+  cropAreaEl,
   dragOffset,
   isDragging,
   isResizingOrDragging,
-  padding,
+  overlayEl,
   resizeSide,
 } from './crop-store';
-const mPadding = get(padding);
+import { draw } from './drawing';
 
 export function handleMouseDown(e: MouseEvent) {
-  const canvas = get(canvasElement);
+  const canvas = get(cropAreaEl);
   if (!canvas) {
     return;
   }
@@ -63,7 +60,7 @@ export function handleMouseDown(e: MouseEvent) {
 }
 
 export function handleMouseMove(e: MouseEvent) {
-  const canvas = get(canvasElement);
+  const canvas = get(cropAreaEl);
   if (!canvas) {
     return;
   }
@@ -86,19 +83,13 @@ export function handleMouseUp() {
   stopInteraction();
 }
 
-export function handleMouseOut() {
-  // stopInteraction();
-  // window.removeEventListener('mouseup', handleMouseUp);
-}
-
 function getMousePosition(e: MouseEvent) {
-  let offsetX = e.clientX - mPadding;
-  let offsetY = e.clientY - mPadding;
-  const clienRect = getBoundingClientRectCached(get(canvasElement));
+  let offsetX = e.clientX;
+  let offsetY = e.clientY;
+  const clienRect = getBoundingClientRectCached(get(cropAreaEl));
 
   offsetX -= clienRect?.left ?? 0;
   offsetY -= clienRect?.top ?? 0;
-
   return { mouseX: offsetX, mouseY: offsetY };
 }
 
@@ -122,6 +113,20 @@ function isOnCropBoundary(mouseX: number, mouseY: number, crop: CropSettings) {
   const { x, y, width, height } = crop;
   const sensitivity = 10;
   const cornerSensitivity = 15;
+
+  const outOfBound = mouseX > get(cropImageSize)[0] || mouseY > get(cropImageSize)[1] || mouseX < 0 || mouseY < 0;
+  if (outOfBound) {
+    return {
+      onLeftBoundary: false,
+      onRightBoundary: false,
+      onTopBoundary: false,
+      onBottomBoundary: false,
+      onTopLeftCorner: false,
+      onTopRightCorner: false,
+      onBottomLeftCorner: false,
+      onBottomRightCorner: false,
+    };
+  }
 
   const onLeftBoundary = mouseX >= x - sensitivity && mouseX <= x + sensitivity && mouseY >= y && mouseY <= y + height;
   const onRightBoundary =
@@ -204,13 +209,13 @@ function startDragging(mouseX: number, mouseY: number) {
   isDragging.set(true);
   const crop = get(cropSettings);
   isResizingOrDragging.set(true);
-  dragOffset.set({ x: mouseX - crop.x - mPadding, y: mouseY - crop.y - mPadding });
+  dragOffset.set({ x: mouseX - crop.x, y: mouseY - crop.y });
   fadeOverlay(false);
 }
 
 function moveCrop(mouseX: number, mouseY: number) {
-  const canvas = get(canvasElement);
-  if (!canvas) {
+  const cropArea = get(cropAreaEl);
+  if (!cropArea) {
     return;
   }
 
@@ -220,20 +225,20 @@ function moveCrop(mouseX: number, mouseY: number) {
   let newX = mouseX - x;
   let newY = mouseY - y;
 
-  newX = Math.max(mPadding, Math.min(canvas.width - crop.width - mPadding, newX));
-  newY = Math.max(mPadding, Math.min(canvas.height - crop.height - mPadding, newY));
+  newX = Math.max(0, Math.min(cropArea.clientWidth - crop.width, newX));
+  newY = Math.max(0, Math.min(cropArea.clientHeight - crop.height, newY));
 
   cropSettings.update((crop) => {
-    crop.x = newX - mPadding;
-    crop.y = newY - mPadding;
+    crop.x = newX;
+    crop.y = newY;
     return crop;
   });
 
-  draw(canvas, crop);
+  draw(crop);
 }
 
 function resizeCrop(mouseX: number, mouseY: number) {
-  const canvas = get(canvasElement);
+  const canvas = get(cropAreaEl);
   const crop = get(cropSettings);
   const resizeSideValue = get(resizeSide);
   if (!canvas || !resizeSideValue) {
@@ -242,10 +247,9 @@ function resizeCrop(mouseX: number, mouseY: number) {
   fadeOverlay(false);
 
   const { x, y, width, height } = crop;
-  const minSize = 10;
-  let newWidth, newHeight;
-  const canvasW = canvas.width - mPadding * 2;
-  const canvasH = canvas.height - mPadding * 2;
+  const minSize = 50;
+  let newWidth = width;
+  let newHeight = height;
   switch (resizeSideValue) {
     case 'left': {
       newWidth = width + x - mouseX;
@@ -253,8 +257,8 @@ function resizeCrop(mouseX: number, mouseY: number) {
       if (newWidth >= minSize && mouseX >= 0) {
         const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, get(cropAspectRatio));
         cropSettings.update((crop) => {
-          crop.width = Math.min(w, canvasW);
-          crop.height = Math.min(h, canvasH);
+          crop.width = Math.max(minSize, Math.min(w, canvas.clientWidth));
+          crop.height = Math.max(minSize, Math.min(h, canvas.clientHeight));
           crop.x = Math.max(0, x + width - crop.width);
           return crop;
         });
@@ -264,11 +268,11 @@ function resizeCrop(mouseX: number, mouseY: number) {
     case 'right': {
       newWidth = mouseX - x;
       newHeight = height;
-      if (newWidth >= minSize && mouseX <= canvasW) {
+      if (newWidth >= minSize && mouseX <= canvas.clientWidth) {
         const { newWidth: w, newHeight: h } = keepAspectRatio(newWidth, newHeight, get(cropAspectRatio));
         cropSettings.update((crop) => {
-          crop.width = Math.min(w, canvasW - x);
-          crop.height = Math.min(h, canvasH);
+          crop.width = Math.max(minSize, Math.min(w, canvas.clientWidth - x));
+          crop.height = Math.max(minSize, Math.min(h, canvas.clientHeight));
           return crop;
         });
       }
@@ -282,13 +286,13 @@ function resizeCrop(mouseX: number, mouseY: number) {
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvasW,
-          canvasH,
+          canvas.clientWidth,
+          canvas.clientHeight,
         );
         cropSettings.update((crop) => {
           crop.y = Math.max(0, y + height - h);
-          crop.width = w;
-          crop.height = h;
+          crop.width = Math.max(minSize, w);
+          crop.height = Math.max(minSize, h);
           return crop;
         });
       }
@@ -297,17 +301,17 @@ function resizeCrop(mouseX: number, mouseY: number) {
     case 'bottom': {
       newHeight = mouseY - y;
       newWidth = width;
-      if (newHeight >= minSize && mouseY <= canvasH) {
+      if (newHeight >= minSize && mouseY <= canvas.clientHeight) {
         const { newWidth: w, newHeight: h } = adjustDimensions(
           newWidth,
           newHeight,
           get(cropAspectRatio),
-          canvasW,
-          canvasH - y,
+          canvas.clientWidth,
+          canvas.clientHeight - y,
         );
         cropSettings.update((crop) => {
-          crop.width = w;
-          crop.height = h;
+          crop.width = Math.max(minSize, w);
+          crop.height = Math.max(minSize, h);
           return crop;
         });
       }
@@ -316,96 +320,88 @@ function resizeCrop(mouseX: number, mouseY: number) {
     case 'top-left': {
       newWidth = width + x - Math.max(mouseX, 0);
       newHeight = height + y - Math.max(mouseY, 0);
-      if (newWidth >= minSize && newHeight >= minSize) {
-        const { newWidth: w, newHeight: h } = adjustDimensions(
-          newWidth,
-          newHeight,
-          get(cropAspectRatio),
-          canvasW,
-          canvasH,
-        );
-        cropSettings.update((crop) => {
-          crop.width = w;
-          crop.height = h;
-          crop.x = Math.max(0, x + width - crop.width);
-          crop.y = Math.max(0, y + height - crop.height);
-          return crop;
-        });
-      }
+      const { newWidth: w, newHeight: h } = adjustDimensions(
+        newWidth,
+        newHeight,
+        get(cropAspectRatio),
+        canvas.clientWidth,
+        canvas.clientHeight,
+      );
+      cropSettings.update((crop) => {
+        crop.width = Math.max(minSize, w);
+        crop.height = Math.max(minSize, h);
+        crop.x = Math.max(0, x + width - crop.width);
+        crop.y = Math.max(0, y + height - crop.height);
+        return crop;
+      });
       break;
     }
     case 'top-right': {
       newWidth = Math.max(mouseX, 0) - x;
       newHeight = height + y - Math.max(mouseY, 0);
-      if (newWidth >= minSize && newHeight >= minSize) {
-        const { newWidth: w, newHeight: h } = adjustDimensions(
-          newWidth,
-          newHeight,
-          get(cropAspectRatio),
-          canvasW - x,
-          y + height,
-        );
-        cropSettings.update((crop) => {
-          crop.width = w;
-          crop.height = h;
-          crop.y = y + height - h;
-          return crop;
-        });
-      }
+      const { newWidth: w, newHeight: h } = adjustDimensions(
+        newWidth,
+        newHeight,
+        get(cropAspectRatio),
+        canvas.clientWidth - x,
+        y + height,
+      );
+      cropSettings.update((crop) => {
+        crop.width = Math.max(minSize, w);
+        crop.height = Math.max(minSize, h);
+        crop.y = Math.max(0, y + height - crop.height);
+        return crop;
+      });
       break;
     }
     case 'bottom-left': {
       newWidth = width + x - Math.max(mouseX, 0);
       newHeight = Math.max(mouseY, 0) - y;
-      if (newWidth >= minSize && newHeight >= minSize) {
-        const { newWidth: w, newHeight: h } = adjustDimensions(
-          newWidth,
-          newHeight,
-          get(cropAspectRatio),
-          canvasW,
-          canvasH - y,
-        );
-        cropSettings.update((crop) => {
-          crop.width = w;
-          crop.height = h;
-          crop.x = Math.max(0, x + width - crop.width);
-          return crop;
-        });
-      }
+      const { newWidth: w, newHeight: h } = adjustDimensions(
+        newWidth,
+        newHeight,
+        get(cropAspectRatio),
+        canvas.clientWidth,
+        canvas.clientHeight - y,
+      );
+      cropSettings.update((crop) => {
+        crop.width = Math.max(minSize, w);
+        crop.height = Math.max(minSize, h);
+        crop.x = Math.max(0, x + width - crop.width);
+        return crop;
+      });
       break;
     }
     case 'bottom-right': {
       newWidth = Math.max(mouseX, 0) - x;
       newHeight = Math.max(mouseY, 0) - y;
-      if (newWidth >= minSize && newHeight >= minSize) {
-        const { newWidth: w, newHeight: h } = adjustDimensions(
-          newWidth,
-          newHeight,
-          get(cropAspectRatio),
-          canvasW - x,
-          canvasH - y,
-        );
-        cropSettings.update((crop) => {
-          crop.width = w;
-          crop.height = h;
-          return crop;
-        });
-      }
+      const { newWidth: w, newHeight: h } = adjustDimensions(
+        newWidth,
+        newHeight,
+        get(cropAspectRatio),
+        canvas.clientWidth - x,
+        canvas.clientHeight - y,
+      );
+      cropSettings.update((crop) => {
+        crop.width = Math.max(minSize, w);
+        crop.height = Math.max(minSize, h);
+        return crop;
+      });
       break;
     }
   }
 
   cropSettings.update((crop) => {
-    crop.x = Math.max(0, Math.min(crop.x, canvasW - crop.width));
-    crop.y = Math.max(0, Math.min(crop.y, canvasH - crop.height));
+    crop.x = Math.max(0, Math.min(crop.x, canvas.clientWidth - crop.width));
+    crop.y = Math.max(0, Math.min(crop.y, canvas.clientHeight - crop.height));
     return crop;
   });
 
-  draw(canvas, crop);
+  draw(crop);
 }
 
 function updateCursor(mouseX: number, mouseY: number) {
-  const canvas = get(canvasElement);
+  const canvas = get(cropAreaEl);
   if (!canvas) {
     return;
   }
@@ -466,26 +462,16 @@ export function checkEdits() {
 }
 
 function fadeOverlay(toDark: boolean) {
-  const step = toDark ? 0.05 : -0.05;
-  const minDarkness = 0.4;
-  const maxDarkness = 0.65;
+  const overlay = get(overlayEl);
+  const cropFrame = document.querySelector('.crop-frame');
+
+  if (toDark) {
+    overlay?.classList.remove('light');
+    cropFrame?.classList.remove('resizing');
+  } else {
+    overlay?.classList.add('light');
+    cropFrame?.classList.add('resizing');
+  }
 
   isResizingOrDragging.set(!toDark);
-
-  const animate = () => {
-    darkenLevel.update((level) => {
-      const newLevel = Math.min(maxDarkness, Math.max(minDarkness, level + step));
-      draw(get(canvasElement), get(cropSettings));
-      return newLevel;
-    });
-
-    if ((toDark && get(darkenLevel) < maxDarkness) || (!toDark && get(darkenLevel) > minDarkness)) {
-      animationFrame.set(requestAnimationFrame(animate));
-    } else {
-      cancelAnimationFrame(get(animationFrame) as number);
-    }
-  };
-
-  cancelAnimationFrame(get(animationFrame) as number);
-  animationFrame.set(requestAnimationFrame(animate));
 }

@@ -1,27 +1,18 @@
 import { cropImageScale, cropImageSize, cropSettings } from '$lib/stores/asset-editor.store';
 import { get } from 'svelte/store';
-import { draw } from './canvas-drawing';
-import { canvasElement, context2D, imgElement, padding } from './crop-store';
+import { cropAreaEl, imgElement } from './crop-store';
+import { draw } from './drawing';
 
-const mPadding = get(padding);
 export function onImageLoad() {
   const img = get(imgElement);
-  const canvas = get(canvasElement);
-  let ctx = get(context2D);
+  const cropArea = get(cropAreaEl);
 
-  if (!canvas || !img) {
+  if (!cropArea || !img) {
     return;
   }
 
-  if (!ctx) {
-    ctx = canvas.getContext('2d');
-    context2D.set(ctx);
-  }
-
-  resizeCanvas();
-
-  const containerWidth = canvas.parentElement?.clientWidth ?? 0;
-  const containerHeight = canvas.parentElement?.clientHeight ?? 0;
+  const containerWidth = cropArea?.clientWidth ?? 0;
+  const containerHeight = cropArea?.clientHeight ?? 0;
   const imageAspectRatio = img.width / img.height;
 
   let scale: number;
@@ -36,7 +27,6 @@ export function onImageLoad() {
       scale = containerWidth / img.width;
     }
   }
-
   cropImageSize.set([img.width, img.height]);
   cropImageScale.set(scale);
 
@@ -48,18 +38,22 @@ export function onImageLoad() {
     return crop;
   });
 
-  draw(canvas, get(cropSettings));
+  img.style.width = `${img.width * scale}px`;
+  img.style.height = `${img.height * scale}px`;
+
+  draw(get(cropSettings));
 }
 
 export function resizeCanvas() {
   const img = get(imgElement);
-  const canvas = get(canvasElement);
-  if (!canvas || !img) {
+  const cropArea = get(cropAreaEl);
+
+  if (!cropArea || !img) {
     return;
   }
 
-  const containerWidth = canvas.parentElement?.clientWidth ?? 0;
-  const containerHeight = canvas.parentElement?.clientHeight ?? 0;
+  const containerWidth = cropArea?.clientWidth ?? 0;
+  const containerHeight = cropArea?.clientHeight ?? 0;
   const imageAspectRatio = img.width / img.height;
 
   let scale;
@@ -75,8 +69,14 @@ export function resizeCanvas() {
     }
   }
 
-  canvas.width = img.width * scale + 2 * mPadding;
-  canvas.height = img.height * scale + 2 * mPadding;
+  img.style.width = `${img.width * scale}px`;
+  img.style.height = `${img.height * scale}px`;
 
-  draw(canvas, get(cropSettings));
+  const cropFrame = cropArea.querySelector('.crop-frame') as HTMLElement;
+  if (cropFrame) {
+    cropFrame.style.width = `${img.width * scale}px`;
+    cropFrame.style.height = `${img.height * scale}px`;
+  }
+
+  draw(get(cropSettings));
 }
