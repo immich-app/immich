@@ -84,7 +84,6 @@ export class VersionService implements OnEvents {
       this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
       return JobStatus.FAILED;
     }
-
     return JobStatus.SUCCESS;
   }
 

@@ -15,6 +15,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
@@ -33,6 +34,7 @@ export class UserService {
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
   ) {
     this.logger.setContext(UserService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
@@ -40,6 +42,7 @@ export class UserService {
 
   async search(): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: false });
+    this.metricRepository.user.addToGauge('immich.user.count', users.length);
     return users.map((user) => mapUser(user));
   }
 
@@ -220,6 +223,8 @@ export class UserService {
     this.logger.warn(`Removing user from database: ${user.id}`);
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
+
+    this.metricRepository.user.addToCounter(`immich.user.deleted`, 1);
 
     return JobStatus.SUCCESS;
   }

@@ -43,6 +43,8 @@ services:
     ports:
       - 3001:3001
       - 9230:9230
+      - 8081:8081
+      - 8082:8082
     depends_on:
       - redis
       - database
