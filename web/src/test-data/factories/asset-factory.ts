@@ -25,5 +25,4 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   checksum: Sync.each(() => faker.string.alphanumeric(28)),
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
-  stackCount: null,
 });

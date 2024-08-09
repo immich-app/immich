@@ -20,49 +20,49 @@ class AssetStackService {
       return;
     }
 
-    try {
-      if (childrenToAdd != null) {
-        final toAdd = childrenToAdd
-            .where((e) => e.isRemote)
-            .map((e) => e.remoteId!)
-            .toList();
+    // try {
+    //   if (childrenToAdd != null) {
+    //     final toAdd = childrenToAdd
+    //         .where((e) => e.isRemote)
+    //         .map((e) => e.remoteId!)
+    //         .toList();
 
-        await _api.assetsApi.updateAssets(
-          AssetBulkUpdateDto(ids: toAdd, stackParentId: parentAsset.remoteId),
-        );
-      }
+    //     await _api.stacksApi.updateStack(
+    //       AssetBulkUpdateDto(ids: toAdd, stackParentId: parentAsset.remoteId),
+    //     );
+    //   }
 
-      if (childrenToRemove != null) {
-        final toRemove = childrenToRemove
-            .where((e) => e.isRemote)
-            .map((e) => e.remoteId!)
-            .toList();
-        await _api.assetsApi.updateAssets(
-          AssetBulkUpdateDto(ids: toRemove, removeParent: true),
-        );
-      }
-    } catch (error) {
-      debugPrint("Error while updating stack children: ${error.toString()}");
-    }
+    //   if (childrenToRemove != null) {
+    //     final toRemove = childrenToRemove
+    //         .where((e) => e.isRemote)
+    //         .map((e) => e.remoteId!)
+    //         .toList();
+    //     await _api.assetsApi.updateAssets(
+    //       AssetBulkUpdateDto(ids: toRemove, removeParent: true),
+    //     );
+    //   }
+    // } catch (error) {
+    //   debugPrint("Error while updating stack children: ${error.toString()}");
+    // }
   }
 
-  Future<void> updateStackParent(Asset oldParent, Asset newParent) async {
-    // Guard [local asset]
-    if (oldParent.remoteId == null || newParent.remoteId == null) {
-      return;
-    }
+  // Future<void> updateStackParent(Asset oldParent, Asset newParent) async {
+  //   // Guard [local asset]
+  //   if (oldParent.remoteId == null || newParent.remoteId == null) {
+  //     return;
+  //   }
 
-    try {
-      await _api.assetsApi.updateStackParent(
-        UpdateStackParentDto(
-          oldParentId: oldParent.remoteId!,
-          newParentId: newParent.remoteId!,
-        ),
-      );
-    } catch (error) {
-      debugPrint("Error while updating stack parent: ${error.toString()}");
-    }
-  }
+  //   try {
+  //     await _api.assetsApi.updateStackParent(
+  //       UpdateStackParentDto(
+  //         oldParentId: oldParent.remoteId!,
+  //         newParentId: newParent.remoteId!,
+  //       ),
+  //     );
+  //   } catch (error) {
+  //     debugPrint("Error while updating stack parent: ${error.toString()}");
+  //   }
+  // }
 }
 
 final assetStackServiceProvider = Provider(

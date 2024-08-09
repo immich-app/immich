@@ -12,9 +12,12 @@ import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import {
   addAssetsToAlbum as addAssets,
+  createStack,
+  deleteStacks,
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
+  getStack,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -329,79 +332,60 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
     return false;
   }
 
-  const parent = assets[0];
-  const children = assets.slice(1);
-  const ids = children.map(({ id }) => id);
   const $t = get(t);
 
   try {
-    await updateAssets({
-      assetBulkUpdateDto: {
-        ids,
-        stackParentId: parent.id,
-      },
-    });
+    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
+    if (showNotification) {
+      notificationController.show({
+        message: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
+        type: NotificationType.Info,
+        button: {
+          text: $t('view_stack'),
+          onClick: () => assetViewingStore.setAssetId(stack.primaryAssetId),
+        },
+      });
+    }
+
+    for (const [index, asset] of assets.entries()) {
+      asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length } : null;
+    }
+
+    return assets.slice(1).map((asset) => asset.id);
   } catch (error) {
     handleError(error, $t('errors.failed_to_stack_assets'));
     return false;
   }
-
-  let grandChildren: AssetResponseDto[] = [];
-  for (const asset of children) {
-    asset.stackParentId = parent.id;
-    if (asset.stack) {
-      // Add grand-children to new parent
-      grandChildren = grandChildren.concat(asset.stack);
-      // Reset children stack info
-      asset.stackCount = null;
-      asset.stack = [];
-    }
-  }
-
-  parent.stack ??= [];
-  parent.stack = parent.stack.concat(children, grandChildren);
-  parent.stackCount = parent.stack.length + 1;
-
-  if (showNotification) {
-    notificationController.show({
-      message: $t('stacked_assets_count', { values: { count: parent.stackCount } }),
-      type: NotificationType.Info,
-      button: {
-        text: $t('view_stack'),
-        onClick() {
-          return assetViewingStore.setAssetId(parent.id);
-        },
-      },
-    });
-  }
-
-  return ids;
 };
 
-export const unstackAssets = async (assets: AssetResponseDto[]) => {
-  const ids = assets.map(({ id }) => id);
-  const $t = get(t);
-  try {
-    await updateAssets({
-      assetBulkUpdateDto: {
-        ids,
-        removeParent: true,
-      },
-    });
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_unstack_assets'));
+export const deleteStack = async (stackIds: string[]) => {
+  const ids = [...new Set(stackIds)];
+  if (ids.length === 0) {
     return;
   }
-  for (const asset of assets) {
-    asset.stackParentId = null;
-    asset.stackCount = null;
-    asset.stack = [];
+
+  const $t = get(t);
+
+  try {
+    const stacks = await Promise.all(ids.map((id) => getStack({ id })));
+    const count = stacks.reduce((sum, stack) => sum + stack.assets.length, 0);
+
+    await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('unstacked_assets_count', { values: { count } }),
+    });
+
+    const assets = stacks.flatMap((stack) => stack.assets);
+    for (const asset of assets) {
+      asset.stack = null;
+    }
+
+    return assets;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_unstack_assets'));
   }
-  notificationController.show({
-    type: NotificationType.Info,
-    message: $t('unstacked_assets_count', { values: { count: assets.length } }),
-  });
-  return assets;
 };
 
 export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {

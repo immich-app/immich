@@ -19,7 +19,13 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import {
+    AssetJobName,
+    AssetTypeEnum,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type StackResponseDto,
+  } from '@immich/sdk';
   import {
     mdiAlertOutline,
     mdiCogRefreshOutline,
@@ -37,10 +43,9 @@
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
-  export let stackedAssets: AssetResponseDto[];
+  export let stack: StackResponseDto | null = null;
   export let showDetailButton: boolean;
   export let showSlideshow = false;
-  export let hasStackChildren = false;
   export let onZoomImage: () => void;
   export let onCopyImage: () => void;
   export let onAction: OnAction;
@@ -117,8 +122,8 @@
         {/if}
 
         {#if isOwner}
-          {#if hasStackChildren}
-            <UnstackAction {stackedAssets} {onAction} />
+          {#if stack}
+            <UnstackAction {stack} {onAction} />
           {/if}
           {#if album}
             <SetAlbumCoverAction {asset} {album} />
