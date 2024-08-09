@@ -6,6 +6,7 @@
     cropImageScale,
     cropImageSize,
     cropSettings,
+    cropSettingsChanged,
     type CropAspectRatio,
   } from '$lib/stores/asset-editor.store';
   import { mdiBackupRestore, mdiCropFree, mdiSquareOutline } from '@mdi/js';
@@ -97,6 +98,7 @@
         height: cropImageSizeM[1] * cropImageScaleM - 1,
       };
       $cropAspectRatio = selectedSize;
+      $cropSettingsChanged = false;
       return;
     }
     selectedSize = size;
