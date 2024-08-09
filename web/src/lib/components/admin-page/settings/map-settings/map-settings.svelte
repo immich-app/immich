@@ -24,9 +24,28 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="flex flex-col gap-4">
-        <SettingAccordion key="map" title={$t('admin.map_settings')} subtitle={$t('admin.map_settings_description')}>
+        <SettingAccordion key="map" title={$t('admin.map_settings')}>
+          <svelte:fragment slot="subtitle">
+            <p class="text-sm dark:text-immich-dark-fg">
+              <FormatMessage key="admin.map_settings_description" let:message>
+                <a
+                  href="https://immich.app/docs/features/reverse-geocoding"
+                  class="underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {message}
+                </a>
+              </FormatMessage>
+            </p>
+          </svelte:fragment>
           <div class="ml-4 mt-4 flex flex-col gap-4">
-            <SettingSwitch title={$t('admin.map_enable_description')} {disabled} bind:checked={config.map.enabled} />
+            <SettingSwitch
+              title={$t('admin.map_enable_description')}
+              subtitle={$t('admin.map_implications')}
+              {disabled}
+              bind:checked={config.map.enabled}
+            />
 
             <hr />
 
