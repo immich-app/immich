@@ -30,7 +30,7 @@ export class StackService {
   }
 
   async create(auth: AuthDto, dto: StackCreateDto): Promise<StackResponseDto> {
-    await this.access.requirePermission(auth, Permission.ASSET_READ, dto.assetIds);
+    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, dto.assetIds);
 
     const stack = await this.stackRepository.create({ ownerId: auth.user.id, assetIds: dto.assetIds });
 
