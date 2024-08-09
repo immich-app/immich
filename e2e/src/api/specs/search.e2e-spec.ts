@@ -288,6 +288,11 @@ describe('/search', () => {
         should: 'should search by takenAfter (no results)',
         deferred: () => ({ dto: { takenAfter: today.plus({ hour: 1 }).toJSDate() }, assets: [] }),
       },
+      // Disabled:
+      // For uploaded files, the path is replaced by random UUIDs, which is why we cannot test accordingly:
+      // Before: /albums/nature/prairie_falcon.jpg
+      // After:  upload/upload/3f2086a6-724a-4850-8718-e9fb27340473/d6/dc/d6dc2da1-7f90-4df0-9f32-e5de3612cc9e.jpg
+      // See server/src/middleware/file-upload.interceptor.ts:getFile()
       //   {
       //     should: 'should search by originalPath',
       //     deferred: () => ({
