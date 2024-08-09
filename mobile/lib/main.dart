@@ -65,6 +65,8 @@ Future<void> initApp() async {
     }
   }
 
+  await fetchSystemPalette();
+
   // Initialize Immich Logger Service
   ImmichLogger();
 
@@ -187,6 +189,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
+    var immichTheme = ref.watch(immichThemeProvider);
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,
@@ -196,9 +199,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       home: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: false,
-        themeMode: ref.watch(immichThemeProvider),
-        darkTheme: immichDarkTheme,
-        theme: immichLightTheme,
+        themeMode: ref.watch(immichThemeModeProvider),
+        darkTheme: getThemeData(colorScheme: immichTheme.dark),
+        theme: getThemeData(colorScheme: immichTheme.light),
         routeInformationParser: router.defaultRouteParser(),
         routerDelegate: router.delegate(
           navigatorObservers: () => [TabNavigationObserver(ref: ref)],

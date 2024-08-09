@@ -4115,6 +4115,8 @@
     },
     "/people/{id}/assets": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.113.0",
         "operationId": "getPersonAssets",
         "parameters": [
           {
@@ -4154,8 +4156,12 @@
           }
         ],
         "tags": [
-          "People"
-        ]
+          "People",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.113.0"
+        }
       }
     },
     "/people/{id}/merge": {

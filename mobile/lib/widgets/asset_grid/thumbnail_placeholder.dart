@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class ThumbnailPlaceholder extends StatelessWidget {
   final EdgeInsets margin;
@@ -13,25 +14,20 @@ class ThumbnailPlaceholder extends StatelessWidget {
     this.height = 250,
   });
 
-  static const _brightColors = [
-    Color(0xFFF1F3F4),
-    Color(0xFFB4B6B8),
-  ];
-
-  static const _darkColors = [
-    Color(0xFF3B3F42),
-    Color(0xFF2B2F32),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    var gradientColors = [
+      context.colorScheme.surfaceContainer,
+      context.colorScheme.surfaceContainer.darken(amount: .1),
+    ];
+
     return Container(
       width: width,
       height: height,
       margin: margin,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: context.isDarkTheme ? _darkColors : _brightColors,
+          colors: gradientColors,
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),

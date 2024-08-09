@@ -129,6 +129,7 @@
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
 <div class="hidden xl:block h-10">
   <GroupTab
+    label={$t('show_albums')}
     filters={Object.values(albumFilterNames)}
     selected={selectedFilterOption}
     onSelect={(selected) => handleChangeAlbumFilter(selected, AlbumFilter.All)}

@@ -7,7 +7,7 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
+export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
@@ -19,6 +19,10 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   EmbeddedVideoType?: string;
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
+
+  // Type is wrong, can also be number.
+  Description?: string | number;
+  ImageDescription?: string | number;
 }
 
 export interface IMetadataRepository {

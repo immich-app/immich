@@ -2278,6 +2278,9 @@ export function updatePerson({ id, personUpdateDto }: {
         body: personUpdateDto
     })));
 }
+/**
+ * This property was deprecated in v1.113.0
+ */
 export function getPersonAssets({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
