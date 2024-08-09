@@ -104,7 +104,7 @@ class VideoViewerPage extends HookConsumerWidget {
         // Done in a microtask to avoid setting the state while the is building
         if (!isMotionVideo) {
           Future.microtask(() {
-            ref.read(showControlsProvider.notifier).show = false;
+            ref.read(showControlsProvider.notifier).show = true;
           });
         }
 
@@ -147,16 +147,20 @@ class VideoViewerPage extends HookConsumerWidget {
             ),
             if (controller != null)
               SizedBox(
-                height: context.height,
-                width: context.width,
-                child: VideoPlayerViewer(
-                  controller: controller,
-                  isMotionVideo: isMotionVideo,
-                  placeholder: placeholder,
-                  hideControlsTimer: hideControlsTimer,
-                  showControls: showControls,
-                  showDownloadingIndicator: showDownloadingIndicator,
-                  loopVideo: loopVideo,
+                height: 16 / 9 * size.width,
+                width: size.width,
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: VideoPlayerViewer(
+                    controller: controller,
+                    isMotionVideo: isMotionVideo,
+                    placeholder: placeholder,
+                    hideControlsTimer: hideControlsTimer,
+                    showControls: showControls,
+                    showDownloadingIndicator: showDownloadingIndicator,
+                    loopVideo: loopVideo,
+                    asset: asset,
+                  ),
                 ),
               ),
           ],

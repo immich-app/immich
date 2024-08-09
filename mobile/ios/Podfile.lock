@@ -65,6 +65,8 @@ PODS:
   - maplibre_gl (0.0.1):
     - Flutter
     - MapLibre (= 5.14.0-pre3)
+  - native_video_player (1.0.0):
+    - Flutter
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -115,6 +117,7 @@ DEPENDENCIES:
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - isar_flutter_libs (from `.symlinks/plugins/isar_flutter_libs/ios`)
   - maplibre_gl (from `.symlinks/plugins/maplibre_gl/ios`)
+  - native_video_player (from `.symlinks/plugins/native_video_player/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
@@ -168,6 +171,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/isar_flutter_libs/ios"
   maplibre_gl:
     :path: ".symlinks/plugins/maplibre_gl/ios"
+  native_video_player:
+    :path: ".symlinks/plugins/native_video_player/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -210,6 +215,7 @@ SPEC CHECKSUMS:
   isar_flutter_libs: fdf730ca925d05687f36d7f1d355e482529ed097
   MapLibre: 620fc933c1d6029b33738c905c1490d024e5d4ef
   maplibre_gl: a2efec727dd340e4c65e26d2b03b584f14881fd9
+  native_video_player: d12af78a1a4a8cf09775a5177d5b392def6fd23c
   package_info_plus: 58f0028419748fad15bf008b270aaa8e54380b1c
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02

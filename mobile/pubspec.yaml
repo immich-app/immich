@@ -64,6 +64,7 @@ dependencies:
   async: ^2.11.0
   dynamic_color: ^1.7.0 #package to apply system theme
   background_downloader: ^8.5.5
+  native_video_player: ^1.3.1
 
   #image editing packages
   crop_image: ^1.0.13
