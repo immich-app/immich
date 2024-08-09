@@ -162,6 +162,7 @@ class AssetService {
         final dto = await _apiService.assetsApi.getAssetInfo(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
           final newExif = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
+          a.exifInfo = newExif;
           if (newExif != a.exifInfo) {
             if (a.isInDb) {
               _db.writeTxn(() => a.put(_db));

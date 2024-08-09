@@ -28,7 +28,9 @@
     }
   };
 
-  $: $isUploading && autoHide();
+  $: if ($isUploading) {
+    autoHide();
+  }
 </script>
 
 {#if $hasError || $isUploading}

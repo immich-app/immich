@@ -13,35 +13,29 @@ dependencies:
     sdk: flutter
 
   path_provider_ios:
-  # TODO: upgrade to stable after 3.0.1 is released. 3.0.0 is broken
-  # https://github.com/fluttercandies/flutter_photo_manager/pull/990#issuecomment-2058066427
-  photo_manager: ^3.2.0
-  photo_manager_image_provider: ^2.1.0
+  photo_manager: ^3.2.3
+  photo_manager_image_provider: ^2.1.1
   flutter_hooks: ^0.20.4
   hooks_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
   intl: ^0.19.0
-  auto_route: ^8.0.2
+  auto_route: ^9.2.0
   fluttertoast: ^8.2.4
   video_player: ^2.8.2
   chewie: ^1.7.4
   socket_io_client: ^2.0.3+1
-  # TODO: Update it to tag once next stable release
-  maplibre_gl:
-    git:
-      url: https://github.com/maplibre/flutter-maplibre-gl.git
-      ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
+  maplibre_gl: 0.19.0+2
   geolocator: ^11.0.0 # used to move to current location in map view
   flutter_udid: ^3.0.0
   flutter_svg: ^2.0.9
-  package_info_plus: ^5.0.1
+  package_info_plus: ^8.0.1
   url_launcher: ^6.2.4
   http: ^0.13.6
   cancellation_token_http: ^2.0.0
   easy_localization: ^3.0.3
-  share_plus: ^7.2.2
+  share_plus: ^10.0.0
   flutter_displaymode: ^0.6.0
   scrollable_positioned_list: ^0.3.8
   path: ^1.8.3
@@ -61,9 +55,11 @@ dependencies:
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
   async: ^2.11.0
+  dynamic_color: ^1.7.0 #package to apply system theme
 
   #image editing packages
   crop_image: ^1.0.13
+
   openapi:
     path: openapi
 
@@ -92,7 +88,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   build_runner: ^2.4.8
-  auto_route_generator: ^8.0.0
+  auto_route_generator: ^9.0.0
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.9
   isar_generator: ^3.1.0+1

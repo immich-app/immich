@@ -20,10 +20,10 @@ extension ContextHelper on BuildContext {
   bool get isDarkTheme => themeData.brightness == Brightness.dark;
 
   // Returns the current Primary color of the Theme
-  Color get primaryColor => themeData.primaryColor;
+  Color get primaryColor => themeData.colorScheme.primary;
 
   // Returns the Scaffold background color of the Theme
-  Color get scaffoldBackgroundColor => themeData.scaffoldBackgroundColor;
+  Color get scaffoldBackgroundColor => colorScheme.surface;
 
   // Returns the current TextTheme
   TextTheme get textTheme => themeData.textTheme;

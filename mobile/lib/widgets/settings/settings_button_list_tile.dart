@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class SettingsButtonListTile extends StatelessWidget {
   final IconData icon;
@@ -39,7 +40,12 @@ class SettingsButtonListTile extends StatelessWidget {
         children: [
           if (subtileText != null) const SizedBox(height: 4),
           if (subtileText != null)
-            Text(subtileText!, style: context.textTheme.bodyMedium),
+            Text(
+              subtileText!,
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: context.colorScheme.onSurfaceSecondary,
+              ),
+            ),
           if (subtitle != null) subtitle!,
           const SizedBox(height: 6),
           ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),

@@ -271,8 +271,8 @@ describe(AssetService.name, () => {
       await sut.updateAll(authStub.user1, {
         ids: [],
         stackParentId: 'parent',
-      }),
-        expect(assetMock.updateAll).toHaveBeenCalledWith(['parent'], { updatedAt: expect.any(Date) });
+      });
+      expect(assetMock.updateAll).toHaveBeenCalledWith(['parent'], { updatedAt: expect.any(Date) });
     });
 
     it('should update parent asset when children are removed', async () => {
@@ -512,20 +512,20 @@ describe(AssetService.name, () => {
   describe('run', () => {
     it('should run the refresh metadata job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA }),
-        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } }]);
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } }]);
     });
 
     it('should run the refresh thumbnails job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL }),
-        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } }]);
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } }]);
     });
 
     it('should run the transcode video', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO }),
-        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } }]);
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } }]);
     });
   });
 

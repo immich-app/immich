@@ -4,7 +4,7 @@
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl, getKey, handlePromiseError } from '$lib/utils';
   import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
-  import { mdiCog, mdiMapMarker } from '@mdi/js';
+  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import maplibregl from 'maplibre-gl';
@@ -30,6 +30,7 @@
   export let showSettingsModal: boolean | undefined = undefined;
   export let zoom: number | undefined = undefined;
   export let center: LngLatLike | undefined = undefined;
+  export let hash = false;
   export let simplified = false;
   export let clickable = false;
   export let useLocationPin = false;
@@ -44,6 +45,8 @@
       map.setZoom(15);
     }
   }
+
+  export let onOpenInMapView: (() => Promise<void> | void) | undefined = undefined;
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
@@ -121,6 +124,7 @@
 
 {#await style then style}
   <MapLibre
+    {hash}
     {style}
     class="h-full"
     {center}
@@ -133,12 +137,14 @@
     bind:map
   >
     <NavigationControl position="top-left" showCompass={!simplified} />
+
     {#if !simplified}
       <GeolocateControl position="top-left" />
       <FullscreenControl position="top-left" />
       <ScaleControl />
       <AttributionControl compact={false} />
     {/if}
+
     {#if showSettingsModal !== undefined}
       <Control>
         <ControlGroup>
@@ -146,12 +152,21 @@
         </ControlGroup>
       </Control>
     {/if}
+
+    {#if onOpenInMapView}
+      <Control position="top-right">
+        <ControlGroup>
+          <ControlButton on:click={() => onOpenInMapView()}>
+            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" />
+          </ControlButton>
+        </ControlGroup>
+      </Control>
+    {/if}
+
     <GeoJSON
       data={{
         type: 'FeatureCollection',
-        features: mapMarkers.map((marker) => {
-          return asFeature(marker);
-        }),
+        features: mapMarkers.map((marker) => asFeature(marker)),
       }}
       id="geojson"
       cluster={{ radius: 500, maxZoom: 24 }}
@@ -173,7 +188,9 @@
         asButton
         let:feature
         on:click={(event) => {
-          $$slots.popup || handleAssetClick(event.detail.feature.properties?.id, map);
+          if (!$$slots.popup) {
+            handleAssetClick(event.detail.feature.properties?.id, map);
+          }
         }}
       >
         {#if useLocationPin}

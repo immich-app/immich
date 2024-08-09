@@ -37,7 +37,7 @@
 
   $: lat = asset?.exifInfo?.latitude ?? undefined;
   $: lng = asset?.exifInfo?.longitude ?? undefined;
-  $: zoom = lat !== undefined && lng !== undefined ? 15 : 1;
+  $: zoom = lat !== undefined && lng !== undefined ? 12.5 : 1;
 
   $: {
     if (places) {
