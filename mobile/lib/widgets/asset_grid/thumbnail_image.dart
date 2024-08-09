@@ -142,6 +142,7 @@ class ThumbnailImage extends ConsumerWidget {
             asset: asset,
             height: 250,
             width: 250,
+            useAltText: true,
           ),
         ),
       );
