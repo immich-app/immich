@@ -210,7 +210,7 @@
       <div class="ml-4">
         <SettingSwitch
           title={$t('rating')}
-          subtitle={$t('show_rating_details_panel')}
+          subtitle={$t('rating_description')}
           bind:checked={ratingEnabled}
           on:toggle={handleRatingChange}
         />
