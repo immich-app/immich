@@ -61,7 +61,8 @@ class BottomGalleryBar extends ConsumerWidget {
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
-    // !!!! itemsList and actionlist should always be in sync
+
+    // !!!! itemsList and actionlist items and conditions should always be in sync
     final itemsList = [
       BottomNavigationBarItem(
         icon: Icon(
@@ -371,7 +372,7 @@ class BottomGalleryBar extends ConsumerWidget {
       if (asset.isImage) (_) => handleEdit(),
       if (isOwner) (_) => handleArchive(),
       if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
-      if (isOwner) (_) => handleDelete(),
+      if (isOwner && !isInAlbum) (_) => handleDelete(),
       if (!isOwner) (_) => handleDownload(),
       if (isInAlbum) (_) => handleRemoveFromAlbum(),
     ];
