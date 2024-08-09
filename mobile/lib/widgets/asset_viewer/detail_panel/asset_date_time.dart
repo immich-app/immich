@@ -22,7 +22,6 @@ class AssetDateTime extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print("AssetDateTime build");
     final watchedAsset = ref.watch(assetDetailProvider(asset));
     String formattedDateTime = getDateTimeString(asset);
 

@@ -313,11 +313,9 @@ final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
 
 final assetDetailProvider =
     StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {
-  print("AssetDetailProvider");
   yield await ref.watch(assetServiceProvider).loadExif(asset);
   final db = ref.watch(dbProvider);
   await for (final a in db.assets.watchObject(asset.id)) {
-    print("Asset updated");
     if (a != null) {
       yield await ref.watch(assetServiceProvider).loadExif(a);
     }
