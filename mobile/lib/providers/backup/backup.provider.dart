@@ -4,6 +4,7 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
@@ -19,11 +20,13 @@ import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -286,12 +289,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ///
   /// From all the selected and albums assets
   /// Find the assets that are not overlapping between the two sets
+  /// Remove assets which are already present in remote server using SHA-1 checksum.
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
     final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
     final Set<AssetEntity> assetsFromSelectedAlbums = {};
     final Set<AssetEntity> assetsFromExcludedAlbums = {};
+    final Set<Asset> hashedSelectedAssets = {};
+    final hashService = HashService(_db, _backgroundService);
 
     for (final album in state.selectedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
@@ -307,6 +313,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       assetsFromSelectedAlbums.addAll(assets);
     }
 
+    // Extract all excluded assets
     for (final album in state.excludedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
 
@@ -319,6 +326,28 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         end: assetCount,
       );
       assetsFromExcludedAlbums.addAll(assets);
+    }
+
+    // Hash all album assets, excluding assets in `assetsFromExcludedAlbums`
+    for (final album in state.selectedBackupAlbums) {
+      final result = await hashService.getHashedAssets(album.albumEntity,
+          excludedAssets:
+              assetsFromExcludedAlbums.toList().map((e) => e.id).toSet());
+      hashedSelectedAssets.addAll(result);
+    }
+
+    if (hashedSelectedAssets.isNotEmpty) {
+      final assetHashCheckResponse =
+          await _backupService.bulkUploadCheckRequest(hashedSelectedAssets);
+
+      if (assetHashCheckResponse?.results != null) {
+        final rejectedAssetIds = assetHashCheckResponse!.results
+            .where(
+                (e) => e.action == AssetBulkUploadCheckResultActionEnum.reject)
+            .map((e) => e.id);
+        assetsFromSelectedAlbums
+            .removeWhere((e) => rejectedAssetIds.contains(e.id));
+      }
     }
 
     final Set<AssetEntity> allUniqueAssets =
