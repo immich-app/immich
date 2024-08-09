@@ -413,6 +413,17 @@ class Asset {
 
   static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
 
+  static int compareByLocalId(Asset a, Asset b) {
+    if (a.localId == null && b.localId == null) {
+      return 0;
+    } else if (a.localId == null) {
+      return 1;
+    } else if (b.localId == null) {
+      return -1;
+    }
+    return a.localId!.compareTo(b.localId!);
+  }
+
   static int compareByChecksum(Asset a, Asset b) =>
       a.checksum.compareTo(b.checksum);
 
