@@ -35,7 +35,7 @@
       on:click={() => handleSelect(value)}
       on:mouseover={() => (hoverRating = value)}
       on:focus|preventDefault={() => (hoverRating = value)}
-      class="shadow-0 outline-0 text-immich-primary"
+      class="shadow-0 outline-0 text-immich-primary dark:text-immich-dark-primary"
       disabled={readOnly}
     >
       <Icon
@@ -43,7 +43,7 @@
         size="1.5em"
         strokeWidth={1}
         color={filled ? 'currentcolor' : 'transparent'}
-        strokeColor={filled ? 'currentcolor' : 'white'}
+        strokeColor={filled ? 'currentcolor' : '#c1cce8'}
       />
     </button>
   {/each}

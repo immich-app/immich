@@ -62,7 +62,7 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
 
   return {
     rating: {
-      enabled: true,
+      enabled: false,
     },
     memories: {
       enabled: true,
