@@ -89,7 +89,7 @@ export class ServerService implements OnEvents {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications } =
+    const { reverseGeocoding, importFaces, map, machineLearning, trash, oauth, passwordLogin, notifications } =
       await this.configCore.getConfig({ withCache: false });
 
     return {
@@ -98,6 +98,7 @@ export class ServerService implements OnEvents {
       duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
       reverseGeocoding: reverseGeocoding.enabled,
+      importFaces: importFaces.enabled,
       sidecar: true,
       search: true,
       trash: trash.enabled,

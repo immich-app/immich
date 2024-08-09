@@ -375,6 +375,11 @@ class SystemConfigReverseGeocodingDto {
   enabled!: boolean;
 }
 
+class SystemConfigImportFacesDto {
+  @ValidateBoolean()
+  enabled!: boolean;
+}
+
 class SystemConfigServerDto {
   @ValidateIf((_, value: string) => value !== '')
   @IsUrl({ require_tld: false, require_protocol: true, protocols: ['http', 'https'] })
@@ -554,6 +559,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   reverseGeocoding!: SystemConfigReverseGeocodingDto;
+
+  @Type(() => SystemConfigImportFacesDto)
+  @ValidateNested()
+  @IsObject()
+  importFaces!: SystemConfigImportFacesDto;
 
   @Type(() => SystemConfigStorageTemplateDto)
   @ValidateNested()

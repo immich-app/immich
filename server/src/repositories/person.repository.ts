@@ -8,8 +8,10 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import {
   AssetFaceId,
+  DeleteAllFacesOptions,
   IPersonRepository,
   PeopleStatistics,
+  PersonNameResponse,
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
@@ -17,7 +19,7 @@ import {
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, IsNull, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -49,8 +51,22 @@ export class PersonRepository implements IPersonRepository {
     await this.personRepository.clear();
   }
 
-  async deleteAllFaces(): Promise<void> {
-    await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
+  async deleteAllFaces({ sourceType }: DeleteAllFacesOptions): Promise<void> {
+    if (sourceType === undefined) {
+      await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
+    } else if (sourceType === null) {
+      await this.assetFaceRepository
+        .createQueryBuilder('asset_faces')
+        .delete()
+        .andWhere('sourceType is null')
+        .execute();
+    } else {
+      await this.assetFaceRepository
+        .createQueryBuilder('asset_faces')
+        .delete()
+        .andWhere('sourceType = :sourceType', { sourceType })
+        .execute();
+    }
   }
 
   getAllFaces(
@@ -182,6 +198,20 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, { withHidden: true }] })
+  getDistinctNames(userId: string, { withHidden }: PersonNameSearchOptions): Promise<PersonNameResponse[]> {
+    const queryBuilder = this.personRepository
+      .createQueryBuilder('person')
+      .select(['person.id', 'person.name'])
+      .distinctOn(['lower(person.name)'])
+      .where(`person.ownerId = :userId AND person.name != ''`, { userId });
+
+    if (!withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+    return queryBuilder.getMany();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(personId: string): Promise<PersonStatistics> {
     const items = await this.assetFaceRepository
@@ -248,8 +278,8 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
-  create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    return this.personRepository.save(entity);
+  create(entities: any): any {
+    return this.personRepository.save(entities);
   }
 
   async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
@@ -257,9 +287,25 @@ export class PersonRepository implements IPersonRepository {
     return res.map((row) => row.id);
   }
 
-  async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    const { id } = await this.personRepository.save(entity);
-    return this.personRepository.findOneByOrFail({ id });
+  async upsertFaces(assetId: string, entities: AssetFaceEntity[], sourceType?: string): Promise<string[]> {
+    return await this.assetFaceRepository.manager.transaction(async (manager) => {
+      const builder = manager.createQueryBuilder(AssetFaceEntity, 'asset_faces');
+      let query = builder.delete().where('assetId = :assetId', { assetId: assetId });
+
+      if (sourceType) {
+        query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
+      } else if (sourceType == null) {
+        query = query.andWhere({ sourceType: IsNull() });
+      }
+      await query.execute();
+
+      const res = await manager.save(AssetFaceEntity, entities);
+      return res.map((row) => row.id);
+    });
+  }
+
+  async update(entities: any): Promise<any> {
+    return await this.personRepository.save(entities);
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })

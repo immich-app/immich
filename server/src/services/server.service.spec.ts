@@ -160,6 +160,7 @@ describe(ServerService.name, () => {
         smartSearch: true,
         duplicateDetection: true,
         facialRecognition: true,
+        importFaces: false,
         map: true,
         reverseGeocoding: true,
         oauth: false,

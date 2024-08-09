@@ -26,7 +26,7 @@ export type ActivityResponseDto = {
     comment?: string | null;
     createdAt: string;
     id: string;
-    "type": ReactionType;
+    "type": Type;
     user: UserResponseDto;
 };
 export type ActivityCreateDto = {
@@ -166,6 +166,7 @@ export type AssetFaceWithoutPersonResponseDto = {
     id: string;
     imageHeight: number;
     imageWidth: number;
+    sourceType?: string | null;
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
@@ -462,6 +463,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     imageWidth: number;
     person: (PersonResponseDto) | null;
+    sourceType?: string | null;
 };
 export type FaceDto = {
     id: string;
@@ -572,7 +574,7 @@ export type MemoryResponseDto = {
     memoryAt: string;
     ownerId: string;
     seenAt?: string;
-    "type": MemoryType;
+    "type": Type2;
     updatedAt: string;
 };
 export type MemoryCreateDto = {
@@ -708,8 +710,8 @@ export type SearchExploreResponseDto = {
 };
 export type MetadataSearchDto = {
     checksum?: string;
-    city?: string | null;
-    country?: string | null;
+    city?: string;
+    country?: string;
     createdAfter?: string;
     createdBefore?: string;
     deviceAssetId?: string;
@@ -723,10 +725,10 @@ export type MetadataSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string | null;
+    lensModel?: string;
     libraryId?: string | null;
     make?: string;
-    model?: string | null;
+    model?: string;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -734,7 +736,7 @@ export type MetadataSearchDto = {
     personIds?: string[];
     previewPath?: string;
     size?: number;
-    state?: string | null;
+    state?: string;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -782,8 +784,8 @@ export type PlacesResponseDto = {
     name: string;
 };
 export type SmartSearchDto = {
-    city?: string | null;
-    country?: string | null;
+    city?: string;
+    country?: string;
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
@@ -794,15 +796,15 @@ export type SmartSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string | null;
+    lensModel?: string;
     libraryId?: string | null;
     make?: string;
-    model?: string | null;
+    model?: string;
     page?: number;
     personIds?: string[];
     query: string;
     size?: number;
-    state?: string | null;
+    state?: string;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -847,6 +849,7 @@ export type ServerFeaturesDto = {
     duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
+    importFaces: boolean;
     map: boolean;
     oauth: boolean;
     oauthAutoLaunch: boolean;
@@ -1006,6 +1009,9 @@ export type SystemConfigImageDto = {
     thumbnailFormat: ImageFormat;
     thumbnailSize: number;
 };
+export type SystemConfigImportFacesDto = {
+    enabled: boolean;
+};
 export type JobSettingsDto = {
     concurrency: number;
 };
@@ -1115,6 +1121,7 @@ export type SystemConfigUserDto = {
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
+    importFaces: SystemConfigImportFacesDto;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -2421,9 +2428,8 @@ export function searchSmart({ smartSearchDto }: {
         body: smartSearchDto
     })));
 }
-export function getSearchSuggestions({ country, includeNull, make, model, state, $type }: {
+export function getSearchSuggestions({ country, make, model, state, $type }: {
     country?: string;
-    includeNull?: boolean;
     make?: string;
     model?: string;
     state?: string;
@@ -2434,7 +2440,6 @@ export function getSearchSuggestions({ country, includeNull, make, model, state,
         data: string[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
-        includeNull,
         make,
         model,
         state,
@@ -3070,6 +3075,10 @@ export enum ReactionType {
     Comment = "comment",
     Like = "like"
 }
+export enum Type {
+    Comment = "comment",
+    Like = "like"
+}
 export enum UserAvatarColor {
     Primary = "primary",
     Pink = "pink",
@@ -3164,6 +3173,9 @@ export enum JobCommand {
 export enum MapTheme {
     Light = "light",
     Dark = "dark"
+}
+export enum Type2 {
+    OnThisDay = "on_this_day"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"

@@ -8,8 +8,12 @@ import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { PersonResponseDto } from 'src/dtos/person.dto';
+import { SearchPeopleDto } from 'src/dtos/search.dto';
+import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { PersonEntity } from 'src/entities/person.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -21,6 +25,7 @@ import {
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
+  JobItem,
   JobName,
   JobStatus,
   QueueName,
@@ -34,6 +39,7 @@ import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 /** look for a date from these tags (in order) */
@@ -100,7 +106,7 @@ export class MetadataService implements OnEvents {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -206,6 +212,7 @@ export class MetadataService implements OnEvents {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
+    const { importFaces } = await this.configCore.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -240,6 +247,10 @@ export class MetadataService implements OnEvents {
       assetId: asset.id,
       metadataExtractedAt: new Date(),
     });
+
+    if (isFaceImportEnabled(importFaces)) {
+      await this.applyTaggedFaces(asset, tags);
+    }
 
     return JobStatus.SUCCESS;
   }
@@ -455,6 +466,65 @@ export class MetadataService implements OnEvents {
     } catch (error: Error | any) {
       this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${error}`, error?.stack);
     }
+  }
+
+  async searchPerson(ownerId: AssetEntity['ownerId'], dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.personRepository.getByName(ownerId, dto.name, { withHidden: dto.withHidden });
+  }
+
+  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
+    if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
+      return;
+    }
+
+    const discoveredFaces: Partial<AssetFaceEntity>[] = [];
+    const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
+    const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
+    const missing: Partial<PersonEntity>[] = [];
+    const missingWithFaceAsset: Partial<PersonEntity>[] = [];
+    for (const region of tags.RegionInfo.RegionList) {
+      if (!region.Name) {
+        continue;
+      }
+
+      const imageWidth = tags.RegionInfo.AppliedToDimensions.W;
+      const imageHeight = tags.RegionInfo.AppliedToDimensions.H;
+      const loweredName = region.Name.toLowerCase();
+      const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+
+      const face = {
+        id: this.cryptoRepository.randomUUID(),
+        personId: personId,
+        assetId: asset.id,
+        imageWidth: imageWidth,
+        imageHeight: imageHeight,
+        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        sourceType: SourceType.EXIF,
+      };
+
+      discoveredFaces.push(face);
+      if (!existingNameMap.has(loweredName)) {
+        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
+        missingWithFaceAsset.push({ id: personId, faceAssetId: face.id });
+      }
+    }
+
+    if (missing.length > 0) {
+      this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
+    }
+
+    const newPersons: PersonEntity[] = await this.personRepository.create(missing);
+
+    const faceIds = await this.personRepository.upsertFaces(asset.id, discoveredFaces, SourceType.EXIF);
+    this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
+
+    await this.personRepository.update(missingWithFaceAsset);
+
+    const jobs = newPersons.map((person) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } }));
+    await this.jobRepository.queueAll(jobs as JobItem[]);
   }
 
   private async exifData(

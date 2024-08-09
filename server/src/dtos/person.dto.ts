@@ -113,6 +113,8 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
+  @ApiProperty({ type: 'string' })
+  sourceType?: string | null;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
@@ -176,6 +178,7 @@ export function mapFacesWithoutPerson(face: AssetFaceEntity): AssetFaceWithoutPe
     boundingBoxX2: face.boundingBoxX2,
     boundingBoxY1: face.boundingBoxY1,
     boundingBoxY2: face.boundingBoxY2,
+    sourceType: face.sourceType,
   };
 }
 

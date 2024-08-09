@@ -7712,6 +7712,10 @@
               }
             ],
             "nullable": true
+          },
+          "sourceType": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -7780,6 +7784,10 @@
           },
           "imageWidth": {
             "type": "integer"
+          },
+          "sourceType": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -10211,6 +10219,9 @@
           "facialRecognition": {
             "type": "boolean"
           },
+          "importFaces": {
+            "type": "boolean"
+          },
           "map": {
             "type": "boolean"
           },
@@ -10244,6 +10255,7 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "importFaces",
           "map",
           "oauth",
           "oauthAutoLaunch",
@@ -10760,6 +10772,9 @@
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
+          "importFaces": {
+            "$ref": "#/components/schemas/SystemConfigImportFacesDto"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -10809,6 +10824,7 @@
         "required": [
           "ffmpeg",
           "image",
+          "importFaces",
           "job",
           "library",
           "logging",
@@ -10976,6 +10992,17 @@
           "quality",
           "thumbnailFormat",
           "thumbnailSize"
+        ],
+        "type": "object"
+      },
+      "SystemConfigImportFacesDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },

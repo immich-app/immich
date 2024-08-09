@@ -141,6 +141,9 @@ export interface SystemConfig {
   reverseGeocoding: {
     enabled: boolean;
   };
+  importFaces: {
+    enabled: boolean;
+  };
   oauth: {
     autoLaunch: boolean;
     autoRegister: boolean;
@@ -285,6 +288,9 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   reverseGeocoding: {
     enabled: true,
+  },
+  importFaces: {
+    enabled: false,
   },
   oauth: {
     autoLaunch: false,

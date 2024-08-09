@@ -20,6 +20,7 @@ class AssetFaceWithoutPersonResponseDto {
     required this.id,
     required this.imageHeight,
     required this.imageWidth,
+    this.sourceType,
   });
 
   int boundingBoxX1;
@@ -36,6 +37,8 @@ class AssetFaceWithoutPersonResponseDto {
 
   int imageWidth;
 
+  String? sourceType;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceWithoutPersonResponseDto &&
     other.boundingBoxX1 == boundingBoxX1 &&
@@ -44,7 +47,8 @@ class AssetFaceWithoutPersonResponseDto {
     other.boundingBoxY2 == boundingBoxY2 &&
     other.id == id &&
     other.imageHeight == imageHeight &&
-    other.imageWidth == imageWidth;
+    other.imageWidth == imageWidth &&
+    other.sourceType == sourceType;
 
   @override
   int get hashCode =>
@@ -55,10 +59,11 @@ class AssetFaceWithoutPersonResponseDto {
     (boundingBoxY2.hashCode) +
     (id.hashCode) +
     (imageHeight.hashCode) +
-    (imageWidth.hashCode);
+    (imageWidth.hashCode) +
+    (sourceType == null ? 0 : sourceType!.hashCode);
 
   @override
-  String toString() => 'AssetFaceWithoutPersonResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth]';
+  String toString() => 'AssetFaceWithoutPersonResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -69,6 +74,11 @@ class AssetFaceWithoutPersonResponseDto {
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
       json[r'imageWidth'] = this.imageWidth;
+    if (this.sourceType != null) {
+      json[r'sourceType'] = this.sourceType;
+    } else {
+    //  json[r'sourceType'] = null;
+    }
     return json;
   }
 
@@ -87,6 +97,7 @@ class AssetFaceWithoutPersonResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
+        sourceType: mapValueOfType<String>(json, r'sourceType'),
       );
     }
     return null;

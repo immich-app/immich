@@ -15,7 +15,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
@@ -215,6 +214,7 @@ part 'model/smart_search_dto.dart';
 part 'model/system_config_dto.dart';
 part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_image_dto.dart';
+part 'model/system_config_import_faces_dto.dart';
 part 'model/system_config_job_dto.dart';
 part 'model/system_config_library_dto.dart';
 part 'model/system_config_library_scan_dto.dart';

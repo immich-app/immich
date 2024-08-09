@@ -129,6 +129,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    sourceType: null,
     faceSearch: { faceId: 'assetFaceId9', embedding: [1, 2, 3, 4] },
   }),
 };

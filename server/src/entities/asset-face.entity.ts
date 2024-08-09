@@ -3,6 +3,10 @@ import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+export enum SourceType {
+  EXIF = 'exif',
+}
+
 @Entity('asset_faces', { synchronize: false })
 @Index('IDX_asset_faces_assetId_personId', ['assetId', 'personId'])
 @Index(['personId', 'assetId'])
@@ -36,6 +40,9 @@ export class AssetFaceEntity {
 
   @Column({ default: 0, type: 'int' })
   boundingBoxY2!: number;
+
+  @Column({ nullable: true, type: 'varchar' })
+  sourceType?: string | null;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;

@@ -404,6 +404,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigImageDto](doc//SystemConfigImageDto.md)
+ - [SystemConfigImportFacesDto](doc//SystemConfigImportFacesDto.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
  - [SystemConfigLibraryDto](doc//SystemConfigLibraryDto.md)
  - [SystemConfigLibraryScanDto](doc//SystemConfigLibraryScanDto.md)
