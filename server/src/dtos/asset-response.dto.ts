@@ -91,7 +91,10 @@ const mapStack = (entity: AssetEntity) => {
     return null;
   }
 
-  return { id: entity.stack.id, assetCount: entity.stack.assets.length };
+  return {
+    id: entity.stack.id,
+    assetCount: entity.stack.assetCount ?? entity.stack.assets.length,
+  };
 };
 
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
