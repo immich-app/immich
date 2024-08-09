@@ -31,8 +31,8 @@ export enum UserAvatarColor {
 }
 
 export interface UserPreferences {
-  app_settings: {
-    rating: boolean;
+  rating: {
+    enabled: boolean;
   };
   memories: {
     enabled: boolean;
@@ -61,8 +61,8 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
   );
 
   return {
-    app_settings: {
-      rating: true,
+    rating: {
+      enabled: true,
     },
     memories: {
       enabled: true,

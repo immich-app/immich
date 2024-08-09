@@ -4,11 +4,6 @@ import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-v
 import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
 import { Optional, ValidateBoolean } from 'src/validation';
 
-class AppSettingsUpdate {
-  @ValidateBoolean({ optional: true })
-  rating?: boolean;
-}
-
 class AvatarUpdate {
   @Optional()
   @IsEnum(UserAvatarColor)
@@ -17,6 +12,11 @@ class AvatarUpdate {
 }
 
 class MemoryUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+}
+
+class RatingUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 }
@@ -52,8 +52,8 @@ class PurchaseUpdate {
 export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
-  @Type(() => AppSettingsUpdate)
-  app_settings?: AppSettingsUpdate;
+  @Type(() => RatingUpdate)
+  rating?: RatingUpdate;
 
   @Optional()
   @ValidateNested()
@@ -86,8 +86,8 @@ class AvatarResponse {
   color!: UserAvatarColor;
 }
 
-class AppSettingsResponse {
-  rating!: boolean;
+class RatingResponse {
+  enabled!: boolean;
 }
 
 class MemoryResponse {
@@ -111,7 +111,7 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
-  app_settings!: AppSettingsResponse;
+  rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;

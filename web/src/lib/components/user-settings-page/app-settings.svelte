@@ -46,6 +46,7 @@
     label: findLocale(editedLocale).name || fallbackLocale.name,
   };
   $: closestLanguage = getClosestAvailableLocale([$lang], langCodes);
+  $: ratingEnabled = $preferences?.rating?.enabled;
 
   onMount(() => {
     const interval = setInterval(() => {
@@ -98,14 +99,10 @@
     }
   };
 
-  let ratingEnabled = $preferences?.app_settings?.rating;
-
-  const handleRatingChange = async (newRating: CustomEvent<boolean>) => {
+  const handleRatingChange = async (enabled: boolean) => {
     try {
-      const data = await updateMyPreferences({
-        userPreferencesUpdateDto: { app_settings: { rating: newRating.detail } },
-      });
-      $preferences.app_settings.rating = data.app_settings.rating;
+      const data = await updateMyPreferences({ userPreferencesUpdateDto: { rating: { enabled } } });
+      $preferences.rating.enabled = data.rating.enabled;
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {
@@ -212,7 +209,7 @@
           title={$t('rating')}
           subtitle={$t('rating_description')}
           bind:checked={ratingEnabled}
-          on:toggle={handleRatingChange}
+          on:toggle={({ detail: enabled }) => handleRatingChange(enabled)}
         />
       </div>
     </div>

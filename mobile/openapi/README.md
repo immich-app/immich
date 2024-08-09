@@ -371,6 +371,8 @@ Class | Method | HTTP request | Description
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
+ - [RatingResponse](doc//RatingResponse.md)
+ - [RatingUpdate](doc//RatingUpdate.md)
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)

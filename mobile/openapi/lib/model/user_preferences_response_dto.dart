@@ -18,6 +18,7 @@ class UserPreferencesResponseDto {
     required this.emailNotifications,
     required this.memories,
     required this.purchase,
+    required this.rating,
   });
 
   AvatarResponse avatar;
@@ -30,13 +31,16 @@ class UserPreferencesResponseDto {
 
   PurchaseResponse purchase;
 
+  RatingResponse rating;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
     other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
     other.memories == memories &&
-    other.purchase == purchase;
+    other.purchase == purchase &&
+    other.rating == rating;
 
   @override
   int get hashCode =>
@@ -45,10 +49,11 @@ class UserPreferencesResponseDto {
     (download.hashCode) +
     (emailNotifications.hashCode) +
     (memories.hashCode) +
-    (purchase.hashCode);
+    (purchase.hashCode) +
+    (rating.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase]';
+  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -57,6 +62,7 @@ class UserPreferencesResponseDto {
       json[r'emailNotifications'] = this.emailNotifications;
       json[r'memories'] = this.memories;
       json[r'purchase'] = this.purchase;
+      json[r'rating'] = this.rating;
     return json;
   }
 
@@ -73,6 +79,7 @@ class UserPreferencesResponseDto {
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         memories: MemoryResponse.fromJson(json[r'memories'])!,
         purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
+        rating: RatingResponse.fromJson(json[r'rating'])!,
       );
     }
     return null;
@@ -125,6 +132,7 @@ class UserPreferencesResponseDto {
     'emailNotifications',
     'memories',
     'purchase',
+    'rating',
   };
 }
 
