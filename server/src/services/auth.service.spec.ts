@@ -353,11 +353,13 @@ describe('AuthService', () => {
 
   describe('getMobileRedirect', () => {
     it('should pass along the query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual('app.immich:/?code=123&state=456');
+      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual(
+        'app.immich:///?code=123&state=456',
+      );
     });
 
     it('should work if called without query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:/?');
+      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:///?');
     });
   });
 
@@ -423,7 +425,7 @@ describe('AuthService', () => {
       userMock.getByOAuthId.mockResolvedValue(userStub.user1);
       sessionMock.create.mockResolvedValue(sessionStub.valid);
 
-      await sut.callback({ url: `app.immich:/?code=abc123` }, loginDetails);
+      await sut.callback({ url: `app.immich:///?code=abc123` }, loginDetails);
 
       expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
     });
