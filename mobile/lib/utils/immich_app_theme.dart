@@ -251,11 +251,13 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
         borderSide: BorderSide(
           color: primaryColor,
         ),
+        borderRadius: const BorderRadius.all(Radius.circular(15)),
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(
           color: colorScheme.outlineVariant,
         ),
+        borderRadius: const BorderRadius.all(Radius.circular(15)),
       ),
       labelStyle: TextStyle(
         color: primaryColor,
@@ -267,6 +269,35 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
     ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: primaryColor,
+    ),
+    dropdownMenuTheme: DropdownMenuThemeData(
+      menuStyle: MenuStyle(
+        shape: WidgetStatePropertyAll<OutlinedBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: primaryColor,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+          ),
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+        ),
+        labelStyle: TextStyle(
+          color: primaryColor,
+        ),
+        hintStyle: const TextStyle(
+          fontSize: 14.0,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
     ),
   );
 }
