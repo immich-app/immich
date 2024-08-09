@@ -606,6 +606,7 @@ describe(MetadataService.name, () => {
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
         tz: '+02:00',
+        Rating: 3,
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue(tags);
@@ -638,6 +639,7 @@ describe(MetadataService.name, () => {
         profileDescription: tags.ProfileDescription,
         projectionType: 'EQUIRECTANGULAR',
         timeZone: tags.tz,
+        rating: tags.Rating,
       });
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,

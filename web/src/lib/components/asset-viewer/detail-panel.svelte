@@ -41,6 +41,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
 
@@ -162,6 +163,7 @@
   {/if}
 
   <DetailPanelDescription {asset} {isOwner} />
+  <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
     <section class="px-4 py-4 text-sm">

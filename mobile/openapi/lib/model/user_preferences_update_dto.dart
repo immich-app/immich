@@ -18,6 +18,7 @@ class UserPreferencesUpdateDto {
     this.emailNotifications,
     this.memories,
     this.purchase,
+    this.rating,
   });
 
   ///
@@ -60,13 +61,22 @@ class UserPreferencesUpdateDto {
   ///
   PurchaseUpdate? purchase;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  RatingUpdate? rating;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesUpdateDto &&
     other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
     other.memories == memories &&
-    other.purchase == purchase;
+    other.purchase == purchase &&
+    other.rating == rating;
 
   @override
   int get hashCode =>
@@ -75,10 +85,11 @@ class UserPreferencesUpdateDto {
     (download == null ? 0 : download!.hashCode) +
     (emailNotifications == null ? 0 : emailNotifications!.hashCode) +
     (memories == null ? 0 : memories!.hashCode) +
-    (purchase == null ? 0 : purchase!.hashCode);
+    (purchase == null ? 0 : purchase!.hashCode) +
+    (rating == null ? 0 : rating!.hashCode);
 
   @override
-  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase]';
+  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -107,6 +118,11 @@ class UserPreferencesUpdateDto {
     } else {
     //  json[r'purchase'] = null;
     }
+    if (this.rating != null) {
+      json[r'rating'] = this.rating;
+    } else {
+    //  json[r'rating'] = null;
+    }
     return json;
   }
 
@@ -123,6 +139,7 @@ class UserPreferencesUpdateDto {
         emailNotifications: EmailNotificationsUpdate.fromJson(json[r'emailNotifications']),
         memories: MemoryUpdate.fromJson(json[r'memories']),
         purchase: PurchaseUpdate.fromJson(json[r'purchase']),
+        rating: RatingUpdate.fromJson(json[r'rating']),
       );
     }
     return null;

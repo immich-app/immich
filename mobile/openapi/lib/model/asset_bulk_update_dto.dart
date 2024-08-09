@@ -20,6 +20,7 @@ class AssetBulkUpdateDto {
     this.isFavorite,
     this.latitude,
     this.longitude,
+    this.rating,
     this.removeParent,
     this.stackParentId,
   });
@@ -68,6 +69,16 @@ class AssetBulkUpdateDto {
   ///
   num? longitude;
 
+  /// Minimum value: 0
+  /// Maximum value: 5
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? rating;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -93,6 +104,7 @@ class AssetBulkUpdateDto {
     other.isFavorite == isFavorite &&
     other.latitude == latitude &&
     other.longitude == longitude &&
+    other.rating == rating &&
     other.removeParent == removeParent &&
     other.stackParentId == stackParentId;
 
@@ -106,11 +118,12 @@ class AssetBulkUpdateDto {
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
+    (rating == null ? 0 : rating!.hashCode) +
     (removeParent == null ? 0 : removeParent!.hashCode) +
     (stackParentId == null ? 0 : stackParentId!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, removeParent=$removeParent, stackParentId=$stackParentId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -145,6 +158,11 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'longitude'] = null;
     }
+    if (this.rating != null) {
+      json[r'rating'] = this.rating;
+    } else {
+    //  json[r'rating'] = null;
+    }
     if (this.removeParent != null) {
       json[r'removeParent'] = this.removeParent;
     } else {
@@ -175,6 +193,7 @@ class AssetBulkUpdateDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
+        rating: num.parse('${json[r'rating']}'),
         removeParent: mapValueOfType<bool>(json, r'removeParent'),
         stackParentId: mapValueOfType<String>(json, r'stackParentId'),
       );

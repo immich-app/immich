@@ -228,6 +228,13 @@ describe(AssetService.name, () => {
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
       expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
     });
+
+    it('should update the exif rating', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.update(authStub.admin, 'asset-1', { rating: 3 });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', rating: 3 });
+    });
   });
 
   describe('updateAll', () => {
