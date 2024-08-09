@@ -43,6 +43,25 @@ class BackupControllerPage extends HookConsumerWidget {
         ? false
         : true;
 
+    void startScreenDarkenTimer() {
+      darkenScreenTimer.value = Timer(const Duration(seconds: 30), () {
+        isScreenDarkened.value = true;
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      });
+    }
+
+    void stopScreenDarkenTimer() {
+      isScreenDarkened.value = false;
+      darkenScreenTimer.value?.cancel();
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [
+          SystemUiOverlay.top,
+          SystemUiOverlay.bottom,
+        ],
+      );
+    }
+
     useEffect(
       () {
         // Update the background settings information just to make sure we
@@ -82,20 +101,9 @@ class BackupControllerPage extends HookConsumerWidget {
     useEffect(
       () {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
-            isScreenDarkened.value = true;
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-          });
+          startScreenDarkenTimer();
         } else {
-          isScreenDarkened.value = false;
-          darkenScreenTimer.value?.cancel();
-          SystemChrome.setEnabledSystemUIMode(
-            SystemUiMode.manual,
-            overlays: [
-              SystemUiOverlay.top,
-              SystemUiOverlay.bottom,
-            ],
-          );
+          stopScreenDarkenTimer();
         }
 
         return null;
@@ -292,26 +300,15 @@ class BackupControllerPage extends HookConsumerWidget {
     return GestureDetector(
       onTap: () {
         if (isScreenDarkened.value) {
-          isScreenDarkened.value = false;
-          darkenScreenTimer.value?.cancel();
-          SystemChrome.setEnabledSystemUIMode(
-            SystemUiMode.manual,
-            overlays: [
-              SystemUiOverlay.top,
-              SystemUiOverlay.bottom,
-            ],
-          );
+          stopScreenDarkenTimer();
         }
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          darkenScreenTimer.value = Timer(const Duration(seconds: 60), () {
-            isScreenDarkened.value = true;
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-          });
+          startScreenDarkenTimer();
         }
       },
       child: AnimatedOpacity(
-        opacity: isScreenDarkened.value ? 0.0 : 1.0,
-        duration: const Duration(seconds: 2),
+        opacity: isScreenDarkened.value ? 0.1 : 1.0,
+        duration: const Duration(seconds: 1),
         child: Scaffold(
           appBar: AppBar(
             elevation: 0,
