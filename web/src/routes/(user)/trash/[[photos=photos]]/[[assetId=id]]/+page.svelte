@@ -28,7 +28,9 @@
 
   export let data: PageData;
 
-  $featureFlags.trash || handlePromiseError(goto(AppRoute.PHOTOS));
+  if (!$featureFlags.trash) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
 
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();

@@ -3,10 +3,10 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 
-class ExifImageProperties extends StatelessWidget {
+class FileInfo extends StatelessWidget {
   final Asset asset;
 
-  const ExifImageProperties({
+  const FileInfo({
     super.key,
     required this.asset,
   });

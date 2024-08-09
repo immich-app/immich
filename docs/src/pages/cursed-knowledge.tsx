@@ -1,4 +1,13 @@
-import { mdiCalendarToday, mdiLeadPencil, mdiLockOutline, mdiSpeedometerSlow, mdiWeb } from '@mdi/js';
+import {
+  mdiCalendarToday,
+  mdiCrosshairsOff,
+  mdiLeadPencil,
+  mdiLockOff,
+  mdiLockOutline,
+  mdiSpeedometerSlow,
+  mdiWeb,
+  mdiWrap,
+} from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import { Item as TimelineItem, Timeline } from '../components/timeline';
@@ -8,6 +17,41 @@ const withLanguage = (date: Date) => (language: string) => date.toLocaleDateStri
 type Item = Omit<TimelineItem, 'done' | 'getDateLabel'> & { date: Date };
 
 const items: Item[] = [
+  {
+    icon: mdiWrap,
+    iconColor: 'gray',
+    title: 'Carriage returns in bash scripts are cursed',
+    description: 'Git can be configured to automatically convert LF to CRLF on checkout and CRLF breaks bash scripts.',
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/11613',
+      text: '#11613',
+    },
+    date: new Date(2024, 7, 7),
+  },
+  {
+    icon: mdiLockOff,
+    iconColor: 'red',
+    title: 'Fetch inside Cloudflare Workers is cursed',
+    description:
+      'Fetch requests in Cloudflare Workers use http by default, even if you explicitly specify https, which can often cause redirect loops.',
+    link: {
+      url: 'https://community.cloudflare.com/t/does-cloudflare-worker-allow-secure-https-connection-to-fetch-even-on-flexible-ssl/68051/5',
+      text: 'Cloudflare',
+    },
+    date: new Date(2024, 7, 7),
+  },
+  {
+    icon: mdiCrosshairsOff,
+    iconColor: 'gray',
+    title: 'GPS sharing on mobile is cursed',
+    description:
+      'Some phones will silently strip GPS data from images when apps without location permission try to access them.',
+    link: {
+      url: 'https://github.com/immich-app/immich/discussions/11268',
+      text: '#11268',
+    },
+    date: new Date(2024, 6, 21),
+  },
   {
     icon: mdiLeadPencil,
     iconColor: 'gold',

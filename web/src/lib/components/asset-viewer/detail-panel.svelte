@@ -41,7 +41,9 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -161,6 +163,7 @@
   {/if}
 
   <DetailPanelDescription {asset} {isOwner} />
+  <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
     <section class="px-4 py-4 text-sm">
@@ -390,7 +393,7 @@
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
-              <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+              <p>{$locale ? `ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` : ''}</p>
             {/if}
 
             {#if asset.exifInfo.exposureTime}
@@ -438,16 +441,17 @@
           },
         ]}
         center={latlng}
-        zoom={15}
+        zoom={12.5}
         simplified
         useLocationPin
+        onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
         <svelte:fragment slot="popup" let:marker>
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
             <a
-              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
               class="font-medium text-immich-primary"
             >

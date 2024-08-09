@@ -402,6 +402,7 @@ SELECT
   "exif"."profileDescription" AS "exif_profileDescription",
   "exif"."colorspace" AS "exif_colorspace",
   "exif"."bitsPerSample" AS "exif_bitsPerSample",
+  "exif"."rating" AS "exif_rating",
   "exif"."fps" AS "exif_fps"
 FROM
   "assets" "asset"

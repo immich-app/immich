@@ -47,22 +47,22 @@ class AlbumInfoListTile extends HookConsumerWidget {
 
     buildIcon() {
       if (isSelected) {
-        return const Icon(
+        return Icon(
           Icons.check_circle_rounded,
-          color: Colors.green,
+          color: context.colorScheme.primary,
         );
       }
 
       if (isExcluded) {
-        return const Icon(
+        return Icon(
           Icons.remove_circle_rounded,
-          color: Colors.red,
+          color: context.colorScheme.error,
         );
       }
 
       return Icon(
         Icons.circle,
-        color: context.isDarkTheme ? Colors.grey[400] : Colors.black45,
+        color: context.colorScheme.surfaceContainerHighest,
       );
     }
 

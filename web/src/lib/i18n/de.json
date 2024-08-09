@@ -1021,6 +1021,8 @@
   "purchase_server_title": "Server",
   "purchase_settings_server_activated": "Der Server Produktschlüssel wird durch den Administrator verwaltet",
   "range": "Reichweite",
+  "rating": "Bewertung",
+  "rating_description": "Stellt die Exif-Bewertung im Informationsbereich dar",
   "raw": "RAW",
   "reaction_options": "Reaktionsmöglichkeiten",
   "read_changelog": "Changelog lesen",
