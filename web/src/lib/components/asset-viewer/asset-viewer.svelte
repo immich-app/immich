@@ -538,7 +538,7 @@
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail}
+  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
