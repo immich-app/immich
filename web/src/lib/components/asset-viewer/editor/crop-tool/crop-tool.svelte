@@ -1,7 +1,5 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import {
     cropAspectRatio,
     cropImageScale,
@@ -16,6 +14,7 @@
   import { t } from 'svelte-i18n';
   import { onImageLoad } from './image-loading';
   import { tick } from 'svelte';
+  import CropPreset from './crop-preset.svelte';
 
   $: rotateHorizontal = [90, 270].includes($normaizedRorateDegrees);
   const icon_16_9 = `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`;
@@ -39,6 +38,7 @@
       name: '1:1',
       icon: mdiSquareOutline,
       viewBox: '0 0 24 24',
+      rotate: false,
     },
     {
       name: '16:9',
@@ -95,6 +95,12 @@
   let selectedSize: CropAspectRatio = 'free';
   $cropAspectRatio = selectedSize;
 
+  $: sizesRows = [
+    sizes.filter((s) => s.rotate === false),
+    sizes.filter((s) => s.rotate === undefined),
+    sizes.filter((s) => s.rotate === true),
+  ];
+
   async function rotate(clock: boolean) {
     rotateDegrees.update((v) => {
       return v + 90 * (clock ? 1 : -1);
@@ -103,20 +109,6 @@
     await tick();
     onImageLoad();
   }
-
-  $: rotatedTitle = (title: string, toRotate: boolean) => {
-    let sides = title.split(':');
-    if (toRotate) {
-      sides.reverse();
-    }
-    return sides.join(':');
-  };
-  $: toRotate = (def: boolean | undefined) => {
-    if (def === false) {
-      return false;
-    }
-    return (def && !rotateHorizontal) || (!def && rotateHorizontal);
-  };
 
   function selectType(size: CropAspectRatio) {
     if (size === 'reset') {
@@ -142,27 +134,13 @@
   <div class="flex h-10 w-full items-center justify-between text-sm">
     <h2>{$t('editor_crop_tool_h2_aspect_ratios').toUpperCase()}</h2>
   </div>
-  <ul class="flex-wrap flex-row flex gap-x-6 gap-y-4 justify-evenly">
-    {#each sizes as size (size.name)}
-      <li>
-        <Button
-          color={selectedSize === size.name ? 'primary' : 'transparent-gray'}
-          class="flex-col gap-1"
-          size="sm"
-          rounded="lg"
-          on:click={() => selectType(size.name)}
-        >
-          <Icon
-            size="1.75em"
-            path={size.icon}
-            viewBox={size.viewBox}
-            class={`${toRotate(size.rotate) ? 'rotate-90' : ''}`}
-          />
-          <span>{rotatedTitle(size.name, rotateHorizontal)}</span>
-        </Button>
-      </li>
-    {/each}
-  </ul>
+  {#each sizesRows as sizesRow}
+    <ul class="flex-wrap flex-row flex gap-x-6 py-2 justify-evenly">
+      {#each sizesRow as size (size.name)}
+        <CropPreset {size} {selectedSize} {rotateHorizontal} {selectType} />
+      {/each}
+    </ul>
+  {/each}
   <div class="flex h-10 w-full items-center justify-between text-sm">
     <h2>{$t('editor_crop_tool_h2_rotation').toUpperCase()}</h2>
   </div>

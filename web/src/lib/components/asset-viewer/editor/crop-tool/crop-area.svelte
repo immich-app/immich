@@ -104,7 +104,7 @@
   }
   .crop-area.changedOriention {
     max-width: 92vh;
-    max-height: calc(100vw - 460px - 1.5rem);
+    max-height: calc(100vw - 400px - 1.5rem);
   }
 
   .crop-frame.transition {
