@@ -40,7 +40,7 @@
 
     img.src = getAssetOriginalUrl({ id: asset.id, checksum: asset.checksum });
 
-    img.addEventListener('load', () => onImageLoad(false));
+    img.addEventListener('load', () => onImageLoad(true));
     img.addEventListener('error', (error) => {
       handleError(error, $t('error_loading_image'));
     });
