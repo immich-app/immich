@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import fs from 'node:fs/promises';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -108,6 +109,34 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+    });
+
+    it('should resolve symlinks', async () => {
+      const tempDirectory = await fs.mkdtemp('immich-symlink-test');
+      const symlinkPath = tempDirectory + '/symlink-to-IMG_123.jpg';
+      const symlinkTarget = tempDirectory + '/IMG_123.jpg';
+
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.noResizePath, id: 'asset-1', originalPath: symlinkPath }]);
+      storageMock.createZipStream.mockReturnValue(archiveMock);
+
+      await fs.writeFile(symlinkTarget, '');
+      await fs.symlink('IMG_123.jpg', symlinkPath);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1'] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      await fs.unlink(symlinkPath);
+      await fs.unlink(symlinkTarget);
+      await fs.rmdir(tempDirectory);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(expect.stringMatching(`.*${symlinkTarget}$`), 'IMG_123.jpg');
     });
   });
 
