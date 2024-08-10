@@ -354,8 +354,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                   );
                 } else {
                   final useNativePlayer =
-                      asset.isLocal && asset.livePhotoVideoId == null;
-
+                      a.isLocal && a.livePhotoVideoId == null;
+                  debugPrint("asset.isLocal ${asset.isLocal}");
+                  debugPrint("build video player $useNativePlayer");
                   return PhotoViewGalleryPageOptions.customChild(
                     onDragStart: (_, details, __) =>
                         localPosition.value = details.localPosition,
@@ -374,14 +375,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                         ? NativeVideoViewerPage(
                             key: ValueKey(a),
                             asset: a,
-                            // loopVideo: shouldLoopVideo.value,
-                            // placeholder: Image(
-                            //   image: provider,
-                            //   fit: BoxFit.contain,
-                            //   height: context.height,
-                            //   width: context.width,
-                            //   alignment: Alignment.center,
-                            // ),
                           )
                         : VideoViewerPage(
                             key: ValueKey(a),
