@@ -102,11 +102,12 @@ export function adjustDimensions(
   aspectRatio: CropAspectRatio,
   xLimit: number,
   yLimit: number,
+  minSize: number,
 ) {
-  let w = newWidth,
-    h = newHeight;
+  let w = newWidth;
+  let h = newHeight;
 
-  let aspectMultiplier;
+  let aspectMultiplier: number;
 
   if (aspectRatio === 'free') {
     aspectMultiplier = newWidth / newHeight;
@@ -128,6 +129,28 @@ export function adjustDimensions(
   if (h > yLimit) {
     h = yLimit;
     if (aspectRatio !== 'free') {
+      w = h * aspectMultiplier;
+    }
+  }
+
+  if (w < minSize) {
+    w = minSize;
+    if (aspectRatio !== 'free') {
+      h = w / aspectMultiplier;
+    }
+  }
+  if (h < minSize) {
+    h = minSize;
+    if (aspectRatio !== 'free') {
+      w = h * aspectMultiplier;
+    }
+  }
+
+  if (aspectRatio !== 'free' && w / h !== aspectMultiplier) {
+    if (w < minSize) {
+      h = w / aspectMultiplier;
+    }
+    if (h < minSize) {
       w = h * aspectMultiplier;
     }
   }

@@ -304,11 +304,12 @@ function resizeCrop(mouseX: number, mouseY: number) {
           get(cropAspectRatio),
           canvas.clientWidth,
           canvas.clientHeight,
+          minSize,
         );
         cropSettings.update((crop) => {
           crop.y = Math.max(0, y + height - h);
-          crop.width = Math.max(minSize, w);
-          crop.height = Math.max(minSize, h);
+          crop.width = w;
+          crop.height = h;
           return crop;
         });
       }
@@ -324,10 +325,11 @@ function resizeCrop(mouseX: number, mouseY: number) {
           get(cropAspectRatio),
           canvas.clientWidth,
           canvas.clientHeight - y,
+          minSize,
         );
         cropSettings.update((crop) => {
-          crop.width = Math.max(minSize, w);
-          crop.height = Math.max(minSize, h);
+          crop.width = w;
+          crop.height = h;
           return crop;
         });
       }
@@ -342,10 +344,11 @@ function resizeCrop(mouseX: number, mouseY: number) {
         get(cropAspectRatio),
         canvas.clientWidth,
         canvas.clientHeight,
+        minSize,
       );
       cropSettings.update((crop) => {
-        crop.width = Math.max(minSize, w);
-        crop.height = Math.max(minSize, h);
+        crop.width = w;
+        crop.height = h;
         crop.x = Math.max(0, x + width - crop.width);
         crop.y = Math.max(0, y + height - crop.height);
         return crop;
@@ -361,10 +364,11 @@ function resizeCrop(mouseX: number, mouseY: number) {
         get(cropAspectRatio),
         canvas.clientWidth - x,
         y + height,
+        minSize,
       );
       cropSettings.update((crop) => {
-        crop.width = Math.max(minSize, w);
-        crop.height = Math.max(minSize, h);
+        crop.width = w;
+        crop.height = h;
         crop.y = Math.max(0, y + height - crop.height);
         return crop;
       });
@@ -379,10 +383,11 @@ function resizeCrop(mouseX: number, mouseY: number) {
         get(cropAspectRatio),
         canvas.clientWidth,
         canvas.clientHeight - y,
+        minSize,
       );
       cropSettings.update((crop) => {
-        crop.width = Math.max(minSize, w);
-        crop.height = Math.max(minSize, h);
+        crop.width = w;
+        crop.height = h;
         crop.x = Math.max(0, x + width - crop.width);
         return crop;
       });
@@ -397,10 +402,11 @@ function resizeCrop(mouseX: number, mouseY: number) {
         get(cropAspectRatio),
         canvas.clientWidth - x,
         canvas.clientHeight - y,
+        minSize,
       );
       cropSettings.update((crop) => {
-        crop.width = Math.max(minSize, w);
-        crop.height = Math.max(minSize, h);
+        crop.width = w;
+        crop.height = h;
         return crop;
       });
       break;
