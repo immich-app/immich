@@ -27,82 +27,123 @@ class NativeVideoViewerPage extends ConsumerStatefulWidget {
 }
 
 class NativeVideoViewerPageState extends ConsumerState<NativeVideoViewerPage> {
+  NativeVideoPlayerController? _controller;
+
+  bool isAutoplayEnabled = false;
+  bool isPlaybackLoopEnabled = false;
+
+  double videoWidth = 0;
+  double videoHeight = 0;
+
+  Future<void> _initController(NativeVideoPlayerController controller) async {
+    _controller = controller;
+
+    _controller?. //
+        onPlaybackStatusChanged
+        .addListener(_onPlaybackStatusChanged);
+    _controller?. //
+        onPlaybackPositionChanged
+        .addListener(_onPlaybackPositionChanged);
+    _controller?. //
+        onPlaybackSpeedChanged
+        .addListener(_onPlaybackSpeedChanged);
+    _controller?. //
+        onVolumeChanged
+        .addListener(_onPlaybackVolumeChanged);
+    _controller?. //
+        onPlaybackReady
+        .addListener(_onPlaybackReady);
+    _controller?. //
+        onPlaybackEnded
+        .addListener(_onPlaybackEnded);
+
+    await _loadVideoSource();
+  }
+
+  Future<void> _loadVideoSource() async {
+    final videoSource = await _createVideoSource();
+    await _controller?.loadVideoSource(videoSource);
+  }
+
+  Future<VideoSource> _createVideoSource() async {
+    final file = await widget.asset.local!.file;
+    if (file == null) {
+      throw Exception('No file found for the video');
+    }
+
+    return await VideoSource.init(
+      path: file.path,
+      type: VideoSourceType.file,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller?. //
+        onPlaybackStatusChanged
+        .removeListener(_onPlaybackStatusChanged);
+    _controller?. //
+        onPlaybackPositionChanged
+        .removeListener(_onPlaybackPositionChanged);
+    _controller?. //
+        onPlaybackSpeedChanged
+        .removeListener(_onPlaybackSpeedChanged);
+    _controller?. //
+        onVolumeChanged
+        .removeListener(_onPlaybackVolumeChanged);
+    _controller?. //
+        onPlaybackReady
+        .removeListener(_onPlaybackReady);
+    _controller?. //
+        onPlaybackEnded
+        .removeListener(_onPlaybackEnded);
+    _controller = null;
+    super.dispose();
+  }
+
+  void _onPlaybackReady() {
+    final videoInfo = _controller?.videoInfo;
+    if (videoInfo != null) {
+      videoWidth = videoInfo.width.toDouble();
+      videoHeight = videoInfo.height.toDouble();
+    }
+    setState(() {});
+    _controller?.play();
+  }
+
+  void _onPlaybackStatusChanged() {
+    setState(() {});
+  }
+
+  void _onPlaybackPositionChanged() {
+    setState(() {});
+  }
+
+  void _onPlaybackSpeedChanged() {
+    setState(() {});
+  }
+
+  void _onPlaybackVolumeChanged() {
+    setState(() {});
+  }
+
+  void _onPlaybackEnded() {
+    if (isPlaybackLoopEnabled) {
+      _controller?.play();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    double videoWidth = size.width;
-    double videoHeight = size.height;
-
-    NativeVideoPlayerController? controller;
-
-    void initController(NativeVideoPlayerController videoCtrl) {
-      controller = videoCtrl;
-
-      controller?.onPlaybackReady.addListener(() {
-        // Emitted when the video loaded successfully and it's ready to play.
-        // At this point, videoInfo is available.
-        final videoInfo = controller?.videoInfo;
-
-        setState(() {
-          if (videoInfo != null) {
-            videoWidth = videoInfo.width.toDouble();
-            videoHeight = videoInfo.height.toDouble();
-
-            print(videoHeight);
-            print(videoWidth);
-          }
-        });
-
-        final videoDuration = videoInfo?.duration;
-
-        controller?.play();
-      });
-
-      controller?.onPlaybackStatusChanged.addListener(() {
-        final playbackStatus = controller?.playbackInfo?.status;
-        // playbackStatus can be playing, paused, or stopped.
-      });
-
-      controller?.onPlaybackPositionChanged.addListener(() {
-        final playbackPosition = controller?.playbackInfo?.position;
-      });
-
-      controller?.onPlaybackEnded.addListener(() {
-        // Emitted when the video has finished playing.
-      });
-    }
-
-    dispose() {
-      controller = null;
-      super.dispose();
-    }
-
     return PopScope(
-      onPopInvoked: (pop) {
-        ref.read(videoPlaybackValueProvider.notifier).value =
-            VideoPlaybackValue.uninitialized();
-      },
+      onPopInvoked: (pop) {},
       child: SizedBox(
         height: videoHeight,
         width: videoWidth,
         child: AspectRatio(
           aspectRatio: 16 / 9,
           child: NativeVideoPlayerView(
-            onViewReady: (c) async {
-              // Use a local file for the video player controller
-              final file = await widget.asset.local!.file;
-              if (file == null) {
-                throw Exception('No file found for the video');
-              }
-
-              final videoSource = await VideoSource.init(
-                path: file.path,
-                type: VideoSourceType.file,
-              );
-
-              await c.loadVideoSource(videoSource);
-              initController(c);
-            },
+            onViewReady: _initController,
           ),
         ),
       ),
