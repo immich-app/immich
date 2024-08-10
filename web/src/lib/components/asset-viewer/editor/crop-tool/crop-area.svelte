@@ -10,7 +10,7 @@
   import { onImageLoad, resizeCanvas } from './image-loading';
   import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
   import { recalculateCrop, animateCropChange } from './crop-settings';
-  import { cropAspectRatio, cropSettings, resetGlobalCropStore } from '$lib/stores/asset-editor.store';
+  import { cropAspectRatio, cropSettings, resetGlobalCropStore, rotateDegrees } from '$lib/stores/asset-editor.store';
 
   export let asset;
   let img: HTMLImageElement;
@@ -56,6 +56,7 @@
 <div class="canvas-container">
   <button
     class="crop-area"
+    style={`rotate:${$rotateDegrees}deg`}
     bind:this={$cropAreaEl}
     on:mousedown={handleMouseDown}
     on:mouseup={handleMouseUp}
@@ -90,6 +91,7 @@
     position: relative;
     display: inline-block;
     outline: none;
+    transition: rotate 0.15s ease;
   }
 
   .overlay {

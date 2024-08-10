@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     cropAspectRatio,
@@ -7,10 +8,14 @@
     cropImageSize,
     cropSettings,
     cropSettingsChanged,
+    normaizedRorateDegrees,
+    rotateDegrees,
     type CropAspectRatio,
   } from '$lib/stores/asset-editor.store';
-  import { mdiBackupRestore, mdiCropFree, mdiSquareOutline } from '@mdi/js';
+  import { mdiBackupRestore, mdiCropFree, mdiRotateLeft, mdiRotateRight, mdiSquareOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
+  $: rotateHorizontal = [90, 270].includes($normaizedRorateDegrees);
   const icon_16_9 = `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`;
   const icon_4_3 = `M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H5V7h14v10z`;
   const icon_3_2 = `M200-240q-33 0-56.5-23.5T120-320v-320q0-33 23.5-56.5T200-720h560q33 0 56.5 23.5T840-640v320q0 33-23.5 56.5T760-240H200Zm0-80h560v-320H200v320Zm0 0v-320 320Z`;
@@ -26,6 +31,7 @@
       icon: mdiCropFree,
       name: 'free',
       viewBox: '0 0 24 24',
+      rotate: false,
     },
     {
       name: '1:1',
@@ -80,11 +86,32 @@
       name: 'reset',
       icon: mdiBackupRestore,
       viewBox: '0 0 24 24',
+      rotate: false,
     },
   ];
 
   let selectedSize: CropAspectRatio = 'free';
   $cropAspectRatio = selectedSize;
+
+  function rotate(clock: boolean) {
+    rotateDegrees.update((v) => {
+      return v + 90 * (clock ? 1 : -1);
+    });
+  }
+
+  $: rotatedTitle = (title: string, toRotate: boolean) => {
+    let sides = title.split(':');
+    if (toRotate) {
+      sides.reverse();
+    }
+    return sides.join(':');
+  };
+  $: toRotate = (def: boolean | undefined) => {
+    if (def === false) {
+      return false;
+    }
+    return (def && !rotateHorizontal) || (!def && rotateHorizontal);
+  };
 
   function selectType(size: CropAspectRatio) {
     if (size === 'reset') {
@@ -106,7 +133,10 @@
   }
 </script>
 
-<div class="mt-3">
+<div class="mt-3 px-4 py-4">
+  <div class="flex h-10 w-full items-center justify-between text-sm">
+    <h2>{$t('editor_crop_tool_h2_aspect_ratios').toUpperCase()}</h2>
+  </div>
   <ul class="flex-wrap flex-row flex gap-x-6 gap-y-4 justify-evenly">
     {#each sizes as size (size.name)}
       <li>
@@ -117,10 +147,22 @@
           rounded="lg"
           on:click={() => selectType(size.name)}
         >
-          <Icon size="1.75em" path={size.icon} viewBox={size.viewBox} class={size.rotate ? 'rotate-90' : ''} />
-          <span>{size.name}</span>
+          <Icon
+            size="1.75em"
+            path={size.icon}
+            viewBox={size.viewBox}
+            class={`${toRotate(size.rotate) ? 'rotate-90' : ''}`}
+          />
+          <span>{rotatedTitle(size.name, rotateHorizontal)}</span>
         </Button>
       </li>
     {/each}
+  </ul>
+  <div class="flex h-10 w-full items-center justify-between text-sm">
+    <h2>{$t('editor_crop_tool_h2_rotation').toUpperCase()}</h2>
+  </div>
+  <ul class="flex-wrap flex-row flex gap-x-6 gap-y-4 justify-center">
+    <li><CircleIconButton title={$t('anti_clockwise')} on:click={() => rotate(false)} icon={mdiRotateLeft} /></li>
+    <li><CircleIconButton title={$t('clockwise')} on:click={() => rotate(true)} icon={mdiRotateRight} /></li>
   </ul>
 </div>

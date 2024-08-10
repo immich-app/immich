@@ -4,6 +4,8 @@ import {
   cropImageSize,
   cropSettings,
   cropSettingsChanged,
+  normaizedRorateDegrees,
+  rotateDegrees,
   showCancelConfirmDialog,
   type CropSettings,
 } from '$lib/stores/asset-editor.store';
@@ -87,9 +89,21 @@ function getMousePosition(e: MouseEvent) {
   let offsetX = e.clientX;
   let offsetY = e.clientY;
   const clienRect = getBoundingClientRectCached(get(cropAreaEl));
+  const rotateDeg = get(normaizedRorateDegrees);
 
-  offsetX -= clienRect?.left ?? 0;
-  offsetY -= clienRect?.top ?? 0;
+  if (rotateDeg == 90) {
+    offsetX = e.clientY - (clienRect?.top ?? 0);
+    offsetY = window.innerWidth - e.clientX - (window.innerWidth - (clienRect?.right ?? 0));
+  } else if (rotateDeg == 180) {
+    offsetX = window.innerWidth - e.clientX - (window.innerWidth - (clienRect?.right ?? 0));
+    offsetY = window.innerHeight - e.clientY - (window.innerHeight - (clienRect?.bottom ?? 0));
+  } else if (rotateDeg == 270) {
+    offsetX = window.innerHeight - e.clientY - (window.innerHeight - (clienRect?.bottom ?? 0));
+    offsetY = e.clientX - (clienRect?.left ?? 0);
+  } else if (rotateDeg == 0) {
+    offsetX -= clienRect?.left ?? 0;
+    offsetY -= clienRect?.top ?? 0;
+  }
   return { mouseX: offsetX, mouseY: offsetY };
 }
 
@@ -98,7 +112,9 @@ let getBoundingClientRectCache: { data: BoundingClientRect | null; time: number 
   data: null,
   time: 0,
 };
-
+rotateDegrees.subscribe(() => {
+  getBoundingClientRectCache.time = 0;
+});
 function getBoundingClientRectCached(el: HTMLElement | null) {
   if (Date.now() - getBoundingClientRectCache.time > 5000 || getBoundingClientRectCache.data === null) {
     getBoundingClientRectCache = {
@@ -407,7 +423,9 @@ function updateCursor(mouseX: number, mouseY: number) {
   }
 
   const crop = get(cropSettings);
-  const {
+  const rotateDeg = get(normaizedRorateDegrees);
+
+  let {
     onLeftBoundary,
     onRightBoundary,
     onTopBoundary,
@@ -418,6 +436,41 @@ function updateCursor(mouseX: number, mouseY: number) {
     onBottomRightCorner,
   } = isOnCropBoundary(mouseX, mouseY, crop);
 
+  if (rotateDeg == 90) {
+    [onTopBoundary, onRightBoundary, onBottomBoundary, onLeftBoundary] = [
+      onLeftBoundary,
+      onTopBoundary,
+      onRightBoundary,
+      onBottomBoundary,
+    ];
+
+    [onTopLeftCorner, onTopRightCorner, onBottomRightCorner, onBottomLeftCorner] = [
+      onBottomLeftCorner,
+      onTopLeftCorner,
+      onTopRightCorner,
+      onBottomRightCorner,
+    ];
+  } else if (rotateDeg == 180) {
+    [onTopBoundary, onBottomBoundary] = [onBottomBoundary, onTopBoundary];
+    [onLeftBoundary, onRightBoundary] = [onRightBoundary, onLeftBoundary];
+
+    [onTopLeftCorner, onBottomRightCorner] = [onBottomRightCorner, onTopLeftCorner];
+    [onTopRightCorner, onBottomLeftCorner] = [onBottomLeftCorner, onTopRightCorner];
+  } else if (rotateDeg == 270) {
+    [onTopBoundary, onRightBoundary, onBottomBoundary, onLeftBoundary] = [
+      onRightBoundary,
+      onBottomBoundary,
+      onLeftBoundary,
+      onTopBoundary,
+    ];
+
+    [onTopLeftCorner, onTopRightCorner, onBottomRightCorner, onBottomLeftCorner] = [
+      onTopRightCorner,
+      onBottomRightCorner,
+      onBottomLeftCorner,
+      onTopLeftCorner,
+    ];
+  }
   if (onTopLeftCorner || onBottomRightCorner) {
     setCursor('nwse-resize');
   } else if (onTopRightCorner || onBottomLeftCorner) {

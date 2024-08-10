@@ -8,6 +8,12 @@ export const cropImageScale = writable(1);
 export const cropAspectRatio = writable<CropAspectRatio>('free');
 export const cropSettingsChanged = writable<boolean>(false);
 
+export const rotateDegrees = writable<number>(0);
+export const normaizedRorateDegrees = derived(rotateDegrees, (v) => {
+  const newAngle = v % 360;
+  return newAngle < 0 ? newAngle + 360 : newAngle;
+});
+
 export const showCancelConfirmDialog = writable<boolean | CallableFunction>(false);
 
 export const editTypes = [
@@ -41,6 +47,7 @@ export function resetGlobalCropStore() {
   cropAspectRatio.set('free');
   cropSettingsChanged.set(false);
   showCancelConfirmDialog.set(false);
+  rotateDegrees.set(0);
 }
 
 export type CropAspectRatio =
