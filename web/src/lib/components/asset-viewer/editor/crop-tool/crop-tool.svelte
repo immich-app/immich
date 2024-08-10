@@ -14,6 +14,8 @@
   } from '$lib/stores/asset-editor.store';
   import { mdiBackupRestore, mdiCropFree, mdiRotateLeft, mdiRotateRight, mdiSquareOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { onImageLoad } from './image-loading';
+  import { tick } from 'svelte';
 
   $: rotateHorizontal = [90, 270].includes($normaizedRorateDegrees);
   const icon_16_9 = `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`;
@@ -93,10 +95,13 @@
   let selectedSize: CropAspectRatio = 'free';
   $cropAspectRatio = selectedSize;
 
-  function rotate(clock: boolean) {
+  async function rotate(clock: boolean) {
     rotateDegrees.update((v) => {
       return v + 90 * (clock ? 1 : -1);
     });
+
+    await tick();
+    onImageLoad();
   }
 
   $: rotatedTitle = (title: string, toRotate: boolean) => {

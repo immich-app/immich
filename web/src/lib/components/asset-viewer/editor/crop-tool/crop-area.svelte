@@ -10,7 +10,13 @@
   import { onImageLoad, resizeCanvas } from './image-loading';
   import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
   import { recalculateCrop, animateCropChange } from './crop-settings';
-  import { cropAspectRatio, cropSettings, resetGlobalCropStore, rotateDegrees } from '$lib/stores/asset-editor.store';
+  import {
+    changedOriention,
+    cropAspectRatio,
+    cropSettings,
+    resetGlobalCropStore,
+    rotateDegrees,
+  } from '$lib/stores/asset-editor.store';
 
   export let asset;
   let img: HTMLImageElement;
@@ -34,7 +40,7 @@
 
     img.src = getAssetOriginalUrl({ id: asset.id, checksum: asset.checksum });
 
-    img.addEventListener('load', onImageLoad);
+    img.addEventListener('load', () => onImageLoad(false));
     img.addEventListener('error', (error) => {
       handleError(error, $t('error_loading_image'));
     });
@@ -55,7 +61,7 @@
 
 <div class="canvas-container">
   <button
-    class="crop-area"
+    class={`crop-area ${$changedOriention ? 'changedOriention' : ''}`}
     style={`rotate:${$rotateDegrees}deg`}
     bind:this={$cropAreaEl}
     on:mousedown={handleMouseDown}
@@ -92,8 +98,18 @@
     display: inline-block;
     outline: none;
     transition: rotate 0.15s ease;
+    max-height: 100%;
+    max-width: 100%;
+    width: max-content;
+  }
+  .crop-area.changedOriention {
+    max-width: 92vh;
+    max-height: calc(100vw - 460px - 1.5rem);
   }
 
+  .crop-frame.transition {
+    transition: all 0.15s ease;
+  }
   .overlay {
     position: absolute;
     top: 0;
@@ -132,7 +148,7 @@
   .crop-area img {
     display: block;
     max-width: 100%;
-    height: auto;
+    height: 100%;
     user-select: none;
   }
 
