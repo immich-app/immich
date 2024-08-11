@@ -25,7 +25,7 @@ function createAssetViewingStore() {
   return {
     asset: readonly(viewingAssetStoreState),
     preloadAssets: readonly(preloadAssets),
-    isViewing: readonly(viewState),
+    isViewing: viewState,
     setAsset,
     setAssetId,
     showAssetViewer,
