@@ -26,7 +26,6 @@
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   export let copyImage: (() => Promise<void>) | null = null;
   export let zoomToggle: (() => void) | null = null;
-  export let setRotation: ((rotation: number) => void) | null = null;
 
   const { slideshowState, slideshowLook } = slideshowStore;
 
@@ -100,13 +99,6 @@
 
   zoomToggle = () => {
     $zoomed = $zoomed ? false : true;
-  };
-
-  setRotation = (rotation: number) => {
-    photoZoomState.update((state) => {
-      state.currentRotation = rotation;
-      return state;
-    });
   };
 
   const onCopyShortcut = (event: KeyboardEvent) => {

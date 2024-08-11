@@ -14,7 +14,6 @@
 
   export let asset: AssetResponseDto;
   export let onAction: OnAction;
-  export let onSetRotation: (rotation: number) => void;
   export let to: 'left' | 'right';
 
   let angle = 0;

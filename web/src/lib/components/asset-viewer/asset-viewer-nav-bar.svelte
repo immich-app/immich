@@ -50,7 +50,6 @@
   export let onShowDetail: () => void;
   // export let showEditorHandler: () => void;
   export let onClose: () => void;
-  export let onSetRotation: (rotation: number) => void;
 
   const sharedLink = getSharedLink();
 
@@ -139,8 +138,8 @@
 
         {#if isOwner}
           {#if !asset.isTrashed}
-            <RotateAction {asset} {onAction} {onSetRotation} to="left" />
-            <RotateAction {asset} {onAction} {onSetRotation} to="right" />
+            <RotateAction {asset} {onAction} to="left" />
+            <RotateAction {asset} {onAction} to="right" />
           {/if}
           {#if hasStackChildren}
             <UnstackAction {stackedAssets} {onAction} />
