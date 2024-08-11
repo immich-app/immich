@@ -10,20 +10,19 @@
   import { mdiRotateLeft, mdiRotateRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
+  import { photoViewer } from '$lib/stores/assets.store';
 
   export let asset: AssetResponseDto;
   export let onAction: OnAction;
   export let onSetRotation: (rotation: number) => void;
   export let to: 'left' | 'right';
 
-  $: orientation = asset.exifInfo?.orientation || '1';
-
   let angle = 0;
 
   const handleRotateAsset = async () => {
     let newOrientation = '1';
     try {
-      switch (orientation) {
+      switch (asset.exifInfo?.orientation) {
         case '0':
         case '1': {
           newOrientation = to === 'left' ? '8' : '6';
@@ -59,6 +58,7 @@
         }
       }
       await updateAsset({ id: asset.id, updateAssetDto: { orientation: newOrientation } });
+      asset.exifInfo = { ...asset.exifInfo, orientation: newOrientation };
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name: AssetJobName.RegenerateThumbnail } });
       notificationController.show({
         type: NotificationType.Info,
@@ -66,12 +66,16 @@
       });
 
       onAction({ type: AssetAction.ROTATE, asset });
-      angle += 90;
-      onSetRotation(angle);
+      angle += to === 'left' ? -90 : 90;
+      setTimeout(() => {
+        // force the image to refresh the thumbnail
+        const oldSrc = new URL($photoViewer!.src);
+        oldSrc.searchParams.set('t', Date.now().toString());
+        $photoViewer!.src = oldSrc.toString();
+      }, 500);
     } catch (error) {
       handleError(error, $t('errors.unable_to_edit_asset'));
     }
-    orientation = newOrientation;
   };
 </script>
 
