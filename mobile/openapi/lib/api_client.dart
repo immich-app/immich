@@ -362,6 +362,8 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MapMarkerResponseDto':
           return MapMarkerResponseDto.fromJson(value);
+        case 'MapReverseGeocodeResponseDto':
+          return MapReverseGeocodeResponseDto.fromJson(value);
         case 'MapTheme':
           return MapThemeTypeTransformer().decode(value);
         case 'MemoryCreateDto':
@@ -422,6 +424,10 @@ class ApiClient {
           return PurchaseUpdate.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RatingResponse':
+          return RatingResponse.fromJson(value);
+        case 'RatingUpdate':
+          return RatingUpdate.fromJson(value);
         case 'ReactionLevel':
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':

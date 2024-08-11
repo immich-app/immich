@@ -30,15 +30,41 @@ class PersonService {
     }
   }
 
-  Future<List<Asset>?> getPersonAssets(String id) async {
+  Future<List<Asset>> getPersonAssets(String id) async {
+    List<Asset> result = [];
+    var hasNext = true;
+    var currentPage = 1;
+
     try {
-      final assets = await _apiService.peopleApi.getPersonAssets(id);
-      if (assets == null) return null;
-      return await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
+      while (hasNext) {
+        final response = await _apiService.searchApi.searchMetadata(
+          MetadataSearchDto(
+            personIds: [id],
+            page: currentPage,
+            size: 1000,
+          ),
+        );
+
+        if (response == null) {
+          break;
+        }
+
+        if (response.assets.nextPage == null) {
+          hasNext = false;
+        }
+
+        final assets = response.assets.items;
+        final mapAssets =
+            await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
+        result.addAll(mapAssets);
+
+        currentPage++;
+      }
     } catch (error, stack) {
       _log.severe("Error while fetching person assets", error, stack);
     }
-    return null;
+
+    return result;
   }
 
   Future<PersonResponseDto?> updateName(String id, String name) async {

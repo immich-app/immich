@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { readonly, writable } from 'svelte/store';
 
 function createPurchaseStore() {
   const isPurcharsed = writable(false);
@@ -8,9 +8,7 @@ function createPurchaseStore() {
   }
 
   return {
-    isPurchased: {
-      subscribe: isPurcharsed.subscribe,
-    },
+    isPurchased: readonly(isPurcharsed),
     setPurchaseStatus,
   };
 }

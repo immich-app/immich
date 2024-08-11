@@ -42,18 +42,23 @@
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
   const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
 
+  // combobox and all the search components have terrible support for value | null so we use empty string instead.
+  function withNullAsUndefined<T>(value: T | null) {
+    return value === null ? undefined : value;
+  }
+
   let filter: SearchFilter = {
     context: 'query' in searchQuery ? searchQuery.query : '',
     filename: 'originalFileName' in searchQuery ? searchQuery.originalFileName : undefined,
     personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
-      country: searchQuery.country,
-      state: searchQuery.state,
-      city: searchQuery.city,
+      country: withNullAsUndefined(searchQuery.country),
+      state: withNullAsUndefined(searchQuery.state),
+      city: withNullAsUndefined(searchQuery.city),
     },
     camera: {
-      make: searchQuery.make,
-      model: searchQuery.model,
+      make: withNullAsUndefined(searchQuery.make),
+      model: withNullAsUndefined(searchQuery.model),
     },
     date: {
       takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,

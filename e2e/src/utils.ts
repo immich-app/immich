@@ -424,12 +424,12 @@ export const utils = {
 
   createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
 
-  setAuthCookies: async (context: BrowserContext, accessToken: string) =>
+  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
     await context.addCookies([
       {
         name: 'immich_access_token',
         value: accessToken,
-        domain: '127.0.0.1',
+        domain,
         path: '/',
         expires: 1_742_402_728,
         httpOnly: true,
@@ -439,7 +439,7 @@ export const utils = {
       {
         name: 'immich_auth_type',
         value: 'password',
-        domain: '127.0.0.1',
+        domain,
         path: '/',
         expires: 1_742_402_728,
         httpOnly: true,
@@ -449,7 +449,7 @@ export const utils = {
       {
         name: 'immich_is_authenticated',
         value: 'true',
-        domain: '127.0.0.1',
+        domain,
         path: '/',
         expires: 1_742_402_728,
         httpOnly: false,

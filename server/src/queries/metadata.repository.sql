@@ -2,65 +2,55 @@
 
 -- MetadataRepository.getCountries
 SELECT DISTINCT
-  ON ("exif"."country") "exif"."country" AS "exif_country",
-  "exif"."assetId" AS "exif_assetId"
+  ON ("exif"."country") "exif"."country" AS "country"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" = $1
-  AND "exif"."country" IS NOT NULL
 
 -- MetadataRepository.getStates
 SELECT DISTINCT
-  ON ("exif"."state") "exif"."state" AS "exif_state",
-  "exif"."assetId" AS "exif_assetId"
+  ON ("exif"."state") "exif"."state" AS "state"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" = $1
-  AND "exif"."state" IS NOT NULL
   AND "exif"."country" = $2
 
 -- MetadataRepository.getCities
 SELECT DISTINCT
-  ON ("exif"."city") "exif"."city" AS "exif_city",
-  "exif"."assetId" AS "exif_assetId"
+  ON ("exif"."city") "exif"."city" AS "city"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" = $1
-  AND "exif"."city" IS NOT NULL
   AND "exif"."country" = $2
   AND "exif"."state" = $3
 
 -- MetadataRepository.getCameraMakes
 SELECT DISTINCT
-  ON ("exif"."make") "exif"."make" AS "exif_make",
-  "exif"."assetId" AS "exif_assetId"
+  ON ("exif"."make") "exif"."make" AS "make"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" = $1
-  AND "exif"."make" IS NOT NULL
   AND "exif"."model" = $2
 
 -- MetadataRepository.getCameraModels
 SELECT DISTINCT
-  ON ("exif"."model") "exif"."model" AS "exif_model",
-  "exif"."assetId" AS "exif_assetId"
+  ON ("exif"."model") "exif"."model" AS "model"
 FROM
   "exif" "exif"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" = $1
-  AND "exif"."model" IS NOT NULL
   AND "exif"."make" = $2

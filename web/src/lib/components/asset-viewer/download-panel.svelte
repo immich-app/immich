@@ -35,7 +35,9 @@
                 <div class="h-[7px] rounded-full bg-immich-primary" style={`width: ${download.percentage}%`} />
               </div>
               <p class="min-w-[4em] whitespace-nowrap text-right">
-                <span class="text-immich-primary">{download.percentage}%</span>
+                <span class="text-immich-primary">
+                  {(download.percentage / 100).toLocaleString($locale, { style: 'percent' })}
+                </span>
               </p>
             </div>
           </div>

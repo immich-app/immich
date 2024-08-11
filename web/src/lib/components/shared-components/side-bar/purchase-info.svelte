@@ -16,6 +16,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { preferences } from '$lib/stores/user.store';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
+  import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
 
   let showMessage = false;
   let isOpen = false;
@@ -83,14 +84,7 @@
         class="w-full"
         type="button"
       >
-        <div
-          class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 border supporter-effect rounded-lg transition-all"
-        >
-          <div class="h-6 w-6">
-            <ImmichLogo noText />
-          </div>
-          <p class="dark:text-gray-100">{$t('purchase_account_info')}</p>
-        </div>
+        <SupporterBadge />
       </button>
     {:else if !$isPurchased && showBuyButton}
       <button

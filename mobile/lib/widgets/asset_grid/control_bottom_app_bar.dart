@@ -281,7 +281,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
         ScrollController scrollController,
       ) {
         return Card(
-          color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[100],
+          color: context.colorScheme.surfaceContainerLow,
           surfaceTintColor: Colors.transparent,
           elevation: 18.0,
           shape: const RoundedRectangleBorder(

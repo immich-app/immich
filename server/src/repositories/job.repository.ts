@@ -142,7 +142,11 @@ export class JobRepository implements IJobRepository {
       job.setTime(new CronTime(expression));
     }
     if (start !== undefined) {
-      start ? job.start() : job.stop();
+      if (start) {
+        job.start();
+      } else {
+        job.stop();
+      }
     }
   }
 

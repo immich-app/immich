@@ -6,10 +6,19 @@ import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const invalidBirthday = [
-  { birthDate: 'false', response: 'birthDate must be a date string' },
-  { birthDate: '123567', response: 'birthDate must be a date string' },
-  { birthDate: 123_567, response: 'birthDate must be a date string' },
-  { birthDate: new Date(9999, 0, 0).toISOString(), response: ['Birth date cannot be in the future'] },
+  {
+    birthDate: 'false',
+    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
+  },
+  {
+    birthDate: '123567',
+    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
+  },
+  {
+    birthDate: 123_567,
+    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
+  },
+  { birthDate: '9999-01-01', response: ['Birth date cannot be in the future'] },
 ];
 
 describe('/people', () => {
@@ -185,13 +194,13 @@ describe('/people', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           name: 'New Person',
-          birthDate: '1990-01-01T05:00:00.000Z',
+          birthDate: '1990-01-01',
         });
       expect(status).toBe(201);
       expect(body).toMatchObject({
         id: expect.any(String),
         name: 'New Person',
-        birthDate: '1990-01-01T05:00:00.000Z',
+        birthDate: '1990-01-01',
       });
     });
   });
@@ -233,7 +242,7 @@ describe('/people', () => {
       const { status, body } = await request(app)
         .put(`/people/${visiblePerson.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ birthDate: '1990-01-01T05:00:00.000Z' });
+        .send({ birthDate: '1990-01-01' });
       expect(status).toBe(200);
       expect(body).toMatchObject({ birthDate: '1990-01-01' });
     });

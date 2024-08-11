@@ -3109,6 +3109,60 @@
         ]
       }
     },
+    "/map/reverse-geocode": {
+      "get": {
+        "operationId": "reverseGeocode",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "lon",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "double",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapReverseGeocodeResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
+        ]
+      }
+    },
     "/map/style.json": {
       "get": {
         "operationId": "getMapStyle",
@@ -4061,6 +4115,8 @@
     },
     "/people/{id}/assets": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.113.0",
         "operationId": "getPersonAssets",
         "parameters": [
           {
@@ -4100,8 +4156,12 @@
           }
         ],
         "tags": [
-          "People"
-        ]
+          "People",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.113.0"
+        }
       }
     },
     "/people/{id}/merge": {
@@ -4671,6 +4731,15 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "includeNull",
+            "required": false,
+            "in": "query",
+            "description": "This property was added in v111.0.0",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -7033,7 +7102,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.110.0",
+    "version": "1.111.0",
     "contact": {}
   },
   "tags": [],
@@ -7162,11 +7231,7 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "comment",
-              "like"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/ReactionType"
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -7483,6 +7548,11 @@
             "type": "number"
           },
           "longitude": {
+            "type": "number"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
             "type": "number"
           },
           "removeParent": {
@@ -8637,6 +8707,11 @@
             "nullable": true,
             "type": "string"
           },
+          "rating": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
+          },
           "state": {
             "default": null,
             "nullable": true,
@@ -9128,6 +9203,28 @@
         ],
         "type": "object"
       },
+      "MapReverseGeocodeResponseDto": {
+        "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "state"
+        ],
+        "type": "object"
+      },
       "MapTheme": {
         "enum": [
           "light",
@@ -9235,10 +9332,7 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "on_this_day"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/MemoryType"
           },
           "updatedAt": {
             "format": "date-time",
@@ -9309,9 +9403,11 @@
             "type": "string"
           },
           "city": {
+            "nullable": true,
             "type": "string"
           },
           "country": {
+            "nullable": true,
             "type": "string"
           },
           "createdAfter": {
@@ -9357,6 +9453,7 @@
             "type": "boolean"
           },
           "lensModel": {
+            "nullable": true,
             "type": "string"
           },
           "libraryId": {
@@ -9368,6 +9465,7 @@
             "type": "string"
           },
           "model": {
+            "nullable": true,
             "type": "string"
           },
           "order": {
@@ -9399,6 +9497,7 @@
             "type": "number"
           },
           "state": {
+            "nullable": true,
             "type": "string"
           },
           "takenAfter": {
@@ -9814,6 +9913,25 @@
           "isActive",
           "isPaused"
         ],
+        "type": "object"
+      },
+      "RatingResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "RatingUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "ReactionLevel": {
@@ -10542,9 +10660,11 @@
       "SmartSearchDto": {
         "properties": {
           "city": {
+            "nullable": true,
             "type": "string"
           },
           "country": {
+            "nullable": true,
             "type": "string"
           },
           "createdAfter": {
@@ -10580,6 +10700,7 @@
             "type": "boolean"
           },
           "lensModel": {
+            "nullable": true,
             "type": "string"
           },
           "libraryId": {
@@ -10591,6 +10712,7 @@
             "type": "string"
           },
           "model": {
+            "nullable": true,
             "type": "string"
           },
           "page": {
@@ -10613,6 +10735,7 @@
             "type": "number"
           },
           "state": {
+            "nullable": true,
             "type": "string"
           },
           "takenAfter": {
@@ -11471,6 +11594,11 @@
           },
           "longitude": {
             "type": "number"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number"
           }
         },
         "type": "object"
@@ -11771,6 +11899,9 @@
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/RatingResponse"
           }
         },
         "required": [
@@ -11778,7 +11909,8 @@
           "download",
           "emailNotifications",
           "memories",
-          "purchase"
+          "purchase",
+          "rating"
         ],
         "type": "object"
       },
@@ -11798,6 +11930,9 @@
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/RatingUpdate"
           }
         },
         "type": "object"

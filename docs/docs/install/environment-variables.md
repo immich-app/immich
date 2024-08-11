@@ -38,21 +38,23 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 
 ## General
 
-| Variable                            | Description                                         |           Default            | Containers               | Workers            |
-| :---------------------------------- | :-------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
-| `TZ`                                | Timezone                                            |                              | server                   | microservices      |
-| `IMMICH_ENV`                        | Environment (production, development)               |         `production`         | server, machine learning | api, microservices |
-| `IMMICH_LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)        |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media Location                                      |   `./upload`<sup>\*1</sup>   | server                   | api, microservices |
-| `IMMICH_CONFIG_FILE`                | Path to config file                                 |                              | server                   | api, microservices |
-| `NO_COLOR`                          | Set to `true` to disable color-coded log output     |           `false`            | server, machine learning |                    |
-| `CPU_CORES`                         | Amount of cores available to the immich server      | auto-detected cpu core count | server                   |                    |
-| `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                           |            `8081`            | server                   | api                |
-| `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                           |            `8082`            | server                   | microservices      |
-| `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images |                              | server                   | microservices      |
-| `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies  |                              | server                   | api                |
+| Variable                            | Description                                                                               |           Default            | Containers               | Workers            |
+| :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
+| `TZ`                                | Timezone                                                                                  |                              | server                   | microservices      |
+| `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
+| `IMMICH_LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media Location inside the container ⚠️**You probably shouldn't set this**<sup>\*1</sup>⚠️ |   `./upload`<sup>\*2</sup>   | server                   | api, microservices |
+| `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
+| `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
+| `CPU_CORES`                         | Amount of cores available to the immich server                                            | auto-detected cpu core count | server                   |                    |
+| `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                                                                 |            `8081`            | server                   | api                |
+| `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |            `8082`            | server                   | microservices      |
+| `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
+| `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies                                        |                              | server                   | api                |
 
-\*1: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
+\*1: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
+
+\*2: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
 It only need to be set if the Immich deployment method is changing.
 
 :::tip

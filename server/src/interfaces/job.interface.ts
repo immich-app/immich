@@ -152,6 +152,7 @@ export interface ISidecarWriteJob extends IEntityJob {
   dateTimeOriginal?: string;
   latitude?: number;
   longitude?: number;
+  rating?: number;
 }
 
 export interface IDeferrableJob extends IEntityJob {

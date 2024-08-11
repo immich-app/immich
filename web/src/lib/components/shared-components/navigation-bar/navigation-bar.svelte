@@ -60,9 +60,13 @@
 
       <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
         {#if $featureFlags.search}
-          <a href={AppRoute.SEARCH} id="search-button" class="ml-4 sm:hidden">
-            <CircleIconButton title={$t('go_to_search')} icon={mdiMagnify} />
-          </a>
+          <CircleIconButton
+            href={AppRoute.SEARCH}
+            id="search-button"
+            class="ml-4 sm:hidden"
+            title={$t('go_to_search')}
+            icon={mdiMagnify}
+          />
         {/if}
 
         <ThemeButton />

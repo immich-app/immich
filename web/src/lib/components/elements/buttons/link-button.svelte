@@ -1,16 +1,22 @@
 <script lang="ts" context="module">
   export type Color = 'transparent-primary' | 'transparent-gray';
+
+  type BaseProps = {
+    color?: Color;
+  };
+
+  export type Props = (LinkProps & BaseProps) | (ButtonProps & BaseProps);
 </script>
 
 <script lang="ts">
-  import Button from './button.svelte';
+  import Button, { type ButtonProps, type LinkProps } from '$lib/components/elements/buttons/button.svelte';
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type $$Props = Props;
 
   export let color: Color = 'transparent-gray';
-  export let disabled = false;
-  export let fullwidth = false;
-  export let title: string | undefined = undefined;
 </script>
 
-<Button {title} size="link" {color} shadow={false} rounded="lg" {disabled} on:click {fullwidth}>
+<Button size="link" {color} shadow={false} rounded="lg" on:click {...$$restProps}>
   <slot />
 </Button>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -42,9 +43,7 @@ class AppBarServerInfo extends HookConsumerWidget {
       padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
       child: Container(
         decoration: BoxDecoration(
-          color: context.isDarkTheme
-              ? context.scaffoldBackgroundColor
-              : const Color.fromARGB(255, 225, 229, 240),
+          color: context.colorScheme.surface,
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),
@@ -71,10 +70,7 @@ class AppBarServerInfo extends HookConsumerWidget {
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(
-                  color: Color.fromARGB(101, 201, 201, 201),
-                  thickness: 1,
-                ),
+                child: Divider(thickness: 1),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,8 +96,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
                         style: TextStyle(
                           fontSize: contentFontSize,
-                          color: context.textTheme.labelSmall?.color
-                              ?.withOpacity(0.5),
+                          color: context.colorScheme.onSurfaceSecondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -111,10 +106,7 @@ class AppBarServerInfo extends HookConsumerWidget {
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(
-                  color: Color.fromARGB(101, 201, 201, 201),
-                  thickness: 1,
-                ),
+                child: Divider(thickness: 1),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -142,8 +134,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                             : "--",
                         style: TextStyle(
                           fontSize: contentFontSize,
-                          color: context.textTheme.labelSmall?.color
-                              ?.withOpacity(0.5),
+                          color: context.colorScheme.onSurfaceSecondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -153,10 +144,7 @@ class AppBarServerInfo extends HookConsumerWidget {
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(
-                  color: Color.fromARGB(101, 201, 201, 201),
-                  thickness: 1,
-                ),
+                child: Divider(thickness: 1),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,8 +185,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                           getServerUrl() ?? '--',
                           style: TextStyle(
                             fontSize: contentFontSize,
-                            color: context.textTheme.labelSmall?.color
-                                ?.withOpacity(0.5),
+                            color: context.colorScheme.onSurfaceSecondary,
                             fontWeight: FontWeight.bold,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -211,10 +198,7 @@ class AppBarServerInfo extends HookConsumerWidget {
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(
-                  color: Color.fromARGB(101, 201, 201, 201),
-                  thickness: 1,
-                ),
+                child: Divider(thickness: 1),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -255,8 +239,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                             : "--",
                         style: TextStyle(
                           fontSize: contentFontSize,
-                          color: context.textTheme.labelSmall?.color
-                              ?.withOpacity(0.5),
+                          color: context.colorScheme.onSurfaceSecondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
