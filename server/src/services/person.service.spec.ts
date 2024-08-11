@@ -241,7 +241,7 @@ describe(PersonService.name, () => {
     });
 
     it("should update a person's name", async () => {
-      personMock.update.mockResolvedValue(personStub.withName);
+      personMock.update.mockResolvedValue([personStub.withName]);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -252,7 +252,7 @@ describe(PersonService.name, () => {
     });
 
     it("should update a person's date of birth", async () => {
-      personMock.update.mockResolvedValue(personStub.withBirthDate);
+      personMock.update.mockResolvedValue([personStub.withBirthDate]);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -271,7 +271,7 @@ describe(PersonService.name, () => {
     });
 
     it('should update a person visibility', async () => {
-      personMock.update.mockResolvedValue(personStub.withName);
+      personMock.update.mockResolvedValue([personStub.withName]);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -282,7 +282,7 @@ describe(PersonService.name, () => {
     });
 
     it("should update a person's thumbnailPath", async () => {
-      personMock.update.mockResolvedValue(personStub.withName);
+      personMock.update.mockResolvedValue([personStub.withName]);
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
@@ -441,7 +441,7 @@ describe(PersonService.name, () => {
 
   describe('createPerson', () => {
     it('should create a new person', async () => {
-      personMock.create.mockResolvedValue(personStub.primaryPerson);
+      personMock.create.mockResolvedValue([personStub.primaryPerson]);
 
       await expect(sut.create(authStub.admin, {})).resolves.toBe(personStub.primaryPerson);
 
@@ -820,7 +820,7 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue(faceStub.primaryFace1.person);
+      personMock.create.mockResolvedValue([faceStub.primaryFace1.person]);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
@@ -845,7 +845,7 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue(personStub.withName);
+      personMock.create.mockResolvedValue([personStub.withName]);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
@@ -864,7 +864,7 @@ describe(PersonService.name, () => {
 
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue(personStub.withName);
+      personMock.create.mockResolvedValue([personStub.withName]);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
@@ -883,7 +883,7 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue(personStub.withName);
+      personMock.create.mockResolvedValue([personStub.withName]);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
@@ -905,7 +905,7 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       searchMock.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue(personStub.withName);
+      personMock.create.mockResolvedValue([personStub.withName]);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id, deferred: true });
 
@@ -1100,7 +1100,7 @@ describe(PersonService.name, () => {
     it('should merge two people with smart merge', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.randomPerson);
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      personMock.update.mockResolvedValue({ ...personStub.randomPerson, name: personStub.primaryPerson.name });
+      personMock.update.mockResolvedValue([{ ...personStub.randomPerson, name: personStub.primaryPerson.name }]);
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-3']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
 

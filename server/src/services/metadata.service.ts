@@ -516,12 +516,12 @@ export class MetadataService implements OnEvents {
       this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
     }
 
-    const newPersons: PersonEntity[] = await this.personRepository.create(missing);
+    const newPersons: PersonEntity[] = await this.personRepository.create(...missing);
 
     const faceIds = await this.personRepository.upsertFaces(asset.id, discoveredFaces, SourceType.EXIF);
     this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
 
-    await this.personRepository.update(missingWithFaceAsset);
+    await this.personRepository.update(...missingWithFaceAsset);
 
     const jobs = newPersons.map((person) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } }));
     await this.jobRepository.queueAll(jobs as JobItem[]);

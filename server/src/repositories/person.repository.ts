@@ -278,7 +278,7 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
-  create(entities: any): any {
+  create(...entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
     return this.personRepository.save(entities);
   }
 
@@ -304,7 +304,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
-  async update(entities: any): Promise<any> {
+  async update(...entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
     return await this.personRepository.save(entities);
   }
 

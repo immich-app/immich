@@ -216,13 +216,14 @@ export class PersonService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
-    return this.repository.create({
+  async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
+    const created = await this.repository.create({
       ownerId: auth.user.id,
       name: dto.name,
       birthDate: dto.birthDate,
       isHidden: dto.isHidden,
     });
+    return created[0];
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
@@ -241,7 +242,8 @@ export class PersonService {
       faceId = face.id;
     }
 
-    const person = await this.repository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
+    const updated = await this.repository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
+    const person = updated[0];
 
     if (assetId) {
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
@@ -502,7 +504,8 @@ export class PersonService {
 
     if (isCore && !personId) {
       this.logger.log(`Creating new person for face ${id}`);
-      const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+      const created = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+      const newPerson = created[0];
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
       personId = newPerson.id;
     }
@@ -618,7 +621,8 @@ export class PersonService {
         }
 
         if (Object.keys(update).length > 0) {
-          primaryPerson = await this.repository.update({ id: primaryPerson.id, ...update });
+          const updated = await this.repository.update({ id: primaryPerson.id, ...update });
+          primaryPerson = updated[0];
         }
 
         const mergeName = mergePerson.name || mergePerson.id;
