@@ -1,6 +1,8 @@
 import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import { albumFactory, assetFactory, sharedLinkFactory } from '@test-data';
+import { albumFactory } from '@test-data/factories/album-factory';
+import { assetFactory } from '@test-data/factories/asset-factory';
+import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { render, screen } from '@testing-library/svelte';
 
 vi.mock('$lib/utils');

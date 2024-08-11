@@ -1,6 +1,6 @@
 import AlbumCover from '$lib/components/album-page/album-cover.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import { albumFactory } from '@test-data';
+import { albumFactory } from '@test-data/factories/album-factory';
 import { render } from '@testing-library/svelte';
 
 vi.mock('$lib/utils');
