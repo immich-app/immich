@@ -15,14 +15,16 @@
   <p class="text-4xl mt-8 font-bold">{$t('purchase_activated_title')}</p>
   <p class="text-lg mt-6">{$t('purchase_activated_subtitle')}</p>
 
-  <div class="mb-4 w-full mt-6 border rounded-xl p-4 bg-gray-50 dark:bg-gray-900 dark:border-gray-600">
-    <SettingSwitch
-      title={$t('show_supporter_badge')}
-      subtitle={$t('show_supporter_badge_description')}
-      bind:checked={$preferences.purchase.showSupportBadge}
-      on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
-    />
-  </div>
+  {#if $preferences.purchase != null}
+    <div class="mb-4 w-full mt-6 border rounded-xl p-4 bg-gray-50 dark:bg-gray-900 dark:border-gray-600">
+      <SettingSwitch
+        title={$t('show_supporter_badge')}
+        subtitle={$t('show_supporter_badge_description')}
+        bind:checked={$preferences.purchase.showSupportBadge}
+        on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
+      />
+    </div>
+  {/if}
 
   <div class="mt-6 w-full">
     <Button fullwidth on:click={onDone}>{$t('ok')}</Button>

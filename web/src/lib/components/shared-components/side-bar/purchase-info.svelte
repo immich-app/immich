@@ -78,7 +78,7 @@
 
 {#if getAccountAge() > 14}
   <div class="hidden md:block license-status pl-4 text-sm">
-    {#if $isPurchased && $preferences.purchase.showSupportBadge}
+    {#if $isPurchased && $preferences.purchase?.showSupportBadge}
       <button
         on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
         class="w-full"

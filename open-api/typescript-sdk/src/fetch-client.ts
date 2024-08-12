@@ -103,12 +103,12 @@ export type RatingResponse = {
     enabled: boolean;
 };
 export type UserPreferencesResponseDto = {
-    avatar: (AvatarResponse) | null;
-    download: DownloadResponse;
-    emailNotifications: EmailNotificationsResponse;
-    memories: MemoryResponse;
-    purchase: PurchaseResponse;
-    rating: (RatingResponse) | null;
+    avatar?: AvatarResponse;
+    download?: DownloadResponse;
+    emailNotifications?: EmailNotificationsResponse;
+    memories?: MemoryResponse;
+    purchase?: PurchaseResponse;
+    rating?: RatingResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;

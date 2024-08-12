@@ -13,24 +13,60 @@ part of openapi.api;
 class UserPreferencesResponseDto {
   /// Returns a new [UserPreferencesResponseDto] instance.
   UserPreferencesResponseDto({
-    required this.avatar,
-    required this.download,
-    required this.emailNotifications,
-    required this.memories,
-    required this.purchase,
-    required this.rating,
+    this.avatar,
+    this.download,
+    this.emailNotifications,
+    this.memories,
+    this.purchase,
+    this.rating,
   });
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   AvatarResponse? avatar;
 
-  DownloadResponse download;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DownloadResponse? download;
 
-  EmailNotificationsResponse emailNotifications;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  EmailNotificationsResponse? emailNotifications;
 
-  MemoryResponse memories;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  MemoryResponse? memories;
 
-  PurchaseResponse purchase;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PurchaseResponse? purchase;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   RatingResponse? rating;
 
   @override
@@ -46,10 +82,10 @@ class UserPreferencesResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (avatar == null ? 0 : avatar!.hashCode) +
-    (download.hashCode) +
-    (emailNotifications.hashCode) +
-    (memories.hashCode) +
-    (purchase.hashCode) +
+    (download == null ? 0 : download!.hashCode) +
+    (emailNotifications == null ? 0 : emailNotifications!.hashCode) +
+    (memories == null ? 0 : memories!.hashCode) +
+    (purchase == null ? 0 : purchase!.hashCode) +
     (rating == null ? 0 : rating!.hashCode);
 
   @override
@@ -62,10 +98,26 @@ class UserPreferencesResponseDto {
     } else {
     //  json[r'avatar'] = null;
     }
+    if (this.download != null) {
       json[r'download'] = this.download;
+    } else {
+    //  json[r'download'] = null;
+    }
+    if (this.emailNotifications != null) {
       json[r'emailNotifications'] = this.emailNotifications;
+    } else {
+    //  json[r'emailNotifications'] = null;
+    }
+    if (this.memories != null) {
       json[r'memories'] = this.memories;
+    } else {
+    //  json[r'memories'] = null;
+    }
+    if (this.purchase != null) {
       json[r'purchase'] = this.purchase;
+    } else {
+    //  json[r'purchase'] = null;
+    }
     if (this.rating != null) {
       json[r'rating'] = this.rating;
     } else {
@@ -83,10 +135,10 @@ class UserPreferencesResponseDto {
 
       return UserPreferencesResponseDto(
         avatar: AvatarResponse.fromJson(json[r'avatar']),
-        download: DownloadResponse.fromJson(json[r'download'])!,
-        emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
-        memories: MemoryResponse.fromJson(json[r'memories'])!,
-        purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
+        download: DownloadResponse.fromJson(json[r'download']),
+        emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications']),
+        memories: MemoryResponse.fromJson(json[r'memories']),
+        purchase: PurchaseResponse.fromJson(json[r'purchase']),
         rating: RatingResponse.fromJson(json[r'rating']),
       );
     }
@@ -135,12 +187,6 @@ class UserPreferencesResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'avatar',
-    'download',
-    'emailNotifications',
-    'memories',
-    'purchase',
-    'rating',
   };
 }
 

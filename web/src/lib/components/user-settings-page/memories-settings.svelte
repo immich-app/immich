@@ -17,7 +17,10 @@
   const handleSave = async () => {
     try {
       const data = await updateMyPreferences({ userPreferencesUpdateDto: { memories: { enabled: memoriesEnabled } } });
-      $preferences.memories.enabled = data.memories.enabled;
+
+      if ($preferences.memories && data.memories) {
+        $preferences.memories.enabled = data.memories.enabled;
+      }
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {

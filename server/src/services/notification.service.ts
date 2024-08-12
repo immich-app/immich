@@ -149,7 +149,7 @@ export class NotificationService implements OnEvents {
 
     const { emailNotifications } = getPreferences(recipient);
 
-    if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
+    if (!emailNotifications?.enabled || !emailNotifications.albumInvite) {
       return JobStatus.SKIPPED;
     }
 
@@ -207,7 +207,7 @@ export class NotificationService implements OnEvents {
 
       const { emailNotifications } = getPreferences(user);
 
-      if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
+      if (!emailNotifications?.enabled || !emailNotifications.albumUpdate) {
         continue;
       }
 

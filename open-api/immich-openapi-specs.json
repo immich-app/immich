@@ -11886,62 +11886,24 @@
       "UserPreferencesResponseDto": {
         "properties": {
           "avatar": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AvatarResponse"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/AvatarResponse"
           },
           "download": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DownloadResponse"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/DownloadResponse"
           },
           "emailNotifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EmailNotificationsResponse"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
           "memories": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MemoryResponse"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/MemoryResponse"
           },
           "purchase": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PurchaseResponse"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/PurchaseResponse"
           },
           "rating": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RatingResponse"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/RatingResponse"
           }
         },
-        "required": [
-          "avatar",
-          "download",
-          "emailNotifications",
-          "memories",
-          "purchase",
-          "rating"
-        ],
         "type": "object"
       },
       "UserPreferencesUpdateDto": {

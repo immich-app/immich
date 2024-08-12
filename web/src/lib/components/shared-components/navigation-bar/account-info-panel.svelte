@@ -6,7 +6,7 @@
   import { AppRoute } from '$lib/constants';
   import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteProfileImage, updateMyPreferences, type UserAvatarColor } from '@immich/sdk';
+  import { deleteProfileImage, updateMyPreferences, UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -29,7 +29,7 @@
       }
 
       $preferences = await updateMyPreferences({ userPreferencesUpdateDto: { avatar: { color } } });
-      $user = { ...$user, profileImagePath: '', avatarColor: $preferences.avatar.color };
+      $user = { ...$user, profileImagePath: '', avatarColor: $preferences.avatar?.color || UserAvatarColor.Primary };
       isShowSelectAvatar = false;
 
       notificationController.show({

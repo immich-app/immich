@@ -31,24 +31,24 @@ export enum UserAvatarColor {
 }
 
 export interface UserPreferences {
-  rating: {
+  rating?: {
     enabled: boolean;
   };
-  memories: {
+  memories?: {
     enabled: boolean;
   };
-  avatar: {
+  avatar?: {
     color: UserAvatarColor;
   };
-  emailNotifications: {
+  emailNotifications?: {
     enabled: boolean;
     albumInvite: boolean;
     albumUpdate: boolean;
   };
-  download: {
+  download?: {
     archiveSize: number;
   };
-  purchase: {
+  purchase?: {
     showSupportBadge: boolean;
     hideBuyButtonUntil: string;
   };

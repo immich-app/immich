@@ -102,7 +102,10 @@
   const handleRatingChange = async (enabled: boolean) => {
     try {
       const data = await updateMyPreferences({ userPreferencesUpdateDto: { rating: { enabled } } });
-      $preferences.rating.enabled = data.rating.enabled;
+
+      if ($preferences.rating && data.rating) {
+        $preferences.rating.enabled = data.rating.enabled;
+      }
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {
