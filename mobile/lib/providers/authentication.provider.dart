@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/api_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -171,15 +172,16 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     try {
       final responses = await Future.wait([
         _apiService.usersApi.getMyUser(),
-        _apiService.usersApi.getMyPreferences(),
+        _apiService.usersApi.getMyPreferencesExtended(),
       ]);
-      userResponse = responses[0] as UserAdminResponseDto;
-      userPreferences = responses[1] as UserPreferencesResponseDto;
+      userResponse = responses[0] as UserAdminResponseDto?;
+      userPreferences = responses[1] as UserPreferencesResponseDto?;
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {
         _log.severe("Unauthorized access, token likely expired. Logging out.");
         return false;
       }
+
       _log.severe(
         "Error getting user information from the server [API EXCEPTION]",
         stackTrace,
