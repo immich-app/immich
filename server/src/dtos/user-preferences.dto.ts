@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiDefaultResponse, ApiProperty, ApiResponse } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
@@ -111,6 +111,7 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
+  @ApiProperty({ default: null })
   rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
