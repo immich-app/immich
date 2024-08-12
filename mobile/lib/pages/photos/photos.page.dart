@@ -31,11 +31,11 @@ class PhotosPage extends HookConsumerWidget {
     final refreshCount = useState(0);
 
     showUserPreferencesStatus() {
-      final hasUserPreference = ref.read(
+      final hasUserPreferences = ref.read(
         authenticationProvider.select((state) => state.isHavingUserPreferences),
       );
 
-      if (!hasUserPreference) {
+      if (!hasUserPreferences) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.amber[600],
