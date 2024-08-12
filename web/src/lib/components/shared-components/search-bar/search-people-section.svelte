@@ -8,14 +8,14 @@
   import { mdiClose, mdiArrowRight } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
+  import { singleGridRow } from '$lib/actions/single-grid-row';
 
-  export let width: number;
   export let selectedPeople: Set<string>;
 
   let peoplePromise = getPeople();
   let showAllPeople = false;
   let name = '';
-  $: numberOfPeople = (width - 80) / 85;
+  let numberOfPeople = 1;
 
   function orderBySelectedPeopleFirst(people: PersonResponseDto[]) {
     return [
@@ -60,11 +60,14 @@
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
-      <div class="flex -mx-1 max-h-64 gap-1 mt-2 flex-wrap overflow-y-auto immich-scrollbar">
+      <div
+        class="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] -mx-1 gap-1 mt-2 overflow-y-auto immich-scrollbar"
+        use:singleGridRow={{ onChange: (itemCount) => (numberOfPeople = itemCount) }}
+      >
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class="flex flex-col items-center w-20 rounded-3xl border-2 hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
+            class="flex flex-col items-center rounded-3xl border-2 hover:bg-immich-gray dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
               person.id,
             )
               ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'
