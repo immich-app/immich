@@ -11894,16 +11894,36 @@
             "nullable": true
           },
           "download": {
-            "$ref": "#/components/schemas/DownloadResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DownloadResponse"
+              }
+            ],
+            "nullable": true
           },
           "emailNotifications": {
-            "$ref": "#/components/schemas/EmailNotificationsResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmailNotificationsResponse"
+              }
+            ],
+            "nullable": true
           },
           "memories": {
-            "$ref": "#/components/schemas/MemoryResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryResponse"
+              }
+            ],
+            "nullable": true
           },
           "purchase": {
-            "$ref": "#/components/schemas/PurchaseResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PurchaseResponse"
+              }
+            ],
+            "nullable": true
           },
           "rating": {
             "allOf": [
