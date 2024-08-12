@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
+import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/memories/memory_lane.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
@@ -29,6 +30,28 @@ class PhotosPage extends HookConsumerWidget {
     final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
 
+    showUserPreferencesStatus() {
+      final hasUserPreference = ref.read(
+        authenticationProvider.select((state) => state.isHavingUserPreferences),
+      );
+
+      if (!hasUserPreference) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.amber[600],
+            content: const Text(
+              "⚠️ Cannot get user preferences, please make sure the server version is up to date.",
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.black,
+              ),
+            ).tr(),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+
     useEffect(
       () {
         ref.read(websocketProvider.notifier).connect();
@@ -36,10 +59,12 @@ class PhotosPage extends HookConsumerWidget {
         ref.read(albumProvider.notifier).getAllAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.read(serverInfoProvider.notifier).getServerInfo();
+        Future.microtask(() => showUserPreferencesStatus());
         return;
       },
       [],
     );
+
     Widget buildLoadingIndicator() {
       Timer(const Duration(seconds: 2), () => tipOneOpacity.value = 1);
 

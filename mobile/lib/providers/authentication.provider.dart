@@ -34,6 +34,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             isAdmin: false,
             shouldChangePassword: false,
             isAuthenticated: false,
+            isHavingUserPreferences: true,
           ),
         );
 
@@ -170,10 +171,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     UserAdminResponseDto? userResponse;
     UserPreferencesResponseDto? userPreferences;
 
-    /// Splitting up API call to get `getMyUser` and `getMyPreferences`
-    /// because `getMyPreferences` call can fail and we still want to get `getMyUser`.
     try {
-      userResponse = await _apiService.usersApi.getMyUser();
+      Future<UserAdminResponseDto?> getMyUserRequest =
+          _apiService.usersApi.getMyUser();
+      Future<UserPreferencesResponseDto?> getMyPreferencesRequest =
+          _apiService.usersApi.getMyPreferences();
+      userResponse = await getMyUserRequest;
+      userPreferences = await getMyPreferencesRequest;
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {
         _log.severe("Unauthorized access, token likely expired. Logging out.");
@@ -181,6 +185,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       }
       _log.severe(
         "Error getting user information from the server [API EXCEPTION]",
+        error,
         stackTrace,
       );
     } catch (error, stackTrace) {
@@ -189,16 +194,14 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         error,
         stackTrace,
       );
-    }
 
-    try {
-      userPreferences = await _apiService.usersApi.getMyPreferences();
-    } catch (error, stackTrace) {
-      _log.warning(
-        "Cannot get user preferences from the server, please updating the server version to match the app version!",
-        error,
-        stackTrace,
-      );
+      if (userPreferences == null) {
+        _log.warning(
+          "Cannot getting user preferences from the server, please updating your server to match the mobile app version",
+          error,
+          stackTrace,
+        );
+      }
     }
 
     // If the user information is successfully retrieved, update the store
@@ -234,6 +237,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       isAdmin: user.isAdmin,
       shouldChangePassword: shouldChangePassword,
       deviceId: deviceId,
+      isHavingUserPreferences: userPreferences != null,
     );
 
     return true;
