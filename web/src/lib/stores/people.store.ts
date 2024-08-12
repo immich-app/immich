@@ -9,4 +9,26 @@ export interface Faces {
   boundingBoxY2: number;
 }
 
-export const boundingBoxesArray = writable<Faces[]>([]);
+interface BoundingBoxStyle {
+  color: string;
+  isSelected: boolean;
+}
+
+export interface BoundingBoxType {
+  boundingBoxStyle: BoundingBoxStyle;
+  faces: Faces;
+}
+
+export function getBorderColor(personId: string): string {
+  return `#${personId.slice(-6)}`;
+}
+
+function createBoundingBoxStyle(personId: string, isSelected: boolean): BoundingBoxStyle {
+  return { color: getBorderColor(personId), isSelected: isSelected };
+}
+
+export function createBoundingBoxType(faces: Faces, personId: string, isSelected: boolean): BoundingBoxType {
+  return { boundingBoxStyle: createBoundingBoxStyle(personId, isSelected), faces: faces };
+}
+
+export const boundingBoxesArray = writable<BoundingBoxType[]>([]);
