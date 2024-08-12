@@ -494,10 +494,10 @@ export class MetadataService implements OnEvents {
 
       const face = {
         id: this.cryptoRepository.randomUUID(),
-        personId: personId,
+        personId,
         assetId: asset.id,
-        imageWidth: imageWidth,
-        imageHeight: imageHeight,
+        imageWidth,
+        imageHeight,
         boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
         boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
         boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
