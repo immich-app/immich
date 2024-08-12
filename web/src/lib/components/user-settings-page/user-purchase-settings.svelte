@@ -110,14 +110,17 @@
   <div in:fade={{ duration: 500 }}>
     {#if $isPurchased}
       <!-- BADGE TOGGLE -->
-      <div class="mb-4">
-        <SettingSwitch
-          title={$t('show_supporter_badge')}
-          subtitle={$t('show_supporter_badge_description')}
-          bind:checked={$preferences.purchase.showSupportBadge}
-          on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
-        />
-      </div>
+
+      {#if $preferences.purchase}
+        <div class="mb-4">
+          <SettingSwitch
+            title={$t('show_supporter_badge')}
+            subtitle={$t('show_supporter_badge_description')}
+            bind:checked={$preferences.purchase.showSupportBadge}
+            on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
+          />
+        </div>
+      {/if}
 
       <!-- PRODUCT KEY INFO CARD -->
       {#if isServerProduct}

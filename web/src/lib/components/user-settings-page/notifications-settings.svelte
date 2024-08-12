@@ -28,9 +28,11 @@
         },
       });
 
-      $preferences.emailNotifications.enabled = data.emailNotifications.enabled;
-      $preferences.emailNotifications.albumInvite = data.emailNotifications.albumInvite;
-      $preferences.emailNotifications.albumUpdate = data.emailNotifications.albumUpdate;
+      if ($preferences.emailNotifications && data.emailNotifications) {
+        $preferences.emailNotifications.enabled = data.emailNotifications.enabled;
+        $preferences.emailNotifications.albumInvite = data.emailNotifications.albumInvite;
+        $preferences.emailNotifications.albumUpdate = data.emailNotifications.albumUpdate;
+      }
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {
