@@ -27,6 +27,9 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
       } else {
         // Android 33 need photo & video
         final photos = await Permission.photos.request();
+
+        print("photos: $photos");
+
         if (!photos.isGranted) {
           // Don't ask twice for the same permission
           state = photos;
@@ -36,7 +39,8 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         // Return the joint result of those two permissions
         final PermissionStatus status;
-        if (photos.isGranted && videos.isGranted) {
+        if ((photos.isGranted && videos.isGranted) ||
+            (photos.isLimited && videos.isLimited)) {
           status = PermissionStatus.granted;
         } else if (photos.isDenied || videos.isDenied) {
           status = PermissionStatus.denied;
@@ -79,7 +83,8 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         // Return the joint result of those two permissions
         final PermissionStatus status;
-        if (photos.isGranted && videos.isGranted) {
+        if ((photos.isGranted && videos.isGranted) ||
+            (photos.isLimited && videos.isLimited)) {
           status = PermissionStatus.granted;
         } else if (photos.isDenied || videos.isDenied) {
           status = PermissionStatus.denied;
