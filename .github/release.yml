@@ -24,17 +24,3 @@ changelog:
     - title: 🌐 Translations
       labels:
         - translation
-
-    - title: 🔨 Maintenance
-      labels:
-        - maintenance
-        - tech-debt
-        - chore
-
-    - title: 🤖 Dependencies
-      labels:
-        - dependencies
-
-    - title: 💤 Other changes
-      labels:
-        - '*'
