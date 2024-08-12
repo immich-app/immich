@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
@@ -168,13 +169,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
     UserAdminResponseDto? userResponse;
     UserPreferencesResponseDto? userPreferences;
+
+    /// Splitting up API call to get `getMyUser` and `getMyPreferences`
+    /// because `getMyPreferences` call can fail and we still want to get `getMyUser`.
     try {
-      final responses = await Future.wait([
-        _apiService.usersApi.getMyUser(),
-        _apiService.usersApi.getMyPreferences(),
-      ]);
-      userResponse = responses[0] as UserAdminResponseDto;
-      userPreferences = responses[1] as UserPreferencesResponseDto;
+      userResponse = await _apiService.usersApi.getMyUser();
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {
         _log.severe("Unauthorized access, token likely expired. Logging out.");
@@ -187,6 +186,16 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     } catch (error, stackTrace) {
       _log.severe(
         "Error getting user information from the server [CATCH ALL]",
+        error,
+        stackTrace,
+      );
+    }
+
+    try {
+      userPreferences = await _apiService.usersApi.getMyPreferences();
+    } catch (error, stackTrace) {
+      _log.warning(
+        "Cannot get user preferences from the server, please updating the server version to match the app version!",
         error,
         stackTrace,
       );
