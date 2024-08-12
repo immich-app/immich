@@ -1,19 +1,16 @@
 import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
-import type { SharedLinkResponseDto } from '@immich/sdk';
-import { albumFactory } from '@test-data';
-import { render } from '@testing-library/svelte';
+import { albumFactory } from '@test-data/factories/album-factory';
+import { assetFactory } from '@test-data/factories/asset-factory';
+import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
+import { render, screen } from '@testing-library/svelte';
 
 vi.mock('$lib/utils');
 
 describe('ShareCover component', () => {
   it('renders an image when the shared link is an album', () => {
     const component = render(ShareCover, {
-      link: {
-        album: albumFactory.build({
-          albumName: '123',
-        }),
-      } as SharedLinkResponseDto,
+      link: sharedLinkFactory.build({ album: albumFactory.build({ albumName: '123' }) }),
       preload: false,
       class: 'text',
     });
@@ -26,13 +23,7 @@ describe('ShareCover component', () => {
   it('renders an image when the shared link is an individual share', () => {
     vi.mocked(getAssetThumbnailUrl).mockReturnValue('/asdf');
     const component = render(ShareCover, {
-      link: {
-        assets: [
-          {
-            id: 'someId',
-          },
-        ],
-      } as SharedLinkResponseDto,
+      link: sharedLinkFactory.build({ assets: [assetFactory.build({ id: 'someId' })] }),
       preload: false,
       class: 'text',
     });
@@ -46,9 +37,7 @@ describe('ShareCover component', () => {
 
   it('renders an image when the shared link has no album or assets', () => {
     const component = render(ShareCover, {
-      link: {
-        assets: [],
-      } as unknown as SharedLinkResponseDto,
+      link: sharedLinkFactory.build(),
       preload: false,
       class: 'text',
     });
@@ -56,5 +45,16 @@ describe('ShareCover component', () => {
     expect(img.alt).toBe('unnamed_share');
     expect(img.getAttribute('loading')).toBe('lazy');
     expect(img.className).toBe('z-0 rounded-xl object-cover text');
+  });
+
+  it('renders fallback image when asset is not resized', () => {
+    const link = sharedLinkFactory.build({ assets: [assetFactory.build({ resized: false })] });
+    render(ShareCover, {
+      link: link,
+      preload: false,
+    });
+
+    const img = screen.getByTestId<HTMLImageElement>('album-image');
+    expect(img.alt).toBe('unnamed_share');
   });
 });

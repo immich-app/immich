@@ -99,12 +99,16 @@ export type PurchaseResponse = {
     hideBuyButtonUntil: string;
     showSupportBadge: boolean;
 };
+export type RatingResponse = {
+    enabled: boolean;
+};
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     memories: MemoryResponse;
     purchase: PurchaseResponse;
+    rating: RatingResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -124,12 +128,16 @@ export type PurchaseUpdate = {
     hideBuyButtonUntil?: string;
     showSupportBadge?: boolean;
 };
+export type RatingUpdate = {
+    enabled?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
     purchase?: PurchaseUpdate;
+    rating?: RatingUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -155,6 +163,7 @@ export type ExifResponseDto = {
     modifyDate?: string | null;
     orientation?: string | null;
     projectionType?: string | null;
+    rating?: number | null;
     state?: string | null;
     timeZone?: string | null;
 };
@@ -331,6 +340,7 @@ export type AssetBulkUpdateDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
+    rating?: number;
     removeParent?: boolean;
     stackParentId?: string;
 };
@@ -382,6 +392,7 @@ export type UpdateAssetDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
+    rating?: number;
 };
 export type AssetMediaReplaceDto = {
     assetData: Blob;

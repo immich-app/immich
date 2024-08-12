@@ -22,7 +22,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/asset_viewer/bottom_gallery_bar.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_bottom_sheet.dart';
+import 'package:immich_mobile/widgets/asset_viewer/detail_panel/detail_panel.dart';
 import 'package:immich_mobile/widgets/asset_viewer/gallery_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
@@ -152,7 +152,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       .watch(appSettingsServiceProvider)
                       .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
                   ? AdvancedBottomSheet(assetDetail: asset)
-                  : ExifBottomSheet(asset: asset),
+                  : DetailPanel(asset: asset),
             ),
           );
         },

@@ -194,12 +194,14 @@
           {$t('export_as_json')}
         </div>
       </LinkButton>
-      <LinkButton on:click={() => inputElement?.click()}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiUpload} size="18" />
-          {$t('import_from_json')}
-        </div>
-      </LinkButton>
+      {#if !$featureFlags.configFile}
+        <LinkButton on:click={() => inputElement?.click()}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiUpload} size="18" />
+            {$t('import_from_json')}
+          </div>
+        </LinkButton>
+      {/if}
     </div>
 
     <AdminSettings bind:config let:handleReset bind:handleSave let:savedConfig let:defaultConfig>

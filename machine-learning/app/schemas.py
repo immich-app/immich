@@ -3,7 +3,7 @@ from typing import Any, Literal, Protocol, TypedDict, TypeGuard, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 
 class StrEnum(str, Enum):

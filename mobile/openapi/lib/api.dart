@@ -182,6 +182,8 @@ part 'model/places_response_dto.dart';
 part 'model/purchase_response.dart';
 part 'model/purchase_update.dart';
 part 'model/queue_status_dto.dart';
+part 'model/rating_response.dart';
+part 'model/rating_update.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';
 part 'model/reverse_geocoding_state_response_dto.dart';
