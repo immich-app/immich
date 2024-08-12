@@ -111,9 +111,10 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
-  @ApiProperty({ default: null })
+  @ApiProperty({ nullable: true })
   rating!: RatingResponse;
   memories!: MemoryResponse;
+  @ApiProperty({ nullable: true })
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;

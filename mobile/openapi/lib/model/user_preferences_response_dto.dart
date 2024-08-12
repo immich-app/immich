@@ -18,10 +18,10 @@ class UserPreferencesResponseDto {
     required this.emailNotifications,
     required this.memories,
     required this.purchase,
-    this.rating = null,
+    required this.rating,
   });
 
-  AvatarResponse avatar;
+  AvatarResponse? avatar;
 
   DownloadResponse download;
 
@@ -31,7 +31,7 @@ class UserPreferencesResponseDto {
 
   PurchaseResponse purchase;
 
-  RatingResponse rating;
+  RatingResponse? rating;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
@@ -45,24 +45,32 @@ class UserPreferencesResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatar.hashCode) +
+    (avatar == null ? 0 : avatar!.hashCode) +
     (download.hashCode) +
     (emailNotifications.hashCode) +
     (memories.hashCode) +
     (purchase.hashCode) +
-    (rating.hashCode);
+    (rating == null ? 0 : rating!.hashCode);
 
   @override
   String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.avatar != null) {
       json[r'avatar'] = this.avatar;
+    } else {
+    //  json[r'avatar'] = null;
+    }
       json[r'download'] = this.download;
       json[r'emailNotifications'] = this.emailNotifications;
       json[r'memories'] = this.memories;
       json[r'purchase'] = this.purchase;
+    if (this.rating != null) {
       json[r'rating'] = this.rating;
+    } else {
+    //  json[r'rating'] = null;
+    }
     return json;
   }
 
@@ -74,12 +82,12 @@ class UserPreferencesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserPreferencesResponseDto(
-        avatar: AvatarResponse.fromJson(json[r'avatar'])!,
+        avatar: AvatarResponse.fromJson(json[r'avatar']),
         download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         memories: MemoryResponse.fromJson(json[r'memories'])!,
         purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
-        rating: RatingResponse.fromJson(json[r'rating'])!,
+        rating: RatingResponse.fromJson(json[r'rating']),
       );
     }
     return null;

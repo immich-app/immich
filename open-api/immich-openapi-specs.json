@@ -11886,7 +11886,12 @@
       "UserPreferencesResponseDto": {
         "properties": {
           "avatar": {
-            "$ref": "#/components/schemas/AvatarResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AvatarResponse"
+              }
+            ],
+            "nullable": true
           },
           "download": {
             "$ref": "#/components/schemas/DownloadResponse"
@@ -11906,7 +11911,7 @@
                 "$ref": "#/components/schemas/RatingResponse"
               }
             ],
-            "default": null
+            "nullable": true
           }
         },
         "required": [
