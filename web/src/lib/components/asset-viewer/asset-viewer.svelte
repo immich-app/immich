@@ -83,7 +83,7 @@
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
-  let unsubscribe: () => void;
+  let unsubscribes: (() => void)[] = [];
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
 
@@ -172,6 +172,12 @@
     }
   };
 
+  const onAssetUpdate = (assetUpdate: AssetResponseDto) => {
+    if (assetUpdate.id === asset.id) {
+      asset = assetUpdate;
+    }
+  };
+
   $: {
     if (isShared && asset.id) {
       handlePromiseError(getFavorite());
@@ -180,11 +186,11 @@
   }
 
   onMount(async () => {
-    unsubscribe = websocketEvents.on('on_upload_success', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
+    unsubscribes.push(
+      websocketEvents.on('on_upload_success', onAssetUpdate),
+      websocketEvents.on('on_asset_update', onAssetUpdate),
+    );
+
     await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
@@ -225,7 +231,10 @@
     if (shuffleSlideshowUnsubscribe) {
       shuffleSlideshowUnsubscribe();
     }
-    unsubscribe?.();
+
+    for (const unsubscribe of unsubscribes) {
+      unsubscribe();
+    }
   });
 
   $: {

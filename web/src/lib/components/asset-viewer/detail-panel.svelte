@@ -7,7 +7,6 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
-  import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import {
@@ -30,7 +29,7 @@
     mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { slide } from 'svelte/transition';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -98,14 +97,6 @@
   $: showingHiddenPeople = false;
 
   $: unassignedFaces = asset.unassignedFaces || [];
-
-  onMount(() => {
-    return websocketEvents.on('on_asset_update', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
-  });
 
   const dispatch = createEventDispatcher<{
     close: void;
