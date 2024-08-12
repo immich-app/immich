@@ -172,6 +172,12 @@
     }
   };
 
+  const onAssetUpdate = (assetUpdate: AssetResponseDto) => {
+    if (assetUpdate.id === asset.id) {
+      asset = assetUpdate;
+    }
+  };
+
   $: {
     if (isShared && asset.id) {
       handlePromiseError(getFavorite());
@@ -181,17 +187,8 @@
 
   onMount(async () => {
     unsubscribes.push(
-      websocketEvents.on('on_upload_success', (assetUpdate) => {
-        if (assetUpdate.id === asset.id) {
-          asset = assetUpdate;
-        }
-      }),
-      websocketEvents.on('on_asset_update', (assetUpdate) => {
-        console.log('assetUpdate', assetUpdate);
-        if (assetUpdate.id === asset.id) {
-          asset = assetUpdate;
-        }
-      }),
+      websocketEvents.on('on_upload_success', onAssetUpdate),
+      websocketEvents.on('on_asset_update', onAssetUpdate),
     );
 
     await navigate({ targetRoute: 'current', assetId: asset.id });
