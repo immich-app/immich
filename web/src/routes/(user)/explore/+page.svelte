@@ -57,7 +57,7 @@
         >
       </div>
       <div
-        class="grid md:grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-x-4"
+        class="grid md:grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-x-4"
         use:singleGridRow={{ onChange: (itemCount) => (maxPeople = itemCount) }}
       >
         {#each people as person (person.id)}
@@ -81,7 +81,7 @@
         >
       </div>
       <div
-        class="grid md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-x-4"
+        class="grid md:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-x-4"
         use:singleGridRow={{ onChange: (itemCount) => (maxPlaces = itemCount) }}
       >
         {#each places as item (item.data.id)}
