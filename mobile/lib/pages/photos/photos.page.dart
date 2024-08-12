@@ -35,18 +35,13 @@ class PhotosPage extends HookConsumerWidget {
         authenticationProvider.select((state) => state.isHavingUserPreferences),
       );
 
-      if (!hasUserPreferences) {
+      if (!hasUserPreferences && currentUser != null && currentUser.isAdmin) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.amber[600],
             content: const Text(
-              "⚠️ Cannot get user preferences, please make sure the server version is up to date.",
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.black,
-              ),
+              "get_my_preferences_error_message",
             ).tr(),
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 6),
           ),
         );
       }
