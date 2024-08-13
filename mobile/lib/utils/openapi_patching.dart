@@ -5,7 +5,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
     case 'UserPreferencesResponseDto':
       if (value is Map) {
         if (value['rating'] == null) {
-          value['rating'] = RatingResponse(enabled: false).toJson();
+          value['rating'] = RatingResponse().toJson();
         }
       }
   }
