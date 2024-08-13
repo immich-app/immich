@@ -9918,6 +9918,7 @@
       "RatingResponse": {
         "properties": {
           "enabled": {
+            "default": false,
             "type": "boolean"
           }
         },
@@ -11901,14 +11902,7 @@
             "$ref": "#/components/schemas/PurchaseResponse"
           },
           "rating": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RatingResponse"
-              }
-            ],
-            "default": {
-              "enabled": false
-            }
+            "$ref": "#/components/schemas/RatingResponse"
           }
         },
         "required": [

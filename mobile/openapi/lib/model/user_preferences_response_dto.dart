@@ -18,7 +18,7 @@ class UserPreferencesResponseDto {
     required this.emailNotifications,
     required this.memories,
     required this.purchase,
-    this.rating = {"enabled":false},
+    required this.rating,
   });
 
   AvatarResponse avatar;

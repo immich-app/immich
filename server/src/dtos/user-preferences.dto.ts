@@ -87,6 +87,7 @@ class AvatarResponse {
 }
 
 class RatingResponse {
+  @ApiProperty({ type: 'boolean', default: false })
   enabled!: boolean;
 }
 
@@ -111,7 +112,7 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
-  @ApiProperty({ type: RatingResponse, default: { enabled: false } })
+  @ApiProperty({ type: RatingResponse })
   rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
