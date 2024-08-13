@@ -2,6 +2,7 @@ import { BinaryField } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
+import { SourceType } from 'src/entities/asset-face.entity';
 import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -23,6 +24,8 @@ import { MetadataService, Orientation } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
+import { metadataStub } from 'test/fixtures/metadata.stub';
+import { personStub } from 'test/fixtures/person.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
@@ -766,6 +769,123 @@ describe(MetadataService.name, () => {
           description: '1000',
         }),
       );
+    });
+
+    it('should skip importing metadata when the feature is disabled', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ importFaces: { enabled: false } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.getDistinctNames).not.toHaveBeenCalled();
+    });
+
+    it('should skip importing metadata face for assets without tags.RegionInfo', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.empty);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.getDistinctNames).not.toHaveBeenCalled();
+    });
+
+    it('should skip importing faces without name', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFaceNoName);
+      personMock.getDistinctNames.mockResolvedValue([]);
+      personMock.create.mockResolvedValue([]);
+      personMock.upsertFaces.mockResolvedValue([]);
+      personMock.update.mockResolvedValue([]);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.create).toHaveBeenCalledWith();
+      expect(personMock.upsertFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
+      expect(personMock.update).toHaveBeenCalledWith();
+    });
+
+    it('should skip importing faces with empty name', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFaceEmptyName);
+      personMock.getDistinctNames.mockResolvedValue([]);
+      personMock.create.mockResolvedValue([]);
+      personMock.upsertFaces.mockResolvedValue([]);
+      personMock.update.mockResolvedValue([]);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.create).toHaveBeenCalledWith();
+      expect(personMock.upsertFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
+      expect(personMock.update).toHaveBeenCalledWith();
+    });
+
+    it('should apply metadata face tags creating new persons', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      personMock.getDistinctNames.mockResolvedValue([]);
+      personMock.create.mockResolvedValue([personStub.withName]);
+      personMock.upsertFaces.mockResolvedValue(['face-asset-uuid']);
+      personMock.update.mockResolvedValue([personStub.withName]);
+      await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
+      expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
+      expect(personMock.create).toHaveBeenCalledWith(expect.objectContaining({ name: personStub.withName.name }));
+      expect(personMock.upsertFaces).toHaveBeenCalledWith(
+        assetStub.primaryImage.id,
+        [
+          {
+            id: 'random-uuid',
+            assetId: assetStub.primaryImage.id,
+            personId: 'random-uuid',
+            imageHeight: 100,
+            imageWidth: 100,
+            boundingBoxX1: 0,
+            boundingBoxX2: 10,
+            boundingBoxY1: 0,
+            boundingBoxY2: 10,
+            sourceType: SourceType.EXIF,
+          },
+        ],
+        SourceType.EXIF,
+      );
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'random-uuid', faceAssetId: 'random-uuid' });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: { id: personStub.withName.id },
+        },
+      ]);
+    });
+
+    it('should assign metadata face tags to existing persons', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      personMock.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
+      personMock.create.mockResolvedValue([]);
+      personMock.upsertFaces.mockResolvedValue(['face-asset-uuid']);
+      personMock.update.mockResolvedValue([personStub.withName]);
+      await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
+      expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
+      expect(personMock.create).toHaveBeenCalledWith();
+      expect(personMock.upsertFaces).toHaveBeenCalledWith(
+        assetStub.primaryImage.id,
+        [
+          {
+            id: 'random-uuid',
+            assetId: assetStub.primaryImage.id,
+            personId: personStub.withName.id,
+            imageHeight: 100,
+            imageWidth: 100,
+            boundingBoxX1: 0,
+            boundingBoxX2: 10,
+            boundingBoxY1: 0,
+            boundingBoxY2: 10,
+            sourceType: SourceType.EXIF,
+          },
+        ],
+        SourceType.EXIF,
+      );
+      expect(personMock.update).toHaveBeenCalledWith();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([]);
     });
   });
 
