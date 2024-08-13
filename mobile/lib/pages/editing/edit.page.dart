@@ -75,34 +75,34 @@ class EditImagePage extends ConsumerWidget {
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () async {
-              try {
-                final Uint8List imageData = await _imageToUint8List(image);
-                ImmichToast.show(
-                  durationInSecond: 3,
-                  context: context,
-                  msg: 'Image Saved!',
-                  gravity: ToastGravity.CENTER,
-                );
-
-                await PhotoManager.editor.saveImage(
-                  imageData,
-                  title: "${asset.fileName.split('.').first}_edited.jpg",
-                );
-                await ref.read(albumProvider.notifier).getDeviceAlbums();
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              } catch (e) {
-                ImmichToast.show(
-                  durationInSecond: 6,
-                  context: context,
-                  msg: 'Error: ${e.toString()}',
-                  gravity: ToastGravity.BOTTOM,
-                );
-              }
-            },
+            onPressed: isEdited
+                ? () async {
+                    try {
+                      final Uint8List imageData =
+                          await _imageToUint8List(image);
+                      await PhotoManager.editor.saveImage(
+                        imageData,
+                        title:
+                            "${asset.fileName.substring(0, asset.fileName.length - 4)}_edited.jpg",
+                      );
+                      await ref.read(albumProvider.notifier).getDeviceAlbums();
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    } catch (e) {
+                      ImmichToast.show(
+                        durationInSecond: 6,
+                        context: context,
+                        msg: 'Error: $e',
+                        gravity: ToastGravity.CENTER,
+                      );
+                    }
+                  }
+                : null,
             child: Text(
               'Save to gallery',
-              style: Theme.of(context).textTheme.displayMedium,
+              style: TextStyle(
+                color:
+                    isEdited ? Theme.of(context).iconTheme.color : Colors.grey,
+              ),
             ),
           ),
         ],
