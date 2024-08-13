@@ -36,6 +36,7 @@ export interface IStorageRepository {
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
   readFile(filepath: string, options?: FileReadOptions<Buffer>): Promise<Buffer>;
   writeFile(filepath: string, buffer: Buffer): Promise<void>;
+  realpath(filepath: string): Promise<string>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string, self?: boolean): Promise<void>;
