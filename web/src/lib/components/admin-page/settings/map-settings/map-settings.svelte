@@ -26,7 +26,12 @@
       <div class="flex flex-col gap-4">
         <SettingAccordion key="map" title={$t('admin.map_settings')} subtitle={$t('admin.map_settings_description')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
-            <SettingSwitch title={$t('admin.map_enable_description')} {disabled} bind:checked={config.map.enabled} />
+            <SettingSwitch
+              title={$t('admin.map_enable_description')}
+              subtitle={$t('admin.map_implications')}
+              {disabled}
+              bind:checked={config.map.enabled}
+            />
 
             <hr />
 
