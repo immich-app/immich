@@ -28,12 +28,13 @@
   {#if config && $user}
     <AdminSettings bind:config let:handleSave>
       <SettingSwitch
-        title={$t('admin.map_enable_description')}
+        title={$t('admin.map_settings')}
         subtitle={$t('admin.map_implications')}
         bind:checked={config.map.enabled}
       />
       <SettingSwitch
-        title={$t('admin.version_check_enabled_description')}
+        title={$t('admin.version_check_settings')}
+        subtitle={$t('admin.version_check_implications')}
         bind:checked={config.newVersionCheck.enabled}
       />
       <div class="flex pt-4">
