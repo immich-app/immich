@@ -82,8 +82,7 @@ class EditImagePage extends ConsumerWidget {
                           await _imageToUint8List(image);
                       await PhotoManager.editor.saveImage(
                         imageData,
-                        title:
-                            "${asset.fileName.substring(0, asset.fileName.length - 4)}_edited.jpg",
+                        title: "${asset.fileName.split('.').first}_edited.jpg",
                       );
                       await ref.read(albumProvider.notifier).getDeviceAlbums();
                       Navigator.of(context).popUntil((route) => route.isFirst);
