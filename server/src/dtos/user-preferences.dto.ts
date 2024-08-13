@@ -87,8 +87,7 @@ class AvatarResponse {
 }
 
 class RatingResponse {
-  @ApiProperty({ type: 'boolean', default: false })
-  enabled!: boolean;
+  enabled: boolean = false;
 }
 
 class MemoryResponse {
