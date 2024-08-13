@@ -111,6 +111,7 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
+  @ApiProperty({ type: RatingResponse, default: { enabled: false } })
   rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;

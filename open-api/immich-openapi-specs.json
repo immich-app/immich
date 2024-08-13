@@ -11901,7 +11901,14 @@
             "$ref": "#/components/schemas/PurchaseResponse"
           },
           "rating": {
-            "$ref": "#/components/schemas/RatingResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RatingResponse"
+              }
+            ],
+            "default": {
+              "enabled": false
+            }
           }
         },
         "required": [
