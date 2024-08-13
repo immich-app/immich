@@ -9,6 +9,4 @@ dynamic upgradeDto(dynamic value, String targetType) {
         }
       }
   }
-
-  return value;
 }

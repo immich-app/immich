@@ -1,12 +1,10 @@
---- api_client.mustache	2024-08-13 12:23:35.556179216 -0500
-+++ api_client_new.mustache	2024-08-13 12:25:25.372242183 -0500
-@@ -158,7 +158,8 @@
- 
+--- api_client.mustache	2024-08-13 14:12:55
++++ api_client1.mustache	2024-08-13 14:12:01
+@@ -159,7 +159,6 @@
  {{#native_serialization}}
    /// Returns a native instance of an OpenAPI class matching the [specified type][targetType].
--  static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
-+  static dynamic fromJson(dynamic originalValue, String targetType, {bool growable = false,}) {
-+  final dynamic value = upgradeDto(originalValue, targetType);
+   static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
+-    upgradeDto(value, targetType);
      try {
        switch (targetType) {
          case 'String':
