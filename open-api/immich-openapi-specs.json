@@ -9918,6 +9918,7 @@
       "RatingResponse": {
         "properties": {
           "enabled": {
+            "default": false,
             "type": "boolean"
           }
         },
