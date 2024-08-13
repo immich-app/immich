@@ -276,7 +276,7 @@
     "transcoding_preferred_hardware_device": "Preferred hardware device",
     "transcoding_preferred_hardware_device_description": "Applies only to VAAPI and QSV. Sets the dri node used for hardware transcoding.",
     "transcoding_preset_preset": "Preset (-preset)",
-    "transcoding_preset_preset_description": "Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above `faster`.",
+    "transcoding_preset_preset_description": "Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above 'faster'.",
     "transcoding_reference_frames": "Reference frames",
     "transcoding_reference_frames_description": "The number of frames to reference when compressing a given frame. Higher values improve compression efficiency, but slow down encoding. 0 sets this value automatically.",
     "transcoding_required_description": "Only videos not in an accepted format",
