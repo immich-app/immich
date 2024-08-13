@@ -53,10 +53,7 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow
-        class="grid md:grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-x-4"
-        let:itemCount
-      >
+      <SingleGridRow class="grid md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4" let:itemCount>
         {#each people.slice(0, itemCount) as person (person.id)}
           <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center">
             <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
@@ -77,10 +74,7 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow
-        class="grid md:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-x-4"
-        let:itemCount
-      >
+      <SingleGridRow class="grid md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4" let:itemCount>
         {#each places.slice(0, itemCount) as item (item.data.id)}
           <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
             <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
