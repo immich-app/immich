@@ -24,6 +24,10 @@ export class StorageRepository implements IStorageRepository {
     this.logger.setContext(StorageRepository.name);
   }
 
+  realpath(filepath: string) {
+    return fs.realpath(filepath);
+  }
+
   readdir(folder: string): Promise<string[]> {
     return fs.readdir(folder);
   }
@@ -52,7 +56,7 @@ export class StorageRepository implements IStorageRepository {
     const archive = archiver('zip', { store: true });
 
     const addFile = (input: string, filename: string) => {
-      archive.file(input, { name: filename });
+      archive.file(input, { name: filename, mode: 0o644 });
     };
 
     const finalize = () => archive.finalize();

@@ -1,14 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
-import fs from 'node:fs/promises';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
 import { Mocked, vitest } from 'vitest';
@@ -27,6 +28,7 @@ describe(DownloadService.name, () => {
   let sut: DownloadService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
 
   it('should work', () => {
@@ -36,9 +38,10 @@ describe(DownloadService.name, () => {
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new DownloadService(accessMock, assetMock, storageMock);
+    sut = new DownloadService(accessMock, assetMock, loggerMock, storageMock);
   });
 
   describe('downloadArchive', () => {
@@ -112,10 +115,6 @@ describe(DownloadService.name, () => {
     });
 
     it('should resolve symlinks', async () => {
-      const tempDirectory = await fs.mkdtemp('immich-symlink-test');
-      const symlinkPath = tempDirectory + '/symlink-to-IMG_123.jpg';
-      const symlinkTarget = tempDirectory + '/IMG_123.jpg';
-
       const archiveMock = {
         addFile: vitest.fn(),
         finalize: vitest.fn(),
@@ -123,20 +122,17 @@ describe(DownloadService.name, () => {
       };
 
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([{ ...assetStub.noResizePath, id: 'asset-1', originalPath: symlinkPath }]);
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.noResizePath, id: 'asset-1', originalPath: '/path/to/symlink.jpg' },
+      ]);
+      storageMock.realpath.mockResolvedValue('/path/to/realpath.jpg');
       storageMock.createZipStream.mockReturnValue(archiveMock);
-
-      await fs.writeFile(symlinkTarget, '');
-      await fs.symlink('IMG_123.jpg', symlinkPath);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1'] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
-      await fs.unlink(symlinkPath);
-      await fs.unlink(symlinkTarget);
-      await fs.rmdir(tempDirectory);
-      expect(archiveMock.addFile).toHaveBeenCalledWith(expect.stringMatching(`.*${symlinkTarget}$`), 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', 'IMG_123.jpg');
     });
   });
 

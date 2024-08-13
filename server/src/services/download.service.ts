@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import fs from 'node:fs/promises';
 import { parse } from 'node:path';
 import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
@@ -8,6 +7,7 @@ import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/d
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ImmichReadStream, IStorageRepository } from 'src/interfaces/storage.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';
@@ -19,9 +19,11 @@ export class DownloadService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
+    this.logger.setContext(DownloadService.name);
   }
 
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
@@ -84,7 +86,14 @@ export class DownloadService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      zip.addFile(await this.resolveSymlink(originalPath), filename);
+      let realpath = originalPath;
+      try {
+        realpath = await this.storageRepository.realpath(originalPath);
+      } catch {
+        this.logger.warn('Unable to resolve realpath', { originalPath });
+      }
+
+      zip.addFile(realpath, filename);
     }
 
     void zip.finalize();
@@ -117,13 +126,5 @@ export class DownloadService {
     }
 
     throw new BadRequestException('assetIds, albumId, or userId is required');
-  }
-
-  private async resolveSymlink(originalPath: string): Promise<string> {
-    try {
-      return await fs.realpath(originalPath);
-    } catch {
-      return originalPath;
-    }
   }
 }
