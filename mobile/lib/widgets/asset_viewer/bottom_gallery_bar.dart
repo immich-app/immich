@@ -16,6 +16,7 @@ import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart'
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -236,6 +237,7 @@ class BottomGalleryBar extends ConsumerWidget {
     }
 
     void handleEdit() async {
+      final image = Image(image: ImmichImage.imageProvider(asset: asset));
       if (asset.isOffline) {
         ImmichToast.show(
           durationInSecond: 1,
@@ -247,8 +249,11 @@ class BottomGalleryBar extends ConsumerWidget {
       }
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) =>
-              EditImagePage(asset: asset), // Send the Asset object
+          builder: (context) => EditImagePage(
+            asset: asset,
+            image: image,
+            isEdited: false,
+          ),
         ),
       );
     }
