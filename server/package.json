@@ -133,7 +133,7 @@
     "typescript": "^5.3.3",
     "unplugin-swc": "^1.4.5",
     "utimes": "^5.2.1",
-    "vite-tsconfig-paths": "^4.3.2",
+    "vite-tsconfig-paths": "^5.0.0",
     "vitest": "^2.0.5"
   },
   "volta": {
