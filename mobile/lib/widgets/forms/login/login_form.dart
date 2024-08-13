@@ -172,7 +172,7 @@ class LoginForm extends HookConsumerWidget {
     populateTestLoginInfo1() {
       usernameController.text = 'testuser@email.com';
       passwordController.text = 'password';
-      serverEndpointController.text = 'http://10.1.15.214:2283/api';
+      serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
     login() async {
