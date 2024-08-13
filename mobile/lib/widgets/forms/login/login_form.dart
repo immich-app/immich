@@ -16,7 +16,6 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -27,8 +26,8 @@ import 'package:immich_mobile/widgets/forms/login/login_button.dart';
 import 'package:immich_mobile/widgets/forms/login/o_auth_login_button.dart';
 import 'package:immich_mobile/widgets/forms/login/password_input.dart';
 import 'package:immich_mobile/widgets/forms/login/server_endpoint_input.dart';
+import 'package:immich_mobile/widgets/forms/login/version_compatibility_warning.dart';
 import 'package:openapi/api.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
@@ -54,30 +53,9 @@ class LoginForm extends HookConsumerWidget {
     final logoAnimationController = useAnimationController(
       duration: const Duration(seconds: 60),
     )..repeat();
-    final serverInfo = ref.watch(serverInfoProvider);
-    final warningMessage = useState<String?>(null);
+
     final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
-
-    checkVersionMismatch() async {
-      try {
-        final packageInfo = await PackageInfo.fromPlatform();
-        final appVersion = packageInfo.version;
-        final appMajorVersion = int.parse(appVersion.split('.')[0]);
-        final appMinorVersion = int.parse(appVersion.split('.')[1]);
-        final serverMajorVersion = serverInfo.serverVersion.major;
-        final serverMinorVersion = serverInfo.serverVersion.minor;
-
-        warningMessage.value = getVersionCompatibilityMessage(
-          appMajorVersion,
-          appMinorVersion,
-          serverMajorVersion,
-          serverMinorVersion,
-        );
-      } catch (error) {
-        warningMessage.value = 'Error checking version compatibility';
-      }
-    }
 
     /// Fetch the server login credential and enables oAuth login if necessary
     /// Returns true if successful, false otherwise
@@ -340,40 +318,12 @@ class LoginForm extends HookConsumerWidget {
       );
     }
 
-    buildVersionCompatWarning() {
-      checkVersionMismatch();
-
-      if (warningMessage.value == null) {
-        return const SizedBox.shrink();
-      }
-
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color:
-                context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color:
-                  context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!,
-            ),
-          ),
-          child: Text(
-            warningMessage.value!,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
-
     buildLogin() {
       return AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            buildVersionCompatWarning(),
+            const VersionCompatibilityWarning(),
             Text(
               sanitizeUrl(serverEndpointController.text),
               style: context.textTheme.displaySmall,
