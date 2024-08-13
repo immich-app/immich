@@ -165,8 +165,8 @@ class ApiClient {
   String serialize(Object? value) => value == null ? '' : json.encode(value);
 
   /// Returns a native instance of an OpenAPI class matching the [specified type][targetType].
-  static dynamic fromJson(dynamic originalValue, String targetType, {bool growable = false,}) {
-  final dynamic value = upgradeDto(originalValue, targetType);
+  static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
+    upgradeDto(value, targetType);
     try {
       switch (targetType) {
         case 'String':
