@@ -112,7 +112,6 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
-  @ApiProperty({ type: RatingResponse })
   rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
