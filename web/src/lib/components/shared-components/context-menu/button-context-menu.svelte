@@ -32,6 +32,7 @@
    * Additional classes to apply to the button.
    */
   export let buttonClass: string | undefined = undefined;
+  export let hideContent = false;
 
   let isOpen = false;
   let contextMenuPosition = { x: 0, y: 0 };
@@ -125,30 +126,32 @@
       on:click={handleClick}
     />
   </div>
-  <div
-    use:shortcuts={[
-      {
-        shortcut: { key: 'Tab' },
-        onShortcut: closeDropdown,
-        preventDefault: false,
-      },
-      {
-        shortcut: { key: 'Tab', shift: true },
-        onShortcut: closeDropdown,
-        preventDefault: false,
-      },
-    ]}
-  >
-    <ContextMenu
-      {...contextMenuPosition}
-      {direction}
-      ariaActiveDescendant={$selectedIdStore}
-      ariaLabelledBy={buttonId}
-      bind:menuElement={menuContainer}
-      id={menuId}
-      isVisible={isOpen}
+  {#if isOpen || !hideContent}
+    <div
+      use:shortcuts={[
+        {
+          shortcut: { key: 'Tab' },
+          onShortcut: closeDropdown,
+          preventDefault: false,
+        },
+        {
+          shortcut: { key: 'Tab', shift: true },
+          onShortcut: closeDropdown,
+          preventDefault: false,
+        },
+      ]}
     >
-      <slot />
-    </ContextMenu>
-  </div>
+      <ContextMenu
+        {...contextMenuPosition}
+        {direction}
+        ariaActiveDescendant={$selectedIdStore}
+        ariaLabelledBy={buttonId}
+        bind:menuElement={menuContainer}
+        id={menuId}
+        isVisible={isOpen}
+      >
+        <slot />
+      </ContextMenu>
+    </div>
+  {/if}
 </div>
