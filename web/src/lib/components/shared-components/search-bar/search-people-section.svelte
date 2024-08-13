@@ -61,7 +61,7 @@
       </div>
 
       <SingleGridRow
-        class="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] -mx-1 gap-1 mt-2 overflow-y-auto immich-scrollbar"
+        class="grid grid-auto-fill-20 -mx-1 gap-1 mt-2 overflow-y-auto immich-scrollbar"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}
