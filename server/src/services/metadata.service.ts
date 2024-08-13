@@ -8,8 +8,6 @@ import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { PersonResponseDto } from 'src/dtos/person.dto';
-import { SearchPeopleDto } from 'src/dtos/search.dto';
 import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -467,10 +465,6 @@ export class MetadataService implements OnEvents {
     } catch (error: Error | any) {
       this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${error}`, error?.stack);
     }
-  }
-
-  async searchPerson(ownerId: AssetEntity['ownerId'], dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return this.personRepository.getByName(ownerId, dto.name, { withHidden: dto.withHidden });
   }
 
   private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
