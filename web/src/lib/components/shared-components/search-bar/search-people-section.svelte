@@ -8,7 +8,7 @@
   import { mdiClose, mdiArrowRight } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
-  import { singleGridRow } from '$lib/actions/single-grid-row';
+  import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
 
   export let selectedPeople: Set<string>;
 
@@ -60,9 +60,9 @@
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
-      <div
+      <SingleGridRow
         class="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] -mx-1 gap-1 mt-2 overflow-y-auto immich-scrollbar"
-        use:singleGridRow={{ onChange: (itemCount) => (numberOfPeople = itemCount) }}
+        bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}
           <button
@@ -78,7 +78,7 @@
             <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
           </button>
         {/each}
-      </div>
+      </SingleGridRow>
 
       {#if showAllPeople || people.length > peopleList.length}
         <div class="flex justify-center mt-2">

@@ -10,7 +10,7 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { onMount } from 'svelte';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { singleGridRow } from '$lib/actions/single-grid-row';
+  import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
 
   export let data: PageData;
 
@@ -20,16 +20,13 @@
     OBJECTS = 'smartInfo.objects',
   }
 
-  let maxPlaces = 1;
-  let maxPeople = 1;
-
   const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
     const targetField = items.find((item) => item.fieldName === field);
     return targetField?.items || [];
   };
 
-  $: places = getFieldItems(data.items, Field.CITY).slice(0, maxPlaces);
-  $: people = data.response.people.slice(0, maxPeople);
+  $: places = getFieldItems(data.items, Field.CITY);
+  $: people = data.response.people;
   $: hasPeople = data.response.total > 0;
 
   onMount(() => {
@@ -56,17 +53,17 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <div
+      <SingleGridRow
         class="grid md:grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-x-4"
-        use:singleGridRow={{ onChange: (itemCount) => (maxPeople = itemCount) }}
+        let:itemCount
       >
-        {#each people as person (person.id)}
+        {#each people.slice(0, itemCount) as person (person.id)}
           <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center">
             <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
             <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
           </a>
         {/each}
-      </div>
+      </SingleGridRow>
     </div>
   {/if}
 
@@ -80,11 +77,11 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <div
+      <SingleGridRow
         class="grid md:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-x-4"
-        use:singleGridRow={{ onChange: (itemCount) => (maxPlaces = itemCount) }}
+        let:itemCount
       >
-        {#each places as item (item.data.id)}
+        {#each places.slice(0, itemCount) as item (item.data.id)}
           <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
             <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
               <img
@@ -100,7 +97,7 @@
             </span>
           </a>
         {/each}
-      </div>
+      </SingleGridRow>
     </div>
   {/if}
 
