@@ -21,11 +21,9 @@ import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
-import 'package:immich_mobile/widgets/forms/login/email_input.dart';
 import 'package:immich_mobile/widgets/forms/login/loading_icon.dart';
 import 'package:immich_mobile/widgets/forms/login/login_button.dart';
 import 'package:immich_mobile/widgets/forms/login/o_auth_login_button.dart';
-import 'package:immich_mobile/widgets/forms/login/password_input.dart';
 import 'package:immich_mobile/widgets/forms/login/server_endpoint_input.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -368,7 +366,24 @@ class LoginForm extends HookConsumerWidget {
       );
     }
 
-    buildLogin() {
+    buildEmailPasswordLoginInput() {
+      final isPasswordVisible = useState<bool>(false);
+      emailFocusNode.requestFocus();
+
+      String? validateEmailInput(String? email) {
+        if (email == null || email == '') return null;
+        if (email.endsWith(' ')) {
+          return 'login_form_err_trailing_whitespace'.tr();
+        }
+        if (email.startsWith(' ')) {
+          return 'login_form_err_leading_whitespace'.tr();
+        }
+        if (email.contains(' ') || !email.contains('@')) {
+          return 'login_form_err_invalid_email'.tr();
+        }
+        return null;
+      }
+
       return AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -381,16 +396,56 @@ class LoginForm extends HookConsumerWidget {
             ),
             if (isPasswordLoginEnable.value) ...[
               const SizedBox(height: 18),
-              EmailInput(
+              // EmailInput
+              TextFormField(
+                autofocus: true,
                 controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: 'login_form_label_email'.tr(),
+                  border: const OutlineInputBorder(),
+                  hintText: 'login_form_email_hint'.tr(),
+                  hintStyle: const TextStyle(
+                    fontWeight: FontWeight.normal,
+                    fontSize: 14,
+                  ),
+                ),
+                validator: validateEmailInput,
+                autovalidateMode: AutovalidateMode.always,
+                autofillHints: const [AutofillHints.email],
+                keyboardType: TextInputType.emailAddress,
+                onFieldSubmitted: (_) => passwordFocusNode.requestFocus(),
                 focusNode: emailFocusNode,
-                onSubmit: passwordFocusNode.requestFocus,
+                textInputAction: TextInputAction.next,
+                onTap: () => emailFocusNode.requestFocus(),
               ),
-              const SizedBox(height: 8),
-              PasswordInput(
+              const SizedBox(height: 12),
+              // PasswordInput
+              TextFormField(
+                obscureText: !isPasswordVisible.value,
                 controller: passwordController,
+                decoration: InputDecoration(
+                  labelText: 'login_form_label_password'.tr(),
+                  border: const OutlineInputBorder(),
+                  hintText: 'login_form_password_hint'.tr(),
+                  hintStyle: const TextStyle(
+                    fontWeight: FontWeight.normal,
+                    fontSize: 14,
+                  ),
+                  suffixIcon: IconButton(
+                    onPressed: () =>
+                        isPasswordVisible.value = !isPasswordVisible.value,
+                    icon: Icon(
+                      isPasswordVisible.value
+                          ? Icons.visibility_off_sharp
+                          : Icons.visibility_sharp,
+                    ),
+                  ),
+                ),
+                autofillHints: const [AutofillHints.password],
+                keyboardType: TextInputType.text,
+                onFieldSubmitted: (_) => login(),
                 focusNode: passwordFocusNode,
-                onSubmit: login,
+                textInputAction: TextInputAction.go,
               ),
             ],
 
@@ -441,8 +496,9 @@ class LoginForm extends HookConsumerWidget {
       );
     }
 
-    final serverSelectionOrLogin =
-        serverEndpoint.value == null ? buildSelectServer() : buildLogin();
+    final serverSelectionOrLogin = serverEndpoint.value == null
+        ? buildSelectServer()
+        : buildEmailPasswordLoginInput();
 
     return LayoutBuilder(
       builder: (context, constraints) {
