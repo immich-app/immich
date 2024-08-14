@@ -256,7 +256,7 @@ export class LibraryService implements OnEvents {
         name: JobName.LIBRARY_SCAN_ASSET,
         data: {
           id: libraryId,
-          assetPath: assetPath,
+          assetPath,
           ownerId,
           force,
         },
@@ -515,10 +515,8 @@ export class LibraryService implements OnEvents {
   async handleQueueAllScan(job: IBaseJob): Promise<JobStatus> {
     this.logger.debug(`Refreshing all external libraries: force=${job.force}`);
 
-    // Queue cleanup
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
-    // Queue all library refresh
     const libraries = await this.repository.getAll(true);
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
@@ -533,12 +531,10 @@ export class LibraryService implements OnEvents {
     return JobStatus.SUCCESS;
   }
 
-  // Checks if an online asset should be marked as offline, either due to missing path, or path outside of any import path
   async handleOfflineCheck(job: ILibraryOfflineJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
     if (!asset || asset.isOffline) {
-      // We only care about online assets, we exit here if offline
       return JobStatus.SKIPPED;
     }
 
@@ -548,7 +544,6 @@ export class LibraryService implements OnEvents {
       const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
 
       if (isInPath) {
-        // Asset path exists and is within an import path
         this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
         return JobStatus.SUCCESS;
       }
