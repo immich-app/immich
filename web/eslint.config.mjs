@@ -32,7 +32,7 @@ export default [
       '**/svelte.config.js',
       'eslint.config.mjs',
       'postcss.config.cjs',
-      'tailwind.config.cjs',
+      'tailwind.config.js',
     ],
   },
   ...compat.extends(

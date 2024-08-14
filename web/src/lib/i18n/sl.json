@@ -22,6 +22,9 @@
   "add_to": "Dodaj k...",
   "add_to_album": "Dodaj v album",
   "add_to_shared_album": "Dodaj k deljenemu albumu",
+  "added_to_archive": "Dodano v arhiv",
+  "added_to_favorites": "Dodano med priljubljene",
+  "added_to_favorites_count": "{count, number} dodanih med priljubljene",
   "admin": {
     "add_exclusion_pattern_description": "Dodajte vzorec izključitev. Globiranje z uporabo *, ** in ? je podprto. Če želite prezreti vse datoteke v katerem koli imeniku z imenom \"Raw\", uporabite \"**/Raw/**\". Če želite prezreti vse datoteke, ki se končajo na \".tif\", uporabite \"**/*.tif\". Če želite prezreti absolutno pot, uporabite \"/pot/za/ignoriranje/**\".",
     "authentication_settings": "Nastavitve preverjanja pristnosti",
@@ -820,8 +823,9 @@
   "viewer": "",
   "waiting": "",
   "week": "",
+  "welcome": "Dobrodošli",
   "welcome_to_immich": "",
-  "year": "",
+  "year": "Leto",
   "yes": "Da",
-  "zoom_image": ""
+  "zoom_image": "Povečava slike"
 }
