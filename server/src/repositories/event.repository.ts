@@ -9,9 +9,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import {
+  ArgsOf,
   ClientEventMap,
   EmitEvent,
-  EmitEventHandler,
+  EmitHandler,
   IEventRepository,
   ServerEvent,
   ServerEventMap,
@@ -19,6 +20,8 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService } from 'src/services/auth.service';
 import { Instrumentation } from 'src/utils/instrumentation';
+
+type EmitHandlers = Partial<{ [T in EmitEvent]: EmitHandler<T>[] }>;
 
 @Instrumentation()
 @WebSocketGateway({
@@ -28,7 +31,7 @@ import { Instrumentation } from 'src/utils/instrumentation';
 })
 @Injectable()
 export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, IEventRepository {
-  private emitHandlers: Partial<Record<EmitEvent, EmitEventHandler<EmitEvent>[]>> = {};
+  private emitHandlers: EmitHandlers = {};
 
   @WebSocketServer()
   private server?: Server;
@@ -78,12 +81,15 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     await client.leave(client.nsp.name);
   }
 
-  on<T extends EmitEvent>(event: T, handler: EmitEventHandler<T>): void {
-    const handlers: EmitEventHandler<EmitEvent>[] = this.emitHandlers[event] || [];
-    this.emitHandlers[event] = [...handlers, handler];
+  on<T extends EmitEvent>(event: T, handler: EmitHandler<T>): void {
+    if (!this.emitHandlers[event]) {
+      this.emitHandlers[event] = [];
+    }
+
+    this.emitHandlers[event].push(handler);
   }
 
-  async emit<T extends EmitEvent>(event: T, ...args: Parameters<EmitEventHandler<T>>): Promise<void> {
+  async emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {
     const handlers = this.emitHandlers[event] || [];
     for (const handler of handlers) {
       await handler(...args);

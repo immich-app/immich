@@ -90,7 +90,7 @@ describe(NotificationService.name, () => {
       const newConfig = configs.smtpEnabled;
 
       notificationMock.verifySmtp.mockResolvedValue(true);
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
     });
 
@@ -99,7 +99,7 @@ describe(NotificationService.name, () => {
       const newConfig = configs.smtpTransport;
 
       notificationMock.verifySmtp.mockResolvedValue(true);
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
     });
 
@@ -107,7 +107,7 @@ describe(NotificationService.name, () => {
       const oldConfig = { ...configs.smtpEnabled };
       const newConfig = { ...configs.smtpEnabled };
 
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
     });
 
@@ -115,19 +115,19 @@ describe(NotificationService.name, () => {
       const oldConfig = { ...configs.smtpEnabled };
       const newConfig = { ...configs.smtpDisabled };
 
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
     });
   });
 
   describe('onUserSignupEvent', () => {
     it('skips when notify is false', async () => {
-      await sut.onUserSignupEvent({ id: '', notify: false });
+      await sut.onUserSignup({ id: '', notify: false });
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should queue notify signup event if notify is true', async () => {
-      await sut.onUserSignupEvent({ id: '', notify: true });
+      await sut.onUserSignup({ id: '', notify: true });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_SIGNUP,
         data: { id: '', tempPassword: undefined },
@@ -137,7 +137,7 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumUpdateEvent', () => {
     it('should queue notify album update event', async () => {
-      await sut.onAlbumUpdateEvent({ id: '', updatedBy: '42' });
+      await sut.onAlbumUpdate({ id: '', updatedBy: '42' });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_UPDATE,
         data: { id: '', senderId: '42' },
@@ -147,7 +147,7 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumInviteEvent', () => {
     it('should queue notify album invite event', async () => {
-      await sut.onAlbumInviteEvent({ id: '', userId: '42' });
+      await sut.onAlbumInvite({ id: '', userId: '42' });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_INVITE,
         data: { id: '', recipientId: '42' },
