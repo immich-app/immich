@@ -47,12 +47,22 @@
   export let onRunJob: (name: AssetJobName) => void;
   export let onPlaySlideshow: () => void;
   export let onShowDetail: () => void;
+  // export let showEditorHandler: () => void;
   export let onClose: () => void;
 
   const sharedLink = getSharedLink();
 
   $: isOwner = $user && asset.ownerId === $user?.id;
   $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  // $: showEditorButton =
+  //   isOwner &&
+  //   asset.type === AssetTypeEnum.Image &&
+  //   !(
+  //     asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+  //     (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+  //   ) &&
+  //   !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
+  //   !asset.livePhotoVideoId;
 </script>
 
 <div
@@ -98,6 +108,15 @@
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
+    <!-- {#if showEditorButton}
+      <CircleIconButton
+        color="opaque"
+        hideMobile={true}
+        icon={mdiImageEditOutline}
+        on:click={showEditorHandler}
+        title={$t('editor')}
+      />
+    {/if} -->
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} />
