@@ -55,8 +55,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final loadAsset = renderList.loadAsset;
     final totalAssets = useState(renderList.totalAssets);
-    final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
-    final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final shouldLoopVideo = useState(AppSettingsEnum.loopVideo.defaultValue);
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
@@ -97,10 +95,6 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        isLoadPreview.value =
-            settings.getSetting<bool>(AppSettingsEnum.loadPreview);
-        isLoadOriginal.value =
-            settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
         shouldLoopVideo.value =
             settings.getSetting<bool>(AppSettingsEnum.loopVideo);
         return null;
@@ -118,7 +112,9 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (index < totalAssets.value && index >= 0) {
           final asset = loadAsset(index);
           await precacheImage(
-            ImmichImage.imageProvider(asset: asset),
+            ImmichImage.imageProvider(
+              asset: asset,
+            ),
             context,
             onError: onError,
           );
@@ -324,8 +320,10 @@ class GalleryViewerPage extends HookConsumerWidget {
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset : loadAsset(index);
-                final ImageProvider provider =
-                    ImmichImage.imageProvider(asset: a);
+
+                final ImageProvider provider = ImmichImage.imageProvider(
+                  asset: a,
+                );
 
                 if (a.isImage && !isPlayingVideo.value) {
                   return PhotoViewGalleryPageOptions(
