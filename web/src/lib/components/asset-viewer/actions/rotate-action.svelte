@@ -6,7 +6,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { AssetAction } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetJobName, runAssetJobs, updateAsset, type AssetResponseDto } from '@immich/sdk';
+  import { AssetJobName, ExifOrientation, runAssetJobs, updateAsset, type AssetResponseDto } from '@immich/sdk';
   import { mdiRotateLeft, mdiRotateRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
@@ -16,46 +16,17 @@
   export let onAction: OnAction;
   export let to: 'left' | 'right';
 
-  let angle = 0;
-
   const handleRotateAsset = async () => {
-    let newOrientation = '1';
+    // every rotation, in order
+    // interleaved normal / mirrored
+    const orientations = ['1', '2', '6', '7', '3', '4', '8', '5'];
+    let index = orientations.indexOf(asset.exifInfo?.orientation ?? '1');
+    if (index === -1) {
+      index = 0;
+    }
+    index = (to === 'right' ? index + 2 : index - 2 + orientations.length) % orientations.length;
+    const newOrientation = orientations[index] as ExifOrientation;
     try {
-      switch (asset.exifInfo?.orientation) {
-        case '0':
-        case '1': {
-          newOrientation = to === 'left' ? '8' : '6';
-          break;
-        }
-        case '2': {
-          newOrientation = to === 'left' ? '5' : '7';
-          break;
-        }
-        case '3': {
-          newOrientation = to === 'left' ? '6' : '8';
-          break;
-        }
-        case '4': {
-          newOrientation = to === 'left' ? '7' : '5';
-          break;
-        }
-        case '5': {
-          newOrientation = to === 'left' ? '4' : '2';
-          break;
-        }
-        case '6': {
-          newOrientation = to === 'left' ? '1' : '3';
-          break;
-        }
-        case '7': {
-          newOrientation = to === 'left' ? '2' : '4';
-          break;
-        }
-        case '8': {
-          newOrientation = to === 'left' ? '3' : '1';
-          break;
-        }
-      }
       await updateAsset({ id: asset.id, updateAssetDto: { orientation: newOrientation } });
       asset.exifInfo = { ...asset.exifInfo, orientation: newOrientation };
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name: AssetJobName.RegenerateThumbnail } });
@@ -65,7 +36,6 @@
       });
 
       onAction({ type: AssetAction.ROTATE, asset });
-      angle += to === 'left' ? -90 : 90;
       setTimeout(() => {
         // force the image to refresh the thumbnail
         const oldSrc = new URL($photoViewer!.src);
@@ -81,5 +51,5 @@
 <MenuOption
   icon={to === 'left' ? mdiRotateLeft : mdiRotateRight}
   onClick={handleRotateAsset}
-  text={$t(`rotate_${to}`)}
+  text={to === 'left' ? $t('rotate_left') : $t('rotate_right')}
 />
