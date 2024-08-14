@@ -483,7 +483,7 @@ export class MediaService {
   }
 
   private decodeExifOrientation(orientation: ExifOrientation) {
-    let angle;
+    let angle = 0;
     switch (orientation) {
       case ExifOrientation.Rotate180:
       case ExifOrientation.MirrorVertical: {
@@ -501,8 +501,7 @@ export class MediaService {
         break;
       }
       case ExifOrientation.Horizontal:
-      case ExifOrientation.MirrorHorizontal:
-      default: {
+      case ExifOrientation.MirrorHorizontal: {
         angle = 0;
         break;
       }
