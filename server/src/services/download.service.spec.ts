@@ -226,5 +226,31 @@ describe(DownloadService.name, () => {
         ],
       });
     });
+
+    it('should skip the video portion of an android live photo by default', async () => {
+      const assetIds = [assetStub.livePhotoStillAsset.id];
+      const assets = [
+        assetStub.livePhotoStillAsset,
+        { ...assetStub.livePhotoMotionAsset, originalPath: 'upload/encoded-video/uuid-MP.mp4' },
+      ];
+
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
+      assetMock.getByIds.mockImplementation(
+        (ids) =>
+          Promise.resolve(
+            ids.map((id) => assets.find((asset) => asset.id === id)).filter((asset) => !!asset),
+          ) as Promise<AssetEntity[]>,
+      );
+
+      await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
+        totalSize: 25_000,
+        archives: [
+          {
+            assetIds: [assetStub.livePhotoStillAsset.id],
+            size: 25_000,
+          },
+        ],
+      });
+    });
   });
 });
