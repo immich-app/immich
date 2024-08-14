@@ -73,6 +73,8 @@ COPY --from=builder-armnn \
 FROM prod-${DEVICE} AS prod
 ARG DEVICE
 
+LABEL org.opencontainers.image.source="https://github.com/immich-app/immich"
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ]; then echo "libmimalloc2.0"; fi) && \
     apt-get autoremove -yqq && \

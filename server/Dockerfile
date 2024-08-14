@@ -43,6 +43,8 @@ RUN npm run build
 # prod build
 FROM ghcr.io/immich-app/base-server-prod:20240813@sha256:51537e98ac601aa8401604a6aa9421e94aa55e03c303f355cc5870142adcc471
 
+LABEL org.opencontainers.image.source="https://github.com/immich-app/immich"
+
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
