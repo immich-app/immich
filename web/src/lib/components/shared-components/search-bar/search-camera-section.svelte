@@ -52,7 +52,7 @@
 <div id="camera-selection">
   <p class="immich-form-label">{$t('camera').toUpperCase()}</p>
 
-  <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
+  <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">
       <Combobox
         label={$t('make')}

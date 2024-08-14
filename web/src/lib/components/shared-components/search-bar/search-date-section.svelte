@@ -12,7 +12,7 @@
   export let filters: SearchDateFilter;
 </script>
 
-<div id="date-range-selection" class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5">
+<div id="date-range-selection" class="grid grid-auto-fit-40 gap-5">
   <label class="immich-form-label" for="start-date">
     <span>{$t('start_date').toUpperCase()}</span>
     <DateInput
