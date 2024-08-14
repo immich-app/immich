@@ -13,7 +13,7 @@ part of openapi.api;
 class RatingResponse {
   /// Returns a new [RatingResponse] instance.
   RatingResponse({
-    required this.enabled,
+    this.enabled = false,
   });
 
   bool enabled;

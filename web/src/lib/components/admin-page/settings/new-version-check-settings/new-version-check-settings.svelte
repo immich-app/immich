@@ -21,6 +21,7 @@
       <div class="ml-4 mt-4">
         <SettingSwitch
           title={$t('admin.version_check_enabled_description')}
+          subtitle={$t('admin.version_check_implications')}
           bind:checked={config.newVersionCheck.enabled}
           {disabled}
         />

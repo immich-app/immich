@@ -15,7 +15,7 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException
 from fastapi.responses import ORJSONResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
-from pydantic.v1 import ValidationError
+from pydantic import ValidationError
 from starlette.formparsers import MultiPartParser
 
 from app.models import get_model_deps

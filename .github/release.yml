@@ -1,41 +1,29 @@
 changelog:
   categories:
-    - title: ⚠️ Breaking Changes
+    - title: 🚨 Breaking Changes
       labels:
         - breaking-change
 
-    - title: 🗄️ Server
+    - title: 🔒 Security
       labels:
-        - 🗄️server
+        - security
 
-    - title: 📱 Mobile
+    - title: 🚀 Features
       labels:
-        - 📱mobile
+        - feature
 
-    - title: 🖥️ Web
+    - title: 🌟 Enhancements
       labels:
-        - 🖥️web
+        - enhancement
 
-    - title: 🧠 Machine Learning
+    - title: 🐛 Bug fixes
       labels:
-        - 🧠machine-learning
+        - bugfix
 
-    - title: ⚡ CLI
-      labels:
-        - cli
-
-    - title: 📓 Documentation
+    - title: 📚 Documentation
       labels:
         - documentation
 
-    - title: 🔨 Maintenance
+    - title: 🌐 Translations
       labels:
-        - deployment
-        - dependencies
-        - renovate
-        - maintenance
-        - tech-debt
-
-    - title: Other changes
-      labels:
-        - "*"
+        - translation

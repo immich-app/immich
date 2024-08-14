@@ -87,7 +87,7 @@ class AvatarResponse {
 }
 
 class RatingResponse {
-  enabled!: boolean;
+  enabled: boolean = false;
 }
 
 class MemoryResponse {

@@ -45,7 +45,9 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-
+  import EditorPanel from './editor/editor-panel.svelte';
+  import CropArea from './editor/crop-tool/crop-area.svelte';
+  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
@@ -80,6 +82,7 @@
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
+  let isShowEditor = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
@@ -272,6 +275,12 @@
     await navigate({ targetRoute: 'current', assetId: null });
   };
 
+  const closeEditor = () => {
+    closeEditorCofirm(() => {
+      isShowEditor = false;
+    });
+  };
+
   const navigateAssetRandom = async () => {
     if (!assetStore) {
       return;
@@ -314,6 +323,13 @@
     e?.stopPropagation();
     dispatch(order);
   };
+
+  // const showEditorHandler = () => {
+  //   if (isShowActivity) {
+  //     isShowActivity = false;
+  //   }
+  //   isShowEditor = !isShowEditor;
+  // };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -383,6 +399,12 @@
 
     onAction?.(action);
   };
+
+  let selectedEditType: string = '';
+
+  function handleUpdateSelectedEditType(type: string) {
+    selectedEditType = type;
+  }
 </script>
 
 <svelte:document bind:fullscreenElement />
@@ -393,7 +415,7 @@
   use:focusTrap
 >
   <!-- Top navigation bar -->
-  {#if $slideshowState === SlideshowState.None}
+  {#if $slideshowState === SlideshowState.None && !isShowEditor}
     <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
@@ -419,7 +441,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
@@ -487,6 +509,8 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
+          {:else if isShowEditor && selectedEditType === 'crop'}
+            <CropArea {asset} />
           {:else}
             <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
           {/if}
@@ -516,13 +540,13 @@
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail}
+  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
@@ -530,6 +554,17 @@
       translate="yes"
     >
       <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
+    </div>
+  {/if}
+
+  {#if isShowEditor}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="editor-panel"
+      class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
     </div>
   {/if}
 
