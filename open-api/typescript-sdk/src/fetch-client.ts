@@ -391,7 +391,7 @@ export type UpdateAssetDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
-    orientation?: Orientation;
+    orientation?: ExifOrientation;
     rating?: number;
 };
 export type AssetMediaReplaceDto = {
@@ -3142,7 +3142,7 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     TranscodeVideo = "transcode-video"
 }
-export enum Orientation {
+export enum ExifOrientation {
     $1 = "1",
     $2 = "2",
     $3 = "3",

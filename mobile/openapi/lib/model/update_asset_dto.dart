@@ -71,7 +71,13 @@ class UpdateAssetDto {
   ///
   num? longitude;
 
-  UpdateAssetDtoOrientationEnum? orientation;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  ExifOrientation? orientation;
 
   /// Minimum value: 0
   /// Maximum value: 5
@@ -168,7 +174,7 @@ class UpdateAssetDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
-        orientation: UpdateAssetDtoOrientationEnum.fromJson(json[r'orientation']),
+        orientation: ExifOrientation.fromJson(json[r'orientation']),
         rating: num.parse('${json[r'rating']}'),
       );
     }
@@ -219,96 +225,4 @@ class UpdateAssetDto {
   static const requiredKeys = <String>{
   };
 }
-
-
-class UpdateAssetDtoOrientationEnum {
-  /// Instantiate a new enum with the provided [value].
-  const UpdateAssetDtoOrientationEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const n1 = UpdateAssetDtoOrientationEnum._(r'1');
-  static const n2 = UpdateAssetDtoOrientationEnum._(r'2');
-  static const n3 = UpdateAssetDtoOrientationEnum._(r'3');
-  static const n4 = UpdateAssetDtoOrientationEnum._(r'4');
-  static const n5 = UpdateAssetDtoOrientationEnum._(r'5');
-  static const n6 = UpdateAssetDtoOrientationEnum._(r'6');
-  static const n7 = UpdateAssetDtoOrientationEnum._(r'7');
-  static const n8 = UpdateAssetDtoOrientationEnum._(r'8');
-
-  /// List of all possible values in this [enum][UpdateAssetDtoOrientationEnum].
-  static const values = <UpdateAssetDtoOrientationEnum>[
-    n1,
-    n2,
-    n3,
-    n4,
-    n5,
-    n6,
-    n7,
-    n8,
-  ];
-
-  static UpdateAssetDtoOrientationEnum? fromJson(dynamic value) => UpdateAssetDtoOrientationEnumTypeTransformer().decode(value);
-
-  static List<UpdateAssetDtoOrientationEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UpdateAssetDtoOrientationEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UpdateAssetDtoOrientationEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [UpdateAssetDtoOrientationEnum] to String,
-/// and [decode] dynamic data back to [UpdateAssetDtoOrientationEnum].
-class UpdateAssetDtoOrientationEnumTypeTransformer {
-  factory UpdateAssetDtoOrientationEnumTypeTransformer() => _instance ??= const UpdateAssetDtoOrientationEnumTypeTransformer._();
-
-  const UpdateAssetDtoOrientationEnumTypeTransformer._();
-
-  String encode(UpdateAssetDtoOrientationEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a UpdateAssetDtoOrientationEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  UpdateAssetDtoOrientationEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'1': return UpdateAssetDtoOrientationEnum.n1;
-        case r'2': return UpdateAssetDtoOrientationEnum.n2;
-        case r'3': return UpdateAssetDtoOrientationEnum.n3;
-        case r'4': return UpdateAssetDtoOrientationEnum.n4;
-        case r'5': return UpdateAssetDtoOrientationEnum.n5;
-        case r'6': return UpdateAssetDtoOrientationEnum.n6;
-        case r'7': return UpdateAssetDtoOrientationEnum.n7;
-        case r'8': return UpdateAssetDtoOrientationEnum.n8;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [UpdateAssetDtoOrientationEnumTypeTransformer] instance.
-  static UpdateAssetDtoOrientationEnumTypeTransformer? _instance;
-}
-
 

@@ -207,45 +207,10 @@ export class MediaService {
             colorspace,
             quality: image.quality,
             processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-            angle: 0,
-            mirror: false,
+            ...this.decodeExifOrientation(
+              (asset.exifInfo?.orientation as ExifOrientation) ?? ExifOrientation.Horizontal,
+            ),
           };
-
-          if (asset.exifInfo?.orientation) {
-            switch (asset.exifInfo.orientation) {
-              case ExifOrientation.Horizontal:
-              case ExifOrientation.MirrorHorizontal: {
-                imageOptions.angle = 0;
-                break;
-              }
-              case ExifOrientation.Rotate180:
-              case ExifOrientation.MirrorVertical: {
-                imageOptions.angle = 180;
-                break;
-              }
-              case ExifOrientation.Rotate90CW:
-              case ExifOrientation.MirrorHorizontalRotate90CW: {
-                imageOptions.angle = 90;
-                break;
-              }
-              case ExifOrientation.MirrorHorizontalRotate270CW:
-              case ExifOrientation.Rotate270CW: {
-                imageOptions.angle = 270;
-                break;
-              }
-            }
-
-            if (
-              [
-                ExifOrientation.MirrorHorizontal,
-                ExifOrientation.MirrorVertical,
-                ExifOrientation.MirrorHorizontalRotate90CW,
-                ExifOrientation.MirrorHorizontalRotate270CW,
-              ].includes(asset.exifInfo.orientation as ExifOrientation)
-            ) {
-              imageOptions.mirror = true;
-            }
-          }
 
           const outputPath = useExtracted ? extractedPath : asset.originalPath;
           await this.mediaRepository.generateThumbnail(outputPath, path, imageOptions);
@@ -515,6 +480,41 @@ export class MediaService {
       // assume sRGB for images with no relevant metadata
       return true;
     }
+  }
+
+  private decodeExifOrientation(orientation: ExifOrientation) {
+    let angle;
+    switch (orientation) {
+      case ExifOrientation.Rotate180:
+      case ExifOrientation.MirrorVertical: {
+        angle = 180;
+        break;
+      }
+      case ExifOrientation.Rotate90CW:
+      case ExifOrientation.MirrorHorizontalRotate90CW: {
+        angle = 90;
+        break;
+      }
+      case ExifOrientation.MirrorHorizontalRotate270CW:
+      case ExifOrientation.Rotate270CW: {
+        angle = 270;
+        break;
+      }
+      case ExifOrientation.Horizontal:
+      case ExifOrientation.MirrorHorizontal:
+      default: {
+        angle = 0;
+        break;
+      }
+    }
+    const mirror = [
+      ExifOrientation.MirrorHorizontal,
+      ExifOrientation.MirrorVertical,
+      ExifOrientation.MirrorHorizontalRotate90CW,
+      ExifOrientation.MirrorHorizontalRotate270CW,
+    ].includes(orientation);
+
+    return { angle, mirror };
   }
 
   private parseBitrateToBps(bitrateString: string) {

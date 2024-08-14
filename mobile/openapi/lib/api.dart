@@ -129,6 +129,7 @@ part 'model/duplicate_response_dto.dart';
 part 'model/email_notifications_response.dart';
 part 'model/email_notifications_update.dart';
 part 'model/entity_type.dart';
+part 'model/exif_orientation.dart';
 part 'model/exif_response_dto.dart';
 part 'model/face_dto.dart';
 part 'model/facial_recognition_config.dart';

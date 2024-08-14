@@ -3,7 +3,6 @@ import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
-  IsIn,
   IsInt,
   IsLatitude,
   IsLongitude,
@@ -17,6 +16,7 @@ import {
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { AssetStats } from 'src/interfaces/asset.interface';
+import { ExifOrientation } from 'src/interfaces/metadata.interface';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
@@ -77,8 +77,9 @@ export class UpdateAssetDto extends UpdateAssetBase {
   description?: string;
 
   @Optional()
-  @IsIn(['1', '2', '3', '4', '5', '6', '7', '8'])
-  orientation?: string;
+  @ApiProperty({ enumName: 'ExifOrientation', enum: ExifOrientation })
+  @IsEnum(ExifOrientation)
+  orientation?: ExifOrientation;
 }
 
 export class RandomAssetsDto {

@@ -315,6 +315,8 @@ class ApiClient {
           return EmailNotificationsUpdate.fromJson(value);
         case 'EntityType':
           return EntityTypeTypeTransformer().decode(value);
+        case 'ExifOrientation':
+          return ExifOrientationTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'FaceDto':

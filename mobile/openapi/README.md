@@ -317,6 +317,7 @@ Class | Method | HTTP request | Description
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
  - [EntityType](doc//EntityType.md)
+ - [ExifOrientation](doc//ExifOrientation.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
