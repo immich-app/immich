@@ -110,7 +110,7 @@
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
-    {#if showEditorButton}
+    <!-- {#if showEditorButton}
       <CircleIconButton
         color="opaque"
         hideMobile={true}
@@ -118,7 +118,7 @@
         on:click={showEditorHandler}
         title={$t('editor')}
       />
-    {/if}
+    {/if} -->
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} />
