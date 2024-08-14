@@ -101,4 +101,17 @@ export class ExifEntity {
   /* Video info */
   @Column({ type: 'float8', nullable: true })
   fps?: number | null;
+
+  /* User crop options */
+  @Column({ type: 'integer', nullable: true })
+  cropLeft!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  cropTop!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  cropWidth!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  cropHeight!: number | null;
 }

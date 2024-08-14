@@ -26,6 +26,10 @@ export class ExifResponseDto {
   description?: string | null = null;
   projectionType?: string | null = null;
   rating?: number | null = null;
+  cropLeft?: number | null = null;
+  cropTop?: number | null = null;
+  cropWidth?: number | null = null;
+  cropHeight?: number | null = null;
 }
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {
@@ -52,6 +56,10 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
     description: entity.description,
     projectionType: entity.projectionType,
     rating: entity.rating,
+    cropLeft: entity.cropLeft,
+    cropTop: entity.cropTop,
+    cropWidth: entity.cropWidth,
+    cropHeight: entity.cropHeight,
   };
 }
 

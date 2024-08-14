@@ -18,6 +18,13 @@ export enum ExifOrientation {
   Rotate270CW = '8',
 }
 
+export interface CropOptions {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;

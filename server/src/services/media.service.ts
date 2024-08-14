@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
+import _ from 'lodash';
 import { dirname } from 'node:path';
 import {
   AudioCodec,
@@ -201,6 +202,10 @@ export class MediaService {
         try {
           const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
+          const { cropLeft, cropTop, cropWidth, cropHeight } = asset.exifInfo ?? {};
+          const crop = _.every([cropLeft, cropTop, cropWidth, cropHeight], _.isNumber)
+            ? { left: cropLeft!, top: cropTop!, width: cropWidth!, height: cropHeight! }
+            : undefined;
           const imageOptions = {
             format,
             size,
@@ -210,6 +215,7 @@ export class MediaService {
             ...this.decodeExifOrientation(
               (asset.exifInfo?.orientation as ExifOrientation) ?? ExifOrientation.Horizontal,
             ),
+            crop,
           };
 
           const outputPath = useExtracted ? extractedPath : asset.originalPath;

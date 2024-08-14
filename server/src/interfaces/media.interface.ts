@@ -1,14 +1,8 @@
 import { Writable } from 'node:stream';
 import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/config';
+import { CropOptions } from 'src/interfaces/metadata.interface';
 
 export const IMediaRepository = 'IMediaRepository';
-
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
 
 export interface ThumbnailOptions {
   size: number;

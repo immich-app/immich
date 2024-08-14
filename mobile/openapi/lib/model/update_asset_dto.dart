@@ -13,6 +13,7 @@ part of openapi.api;
 class UpdateAssetDto {
   /// Returns a new [UpdateAssetDto] instance.
   UpdateAssetDto({
+    this.crop,
     this.dateTimeOriginal,
     this.description,
     this.isArchived,
@@ -22,6 +23,14 @@ class UpdateAssetDto {
     this.orientation,
     this.rating,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Object? crop;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -91,6 +100,7 @@ class UpdateAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
+    other.crop == crop &&
     other.dateTimeOriginal == dateTimeOriginal &&
     other.description == description &&
     other.isArchived == isArchived &&
@@ -103,6 +113,7 @@ class UpdateAssetDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (crop == null ? 0 : crop!.hashCode) +
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
@@ -113,10 +124,15 @@ class UpdateAssetDto {
     (rating == null ? 0 : rating!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, orientation=$orientation, rating=$rating]';
+  String toString() => 'UpdateAssetDto[crop=$crop, dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, orientation=$orientation, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.crop != null) {
+      json[r'crop'] = this.crop;
+    } else {
+    //  json[r'crop'] = null;
+    }
     if (this.dateTimeOriginal != null) {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal;
     } else {
@@ -168,6 +184,7 @@ class UpdateAssetDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateAssetDto(
+        crop: mapValueOfType<Object>(json, r'crop'),
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),

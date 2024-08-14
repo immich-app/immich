@@ -44,7 +44,8 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { BoundingBox, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, IMediaRepository, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
+import { IMediaRepository, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
+import { CropOptions } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';

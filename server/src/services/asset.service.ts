@@ -158,8 +158,8 @@ export class AssetService {
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
 
-    const { description, dateTimeOriginal, latitude, longitude, orientation, rating, ...rest } = dto;
-    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, orientation, rating });
+    const { description, dateTimeOriginal, latitude, longitude, orientation, rating, crop, ...rest } = dto;
+    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, orientation, rating, crop });
 
     await this.assetRepository.update({ id, ...rest });
     const asset = await this.assetRepository.getById(id, {

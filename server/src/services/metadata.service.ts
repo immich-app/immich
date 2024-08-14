@@ -262,7 +262,7 @@ export class MetadataService implements OnEvents {
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
-    const { id, description, dateTimeOriginal, latitude, longitude, orientation, rating } = job;
+    const { id, description, dateTimeOriginal, latitude, longitude, orientation, rating, crop } = job;
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -278,6 +278,10 @@ export class MetadataService implements OnEvents {
         GPSLongitude: longitude,
         'Orientation#': _.isUndefined(orientation) ? undefined : Number.parseInt(orientation ?? '1', 10),
         Rating: rating,
+        CropLeft: crop?.left?.toString(),
+        CropTop: crop?.top.toString(),
+        CropWidth: crop?.width,
+        CropHeight: crop?.height,
       },
       _.isUndefined,
     );
@@ -472,6 +476,10 @@ export class MetadataService implements OnEvents {
       assetId: asset.id,
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
+      cropLeft: _.isUndefined(tags.CropLeft) ? null : Number.parseInt(tags.CropLeft),
+      cropTop: _.isUndefined(tags.CropTop) ? null : Number.parseInt(tags.CropTop),
+      cropWidth: validate(tags.CropWidth),
+      cropHeight: validate(tags.CropHeight),
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
       description: String(tags.ImageDescription || tags.Description || '').trim(),
       exifImageHeight: validate(tags.ImageHeight),

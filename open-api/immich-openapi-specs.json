@@ -8632,6 +8632,26 @@
             "nullable": true,
             "type": "string"
           },
+          "cropHeight": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
+          },
+          "cropLeft": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
+          },
+          "cropTop": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
+          },
+          "cropWidth": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
+          },
           "dateTimeOriginal": {
             "default": null,
             "format": "date-time",
@@ -11591,6 +11611,9 @@
       },
       "UpdateAssetDto": {
         "properties": {
+          "crop": {
+            "type": "object"
+          },
           "dateTimeOriginal": {
             "type": "string"
           },

@@ -385,6 +385,7 @@ export type AssetStatsResponseDto = {
     videos: number;
 };
 export type UpdateAssetDto = {
+    crop?: object;
     dateTimeOriginal?: string;
     description?: string;
     isArchived?: boolean;

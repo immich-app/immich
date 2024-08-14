@@ -1,3 +1,4 @@
+import { CropOptions } from 'src/interfaces/metadata.interface';
 import { EmailImageAttachment } from 'src/interfaces/notification.interface';
 
 export enum QueueName {
@@ -149,6 +150,7 @@ export interface ISidecarWriteJob extends IEntityJob {
   longitude?: number;
   orientation?: string;
   rating?: number;
+  crop?: CropOptions;
 }
 
 export interface IDeferrableJob extends IEntityJob {

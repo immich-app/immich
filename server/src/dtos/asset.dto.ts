@@ -16,7 +16,7 @@ import {
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType } from 'src/entities/asset.entity';
 import { AssetStats } from 'src/interfaces/asset.interface';
-import { ExifOrientation } from 'src/interfaces/metadata.interface';
+import { CropOptions, ExifOrientation } from 'src/interfaces/metadata.interface';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
@@ -80,6 +80,9 @@ export class UpdateAssetDto extends UpdateAssetBase {
   @ApiProperty({ enumName: 'ExifOrientation', enum: ExifOrientation })
   @IsEnum(ExifOrientation)
   orientation?: ExifOrientation;
+
+  @Optional()
+  crop?: CropOptions;
 }
 
 export class RandomAssetsDto {
