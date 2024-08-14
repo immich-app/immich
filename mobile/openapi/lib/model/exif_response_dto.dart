@@ -15,6 +15,10 @@ class ExifResponseDto {
   ExifResponseDto({
     this.city,
     this.country,
+    this.cropHeight,
+    this.cropLeft,
+    this.cropTop,
+    this.cropWidth,
     this.dateTimeOriginal,
     this.description,
     this.exifImageHeight,
@@ -40,6 +44,14 @@ class ExifResponseDto {
   String? city;
 
   String? country;
+
+  num? cropHeight;
+
+  num? cropLeft;
+
+  num? cropTop;
+
+  num? cropWidth;
 
   DateTime? dateTimeOriginal;
 
@@ -85,6 +97,10 @@ class ExifResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
     other.city == city &&
     other.country == country &&
+    other.cropHeight == cropHeight &&
+    other.cropLeft == cropLeft &&
+    other.cropTop == cropTop &&
+    other.cropWidth == cropWidth &&
     other.dateTimeOriginal == dateTimeOriginal &&
     other.description == description &&
     other.exifImageHeight == exifImageHeight &&
@@ -111,6 +127,10 @@ class ExifResponseDto {
     // ignore: unnecessary_parenthesis
     (city == null ? 0 : city!.hashCode) +
     (country == null ? 0 : country!.hashCode) +
+    (cropHeight == null ? 0 : cropHeight!.hashCode) +
+    (cropLeft == null ? 0 : cropLeft!.hashCode) +
+    (cropTop == null ? 0 : cropTop!.hashCode) +
+    (cropWidth == null ? 0 : cropWidth!.hashCode) +
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
@@ -133,7 +153,7 @@ class ExifResponseDto {
     (timeZone == null ? 0 : timeZone!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, rating=$rating, state=$state, timeZone=$timeZone]';
+  String toString() => 'ExifResponseDto[city=$city, country=$country, cropHeight=$cropHeight, cropLeft=$cropLeft, cropTop=$cropTop, cropWidth=$cropWidth, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, rating=$rating, state=$state, timeZone=$timeZone]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -146,6 +166,26 @@ class ExifResponseDto {
       json[r'country'] = this.country;
     } else {
     //  json[r'country'] = null;
+    }
+    if (this.cropHeight != null) {
+      json[r'cropHeight'] = this.cropHeight;
+    } else {
+    //  json[r'cropHeight'] = null;
+    }
+    if (this.cropLeft != null) {
+      json[r'cropLeft'] = this.cropLeft;
+    } else {
+    //  json[r'cropLeft'] = null;
+    }
+    if (this.cropTop != null) {
+      json[r'cropTop'] = this.cropTop;
+    } else {
+    //  json[r'cropTop'] = null;
+    }
+    if (this.cropWidth != null) {
+      json[r'cropWidth'] = this.cropWidth;
+    } else {
+    //  json[r'cropWidth'] = null;
     }
     if (this.dateTimeOriginal != null) {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
@@ -260,6 +300,18 @@ class ExifResponseDto {
       return ExifResponseDto(
         city: mapValueOfType<String>(json, r'city'),
         country: mapValueOfType<String>(json, r'country'),
+        cropHeight: json[r'cropHeight'] == null
+            ? null
+            : num.parse('${json[r'cropHeight']}'),
+        cropLeft: json[r'cropLeft'] == null
+            ? null
+            : num.parse('${json[r'cropLeft']}'),
+        cropTop: json[r'cropTop'] == null
+            ? null
+            : num.parse('${json[r'cropTop']}'),
+        cropWidth: json[r'cropWidth'] == null
+            ? null
+            : num.parse('${json[r'cropWidth']}'),
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
         description: mapValueOfType<String>(json, r'description'),
         exifImageHeight: json[r'exifImageHeight'] == null

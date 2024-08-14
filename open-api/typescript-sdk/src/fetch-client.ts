@@ -146,6 +146,10 @@ export type AlbumUserResponseDto = {
 export type ExifResponseDto = {
     city?: string | null;
     country?: string | null;
+    cropHeight?: number | null;
+    cropLeft?: number | null;
+    cropTop?: number | null;
+    cropWidth?: number | null;
     dateTimeOriginal?: string | null;
     description?: string | null;
     exifImageHeight?: number | null;
