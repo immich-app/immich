@@ -324,12 +324,12 @@
     dispatch(order);
   };
 
-  const showEditorHandler = () => {
-    if (isShowActivity) {
-      isShowActivity = false;
-    }
-    isShowEditor = !isShowEditor;
-  };
+  // const showEditorHandler = () => {
+  //   if (isShowActivity) {
+  //     isShowActivity = false;
+  //   }
+  //   isShowEditor = !isShowEditor;
+  // };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -428,7 +428,6 @@
         onCopyImage={copyImage}
         onAction={handleAction}
         onRunJob={handleRunJob}
-        {showEditorHandler}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
