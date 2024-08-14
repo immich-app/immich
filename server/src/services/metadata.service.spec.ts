@@ -934,6 +934,7 @@ describe(MetadataService.name, () => {
       const description = 'this is a description';
       const gps = 12;
       const date = '2023-11-22T04:56:12.196Z';
+      const orientation = 6;
 
       assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
       await expect(
@@ -943,6 +944,7 @@ describe(MetadataService.name, () => {
           latitude: gps,
           longitude: gps,
           dateTimeOriginal: date,
+          orientation: orientation.toString(),
         }),
       ).resolves.toBe(JobStatus.SUCCESS);
       expect(metadataMock.writeTags).toHaveBeenCalledWith(assetStub.sidecar.sidecarPath, {
@@ -951,6 +953,7 @@ describe(MetadataService.name, () => {
         DateTimeOriginal: date,
         GPSLatitude: gps,
         GPSLongitude: gps,
+        'Orientation#': orientation,
       });
     });
   });

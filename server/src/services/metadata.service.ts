@@ -276,7 +276,7 @@ export class MetadataService implements OnEvents {
         DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
-        'Orientation#': Number.parseInt(orientation ?? '1', 10),
+        'Orientation#': _.isUndefined(orientation) ? undefined : Number.parseInt(orientation ?? '1', 10),
         Rating: rating,
       },
       _.isUndefined,

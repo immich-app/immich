@@ -297,6 +297,8 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.SRGB,
         processInvalidImages: false,
+        angle: 0,
+        mirror: false,
       });
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
     });
@@ -328,6 +330,8 @@ describe(MediaService.name, () => {
           quality: 80,
           colorspace: Colorspace.P3,
           processInvalidImages: false,
+          angle: 0,
+          mirror: false,
         },
       );
       expect(assetMock.update).toHaveBeenCalledWith({
@@ -471,6 +475,8 @@ describe(MediaService.name, () => {
           quality: 80,
           colorspace: Colorspace.SRGB,
           processInvalidImages: false,
+          angle: 0,
+          mirror: false,
         });
         expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
       },
@@ -502,6 +508,8 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
+        angle: 0,
+        mirror: false,
       },
     );
     expect(assetMock.update).toHaveBeenCalledWith({
@@ -529,6 +537,8 @@ describe(MediaService.name, () => {
           quality: 80,
           colorspace: Colorspace.P3,
           processInvalidImages: false,
+          angle: 0,
+          mirror: false,
         },
       ],
     ]);
@@ -554,6 +564,8 @@ describe(MediaService.name, () => {
           quality: 80,
           colorspace: Colorspace.P3,
           processInvalidImages: false,
+          angle: 0,
+          mirror: false,
         },
       ],
     ]);
@@ -577,6 +589,8 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
+        angle: 0,
+        mirror: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
@@ -598,6 +612,8 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
+        angle: 0,
+        mirror: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
@@ -619,6 +635,8 @@ describe(MediaService.name, () => {
         quality: 80,
         colorspace: Colorspace.P3,
         processInvalidImages: true,
+        angle: 0,
+        mirror: false,
       },
     );
     expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
