@@ -384,7 +384,7 @@
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
-              <p>{$locale ? `ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` : ''}</p>
+              <p>{$locale ? `ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` : `ƒ/${asset.exifInfo.fNumber}`}</p>
             {/if}
 
             {#if asset.exifInfo.exposureTime}
