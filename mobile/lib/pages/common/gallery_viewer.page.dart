@@ -112,9 +112,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (index < totalAssets.value && index >= 0) {
           final asset = loadAsset(index);
           await precacheImage(
-            ImmichImage.imageProvider(
-              asset: asset,
-            ),
+            ImmichImage.imageProvider(asset: asset),
             context,
             onError: onError,
           );
@@ -321,9 +319,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final a =
                     index == currentIndex.value ? asset : loadAsset(index);
 
-                final ImageProvider provider = ImmichImage.imageProvider(
-                  asset: a,
-                );
+                final ImageProvider provider =
+                    ImmichImage.imageProvider(asset: a);
 
                 if (a.isImage && !isPlayingVideo.value) {
                   return PhotoViewGalleryPageOptions(
