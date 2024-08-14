@@ -208,7 +208,7 @@ export class MediaService {
             quality: image.quality,
             processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
             angle: 0,
-            mirror: false
+            mirror: false,
           };
 
           if (asset.exifInfo?.orientation) {
@@ -231,12 +231,14 @@ export class MediaService {
                 break;
             }
 
-            if ([
-              ExifOrientation.MirrorHorizontal,
-              ExifOrientation.MirrorVertical,
-              ExifOrientation.MirrorHorizontalRotate90CW,
-              ExifOrientation.MirrorHorizontalRotate270CW,
-            ].includes(asset.exifInfo.orientation as ExifOrientation)) {
+            if (
+              [
+                ExifOrientation.MirrorHorizontal,
+                ExifOrientation.MirrorVertical,
+                ExifOrientation.MirrorHorizontalRotate90CW,
+                ExifOrientation.MirrorHorizontalRotate270CW,
+              ].includes(asset.exifInfo.orientation as ExifOrientation)
+            ) {
               imageOptions.mirror = true;
             }
           }
