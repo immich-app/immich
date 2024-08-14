@@ -403,7 +403,11 @@ SELECT
   "exif"."colorspace" AS "exif_colorspace",
   "exif"."bitsPerSample" AS "exif_bitsPerSample",
   "exif"."rating" AS "exif_rating",
-  "exif"."fps" AS "exif_fps"
+  "exif"."fps" AS "exif_fps",
+  "exif"."cropLeft" AS "exif_cropLeft",
+  "exif"."cropTop" AS "exif_cropTop",
+  "exif"."cropWidth" AS "exif_cropWidth",
+  "exif"."cropHeight" AS "exif_cropHeight"
 FROM
   "assets" "asset"
   INNER JOIN "exif" "exif" ON "exif"."assetId" = "asset"."id"

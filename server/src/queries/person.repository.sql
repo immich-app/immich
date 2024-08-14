@@ -323,7 +323,11 @@ FROM
       "AssetEntity__AssetEntity_exifInfo"."colorspace" AS "AssetEntity__AssetEntity_exifInfo_colorspace",
       "AssetEntity__AssetEntity_exifInfo"."bitsPerSample" AS "AssetEntity__AssetEntity_exifInfo_bitsPerSample",
       "AssetEntity__AssetEntity_exifInfo"."rating" AS "AssetEntity__AssetEntity_exifInfo_rating",
-      "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps"
+      "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps",
+      "AssetEntity__AssetEntity_exifInfo"."cropLeft" AS "AssetEntity__AssetEntity_exifInfo_cropLeft",
+      "AssetEntity__AssetEntity_exifInfo"."cropTop" AS "AssetEntity__AssetEntity_exifInfo_cropTop",
+      "AssetEntity__AssetEntity_exifInfo"."cropWidth" AS "AssetEntity__AssetEntity_exifInfo_cropWidth",
+      "AssetEntity__AssetEntity_exifInfo"."cropHeight" AS "AssetEntity__AssetEntity_exifInfo_cropHeight"
     FROM
       "assets" "AssetEntity"
       LEFT JOIN "asset_faces" "AssetEntity__AssetEntity_faces" ON "AssetEntity__AssetEntity_faces"."assetId" = "AssetEntity"."id"
