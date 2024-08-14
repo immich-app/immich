@@ -214,21 +214,25 @@ export class MediaService {
           if (asset.exifInfo?.orientation) {
             switch (asset.exifInfo.orientation) {
               case ExifOrientation.Horizontal:
-              case ExifOrientation.MirrorHorizontal:
+              case ExifOrientation.MirrorHorizontal: {
                 imageOptions.angle = 0;
                 break;
+              }
               case ExifOrientation.Rotate180:
-              case ExifOrientation.MirrorVertical:
+              case ExifOrientation.MirrorVertical: {
                 imageOptions.angle = 180;
                 break;
+              }
               case ExifOrientation.Rotate90CW:
-              case ExifOrientation.MirrorHorizontalRotate90CW:
+              case ExifOrientation.MirrorHorizontalRotate90CW: {
                 imageOptions.angle = 90;
                 break;
+              }
               case ExifOrientation.MirrorHorizontalRotate270CW:
-              case ExifOrientation.Rotate270CW:
+              case ExifOrientation.Rotate270CW: {
                 imageOptions.angle = 270;
                 break;
+              }
             }
 
             if (

@@ -391,7 +391,7 @@ export type UpdateAssetDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
-    orientation?: string;
+    orientation?: Orientation;
     rating?: number;
 };
 export type AssetMediaReplaceDto = {
@@ -3141,6 +3141,16 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     RefreshMetadata = "refresh-metadata",
     TranscodeVideo = "transcode-video"
+}
+export enum Orientation {
+    $1 = "1",
+    $2 = "2",
+    $3 = "3",
+    $4 = "4",
+    $5 = "5",
+    $6 = "6",
+    $7 = "7",
+    $8 = "8"
 }
 export enum AssetMediaSize {
     Preview = "preview",
