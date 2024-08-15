@@ -29,16 +29,16 @@
           <SettingSwitch
             title={$t('admin.import_faces_metadata_setting')}
             subtitle={$t('admin.import_faces_metadata_setting_description')}
-            bind:checked={config.importFaces.enabled}
+            bind:checked={config.metadata.faces.import}
             {disabled}
           />
         </div>
       </SettingAccordion>
 
       <SettingButtonsRow
-        onReset={(options) => onReset({ ...options, configKeys: ['importFaces'] })}
-        onSave={() => onSave({ importFaces: config.importFaces })}
-        showResetToDefault={!isEqual(savedConfig.importFaces, defaultConfig.importFaces)}
+        onReset={(options) => onReset({ ...options, configKeys: ['metadata'] })}
+        onSave={() => onSave({ metadata: config.metadata })}
+        showResetToDefault={!isEqual(savedConfig.metadata.faces.import, defaultConfig.metadata.faces.import)}
         {disabled}
       />
     </form>
