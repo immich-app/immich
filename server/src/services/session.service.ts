@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
+import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';

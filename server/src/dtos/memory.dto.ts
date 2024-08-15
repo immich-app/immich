@@ -2,7 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { MemoryEntity, MemoryType } from 'src/entities/memory.entity';
+import { MemoryEntity } from 'src/entities/memory.entity';
+import { MemoryType } from 'src/enum';
 import { ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class MemoryBaseDto {

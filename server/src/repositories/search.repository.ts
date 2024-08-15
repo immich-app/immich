@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { getVectorExtension } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
+import { AssetType } from 'src/enum';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {

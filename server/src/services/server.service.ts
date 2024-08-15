@@ -14,7 +14,7 @@ import {
   ServerStorageResponseDto,
   UsageByUserDto,
 } from 'src/dtos/server.dto';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { OnEvents } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';

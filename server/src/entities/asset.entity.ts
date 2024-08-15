@@ -9,6 +9,7 @@ import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AssetType } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -174,11 +175,4 @@ export class AssetEntity {
   @Index('IDX_assets_duplicateId')
   @Column({ type: 'uuid', nullable: true })
   duplicateId!: string | null;
-}
-
-export enum AssetType {
-  IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
-  AUDIO = 'AUDIO',
-  OTHER = 'OTHER',
 }

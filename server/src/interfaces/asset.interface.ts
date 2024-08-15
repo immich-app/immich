@@ -1,7 +1,7 @@
-import { AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { AssetOrder, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';

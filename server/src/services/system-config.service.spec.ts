@@ -13,7 +13,7 @@ import {
   VideoContainer,
   defaults,
 } from 'src/config';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';

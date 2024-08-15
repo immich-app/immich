@@ -1,6 +1,7 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { SharedLinkType } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -61,14 +62,4 @@ export class SharedLinkEntity {
 
   @Column({ type: 'varchar', nullable: true })
   albumId!: string | null;
-}
-
-export enum SharedLinkType {
-  ALBUM = 'ALBUM',
-
-  /**
-   * Individual asset
-   * or group of assets that are not in an album
-   */
-  INDIVIDUAL = 'INDIVIDUAL',
 }

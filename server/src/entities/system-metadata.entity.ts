@@ -1,4 +1,5 @@
 import { SystemConfig } from 'src/config';
+import { SystemMetadataKey } from 'src/enum';
 import { Column, DeepPartial, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_metadata')
@@ -8,15 +9,6 @@ export class SystemMetadataEntity<T extends keyof SystemMetadata = SystemMetadat
 
   @Column({ type: 'jsonb' })
   value!: SystemMetadata[T];
-}
-
-export enum SystemMetadataKey {
-  REVERSE_GEOCODING_STATE = 'reverse-geocoding-state',
-  FACIAL_RECOGNITION_STATE = 'facial-recognition-state',
-  ADMIN_ONBOARDING = 'admin-onboarding',
-  SYSTEM_CONFIG = 'system-config',
-  VERSION_CHECK_STATE = 'version-check-state',
-  LICENSE = 'license',
 }
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };

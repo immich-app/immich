@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { mapUserAdmin } from 'src/dtos/user.dto';
-import { UserStatus } from 'src/entities/user.entity';
+import { UserStatus } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
