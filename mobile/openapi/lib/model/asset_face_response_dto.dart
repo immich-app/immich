@@ -40,7 +40,13 @@ class AssetFaceResponseDto {
 
   PersonResponseDto? person;
 
-  String? sourceType;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? sourceType;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceResponseDto &&
@@ -108,7 +114,7 @@ class AssetFaceResponseDto {
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         person: PersonResponseDto.fromJson(json[r'person']),
-        sourceType: mapValueOfType<String>(json, r'sourceType'),
+        sourceType: num.parse('${json[r'sourceType']}'),
       );
     }
     return null;
