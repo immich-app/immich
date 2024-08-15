@@ -38,9 +38,7 @@ FROM python:3.11-slim-bookworm@sha256:1c0c54195c7c7b46e61a2f3b906e9b55a8165f2038
 
 FROM prod-cpu AS prod-openvino
 
-COPY scripts/configure-apt.sh ./
-RUN ./configure-apt.sh && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-core_1.0.17193.4_amd64.deb && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-opencl_1.0.17193.4_amd64.deb && \
@@ -49,7 +47,6 @@ RUN ./configure-apt.sh && \
     wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/libigdgmm12_22.3.20_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
-    rm configure-apt.sh && \
     apt-get remove wget -yqq && \
     rm -rf /var/lib/apt/lists/*
 
