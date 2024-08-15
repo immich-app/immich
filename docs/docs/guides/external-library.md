@@ -7,7 +7,7 @@ in a directory on the same machine.
 # Mount the directory into the containers.
 
 Edit `docker-compose.yml` to add one or more new mount points in the section `immich-server:` under `volumes:`.
-If you want Immich to be able to delete the images in the external library, remove `:ro` from the end of the mount point.
+If you want Immich to be able to delete the images in the external library or add metadata ([XMP sidecars](/docs/features/xmp-sidecars)), remove `:ro` from the end of the mount point.
 
 ```diff
 immich-server:
