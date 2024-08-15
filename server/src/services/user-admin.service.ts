@@ -45,7 +45,7 @@ export class UserAdminService {
     const { notify, ...rest } = dto;
     const user = await this.userCore.createUser(rest);
 
-    await this.eventRepository.emit('onUserSignupEvent', {
+    await this.eventRepository.emit('onUserSignup', {
       notify: !!notify,
       id: user.id,
       tempPassword: user.shouldChangePassword ? rest.password : undefined,

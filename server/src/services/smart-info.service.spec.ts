@@ -49,7 +49,7 @@ describe(SmartInfoService.name, () => {
   describe('onConfigValidateEvent', () => {
     it('should allow a valid model', () => {
       expect(() =>
-        sut.onConfigValidateEvent({
+        sut.onConfigValidate({
           newConfig: { machineLearning: { clip: { modelName: 'ViT-B-16__openai' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -58,7 +58,7 @@ describe(SmartInfoService.name, () => {
 
     it('should allow including organization', () => {
       expect(() =>
-        sut.onConfigValidateEvent({
+        sut.onConfigValidate({
           newConfig: { machineLearning: { clip: { modelName: 'immich-app/ViT-B-16__openai' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -67,7 +67,7 @@ describe(SmartInfoService.name, () => {
 
     it('should fail for an unsupported model', () => {
       expect(() =>
-        sut.onConfigValidateEvent({
+        sut.onConfigValidate({
           newConfig: { machineLearning: { clip: { modelName: 'test-model' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -77,7 +77,7 @@ describe(SmartInfoService.name, () => {
 
   describe('onBootstrapEvent', () => {
     it('should return if not microservices', async () => {
-      await sut.onBootstrapEvent('api');
+      await sut.onBootstrap('api');
 
       expect(systemMock.get).not.toHaveBeenCalled();
       expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
@@ -92,7 +92,7 @@ describe(SmartInfoService.name, () => {
     it('should return if machine learning is disabled', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
-      await sut.onBootstrapEvent('microservices');
+      await sut.onBootstrap('microservices');
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
@@ -107,7 +107,7 @@ describe(SmartInfoService.name, () => {
     it('should return if model and DB dimension size are equal', async () => {
       searchMock.getDimensionSize.mockResolvedValue(512);
 
-      await sut.onBootstrapEvent('microservices');
+      await sut.onBootstrap('microservices');
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -123,7 +123,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(768);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.onBootstrapEvent('microservices');
+      await sut.onBootstrap('microservices');
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -138,7 +138,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(768);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: true });
 
-      await sut.onBootstrapEvent('microservices');
+      await sut.onBootstrap('microservices');
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -154,7 +154,7 @@ describe(SmartInfoService.name, () => {
     it('should return if machine learning is disabled', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
-      await sut.onConfigUpdateEvent({
+      await sut.onConfigUpdate({
         newConfig: systemConfigStub.machineLearningDisabled as SystemConfig,
         oldConfig: systemConfigStub.machineLearningDisabled as SystemConfig,
       });
@@ -172,7 +172,7 @@ describe(SmartInfoService.name, () => {
     it('should return if model and DB dimension size are equal', async () => {
       searchMock.getDimensionSize.mockResolvedValue(512);
 
-      await sut.onConfigUpdateEvent({
+      await sut.onConfigUpdate({
         newConfig: {
           machineLearning: { clip: { modelName: 'ViT-B-16__openai', enabled: true }, enabled: true },
         } as SystemConfig,
@@ -194,7 +194,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(512);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.onConfigUpdateEvent({
+      await sut.onConfigUpdate({
         newConfig: {
           machineLearning: { clip: { modelName: 'ViT-L-14-quickgelu__dfn2b', enabled: true }, enabled: true },
         } as SystemConfig,
@@ -215,7 +215,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(512);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.onConfigUpdateEvent({
+      await sut.onConfigUpdate({
         newConfig: {
           machineLearning: { clip: { modelName: 'ViT-B-32__openai', enabled: true }, enabled: true },
         } as SystemConfig,
@@ -237,7 +237,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(512);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: true });
 
-      await sut.onConfigUpdateEvent({
+      await sut.onConfigUpdate({
         newConfig: {
           machineLearning: { clip: { modelName: 'ViT-B-32__openai', enabled: true }, enabled: true },
         } as SystemConfig,

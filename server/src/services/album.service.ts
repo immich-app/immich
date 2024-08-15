@@ -187,7 +187,7 @@ export class AlbumService {
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
       });
 
-      await this.eventRepository.emit('onAlbumUpdateEvent', { id, updatedBy: auth.user.id });
+      await this.eventRepository.emit('onAlbumUpdate', { id, updatedBy: auth.user.id });
     }
 
     return results;
@@ -235,7 +235,7 @@ export class AlbumService {
       }
 
       await this.albumUserRepository.create({ userId: userId, albumId: id, role });
-      await this.eventRepository.emit('onAlbumInviteEvent', { id, userId });
+      await this.eventRepository.emit('onAlbumInvite', { id, userId });
     }
 
     return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);

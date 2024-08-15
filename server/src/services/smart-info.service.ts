@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEmit } from 'src/decorators';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { OnEvents, SystemConfigUpdateEvent } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -21,7 +22,7 @@ import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class SmartInfoService implements OnEvents {
+export class SmartInfoService {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -37,7 +38,8 @@ export class SmartInfoService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async onBootstrapEvent(app: 'api' | 'microservices') {
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(app: ArgOf<'onBootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -46,7 +48,8 @@ export class SmartInfoService implements OnEvents {
     await this.init(config);
   }
 
-  onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
+  @OnEmit({ event: 'onConfigValidate' })
+  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
     try {
       getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
     } catch {
@@ -56,7 +59,8 @@ export class SmartInfoService implements OnEvents {
     }
   }
 
-  async onConfigUpdateEvent({ oldConfig, newConfig }: SystemConfigUpdateEvent) {
+  @OnEmit({ event: 'onConfigUpdate' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'onConfigUpdate'>) {
     await this.init(newConfig, oldConfig);
   }
 

@@ -3,6 +3,7 @@ import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEmit } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
@@ -16,7 +17,6 @@ import {
 } from 'src/dtos/server.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { OnEvents } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -27,7 +27,7 @@ import { mimeTypes } from 'src/utils/mime-types';
 import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class ServerService implements OnEvents {
+export class ServerService {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -42,7 +42,8 @@ export class ServerService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async onBootstrapEvent(): Promise<void> {
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(): Promise<void> {
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {
       await this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, {
