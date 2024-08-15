@@ -773,7 +773,7 @@ describe(MetadataService.name, () => {
 
     it('should skip importing metadata when the feature is disabled', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
-      systemMock.get.mockResolvedValue({ importFaces: { enabled: false } });
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: false } } });
       metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(personMock.getDistinctNames).not.toHaveBeenCalled();
@@ -781,7 +781,7 @@ describe(MetadataService.name, () => {
 
     it('should skip importing metadata face for assets without tags.RegionInfo', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
-      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
       metadataMock.readTags.mockResolvedValue(metadataStub.empty);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(personMock.getDistinctNames).not.toHaveBeenCalled();
@@ -789,7 +789,7 @@ describe(MetadataService.name, () => {
 
     it('should skip importing faces without name', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
-      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
       metadataMock.readTags.mockResolvedValue(metadataStub.withFaceNoName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.create.mockResolvedValue([]);
@@ -803,7 +803,7 @@ describe(MetadataService.name, () => {
 
     it('should skip importing faces with empty name', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
-      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
       metadataMock.readTags.mockResolvedValue(metadataStub.withFaceEmptyName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.create.mockResolvedValue([]);
@@ -817,7 +817,7 @@ describe(MetadataService.name, () => {
 
     it('should apply metadata face tags creating new persons', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
-      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
       metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.create.mockResolvedValue([personStub.withName]);
@@ -856,7 +856,7 @@ describe(MetadataService.name, () => {
 
     it('should assign metadata face tags to existing persons', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
-      systemMock.get.mockResolvedValue({ importFaces: { enabled: true } });
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
       metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
       personMock.create.mockResolvedValue([]);

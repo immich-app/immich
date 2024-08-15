@@ -210,7 +210,7 @@ export class MetadataService implements OnEvents {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
-    const { importFaces } = await this.configCore.getConfig({ withCache: true });
+    const { metadata } = await this.configCore.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -246,7 +246,7 @@ export class MetadataService implements OnEvents {
       metadataExtractedAt: new Date(),
     });
 
-    if (isFaceImportEnabled(importFaces)) {
+    if (isFaceImportEnabled(metadata)) {
       await this.applyTaggedFaces(asset, tags);
     }
 
