@@ -100,11 +100,9 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
 
-  const queue = new Queue<string[], AssetBulkUploadCheckResults>(
-    async (filepaths: string[]) => {
-      const dto = await Promise.all(
-        filepaths.map(async (filepath) => ({ id: filepath, checksum: await sha1(filepath) })),
-      );
+  const queue = new Queue<string, AssetBulkUploadCheckResults>(
+    async (filepath: string) => {
+      const dto = [{ id: filepath, checksum: await sha1(filepath) }];
       const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: dto } });
       const results = response.results as AssetBulkUploadCheckResults;
       for (const { id: filepath, assetId, action } of results) {
@@ -115,15 +113,17 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
           duplicates.push({ id: assetId as string, filepath });
         }
       }
-      progressBar.increment(filepaths.length);
+      progressBar.increment();
       return results;
     },
     { concurrency, retry: 3 },
   );
 
-  for (const items of chunk(files, concurrency)) {
-    await queue.push(items);
-  }
+  await Promise.all(
+    files.map(async (item) => {
+      await queue.push(item);
+    }),
+  );
 
   await queue.drained();
 
@@ -201,9 +201,11 @@ export const uploadFiles = async (files: string[], { dryRun, concurrency }: Uplo
     { concurrency, retry: 3 },
   );
 
-  for (const filepath of files) {
-    await queue.push(filepath);
-  }
+  await Promise.all(
+    files.map(async (item) => {
+      await queue.push(item);
+    }),
+  );
 
   await queue.drained();
 
