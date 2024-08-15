@@ -24,7 +24,7 @@
 
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
-    android:largeHeap="true">
+    android:largeHeap="true" android:enableOnBackInvokedCallback="true">
 
     <service
       android:name="androidx.work.impl.foreground.SystemForegroundService"
@@ -35,7 +35,7 @@
 
     <meta-data
       android:name="io.flutter.embedding.android.EnableImpeller"
-      android:value="false" />
+      android:value="true" />
 
     <meta-data
       android:name="com.google.firebase.messaging.default_notification_icon"
@@ -82,10 +82,6 @@
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove" />
   </application>
-
-
-
-
 
 
   <queries>
