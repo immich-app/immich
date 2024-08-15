@@ -27,7 +27,6 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
       } else {
         // Android 33 need photo & video
         final photos = await Permission.photos.request();
-
         if (!photos.isGranted) {
           // Don't ask twice for the same permission
           state = photos;
