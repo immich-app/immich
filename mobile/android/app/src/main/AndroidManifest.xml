@@ -1,8 +1,37 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="app.alextran.immich"
   xmlns:tools="http://schemas.android.com/tools">
+
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+  <uses-permission android:name="android.permission.MANAGE_MEDIA" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+
+  <!-- Foreground service permission -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
     android:largeHeap="true">
+
+    <service
+      android:name="androidx.work.impl.foreground.SystemForegroundService"
+      android:directBootAware="false"
+      android:enabled="@bool/enable_system_foreground_service_default"
+      android:exported="false"
+      android:foregroundServiceType="dataSync|shortService" />
 
     <meta-data
       android:name="io.flutter.embedding.android.EnableImpeller"
@@ -51,23 +80,13 @@
     <provider
       android:name="androidx.startup.InitializationProvider"
       android:authorities="${applicationId}.androidx-startup"
-      tools:node="remove"></provider>
+      tools:node="remove" />
   </application>
 
 
-  <uses-permission android:name="android.permission.INTERNET" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-    android:maxSdkVersion="32" />
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
-  <uses-permission android:name="android.permission.MANAGE_MEDIA" />
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+
+
 
   <queries>
     <intent>
