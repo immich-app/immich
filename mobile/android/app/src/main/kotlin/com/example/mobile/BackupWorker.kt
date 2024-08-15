@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -129,7 +130,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
   private fun waitOnSetForegroundAsync() {
     val fgFuture = this.fgFuture
-    if (fgFuture != null && !fgFuture.isCancelled() && !fgFuture.isDone()) {
+    if (fgFuture != null && !fgFuture.isCancelled && !fgFuture.isDone) {
       try {
         fgFuture.get(500, TimeUnit.MILLISECONDS)
       } catch (e: Exception) {
@@ -149,6 +150,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     waitOnSetForegroundAsync()
   }
 
+  @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   override fun onMethodCall(call: MethodCall, r: MethodChannel.Result) {
     when (call.method) {
       "initialized" -> {
@@ -233,8 +235,13 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
   private fun showInfo(notification: Notification, isDetail: Boolean = false) {
     val id = if (isDetail) NOTIFICATION_DETAIL_ID else NOTIFICATION_ID
+
     if (isIgnoringBatteryOptimizations && !isDetail) {
-      fgFuture = setForegroundAsync(ForegroundInfo(id, notification))
+      fgFuture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        setForegroundAsync(ForegroundInfo(id, notification, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE))
+      } else {
+        setForegroundAsync(ForegroundInfo(id, notification))
+      }
     } else {
       notificationManager.notify(id, notification)
     }

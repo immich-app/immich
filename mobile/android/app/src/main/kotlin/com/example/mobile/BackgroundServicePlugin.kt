@@ -51,7 +51,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
           .putLong(BackupWorker.SHARED_PREF_CALLBACK_KEY, args[0] as Long)
           .putString(BackupWorker.SHARED_PREF_NOTIFICATION_TITLE, args[1] as String)
           .apply()
-        ContentObserverWorker.enable(ctx, immediate = args.get(2) as Boolean)
+        ContentObserverWorker.enable(ctx, immediate = args[2] as Boolean)
         result.success(true)
       }
 
@@ -96,9 +96,9 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             var len = 0
             try {
               val file = FileInputStream(path)
-              file.use { file ->
+              file.use { assetFile ->
                 while (true) {
-                  len = file.read(buf)
+                  len = assetFile.read(buf)
                   if (len != BUFFER_SIZE) break
                   digest.update(buf)
                 }

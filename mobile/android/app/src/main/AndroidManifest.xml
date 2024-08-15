@@ -22,10 +22,16 @@
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
-
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
     android:largeHeap="true">
+
+    <service
+      android:name="androidx.work.impl.foreground.SystemForegroundService"
+      android:directBootAware="false"
+      android:enabled="@bool/enable_system_foreground_service_default"
+      android:exported="false"
+      android:foregroundServiceType="dataSync|shortService" />
 
     <meta-data
       android:name="io.flutter.embedding.android.EnableImpeller"
