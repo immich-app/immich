@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
+import { UserPreferences } from 'src/entities/user-metadata.entity';
+import { UserAvatarColor } from 'src/enum';
 import { Optional, ValidateBoolean } from 'src/validation';
 
 class AvatarUpdate {

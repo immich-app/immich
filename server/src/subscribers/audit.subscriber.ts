@@ -1,6 +1,7 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AuditEntity, DatabaseAction, EntityType } from 'src/entities/audit.entity';
+import { AuditEntity } from 'src/entities/audit.entity';
+import { DatabaseAction, EntityType } from 'src/enum';
 import { EntitySubscriberInterface, EventSubscriber, RemoveEvent } from 'typeorm';
 
 @EventSubscriber()

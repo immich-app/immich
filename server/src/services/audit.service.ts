@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import {
   AuditDeletesDto,
@@ -13,8 +13,8 @@ import {
   PathEntityType,
 } from 'src/dtos/audit.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DatabaseAction } from 'src/entities/audit.entity';
 import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
+import { DatabaseAction, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';

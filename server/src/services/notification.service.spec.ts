@@ -1,6 +1,6 @@
 import { defaults, SystemConfig } from 'src/config';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
-import { UserMetadataKey } from 'src/entities/user-metadata.entity';
+import { UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';

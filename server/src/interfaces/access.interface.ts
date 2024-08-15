@@ -1,4 +1,4 @@
-import { AlbumUserRole } from 'src/entities/album-user.entity';
+import { AlbumUserRole } from 'src/enum';
 
 export const IAccessRepository = 'IAccessRepository';
 
