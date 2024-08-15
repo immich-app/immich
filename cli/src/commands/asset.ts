@@ -100,7 +100,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   const results: { id: string; checksum: string }[] = [];
 
   const queue = new Queue<string, AssetBulkUploadCheckResults>(
-    async (filepath: string) => {
+    async (filepath: string): Promise<AssetBulkUploadCheckResults> => {
       const dto = { id: filepath, checksum: await sha1(filepath) };
 
       results.push(dto);
@@ -129,20 +129,19 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     try {
       const chunks = chunk(results, 1000);
 
-      await Promise.all(
-        chunks.map(async (chunk) => {
-          const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: chunk } });
+      for (const chunk of chunks) {
+        const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: chunk } });
 
-          for (const { id: filepath, assetId, action } of response.results) {
-            if (action === Action.Accept) {
-              newFiles.push(filepath);
-            } else {
-              // rejects are always duplicates
-              duplicates.push({ id: assetId as string, filepath });
-            }
+        for (const { id: filepath, assetId, action } of response.results) {
+          if (action === Action.Accept) {
+            newFiles.push(filepath);
+          } else {
+            // rejects are always duplicates
+            duplicates.push({ id: assetId as string, filepath });
           }
-        }),
-      );
+        }
+      }
+
       break;
     } catch (error: any) {
       retries++;
