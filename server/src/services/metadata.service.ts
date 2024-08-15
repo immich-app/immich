@@ -8,6 +8,7 @@ import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEmit } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetType } from 'src/enum';
@@ -15,7 +16,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ClientEvent, IEventRepository, OnEvents } from 'src/interfaces/event.interface';
+import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -86,7 +87,7 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 };
 
 @Injectable()
-export class MetadataService implements OnEvents {
+export class MetadataService {
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
 
@@ -120,7 +121,8 @@ export class MetadataService implements OnEvents {
     );
   }
 
-  async onBootstrapEvent(app: 'api' | 'microservices') {
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(app: ArgOf<'onBootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -128,7 +130,8 @@ export class MetadataService implements OnEvents {
     await this.init(config);
   }
 
-  async onConfigUpdateEvent({ newConfig }: { newConfig: SystemConfig }) {
+  @OnEmit({ event: 'onConfigUpdate' })
+  async onConfigUpdate({ newConfig }: ArgOf<'onConfigUpdate'>) {
     await this.init(newConfig);
   }
 
@@ -150,7 +153,8 @@ export class MetadataService implements OnEvents {
     }
   }
 
-  async onShutdownEvent() {
+  @OnEmit({ event: 'onShutdown' })
+  async onShutdown() {
     await this.repository.teardown();
   }
 

@@ -58,7 +58,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           isLabelVisible: serverInfoState.isVersionMismatch ||
               ((user?.isAdmin ?? false) &&
                   serverInfoState.isNewReleaseAvailable),
-          offset: const Offset(2, 2),
+          offset: const Offset(-2, -12),
           child: user == null
               ? const Icon(
                   Icons.face_outlined,
@@ -132,7 +132,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           backgroundColor: Colors.transparent,
           alignment: Alignment.bottomRight,
           isLabelVisible: indicatorIcon != null,
-          offset: const Offset(2, 2),
+          offset: const Offset(-2, -12),
           child: Icon(
             Icons.backup_rounded,
             size: widgetSize,

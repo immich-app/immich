@@ -33,12 +33,15 @@ class EmailNotificationsUpdate {
   albumUpdate?: boolean;
 }
 
-class DownloadUpdate {
+class DownloadUpdate implements Partial<DownloadResponse> {
   @Optional()
   @IsInt()
   @IsPositive()
   @ApiProperty({ type: 'integer' })
   archiveSize?: number;
+
+  @ValidateBoolean({ optional: true })
+  includeEmbeddedVideos?: boolean;
 }
 
 class PurchaseUpdate {
@@ -104,6 +107,8 @@ class EmailNotificationsResponse {
 class DownloadResponse {
   @ApiProperty({ type: 'integer' })
   archiveSize!: number;
+
+  includeEmbeddedVideos: boolean = false;
 }
 
 class PurchaseResponse {

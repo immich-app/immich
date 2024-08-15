@@ -76,10 +76,10 @@ describe(StorageTemplateService.name, () => {
     SystemConfigCore.create(systemMock, loggerMock).config$.next(defaults);
   });
 
-  describe('onConfigValidateEvent', () => {
+  describe('onConfigValidate', () => {
     it('should allow valid templates', () => {
       expect(() =>
-        sut.onConfigValidateEvent({
+        sut.onConfigValidate({
           newConfig: {
             storageTemplate: {
               template:
@@ -93,7 +93,7 @@ describe(StorageTemplateService.name, () => {
 
     it('should fail for an invalid template', () => {
       expect(() =>
-        sut.onConfigValidateEvent({
+        sut.onConfigValidate({
           newConfig: {
             storageTemplate: {
               template: '{{foo}}',

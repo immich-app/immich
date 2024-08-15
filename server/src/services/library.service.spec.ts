@@ -73,7 +73,7 @@ describe(LibraryService.name, () => {
     it('should init cron job and subscribe to config changes', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.libraryScan);
 
-      await sut.onBootstrapEvent();
+      await sut.onBootstrap();
       expect(systemMock.get).toHaveBeenCalled();
       expect(jobMock.addCronJob).toHaveBeenCalled();
 
@@ -105,7 +105,7 @@ describe(LibraryService.name, () => {
         ),
       );
 
-      await sut.onBootstrapEvent();
+      await sut.onBootstrap();
 
       expect(storageMock.watch.mock.calls).toEqual(
         expect.arrayContaining([
@@ -118,7 +118,7 @@ describe(LibraryService.name, () => {
     it('should not initialize watcher when watching is disabled', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
 
-      await sut.onBootstrapEvent();
+      await sut.onBootstrap();
 
       expect(storageMock.watch).not.toHaveBeenCalled();
     });
@@ -127,7 +127,7 @@ describe(LibraryService.name, () => {
       systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       databaseMock.tryLock.mockResolvedValue(false);
 
-      await sut.onBootstrapEvent();
+      await sut.onBootstrap();
 
       expect(storageMock.watch).not.toHaveBeenCalled();
     });
@@ -136,7 +136,7 @@ describe(LibraryService.name, () => {
   describe('onConfigValidateEvent', () => {
     it('should allow a valid cron expression', () => {
       expect(() =>
-        sut.onConfigValidateEvent({
+        sut.onConfigValidate({
           newConfig: { library: { scan: { cronExpression: '0 0 * * *' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -145,7 +145,7 @@ describe(LibraryService.name, () => {
 
     it('should fail for an invalid cron expression', () => {
       expect(() =>
-        sut.onConfigValidateEvent({
+        sut.onConfigValidate({
           newConfig: { library: { scan: { cronExpression: 'foo' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
@@ -730,7 +730,7 @@ describe(LibraryService.name, () => {
       const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
-      await sut.onBootstrapEvent();
+      await sut.onBootstrap();
       await sut.delete(libraryStub.externalLibraryWithImportPaths1.id);
 
       expect(mockClose).toHaveBeenCalled();
@@ -861,7 +861,7 @@ describe(LibraryService.name, () => {
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([]);
 
-        await sut.onBootstrapEvent();
+        await sut.onBootstrap();
         await sut.create({
           ownerId: authStub.admin.user.id,
           importPaths: libraryStub.externalLibraryWithImportPaths1.importPaths,
@@ -917,7 +917,7 @@ describe(LibraryService.name, () => {
       systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.getAll.mockResolvedValue([]);
 
-      await sut.onBootstrapEvent();
+      await sut.onBootstrap();
     });
 
     it('should update library', async () => {
@@ -933,7 +933,7 @@ describe(LibraryService.name, () => {
       beforeEach(async () => {
         systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
 
-        await sut.onBootstrapEvent();
+        await sut.onBootstrap();
       });
 
       it('should not watch library', async () => {
@@ -949,7 +949,7 @@ describe(LibraryService.name, () => {
       beforeEach(async () => {
         systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
         libraryMock.getAll.mockResolvedValue([]);
-        await sut.onBootstrapEvent();
+        await sut.onBootstrap();
       });
 
       it('should watch library', async () => {
@@ -1107,8 +1107,8 @@ describe(LibraryService.name, () => {
       const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
-      await sut.onBootstrapEvent();
-      await sut.onShutdownEvent();
+      await sut.onBootstrap();
+      await sut.onShutdown();
 
       expect(mockClose).toHaveBeenCalledTimes(2);
     });

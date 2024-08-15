@@ -380,7 +380,7 @@ describe(AlbumService.name, () => {
         userId: authStub.user2.user.id,
         albumId: albumStub.sharedWithAdmin.id,
       });
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInviteEvent', {
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInvite', {
         id: albumStub.sharedWithAdmin.id,
         userId: userStub.user2.id,
       });
@@ -568,7 +568,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdateEvent', {
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdate', {
         id: 'album-123',
         updatedBy: authStub.admin.user.id,
       });
@@ -612,7 +612,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdateEvent', {
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdate', {
         id: 'album-123',
         updatedBy: authStub.user1.user.id,
       });

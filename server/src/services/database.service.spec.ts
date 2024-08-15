@@ -45,7 +45,7 @@ describe(DatabaseService.name, () => {
   it('should throw an error if PostgreSQL version is below minimum supported version', async () => {
     databaseMock.getPostgresVersion.mockResolvedValueOnce('13.10.0');
 
-    await expect(sut.onBootstrapEvent()).rejects.toThrow('Invalid PostgreSQL version. Found 13.10.0');
+    await expect(sut.onBootstrap()).rejects.toThrow('Invalid PostgreSQL version. Found 13.10.0');
 
     expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
   });
@@ -65,7 +65,7 @@ describe(DatabaseService.name, () => {
         availableVersion: minVersionInRange,
       });
 
-      await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(databaseMock.getPostgresVersion).toHaveBeenCalled();
       expect(databaseMock.createExtension).toHaveBeenCalledWith(extension);
@@ -79,7 +79,7 @@ describe(DatabaseService.name, () => {
       databaseMock.getExtensionVersion.mockResolvedValue({ installedVersion: null, availableVersion: null });
       const message = `The ${extensionName} extension is not available in this Postgres instance.
     If using a container image, ensure the image has the extension installed.`;
-      await expect(sut.onBootstrapEvent()).rejects.toThrow(message);
+      await expect(sut.onBootstrap()).rejects.toThrow(message);
 
       expect(databaseMock.createExtension).not.toHaveBeenCalled();
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
@@ -91,7 +91,7 @@ describe(DatabaseService.name, () => {
         availableVersion: versionBelowRange,
       });
 
-      await expect(sut.onBootstrapEvent()).rejects.toThrow(
+      await expect(sut.onBootstrap()).rejects.toThrow(
         `The ${extensionName} extension version is ${versionBelowRange}, but Immich only supports ${extensionRange}`,
       );
 
@@ -101,7 +101,7 @@ describe(DatabaseService.name, () => {
     it(`should throw an error if ${extension} extension version is a nightly`, async () => {
       databaseMock.getExtensionVersion.mockResolvedValue({ installedVersion: '0.0.0', availableVersion: '0.0.0' });
 
-      await expect(sut.onBootstrapEvent()).rejects.toThrow(
+      await expect(sut.onBootstrap()).rejects.toThrow(
         `The ${extensionName} extension version is 0.0.0, which means it is a nightly release.`,
       );
 
@@ -117,7 +117,7 @@ describe(DatabaseService.name, () => {
       });
       databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: false });
 
-      await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(databaseMock.updateVectorExtension).toHaveBeenCalledWith(extension, updateInRange);
       expect(databaseMock.updateVectorExtension).toHaveBeenCalledTimes(1);
@@ -132,7 +132,7 @@ describe(DatabaseService.name, () => {
         installedVersion: minVersionInRange,
       });
 
-      await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
@@ -145,7 +145,7 @@ describe(DatabaseService.name, () => {
         installedVersion: null,
       });
 
-      await expect(sut.onBootstrapEvent()).rejects.toThrow();
+      await expect(sut.onBootstrap()).rejects.toThrow();
 
       expect(databaseMock.createExtension).not.toHaveBeenCalled();
       expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
@@ -159,7 +159,7 @@ describe(DatabaseService.name, () => {
         installedVersion: minVersionInRange,
       });
 
-      await expect(sut.onBootstrapEvent()).rejects.toThrow();
+      await expect(sut.onBootstrap()).rejects.toThrow();
 
       expect(databaseMock.createExtension).not.toHaveBeenCalled();
       expect(databaseMock.updateVectorExtension).not.toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe(DatabaseService.name, () => {
         installedVersion: updateInRange,
       });
 
-      await expect(sut.onBootstrapEvent()).rejects.toThrow(
+      await expect(sut.onBootstrap()).rejects.toThrow(
         `The database currently has ${extensionName} ${updateInRange} activated, but the Postgres instance only has ${minVersionInRange} available.`,
       );
 
@@ -189,7 +189,7 @@ describe(DatabaseService.name, () => {
       });
       databaseMock.updateVectorExtension.mockRejectedValue(new Error('Failed to update extension'));
 
-      await expect(sut.onBootstrapEvent()).rejects.toThrow('Failed to update extension');
+      await expect(sut.onBootstrap()).rejects.toThrow('Failed to update extension');
 
       expect(loggerMock.warn.mock.calls[0][0]).toContain(
         `The ${extensionName} extension can be updated to ${updateInRange}.`,
@@ -206,7 +206,7 @@ describe(DatabaseService.name, () => {
       });
       databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: true });
 
-      await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(loggerMock.warn).toHaveBeenCalledTimes(1);
       expect(loggerMock.warn.mock.calls[0][0]).toContain(extensionName);
@@ -218,7 +218,7 @@ describe(DatabaseService.name, () => {
     it(`should reindex ${extension} indices if needed`, async () => {
       databaseMock.shouldReindex.mockResolvedValue(true);
 
-      await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(databaseMock.shouldReindex).toHaveBeenCalledTimes(2);
       expect(databaseMock.reindex).toHaveBeenCalledTimes(2);
@@ -229,7 +229,7 @@ describe(DatabaseService.name, () => {
     it(`should not reindex ${extension} indices if not needed`, async () => {
       databaseMock.shouldReindex.mockResolvedValue(false);
 
-      await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(databaseMock.shouldReindex).toHaveBeenCalledTimes(2);
       expect(databaseMock.reindex).toHaveBeenCalledTimes(0);
@@ -240,7 +240,7 @@ describe(DatabaseService.name, () => {
     it('should skip migrations if DB_SKIP_MIGRATIONS=true', async () => {
       process.env.DB_SKIP_MIGRATIONS = 'true';
 
-      await expect(sut.onBootstrapEvent()).resolves.toBeUndefined();
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
@@ -255,7 +255,7 @@ describe(DatabaseService.name, () => {
     databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: false });
     databaseMock.createExtension.mockRejectedValue(new Error('Failed to create extension'));
 
-    await expect(sut.onBootstrapEvent()).rejects.toThrow('Failed to create extension');
+    await expect(sut.onBootstrap()).rejects.toThrow('Failed to create extension');
 
     expect(loggerMock.fatal).toHaveBeenCalledTimes(1);
     expect(loggerMock.fatal.mock.calls[0][0]).toContain(
@@ -274,7 +274,7 @@ describe(DatabaseService.name, () => {
     databaseMock.updateVectorExtension.mockResolvedValue({ restartRequired: false });
     databaseMock.createExtension.mockRejectedValue(new Error('Failed to create extension'));
 
-    await expect(sut.onBootstrapEvent()).rejects.toThrow('Failed to create extension');
+    await expect(sut.onBootstrap()).rejects.toThrow('Failed to create extension');
 
     expect(loggerMock.fatal).toHaveBeenCalledTimes(1);
     expect(loggerMock.fatal.mock.calls[0][0]).toContain(

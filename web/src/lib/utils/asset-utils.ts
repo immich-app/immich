@@ -172,13 +172,19 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     },
   ];
 
+  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
+    return asset.originalPath.includes('encoded-video');
+  };
+
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
-    assets.push({
-      filename: motionAsset.originalFileName,
-      id: asset.livePhotoVideoId,
-      size: motionAsset.exifInfo?.fileSizeInByte || 0,
-    });
+    if (!isAndroidMotionVideo(motionAsset) || get(preferences).download.includeEmbeddedVideos) {
+      assets.push({
+        filename: motionAsset.originalFileName,
+        id: asset.livePhotoVideoId,
+        size: motionAsset.exifInfo?.fileSizeInByte || 0,
+      });
+    }
   }
 
   for (const { filename, id, size } of assets) {
