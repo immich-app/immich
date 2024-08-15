@@ -1,6 +1,6 @@
 <script lang="ts">
   import { BucketPosition } from '$lib/stores/assets.store';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher, onMount, afterUpdate, tick } from 'svelte';
 
   export let once = false;
   export let top = 0;
@@ -8,9 +8,12 @@
   export let left = 0;
   export let right = 0;
   export let root: HTMLElement | null = null;
+  export let threshold = 0;
 
   export let intersecting = false;
   let container: HTMLDivElement;
+  let prevRoot: null | HTMLElement = null;
+  let observer: IntersectionObserver;
   const dispatch = createEventDispatcher<{
     hidden: HTMLDivElement;
     intersected: {
@@ -22,7 +25,7 @@
   onMount(() => {
     if (typeof IntersectionObserver !== 'undefined') {
       const rootMargin = `${top}px ${right}px ${bottom}px ${left}px`;
-      const observer = new IntersectionObserver(
+      observer = new IntersectionObserver(
         (entries) => {
           intersecting = entries.some((entry) => entry.isIntersecting);
           if (!intersecting) {
@@ -50,6 +53,7 @@
         {
           rootMargin,
           root,
+          threshold,
         },
       );
 
@@ -74,6 +78,19 @@
 
     window.addEventListener('scroll', handler);
     return () => window.removeEventListener('scroll', handler);
+  });
+
+  afterUpdate(async () => {
+    await tick();
+
+    if (root !== null && root !== prevRoot) {
+      observer?.observe(root);
+
+      if (prevRoot !== null) {
+        observer?.unobserve(prevRoot);
+      }
+      prevRoot = root;
+    }
   });
 </script>
 

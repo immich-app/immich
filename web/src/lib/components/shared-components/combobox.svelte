@@ -29,12 +29,14 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
+  import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 
   export let label: string;
   export let hideLabel = false;
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption | undefined;
   export let placeholder = '';
+  export let showComboboxOnTop = false;
 
   /**
    * Unique identifier for the combobox.
@@ -54,6 +56,9 @@
   let input: HTMLInputElement;
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
+
+  let element: HTMLElement;
+  let isChangingPosition: boolean;
 
   $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -154,7 +159,8 @@
       autocomplete="off"
       bind:this={input}
       class:!pl-8={isActive}
-      class:!rounded-b-none={isOpen}
+      class:!rounded-b-none={isOpen && !showComboboxOnTop}
+      class:!rounded-t-none={isOpen && showComboboxOnTop}
       class:cursor-pointer={!isActive}
       class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
       id={inputId}
@@ -216,42 +222,60 @@
       {/if}
     </div>
   </div>
-
-  <ul
-    role="listbox"
-    id={listboxId}
-    transition:fly={{ duration: 250 }}
-    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-10"
-    class:border={isOpen}
-    tabindex="-1"
+  <IntersectionObserver
+    root={element}
+    threshold={1}
+    on:intersected={() => {
+      if (!isChangingPosition && showComboboxOnTop) {
+        showComboboxOnTop = false;
+      }
+      isChangingPosition = false;
+    }}
+    on:hidden={() => {
+      isChangingPosition = true;
+      showComboboxOnTop = !showComboboxOnTop;
+    }}
   >
-    {#if isOpen}
-      {#if filteredOptions.length === 0}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <li
-          role="option"
-          aria-selected={selectedIndex === 0}
-          aria-disabled={true}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
-          id={`${listboxId}-${0}`}
-          on:click={() => closeDropdown()}
-        >
-          {$t('no_results')}
-        </li>
+    <ul
+      role="listbox"
+      id={listboxId}
+      transition:fly={{ duration: 250 }}
+      class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border-b-0 border-gray-300 dark:border-gray-900 z-10"
+      class:bottom-45={showComboboxOnTop}
+      class:rounded-t-xl={showComboboxOnTop}
+      class:rounded-b-xl={!showComboboxOnTop}
+      class:border={isOpen}
+      tabindex="-1"
+      bind:this={element}
+    >
+      {#if isOpen}
+        {#if filteredOptions.length === 0}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <li
+            role="option"
+            aria-selected={selectedIndex === 0}
+            aria-disabled={true}
+            class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
+            id={`${listboxId}-${0}`}
+            on:click={() => closeDropdown()}
+          >
+            {$t('no_results')}
+          </li>
+        {/if}
+        {#each filteredOptions as option, index (option.label)}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <li
+            aria-selected={index === selectedIndex}
+            bind:this={optionRefs[index]}
+            class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
+            id={`${listboxId}-${index}`}
+            on:click={() => onSelect(option)}
+            role="option"
+          >
+            {option.label}
+          </li>
+        {/each}
       {/if}
-      {#each filteredOptions as option, index (option.label)}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <li
-          aria-selected={index === selectedIndex}
-          bind:this={optionRefs[index]}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
-          id={`${listboxId}-${index}`}
-          on:click={() => onSelect(option)}
-          role="option"
-        >
-          {option.label}
-        </li>
-      {/each}
-    {/if}
-  </ul>
+    </ul>
+  </IntersectionObserver>
 </div>

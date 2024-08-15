@@ -28,6 +28,9 @@ export default {
       fontFamily: {
         'immich-mono': ['Overpass Mono', 'monospace'],
       },
+      inset: {
+        45: '2.8rem',
+      },
       spacing: {
         18: '4.5rem',
       },
