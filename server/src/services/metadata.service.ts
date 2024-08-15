@@ -23,7 +23,6 @@ import {
   IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
   JobName,
   JobStatus,
   QueueName,
@@ -518,8 +517,10 @@ export class MetadataService implements OnEvents {
 
     await this.personRepository.update(...missingWithFaceAsset);
 
-    const jobs = newPersons.map((person) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } }));
-    await this.jobRepository.queueAll(jobs as JobItem[]);
+    const jobs = newPersons.map(
+      (person) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } }) as const,
+    );
+    await this.jobRepository.queueAll(jobs);
   }
 
   private async exifData(
