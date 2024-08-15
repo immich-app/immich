@@ -97,22 +97,14 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
   progressBar.start(files.length, 0);
 
-  const newFiles: string[] = [];
-  const duplicates: Asset[] = [];
+  const results: { id: string; checksum: string }[] = [];
 
   const queue = new Queue<string, AssetBulkUploadCheckResults>(
     async (filepath: string) => {
-      const dto = [{ id: filepath, checksum: await sha1(filepath) }];
-      const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: dto } });
-      const results = response.results as AssetBulkUploadCheckResults;
-      for (const { id: filepath, assetId, action } of results) {
-        if (action === Action.Accept) {
-          newFiles.push(filepath);
-        } else {
-          // rejects are always duplicates
-          duplicates.push({ id: assetId as string, filepath });
-        }
-      }
+      const dto = { id: filepath, checksum: await sha1(filepath) };
+
+      results.push(dto);
+
       progressBar.increment();
       return results;
     },
@@ -126,6 +118,19 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   );
 
   await queue.drained();
+
+  const newFiles: string[] = [];
+  const duplicates: Asset[] = [];
+
+  const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: results } });
+  for (const { id: filepath, assetId, action } of response.results) {
+    if (action === Action.Accept) {
+      newFiles.push(filepath);
+    } else {
+      // rejects are always duplicates
+      duplicates.push({ id: assetId as string, filepath });
+    }
+  }
 
   progressBar.stop();
 
