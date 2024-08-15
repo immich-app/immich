@@ -758,7 +758,6 @@ describe(PersonService.name, () => {
         boundingBoxY2: 200,
         imageHeight: 500,
         imageWidth: 400,
-        sourceType: null,
         faceSearch: { faceId, embedding: [1, 2, 3, 4] },
       };
 

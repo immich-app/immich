@@ -366,7 +366,6 @@ export class PersonService {
           boundingBoxY1: face.boundingBox.y1,
           boundingBoxX2: face.boundingBox.x2,
           boundingBoxY2: face.boundingBox.y2,
-          sourceType: null,
           faceSearch: { faceId, embedding: face.embedding },
         });
       }
