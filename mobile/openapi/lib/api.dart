@@ -16,6 +16,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/utils/openapi_patching.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
@@ -183,6 +184,8 @@ part 'model/places_response_dto.dart';
 part 'model/purchase_response.dart';
 part 'model/purchase_update.dart';
 part 'model/queue_status_dto.dart';
+part 'model/rating_response.dart';
+part 'model/rating_update.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';
 part 'model/reverse_geocoding_state_response_dto.dart';

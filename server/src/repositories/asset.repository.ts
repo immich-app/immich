@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
+import { AssetOrder, AssetType } from 'src/enum';
 import {
   AssetBuilderOptions,
   AssetCreate,

@@ -3,7 +3,7 @@ import { Colorspace } from 'src/config';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';

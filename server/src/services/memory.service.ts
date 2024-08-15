@@ -1,9 +1,10 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { addAssets, removeAssets } from 'src/utils/asset.util';

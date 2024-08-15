@@ -190,11 +190,12 @@ class MultiselectGrid extends HookConsumerWidget {
             .deleteAssets(toDelete, force: force);
 
         if (isDeleted) {
-          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
-          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
           ImmichToast.show(
             context: context,
-            msg: '${selection.value.length} $assetOrAssets $trashOrRemoved',
+            msg: force
+                ? 'assets_deleted_permanently'
+                    .tr(args: ["${selection.value.length}"])
+                : 'assets_trashed'.tr(args: ["${selection.value.length}"]),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -213,11 +214,10 @@ class MultiselectGrid extends HookConsumerWidget {
             .read(assetProvider.notifier)
             .deleteLocalOnlyAssets(localIds, onlyBackedUp: onlyBackedUp);
         if (isDeleted) {
-          final assetOrAssets = localIds.length > 1 ? 'assets' : 'asset';
           ImmichToast.show(
             context: context,
-            msg:
-                '${localIds.length} $assetOrAssets removed permanently from your device',
+            msg: 'assets_removed_permanently_from_device'
+                .tr(args: ["${localIds.length}"]),
             gravity: ToastGravity.BOTTOM,
           );
           selectionEnabledHook.value = false;
@@ -239,12 +239,12 @@ class MultiselectGrid extends HookConsumerWidget {
             .read(assetProvider.notifier)
             .deleteRemoteOnlyAssets(toDelete, force: force);
         if (isDeleted) {
-          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
-          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
           ImmichToast.show(
             context: context,
-            msg:
-                '${toDelete.length} $assetOrAssets $trashOrRemoved from the Immich server',
+            msg: force
+                ? 'assets_deleted_permanently_from_server'
+                    .tr(args: ["${toDelete.length}"])
+                : 'assets_trashed_from_server'.tr(args: ["${toDelete.length}"]),
             gravity: ToastGravity.BOTTOM,
           );
         }

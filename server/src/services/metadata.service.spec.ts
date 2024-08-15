@@ -2,8 +2,8 @@ import { BinaryField } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { AssetType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -606,6 +606,7 @@ describe(MetadataService.name, () => {
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
         tz: '+02:00',
+        Rating: 3,
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue(tags);
@@ -638,6 +639,7 @@ describe(MetadataService.name, () => {
         profileDescription: tags.ProfileDescription,
         projectionType: 'EQUIRECTANGULAR',
         timeZone: tags.tz,
+        rating: tags.Rating,
       });
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
@@ -750,6 +752,18 @@ describe(MetadataService.name, () => {
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           description: 'my\n description',
+        }),
+      );
+    });
+
+    it('handles a numeric description', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Description: 1000 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '1000',
         }),
       );
     });

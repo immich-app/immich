@@ -59,7 +59,11 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`Websocket Connect:    ${client.id}`);
-      const auth = await this.authService.validate(client.request.headers, {});
+      const auth = await this.authService.authenticate({
+        headers: client.request.headers,
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io' },
+      });
       await client.join(auth.user.id);
       this.serverSend(ServerEvent.WEBSOCKET_CONNECT, { userId: auth.user.id });
     } catch (error: Error | any) {

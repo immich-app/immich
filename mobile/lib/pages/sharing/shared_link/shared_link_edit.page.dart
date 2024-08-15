@@ -234,14 +234,6 @@ class SharedLinkEditPage extends HookConsumerWidget {
         onSelected: (value) {
           expiryAfter.value = value!;
         },
-        inputDecorationTheme: themeData.inputDecorationTheme.copyWith(
-          disabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.withOpacity(0.5)),
-          ),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
-          ),
-        ),
         dropdownMenuEntries: [
           DropdownMenuEntry(
             value: 0,

@@ -1,5 +1,5 @@
 import { extname } from 'node:path';
-import { AssetType } from 'src/entities/asset.entity';
+import { AssetType } from 'src/enum';
 
 const raw: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],

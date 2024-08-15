@@ -14,8 +14,8 @@ import {
   SmartSearchDto,
   mapPlaces,
 } from 'src/dtos/search.dto';
-import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { AssetOrder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';

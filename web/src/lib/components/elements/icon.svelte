@@ -14,6 +14,8 @@
   export let ariaHidden: boolean | undefined = undefined;
   export let ariaLabel: string | undefined = undefined;
   export let ariaLabelledby: string | undefined = undefined;
+  export let strokeWidth: number = 0;
+  export let strokeColor: string = 'currentColor';
 </script>
 
 <svg
@@ -22,6 +24,8 @@
   {viewBox}
   class="{className} {flipped ? '-scale-x-100' : ''}"
   {role}
+  stroke={strokeColor}
+  stroke-width={strokeWidth}
   aria-label={ariaLabel}
   aria-hidden={ariaHidden}
   aria-labelledby={ariaLabelledby}
