@@ -52,14 +52,9 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async deleteAllFaces({ sourceType }: DeleteAllFacesOptions): Promise<void> {
-    if (sourceType === undefined) {
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if(sourceType === undefined) {
       await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
-    } else if (sourceType === null) {
-      await this.assetFaceRepository
-        .createQueryBuilder('asset_faces')
-        .delete()
-        .andWhere('sourceType is null')
-        .execute();
     } else {
       await this.assetFaceRepository
         .createQueryBuilder('asset_faces')

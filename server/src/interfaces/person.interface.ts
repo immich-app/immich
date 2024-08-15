@@ -41,7 +41,7 @@ export interface PeopleStatistics {
 }
 
 export interface DeleteAllFacesOptions {
-  sourceType?: string | null;
+  sourceType?: number;
 }
 
 export interface IPersonRepository {

@@ -22,7 +22,7 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/dtos/person.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -299,7 +299,7 @@ export class PersonService {
     }
 
     if (force) {
-      await this.repository.deleteAllFaces({ sourceType: null });
+      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     }
 
@@ -405,7 +405,7 @@ export class PersonService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
-      await this.repository.deleteAllFaces({ sourceType: null });
+      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     } else if (waiting) {
       this.logger.debug(

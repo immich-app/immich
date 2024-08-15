@@ -4,7 +4,7 @@ export class AddSourceColumnToAssetFace1721249222549 implements MigrationInterfa
     name = 'AddSourceColumnToAssetFace1721249222549'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "asset_faces" ADD "sourceType" character varying DEFAULT NULL`);
+        await queryRunner.query(`ALTER TABLE "asset_faces" ADD "sourceType" integer DEFAULT 0`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

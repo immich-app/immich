@@ -4,7 +4,8 @@ import { PersonEntity } from 'src/entities/person.entity';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum SourceType {
-  EXIF = 'exif',
+  MACHINE_LEARNING = 0,
+  EXIF = 1,
 }
 
 @Entity('asset_faces', { synchronize: false })
@@ -41,8 +42,8 @@ export class AssetFaceEntity {
   @Column({ default: 0, type: 'int' })
   boundingBoxY2!: number;
 
-  @Column({ nullable: true, type: 'varchar' })
-  sourceType?: string | null;
+  @Column({ default: SourceType.MACHINE_LEARNING, type: 'int' })
+  sourceType!: number;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;

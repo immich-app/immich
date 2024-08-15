@@ -7719,8 +7719,7 @@
             "nullable": true
           },
           "sourceType": {
-            "nullable": true,
-            "type": "string"
+            "type": "number"
           }
         },
         "required": [
@@ -7791,8 +7790,7 @@
             "type": "integer"
           },
           "sourceType": {
-            "nullable": true,
-            "type": "string"
+            "type": "number"
           }
         },
         "required": [

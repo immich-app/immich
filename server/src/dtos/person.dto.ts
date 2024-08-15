@@ -113,8 +113,8 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
-  @ApiProperty({ type: 'string' })
-  sourceType?: string | null;
+  @ApiProperty({ type: 'number' })
+  sourceType?: number;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {

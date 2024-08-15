@@ -175,7 +175,7 @@ export type AssetFaceWithoutPersonResponseDto = {
     id: string;
     imageHeight: number;
     imageWidth: number;
-    sourceType?: string | null;
+    sourceType?: number;
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
@@ -474,7 +474,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     imageWidth: number;
     person: (PersonResponseDto) | null;
-    sourceType?: string | null;
+    sourceType?: number;
 };
 export type FaceDto = {
     id: string;
