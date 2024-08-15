@@ -993,7 +993,7 @@ describe('/asset', () => {
       expect(body).toEqual(errorDto.badRequest());
     });
 
-    it.each([
+    const tests = [
       {
         input: 'formats/avif/8bit-sRGB.avif',
         expected: {
@@ -1209,21 +1209,32 @@ describe('/asset', () => {
           },
         },
       },
-    ])(`should upload and generate a thumbnail for $input`, async ({ input, expected }) => {
-      const filepath = join(testAssetDir, input);
-      const { id, status } = await utils.createAsset(admin.accessToken, {
-        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-      });
+    ];
 
-      expect(status).toBe(AssetMediaStatus.Created);
+    it(`should upload and generate a thumbnail for different file types`, async () => {
+      // upload in parallel
+      const assets = await Promise.all(
+        tests.map(async ({ input }) => {
+          const filepath = join(testAssetDir, input);
+          return utils.createAsset(admin.accessToken, {
+            assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+          });
+        }),
+      );
 
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
+      for (const { id, status } of assets) {
+        expect(status).toBe(AssetMediaStatus.Created);
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+      }
 
-      const asset = await utils.getAssetInfo(admin.accessToken, id);
+      for (const [i, { id }] of assets.entries()) {
+        const { expected } = tests[i];
+        const asset = await utils.getAssetInfo(admin.accessToken, id);
 
-      expect(asset.exifInfo).toBeDefined();
-      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
-      expect(asset).toMatchObject(expected);
+        expect(asset.exifInfo).toBeDefined();
+        expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+        expect(asset).toMatchObject(expected);
+      }
     });
 
     it('should handle a duplicate', async () => {

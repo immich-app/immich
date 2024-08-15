@@ -11,6 +11,9 @@ changelog:
     - title: 🚀 Features
       labels:
         - feature
+
+    - title: 🌟 Enhancements
+      labels:
         - enhancement
 
     - title: 🐛 Bug fixes

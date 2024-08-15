@@ -166,6 +166,7 @@ class ApiClient {
 
   /// Returns a native instance of an OpenAPI class matching the [specified type][targetType].
   static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
+    upgradeDto(value, targetType);
     try {
       switch (targetType) {
         case 'String':

@@ -6,7 +6,7 @@ from pathlib import Path
 from socket import socket
 
 from gunicorn.arbiter import Arbiter
-from pydantic.v1 import BaseModel, BaseSettings
+from pydantic import BaseModel, BaseSettings
 from rich.console import Console
 from rich.logging import RichHandler
 from uvicorn import Server

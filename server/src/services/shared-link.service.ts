@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
@@ -14,7 +14,8 @@ import {
   mapSharedLinkWithoutMetadata,
 } from 'src/dtos/shared-link.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
+import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { Permission, SharedLinkType } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';

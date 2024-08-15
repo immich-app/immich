@@ -17,8 +17,8 @@ import {
   ValidateLibraryResponseDto,
   mapLibrary,
 } from 'src/dtos/library.dto';
-import { AssetType } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
+import { AssetType } from 'src/enum';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
