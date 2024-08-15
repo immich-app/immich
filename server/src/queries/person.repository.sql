@@ -231,6 +231,16 @@ ORDER BY
 LIMIT
   20
 
+-- PersonRepository.getDistinctNames
+SELECT DISTINCT
+  ON (lower("person"."name")) "person"."id" AS "person_id",
+  "person"."name" AS "person_name"
+FROM
+  "person" "person"
+WHERE
+  "person"."ownerId" = $1
+  AND "person"."name" != ''
+
 -- PersonRepository.getStatistics
 SELECT
   COUNT(DISTINCT ("asset"."id")) AS "count"
