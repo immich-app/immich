@@ -1189,6 +1189,7 @@ describe(PersonService.name, () => {
         id: faceStub.face1.id,
         imageHeight: 1024,
         imageWidth: 1024,
+        sourceType: SourceType.MACHINE_LEARNING,
         person: mapPerson(personStub.withName),
       });
     });

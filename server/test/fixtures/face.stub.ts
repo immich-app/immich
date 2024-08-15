@@ -1,4 +1,4 @@
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { personStub } from 'test/fixtures/person.stub';
 
@@ -17,6 +17,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId1', embedding: [1, 2, 3, 4] },
   }),
   primaryFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
@@ -31,6 +32,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId2', embedding: [1, 2, 3, 4] },
   }),
   mergeFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
@@ -45,6 +47,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId3', embedding: [1, 2, 3, 4] },
   }),
   mergeFace2: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
@@ -59,6 +62,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId4', embedding: [1, 2, 3, 4] },
   }),
   start: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
@@ -73,6 +77,7 @@ export const faceStub = {
     boundingBoxY2: 505,
     imageHeight: 2880,
     imageWidth: 2160,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId5', embedding: [1, 2, 3, 4] },
   }),
   middle: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
@@ -87,6 +92,7 @@ export const faceStub = {
     boundingBoxY2: 200,
     imageHeight: 500,
     imageWidth: 400,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId6', embedding: [1, 2, 3, 4] },
   }),
   end: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
@@ -101,6 +107,7 @@ export const faceStub = {
     boundingBoxY2: 495,
     imageHeight: 500,
     imageWidth: 500,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId7', embedding: [1, 2, 3, 4] },
   }),
   noPerson1: Object.freeze<AssetFaceEntity>({
@@ -115,6 +122,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId8', embedding: [1, 2, 3, 4] },
   }),
   noPerson2: Object.freeze<AssetFaceEntity>({
@@ -129,7 +137,7 @@ export const faceStub = {
     boundingBoxY2: 1,
     imageHeight: 1024,
     imageWidth: 1024,
-    sourceType: null,
+    sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId9', embedding: [1, 2, 3, 4] },
   }),
 };

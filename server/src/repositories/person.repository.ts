@@ -19,7 +19,7 @@ import {
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, IsNull, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
