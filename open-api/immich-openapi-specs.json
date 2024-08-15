@@ -8503,10 +8503,15 @@
         "properties": {
           "archiveSize": {
             "type": "integer"
+          },
+          "includeEmbeddedVideos": {
+            "default": false,
+            "type": "boolean"
           }
         },
         "required": [
-          "archiveSize"
+          "archiveSize",
+          "includeEmbeddedVideos"
         ],
         "type": "object"
       },
@@ -8533,6 +8538,9 @@
           "archiveSize": {
             "minimum": 1,
             "type": "integer"
+          },
+          "includeEmbeddedVideos": {
+            "type": "boolean"
           }
         },
         "type": "object"

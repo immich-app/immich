@@ -86,6 +86,7 @@ export type AvatarResponse = {
 };
 export type DownloadResponse = {
     archiveSize: number;
+    includeEmbeddedVideos: boolean;
 };
 export type EmailNotificationsResponse = {
     albumInvite: boolean;
@@ -115,6 +116,7 @@ export type AvatarUpdate = {
 };
 export type DownloadUpdate = {
     archiveSize?: number;
+    includeEmbeddedVideos?: boolean;
 };
 export type EmailNotificationsUpdate = {
     albumInvite?: boolean;

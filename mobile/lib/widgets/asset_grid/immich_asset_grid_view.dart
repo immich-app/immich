@@ -262,8 +262,9 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       shrinkWrap: widget.shrinkWrap,
     );
 
-    final child = useDragScrolling
+    final child = (useDragScrolling && ModalRoute.of(context) != null)
         ? DraggableScrollbar.semicircle(
+            viewPortHeight: context.height,
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
@@ -281,6 +282,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             child: listWidget,
           )
         : listWidget;
+
     return widget.onRefresh == null
         ? child
         : appBarOffset()
@@ -528,7 +530,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: !(widget.selectionActive && _selectedAssets.isNotEmpty),
-      onPopInvoked: (didPop) => !didPop ? _deselectAll() : null,
+      onPopInvokedWithResult: (didPop, _) => !didPop ? _deselectAll() : null,
       child: Stack(
         children: [
           AssetDragRegion(

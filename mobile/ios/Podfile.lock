@@ -202,7 +202,7 @@ SPEC CHECKSUMS:
   fluttertoast: e9a18c7be5413da53898f660530c56f35edfba9c
   geolocator_apple: 6cbaf322953988e009e5ecb481f07efece75c450
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
-  integration_test: ce0a3ffa1de96d1a89ca0ac26fca7ea18a749ef4
+  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   isar_flutter_libs: b69f437aeab9c521821c3f376198c4371fa21073
   MapLibre: 620fc933c1d6029b33738c905c1490d024e5d4ef
   maplibre_gl: a2efec727dd340e4c65e26d2b03b584f14881fd9

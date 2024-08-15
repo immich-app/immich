@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { AccessCore } from 'src/cores/access.core';
+import { StorageCore } from 'src/cores/storage.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
@@ -12,6 +13,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ImmichReadStream, IStorageRepository } from 'src/interfaces/storage.interface';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class DownloadService {
@@ -32,12 +34,22 @@ export class DownloadService {
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
 
+    const preferences = getPreferences(auth.user);
+
     const assetPagination = await this.getDownloadAssets(auth, dto);
     for await (const assets of assetPagination) {
       // motion part of live photos
-      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
+      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter((id): id is string => !!id);
       if (motionIds.length > 0) {
-        assets.push(...(await this.assetRepository.getByIds(motionIds, { exifInfo: true })));
+        const motionAssets = await this.assetRepository.getByIds(motionIds, { exifInfo: true });
+        for (const motionAsset of motionAssets) {
+          if (
+            !StorageCore.isAndroidMotionPath(motionAsset.originalPath) ||
+            preferences.download.includeEmbeddedVideos
+          ) {
+            assets.push(motionAsset);
+          }
+        }
       }
 
       for (const asset of assets) {

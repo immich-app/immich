@@ -35,6 +35,7 @@ export interface UserPreferences {
   };
   download: {
     archiveSize: number;
+    includeEmbeddedVideos: boolean;
   };
   purchase: {
     showSupportBadge: boolean;
@@ -65,6 +66,7 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     download: {
       archiveSize: HumanReadableSize.GiB * 4,
+      includeEmbeddedVideos: false,
     },
     purchase: {
       showSupportBadge: true,
