@@ -122,20 +122,29 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
 
-  // TODO: Retry 3 times if there is an error
-  try {
-    const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: results } });
+  let retries = 0;
+  const maxRetries = 3;
 
-    for (const { id: filepath, assetId, action } of response.results) {
-      if (action === Action.Accept) {
-        newFiles.push(filepath);
-      } else {
-        // rejects are always duplicates
-        duplicates.push({ id: assetId as string, filepath });
+  while (retries < maxRetries) {
+    try {
+      const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: results } });
+
+      for (const { id: filepath, assetId, action } of response.results) {
+        if (action === Action.Accept) {
+          newFiles.push(filepath);
+        } else {
+          // rejects are always duplicates
+          duplicates.push({ id: assetId as string, filepath });
+        }
+      }
+
+      break;
+    } catch (error: any) {
+      retries++;
+      if (retries >= maxRetries) {
+        throw new Error(`An error occurred while checking for duplicates: ${error.message}`);
       }
     }
-  } catch (error: any) {
-    throw new Error(`An error occurred while checking for duplicates: ${error.message}`);
   }
 
   progressBar.stop();
