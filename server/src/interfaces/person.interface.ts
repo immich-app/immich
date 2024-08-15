@@ -59,7 +59,7 @@ export interface IPersonRepository {
   delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
   deleteAllFaces(options: DeleteAllFacesOptions): Promise<void>;
-  upsertFaces(assetId: string, entities: Partial<AssetFaceEntity>[], sourceType?: string): Promise<string[]>;
+  replaceFaces(assetId: string, entities: Partial<AssetFaceEntity>[], sourceType?: number): Promise<string[]>;
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;
   getFaceByIdWithAssets(

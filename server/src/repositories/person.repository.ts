@@ -287,15 +287,13 @@ export class PersonRepository implements IPersonRepository {
     return res.map((row) => row.id);
   }
 
-  async upsertFaces(assetId: string, entities: AssetFaceEntity[], sourceType?: string): Promise<string[]> {
+  async replaceFaces(assetId: string, entities: AssetFaceEntity[], sourceType?: number): Promise<string[]> {
     return await this.assetFaceRepository.manager.transaction(async (manager) => {
       const builder = manager.createQueryBuilder(AssetFaceEntity, 'asset_faces');
       let query = builder.delete().where('assetId = :assetId', { assetId: assetId });
 
       if (sourceType) {
         query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
-      } else if (sourceType == null) {
-        query = query.andWhere({ sourceType: IsNull() });
       }
       await query.execute();
 

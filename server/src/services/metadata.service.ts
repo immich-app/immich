@@ -513,7 +513,7 @@ export class MetadataService implements OnEvents {
 
     const newPersons: PersonEntity[] = await this.personRepository.create(...missing);
 
-    const faceIds = await this.personRepository.upsertFaces(asset.id, discoveredFaces, SourceType.EXIF);
+    const faceIds = await this.personRepository.replaceFaces(asset.id, discoveredFaces, SourceType.EXIF);
     this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
 
     await this.personRepository.update(...missingWithFaceAsset);

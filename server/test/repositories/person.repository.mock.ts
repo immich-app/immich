@@ -25,7 +25,7 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
 
     reassignFaces: vitest.fn(),
     createFaces: vitest.fn(),
-    upsertFaces: vitest.fn(),
+    replaceFaces: vitest.fn(),
     getFaces: vitest.fn(),
     reassignFace: vitest.fn(),
     getFaceById: vitest.fn(),

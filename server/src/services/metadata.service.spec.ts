@@ -793,11 +793,11 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFaceNoName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.create.mockResolvedValue([]);
-      personMock.upsertFaces.mockResolvedValue([]);
+      personMock.replaceFaces.mockResolvedValue([]);
       personMock.update.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(personMock.create).toHaveBeenCalledWith();
-      expect(personMock.upsertFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
       expect(personMock.update).toHaveBeenCalledWith();
     });
 
@@ -807,11 +807,11 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFaceEmptyName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.create.mockResolvedValue([]);
-      personMock.upsertFaces.mockResolvedValue([]);
+      personMock.replaceFaces.mockResolvedValue([]);
       personMock.update.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(personMock.create).toHaveBeenCalledWith();
-      expect(personMock.upsertFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
       expect(personMock.update).toHaveBeenCalledWith();
     });
 
@@ -821,13 +821,13 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.create.mockResolvedValue([personStub.withName]);
-      personMock.upsertFaces.mockResolvedValue(['face-asset-uuid']);
+      personMock.replaceFaces.mockResolvedValue(['face-asset-uuid']);
       personMock.update.mockResolvedValue([personStub.withName]);
       await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
       expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
       expect(personMock.create).toHaveBeenCalledWith(expect.objectContaining({ name: personStub.withName.name }));
-      expect(personMock.upsertFaces).toHaveBeenCalledWith(
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(
         assetStub.primaryImage.id,
         [
           {
@@ -860,13 +860,13 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
       personMock.create.mockResolvedValue([]);
-      personMock.upsertFaces.mockResolvedValue(['face-asset-uuid']);
+      personMock.replaceFaces.mockResolvedValue(['face-asset-uuid']);
       personMock.update.mockResolvedValue([personStub.withName]);
       await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
       expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
       expect(personMock.create).toHaveBeenCalledWith();
-      expect(personMock.upsertFaces).toHaveBeenCalledWith(
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(
         assetStub.primaryImage.id,
         [
           {
