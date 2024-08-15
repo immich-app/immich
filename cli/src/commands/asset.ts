@@ -127,17 +127,22 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
   while (retries < maxRetries) {
     try {
-      const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: results } });
+      const chunks = chunk(results, 1000);
 
-      for (const { id: filepath, assetId, action } of response.results) {
-        if (action === Action.Accept) {
-          newFiles.push(filepath);
-        } else {
-          // rejects are always duplicates
-          duplicates.push({ id: assetId as string, filepath });
-        }
-      }
+      await Promise.all(
+        chunks.map(async (chunk) => {
+          const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: chunk } });
 
+          for (const { id: filepath, assetId, action } of response.results) {
+            if (action === Action.Accept) {
+              newFiles.push(filepath);
+            } else {
+              // rejects are always duplicates
+              duplicates.push({ id: assetId as string, filepath });
+            }
+          }
+        }),
+      );
       break;
     } catch (error: any) {
       retries++;
