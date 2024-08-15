@@ -94,7 +94,7 @@ export class SharedLinkService {
       password: dto.password,
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,
-      allowDownload: dto.showMetadata === false ? false : dto.allowDownload ?? true,
+      allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
       showExif: dto.showMetadata ?? true,
     });
 
