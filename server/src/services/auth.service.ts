@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -19,6 +20,7 @@ import {
   ChangePasswordDto,
   ImmichCookie,
   ImmichHeader,
+  ImmichQuery,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthAuthorizeResponseDto,
@@ -52,6 +54,16 @@ interface ClaimOptions<T> {
   default: T;
   isValid: (value: unknown) => boolean;
 }
+
+export type ValidateRequest = {
+  headers: IncomingHttpHeaders;
+  queryParams: Record<string, string>;
+  metadata: {
+    sharedLinkRoute: boolean;
+    adminRoute: boolean;
+    uri: string;
+  };
+};
 
 @Injectable()
 export class AuthService {
@@ -143,14 +155,31 @@ export class AuthService {
     return mapUserAdmin(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
-    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || params.key) as string;
+  async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
+    const authDto = await this.validate({ headers, queryParams });
+    const { adminRoute, sharedLinkRoute, uri } = metadata;
+
+    if (!authDto.user.isAdmin && adminRoute) {
+      this.logger.warn(`Denied access to admin only route: ${uri}`);
+      throw new ForbiddenException('Forbidden');
+    }
+
+    if (authDto.sharedLink && !sharedLinkRoute) {
+      this.logger.warn(`Denied access to non-shared route: ${uri}`);
+      throw new ForbiddenException('Forbidden');
+    }
+
+    return authDto;
+  }
+
+  private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
+    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || queryParams[ImmichQuery.SHARED_LINK_KEY]) as string;
     const session = (headers[ImmichHeader.USER_TOKEN] ||
       headers[ImmichHeader.SESSION_TOKEN] ||
-      params.sessionKey ||
+      queryParams[ImmichQuery.SESSION_KEY] ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[ImmichHeader.API_KEY] || params.apiKey) as string;
+    const apiKey = (headers[ImmichHeader.API_KEY] || queryParams[ImmichQuery.API_KEY]) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);

@@ -4,7 +4,7 @@ import {
   AdminOnboardingUpdateDto,
   ReverseGeocodingStateResponseDto,
 } from 'src/dtos/system-metadata.dto';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 @Injectable()

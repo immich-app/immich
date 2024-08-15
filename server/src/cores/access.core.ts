@@ -1,52 +1,9 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { AlbumUserRole, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { setDifference, setIsEqual, setUnion } from 'src/utils/set';
-
-export enum Permission {
-  ACTIVITY_CREATE = 'activity.create',
-  ACTIVITY_DELETE = 'activity.delete',
-
-  // ASSET_CREATE = 'asset.create',
-  ASSET_READ = 'asset.read',
-  ASSET_UPDATE = 'asset.update',
-  ASSET_DELETE = 'asset.delete',
-  ASSET_RESTORE = 'asset.restore',
-  ASSET_SHARE = 'asset.share',
-  ASSET_VIEW = 'asset.view',
-  ASSET_DOWNLOAD = 'asset.download',
-  ASSET_UPLOAD = 'asset.upload',
-
-  // ALBUM_CREATE = 'album.create',
-  ALBUM_READ = 'album.read',
-  ALBUM_UPDATE = 'album.update',
-  ALBUM_DELETE = 'album.delete',
-  ALBUM_ADD_ASSET = 'album.addAsset',
-  ALBUM_REMOVE_ASSET = 'album.removeAsset',
-  ALBUM_SHARE = 'album.share',
-  ALBUM_DOWNLOAD = 'album.download',
-
-  AUTH_DEVICE_DELETE = 'authDevice.delete',
-
-  ARCHIVE_READ = 'archive.read',
-
-  TIMELINE_READ = 'timeline.read',
-  TIMELINE_DOWNLOAD = 'timeline.download',
-
-  MEMORY_READ = 'memory.read',
-  MEMORY_WRITE = 'memory.write',
-  MEMORY_DELETE = 'memory.delete',
-
-  PERSON_READ = 'person.read',
-  PERSON_WRITE = 'person.write',
-  PERSON_MERGE = 'person.merge',
-  PERSON_CREATE = 'person.create',
-  PERSON_REASSIGN = 'person.reassign',
-
-  PARTNER_UPDATE = 'partner.update',
-}
 
 let instance: AccessCore | null;
 
