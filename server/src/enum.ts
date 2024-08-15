@@ -116,8 +116,3 @@ export enum UserStatus {
   REMOVING = 'removing',
   DELETED = 'deleted',
 }
-
-export enum SourceType {
-  MACHINE_LEARNING = 0,
-  EXIF = 1,
-}
