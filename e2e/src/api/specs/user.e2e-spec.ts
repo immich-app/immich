@@ -236,6 +236,32 @@ describe('/users', () => {
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ download: { archiveSize: 1_234_567 } });
     });
+
+    it('should require a boolean for download include embedded videos', async () => {
+      const { status, body } = await request(app)
+        .put(`/users/me/preferences`)
+        .send({ download: { includeEmbeddedVideos: 1_234_567.89 } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['download.includeEmbeddedVideos must be a boolean value']));
+    });
+
+    it('should update download include embedded videos', async () => {
+      const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(before).toMatchObject({ download: { includeEmbeddedVideos: false } });
+
+      const { status, body } = await request(app)
+        .put(`/users/me/preferences`)
+        .send({ download: { includeEmbeddedVideos: true } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ download: { includeEmbeddedVideos: true } });
+
+      const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ download: { includeEmbeddedVideos: true } });
+    });
   });
 
   describe('GET /users/:id', () => {
