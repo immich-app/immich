@@ -190,6 +190,8 @@ describe('checkForDuplicates', () => {
     });
   });
 
+  // TODO: this shouldn't return empty arrays, this should return an error
+  //       Failed duplicate checks should be a reason for panic instead of ignoring
   it('returns results when check duplicates retry is failed', async () => {
     vi.mocked(checkBulkUpload).mockRejectedValue(new Error('Network error'));
 
