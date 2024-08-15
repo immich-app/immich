@@ -10800,9 +10800,6 @@
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
-          "importFaces": {
-            "$ref": "#/components/schemas/SystemConfigImportFacesDto"
-          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -10817,6 +10814,9 @@
           },
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/SystemConfigMetadataDto"
           },
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
@@ -10852,12 +10852,12 @@
         "required": [
           "ffmpeg",
           "image",
-          "importFaces",
           "job",
           "library",
           "logging",
           "machineLearning",
           "map",
+          "metadata",
           "newVersionCheck",
           "notifications",
           "oauth",
@@ -10984,6 +10984,17 @@
         ],
         "type": "object"
       },
+      "SystemConfigFacesDto": {
+        "properties": {
+          "import": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "import"
+        ],
+        "type": "object"
+      },
       "SystemConfigImageDto": {
         "properties": {
           "colorspace": {
@@ -11020,17 +11031,6 @@
           "quality",
           "thumbnailFormat",
           "thumbnailSize"
-        ],
-        "type": "object"
-      },
-      "SystemConfigImportFacesDto": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
         ],
         "type": "object"
       },
@@ -11184,6 +11184,21 @@
           "darkStyle",
           "enabled",
           "lightStyle"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMetadataDto": {
+        "properties": {
+          "faces": {
+            "$ref": "#/components/schemas/SystemConfigFacesDto"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/SystemConfigTagsDto"
+          }
+        },
+        "required": [
+          "faces",
+          "tags"
         ],
         "type": "object"
       },
@@ -11382,6 +11397,17 @@
           "enabled",
           "hashVerificationEnabled",
           "template"
+        ],
+        "type": "object"
+      },
+      "SystemConfigTagsDto": {
+        "properties": {
+          "import": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "import"
         ],
         "type": "object"
       },
