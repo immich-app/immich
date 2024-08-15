@@ -6,6 +6,7 @@ import {
   LoginResponseDto,
   SharedLinkType,
   getAssetInfo,
+  getConfig,
   getMyUser,
   updateAssets,
 } from '@immich/sdk';
@@ -44,6 +45,9 @@ const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
+const facesAssetFilepath = `${testAssetDir}/metadata/faces/portrait.jpg`;
+
+const getSystemConfig = (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) });
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -74,6 +78,7 @@ describe('/asset', () => {
   let stackAssets: AssetMediaResponseDto[];
   let locationAsset: AssetMediaResponseDto;
   let ratingAsset: AssetMediaResponseDto;
+  let facesAsset: AssetMediaResponseDto;
 
   const setupTests = async () => {
     await utils.resetDatabase();
@@ -110,6 +115,16 @@ describe('/asset', () => {
     });
 
     await utils.waitForWebsocketEvent({ event: 'assetUpload', id: ratingAsset.id });
+
+    // asset faces
+    facesAsset = await utils.createAsset(admin.accessToken, {
+      assetData: {
+        filename: 'portrait.jpg',
+        bytes: await readFile(facesAssetFilepath),
+      },
+    });
+
+    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
 
     user1Assets = await Promise.all([
       utils.createAsset(user1.accessToken),
@@ -240,6 +255,65 @@ describe('/asset', () => {
         id: ratingAsset.id,
         exifInfo: expect.objectContaining({ rating: 3 }),
       });
+    });
+
+    it('should get the asset faces', async () => {
+      const response = await request(app)
+        .put('/system-config')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          ...(await getSystemConfig(admin.accessToken)),
+          metadata: { faces: { import: true }, tags: { import: true } },
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        metadata: { faces: { import: true } },
+      });
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
+
+      const { status, body } = await request(app)
+        .get(`/assets/${facesAsset.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body.id).toEqual(facesAsset.id);
+      expect(body.people).toMatchObject([
+        {
+          name: 'Marie Curie',
+          birthDate: null,
+          thumbnailPath: '',
+          isHidden: false,
+          faces: [
+            {
+              imageHeight: 700,
+              imageWidth: 840,
+              boundingBoxX1: 261,
+              boundingBoxX2: 356,
+              boundingBoxY1: 146,
+              boundingBoxY2: 284,
+              sourceType: 1,
+            },
+          ],
+        },
+        {
+          name: 'Pierre Curie',
+          birthDate: null,
+          thumbnailPath: '',
+          isHidden: false,
+          faces: [
+            {
+              imageHeight: 700,
+              imageWidth: 840,
+              boundingBoxX1: 536,
+              boundingBoxX2: 618,
+              boundingBoxY1: 83,
+              boundingBoxY2: 252,
+              sourceType: 1,
+            },
+          ],
+        },
+      ]);
     });
 
     it('should work with a shared link', async () => {
