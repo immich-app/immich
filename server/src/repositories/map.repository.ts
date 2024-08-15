@@ -8,7 +8,7 @@ import { citiesFile, resourcePaths } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { NaturalEarthCountriesEntity } from 'src/entities/natural-earth-countries.entity';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   GeoPoint,
