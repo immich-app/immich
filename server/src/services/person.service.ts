@@ -23,7 +23,7 @@ import {
   mapPerson,
 } from 'src/dtos/person.dto';
 import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetType, Permission, SystemMetadataKey } from 'src/enum';
