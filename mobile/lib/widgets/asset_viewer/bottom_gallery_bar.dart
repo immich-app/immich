@@ -11,7 +11,7 @@ import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
-import 'package:immich_mobile/services/asset_stack.service.dart';
+import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
@@ -49,10 +49,9 @@ class BottomGalleryBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
 
-    // final stack = showStack && asset.stackChildrenCount > 0
-    //     ? ref.watch(assetStackStateProvider(asset))
-    //     : <Asset>[];
-    final stack = <Asset>[];
+    final stack = showStack && asset.stackCount > 0
+        ? ref.watch(assetStackStateProvider(asset))
+        : <Asset>[];
     final stackElements = showStack ? [asset, ...stack] : <Asset>[];
     bool isParent = stackIndex == -1 || stackIndex == 0;
     final navStack = AutoRouter.of(context).stackData;
@@ -128,6 +127,24 @@ class BottomGalleryBar extends ConsumerWidget {
       );
     }
 
+    unStack() async {
+      if (asset.stackId == null) {
+        return;
+      }
+
+      ref.read(stackServiceProvider).deleteStack(asset.stackId!);
+    }
+
+    setPrimaryStackAsset(Asset asset) async {
+      if (asset.stackId == null && asset.remoteId == null) {
+        return;
+      }
+
+      ref
+          .read(stackServiceProvider)
+          .updateStack(asset.stackId!, asset.remoteId!);
+    }
+
     void showStackActionItems() {
       showModalBottomSheet<void>(
         context: context,
@@ -146,12 +163,9 @@ class BottomGalleryBar extends ConsumerWidget {
                         size: 24,
                       ),
                       onTap: () async {
-                        // await ref
-                        //     .read(assetStackServiceProvider)
-                        //     .updateStackParent(
-                        //       asset,
-                        //       stackElements.elementAt(stackIndex),
-                        //     );
+                        await setPrimaryStackAsset(
+                          stackElements.elementAt(stackIndex),
+                        );
                         ctx.pop();
                         context.maybePop();
                       },
@@ -162,51 +176,11 @@ class BottomGalleryBar extends ConsumerWidget {
                     ),
                   ListTile(
                     leading: const Icon(
-                      Icons.copy_all_outlined,
-                      size: 24,
-                    ),
-                    onTap: () async {
-                      if (isParent) {
-                        // await ref
-                        //     .read(assetStackServiceProvider)
-                        //     .updateStackParent(
-                        //       asset,
-                        //       stackElements
-                        //           .elementAt(1), // Next asset as parent
-                        //     );
-                        // Remove itself from stack
-                        await ref.read(assetStackServiceProvider).updateStack(
-                          stackElements.elementAt(1),
-                          childrenToRemove: [asset],
-                        );
-                        ctx.pop();
-                        context.maybePop();
-                      } else {
-                        await ref.read(assetStackServiceProvider).updateStack(
-                          asset,
-                          childrenToRemove: [
-                            stackElements.elementAt(stackIndex),
-                          ],
-                        );
-                        removeAssetFromStack();
-                        ctx.pop();
-                      }
-                    },
-                    title: const Text(
-                      "viewer_remove_from_stack",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ).tr(),
-                  ),
-                  ListTile(
-                    leading: const Icon(
                       Icons.filter_none_outlined,
                       size: 18,
                     ),
                     onTap: () async {
-                      await ref.read(assetStackServiceProvider).updateStack(
-                            asset,
-                            childrenToRemove: stack,
-                          );
+                      await unStack();
                       ctx.pop();
                       context.maybePop();
                     },

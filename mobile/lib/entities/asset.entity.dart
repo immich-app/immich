@@ -38,7 +38,8 @@ class Asset {
         stackParentId = remote.stack?.primaryAssetId == remote.id
             ? null
             : remote.stack?.primaryAssetId,
-        stackCount = remote.stack?.assetCount,
+        stackCount = remote.stack?.assetCount ?? 0,
+        stackId = remote.stack?.id,
         thumbhash = remote.thumbhash;
 
   Asset.local(AssetEntity local, List<int> hash)
@@ -164,12 +165,11 @@ class Asset {
   @ignore
   ExifInfo? exifInfo;
 
+  String? stackId;
+
   String? stackParentId;
 
-  @ignore
-  int get stackChildrenCount => stackCount ?? 0;
-
-  int? stackCount;
+  int stackCount;
 
   /// Aspect ratio of the asset
   @ignore
@@ -232,7 +232,8 @@ class Asset {
         isArchived == other.isArchived &&
         isTrashed == other.isTrashed &&
         stackCount == other.stackCount &&
-        stackParentId == other.stackParentId;
+        stackParentId == other.stackParentId &&
+        stackId == other.stackId;
   }
 
   @override
@@ -257,7 +258,8 @@ class Asset {
       isArchived.hashCode ^
       isTrashed.hashCode ^
       stackCount.hashCode ^
-      stackParentId.hashCode;
+      stackParentId.hashCode ^
+      stackId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -279,10 +281,8 @@ class Asset {
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
         a.thumbhash != thumbhash ||
-        ((stackCount == null && a.stackCount != null) ||
-            (stackCount != null &&
-                a.stackCount != null &&
-                stackCount != a.stackCount));
+        stackCount != a.stackCount ||
+        stackId != a.stackId;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
