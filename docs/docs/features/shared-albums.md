@@ -80,7 +80,7 @@ You can edit the link properties, options include;
 ## Share Specific Assets
 
 A user can share specific assets without linking them to a specific album.
-in order to do so;
+To do this:
 
 1. Go to the timeline
 2. Select the assets (Shift can be used for multiple selection)
