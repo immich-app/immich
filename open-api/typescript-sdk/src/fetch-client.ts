@@ -177,7 +177,7 @@ export type AssetFaceWithoutPersonResponseDto = {
     id: string;
     imageHeight: number;
     imageWidth: number;
-    sourceType?: number;
+    sourceType?: SourceType;
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
@@ -476,7 +476,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     imageWidth: number;
     person: (PersonResponseDto) | null;
-    sourceType?: number;
+    sourceType?: SourceType;
 };
 export type FaceDto = {
     id: string;
@@ -3117,6 +3117,10 @@ export enum UserStatus {
 export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
+}
+export enum SourceType {
+    MachineLearning = "machine-learning",
+    Exif = "exif"
 }
 export enum TagTypeEnum {
     Object = "OBJECT",

@@ -6,6 +6,7 @@ import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SourceType } from 'src/enum';
 import { IsDateStringFormat, MaxDateString, Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class PersonCreateDto {
@@ -113,8 +114,8 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
-  @ApiProperty({ type: 'number' })
-  sourceType?: number;
+  @ApiProperty({ enum: SourceType, enumName: 'SourceType', default: SourceType.MACHINE_LEARNING })
+  sourceType?: string;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {

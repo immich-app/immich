@@ -124,6 +124,9 @@ String parameterToString(dynamic value) {
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
   }
+  if (value is SourceType) {
+    return SourceTypeTypeTransformer().encode(value).toString();
+  }
   if (value is TagTypeEnum) {
     return TagTypeEnumTypeTransformer().encode(value).toString();
   }

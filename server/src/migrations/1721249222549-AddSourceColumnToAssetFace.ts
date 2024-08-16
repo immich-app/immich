@@ -4,11 +4,13 @@ export class AddSourceColumnToAssetFace1721249222549 implements MigrationInterfa
     name = 'AddSourceColumnToAssetFace1721249222549'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "asset_faces" ADD "sourceType" integer DEFAULT 0`);
+        await queryRunner.query(`CREATE TYPE sourceType AS ENUM ('machine-learning', 'exif');`);
+        await queryRunner.query(`ALTER TABLE "asset_faces" ADD "sourceType" sourceType DEFAULT 'machine-learning'`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "asset_faces" DROP COLUMN "sourceType"`);
+        await queryRunner.query(`DROP TYPE sourceType`);
     }
 
 }

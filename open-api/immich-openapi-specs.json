@@ -7719,7 +7719,7 @@
             "nullable": true
           },
           "sourceType": {
-            "type": "number"
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -7790,7 +7790,7 @@
             "type": "integer"
           },
           "sourceType": {
-            "type": "number"
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -10799,6 +10799,14 @@
           "query"
         ],
         "type": "object"
+      },
+      "SourceType": {
+        "default": "machine-learning",
+        "enum": [
+          "machine-learning",
+          "exif"
+        ],
+        "type": "string"
       },
       "SystemConfigDto": {
         "properties": {

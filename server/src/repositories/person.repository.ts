@@ -282,7 +282,7 @@ export class PersonRepository implements IPersonRepository {
     return res.map((row) => row.id);
   }
 
-  async replaceFaces(assetId: string, entities: AssetFaceEntity[], sourceType?: number): Promise<string[]> {
+  async replaceFaces(assetId: string, entities: AssetFaceEntity[], sourceType?: string): Promise<string[]> {
     return await this.assetFaceRepository.manager.transaction(async (manager) => {
       const builder = manager.createQueryBuilder(AssetFaceEntity, 'asset_faces');
       let query = builder.delete().where('assetId = :assetId', { assetId: assetId });

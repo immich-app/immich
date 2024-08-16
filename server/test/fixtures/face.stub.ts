@@ -1,4 +1,5 @@
-import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { SourceType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { personStub } from 'test/fixtures/person.stub';
 

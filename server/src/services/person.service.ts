@@ -22,11 +22,11 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/dtos/person.dto';
-import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, Permission, SystemMetadataKey } from 'src/enum';
+import { AssetType, Permission, SourceType, SystemMetadataKey } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -448,7 +448,7 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
-    if (face.sourceType) {
+    if (face.sourceType != SourceType.MACHINE_LEARNING) {
       this.logger.warn(`Face ${id} skippable source type ${face.sourceType}`);
       return JobStatus.SKIPPED;
     }
