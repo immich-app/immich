@@ -45,7 +45,7 @@ width="70%"
 alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 />
 
-3.  Select the cog ⚙️ next to Immich then click "**Edit Stack**"
+3.  Select the cogwheel ⚙️ next to Immich and click "**Edit Stack**"
 4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Remove any text that may be in the text area by default. Note that Unraid v6.12.10 uses version 24.0.9 of the Docker Engine, which does not support healthcheck `start_interval` as defined in the `database` service of the Docker compose file (version 25 or higher is needed). This parameter defines an initial waiting period before starting health checks, to give the container time to start up. Commenting out the `start_interval` and `start_period` parameters will allow the containers to start up normally. The only downside to this is that the database container will not receive an initial health check until `interval` time has passed.
 
     <details >
