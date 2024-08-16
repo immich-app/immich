@@ -101,11 +101,12 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
 
-  const checkBulkUploadQueue = new Queue<AssetBulkUploadCheckResults, any>(
+  const checkBulkUploadQueue = new Queue<AssetBulkUploadCheckResults, void>(
     async (assets: AssetBulkUploadCheckResults) => {
       const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets } });
 
       const results = response.results as AssetBulkUploadCheckResults;
+
       for (const { id: filepath, assetId, action } of results) {
         if (action === Action.Accept) {
           newFiles.push(filepath);
@@ -116,7 +117,6 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
       }
 
       checkProgressBar.increment(assets.length);
-      return { message: 'success' };
     },
     { concurrency, retry: 3 },
   );
@@ -130,7 +130,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
       results.push(dto);
       checkBulkUploadRequests.push(dto);
-      if (checkBulkUploadRequests.length >= concurrency) {
+      if (checkBulkUploadRequests.length > concurrency) {
         void checkBulkUploadQueue.push([...checkBulkUploadRequests]);
         checkBulkUploadRequests = [];
       }

@@ -190,11 +190,12 @@ describe('checkForDuplicates', () => {
     });
   });
 
-  it('throws error when check duplicates retry is failed', async () => {
+  it('returns results when check duplicates retry is failed', async () => {
     vi.mocked(checkBulkUpload).mockRejectedValue(new Error('Network error'));
 
-    await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).rejects.toThrowError(
-      'An error occurred while checking for duplicates: Network error',
-    );
+    await expect(checkForDuplicates([testFilePath], { concurrency: 1 })).resolves.toEqual({
+      duplicates: [],
+      newFiles: [],
+    });
   });
 });
