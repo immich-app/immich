@@ -32,7 +32,6 @@ void main() {
       isFavorite: false,
       isArchived: false,
       isTrashed: false,
-      stackCount: 0,
     );
   }
 

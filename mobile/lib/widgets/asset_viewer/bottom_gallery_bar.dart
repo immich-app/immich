@@ -49,9 +49,10 @@ class BottomGalleryBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
 
-    final stack = showStack && asset.stackChildrenCount > 0
-        ? ref.watch(assetStackStateProvider(asset))
-        : <Asset>[];
+    // final stack = showStack && asset.stackChildrenCount > 0
+    //     ? ref.watch(assetStackStateProvider(asset))
+    //     : <Asset>[];
+    final stack = <Asset>[];
     final stackElements = showStack ? [asset, ...stack] : <Asset>[];
     bool isParent = stackIndex == -1 || stackIndex == 0;
     final navStack = AutoRouter.of(context).stackData;

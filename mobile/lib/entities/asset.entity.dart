@@ -33,11 +33,6 @@ class Asset {
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
         isOffline = remote.isOffline,
-        // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
-        // stack handling to properly handle it
-        stackParentId =
-            remote.stack?.id == remote.id ? null : remote.stack?.id,
-        stackCount = remote.stack?.assetCount ?? 0,
         thumbhash = remote.thumbhash;
 
   Asset.local(AssetEntity local, List<int> hash)
@@ -55,7 +50,6 @@ class Asset {
         isArchived = false,
         isTrashed = false,
         isOffline = false,
-        stackCount = 0,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
@@ -86,8 +80,6 @@ class Asset {
     this.isFavorite = false,
     this.isArchived = false,
     this.isTrashed = false,
-    this.stackParentId,
-    this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
   });
@@ -163,13 +155,6 @@ class Asset {
   @ignore
   ExifInfo? exifInfo;
 
-  String? stackParentId;
-
-  @ignore
-  int get stackChildrenCount => stackCount ?? 0;
-
-  int? stackCount;
-
   /// Aspect ratio of the asset
   @ignore
   double? get aspectRatio =>
@@ -229,9 +214,7 @@ class Asset {
         isFavorite == other.isFavorite &&
         isLocal == other.isLocal &&
         isArchived == other.isArchived &&
-        isTrashed == other.isTrashed &&
-        stackCount == other.stackCount &&
-        stackParentId == other.stackParentId;
+        isTrashed == other.isTrashed;
   }
 
   @override
@@ -254,9 +237,7 @@ class Asset {
       isFavorite.hashCode ^
       isLocal.hashCode ^
       isArchived.hashCode ^
-      isTrashed.hashCode ^
-      stackCount.hashCode ^
-      stackParentId.hashCode;
+      isTrashed.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -269,19 +250,12 @@ class Asset {
         width == null && a.width != null ||
         height == null && a.height != null ||
         livePhotoVideoId == null && a.livePhotoVideoId != null ||
-        stackParentId == null && a.stackParentId != null ||
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
         isOffline != a.isOffline ||
         a.exifInfo?.latitude != exifInfo?.latitude ||
-        a.exifInfo?.longitude != exifInfo?.longitude ||
-        // no local stack count or different count from remote
-        a.thumbhash != thumbhash ||
-        ((stackCount == null && a.stackCount != null) ||
-            (stackCount != null &&
-                a.stackCount != null &&
-                stackCount != a.stackCount));
+        a.exifInfo?.longitude != exifInfo?.longitude;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -311,10 +285,6 @@ class Asset {
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
-          // stack handling to properly handle it
-          stackParentId: stackParentId == remoteId ? null : stackParentId,
-          stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
           isTrashed: isTrashed,
@@ -330,10 +300,6 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
-          // stack handling to properly handle it
-          stackParentId: a.stackParentId == a.remoteId ? null : a.stackParentId,
-          stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
@@ -398,8 +364,6 @@ class Asset {
         isTrashed: isTrashed ?? this.isTrashed,
         isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
-        stackParentId: stackParentId ?? this.stackParentId,
-        stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
       );
 
@@ -445,8 +409,6 @@ class Asset {
   "checksum": "$checksum",
   "ownerId": $ownerId,
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
-  "stackCount": "$stackCount",
-  "stackParentId": "${stackParentId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt",
   "updatedAt": "$updatedAt",

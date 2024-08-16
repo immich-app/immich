@@ -87,34 +87,24 @@ const AssetSchema = CollectionSchema(
       name: r'remoteId',
       type: IsarType.string,
     ),
-    r'stackCount': PropertySchema(
-      id: 14,
-      name: r'stackCount',
-      type: IsarType.long,
-    ),
-    r'stackParentId': PropertySchema(
-      id: 15,
-      name: r'stackParentId',
-      type: IsarType.string,
-    ),
     r'thumbhash': PropertySchema(
-      id: 16,
+      id: 14,
       name: r'thumbhash',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 17,
+      id: 15,
       name: r'type',
       type: IsarType.byte,
       enumMap: _AssettypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 18,
+      id: 16,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'width': PropertySchema(
-      id: 19,
+      id: 17,
       name: r'width',
       type: IsarType.int,
     )
@@ -205,12 +195,6 @@ int _assetEstimateSize(
     }
   }
   {
-    final value = object.stackParentId;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
     final value = object.thumbhash;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -239,12 +223,10 @@ void _assetSerialize(
   writer.writeString(offsets[11], object.localId);
   writer.writeLong(offsets[12], object.ownerId);
   writer.writeString(offsets[13], object.remoteId);
-  writer.writeLong(offsets[14], object.stackCount);
-  writer.writeString(offsets[15], object.stackParentId);
-  writer.writeString(offsets[16], object.thumbhash);
-  writer.writeByte(offsets[17], object.type.index);
-  writer.writeDateTime(offsets[18], object.updatedAt);
-  writer.writeInt(offsets[19], object.width);
+  writer.writeString(offsets[14], object.thumbhash);
+  writer.writeByte(offsets[15], object.type.index);
+  writer.writeDateTime(offsets[16], object.updatedAt);
+  writer.writeInt(offsets[17], object.width);
 }
 
 Asset _assetDeserialize(
@@ -269,13 +251,11 @@ Asset _assetDeserialize(
     localId: reader.readStringOrNull(offsets[11]),
     ownerId: reader.readLong(offsets[12]),
     remoteId: reader.readStringOrNull(offsets[13]),
-    stackCount: reader.readLongOrNull(offsets[14]),
-    stackParentId: reader.readStringOrNull(offsets[15]),
-    thumbhash: reader.readStringOrNull(offsets[16]),
-    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[17])] ??
+    thumbhash: reader.readStringOrNull(offsets[14]),
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[15])] ??
         AssetType.other,
-    updatedAt: reader.readDateTime(offsets[18]),
-    width: reader.readIntOrNull(offsets[19]),
+    updatedAt: reader.readDateTime(offsets[16]),
+    width: reader.readIntOrNull(offsets[17]),
   );
   return object;
 }
@@ -316,17 +296,13 @@ P _assetDeserializeProp<P>(
     case 13:
       return (reader.readStringOrNull(offset)) as P;
     case 14:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 15:
-      return (reader.readStringOrNull(offset)) as P;
-    case 16:
-      return (reader.readStringOrNull(offset)) as P;
-    case 17:
       return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
           AssetType.other) as P;
-    case 18:
+    case 16:
       return (reader.readDateTime(offset)) as P;
-    case 19:
+    case 17:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1859,221 +1835,6 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'stackCount',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'stackCount',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountEqualTo(
-      int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'stackCount',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'stackCount',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountLessThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'stackCount',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountBetween(
-    int? lower,
-    int? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'stackCount',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'stackParentId',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'stackParentId',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'stackParentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'stackParentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'stackParentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'stackParentId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'stackParentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'stackParentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'stackParentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'stackParentId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'stackParentId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'stackParentId',
-        value: '',
-      ));
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2568,30 +2329,6 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackCount() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackCount', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackCountDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackCount', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackParentId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackParentIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByThumbhash() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'thumbhash', Sort.asc);
@@ -2822,30 +2559,6 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackCount() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackCount', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackCountDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackCount', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackParentId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackParentIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByThumbhash() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'thumbhash', Sort.asc);
@@ -2986,20 +2699,6 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByStackCount() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'stackCount');
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QDistinct> distinctByStackParentId(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'stackParentId',
-          caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QDistinct> distinctByThumbhash(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -3114,18 +2813,6 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, String?, QQueryOperations> remoteIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteId');
-    });
-  }
-
-  QueryBuilder<Asset, int?, QQueryOperations> stackCountProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'stackCount');
-    });
-  }
-
-  QueryBuilder<Asset, String?, QQueryOperations> stackParentIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'stackParentId');
     });
   }
 
