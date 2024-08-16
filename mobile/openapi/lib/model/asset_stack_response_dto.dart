@@ -15,30 +15,36 @@ class AssetStackResponseDto {
   AssetStackResponseDto({
     required this.assetCount,
     required this.id,
+    required this.primaryAssetId,
   });
 
   int assetCount;
 
   String id;
 
+  String primaryAssetId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetStackResponseDto &&
     other.assetCount == assetCount &&
-    other.id == id;
+    other.id == id &&
+    other.primaryAssetId == primaryAssetId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assetCount.hashCode) +
-    (id.hashCode);
+    (id.hashCode) +
+    (primaryAssetId.hashCode);
 
   @override
-  String toString() => 'AssetStackResponseDto[assetCount=$assetCount, id=$id]';
+  String toString() => 'AssetStackResponseDto[assetCount=$assetCount, id=$id, primaryAssetId=$primaryAssetId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetCount'] = this.assetCount;
       json[r'id'] = this.id;
+      json[r'primaryAssetId'] = this.primaryAssetId;
     return json;
   }
 
@@ -52,6 +58,7 @@ class AssetStackResponseDto {
       return AssetStackResponseDto(
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         id: mapValueOfType<String>(json, r'id')!,
+        primaryAssetId: mapValueOfType<String>(json, r'primaryAssetId')!,
       );
     }
     return null;
@@ -101,6 +108,7 @@ class AssetStackResponseDto {
   static const requiredKeys = <String>{
     'assetCount',
     'id',
+    'primaryAssetId',
   };
 }
 

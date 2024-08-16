@@ -58,6 +58,9 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
 
 export class AssetStackResponseDto {
   id!: string;
+
+  primaryAssetId!: string;
+
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
 }
@@ -93,6 +96,7 @@ const mapStack = (entity: AssetEntity) => {
 
   return {
     id: entity.stack.id,
+    primaryAssetId: entity.stack.primaryAssetId,
     assetCount: entity.stack.assetCount ?? entity.stack.assets.length,
   };
 };

@@ -195,6 +195,7 @@ export type SmartInfoResponseDto = {
 export type AssetStackResponseDto = {
     assetCount: number;
     id: string;
+    primaryAssetId: string;
 };
 export type TagResponseDto = {
     id: string;

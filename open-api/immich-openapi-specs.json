@@ -8379,11 +8379,15 @@
           },
           "id": {
             "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
           }
         },
         "required": [
           "assetCount",
-          "id"
+          "id",
+          "primaryAssetId"
         ],
         "type": "object"
       },
