@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { APIKeyService } from 'src/services/api-key.service';
@@ -22,10 +23,11 @@ describe(APIKeyService.name, () => {
   describe('create', () => {
     it('should create a new key', async () => {
       keyMock.create.mockResolvedValue(keyStub.admin);
-      await sut.create(authStub.admin, { name: 'Test Key' });
+      await sut.create(authStub.admin, { name: 'Test Key', permissions: [Permission.ALL] });
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'Test Key',
+        permissions: [Permission.ALL],
         userId: authStub.admin.user.id,
       });
       expect(cryptoMock.newPassword).toHaveBeenCalled();
@@ -35,11 +37,12 @@ describe(APIKeyService.name, () => {
     it('should not require a name', async () => {
       keyMock.create.mockResolvedValue(keyStub.admin);
 
-      await sut.create(authStub.admin, {});
+      await sut.create(authStub.admin, { permissions: [Permission.ALL] });
 
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'API Key',
+        permissions: [Permission.ALL],
         userId: authStub.admin.user.id,
       });
       expect(cryptoMock.newPassword).toHaveBeenCalled();

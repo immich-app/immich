@@ -299,10 +299,12 @@ export type ApiKeyResponseDto = {
     createdAt: string;
     id: string;
     name: string;
+    permissions: Permission[];
     updatedAt: string;
 };
 export type ApiKeyCreateDto = {
     name?: string;
+    permissions: Permission[];
 };
 export type ApiKeyCreateResponseDto = {
     apiKey: ApiKeyResponseDto;
@@ -3124,6 +3126,79 @@ export enum Error {
     NoPermission = "no_permission",
     NotFound = "not_found",
     Unknown = "unknown"
+}
+export enum Permission {
+    All = "all",
+    ActivityCreate = "activity.create",
+    ActivityRead = "activity.read",
+    ActivityUpdate = "activity.update",
+    ActivityDelete = "activity.delete",
+    ActivityStatistics = "activity.statistics",
+    ApiKeyCreate = "apiKey.create",
+    ApiKeyRead = "apiKey.read",
+    ApiKeyUpdate = "apiKey.update",
+    ApiKeyDelete = "apiKey.delete",
+    AssetRead = "asset.read",
+    AssetUpdate = "asset.update",
+    AssetDelete = "asset.delete",
+    AssetRestore = "asset.restore",
+    AssetShare = "asset.share",
+    AssetView = "asset.view",
+    AssetDownload = "asset.download",
+    AssetUpload = "asset.upload",
+    AlbumCreate = "album.create",
+    AlbumRead = "album.read",
+    AlbumUpdate = "album.update",
+    AlbumDelete = "album.delete",
+    AlbumStatistics = "album.statistics",
+    AlbumAddAsset = "album.addAsset",
+    AlbumRemoveAsset = "album.removeAsset",
+    AlbumShare = "album.share",
+    AlbumDownload = "album.download",
+    AuthDeviceDelete = "authDevice.delete",
+    ArchiveRead = "archive.read",
+    FaceCreate = "face.create",
+    FaceRead = "face.read",
+    FaceUpdate = "face.update",
+    FaceDelete = "face.delete",
+    LibraryCreate = "library.create",
+    LibraryRead = "library.read",
+    LibraryUpdate = "library.update",
+    LibraryDelete = "library.delete",
+    LibraryStatistics = "library.statistics",
+    TimelineRead = "timeline.read",
+    TimelineDownload = "timeline.download",
+    MemoryCreate = "memory.create",
+    MemoryRead = "memory.read",
+    MemoryUpdate = "memory.update",
+    MemoryDelete = "memory.delete",
+    PartnerCreate = "partner.create",
+    PartnerRead = "partner.read",
+    PartnerUpdate = "partner.update",
+    PartnerDelete = "partner.delete",
+    PersonCreate = "person.create",
+    PersonRead = "person.read",
+    PersonUpdate = "person.update",
+    PersonDelete = "person.delete",
+    PersonStatistics = "person.statistics",
+    PersonMerge = "person.merge",
+    PersonReassign = "person.reassign",
+    SharedLinkCreate = "sharedLink.create",
+    SharedLinkRead = "sharedLink.read",
+    SharedLinkUpdate = "sharedLink.update",
+    SharedLinkDelete = "sharedLink.delete",
+    SystemConfigRead = "systemConfig.read",
+    SystemConfigUpdate = "systemConfig.update",
+    SystemMetadataRead = "systemMetadata.read",
+    SystemMetadataUpdate = "systemMetadata.update",
+    TagCreate = "tag.create",
+    TagRead = "tag.read",
+    TagUpdate = "tag.update",
+    TagDelete = "tag.delete",
+    AdminUserCreate = "admin.user.create",
+    AdminUserRead = "admin.user.read",
+    AdminUserUpdate = "admin.user.update",
+    AdminUserDelete = "admin.user.delete"
 }
 export enum AssetMediaStatus {
     Created = "created",

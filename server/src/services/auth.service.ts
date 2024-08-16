@@ -31,6 +31,7 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
+import { Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -38,6 +39,7 @@ import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 
 export interface LoginDetails {
@@ -61,6 +63,7 @@ export type ValidateRequest = {
   metadata: {
     sharedLinkRoute: boolean;
     adminRoute: boolean;
+    permission?: Permission;
     uri: string;
   };
 };
@@ -157,7 +160,7 @@ export class AuthService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, permission, uri } = metadata;
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
@@ -167,6 +170,10 @@ export class AuthService {
     if (authDto.sharedLink && !sharedLinkRoute) {
       this.logger.warn(`Denied access to non-shared route: ${uri}`);
       throw new ForbiddenException('Forbidden');
+    }
+
+    if (authDto.apiKey && permission && !isGranted({ requested: [permission], current: authDto.apiKey.permissions })) {
+      throw new ForbiddenException(`Missing required permission: ${permission}`);
     }
 
     return authDto;

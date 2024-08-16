@@ -9,6 +9,7 @@ import {
   UserAdminSearchDto,
   UserAdminUpdateDto,
 } from 'src/dtos/user.dto';
+import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { UserAdminService } from 'src/services/user-admin.service';
 import { UUIDParamDto } from 'src/validation';
@@ -19,25 +20,25 @@ export class UserAdminController {
   constructor(private service: UserAdminService) {}
 
   @Get()
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ADMIN_USER_READ, admin: true })
   searchUsersAdmin(@Auth() auth: AuthDto, @Query() dto: UserAdminSearchDto): Promise<UserAdminResponseDto[]> {
     return this.service.search(auth, dto);
   }
 
   @Post()
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ADMIN_USER_CREATE, admin: true })
   createUserAdmin(@Body() createUserDto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
     return this.service.create(createUserDto);
   }
 
   @Get(':id')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ADMIN_USER_READ, admin: true })
   getUserAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserAdminResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ADMIN_USER_UPDATE, admin: true })
   updateUserAdmin(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -47,7 +48,7 @@ export class UserAdminController {
   }
 
   @Delete(':id')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ADMIN_USER_DELETE, admin: true })
   deleteUserAdmin(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -57,13 +58,13 @@ export class UserAdminController {
   }
 
   @Get(':id/preferences')
-  @Authenticated()
+  @Authenticated({ permission: Permission.ADMIN_USER_READ, admin: true })
   getUserPreferencesAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserPreferencesResponseDto> {
     return this.service.getPreferences(auth, id);
   }
 
   @Put(':id/preferences')
-  @Authenticated()
+  @Authenticated({ permission: Permission.ADMIN_USER_UPDATE, admin: true })
   updateUserPreferencesAdmin(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -73,7 +74,7 @@ export class UserAdminController {
   }
 
   @Post(':id/restore')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ADMIN_USER_DELETE, admin: true })
   restoreUserAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserAdminResponseDto> {
     return this.service.restore(auth, id);
   }

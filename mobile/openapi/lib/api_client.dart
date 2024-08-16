@@ -407,6 +407,8 @@ class ApiClient {
           return PeopleUpdateDto.fromJson(value);
         case 'PeopleUpdateItem':
           return PeopleUpdateItem.fromJson(value);
+        case 'Permission':
+          return PermissionTypeTransformer().decode(value);
         case 'PersonCreateDto':
           return PersonCreateDto.fromJson(value);
         case 'PersonResponseDto':

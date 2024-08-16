@@ -7135,8 +7135,17 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
           }
         },
+        "required": [
+          "permissions"
+        ],
         "type": "object"
       },
       "APIKeyCreateResponseDto": {
@@ -7166,6 +7175,12 @@
           "name": {
             "type": "string"
           },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -7175,6 +7190,7 @@
           "createdAt",
           "id",
           "name",
+          "permissions",
           "updatedAt"
         ],
         "type": "object"
@@ -9728,6 +9744,82 @@
           "id"
         ],
         "type": "object"
+      },
+      "Permission": {
+        "enum": [
+          "all",
+          "activity.create",
+          "activity.read",
+          "activity.update",
+          "activity.delete",
+          "activity.statistics",
+          "apiKey.create",
+          "apiKey.read",
+          "apiKey.update",
+          "apiKey.delete",
+          "asset.read",
+          "asset.update",
+          "asset.delete",
+          "asset.restore",
+          "asset.share",
+          "asset.view",
+          "asset.download",
+          "asset.upload",
+          "album.create",
+          "album.read",
+          "album.update",
+          "album.delete",
+          "album.statistics",
+          "album.addAsset",
+          "album.removeAsset",
+          "album.share",
+          "album.download",
+          "authDevice.delete",
+          "archive.read",
+          "face.create",
+          "face.read",
+          "face.update",
+          "face.delete",
+          "library.create",
+          "library.read",
+          "library.update",
+          "library.delete",
+          "library.statistics",
+          "timeline.read",
+          "timeline.download",
+          "memory.create",
+          "memory.read",
+          "memory.update",
+          "memory.delete",
+          "partner.create",
+          "partner.read",
+          "partner.update",
+          "partner.delete",
+          "person.create",
+          "person.read",
+          "person.update",
+          "person.delete",
+          "person.statistics",
+          "person.merge",
+          "person.reassign",
+          "sharedLink.create",
+          "sharedLink.read",
+          "sharedLink.update",
+          "sharedLink.delete",
+          "systemConfig.read",
+          "systemConfig.update",
+          "systemMetadata.read",
+          "systemMetadata.update",
+          "tag.create",
+          "tag.read",
+          "tag.update",
+          "tag.delete",
+          "admin.user.create",
+          "admin.user.read",
+          "admin.user.update",
+          "admin.user.delete"
+        ],
+        "type": "string"
       },
       "PersonCreateDto": {
         "properties": {
