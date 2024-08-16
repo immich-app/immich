@@ -11,7 +11,7 @@ import {
   getSupportedMediaTypes,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
-import { Presets, SingleBar } from 'cli-progress';
+import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
@@ -90,68 +90,68 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     return { newFiles: files, duplicates: [] };
   }
 
-  const progressBar = new SingleBar(
-    { format: 'Checking files | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
+  const multiBar = new MultiBar(
+    { format: '{message} | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
     Presets.shades_classic,
   );
 
-  progressBar.start(files.length, 0);
+  const hashProgressBar = multiBar.create(files.length, 0, { message: 'Hashing files          ' });
+  const checkProgressBar = multiBar.create(files.length, 0, { message: 'Checking for duplicates' });
+
+  const newFiles: string[] = [];
+  const duplicates: Asset[] = [];
+
+  const checkBulkUploadQueue = new Queue<AssetBulkUploadCheckResults, any>(
+    async (assets: AssetBulkUploadCheckResults) => {
+      const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets } });
+
+      const results = response.results as AssetBulkUploadCheckResults;
+      for (const { id: filepath, assetId, action } of results) {
+        if (action === Action.Accept) {
+          newFiles.push(filepath);
+        } else {
+          // rejects are always duplicates
+          duplicates.push({ id: assetId as string, filepath });
+        }
+      }
+
+      checkProgressBar.increment(assets.length);
+      return { message: 'success' };
+    },
+    { concurrency, retry: 3 },
+  );
 
   const results: { id: string; checksum: string }[] = [];
+  let checkBulkUploadRequests: AssetBulkUploadCheckResults = [];
 
   const queue = new Queue<string, AssetBulkUploadCheckResults>(
     async (filepath: string): Promise<AssetBulkUploadCheckResults> => {
       const dto = { id: filepath, checksum: await sha1(filepath) };
 
       results.push(dto);
+      checkBulkUploadRequests.push(dto);
+      if (checkBulkUploadRequests.length >= concurrency) {
+        void checkBulkUploadQueue.push([...checkBulkUploadRequests]);
+        checkBulkUploadRequests = [];
+      }
 
-      progressBar.increment();
+      hashProgressBar.increment();
       return results;
     },
     { concurrency, retry: 3 },
   );
 
-  await Promise.all(
-    files.map(async (item) => {
-      await queue.push(item);
-    }),
-  );
+  files.map((item) => {
+    void queue.push(item);
+  });
 
   await queue.drained();
 
-  const newFiles: string[] = [];
-  const duplicates: Asset[] = [];
+  await checkBulkUploadQueue.push(checkBulkUploadRequests);
 
-  let retries = 0;
-  const maxRetries = 3;
+  await checkBulkUploadQueue.drained();
 
-  while (retries < maxRetries) {
-    try {
-      const chunks = chunk(results, 1000);
-
-      for (const chunk of chunks) {
-        const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: chunk } });
-
-        for (const { id: filepath, assetId, action } of response.results) {
-          if (action === Action.Accept) {
-            newFiles.push(filepath);
-          } else {
-            // rejects are always duplicates
-            duplicates.push({ id: assetId as string, filepath });
-          }
-        }
-      }
-
-      break;
-    } catch (error: any) {
-      retries++;
-      if (retries >= maxRetries) {
-        throw new Error(`An error occurred while checking for duplicates: ${error.message}`);
-      }
-    }
-  }
-
-  progressBar.stop();
+  multiBar.stop();
 
   console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(duplicates.length)}`);
 
@@ -225,11 +225,9 @@ export const uploadFiles = async (files: string[], { dryRun, concurrency }: Uplo
     { concurrency, retry: 3 },
   );
 
-  await Promise.all(
-    files.map(async (item) => {
-      await queue.push(item);
-    }),
-  );
+  files.map((item) => {
+    void queue.push(item);
+  });
 
   await queue.drained();
 
