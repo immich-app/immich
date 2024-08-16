@@ -116,16 +116,6 @@ describe('/asset', () => {
 
     await utils.waitForWebsocketEvent({ event: 'assetUpload', id: ratingAsset.id });
 
-    // asset faces
-    facesAsset = await utils.createAsset(admin.accessToken, {
-      assetData: {
-        filename: 'portrait.jpg',
-        bytes: await readFile(facesAssetFilepath),
-      },
-    });
-
-    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
-
     user1Assets = await Promise.all([
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
@@ -269,6 +259,14 @@ describe('/asset', () => {
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         metadata: { faces: { import: true } },
+      });
+
+      // asset faces
+      facesAsset = await utils.createAsset(admin.accessToken, {
+        assetData: {
+          filename: 'portrait.jpg',
+          bytes: await readFile(facesAssetFilepath),
+        },
       });
 
       await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
