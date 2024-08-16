@@ -4,6 +4,7 @@ import { AlbumEntity } from 'src/entities/album.entity';
 import { APIKeyEntity } from 'src/entities/api-key.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
+import { AssetUserEntity } from 'src/entities/asset-user.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AuditEntity } from 'src/entities/audit.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -26,22 +27,25 @@ import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
 export const entities = [
+  APIKeyEntity,
   ActivityEntity,
   AlbumEntity,
   AlbumUserEntity,
-  APIKeyEntity,
   AssetEntity,
   AssetFaceEntity,
   AssetJobStatusEntity,
+  AssetUserEntity,
   AuditEntity,
   ExifEntity,
   FaceSearchEntity,
   GeodataPlacesEntity,
-  NaturalEarthCountriesEntity,
+  LibraryEntity,
   MemoryEntity,
   MoveEntity,
+  NaturalEarthCountriesEntity,
   PartnerEntity,
   PersonEntity,
+  SessionEntity,
   SharedLinkEntity,
   SmartInfoEntity,
   SmartSearchEntity,
@@ -50,6 +54,4 @@ export const entities = [
   TagEntity,
   UserEntity,
   UserMetadataEntity,
-  SessionEntity,
-  LibraryEntity,
 ];

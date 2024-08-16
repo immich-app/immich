@@ -114,7 +114,9 @@ describe(AssetService.name, () => {
         { yearsAgo: 15, title: '15 years ago', assets: [mapAsset(image4)] },
       ]);
 
-      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[[authStub.admin.user.id], { day: 15, month: 1 }]]);
+      expect(assetMock.getByDayOfYear.mock.calls).toEqual([
+        [[authStub.admin.user.id], { day: 15, month: 1 }, authStub.admin.user.id],
+      ]);
     });
 
     it('should get memories with partners with inTimeline enabled', async () => {
@@ -124,7 +126,7 @@ describe(AssetService.name, () => {
       await sut.getMemoryLane(authStub.admin, { day: 15, month: 1 });
 
       expect(assetMock.getByDayOfYear.mock.calls).toEqual([
-        [[authStub.admin.user.id, userStub.user1.id], { day: 15, month: 1 }],
+        [[authStub.admin.user.id, userStub.user1.id], { day: 15, month: 1 }, authStub.admin.user.id],
       ]);
     });
   });

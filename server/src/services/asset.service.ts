@@ -71,7 +71,7 @@ export class AssetService {
     });
     const userIds = [auth.user.id, ...partnerIds];
 
-    const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
+    const assets = await this.assetRepository.getByDayOfYear(userIds, dto, auth.user.id);
     const groups: Record<number, AssetEntity[]> = {};
     const currentYear = new Date().getFullYear();
     for (const asset of assets) {

@@ -19,7 +19,6 @@ SELECT
   "entity"."fileCreatedAt" AS "entity_fileCreatedAt",
   "entity"."localDateTime" AS "entity_localDateTime",
   "entity"."fileModifiedAt" AS "entity_fileModifiedAt",
-  "entity"."isFavorite" AS "entity_isFavorite",
   "entity"."isArchived" AS "entity_isArchived",
   "entity"."isExternal" AS "entity_isExternal",
   "entity"."isOffline" AS "entity_isOffline",
@@ -59,13 +58,16 @@ SELECT
   "exifInfo"."colorspace" AS "exifInfo_colorspace",
   "exifInfo"."bitsPerSample" AS "exifInfo_bitsPerSample",
   "exifInfo"."rating" AS "exifInfo_rating",
-  "exifInfo"."fps" AS "exifInfo_fps"
+  "exifInfo"."fps" AS "exifInfo_fps",
+  "favoriteInfo"."assetId" IS NOT NULL AS entity_isFavorite
 FROM
   "assets" "entity"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "entity"."id"
+  LEFT JOIN "asset_favorites" "favoriteInfo" ON "favoriteInfo"."assetId" = "entity"."id"
+  AND ("favoriteInfo"."userId" = $1)
 WHERE
   (
-    "entity"."ownerId" IN ($1)
+    "entity"."ownerId" IN ($2)
     AND "entity"."isVisible" = true
     AND "entity"."isArchived" = false
     AND "entity"."previewPath" IS NOT NULL
@@ -73,12 +75,12 @@ WHERE
       DAY
       FROM
         "entity"."localDateTime" AT TIME ZONE 'UTC'
-    ) = $2
+    ) = $3
     AND EXTRACT(
       MONTH
       FROM
         "entity"."localDateTime" AT TIME ZONE 'UTC'
-    ) = $3
+    ) = $4
   )
   AND ("entity"."deletedAt" IS NULL)
 ORDER BY

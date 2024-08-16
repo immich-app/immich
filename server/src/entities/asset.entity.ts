@@ -1,6 +1,7 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
+import { AssetUserEntity } from 'src/entities/asset-user.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
@@ -104,9 +105,6 @@ export class AssetEntity {
   fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
-  isFavorite!: boolean;
-
-  @Column({ type: 'boolean', default: false })
   isArchived!: boolean;
 
   @Column({ type: 'boolean', default: false })
@@ -141,6 +139,9 @@ export class AssetEntity {
 
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
+
+  @OneToMany(() => AssetUserEntity, (assetUserEntity) => assetUserEntity.asset)
+  userInfo?: AssetUserEntity;
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;

@@ -151,7 +151,7 @@ export interface IAssetRepository {
     select?: FindOptionsSelect<AssetEntity>,
   ): Promise<AssetEntity[]>;
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
-  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
+  getByDayOfYear(ownerIds: string[], monthDay: MonthDay, userId: string): Promise<AssetEntity[]>;
   getByChecksum(options: { ownerId: string; checksum: Buffer; libraryId?: string }): Promise<AssetEntity | null>;
   getByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;

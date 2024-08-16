@@ -77,7 +77,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })
-  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<AssetEntity[]> {
+  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay, userId: string): Promise<AssetEntity[]> {
     return this.repository
       .createQueryBuilder('entity')
       .where(
@@ -94,6 +94,8 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
+      .leftJoin('entity.favoriteInfo', 'favoriteInfo', 'favoriteInfo.userId = :userId', { userId })
+      .addSelect('favoriteInfo.assetId IS NOT NULL AS entity_isFavorite')
       .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
