@@ -43,7 +43,7 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 @Index('IDX_originalPath_libraryId', ['originalPath', 'libraryId'])
 @Index('IDX_asset_id_stackId', ['id', 'stackId'])
 @Index('idx_originalFileName_trigram', { synchronize: false })
-// For all assets, each originalpath must be unique per user and library
+// For all assets, each originalPath must be unique per user and library
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
