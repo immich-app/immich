@@ -360,6 +360,7 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
       .filter()
       .ownerIdEqualTo(userId)
       .isTrashedEqualTo(false)
+      .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
 }
 
@@ -373,5 +374,6 @@ QueryBuilder<Asset, Asset, QAfterSortBy> _commonFilterAndSort(
       .filter()
       .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
+      .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
 }

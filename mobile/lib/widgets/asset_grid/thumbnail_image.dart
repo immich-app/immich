@@ -107,19 +107,19 @@ class ThumbnailImage extends ConsumerWidget {
         right: 8,
         child: Row(
           children: [
-            // if (asset.stackChildrenCount > 1)
-            //   Text(
-            //     "${asset.stackChildrenCount}",
-            //     style: const TextStyle(
-            //       color: Colors.white,
-            //       fontSize: 10,
-            //       fontWeight: FontWeight.bold,
-            //     ),
-            //   ),
-            // if (asset.stackChildrenCount > 1)
-            //   const SizedBox(
-            //     width: 3,
-            //   ),
+            if (asset.stackChildrenCount > 1)
+              Text(
+                "${asset.stackChildrenCount}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (asset.stackChildrenCount > 1)
+              const SizedBox(
+                width: 3,
+              ),
             const Icon(
               Icons.burst_mode_rounded,
               color: Colors.white,
@@ -208,7 +208,7 @@ class ThumbnailImage extends ConsumerWidget {
             ),
           ),
         if (!asset.isImage) buildVideoIcon(),
-        // if (asset.stackChildrenCount > 0) buildStackIcon(),
+        if (asset.stackChildrenCount > 0) buildStackIcon(),
       ],
     );
   }
