@@ -1,25 +1,22 @@
 export class KeyedPriorityQueue<K, T> {
   private items: { key: K; value: T; priority: number }[] = [];
   private set: Set<K> = new Set();
-  private pendingRemove: Set<K> = new Set();
 
   remove(key: K) {
     const removed = this.set.delete(key);
     if (removed) {
-      this.pendingRemove.add(key);
-    }
-    return removed;
-  }
-
-  reAdd(key: K) {
-    const removed = this.pendingRemove.delete(key);
-    if (removed) {
-      this.set.add(key);
+      const idx = this.items.findIndex((i) => i.key === key);
+      if (idx >= 0) {
+        this.items.splice(idx, 1);
+      }
     }
     return removed;
   }
 
   push(key: K, value: T, priority: number) {
+    if (this.set.has(key)) {
+      return this.length;
+    }
     for (let i = 0; i < this.items.length; i++) {
       if (this.items[i].priority > priority) {
         this.set.add(key);
@@ -36,7 +33,6 @@ export class KeyedPriorityQueue<K, T> {
     while (item) {
       if (this.set.has(item.key)) {
         this.set.delete(item.key);
-        this.pendingRemove.delete(item.key);
         return item;
       }
       item = this.items.shift();

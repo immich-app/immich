@@ -130,11 +130,11 @@ const observe = (key: HTMLElement | string, target: HTMLElement, properties: Int
 
 function configure(key: HTMLElement | string, element: HTMLElement, properties: IntersectionObserverActionProperties) {
   elementToConfig.set(key, properties);
-  if (properties.immediate) {
-    observe(key, element, properties);
-  } else {
-    addTask(key, () => observe(key, element, properties), properties.priority);
-  }
+  // // if (properties.immediate) {
+  // observe(key, element, properties);
+  // // } else {
+  addTask(key, () => observe(key, element, properties), properties.priority);
+  // }
 }
 function _intersectionObserver(
   key: HTMLElement | string,

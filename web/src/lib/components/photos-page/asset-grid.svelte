@@ -229,7 +229,7 @@
   const bucketListener: BucketListener = (event) => {
     const { type } = event;
     if (type === 'intersecting') {
-      updateLastIntersectedBucketDate();
+      // updateLastIntersectedBucketDate();
     }
     if (type === 'buckheight') {
       const { bucket, delta } = event;
@@ -501,6 +501,7 @@
   }
 
   function intersectedHandler(bucket: AssetBucket) {
+    updateLastIntersectedBucketDate();
     const intersectedTask = () => {
       $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
       void loadIt(bucket);

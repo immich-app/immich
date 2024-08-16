@@ -868,7 +868,6 @@ function drain() {
   let count = 0;
   for (let t = tasks.shift(); t; t = tasks.shift()) {
     t.value();
-
     if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
       scheduleDrain(TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS_DELAY_MS);
       break;
@@ -877,6 +876,7 @@ function drain() {
 }
 
 function scheduleDrain(delay: number = TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS) {
+  // console.log('schedule drain intersected', tasks.length);
   clearTimeout(queueTimer);
   queueTimer = setTimeout(() => {
     const delta = Date.now() - get(lastScrollTime);
@@ -929,17 +929,22 @@ export function queueScrollSensitiveTask(task: Task, priority: number = 10, task
 }
 let lastIdle: number;
 function scheduleDrainSeparatedQueue() {
+  // console.log('schedule drain seperate', seperatedQueue.size);
   cancelIdleCallback(lastIdle);
   lastIdle = requestIdleCallback(
     () => {
+      if (tasks.length > 0) {
+        // console.log('tasks queue is', tasks.length);
+      }
+      // console.log('starting drain');
       let count = 0;
-
       let entry = seperatedQueue.entries().next().value;
       while (entry) {
         const [taskId, task] = entry;
         seperatedQueue.delete(taskId);
         task();
         if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
+          // console.log('hit max', TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS);
           break;
         }
         entry = seperatedQueue.entries().next().value;
@@ -963,212 +968,214 @@ export function removeSeparateTask(taskId: string) {
 
 class AssetGridTaskManager {
   tasks: Map<AssetBucket, BucketTask> = new Map();
+  private getOrCreateBucketTask(bucket: AssetBucket) {
+    let bucketTask = this.tasks.get(bucket);
+    if (!bucketTask) {
+      bucketTask = this.createBucketTask(bucket);
+    }
+    return bucketTask;
+  }
+
   private createBucketTask(bucket: AssetBucket) {
     const bucketTask = new BucketTask(this, bucket);
     this.tasks.set(bucket, bucketTask);
     return bucketTask;
   }
-  private createDateGroupTask(bucketTask: BucketTask, dateGroup: DateGroup) {
-    const dateGroupTask = new DateGroupTask(bucketTask, dateGroup);
-    bucketTask.dateTasks.set(dateGroup, dateGroupTask);
-    return dateGroupTask;
-  }
+
   intersectedBucket(bucket: AssetBucket, task: Task) {
-    let bucketTask = this.tasks.get(bucket);
-    if (!bucketTask) {
-      bucketTask = this.createBucketTask(bucket);
-    }
+    const bucketTask = this.getOrCreateBucketTask(bucket);
+    debugger;
     bucketTask.scheduleIntersected(task);
   }
 
   seperatedBucket(bucket: AssetBucket, seperated: Task) {
-    let bucketTask = this.tasks.get(bucket);
-    if (!bucketTask) {
-      bucketTask = this.createBucketTask(bucket);
-    }
+    const bucketTask = this.getOrCreateBucketTask(bucket);
     bucketTask.scheduleSeparated(seperated);
   }
 
   intersectedDateGroup(dateGroup: DateGroup, interested: Task) {
-    let bucketTask = this.tasks.get(dateGroup.bucket);
-    if (!bucketTask) {
-      bucketTask = this.createBucketTask(dateGroup.bucket);
-    }
+    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
     bucketTask.intersectedDateGroup(dateGroup, interested);
   }
 
   seperatedDateGroup(dateGroup: DateGroup, seperated: Task) {
-    let bucketTask = this.tasks.get(dateGroup.bucket);
-    if (!bucketTask) {
-      bucketTask = this.createBucketTask(dateGroup.bucket);
-    }
+    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
     bucketTask.separatedDateGroup(dateGroup, seperated);
   }
+
   intersectedThumbnail(dateGroup: DateGroup, asset: AssetResponseDto, intersected: Task) {
-    let bucketTask = this.tasks.get(dateGroup.bucket);
-    if (!bucketTask) {
-      bucketTask = this.createBucketTask(dateGroup.bucket);
-    }
-    let dateGroupTask = bucketTask.dateTasks.get(dateGroup);
-    if (!dateGroupTask) {
-      dateGroupTask = this.createDateGroupTask(bucketTask, dateGroup);
-    }
+    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
+    const dateGroupTask = bucketTask.getOrCreateDateGroupTask(dateGroup);
     dateGroupTask.intersectedThumbnail(asset, intersected);
   }
+
   seperatedThumbnail(dateGroup: DateGroup, asset: AssetResponseDto, seperated: Task) {
-    let bucketTask = this.tasks.get(dateGroup.bucket);
-    if (!bucketTask) {
-      bucketTask = this.createBucketTask(dateGroup.bucket);
-    }
-    let dateGroupTask = bucketTask.dateTasks.get(dateGroup);
-    if (!dateGroupTask) {
-      dateGroupTask = this.createDateGroupTask(bucketTask, dateGroup);
-    }
+    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
+    const dateGroupTask = bucketTask.getOrCreateDateGroupTask(dateGroup);
     dateGroupTask.separatedThumbnail(asset, seperated);
   }
 }
-class BucketTask {
-  assetBucket: AssetBucket;
-  assetGridTaskManager: AssetGridTaskManager;
+class IntersectionTask {
+  seperatedKey;
+  intersectedKey;
+  priority;
+
+  status = 'unknown';
+
   intersected: Task | undefined;
   separated: Task | undefined;
+
+  constructor(keyPrefix: string, key: string, priority: number) {
+    this.seperatedKey = keyPrefix + ':s:' + key;
+    this.intersectedKey = keyPrefix + ':i:' + key;
+    this.priority = priority;
+  }
+
+  trackIntersectedTask(task: Task) {
+    this.status = 'intersected';
+    this.intersected = task;
+    return () => {
+      task?.();
+      this.intersected = undefined;
+    };
+  }
+
+  trackSeperatedTask(task: Task) {
+    this.status = 'seperated';
+    this.separated = task;
+    return () => {
+      task?.();
+      this.separated = undefined;
+    };
+  }
+
+  removePendingSeparated() {
+    if (removeSeparateTask(this.seperatedKey)) {
+      this.separated = undefined;
+    }
+  }
+
+  scheduleIntersected(intersected: Task) {
+    if (this.separated) {
+      // console.log('remove seperated', this.seperatedKey);
+      this.removePendingSeparated();
+    }
+    if (this.intersected) {
+      // console.log('ret, inter', this.intersectedKey);
+      return;
+    }
+    if (this.status === 'intersected') {
+      // console.log('ret, status inter', this.intersectedKey);
+      return;
+    }
+    queueScrollSensitiveTask(this.trackIntersectedTask(intersected), this.priority, this.intersectedKey);
+  }
+
+  scheduleSeparated(separated: Task) {
+    if (this.intersected) {
+      // console.log('remove intersected', this.intersectedKey);
+      tasks.remove(this.intersectedKey);
+      this.intersected = undefined;
+    }
+    if (this.separated) {
+      // console.log('ret, seper', this.seperatedKey);
+      return;
+    }
+    if (this.status === 'seperated') {
+      // console.log('ret, b status already sep', this.seperatedKey);
+      return;
+    }
+    queueSeparateTask(this.trackSeperatedTask(separated), this.seperatedKey);
+  }
+}
+class BucketTask extends IntersectionTask {
+  assetBucket: AssetBucket;
+  assetGridTaskManager: AssetGridTaskManager;
   // indexed by dateGroup's date
   dateTasks: Map<DateGroup, DateGroupTask> = new Map();
+
   constructor(parent: AssetGridTaskManager, assetBucket: AssetBucket) {
+    super('b', assetBucket.bucketDate, TUNABLES.BUCKET.PRIORITY);
     this.assetBucket = assetBucket;
     this.assetGridTaskManager = parent;
   }
+
+  getOrCreateDateGroupTask(dateGroup: DateGroup) {
+    let dateGroupTask = this.dateTasks.get(dateGroup);
+    if (!dateGroupTask) {
+      dateGroupTask = this.createDateGroupTask(dateGroup);
+    }
+    return dateGroupTask;
+  }
+
+  createDateGroupTask(dateGroup: DateGroup) {
+    const dateGroupTask = new DateGroupTask(this, dateGroup);
+    this.dateTasks.set(dateGroup, dateGroupTask);
+    return dateGroupTask;
+  }
+
   removePendingSeparated() {
+    super.removePendingSeparated();
     for (const dateGroupTask of this.dateTasks.values()) {
       dateGroupTask.removePendingSeparated();
     }
-    if (removeSeparateTask('b.s:' + this.assetBucket.bucketDate)) {
-      this.separated = undefined;
-    }
-  }
-  scheduleIntersected(intersected: Task) {
-    if (this.separated) {
-      this.removePendingSeparated();
-    }
-
-    this.intersected = intersected;
-    const wrapped = () => {
-      this.intersected?.();
-      this.intersected = undefined;
-    };
-    queueScrollSensitiveTask(wrapped, TUNABLES.BUCKET.PRIORITY, 'b.i:' + this.assetBucket.bucketDate);
-  }
-  scheduleSeparated(separated: Task) {
-    this.separated = separated;
-    const wrapped = () => {
-      this.separated?.();
-      this.separated = undefined;
-    };
-    queueSeparateTask(wrapped, 'b.s:' + this.assetBucket.bucketDate);
   }
 
   intersectedDateGroup(dateGroup: DateGroup, intersected: Task) {
-    let dateGroupTask = this.dateTasks.get(dateGroup);
-    if (!dateGroupTask) {
-      dateGroupTask = new DateGroupTask(this, dateGroup);
-      this.dateTasks.set(dateGroup, dateGroupTask);
-    }
+    const dateGroupTask = this.getOrCreateDateGroupTask(dateGroup);
     dateGroupTask.scheduleIntersected(intersected);
   }
+
   separatedDateGroup(dateGroup: DateGroup, separated: Task) {
-    let dateGroupTask = this.dateTasks.get(dateGroup);
-    if (!dateGroupTask) {
-      dateGroupTask = new DateGroupTask(this, dateGroup);
-      this.dateTasks.set(dateGroup, dateGroupTask);
-    }
+    const dateGroupTask = this.getOrCreateDateGroupTask(dateGroup);
     dateGroupTask.scheduleSeparated(separated);
   }
 }
-class DateGroupTask {
+class DateGroupTask extends IntersectionTask {
   dateGroup: DateGroup;
   bucketTask: BucketTask;
-  intersected: Task | undefined;
-  separated: Task | undefined;
   // indexed by thumbnail's asset
   thumbnailTasks: Map<AssetResponseDto, ThumbnailTask> = new Map();
-  constructor(parent: BucketTask, date: DateGroup) {
-    this.dateGroup = date;
+
+  constructor(parent: BucketTask, dateGroup: DateGroup) {
+    super('dg', dateGroup.date.toString(), TUNABLES.DATEGROUP.PRIORITY);
+    this.dateGroup = dateGroup;
     this.bucketTask = parent;
   }
+
   removePendingSeparated() {
+    super.removePendingSeparated();
     for (const thumbnailTask of this.thumbnailTasks.values()) {
       thumbnailTask.removePendingSeparated();
     }
-    if (removeSeparateTask('dg.s:' + this.dateGroup.date.toString())) {
-      this.separated = undefined;
-    }
   }
-  scheduleIntersected(intersected: Task) {
-    if (this.separated) {
-      this.removePendingSeparated();
-    }
 
-    this.intersected = intersected;
-    const wrapped = () => {
-      this.intersected?.();
-      this.intersected = undefined;
-    };
-    queueScrollSensitiveTask(wrapped, TUNABLES.DATEGROUP.PRIORITY, 'dg.i:' + this.dateGroup.date.toString());
-  }
-  scheduleSeparated(separated: Task) {
-    this.separated = separated;
-    const wrapped = () => {
-      this.separated?.();
-      this.separated = undefined;
-    };
-    queueSeparateTask(wrapped, 'dg.s:' + this.dateGroup.date.toString());
+  getOrCreateThumbnailTask(asset: AssetResponseDto) {
+    let thumbnailTask = this.thumbnailTasks.get(asset);
+    if (!thumbnailTask) {
+      thumbnailTask = new ThumbnailTask(this, asset);
+      this.thumbnailTasks.set(asset, thumbnailTask);
+    }
+    return thumbnailTask;
   }
 
   intersectedThumbnail(asset: AssetResponseDto, intersected: Task) {
-    let thumbnailTask = this.thumbnailTasks.get(asset);
-    if (!thumbnailTask) {
-      thumbnailTask = new ThumbnailTask(this, asset);
-      this.thumbnailTasks.set(asset, thumbnailTask);
-    }
+    const thumbnailTask = this.getOrCreateThumbnailTask(asset);
     thumbnailTask.scheduleIntersected(intersected);
   }
+
   separatedThumbnail(asset: AssetResponseDto, seperated: Task) {
-    let thumbnailTask = this.thumbnailTasks.get(asset);
-    if (!thumbnailTask) {
-      thumbnailTask = new ThumbnailTask(this, asset);
-      this.thumbnailTasks.set(asset, thumbnailTask);
-    }
-    thumbnailTask.scheduleSeperated(seperated);
+    const thumbnailTask = this.getOrCreateThumbnailTask(asset);
+    thumbnailTask.scheduleSeparated(seperated);
   }
 }
-class ThumbnailTask {
+class ThumbnailTask extends IntersectionTask {
   asset: AssetResponseDto;
   dateGroupTask: DateGroupTask;
-  intersected: Task | undefined;
-  seperated: Task | undefined;
+
   constructor(parent: DateGroupTask, asset: AssetResponseDto) {
+    super('t', asset.id, TUNABLES.THUMBNAIL.PRIORITY);
     this.asset = asset;
     this.dateGroupTask = parent;
-  }
-  scheduleIntersected(intersected: Task) {
-    this.intersected = intersected;
-    const wrapped = () => {
-      this.intersected?.();
-      this.intersected = undefined;
-    };
-    queueScrollSensitiveTask(wrapped, TUNABLES.THUMBNAIL.PRIORITY, 't.i:' + this.asset.id);
-  }
-  scheduleSeperated(seperated: Task) {
-    this.seperated = seperated;
-    const wrapped = () => {
-      this.seperated?.();
-      this.seperated = undefined;
-    };
-    queueSeparateTask(wrapped, 't.s:' + this.asset.id);
-  }
-  removePendingSeparated() {
-    if (removeSeparateTask('t.s:' + this.asset.id)) {
-      this.seperated = undefined;
-    }
   }
 }
