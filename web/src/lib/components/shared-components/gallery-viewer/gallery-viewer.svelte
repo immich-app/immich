@@ -1,20 +1,23 @@
 <script lang="ts">
-  import Portal from '../portal/portal.svelte';
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { Viewport } from '$lib/stores/assets.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type AssetResponseDto } from '@immich/sdk';
-  import { onDestroy } from 'svelte';
-  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import justifiedLayout from 'justified-layout';
-  import { getAssetRatio } from '$lib/utils/asset-utils';
-  import { calculateWidth } from '$lib/utils/timeline-util';
-  import { navigate } from '$lib/utils/navigation';
-  import { AppRoute, AssetAction } from '$lib/constants';
   import { goto } from '$app/navigation';
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import { AppRoute, AssetAction } from '$lib/constants';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
+  import { getAssetRatio } from '$lib/utils/asset-utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
+  import { calculateWidth } from '$lib/utils/timeline-util';
+  import { type AssetResponseDto } from '@immich/sdk';
+  import justifiedLayout from 'justified-layout';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
+  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
+  import Portal from '../portal/portal.svelte';
   import { handlePromiseError } from '$lib/utils';
+
+  const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
@@ -68,13 +71,13 @@
     }
   };
 
-  const handleAction = async (action: AssetAction, asset: AssetResponseDto) => {
-    switch (action) {
+  const handleAction = async (action: Action) => {
+    switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
         assets.splice(
-          assets.findIndex((a) => a.id === asset.id),
+          assets.findIndex((a) => a.id === action.asset.id),
           1,
         );
         assets = assets;
@@ -148,7 +151,7 @@
   <Portal target="body">
     <AssetViewer
       asset={$viewingAsset}
-      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
+      onAction={handleAction}
       on:previous={handlePrevious}
       on:next={handleNext}
       on:close={() => {

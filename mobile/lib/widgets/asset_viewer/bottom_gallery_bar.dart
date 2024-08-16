@@ -61,58 +61,6 @@ class BottomGalleryBar extends ConsumerWidget {
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
-    // !!!! itemsList and actionlist should always be in sync
-    final itemsList = [
-      BottomNavigationBarItem(
-        icon: Icon(
-          Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
-        ),
-        label: 'control_bottom_app_bar_share'.tr(),
-        tooltip: 'control_bottom_app_bar_share'.tr(),
-      ),
-      if (asset.isImage)
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.tune_outlined),
-          label: 'control_bottom_app_bar_edit'.tr(),
-          tooltip: 'control_bottom_app_bar_edit'.tr(),
-        ),
-      if (isOwner)
-        asset.isArchived
-            ? BottomNavigationBarItem(
-                icon: const Icon(Icons.unarchive_rounded),
-                label: 'control_bottom_app_bar_unarchive'.tr(),
-                tooltip: 'control_bottom_app_bar_unarchive'.tr(),
-              )
-            : BottomNavigationBarItem(
-                icon: const Icon(Icons.archive_outlined),
-                label: 'control_bottom_app_bar_archive'.tr(),
-                tooltip: 'control_bottom_app_bar_archive'.tr(),
-              ),
-      if (isOwner && stack.isNotEmpty)
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.burst_mode_outlined),
-          label: 'control_bottom_app_bar_stack'.tr(),
-          tooltip: 'control_bottom_app_bar_stack'.tr(),
-        ),
-      if (isOwner && !isInAlbum)
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.delete_outline),
-          label: 'control_bottom_app_bar_delete'.tr(),
-          tooltip: 'control_bottom_app_bar_delete'.tr(),
-        ),
-      if (!isOwner)
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.download_outlined),
-          label: 'download'.tr(),
-          tooltip: 'download'.tr(),
-        ),
-      if (isInAlbum)
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.remove_circle_outline),
-          label: 'album_viewer_appbar_share_remove'.tr(),
-          tooltip: 'album_viewer_appbar_share_remove'.tr(),
-        ),
-    ];
 
     void removeAssetFromStack() {
       if (stackIndex > 0 && showStack) {
@@ -366,16 +314,71 @@ class BottomGalleryBar extends ConsumerWidget {
       }
     }
 
-    List<Function(int)> actionslist = [
-      (_) => shareAsset(),
-      if (asset.isImage) (_) => handleEdit(),
-      if (isOwner) (_) => handleArchive(),
-      if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
-      if (isOwner) (_) => handleDelete(),
-      if (!isOwner) (_) => handleDownload(),
-      if (isInAlbum) (_) => handleRemoveFromAlbum(),
+    final List<Map<BottomNavigationBarItem, Function(int)>> albumActions = [
+      {
+        BottomNavigationBarItem(
+          icon: Icon(
+            Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
+          ),
+          label: 'control_bottom_app_bar_share'.tr(),
+          tooltip: 'control_bottom_app_bar_share'.tr(),
+        ): (_) => shareAsset(),
+      },
+      if (asset.isImage)
+        {
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.tune_outlined),
+            label: 'control_bottom_app_bar_edit'.tr(),
+            tooltip: 'control_bottom_app_bar_edit'.tr(),
+          ): (_) => handleEdit(),
+        },
+      if (isOwner)
+        {
+          asset.isArchived
+              ? BottomNavigationBarItem(
+                  icon: const Icon(Icons.unarchive_rounded),
+                  label: 'control_bottom_app_bar_unarchive'.tr(),
+                  tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+                )
+              : BottomNavigationBarItem(
+                  icon: const Icon(Icons.archive_outlined),
+                  label: 'control_bottom_app_bar_archive'.tr(),
+                  tooltip: 'control_bottom_app_bar_archive'.tr(),
+                ): (_) => handleArchive(),
+        },
+      if (isOwner && stack.isNotEmpty)
+        {
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.burst_mode_outlined),
+            label: 'control_bottom_app_bar_stack'.tr(),
+            tooltip: 'control_bottom_app_bar_stack'.tr(),
+          ): (_) => showStackActionItems(),
+        },
+      if (isOwner && !isInAlbum)
+        {
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.delete_outline),
+            label: 'control_bottom_app_bar_delete'.tr(),
+            tooltip: 'control_bottom_app_bar_delete'.tr(),
+          ): (_) => handleDelete(),
+        },
+      if (!isOwner)
+        {
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.download_outlined),
+            label: 'download'.tr(),
+            tooltip: 'download'.tr(),
+          ): (_) => handleDownload(),
+        },
+      if (isInAlbum)
+        {
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.remove_circle_outline),
+            label: 'album_viewer_appbar_share_remove'.tr(),
+            tooltip: 'album_viewer_appbar_share_remove'.tr(),
+          ): (_) => handleRemoveFromAlbum(),
+        },
     ];
-
     return IgnorePointer(
       ignoring: !ref.watch(showControlsProvider),
       child: AnimatedOpacity(
@@ -407,11 +410,10 @@ class BottomGalleryBar extends ConsumerWidget {
               unselectedItemColor: Colors.white,
               showSelectedLabels: true,
               showUnselectedLabels: true,
-              items: itemsList,
+              items:
+                  albumActions.map((e) => e.keys.first).toList(growable: false),
               onTap: (index) {
-                if (index < actionslist.length) {
-                  actionslist[index].call(index);
-                }
+                albumActions[index].values.first.call(index);
               },
             ),
           ],

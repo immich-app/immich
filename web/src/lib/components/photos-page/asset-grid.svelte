@@ -1,10 +1,7 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { intersectionObserver } from '$lib/actions/intersection-observer';
-  import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
-  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -38,8 +35,12 @@
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-  import type { UpdatePayload } from 'vite';
+
+  import { resizeObserver } from '$lib/actions/resize-observer';
   import MeasureDateGroup from '$lib/components/photos-page/measure-date-group.svelte';
+  import { intersectionObserver } from '$lib/actions/intersection-observer';
+  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import { page } from '$app/stores';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -49,7 +50,12 @@
   export let participatesInRouting: boolean;
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
-  export let removeAction: AssetAction | null = null;
+  export let removeAction:
+    | AssetAction.UNARCHIVE
+    | AssetAction.ARCHIVE
+    | AssetAction.FAVORITE
+    | AssetAction.UNFAVORITE
+    | null = null;
   export let withStacked = false;
   export let showArchiveIcon = false;
   export let isShared = false;
@@ -548,17 +554,17 @@
     await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
   };
 
-  const handleAction = async (action: AssetAction, asset: AssetResponseDto) => {
-    switch (action) {
+  const handleAction = async (action: Action) => {
+    switch (action.type) {
       case removeAction:
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
       case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
-        (await handleNext()) || (await handlePrevious()) || (await handleClose({ detail: { asset } }));
+        (await handleNext()) || (await handlePrevious()) || (await handleClose({ detail: { asset: action.asset } }));
 
         // delete after find the next one
-        $assetStore.removeAssets([asset.id]);
+        assetStore.removeAssets([action.asset.id]);
         break;
       }
 
@@ -566,13 +572,17 @@
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
       case AssetAction.UNFAVORITE: {
-        $assetStore.updateAssets([asset]);
+        assetStore.updateAssets([action.asset]);
         break;
       }
 
       case AssetAction.ADD: {
-        $assetStore.addAssets([asset]);
+        assetStore.addAssets([action.asset]);
         break;
+      }
+
+      case AssetAction.UNSTACK: {
+        assetStore.addAssets(action.assets);
       }
     }
   };
@@ -863,10 +873,10 @@
         preloadAssets={$preloadAssets}
         {isShared}
         {album}
+        onAction={handleAction}
         on:previous={handlePrevious}
         on:next={handleNext}
         on:close={handleClose}
-        on:action={({ detail: action }) => handleAction(action.type, action.asset)}
       />
     {/await}
   {/if}

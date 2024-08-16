@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -55,7 +56,7 @@ class LoginForm extends HookConsumerWidget {
     )..repeat();
     final serverInfo = ref.watch(serverInfoProvider);
     final warningMessage = useState<String?>(null);
-
+    final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
     checkVersionMismatch() async {
@@ -175,6 +176,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     login() async {
+      TextInput.finishAutofillContext();
       // Start loading
       isLoading.value = true;
 
@@ -478,7 +480,10 @@ class LoginForm extends HookConsumerWidget {
 
                   // Note: This used to have an AnimatedSwitcher, but was removed
                   // because of https://github.com/flutter/flutter/issues/120874
-                  serverSelectionOrLogin,
+                  Form(
+                    key: loginFormKey,
+                    child: serverSelectionOrLogin,
+                  ),
                 ],
               ),
             ),

@@ -112,7 +112,8 @@ The `immich-server` container will need access to the gallery. Modify your docke
 ```
 
 :::tip
-The `ro` flag at the end only gives read-only access to the volumes. This will disallow the images from being deleted in the web UI.
+The `ro` flag at the end only gives read-only access to the volumes.
+This will disallow the images from being deleted in the web UI, or adding metadata to the library ([XMP sidecars](/docs/features/xmp-sidecars)).
 :::
 
 :::info

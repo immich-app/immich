@@ -10,11 +10,7 @@ export interface DownloadProgress {
 export const downloadAssets = writable<Record<string, DownloadProgress>>({});
 
 export const isDownloading = derived(downloadAssets, ($downloadAssets) => {
-  if (Object.keys($downloadAssets).length === 0) {
-    return false;
-  }
-
-  return true;
+  return Object.keys($downloadAssets).length > 0;
 });
 
 const update = (key: string, value: Partial<DownloadProgress> | null) => {

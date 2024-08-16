@@ -15,13 +15,15 @@ import {
 } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { OnEmit } from 'src/decorators';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
+import { AssetType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { OnEvents, SystemConfigUpdateEvent } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -45,7 +47,7 @@ interface RenderMetadata {
 }
 
 @Injectable()
-export class StorageTemplateService implements OnEvents {
+export class StorageTemplateService {
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
   private _template: {
@@ -87,7 +89,8 @@ export class StorageTemplateService implements OnEvents {
     );
   }
 
-  onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
+  @OnEmit({ event: 'onConfigValidate' })
+  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {

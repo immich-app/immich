@@ -43,6 +43,7 @@ const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
 const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
+const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -72,6 +73,7 @@ describe('/asset', () => {
   let user2Assets: AssetMediaResponseDto[];
   let stackAssets: AssetMediaResponseDto[];
   let locationAsset: AssetMediaResponseDto;
+  let ratingAsset: AssetMediaResponseDto;
 
   const setupTests = async () => {
     await utils.resetDatabase();
@@ -98,6 +100,16 @@ describe('/asset', () => {
     });
 
     await utils.waitForWebsocketEvent({ event: 'assetUpload', id: locationAsset.id });
+
+    // asset rating
+    ratingAsset = await utils.createAsset(admin.accessToken, {
+      assetData: {
+        filename: 'mongolels.jpg',
+        bytes: await readFile(ratingAssetFilepath),
+      },
+    });
+
+    await utils.waitForWebsocketEvent({ event: 'assetUpload', id: ratingAsset.id });
 
     user1Assets = await Promise.all([
       utils.createAsset(user1.accessToken),
@@ -212,6 +224,22 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toMatchObject({ id: user1Assets[0].id });
+    });
+
+    it('should get the asset rating', async () => {
+      await utils.waitForWebsocketEvent({
+        event: 'assetUpload',
+        id: ratingAsset.id,
+      });
+
+      const { status, body } = await request(app)
+        .get(`/assets/${ratingAsset.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({
+        id: ratingAsset.id,
+        exifInfo: expect.objectContaining({ rating: 3 }),
+      });
     });
 
     it('should work with a shared link', async () => {
@@ -573,6 +601,31 @@ describe('/asset', () => {
         }),
       });
       expect(status).toEqual(200);
+    });
+
+    it('should set the rating', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ rating: 2 });
+      expect(body).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({
+          rating: 2,
+        }),
+      });
+      expect(status).toEqual(200);
+    });
+
+    it('should reject invalid rating', async () => {
+      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: null }]) {
+        const { status, body } = await request(app)
+          .put(`/assets/${user1Assets[0].id}`)
+          .send(test)
+          .set('Authorization', `Bearer ${user1.accessToken}`);
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest());
+      }
     });
 
     it('should return tagged people', async () => {
@@ -940,7 +993,7 @@ describe('/asset', () => {
       expect(body).toEqual(errorDto.badRequest());
     });
 
-    it.each([
+    const tests = [
       {
         input: 'formats/avif/8bit-sRGB.avif',
         expected: {
@@ -1156,21 +1209,32 @@ describe('/asset', () => {
           },
         },
       },
-    ])(`should upload and generate a thumbnail for $input`, async ({ input, expected }) => {
-      const filepath = join(testAssetDir, input);
-      const { id, status } = await utils.createAsset(admin.accessToken, {
-        assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
-      });
+    ];
 
-      expect(status).toBe(AssetMediaStatus.Created);
+    it(`should upload and generate a thumbnail for different file types`, async () => {
+      // upload in parallel
+      const assets = await Promise.all(
+        tests.map(async ({ input }) => {
+          const filepath = join(testAssetDir, input);
+          return utils.createAsset(admin.accessToken, {
+            assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
+          });
+        }),
+      );
 
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: id });
+      for (const { id, status } of assets) {
+        expect(status).toBe(AssetMediaStatus.Created);
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+      }
 
-      const asset = await utils.getAssetInfo(admin.accessToken, id);
+      for (const [i, { id }] of assets.entries()) {
+        const { expected } = tests[i];
+        const asset = await utils.getAssetInfo(admin.accessToken, id);
 
-      expect(asset.exifInfo).toBeDefined();
-      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
-      expect(asset).toMatchObject(expected);
+        expect(asset.exifInfo).toBeDefined();
+        expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+        expect(asset).toMatchObject(expected);
+      }
     });
 
     it('should handle a duplicate', async () => {

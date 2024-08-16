@@ -3,7 +3,8 @@ import { IsEnum, IsString } from 'class-validator';
 import _ from 'lodash';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
+import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { SharedLinkType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class SharedLinkCreateDto {

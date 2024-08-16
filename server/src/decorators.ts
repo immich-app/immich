@@ -4,7 +4,7 @@ import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
-import { ServerEvent } from 'src/interfaces/event.interface';
+import { EmitEvent, ServerEvent } from 'src/interfaces/event.interface';
 import { Metadata } from 'src/middleware/auth.guard';
 import { setUnion } from 'src/utils/set';
 
@@ -136,11 +136,12 @@ export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GEN
 export const OnServerEvent = (event: ServerEvent, options?: OnEventOptions) =>
   OnEvent(event, { suppressErrors: false, ...options });
 
-export type HandlerOptions = {
+export type EmitConfig = {
+  event: EmitEvent;
   /** lower value has higher priority, defaults to 0 */
-  priority: number;
+  priority?: number;
 };
-export const EventHandlerOptions = (options: HandlerOptions) => SetMetadata(Metadata.EVENT_HANDLER_OPTIONS, options);
+export const OnEmit = (config: EmitConfig) => SetMetadata(Metadata.ON_EMIT_CONFIG, config);
 
 type LifecycleRelease = 'NEXT_RELEASE' | string;
 type LifecycleMetadata = {

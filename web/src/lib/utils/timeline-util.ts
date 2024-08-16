@@ -61,7 +61,7 @@ export function formatGroupTitle(_date: DateTime): string {
   }
 
   // Last week
-  if (date >= today.minus({ days: 6 })) {
+  if (date >= today.minus({ days: 6 }) && date < today) {
     return date.toLocaleString({ weekday: 'long' });
   }
 

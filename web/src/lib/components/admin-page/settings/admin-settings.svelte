@@ -8,7 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
   import { loadConfig } from '$lib/stores/server-config.store';
-  import { cloneDeep } from 'lodash-es';
+  import { cloneDeep, isEqual } from 'lodash-es';
   import { onMount } from 'svelte';
   import type { SettingsResetOptions } from './admin-settings';
   import { t } from 'svelte-i18n';
@@ -23,12 +23,16 @@
   };
 
   export const handleSave = async (update: Partial<SystemConfigDto>) => {
+    let systemConfigDto = {
+      ...savedConfig,
+      ...update,
+    };
+    if (isEqual(systemConfigDto, savedConfig)) {
+      return;
+    }
     try {
       const newConfig = await updateConfig({
-        systemConfigDto: {
-          ...savedConfig,
-          ...update,
-        },
+        systemConfigDto,
       });
 
       config = cloneDeep(newConfig);

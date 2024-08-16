@@ -4,41 +4,27 @@ import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.d
 
 export const IEventRepository = 'IEventRepository';
 
-export type SystemConfigUpdateEvent = { newConfig: SystemConfig; oldConfig: SystemConfig };
-export type AlbumUpdateEvent = {
-  id: string;
-  /** user id */
-  updatedBy: string;
-};
-export type AlbumInviteEvent = { id: string; userId: string };
-export type UserSignupEvent = { notify: boolean; id: string; tempPassword?: string };
-
-type MaybePromise<T> = Promise<T> | T;
-type Handler<T = undefined> = (data: T) => MaybePromise<void>;
-
-const noop = () => {};
-const dummyHandlers = {
+type EmitEventMap = {
   // app events
-  onBootstrapEvent: noop as Handler<'api' | 'microservices'>,
-  onShutdownEvent: noop as () => MaybePromise<void>,
+  onBootstrap: ['api' | 'microservices'];
+  onShutdown: [];
 
   // config events
-  onConfigUpdateEvent: noop as Handler<SystemConfigUpdateEvent>,
-  onConfigValidateEvent: noop as Handler<SystemConfigUpdateEvent>,
+  onConfigUpdate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+  onConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  onAlbumUpdateEvent: noop as Handler<AlbumUpdateEvent>,
-  onAlbumInviteEvent: noop as Handler<AlbumInviteEvent>,
+  onAlbumUpdate: [{ id: string; updatedBy: string }];
+  onAlbumInvite: [{ id: string; userId: string }];
 
   // user events
-  onUserSignupEvent: noop as Handler<UserSignupEvent>,
+  onUserSignup: [{ notify: boolean; id: string; tempPassword?: string }];
 };
 
-export type EventHandlers = typeof dummyHandlers;
-export type EmitEvent = keyof EventHandlers;
-export type EmitEventHandler<T extends EmitEvent> = (...args: Parameters<EventHandlers[T]>) => MaybePromise<void>;
-export const events = Object.keys(dummyHandlers) as EmitEvent[];
-export type OnEvents = Partial<EventHandlers>;
+export type EmitEvent = keyof EmitEventMap;
+export type EmitHandler<T extends EmitEvent> = (...args: ArgsOf<T>) => Promise<void> | void;
+export type ArgOf<T extends EmitEvent> = EmitEventMap[T][0];
+export type ArgsOf<T extends EmitEvent> = EmitEventMap[T];
 
 export enum ClientEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
@@ -81,8 +67,8 @@ export interface ServerEventMap {
 }
 
 export interface IEventRepository {
-  on<T extends EmitEvent>(event: T, handler: EmitEventHandler<T>): void;
-  emit<T extends EmitEvent>(event: T, ...args: Parameters<EmitEventHandler<T>>): Promise<void>;
+  on<T extends keyof EmitEventMap>(event: T, handler: EmitHandler<T>): void;
+  emit<T extends keyof EmitEventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
 
   /**
    * Send to connected clients for a specific user

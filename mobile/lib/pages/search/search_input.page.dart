@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
@@ -509,7 +510,7 @@ class SearchInputPage extends HookConsumerWidget {
                 ? 'contextual_search'.tr()
                 : 'filename_search'.tr(),
             hintStyle: context.textTheme.bodyLarge?.copyWith(
-              color: context.themeData.colorScheme.onSurface.withOpacity(0.75),
+              color: context.themeData.colorScheme.onSurfaceSecondary,
               fontWeight: FontWeight.w500,
             ),
             enabledBorder: const UnderlineInputBorder(

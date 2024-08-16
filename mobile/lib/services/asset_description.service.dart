@@ -43,6 +43,19 @@ class AssetDescriptionService {
       }
     }
   }
+
+  String getAssetDescription(Asset asset) {
+    final localExifId = asset.exifInfo?.id;
+
+    // Guard [remoteAssetId] and [localExifId] null
+    if (localExifId == null) {
+      return "";
+    }
+
+    final exifInfo = _db.exifInfos.getSync(localExifId);
+
+    return exifInfo?.description ?? "";
+  }
 }
 
 final assetDescriptionServiceProvider = Provider(

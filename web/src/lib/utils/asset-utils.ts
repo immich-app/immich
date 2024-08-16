@@ -172,13 +172,19 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     },
   ];
 
+  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
+    return asset.originalPath.includes('encoded-video');
+  };
+
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
-    assets.push({
-      filename: motionAsset.originalFileName,
-      id: asset.livePhotoVideoId,
-      size: motionAsset.exifInfo?.fileSizeInByte || 0,
-    });
+    if (!isAndroidMotionVideo(motionAsset) || get(preferences).download.includeEmbeddedVideos) {
+      assets.push({
+        filename: motionAsset.originalFileName,
+        id: asset.livePhotoVideoId,
+        size: motionAsset.exifInfo?.fileSizeInByte || 0,
+      });
+    }
   }
 
   for (const { filename, id, size } of assets) {
@@ -324,7 +330,7 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   return ids;
 };
 
-export const stackAssets = async (assets: AssetResponseDto[]) => {
+export const stackAssets = async (assets: AssetResponseDto[], showNotification = true) => {
   if (assets.length < 2) {
     return false;
   }
@@ -362,16 +368,18 @@ export const stackAssets = async (assets: AssetResponseDto[]) => {
   parent.stack = parent.stack.concat(children, grandChildren);
   parent.stackCount = parent.stack.length + 1;
 
-  notificationController.show({
-    message: $t('stacked_assets_count', { values: { count: parent.stackCount } }),
-    type: NotificationType.Info,
-    button: {
-      text: $t('view_stack'),
-      onClick() {
-        return assetViewingStore.setAssetId(parent.id);
+  if (showNotification) {
+    notificationController.show({
+      message: $t('stacked_assets_count', { values: { count: parent.stackCount } }),
+      type: NotificationType.Info,
+      button: {
+        text: $t('view_stack'),
+        onClick() {
+          return assetViewingStore.setAssetId(parent.id);
+        },
       },
-    },
-  });
+    });
+  }
 
   return ids;
 };

@@ -49,10 +49,6 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1),
-        ),
         title: const Text('setting_pages_app_bar_settings').tr(),
       ),
       body: context.isMobile ? _MobileLayout() : _TabletLayout(),
@@ -67,13 +63,18 @@ class _MobileLayout extends StatelessWidget {
       children: SettingSection.values
           .map(
             (s) => ListTile(
-              title: Text(
-                s.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 2.0, horizontal: 16.0),
               leading: Icon(s.icon),
+              title: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  s.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ).tr(),
+              ),
               onTap: () => context.pushRoute(SettingsSubRoute(section: s)),
             ),
           )
@@ -102,7 +103,7 @@ class _TabletLayout extends HookWidget {
                       leading: Icon(s.icon),
                       selected: s.index == selectedSection.value.index,
                       selectedColor: context.primaryColor,
-                      selectedTileColor: context.primaryColor.withAlpha(50),
+                      selectedTileColor: context.themeData.highlightColor,
                       onTap: () => selectedSection.value = s,
                     ),
                   ),

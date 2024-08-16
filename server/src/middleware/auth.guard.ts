@@ -20,7 +20,7 @@ export enum Metadata {
   ADMIN_ROUTE = 'admin_route',
   SHARED_ROUTE = 'shared_route',
   API_KEY_SECURITY = 'api_key',
-  EVENT_HANDLER_OPTIONS = 'event_handler_options',
+  ON_EMIT_CONFIG = 'on_emit_config',
 }
 
 type AdminRoute = { admin?: true };
@@ -89,20 +89,14 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    const { admin: adminRoute, sharedLink: sharedLinkRoute } = { sharedLink: false, admin: false, ...options };
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
-    const authDto = await this.authService.validate(request.headers, request.query as Record<string, string>);
-    if (authDto.sharedLink && !(options as SharedLinkRoute).sharedLink) {
-      this.logger.warn(`Denied access to non-shared route: ${request.path}`);
-      return false;
-    }
-
-    if (!authDto.user.isAdmin && (options as AdminRoute).admin) {
-      this.logger.warn(`Denied access to admin only route: ${request.path}`);
-      return false;
-    }
-
-    request.user = authDto;
+    request.user = await this.authService.authenticate({
+      headers: request.headers,
+      queryParams: request.query as Record<string, string>,
+      metadata: { adminRoute, sharedLinkRoute, uri: request.path },
+    });
 
     return true;
   }

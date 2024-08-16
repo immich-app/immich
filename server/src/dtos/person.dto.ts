@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { DateTime } from 'luxon';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -20,7 +21,7 @@ export class PersonCreateDto {
    * Note: the mobile app cannot currently set the birth date to null.
    */
   @ApiProperty({ format: 'date' })
-  @MaxDateString(() => new Date(), { message: 'Birth date cannot be in the future' })
+  @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
   @Optional({ nullable: true })
   birthDate?: string | null;

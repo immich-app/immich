@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class SettingsSwitchListTile extends StatelessWidget {
   final ValueNotifier<bool> valueNotifier;
@@ -54,7 +55,9 @@ class SettingsSwitchListTile extends StatelessWidget {
           ? Text(
               subtitle!,
               style: context.textTheme.bodyMedium?.copyWith(
-                color: enabled ? null : context.themeData.disabledColor,
+                color: enabled
+                    ? context.colorScheme.onSurfaceSecondary
+                    : context.themeData.disabledColor,
               ),
             )
           : null,

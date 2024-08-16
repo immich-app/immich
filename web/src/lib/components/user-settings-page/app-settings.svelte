@@ -19,6 +19,13 @@
   import { locale as i18nLocale, t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { invalidateAll } from '$app/navigation';
+  import { preferences } from '$lib/stores/user.store';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { handleError } from '../../utils/handle-error';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
 
   let time = new Date();
 
@@ -39,6 +46,7 @@
     label: findLocale(editedLocale).name || fallbackLocale.name,
   };
   $: closestLanguage = getClosestAvailableLocale([$lang], langCodes);
+  $: ratingEnabled = $preferences?.rating?.enabled;
 
   onMount(() => {
     const interval = setInterval(() => {
@@ -88,6 +96,17 @@
   const handleLocaleChange = (newLocale: string | undefined) => {
     if (newLocale) {
       $locale = newLocale;
+    }
+  };
+
+  const handleRatingChange = async (enabled: boolean) => {
+    try {
+      const data = await updateMyPreferences({ userPreferencesUpdateDto: { rating: { enabled } } });
+      $preferences.rating.enabled = data.rating.enabled;
+
+      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_settings'));
     }
   };
 </script>
@@ -183,6 +202,14 @@
           title={$t('sharing')}
           subtitle={$t('sharing_sidebar_description')}
           bind:checked={$sidebarSettings.sharing}
+        />
+      </div>
+      <div class="ml-4">
+        <SettingSwitch
+          title={$t('rating')}
+          subtitle={$t('rating_description')}
+          bind:checked={ratingEnabled}
+          on:toggle={({ detail: enabled }) => handleRatingChange(enabled)}
         />
       </div>
     </div>

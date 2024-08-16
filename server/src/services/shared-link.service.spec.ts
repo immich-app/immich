@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, UnauthorizedException } from '
 import _ from 'lodash';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { SharedLinkType } from 'src/entities/shared-link.entity';
+import { SharedLinkType } from 'src/enum';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';

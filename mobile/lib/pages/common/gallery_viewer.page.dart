@@ -22,7 +22,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/asset_viewer/bottom_gallery_bar.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_bottom_sheet.dart';
+import 'package:immich_mobile/widgets/asset_viewer/detail_panel/detail_panel.dart';
 import 'package:immich_mobile/widgets/asset_viewer/gallery_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
@@ -55,8 +55,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final loadAsset = renderList.loadAsset;
     final totalAssets = useState(renderList.totalAssets);
-    final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
-    final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final shouldLoopVideo = useState(AppSettingsEnum.loopVideo.defaultValue);
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
@@ -97,10 +95,6 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        isLoadPreview.value =
-            settings.getSetting<bool>(AppSettingsEnum.loadPreview);
-        isLoadOriginal.value =
-            settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
         shouldLoopVideo.value =
             settings.getSetting<bool>(AppSettingsEnum.loopVideo);
         return null;
@@ -152,7 +146,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       .watch(appSettingsServiceProvider)
                       .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
                   ? AdvancedBottomSheet(assetDetail: asset)
-                  : ExifBottomSheet(asset: asset),
+                  : DetailPanel(asset: asset),
             ),
           );
         },
@@ -270,7 +264,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     return PopScope(
       // Change immersive mode back to normal "edgeToEdge" mode
-      onPopInvoked: (_) =>
+      onPopInvokedWithResult: (didPop, _) =>
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -324,6 +318,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset : loadAsset(index);
+
                 final ImageProvider provider =
                     ImmichImage.imageProvider(asset: a);
 
