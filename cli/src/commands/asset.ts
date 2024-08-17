@@ -130,7 +130,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
       results.push(dto);
       checkBulkUploadRequests.push(dto);
-      if (checkBulkUploadRequests.length > concurrency) {
+      if (checkBulkUploadRequests.length > 5000) {
         void checkBulkUploadQueue.push([...checkBulkUploadRequests]);
         checkBulkUploadRequests = [];
       }
