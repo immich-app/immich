@@ -366,8 +366,8 @@ class BottomGalleryBar extends ConsumerWidget {
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.download_outlined),
-            label: 'download'.tr(),
-            tooltip: 'download'.tr(),
+            label: 'control_bottom_app_bar_download'.tr(),
+            tooltip: 'control_bottom_app_bar_download'.tr(),
           ): (_) => handleDownload(),
         },
       if (isInAlbum)
