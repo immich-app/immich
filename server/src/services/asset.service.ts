@@ -413,4 +413,15 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
     }
   }
+
+  async getAllOriginalPaths(auth: AuthDto): Promise<string[]> {
+    return this.assetRepository.getAllOriginalPaths(auth.user.id);
+  }
+
+  async getByPartialPath(auth: AuthDto, path: string) {
+    const assets = await this.assetRepository.getByPartialPath(auth.user.id, path);
+    const ids = assets.map((a) => a.id);
+    await this.access.requirePermission(auth, Permission.ASSET_READ, ids);
+    return assets;
+  }
 }

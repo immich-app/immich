@@ -144,6 +144,8 @@ export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffli
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
+  getByPartialPath(userId: string, partialPath: string): Promise<AssetEntity[]>;
+  getAllOriginalPaths(id: string): Promise<string[]>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByIds(
     ids: string[],

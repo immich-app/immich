@@ -40,6 +40,7 @@ import {
   In,
   IsNull,
   MoreThan,
+  Like,
   Not,
   Repository,
 } from 'typeorm';
@@ -808,5 +809,29 @@ export class AssetRepository implements IAssetRepository {
       .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
     return builder.getMany();
+  }
+
+  async getAllOriginalPaths(userId: string): Promise<string[]> {
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: false,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
+    });
+
+    const results = await builder
+      .select('DISTINCT substring(asset.originalPath FROM \'^(.*/)[^/]*$\')', 'directoryPath')
+      .getRawMany();
+
+    return results.map((row: { directoryPath: string }) => row.directoryPath);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getByPartialPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
+    const assets = await this.repository.find({
+      where: { ownerId: userId, originalPath: Like(`%${partialPath}%`) },
+    });
+    return assets;
   }
 }

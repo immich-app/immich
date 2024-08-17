@@ -14,6 +14,7 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';
@@ -23,6 +24,17 @@ import { UUIDParamDto } from 'src/validation';
 @Controller(Route.ASSET)
 export class AssetController {
   constructor(private service: AssetService) {}
+  @Get('original-paths')
+  @Authenticated()
+  getAllOriginalPaths(@Auth() auth: AuthDto): Promise<string[]> {
+    return this.service.getAllOriginalPaths(auth);
+  }
+
+  @Get('/search-by-path')
+  @Authenticated()
+  getByPartialPath(@Auth() auth: AuthDto, @Query('path') path: string): Promise<AssetEntity[]> {
+    return this.service.getByPartialPath(auth, path);
+  }
 
   @Get('memory-lane')
   @Authenticated()

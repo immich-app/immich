@@ -104,6 +104,12 @@
       </svelte:fragment>
     </SideBarLink>
 
+    <SideBarLink title={$t('Folders')} routeId="/(user)/folders" icon={mdiImageAlbum} flippedLogo>
+      <svelte:fragment slot="moreInformation">
+        <MoreInformationAlbums albumCountType="owned" />
+      </svelte:fragment>
+    </SideBarLink>
+
     <SideBarLink
       title={$t('utilities')}
       routeId="/(user)/utilities"

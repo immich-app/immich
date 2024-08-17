@@ -3077,6 +3077,50 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
+
+
+/**
+ * Get all original paths of assets
+ */
+export function getAllOriginalPaths(opts?: Oazapfts.RequestOpts) {
+  return oazapfts.ok(
+    oazapfts.fetchJson<{
+      status: 200;
+      data: string[];
+    }>('/assets/original-paths', {
+      ...opts,
+    })
+  );
+}
+
+/**
+ * Search assets by partial path
+ */
+export function searchAssetsByPartialPath(
+  {
+    path,
+  }: {
+    path: string;
+  },
+  opts?: Oazapfts.RequestOpts
+) {
+  return oazapfts.ok(
+    oazapfts.fetchJson<{
+      status: 200;
+      data: AssetResponseDto[];
+    }>(
+      `/assets/search-by-path${QS.query(
+        QS.explode({
+          path,
+        })
+      )}`,
+      {
+        ...opts,
+      }
+    )
+  );
+}
+
 export enum ReactionLevel {
     Album = "album",
     Asset = "asset"
