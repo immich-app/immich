@@ -141,9 +141,9 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     { concurrency, retry: 3 },
   );
 
-  files.map((item) => {
+  for (const item of files) {
     void queue.push(item);
-  });
+  }
 
   await queue.drained();
 
@@ -227,9 +227,9 @@ export const uploadFiles = async (files: string[], { dryRun, concurrency }: Uplo
     { concurrency, retry: 3 },
   );
 
-  files.map((item) => {
+  for (const item of files) {
     void queue.push(item);
-  });
+  }
 
   await queue.drained();
 
