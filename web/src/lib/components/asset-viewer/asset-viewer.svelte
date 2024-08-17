@@ -269,7 +269,7 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const closeViewer = async () => {
+  const closeViewer = () => {
     dispatch('close', { asset });
   };
 
@@ -389,7 +389,7 @@
         break;
       }
       case AssetAction.UNSTACK: {
-        await closeViewer();
+        closeViewer();
       }
     }
 

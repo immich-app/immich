@@ -3,7 +3,9 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { queueScrollSensitiveTask } from '$lib/stores/assets.store';
+  import { queueScrollSensitiveTask, removeAllTasksForComponent } from '$lib/stores/assets.store';
+  import { generateId } from '$lib/utils/generate-id';
+  import { onDestroy } from 'svelte';
 
   export let url: string;
   export let durationInSeconds = 0;
@@ -14,6 +16,7 @@
   export let playIcon = mdiPlayCircleOutline;
   export let pauseIcon = mdiPauseCircleOutline;
 
+  const componentId = generateId();
   let remainingSeconds = durationInSeconds;
   let loading = true;
   let error = false;
@@ -28,6 +31,9 @@
       player.src = '';
     }
   }
+  onDestroy(() => {
+    removeAllTasksForComponent(componentId);
+  });
 </script>
 
 <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
@@ -41,16 +47,22 @@
   <span
     class="pr-2 pt-2"
     on:mouseenter={() =>
-      queueScrollSensitiveTask(() => {
-        if (playbackOnIconHover) {
-          enablePlayback = true;
-        }
+      queueScrollSensitiveTask({
+        componentId,
+        task: () => {
+          if (playbackOnIconHover) {
+            enablePlayback = true;
+          }
+        },
       })}
     on:mouseleave={() =>
-      queueScrollSensitiveTask(() => {
-        if (playbackOnIconHover) {
-          enablePlayback = false;
-        }
+      queueScrollSensitiveTask({
+        componentId,
+        task: () => {
+          if (playbackOnIconHover) {
+            enablePlayback = false;
+          }
+        },
       })}
   >
     {#if enablePlayback}

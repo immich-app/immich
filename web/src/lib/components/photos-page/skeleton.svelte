@@ -3,17 +3,6 @@
   export let height: string | null = null;
 </script>
 
-<div class="overflow-clip" style={`height: ${height}`}>
-  {#if title}
-    <div
-      class="flex z-[100] sticky top-0 pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
-    >
-      <span class="w-full truncate first-letter:capitalize">{title}</span>
-    </div>
-  {/if}
-  <div id="skeleton" style={`height: ${height}`}></div>
-</div>
-
 <style>
   #skeleton {
     background-image: url('/light_skeleton.png');

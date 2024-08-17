@@ -3,15 +3,22 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { AssetBucket, queueScrollSensitiveTask, type AssetStore, type Viewport } from '$lib/stores/assets.store';
+  import {
+    AssetBucket,
+    queueScrollSensitiveTask,
+    removeAllTasksForComponent,
+    type AssetStore,
+    type Viewport,
+  } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
   import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let element: HTMLElement | undefined = undefined;
   export let isSelectionMode = false;
@@ -29,6 +36,8 @@
   export let onScrollTarget: ScrollTargetListener | undefined = undefined;
   export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
 
+  const componentId = generateId();
+  console.log('Created DG', componentId);
   $: bucketDate = bucket.bucketDate;
   $: dateGroups = bucket.dateGroups;
 
@@ -87,6 +96,9 @@
       dispatch('selectAssetCandidates', asset);
     }
   };
+  onDestroy(() => {
+    removeAllTasksForComponent(componentId);
+  });
 </script>
 
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" data-bucket-date={bucketDate} bind:this={element}>
@@ -97,14 +109,16 @@
     <div
       id="date-group"
       use:intersectionObserver={{
-        onIntersect: () =>
-          $assetStore.taskManager.intersectedDateGroup(dateGroup, () =>
+        onIntersect: () => {
+          $assetStore.taskManager.intersectedDateGroup(componentId, dateGroup, () =>
             assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true }),
-          ),
-        onSeparate: () =>
-          $assetStore.taskManager.seperatedDateGroup(dateGroup, () =>
+          );
+        },
+        onSeparate: () => {
+          $assetStore.taskManager.seperatedDateGroup(componentId, dateGroup, () =>
             assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
-          ),
+          );
+        },
         top: INTERSECTION_ROOT_TOP,
         bottom: INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
@@ -126,14 +140,20 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           on:mouseenter={() =>
-            queueScrollSensitiveTask(() => {
-              isMouseOverGroup = true;
-              assetMouseEventHandler(dateGroup.groupTitle, null);
+            queueScrollSensitiveTask({
+              componentId,
+              task: () => {
+                isMouseOverGroup = true;
+                assetMouseEventHandler(dateGroup.groupTitle, null);
+              },
             })}
           on:mouseleave={() => {
-            queueScrollSensitiveTask(() => {
-              isMouseOverGroup = false;
-              assetMouseEventHandler(dateGroup.groupTitle, null);
+            queueScrollSensitiveTask({
+              componentId,
+              task: () => {
+                isMouseOverGroup = false;
+                assetMouseEventHandler(dateGroup.groupTitle, null);
+              },
             });
           }}
         >

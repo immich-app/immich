@@ -23,10 +23,13 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { AssetStore, queueScrollSensitiveTask } from '$lib/stores/assets.store';
+  import { AssetStore, queueScrollSensitiveTask, removeAllTasksForComponent } from '$lib/stores/assets.store';
   import { thumbHashToRGBA } from 'thumbhash';
   import { TUNABLES } from '$lib/utils/tunables';
   import type { DateGroup } from '$lib/utils/timeline-util';
+
+  import { generateId } from '$lib/utils/generate-id';
+  import { onDestroy } from 'svelte';
 
   export let asset: AssetResponseDto;
   export let dateGroup: DateGroup | undefined = undefined;
@@ -60,6 +63,7 @@
   let className = '';
   export { className as class };
 
+  const componentId = generateId();
   let element: HTMLElement | undefined;
   let mouseOver = false;
   let intersecting = false;
@@ -109,9 +113,10 @@
     mouseOver = true;
     onMouseEvent?.({ isMouseOver: true, selectedGroupIndex: groupIndex });
   };
+
   const onMouseEnter = () => {
     if (dateGroup) {
-      queueScrollSensitiveTask(() => _onMouseEnter());
+      queueScrollSensitiveTask({ componentId, task: () => _onMouseEnter() });
     } else {
       _onMouseEnter();
     }
@@ -119,27 +124,36 @@
 
   const onMouseLeave = () => {
     if (dateGroup) {
-      queueScrollSensitiveTask(() => (mouseOver = false));
+      queueScrollSensitiveTask({ componentId, task: () => (mouseOver = false) });
     } else {
       mouseOver = false;
     }
   };
 
   const _onIntersect = () => {
+    console.log('thumb int', asset.id);
     intersecting = true;
+    console.log(asset.id, intersecting);
     onIntersected?.();
   };
+
   const onIntersect = () => {
+    if (intersecting === true) {
+      return;
+    }
     if (dateGroup && assetStore) {
-      assetStore.taskManager.intersectedThumbnail(dateGroup, asset, () => _onIntersect());
+      assetStore.taskManager.intersectedThumbnail(componentId, dateGroup, asset, () => void _onIntersect());
     } else {
-      _onIntersect();
+      void _onIntersect();
     }
   };
 
   const onSeparate = () => {
+    if (intersecting === false) {
+      return;
+    }
     if (dateGroup && assetStore) {
-      assetStore.taskManager.seperatedThumbnail(dateGroup, asset, () => (intersecting = false));
+      assetStore.taskManager.seperatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
     } else {
       intersecting = false;
     }
@@ -155,6 +169,9 @@
       ctx.putImageData(pixels, 0, 0);
     }
   };
+  onDestroy(() => {
+    removeAllTasksForComponent(componentId);
+  });
 </script>
 
 <div
@@ -165,6 +182,8 @@
     onSeparate,
     priority: PRIORITY,
   }}
+  data-asset={asset.id}
+  data-int={intersecting}
   style:width="{width}px"
   style:height="{height}px"
   class="group focus-visible:outline-none flex overflow-hidden {disabled
@@ -180,6 +199,7 @@
       out:fade={{ duration: 150 }}
     ></canvas>
   {/if}
+
   {#if display}
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->

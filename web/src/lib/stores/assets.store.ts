@@ -1,6 +1,7 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { getAssetRatio } from '$lib/utils/asset-utils';
+import { generateId } from '$lib/utils/generate-id';
 import { KeyedPriorityQueue } from '$lib/utils/keyed-priority-queue';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
@@ -860,14 +861,37 @@ export const isSelectingAllAssets = writable(false);
 
 export const lastScrollTime = writable<number>(0);
 
-type Task = () => void;
+interface RequestIdleCallback {
+  didTimeout?: boolean;
+  timeRemaining?(): DOMHighResTimeStamp;
+}
+interface RequestIdleCallbackOptions {
+  timeout?: number;
+}
 
+function fake_requestIdleCallback(cb: (deadline: RequestIdleCallback) => any, _?: RequestIdleCallbackOptions) {
+  const start = Date.now();
+  return setTimeout(cb({ didTimeout: false, timeRemaining: () => Math.max(0, 50 - (Date.now() - start)) }), 100);
+}
+
+function fake_cancelIdleCallback(id: number) {
+  return clearTimeout(id);
+}
+
+const idleCB = window.requestIdleCallback || fake_requestIdleCallback;
+const cancelIdleCB = window.cancelIdleCallback || fake_cancelIdleCallback;
+
+type Task = () => void;
 let queueTimer: ReturnType<typeof setTimeout> | undefined;
 
 function drain() {
   let count = 0;
   for (let t = tasks.shift(); t; t = tasks.shift()) {
     t.value();
+    if (cleaners.has(t.key)) {
+      cleaners.get(t.key)!();
+      cleaners.delete(t.key);
+    }
     if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
       scheduleDrain(TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS_DELAY_MS);
       break;
@@ -907,16 +931,70 @@ function scheduleDrain(delay: number = TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL
     }
   }, delay);
 }
-let uniqueId = 0;
-function generateDefaultId() {
-  uniqueId++;
-  return uniqueId.toString();
+
+const componentTasks = new Map<string, Set<string>>();
+function getOrCreateComponentTasks(componentId: string) {
+  let componentTaskSet = componentTasks.get(componentId);
+  if (!componentTaskSet) {
+    componentTaskSet = new Set<string>();
+    componentTasks.set(componentId, componentTaskSet);
+  }
+
+  return componentTaskSet;
 }
+function deleteFromComponentTasks(componentId: string, taskId: string) {
+  if (componentTasks.has(componentId)) {
+    const componentTaskSet = componentTasks.get(componentId);
+    componentTaskSet?.delete(taskId);
+    if (componentTaskSet?.size === 0) {
+      componentTasks.delete(componentId);
+    }
+  }
+}
+
 const tasks = new KeyedPriorityQueue<string, Task>();
+const cleaners = new Map<string, Task>();
 const seperatedQueue = new Map<string, Task>();
 
-export function queueScrollSensitiveTask(task: Task, priority: number = 10, taskId: string = generateDefaultId()) {
+export function removeAllTasksForComponent(componentId: string) {
+  console.log('REMOVING', componentId);
+  if (componentTasks.has(componentId)) {
+    const tasksIds = componentTasks.get(componentId) || [];
+    for (const taskId of tasksIds) {
+      if (tasks.remove(taskId)) {
+        console.log('removed...', taskId);
+      }
+      if (seperatedQueue.delete(taskId)) {
+        console.log('removed...', taskId);
+      }
+      if (cleaners.has(taskId)) {
+        const cleanup = cleaners.get(taskId);
+        cleaners.delete(taskId);
+        cleanup!();
+      }
+    }
+  }
+  componentTasks.delete(componentId);
+}
+
+export function queueScrollSensitiveTask({
+  task,
+  cleanup,
+  componentId,
+  priority = 10,
+  taskId = generateId(),
+}: {
+  task: Task;
+  cleanup?: Task;
+  componentId: string;
+  priority?: number;
+  taskId?: string;
+}) {
   tasks.push(taskId, task, priority);
+  if (cleanup) {
+    cleaners.set(taskId, cleanup);
+  }
+  getOrCreateComponentTasks(componentId).add(taskId);
   const lastTime = get(lastScrollTime);
   const delta = Date.now() - lastTime;
   if (lastTime != 0 && delta < TUNABLES.SCROLL_TASK_QUEUE.MIN_DELAY_MS) {
@@ -930,12 +1008,13 @@ export function queueScrollSensitiveTask(task: Task, priority: number = 10, task
 let lastIdle: number;
 function scheduleDrainSeparatedQueue() {
   // console.log('schedule drain seperate', seperatedQueue.size);
-  cancelIdleCallback(lastIdle);
-  lastIdle = requestIdleCallback(
+  cancelIdleCB(lastIdle);
+  lastIdle = idleCB(
     () => {
       if (tasks.length > 0) {
         // console.log('tasks queue is', tasks.length);
       }
+
       // console.log('starting drain');
       let count = 0;
       let entry = seperatedQueue.entries().next().value;
@@ -956,14 +1035,43 @@ function scheduleDrainSeparatedQueue() {
     { timeout: 1000 },
   );
 }
-export function queueSeparateTask(task: Task, taskId: string) {
+export function queueSeparateTask({
+  task,
+  cleanup,
+  componentId,
+  taskId,
+}: {
+  task: Task;
+  cleanup: Task;
+  componentId: string;
+  taskId: string;
+}) {
   seperatedQueue.set(taskId, task);
+  cleaners.set(taskId, cleanup);
+  getOrCreateComponentTasks(componentId).add(taskId);
   scheduleDrainSeparatedQueue();
 }
 
-export function removeSeparateTask(taskId: string) {
-  const d = seperatedQueue.delete(taskId);
-  return d;
+export function removeIntersectedTask(componentId: string, taskId: string) {
+  const removed = tasks.remove(taskId);
+  if (cleaners.has(taskId)) {
+    debugger;
+    const cleanup = cleaners.get(taskId);
+    cleaners.delete(taskId);
+    cleanup!();
+  }
+  return removed;
+}
+
+export function removeSeparateTask(componentId: string, taskId: string) {
+  const removed = seperatedQueue.delete(taskId);
+  if (cleaners.has(taskId)) {
+    debugger;
+    const cleanup = cleaners.get(taskId);
+    cleaners.delete(taskId);
+    cleanup!();
+  }
+  return removed;
 }
 
 class AssetGridTaskManager {
@@ -982,37 +1090,36 @@ class AssetGridTaskManager {
     return bucketTask;
   }
 
-  intersectedBucket(bucket: AssetBucket, task: Task) {
+  intersectedBucket(componentId: string, bucket: AssetBucket, task: Task) {
     const bucketTask = this.getOrCreateBucketTask(bucket);
-    debugger;
-    bucketTask.scheduleIntersected(task);
+    bucketTask.scheduleIntersected(componentId, task);
   }
 
-  seperatedBucket(bucket: AssetBucket, seperated: Task) {
+  seperatedBucket(componentId: string, bucket: AssetBucket, seperated: Task) {
     const bucketTask = this.getOrCreateBucketTask(bucket);
-    bucketTask.scheduleSeparated(seperated);
+    bucketTask.scheduleSeparated(componentId, seperated);
   }
 
-  intersectedDateGroup(dateGroup: DateGroup, interested: Task) {
+  intersectedDateGroup(componentId: string, dateGroup: DateGroup, intersected: Task) {
     const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
-    bucketTask.intersectedDateGroup(dateGroup, interested);
+    bucketTask.intersectedDateGroup(componentId, dateGroup, intersected);
   }
 
-  seperatedDateGroup(dateGroup: DateGroup, seperated: Task) {
+  seperatedDateGroup(componentId: string, dateGroup: DateGroup, seperated: Task) {
     const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
-    bucketTask.separatedDateGroup(dateGroup, seperated);
+    bucketTask.separatedDateGroup(componentId, dateGroup, seperated);
   }
 
-  intersectedThumbnail(dateGroup: DateGroup, asset: AssetResponseDto, intersected: Task) {
+  intersectedThumbnail(componentId: string, dateGroup: DateGroup, asset: AssetResponseDto, intersected: Task) {
     const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
     const dateGroupTask = bucketTask.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.intersectedThumbnail(asset, intersected);
+    dateGroupTask.intersectedThumbnail(componentId, asset, intersected);
   }
 
-  seperatedThumbnail(dateGroup: DateGroup, asset: AssetResponseDto, seperated: Task) {
+  seperatedThumbnail(componentId: string, dateGroup: DateGroup, asset: AssetResponseDto, seperated: Task) {
     const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
     const dateGroupTask = bucketTask.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.separatedThumbnail(asset, seperated);
+    dateGroupTask.separatedThumbnail(componentId, asset, seperated);
   }
 }
 class IntersectionTask {
@@ -1020,7 +1127,7 @@ class IntersectionTask {
   intersectedKey;
   priority;
 
-  status = 'unknown';
+  // status = 'unknown';
 
   intersected: Task | undefined;
   separated: Task | undefined;
@@ -1031,61 +1138,102 @@ class IntersectionTask {
     this.priority = priority;
   }
 
-  trackIntersectedTask(task: Task) {
-    this.status = 'intersected';
-    this.intersected = task;
-    return () => {
+  trackIntersectedTask(componentId: string, task: Task) {
+    if (this.seperatedKey.startsWith('t')) {
+      console.log('int', componentId, this.intersectedKey);
+    }
+    // this.status = 'intersected';
+
+    const execTask = () => {
+      if (this.separated) {
+        console.log('bad bad bad', this.intersectedKey);
+        return;
+      }
+      console.log('int1', componentId, this.intersectedKey);
       task?.();
-      this.intersected = undefined;
     };
+    this.intersected = execTask;
+    const cleanup = () => {
+      this.intersected = undefined;
+      deleteFromComponentTasks(componentId, this.intersectedKey);
+    };
+    return { task: execTask, cleanup };
   }
 
-  trackSeperatedTask(task: Task) {
-    this.status = 'seperated';
-    this.separated = task;
-    return () => {
+  trackSeperatedTask(componentId: string, task: Task) {
+    if (this.seperatedKey.startsWith('t')) {
+      console.log('sep', componentId, this.seperatedKey);
+    }
+    // this.status = 'seperated';
+    const execTask = () => {
+      if (this.intersected) {
+        console.log('bad bad bad', this.seperatedKey);
+        return;
+      }
+      if (!componentTasks.has(componentId)) {
+        debugger;
+      }
+      console.log('sep2', componentTasks.has(componentId), componentId, this.seperatedKey);
       task?.();
-      this.separated = undefined;
     };
-  }
-
-  removePendingSeparated() {
-    if (removeSeparateTask(this.seperatedKey)) {
+    this.separated = execTask;
+    const cleanup = () => {
       this.separated = undefined;
+      deleteFromComponentTasks(componentId, this.seperatedKey);
+    };
+    return { task: execTask, cleanup };
+  }
+
+  removePendingSeparated(componentId: string) {
+    if (this.separated && removeSeparateTask(componentId, this.seperatedKey)) {
+      console.log('remove seper task!', this.seperatedKey);
+    }
+  }
+  removePendingIntersected(componentId: string) {
+    if (this.intersected && removeIntersectedTask(componentId, this.intersectedKey)) {
+      console.log('remove inter task!', this.seperatedKey);
     }
   }
 
-  scheduleIntersected(intersected: Task) {
-    if (this.separated) {
-      // console.log('remove seperated', this.seperatedKey);
-      this.removePendingSeparated();
-    }
+  scheduleIntersected(componentId: string, intersected: Task) {
+    this.removePendingSeparated(componentId);
+
     if (this.intersected) {
-      // console.log('ret, inter', this.intersectedKey);
+      debugger;
+      console.log('ret, inter', componentId, this.intersectedKey);
       return;
     }
-    if (this.status === 'intersected') {
-      // console.log('ret, status inter', this.intersectedKey);
-      return;
-    }
-    queueScrollSensitiveTask(this.trackIntersectedTask(intersected), this.priority, this.intersectedKey);
+    const { task, cleanup } = this.trackIntersectedTask(componentId, intersected);
+    queueScrollSensitiveTask({
+      task,
+      cleanup,
+      componentId: componentId,
+      priority: this.priority,
+      taskId: this.intersectedKey,
+    });
   }
 
-  scheduleSeparated(separated: Task) {
-    if (this.intersected) {
-      // console.log('remove intersected', this.intersectedKey);
-      tasks.remove(this.intersectedKey);
-      this.intersected = undefined;
-    }
+  scheduleSeparated(componentId: string, separated: Task) {
+    this.removePendingIntersected(componentId);
+
     if (this.separated) {
-      // console.log('ret, seper', this.seperatedKey);
+      debugger;
+      console.log('ret, seper', componentId, this.seperatedKey);
       return;
     }
-    if (this.status === 'seperated') {
-      // console.log('ret, b status already sep', this.seperatedKey);
-      return;
-    }
-    queueSeparateTask(this.trackSeperatedTask(separated), this.seperatedKey);
+
+    const { task, cleanup } = this.trackSeperatedTask(componentId, separated);
+    queueSeparateTask({
+      task,
+      cleanup,
+      componentId: componentId,
+      taskId: this.seperatedKey,
+    });
+  }
+
+  remove(componentId: string) {
+    this.removePendingIntersected(componentId);
+    this.removePendingSeparated(componentId);
   }
 }
 class BucketTask extends IntersectionTask {
@@ -1114,21 +1262,21 @@ class BucketTask extends IntersectionTask {
     return dateGroupTask;
   }
 
-  removePendingSeparated() {
-    super.removePendingSeparated();
+  removePendingSeparated(componentId: string) {
+    super.removePendingSeparated(componentId);
     for (const dateGroupTask of this.dateTasks.values()) {
-      dateGroupTask.removePendingSeparated();
+      dateGroupTask.removePendingSeparated(componentId);
     }
   }
 
-  intersectedDateGroup(dateGroup: DateGroup, intersected: Task) {
+  intersectedDateGroup(componentId: string, dateGroup: DateGroup, intersected: Task) {
     const dateGroupTask = this.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.scheduleIntersected(intersected);
+    dateGroupTask.scheduleIntersected(componentId, intersected);
   }
 
-  separatedDateGroup(dateGroup: DateGroup, separated: Task) {
+  separatedDateGroup(componentId: string, dateGroup: DateGroup, separated: Task) {
     const dateGroupTask = this.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.scheduleSeparated(separated);
+    dateGroupTask.scheduleSeparated(componentId, separated);
   }
 }
 class DateGroupTask extends IntersectionTask {
@@ -1143,10 +1291,10 @@ class DateGroupTask extends IntersectionTask {
     this.bucketTask = parent;
   }
 
-  removePendingSeparated() {
-    super.removePendingSeparated();
+  removePendingSeparated(componentId: string) {
+    super.removePendingSeparated(componentId);
     for (const thumbnailTask of this.thumbnailTasks.values()) {
-      thumbnailTask.removePendingSeparated();
+      thumbnailTask.removePendingSeparated(componentId);
     }
   }
 
@@ -1159,14 +1307,14 @@ class DateGroupTask extends IntersectionTask {
     return thumbnailTask;
   }
 
-  intersectedThumbnail(asset: AssetResponseDto, intersected: Task) {
+  intersectedThumbnail(componentId: string, asset: AssetResponseDto, intersected: Task) {
     const thumbnailTask = this.getOrCreateThumbnailTask(asset);
-    thumbnailTask.scheduleIntersected(intersected);
+    thumbnailTask.scheduleIntersected(componentId, intersected);
   }
 
-  separatedThumbnail(asset: AssetResponseDto, seperated: Task) {
+  separatedThumbnail(componentId: string, asset: AssetResponseDto, seperated: Task) {
     const thumbnailTask = this.getOrCreateThumbnailTask(asset);
-    thumbnailTask.scheduleSeparated(seperated);
+    thumbnailTask.scheduleSeparated(componentId, seperated);
   }
 }
 class ThumbnailTask extends IntersectionTask {

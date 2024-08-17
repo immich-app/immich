@@ -10,6 +10,7 @@
     AssetStore,
     isSelectingAllAssets,
     lastScrollTime,
+    removeAllTasksForComponent,
     type BucketListener,
     type ViewportXY,
   } from '$lib/stores/assets.store';
@@ -29,7 +30,7 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { throttle } from 'lodash-es';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
@@ -41,6 +42,8 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { page } from '$app/stores';
+  import type { UpdatePayload } from 'vite';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -68,6 +71,8 @@
 
   const viewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
   const safeViewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
+
+  const componentId = generateId();
   let element: HTMLElement;
   let timelineElement: HTMLElement;
   let showShortcuts = false;
@@ -206,6 +211,7 @@
 
   const _updateLastIntersectedBucketDate = () => {
     let elem = document.elementFromPoint(safeViewport.x + 1, safeViewport.y + 1);
+
     while (elem != null) {
       if (elem.id === 'buck') {
         break;
@@ -222,6 +228,9 @@
   });
 
   const scrollTolastIntersectedBucket = (adjustedBucket: AssetBucket, delta: number) => {
+    if (!lastIntersectedBucketDate) {
+      updateLastIntersectedBucketDate();
+    }
     if (lastIntersectedBucketDate) {
       const currentIndex = $assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
       const deltaIndex = $assetStore.buckets.indexOf(adjustedBucket);
@@ -485,34 +494,13 @@
     }
   };
 
-  async function loadIt(bucket: AssetBucket) {
-    // here in lies a great battle between load and cancel. If you scrub up and down many times over the
-    // section, there will be multiple outstanding loads/cancels. cancel you only need to do once, since
-    // multiple loads on the same bucket will wait on promise, and if canceled, all will stop.
-    // However, loading a bucket that is was loaded before, but is canceled will canel the load. But we
-    // really need it to be loaded, at least, while its still 'intersecting'. That is why we don't use
-    // preventCancel here - we want to allow it to cancel, but only under the right conditions.
-
-    // lets try 5 times, because we really want the bucket to load, we don't want any queues cancels interfering
-    await $assetStore.loadBucket(bucket.bucketDate);
-
-    // let count = 5;
-    // while (bucket.intersecting && count-- > 0) {
-    //   try {
-    //     await $assetStore.loadBucket(bucket.bucketDate);
-    //   } catch {
-    //     await new Promise((resolve) => setTimeout(resolve, 100));
-    //   }
-    // }
-  }
-
   function intersectedHandler(bucket: AssetBucket) {
     updateLastIntersectedBucketDate();
     const intersectedTask = () => {
       $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
-      void loadIt(bucket);
+      void $assetStore.loadBucket(bucket.bucketDate);
     };
-    $assetStore.taskManager.intersectedBucket(bucket, intersectedTask);
+    $assetStore.taskManager.intersectedBucket(componentId, bucket, intersectedTask);
   }
 
   function seperatedHandler(bucket: AssetBucket) {
@@ -520,7 +508,7 @@
       $assetStore.updateBucket(bucket.bucketDate, { intersecting: false });
       bucket.cancel();
     };
-    $assetStore.taskManager.seperatedBucket(bucket, seperatedTask);
+    $assetStore.taskManager.seperatedBucket(componentId, bucket, seperatedTask);
   }
 
   const handlePrevious = async () => {
@@ -561,6 +549,7 @@
       case AssetAction.RESTORE:
       case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await handleNext()) || (await handlePrevious()) || (await handleClose({ detail: { asset: action.asset } }));
 
         // delete after find the next one
@@ -751,6 +740,9 @@
       e.preventDefault();
     }
   };
+  onDestroy(() => {
+    removeAllTasksForComponent(componentId);
+  });
 </script>
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
