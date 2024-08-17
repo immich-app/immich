@@ -12,7 +12,7 @@ Smart Search and Face Detection will use this feature, but Facial Recognition is
 :::
 
 :::danger
-When using remote machine learning, the thumb images are sent to the remote machine learning, use this option carefully when running this on a public computer or a paid processing cloud.
+When using remote machine learning, the thumbnails are sent to the remote machine learning container. Use this option carefully when running this on a public computer or a paid processing cloud.
 :::
 
 ```yaml

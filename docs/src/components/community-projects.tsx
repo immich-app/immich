@@ -69,8 +69,8 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Tomasinjo/gatekeeper',
   },
   {
-    title: 'lrc-immich-plugin',
-    description: 'Export images from Lightroom Classic directly to Immich.',
+    title: 'Gatekeeper',
+    description: 'A simple network access control system for your self hosted services.',
     url: 'https://github.com/Tomasinjo/gatekeeper',
   },
 ];
