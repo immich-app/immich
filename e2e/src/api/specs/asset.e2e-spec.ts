@@ -251,7 +251,7 @@ describe('/asset', () => {
     it('should get the asset faces', async () => {
       const config = await getSystemConfig(admin.accessToken);
       config.metadata.faces.import = true;
-      await updateConfig({systemConfigDto: config},{ headers: asBearerAuth(admin.accessToken) });
+      await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
 
       // asset faces
       facesAsset = await utils.createAsset(admin.accessToken, {
