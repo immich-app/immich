@@ -9,6 +9,7 @@ import {
   getConfig,
   getMyUser,
   updateAssets,
+  updateConfig,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
@@ -248,18 +249,9 @@ describe('/asset', () => {
     });
 
     it('should get the asset faces', async () => {
-      const response = await request(app)
-        .put('/system-config')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({
-          ...(await getSystemConfig(admin.accessToken)),
-          metadata: { faces: { import: true }, tags: { import: true } },
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        metadata: { faces: { import: true } },
-      });
+      const config = await getSystemConfig(admin.accessToken);
+      config.metadata.faces.import = true;
+      await updateConfig({systemConfigDto: config},{ headers: asBearerAuth(admin.accessToken) });
 
       // asset faces
       facesAsset = await utils.createAsset(admin.accessToken, {
