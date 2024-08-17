@@ -53,7 +53,7 @@ class BottomGalleryBar extends ConsumerWidget {
         ? ref.watch(assetStackStateProvider(asset))
         : <Asset>[];
     final stackElements = showStack ? [asset, ...stack] : <Asset>[];
-    bool isParent = stackIndex == -1 || stackIndex == 0;
+    bool isParent = asset.remoteId == asset.stackParentId;
     final navStack = AutoRouter.of(context).stackData;
     final isTrashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
@@ -132,7 +132,7 @@ class BottomGalleryBar extends ConsumerWidget {
         return;
       }
 
-      ref.read(stackServiceProvider).deleteStack(asset.stackId!);
+      await ref.read(stackServiceProvider).deleteStack(asset.stackId!);
     }
 
     setPrimaryStackAsset(Asset asset) async {
