@@ -957,16 +957,11 @@ const cleaners = new Map<string, Task>();
 const seperatedQueue = new Map<string, Task>();
 
 export function removeAllTasksForComponent(componentId: string) {
-  console.log('REMOVING', componentId);
   if (componentTasks.has(componentId)) {
     const tasksIds = componentTasks.get(componentId) || [];
     for (const taskId of tasksIds) {
-      if (tasks.remove(taskId)) {
-        console.log('removed...', taskId);
-      }
-      if (seperatedQueue.delete(taskId)) {
-        console.log('removed...', taskId);
-      }
+      tasks.remove(taskId);
+      seperatedQueue.delete(taskId);
       if (cleaners.has(taskId)) {
         const cleanup = cleaners.get(taskId);
         cleaners.delete(taskId);
@@ -1055,7 +1050,6 @@ export function queueSeparateTask({
 export function removeIntersectedTask(componentId: string, taskId: string) {
   const removed = tasks.remove(taskId);
   if (cleaners.has(taskId)) {
-    debugger;
     const cleanup = cleaners.get(taskId);
     cleaners.delete(taskId);
     cleanup!();
@@ -1066,7 +1060,6 @@ export function removeIntersectedTask(componentId: string, taskId: string) {
 export function removeSeparateTask(componentId: string, taskId: string) {
   const removed = seperatedQueue.delete(taskId);
   if (cleaners.has(taskId)) {
-    debugger;
     const cleanup = cleaners.get(taskId);
     cleaners.delete(taskId);
     cleanup!();
@@ -1139,17 +1132,16 @@ class IntersectionTask {
   }
 
   trackIntersectedTask(componentId: string, task: Task) {
-    if (this.seperatedKey.startsWith('t')) {
-      console.log('int', componentId, this.intersectedKey);
-    }
-    // this.status = 'intersected';
+    // if (this.seperatedKey.startsWith('t')) {
+    //   console.log('int', componentId, this.intersectedKey);
+    // }
 
     const execTask = () => {
       if (this.separated) {
         console.log('bad bad bad', this.intersectedKey);
         return;
       }
-      console.log('int1', componentId, this.intersectedKey);
+      // console.log('int1', componentId, this.intersectedKey);
       task?.();
     };
     this.intersected = execTask;
@@ -1161,19 +1153,17 @@ class IntersectionTask {
   }
 
   trackSeperatedTask(componentId: string, task: Task) {
-    if (this.seperatedKey.startsWith('t')) {
-      console.log('sep', componentId, this.seperatedKey);
-    }
+    // if (this.seperatedKey.startsWith('t')) {
+    //   console.log('sep', componentId, this.seperatedKey);
+    // }
     // this.status = 'seperated';
     const execTask = () => {
       if (this.intersected) {
         console.log('bad bad bad', this.seperatedKey);
         return;
       }
-      if (!componentTasks.has(componentId)) {
-        debugger;
-      }
-      console.log('sep2', componentTasks.has(componentId), componentId, this.seperatedKey);
+
+      // console.log('sep2', componentTasks.has(componentId), componentId, this.seperatedKey);
       task?.();
     };
     this.separated = execTask;
@@ -1186,12 +1176,12 @@ class IntersectionTask {
 
   removePendingSeparated(componentId: string) {
     if (this.separated && removeSeparateTask(componentId, this.seperatedKey)) {
-      console.log('remove seper task!', this.seperatedKey);
+      // console.log('remove seper task!', this.seperatedKey);
     }
   }
   removePendingIntersected(componentId: string) {
     if (this.intersected && removeIntersectedTask(componentId, this.intersectedKey)) {
-      console.log('remove inter task!', this.seperatedKey);
+      // console.log('remove inter task!', this.seperatedKey);
     }
   }
 
@@ -1199,8 +1189,7 @@ class IntersectionTask {
     this.removePendingSeparated(componentId);
 
     if (this.intersected) {
-      debugger;
-      console.log('ret, inter', componentId, this.intersectedKey);
+      // console.log('ret, inter', componentId, this.intersectedKey);
       return;
     }
     const { task, cleanup } = this.trackIntersectedTask(componentId, intersected);
@@ -1217,8 +1206,7 @@ class IntersectionTask {
     this.removePendingIntersected(componentId);
 
     if (this.separated) {
-      debugger;
-      console.log('ret, seper', componentId, this.seperatedKey);
+      // console.log('ret, seper', componentId, this.seperatedKey);
       return;
     }
 

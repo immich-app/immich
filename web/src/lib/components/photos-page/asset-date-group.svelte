@@ -14,7 +14,7 @@
   import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -37,7 +37,6 @@
   export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
 
   const componentId = generateId();
-  console.log('Created DG', componentId);
   $: bucketDate = bucket.bucketDate;
   $: dateGroups = bucket.dateGroups;
 
@@ -96,6 +95,7 @@
       dispatch('selectAssetCandidates', asset);
     }
   };
+
   onDestroy(() => {
     removeAllTasksForComponent(componentId);
   });

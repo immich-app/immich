@@ -131,9 +131,7 @@
   };
 
   const _onIntersect = () => {
-    console.log('thumb int', asset.id);
     intersecting = true;
-    console.log(asset.id, intersecting);
     onIntersected?.();
   };
 

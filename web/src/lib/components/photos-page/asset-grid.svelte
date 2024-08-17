@@ -409,6 +409,9 @@
     }
     showSkeleton = false;
     $assetStore.clearPendingScroll();
+    // set intersecting true manually here, to reduce flicker that happens when
+    // clearing pending scroll, but the intersection observer hadn't yet had time to run
+    $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
   };
 
   const trashOrDelete = async (force: boolean = false) => {
