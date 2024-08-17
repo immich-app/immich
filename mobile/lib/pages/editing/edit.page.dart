@@ -57,7 +57,11 @@ class EditImagePage extends ConsumerWidget {
   }
 
   Future<void> _saveEditedImage(
-      BuildContext context, Asset asset, Image image, WidgetRef ref,) async {
+    BuildContext context,
+    Asset asset,
+    Image image,
+    WidgetRef ref,
+  ) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
       await PhotoManager.editor.saveImage(
