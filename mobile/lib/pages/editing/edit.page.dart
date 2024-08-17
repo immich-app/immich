@@ -56,6 +56,26 @@ class EditImagePage extends ConsumerWidget {
     return completer.future;
   }
 
+  Future<void> _saveEditedImage(
+      BuildContext context, Asset asset, Image image, WidgetRef ref,) async {
+    try {
+      final Uint8List imageData = await _imageToUint8List(image);
+      await PhotoManager.editor.saveImage(
+        imageData,
+        title: "${asset.fileName.split('.').first}_edited.jpg",
+      );
+      await ref.read(albumProvider.notifier).getDeviceAlbums();
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      ImmichToast.show(
+        durationInSecond: 6,
+        context: context,
+        msg: 'Error: $e',
+        gravity: ToastGravity.CENTER,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Image imageWidget =
@@ -76,25 +96,7 @@ class EditImagePage extends ConsumerWidget {
         actions: <Widget>[
           TextButton(
             onPressed: isEdited
-                ? () async {
-                    try {
-                      final Uint8List imageData =
-                          await _imageToUint8List(image);
-                      await PhotoManager.editor.saveImage(
-                        imageData,
-                        title: "${asset.fileName.split('.').first}_edited.jpg",
-                      );
-                      await ref.read(albumProvider.notifier).getDeviceAlbums();
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    } catch (e) {
-                      ImmichToast.show(
-                        durationInSecond: 6,
-                        context: context,
-                        msg: 'Error: $e',
-                        gravity: ToastGravity.CENTER,
-                      );
-                    }
-                  }
+                ? () => _saveEditedImage(context, asset, image, ref)
                 : null,
             child: Text(
               'Save to gallery',
