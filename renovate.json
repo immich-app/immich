@@ -81,5 +81,5 @@
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml", "mobile/ios", "mobile/android"],
   "ignoreDeps": ["http", "intl"],
-  "labels": ["dependencies", "renovate"]
+  "labels": ["dependencies"]
 }

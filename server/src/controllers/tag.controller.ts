@@ -5,6 +5,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { CreateTagDto, TagResponseDto, UpdateTagDto } from 'src/dtos/tag.dto';
+import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { TagService } from 'src/services/tag.service';
 import { UUIDParamDto } from 'src/validation';
@@ -15,31 +16,31 @@ export class TagController {
   constructor(private service: TagService) {}
 
   @Post()
-  @Authenticated()
+  @Authenticated({ permission: Permission.TAG_CREATE })
   createTag(@Auth() auth: AuthDto, @Body() dto: CreateTagDto): Promise<TagResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get()
-  @Authenticated()
+  @Authenticated({ permission: Permission.TAG_READ })
   getAllTags(@Auth() auth: AuthDto): Promise<TagResponseDto[]> {
     return this.service.getAll(auth);
   }
 
   @Get(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.TAG_READ })
   getTagById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<TagResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Patch(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.TAG_UPDATE })
   updateTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateTagDto): Promise<TagResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.TAG_DELETE })
   deleteTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }

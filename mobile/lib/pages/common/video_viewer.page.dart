@@ -123,7 +123,7 @@ class VideoViewerPage extends HookConsumerWidget {
     final size = MediaQuery.sizeOf(context);
 
     return PopScope(
-      onPopInvoked: (pop) {
+      onPopInvokedWithResult: (didPop, _) {
         ref.read(videoPlaybackValueProvider.notifier).value =
             VideoPlaybackValue.uninitialized();
       },

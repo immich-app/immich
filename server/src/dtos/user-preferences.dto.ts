@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
+import { UserPreferences } from 'src/entities/user-metadata.entity';
+import { UserAvatarColor } from 'src/enum';
 import { Optional, ValidateBoolean } from 'src/validation';
 
 class AvatarUpdate {
@@ -12,6 +13,11 @@ class AvatarUpdate {
 }
 
 class MemoryUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+}
+
+class RatingUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 }
@@ -27,12 +33,15 @@ class EmailNotificationsUpdate {
   albumUpdate?: boolean;
 }
 
-class DownloadUpdate {
+class DownloadUpdate implements Partial<DownloadResponse> {
   @Optional()
   @IsInt()
   @IsPositive()
   @ApiProperty({ type: 'integer' })
   archiveSize?: number;
+
+  @ValidateBoolean({ optional: true })
+  includeEmbeddedVideos?: boolean;
 }
 
 class PurchaseUpdate {
@@ -45,6 +54,11 @@ class PurchaseUpdate {
 }
 
 export class UserPreferencesUpdateDto {
+  @Optional()
+  @ValidateNested()
+  @Type(() => RatingUpdate)
+  rating?: RatingUpdate;
+
   @Optional()
   @ValidateNested()
   @Type(() => AvatarUpdate)
@@ -76,6 +90,10 @@ class AvatarResponse {
   color!: UserAvatarColor;
 }
 
+class RatingResponse {
+  enabled: boolean = false;
+}
+
 class MemoryResponse {
   enabled!: boolean;
 }
@@ -89,6 +107,8 @@ class EmailNotificationsResponse {
 class DownloadResponse {
   @ApiProperty({ type: 'integer' })
   archiveSize!: number;
+
+  includeEmbeddedVideos: boolean = false;
 }
 
 class PurchaseResponse {
@@ -97,6 +117,7 @@ class PurchaseResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
+  rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;

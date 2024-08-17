@@ -166,6 +166,7 @@ class ApiClient {
 
   /// Returns a native instance of an OpenAPI class matching the [specified type][targetType].
   static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
+    upgradeDto(value, targetType);
     try {
       switch (targetType) {
         case 'String':
@@ -406,6 +407,8 @@ class ApiClient {
           return PeopleUpdateDto.fromJson(value);
         case 'PeopleUpdateItem':
           return PeopleUpdateItem.fromJson(value);
+        case 'Permission':
+          return PermissionTypeTransformer().decode(value);
         case 'PersonCreateDto':
           return PersonCreateDto.fromJson(value);
         case 'PersonResponseDto':
@@ -424,6 +427,10 @@ class ApiClient {
           return PurchaseUpdate.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RatingResponse':
+          return RatingResponse.fromJson(value);
+        case 'RatingUpdate':
+          return RatingUpdate.fromJson(value);
         case 'ReactionLevel':
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':

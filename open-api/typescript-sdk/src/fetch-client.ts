@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.111.0
+ * 1.112.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -86,6 +86,7 @@ export type AvatarResponse = {
 };
 export type DownloadResponse = {
     archiveSize: number;
+    includeEmbeddedVideos: boolean;
 };
 export type EmailNotificationsResponse = {
     albumInvite: boolean;
@@ -99,18 +100,23 @@ export type PurchaseResponse = {
     hideBuyButtonUntil: string;
     showSupportBadge: boolean;
 };
+export type RatingResponse = {
+    enabled: boolean;
+};
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
     memories: MemoryResponse;
     purchase: PurchaseResponse;
+    rating: RatingResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
 };
 export type DownloadUpdate = {
     archiveSize?: number;
+    includeEmbeddedVideos?: boolean;
 };
 export type EmailNotificationsUpdate = {
     albumInvite?: boolean;
@@ -124,12 +130,16 @@ export type PurchaseUpdate = {
     hideBuyButtonUntil?: string;
     showSupportBadge?: boolean;
 };
+export type RatingUpdate = {
+    enabled?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
     memories?: MemoryUpdate;
     purchase?: PurchaseUpdate;
+    rating?: RatingUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
@@ -155,6 +165,7 @@ export type ExifResponseDto = {
     modifyDate?: string | null;
     orientation?: string | null;
     projectionType?: string | null;
+    rating?: number | null;
     state?: string | null;
     timeZone?: string | null;
 };
@@ -288,10 +299,12 @@ export type ApiKeyResponseDto = {
     createdAt: string;
     id: string;
     name: string;
+    permissions: Permission[];
     updatedAt: string;
 };
 export type ApiKeyCreateDto = {
     name?: string;
+    permissions: Permission[];
 };
 export type ApiKeyCreateResponseDto = {
     apiKey: ApiKeyResponseDto;
@@ -330,6 +343,7 @@ export type AssetBulkUpdateDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
+    rating?: number;
     removeParent?: boolean;
     stackParentId?: string;
 };
@@ -381,6 +395,7 @@ export type UpdateAssetDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
+    rating?: number;
 };
 export type AssetMediaReplaceDto = {
     assetData: Blob;
@@ -708,8 +723,8 @@ export type SearchExploreResponseDto = {
 };
 export type MetadataSearchDto = {
     checksum?: string;
-    city?: string;
-    country?: string;
+    city?: string | null;
+    country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceAssetId?: string;
@@ -723,10 +738,10 @@ export type MetadataSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string;
+    lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
-    model?: string;
+    model?: string | null;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -734,7 +749,7 @@ export type MetadataSearchDto = {
     personIds?: string[];
     previewPath?: string;
     size?: number;
-    state?: string;
+    state?: string | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -782,8 +797,8 @@ export type PlacesResponseDto = {
     name: string;
 };
 export type SmartSearchDto = {
-    city?: string;
-    country?: string;
+    city?: string | null;
+    country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
@@ -794,15 +809,15 @@ export type SmartSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
-    lensModel?: string;
+    lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
-    model?: string;
+    model?: string | null;
     page?: number;
     personIds?: string[];
     query: string;
     size?: number;
-    state?: string;
+    state?: string | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -2267,6 +2282,9 @@ export function updatePerson({ id, personUpdateDto }: {
         body: personUpdateDto
     })));
 }
+/**
+ * This property was deprecated in v1.113.0
+ */
 export function getPersonAssets({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2418,8 +2436,9 @@ export function searchSmart({ smartSearchDto }: {
         body: smartSearchDto
     })));
 }
-export function getSearchSuggestions({ country, make, model, state, $type }: {
+export function getSearchSuggestions({ country, includeNull, make, model, state, $type }: {
     country?: string;
+    includeNull?: boolean;
     make?: string;
     model?: string;
     state?: string;
@@ -2430,6 +2449,7 @@ export function getSearchSuggestions({ country, make, model, state, $type }: {
         data: string[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
+        includeNull,
         make,
         model,
         state,
@@ -3106,6 +3126,79 @@ export enum Error {
     NoPermission = "no_permission",
     NotFound = "not_found",
     Unknown = "unknown"
+}
+export enum Permission {
+    All = "all",
+    ActivityCreate = "activity.create",
+    ActivityRead = "activity.read",
+    ActivityUpdate = "activity.update",
+    ActivityDelete = "activity.delete",
+    ActivityStatistics = "activity.statistics",
+    ApiKeyCreate = "apiKey.create",
+    ApiKeyRead = "apiKey.read",
+    ApiKeyUpdate = "apiKey.update",
+    ApiKeyDelete = "apiKey.delete",
+    AssetRead = "asset.read",
+    AssetUpdate = "asset.update",
+    AssetDelete = "asset.delete",
+    AssetRestore = "asset.restore",
+    AssetShare = "asset.share",
+    AssetView = "asset.view",
+    AssetDownload = "asset.download",
+    AssetUpload = "asset.upload",
+    AlbumCreate = "album.create",
+    AlbumRead = "album.read",
+    AlbumUpdate = "album.update",
+    AlbumDelete = "album.delete",
+    AlbumStatistics = "album.statistics",
+    AlbumAddAsset = "album.addAsset",
+    AlbumRemoveAsset = "album.removeAsset",
+    AlbumShare = "album.share",
+    AlbumDownload = "album.download",
+    AuthDeviceDelete = "authDevice.delete",
+    ArchiveRead = "archive.read",
+    FaceCreate = "face.create",
+    FaceRead = "face.read",
+    FaceUpdate = "face.update",
+    FaceDelete = "face.delete",
+    LibraryCreate = "library.create",
+    LibraryRead = "library.read",
+    LibraryUpdate = "library.update",
+    LibraryDelete = "library.delete",
+    LibraryStatistics = "library.statistics",
+    TimelineRead = "timeline.read",
+    TimelineDownload = "timeline.download",
+    MemoryCreate = "memory.create",
+    MemoryRead = "memory.read",
+    MemoryUpdate = "memory.update",
+    MemoryDelete = "memory.delete",
+    PartnerCreate = "partner.create",
+    PartnerRead = "partner.read",
+    PartnerUpdate = "partner.update",
+    PartnerDelete = "partner.delete",
+    PersonCreate = "person.create",
+    PersonRead = "person.read",
+    PersonUpdate = "person.update",
+    PersonDelete = "person.delete",
+    PersonStatistics = "person.statistics",
+    PersonMerge = "person.merge",
+    PersonReassign = "person.reassign",
+    SharedLinkCreate = "sharedLink.create",
+    SharedLinkRead = "sharedLink.read",
+    SharedLinkUpdate = "sharedLink.update",
+    SharedLinkDelete = "sharedLink.delete",
+    SystemConfigRead = "systemConfig.read",
+    SystemConfigUpdate = "systemConfig.update",
+    SystemMetadataRead = "systemMetadata.read",
+    SystemMetadataUpdate = "systemMetadata.update",
+    TagCreate = "tag.create",
+    TagRead = "tag.read",
+    TagUpdate = "tag.update",
+    TagDelete = "tag.delete",
+    AdminUserCreate = "admin.user.create",
+    AdminUserRead = "admin.user.read",
+    AdminUserUpdate = "admin.user.update",
+    AdminUserDelete = "admin.user.delete"
 }
 export enum AssetMediaStatus {
     Created = "created",

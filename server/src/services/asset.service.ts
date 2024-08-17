@@ -1,7 +1,7 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
@@ -22,6 +22,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
@@ -158,8 +159,8 @@ export class AssetService {
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
 
-    const { description, dateTimeOriginal, latitude, longitude, ...rest } = dto;
-    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
+    const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
+    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     await this.assetRepository.update({ id, ...rest });
     const asset = await this.assetRepository.getById(id, {
@@ -405,8 +406,8 @@ export class AssetService {
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {
-    const { id, description, dateTimeOriginal, latitude, longitude } = dto;
-    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude }, _.isUndefined);
+    const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
+    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });

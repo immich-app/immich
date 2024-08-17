@@ -64,6 +64,11 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/hanpq/PSImmich',
   },
   {
+    title: 'Immich Distribution',
+    description: 'Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.',
+    url: 'https://immich-distribution.nsg.cc',
+  },
+  {
     title: 'Support mTLS with Home Assistant',
     description: 'Allows access to Immich from public IP that did mTLS with Home Assistant.',
     url: 'https://github.com/Tomasinjo/gatekeeper',

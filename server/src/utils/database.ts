@@ -44,11 +44,19 @@ export function searchAssetBuilder(
   }
 
   if (hasExifQuery) {
-    options.withExif
-      ? builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo')
-      : builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+    if (options.withExif) {
+      builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
+    } else {
+      builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+    }
 
-    builder.andWhere({ exifInfo });
+    for (const [key, value] of Object.entries(exifInfo)) {
+      if (value === null) {
+        builder.andWhere(`exifInfo.${key} IS NULL`);
+      } else {
+        builder.andWhere(`exifInfo.${key} = :${key}`, { [key]: value });
+      }
+    }
   }
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);

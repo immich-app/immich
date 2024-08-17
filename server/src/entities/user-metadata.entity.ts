@@ -1,4 +1,5 @@
 import { UserEntity } from 'src/entities/user.entity';
+import { UserAvatarColor, UserMetadataKey } from 'src/enum';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { Column, DeepPartial, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
@@ -17,20 +18,10 @@ export class UserMetadataEntity<T extends keyof UserMetadata = UserMetadataKey> 
   value!: UserMetadata[T];
 }
 
-export enum UserAvatarColor {
-  PRIMARY = 'primary',
-  PINK = 'pink',
-  RED = 'red',
-  YELLOW = 'yellow',
-  BLUE = 'blue',
-  GREEN = 'green',
-  PURPLE = 'purple',
-  ORANGE = 'orange',
-  GRAY = 'gray',
-  AMBER = 'amber',
-}
-
 export interface UserPreferences {
+  rating: {
+    enabled: boolean;
+  };
   memories: {
     enabled: boolean;
   };
@@ -44,6 +35,7 @@ export interface UserPreferences {
   };
   download: {
     archiveSize: number;
+    includeEmbeddedVideos: boolean;
   };
   purchase: {
     showSupportBadge: boolean;
@@ -58,6 +50,9 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
   );
 
   return {
+    rating: {
+      enabled: false,
+    },
     memories: {
       enabled: true,
     },
@@ -71,6 +66,7 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     download: {
       archiveSize: HumanReadableSize.GiB * 4,
+      includeEmbeddedVideos: false,
     },
     purchase: {
       showSupportBadge: true,
@@ -78,11 +74,6 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
   };
 };
-
-export enum UserMetadataKey {
-  PREFERENCES = 'preferences',
-  LICENSE = 'license',
-}
 
 export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {
   [UserMetadataKey.PREFERENCES]: DeepPartial<UserPreferences>;

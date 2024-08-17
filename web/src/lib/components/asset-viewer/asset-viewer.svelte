@@ -45,7 +45,9 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-
+  import EditorPanel from './editor/editor-panel.svelte';
+  import CropArea from './editor/crop-tool/crop-area.svelte';
+  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
@@ -80,10 +82,11 @@
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
+  let isShowEditor = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
   let fullscreenElement: Element;
-  let unsubscribe: () => void;
+  let unsubscribes: (() => void)[] = [];
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
 
@@ -172,6 +175,12 @@
     }
   };
 
+  const onAssetUpdate = (assetUpdate: AssetResponseDto) => {
+    if (assetUpdate.id === asset.id) {
+      asset = assetUpdate;
+    }
+  };
+
   $: {
     if (isShared && asset.id) {
       handlePromiseError(getFavorite());
@@ -180,11 +189,11 @@
   }
 
   onMount(async () => {
-    unsubscribe = websocketEvents.on('on_upload_success', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
+    unsubscribes.push(
+      websocketEvents.on('on_upload_success', onAssetUpdate),
+      websocketEvents.on('on_asset_update', onAssetUpdate),
+    );
+
     await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
@@ -225,10 +234,17 @@
     if (shuffleSlideshowUnsubscribe) {
       shuffleSlideshowUnsubscribe();
     }
-    unsubscribe?.();
+
+    for (const unsubscribe of unsubscribes) {
+      unsubscribe();
+    }
   });
 
-  $: asset.id && !sharedLink && handlePromiseError(handleGetAllAlbums()); // Update the album information when the asset ID changes
+  $: {
+    if (asset.id && !sharedLink) {
+      handlePromiseError(handleGetAllAlbums());
+    }
+  }
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {
@@ -257,6 +273,12 @@
   const closeViewer = async () => {
     dispatch('close');
     await navigate({ targetRoute: 'current', assetId: null });
+  };
+
+  const closeEditor = () => {
+    closeEditorCofirm(() => {
+      isShowEditor = false;
+    });
   };
 
   const navigateAssetRandom = async () => {
@@ -302,6 +324,13 @@
     dispatch(order);
   };
 
+  // const showEditorHandler = () => {
+  //   if (isShowActivity) {
+  //     isShowActivity = false;
+  //   }
+  //   isShowEditor = !isShowEditor;
+  // };
+
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
@@ -330,7 +359,7 @@
 
   const handlePlaySlideshow = async () => {
     try {
-      await assetViewerHtmlElement.requestFullscreen();
+      await assetViewerHtmlElement.requestFullscreen?.();
     } catch (error) {
       handleError(error, $t('errors.unable_to_enter_fullscreen'));
       $slideshowState = SlideshowState.StopSlideshow;
@@ -370,17 +399,23 @@
 
     onAction?.(action);
   };
+
+  let selectedEditType: string = '';
+
+  function handleUpdateSelectedEditType(type: string) {
+    selectedEditType = type;
+  }
 </script>
 
 <svelte:document bind:fullscreenElement />
 
 <section
   id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed left-0 top-0 z-[1001] grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
 >
   <!-- Top navigation bar -->
-  {#if $slideshowState === SlideshowState.None}
+  {#if $slideshowState === SlideshowState.None && !isShowEditor}
     <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
@@ -406,7 +441,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
@@ -418,7 +453,7 @@
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
           {isFullScreen}
-          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen()}
+          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen?.()}
           onPrevious={() => navigateAsset('previous')}
           onNext={() => navigateAsset('next')}
           onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
@@ -474,6 +509,8 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <PanoramaViewer {asset} />
+          {:else if isShowEditor && selectedEditType === 'crop'}
+            <CropArea {asset} />
           {:else}
             <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
           {/if}
@@ -503,13 +540,13 @@
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail}
+  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
@@ -517,6 +554,17 @@
       translate="yes"
     >
       <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
+    </div>
+  {/if}
+
+  {#if isShowEditor}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="editor-panel"
+      class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
     </div>
   {/if}
 

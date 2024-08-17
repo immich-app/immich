@@ -7,6 +7,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 /// The local image provider for an asset
@@ -16,6 +18,12 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
   ImmichLocalImageProvider({
     required this.asset,
   }) : assert(asset.local != null, 'Only usable when asset.local is set');
+
+  /// Whether to show the original file or load a compressed version
+  bool get _useOriginal => Store.get(
+        AppSettingsEnum.loadOriginal.storeKey,
+        AppSettingsEnum.loadOriginal.defaultValue,
+      );
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
@@ -62,8 +70,11 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
     if (asset.isImage) {
       /// Using 2K thumbnail for local iOS image to avoid double swiping issue
       if (Platform.isIOS) {
-        final largeImageBytes = await asset.local
-            ?.thumbnailDataWithSize(const ThumbnailSize(3840, 2160));
+        final largeImageBytes = _useOriginal
+            ? await asset.local?.originBytes
+            : await asset.local
+                ?.thumbnailDataWithSize(const ThumbnailSize(3840, 2160));
+
         if (largeImageBytes == null) {
           throw StateError(
             "Loading thumb for local photo ${asset.fileName} failed",

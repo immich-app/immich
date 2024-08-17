@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ImageFormat } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -23,10 +23,10 @@ import {
   mapPerson,
 } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { AssetType, Permission, SystemMetadataKey } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -113,7 +113,7 @@ export class PersonService {
   }
 
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, personId);
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
@@ -142,7 +142,7 @@ export class PersonService {
   }
 
   async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, personId);
 
     await this.access.requirePermission(auth, Permission.PERSON_CREATE, dto.id);
     const face = await this.repository.getFaceById(dto.id);
@@ -226,7 +226,7 @@ export class PersonService {
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, id);
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
     // TODO: set by faceId directly
@@ -259,8 +259,8 @@ export class PersonService {
           name: person.name,
           birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
-        }),
-          results.push({ id: person.id, success: true });
+        });
+        results.push({ id: person.id, success: true });
       } catch (error: Error | any) {
         this.logger.error(`Unable to update ${person.id} : ${error}`, error?.stack);
         results.push({ id: person.id, success: false, error: BulkIdErrorReason.UNKNOWN });
@@ -581,7 +581,7 @@ export class PersonService {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, id);
     let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 

@@ -1,9 +1,10 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto } from 'src/dtos/api-key.dto';
+import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { APIKeyEntity } from 'src/entities/api-key.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { isGranted } from 'src/utils/access';
 
 @Injectable()
 export class APIKeyService {
@@ -14,16 +15,22 @@ export class APIKeyService {
 
   async create(auth: AuthDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     const secret = this.crypto.newPassword(32);
+
+    if (auth.apiKey && !isGranted({ requested: dto.permissions, current: auth.apiKey.permissions })) {
+      throw new BadRequestException('Cannot grant permissions you do not have');
+    }
+
     const entity = await this.repository.create({
       key: this.crypto.hashSha256(secret),
       name: dto.name || 'API Key',
       userId: auth.user.id,
+      permissions: dto.permissions,
     });
 
     return { secret, apiKey: this.map(entity) };
   }
 
-  async update(auth: AuthDto, id: string, dto: APIKeyCreateDto): Promise<APIKeyResponseDto> {
+  async update(auth: AuthDto, id: string, dto: APIKeyUpdateDto): Promise<APIKeyResponseDto> {
     const exists = await this.repository.getById(auth.user.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
@@ -62,6 +69,7 @@ export class APIKeyService {
       name: entity.name,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      permissions: entity.permissions,
     };
   }
 }

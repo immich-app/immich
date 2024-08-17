@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { AlbumUserRole } from 'src/entities/album-user.entity';
+import { AlbumUserRole } from 'src/enum';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
@@ -45,14 +45,14 @@ describe(AlbumService.name, () => {
 
   describe('getCount', () => {
     it('should get the album count', async () => {
-      albumMock.getOwned.mockResolvedValue([]),
-        albumMock.getShared.mockResolvedValue([]),
-        albumMock.getNotShared.mockResolvedValue([]),
-        await expect(sut.getCount(authStub.admin)).resolves.toEqual({
-          owned: 0,
-          shared: 0,
-          notShared: 0,
-        });
+      albumMock.getOwned.mockResolvedValue([]);
+      albumMock.getShared.mockResolvedValue([]);
+      albumMock.getNotShared.mockResolvedValue([]);
+      await expect(sut.getCount(authStub.admin)).resolves.toEqual({
+        owned: 0,
+        shared: 0,
+        notShared: 0,
+      });
 
       expect(albumMock.getOwned).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(albumMock.getShared).toHaveBeenCalledWith(authStub.admin.user.id);
@@ -380,7 +380,7 @@ describe(AlbumService.name, () => {
         userId: authStub.user2.user.id,
         albumId: albumStub.sharedWithAdmin.id,
       });
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInviteEvent', {
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInvite', {
         id: albumStub.sharedWithAdmin.id,
         userId: userStub.user2.id,
       });
@@ -568,7 +568,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdateEvent', {
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdate', {
         id: 'album-123',
         updatedBy: authStub.admin.user.id,
       });
@@ -612,7 +612,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdateEvent', {
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdate', {
         id: 'album-123',
         updatedBy: authStub.user1.user.id,
       });

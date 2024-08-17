@@ -33,6 +33,7 @@ test.describe('Registration', () => {
     // onboarding
     await expect(page).toHaveURL('/auth/onboarding');
     await page.getByRole('button', { name: 'Theme' }).click();
+    await page.getByRole('button', { name: 'Privacy' }).click();
     await page.getByRole('button', { name: 'Storage Template' }).click();
     await page.getByRole('button', { name: 'Done' }).click();
 

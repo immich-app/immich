@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -56,7 +57,7 @@ class GalleryAppBar extends ConsumerWidget {
       if (result && context.mounted) {
         ImmichToast.show(
           context: context,
-          msg: 'asset restored successfully',
+          msg: 'asset_restored_successfully'.tr(),
           gravity: ToastGravity.BOTTOM,
         );
       }

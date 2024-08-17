@@ -14,8 +14,8 @@ import {
   SmartSearchDto,
   mapPlaces,
 } from 'src/dtos/search.dto';
-import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { AssetOrder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
@@ -120,22 +120,30 @@ export class SearchService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
+  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
+    const results = await this.getSuggestions(auth.user.id, dto);
+    return results.filter((result) => (dto.includeNull ? true : result !== null));
+  }
+
+  private getSuggestions(userId: string, dto: SearchSuggestionRequestDto) {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.metadataRepository.getCountries(auth.user.id);
+        return this.metadataRepository.getCountries(userId);
       }
       case SearchSuggestionType.STATE: {
-        return this.metadataRepository.getStates(auth.user.id, dto.country);
+        return this.metadataRepository.getStates(userId, dto.country);
       }
       case SearchSuggestionType.CITY: {
-        return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
+        return this.metadataRepository.getCities(userId, dto.country, dto.state);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
+        return this.metadataRepository.getCameraMakes(userId, dto.model);
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
+        return this.metadataRepository.getCameraModels(userId, dto.make);
+      }
+      default: {
+        return [];
       }
     }
   }

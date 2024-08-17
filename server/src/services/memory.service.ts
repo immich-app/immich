@@ -1,9 +1,10 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { AccessCore } from 'src/cores/access.core';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
@@ -49,7 +50,7 @@ export class MemoryService {
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
-    await this.access.requirePermission(auth, Permission.MEMORY_WRITE, id);
+    await this.access.requirePermission(auth, Permission.MEMORY_UPDATE, id);
 
     const memory = await this.repository.update({
       id,
@@ -81,7 +82,7 @@ export class MemoryService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.MEMORY_WRITE, id);
+    await this.access.requirePermission(auth, Permission.MEMORY_UPDATE, id);
 
     const repos = { accessRepository: this.accessRepository, repository: this.repository };
     const results = await removeAssets(auth, repos, {
