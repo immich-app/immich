@@ -1,5 +1,6 @@
 import {
   Action,
+  AssetBulkUploadCheckItem,
   AssetBulkUploadCheckResult,
   AssetMediaResponseDto,
   AssetMediaStatus,
@@ -101,8 +102,8 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
 
-  const checkBulkUploadQueue = new Queue<AssetBulkUploadCheckResults, void>(
-    async (assets: AssetBulkUploadCheckResults) => {
+  const checkBulkUploadQueue = new Queue<AssetBulkUploadCheckItem[], void>(
+    async (assets: AssetBulkUploadCheckItem[]) => {
       const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets } });
 
       const results = response.results as AssetBulkUploadCheckResults;
@@ -122,10 +123,10 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   );
 
   const results: { id: string; checksum: string }[] = [];
-  let checkBulkUploadRequests: AssetBulkUploadCheckResults = [];
+  let checkBulkUploadRequests: AssetBulkUploadCheckItem[] = [];
 
-  const queue = new Queue<string, AssetBulkUploadCheckResults>(
-    async (filepath: string): Promise<AssetBulkUploadCheckResults> => {
+  const queue = new Queue<string, AssetBulkUploadCheckItem[]>(
+    async (filepath: string): Promise<AssetBulkUploadCheckItem[]> => {
       const dto = { id: filepath, checksum: await sha1(filepath) };
 
       results.push(dto);
