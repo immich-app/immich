@@ -147,7 +147,9 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
   await queue.drained();
 
-  await checkBulkUploadQueue.push(checkBulkUploadRequests);
+  if (checkBulkUploadRequests.length > 0) {
+    void checkBulkUploadQueue.push([...checkBulkUploadRequests]);
+  }
 
   await checkBulkUploadQueue.drained();
 
