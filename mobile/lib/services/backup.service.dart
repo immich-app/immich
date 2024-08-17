@@ -20,7 +20,7 @@ import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
-import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart' as pm;
 import 'package:photo_manager/photo_manager.dart';
 
 final backupServiceProvider = Provider(
@@ -213,7 +213,7 @@ class BackupService {
         _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
 
     if (Platform.isAndroid &&
-        !(await Permission.accessMediaLocation.status).isGranted) {
+        !(await pm.Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
       // uploading corrupt assets without EXIF information
       _log.warning("Media location permission is not granted. "

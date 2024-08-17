@@ -50,7 +50,7 @@ export class MemoryService {
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
-    await this.access.requirePermission(auth, Permission.MEMORY_WRITE, id);
+    await this.access.requirePermission(auth, Permission.MEMORY_UPDATE, id);
 
     const memory = await this.repository.update({
       id,
@@ -82,7 +82,7 @@ export class MemoryService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.MEMORY_WRITE, id);
+    await this.access.requirePermission(auth, Permission.MEMORY_UPDATE, id);
 
     const repos = { accessRepository: this.accessRepository, repository: this.repository };
     const results = await removeAssets(auth, repos, {

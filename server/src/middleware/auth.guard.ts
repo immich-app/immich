@@ -11,6 +11,7 @@ import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthDto, ImmichQuery } from 'src/dtos/auth.dto';
+import { Permission } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { UAParser } from 'ua-parser-js';
@@ -25,7 +26,7 @@ export enum Metadata {
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };
-type AuthenticatedOptions = AdminRoute | SharedLinkRoute;
+type AuthenticatedOptions = { permission?: Permission } & (AdminRoute | SharedLinkRoute);
 
 export const Authenticated = (options?: AuthenticatedOptions): MethodDecorator => {
   const decorators: MethodDecorator[] = [
@@ -89,13 +90,17 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const { admin: adminRoute, sharedLink: sharedLinkRoute } = { sharedLink: false, admin: false, ...options };
+    const {
+      admin: adminRoute,
+      sharedLink: sharedLinkRoute,
+      permission,
+    } = { sharedLink: false, admin: false, ...options };
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
     request.user = await this.authService.authenticate({
       headers: request.headers,
       queryParams: request.query as Record<string, string>,
-      metadata: { adminRoute, sharedLinkRoute, uri: request.path },
+      metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
     });
 
     return true;

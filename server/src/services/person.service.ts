@@ -113,7 +113,7 @@ export class PersonService {
   }
 
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, personId);
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
@@ -142,7 +142,7 @@ export class PersonService {
   }
 
   async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, personId);
 
     await this.access.requirePermission(auth, Permission.PERSON_CREATE, dto.id);
     const face = await this.repository.getFaceById(dto.id);
@@ -226,7 +226,7 @@ export class PersonService {
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, id);
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
     // TODO: set by faceId directly
@@ -581,7 +581,7 @@ export class PersonService {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
+    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, id);
     let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 

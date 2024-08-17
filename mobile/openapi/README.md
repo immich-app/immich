@@ -363,6 +363,7 @@ Class | Method | HTTP request | Description
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
  - [PeopleUpdateDto](doc//PeopleUpdateDto.md)
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)
+ - [Permission](doc//Permission.md)
  - [PersonCreateDto](doc//PersonCreateDto.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
