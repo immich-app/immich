@@ -288,7 +288,7 @@ export class PersonRepository implements IPersonRepository {
       let query = builder.delete().where('assetId = :assetId', { assetId });
 
       if (sourceType) {
-        query = query.andWhere('sourceType = :sourceType', { sourceType: sourceType });
+        query = query.andWhere('sourceType = :sourceType', { sourceType });
       }
       await query.execute();
 
