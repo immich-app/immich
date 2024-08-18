@@ -824,7 +824,7 @@ export class AssetRepository implements IAssetRepository {
       .select('DISTINCT substring(asset.originalPath FROM \'^(.*/)[^/]*$\')', 'directoryPath')
       .getRawMany();
 
-    return results.map((row: { directoryPath: string }) => row.directoryPath);
+    return results.map((row: { directoryPath: string }) => row.directoryPath.replace(/\/$/, ''));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })

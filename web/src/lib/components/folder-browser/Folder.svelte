@@ -31,17 +31,9 @@
   {#if isOpen}
     <ul>
       {#each Object.entries(content) as [subFolderName, subContent]}
-        {#if subFolderName !== '__assets'}
-          <li>
-            <Folder folderName={subFolderName} content={subContent} parentPath={`${parentPath}/${folderName}`} />
-          </li>
-        {:else}
-          {#each content.__assets as asset}
-            <li>
-              {asset.originalPath}
-            </li>
-          {/each}
-        {/if}
+        <li>
+          <Folder folderName={subFolderName} content={subContent} parentPath={`${parentPath}/${folderName}`} />
+        </li>
       {/each}
     </ul>
   {/if}
@@ -64,7 +56,7 @@
   }
   ul {
     list-style: none;
-    padding-left: 20px;
+    padding-left: 0.5rem;
   }
   li {
     margin: 5px 0;
