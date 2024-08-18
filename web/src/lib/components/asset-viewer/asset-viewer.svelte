@@ -469,6 +469,8 @@
             bind:copyImage
             asset={previewStackedAsset}
             {preloadAssets}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
             on:close={closeViewer}
             haveFadeTransition={false}
             {sharedLink}
@@ -479,6 +481,8 @@
             checksum={previewStackedAsset.checksum}
             projectionType={previewStackedAsset.exifInfo?.projectionType}
             loopVideo={true}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
             on:close={closeViewer}
             on:onVideoEnded={() => navigateAsset()}
             on:onVideoStarted={handleVideoStarted}
@@ -502,6 +506,8 @@
               checksum={asset.checksum}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
               on:close={closeViewer}
               on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
             />
@@ -512,7 +518,16 @@
           {:else if isShowEditor && selectedEditType === 'crop'}
             <CropArea {asset} />
           {:else}
-            <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
+            <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
+              {asset}
+              {preloadAssets}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              on:close={closeViewer}
+              {sharedLink}
+            />
           {/if}
         {:else}
           <VideoViewer
@@ -520,6 +535,8 @@
             checksum={asset.checksum}
             projectionType={asset.exifInfo?.projectionType}
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
             on:close={closeViewer}
             on:onVideoEnded={() => navigateAsset()}
             on:onVideoStarted={handleVideoStarted}
