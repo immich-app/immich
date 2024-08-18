@@ -49,11 +49,10 @@ class BottomGalleryBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
 
-    final stack = showStack && asset.stackCount > 0
+    final stackItems = showStack && asset.stackCount > 0
         ? ref.watch(assetStackStateProvider(asset))
         : <Asset>[];
-    final stackElements = showStack ? [asset, ...stack] : <Asset>[];
-    bool isParent = asset.stackParentId == null;
+    bool isStackPrimaryAsset = asset.stackPrimaryAssetId == null;
     final navStack = AutoRouter.of(context).stackData;
     final isTrashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
@@ -76,7 +75,7 @@ class BottomGalleryBar extends ConsumerWidget {
           {asset},
           force: force,
         );
-        if (isDeleted && isParent) {
+        if (isDeleted && isStackPrimaryAsset) {
           // Workaround for asset remaining in the gallery
           renderList.deleteAsset(asset);
 
@@ -98,7 +97,7 @@ class BottomGalleryBar extends ConsumerWidget {
         final isDeleted = await onDelete(false);
         if (isDeleted) {
           // Can only trash assets stored in server. Local assets are always permanently removed for now
-          if (context.mounted && asset.isRemote && isParent) {
+          if (context.mounted && asset.isRemote && isStackPrimaryAsset) {
             ImmichToast.show(
               durationInSecond: 1,
               context: context,
@@ -134,7 +133,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
       await ref
           .read(stackServiceProvider)
-          .deleteStack(asset.stackId!, [asset, ...stack]);
+          .deleteStack(asset.stackId!, [asset, ...stackItems]);
     }
 
     void showStackActionItems() {
@@ -204,7 +203,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
     handleArchive() {
       ref.read(assetProvider.notifier).toggleArchive([asset]);
-      if (isParent) {
+      if (isStackPrimaryAsset) {
         context.maybePop();
         return;
       }

@@ -56,7 +56,7 @@ class StackService {
       final List<Asset> removeAssets = [];
       for (final asset in assets) {
         asset.stackId = null;
-        asset.stackParentId = null;
+        asset.stackPrimaryAssetId = null;
         asset.stackCount = 0;
 
         removeAssets.add(asset);

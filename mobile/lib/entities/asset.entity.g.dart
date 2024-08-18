@@ -97,9 +97,9 @@ const AssetSchema = CollectionSchema(
       name: r'stackId',
       type: IsarType.string,
     ),
-    r'stackParentId': PropertySchema(
+    r'stackPrimaryAssetId': PropertySchema(
       id: 16,
-      name: r'stackParentId',
+      name: r'stackPrimaryAssetId',
       type: IsarType.string,
     ),
     r'thumbhash': PropertySchema(
@@ -216,7 +216,7 @@ int _assetEstimateSize(
     }
   }
   {
-    final value = object.stackParentId;
+    final value = object.stackPrimaryAssetId;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -252,7 +252,7 @@ void _assetSerialize(
   writer.writeString(offsets[13], object.remoteId);
   writer.writeLong(offsets[14], object.stackCount);
   writer.writeString(offsets[15], object.stackId);
-  writer.writeString(offsets[16], object.stackParentId);
+  writer.writeString(offsets[16], object.stackPrimaryAssetId);
   writer.writeString(offsets[17], object.thumbhash);
   writer.writeByte(offsets[18], object.type.index);
   writer.writeDateTime(offsets[19], object.updatedAt);
@@ -282,14 +282,14 @@ Asset _assetDeserialize(
     ownerId: reader.readLong(offsets[12]),
     remoteId: reader.readStringOrNull(offsets[13]),
     stackCount: reader.readLongOrNull(offsets[14]) ?? 0,
-    stackParentId: reader.readStringOrNull(offsets[16]),
+    stackId: reader.readStringOrNull(offsets[15]),
+    stackPrimaryAssetId: reader.readStringOrNull(offsets[16]),
     thumbhash: reader.readStringOrNull(offsets[17]),
     type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ??
         AssetType.other,
     updatedAt: reader.readDateTime(offsets[19]),
     width: reader.readIntOrNull(offsets[20]),
   );
-  object.stackId = reader.readStringOrNull(offsets[15]);
   return object;
 }
 
@@ -2073,36 +2073,39 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsNotNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdEqualTo(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdGreaterThan(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2110,14 +2113,14 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdLessThan(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2125,14 +2128,14 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdBetween(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2141,7 +2144,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -2151,69 +2154,72 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdStartsWith(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdEndsWith(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdContains(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdMatches(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackParentIdIsNotEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'stackParentId',
+        property: r'stackPrimaryAssetId',
         value: '',
       ));
     });
@@ -2737,15 +2743,15 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackParentId() {
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackPrimaryAssetId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.asc);
+      return query.addSortBy(r'stackPrimaryAssetId', Sort.asc);
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackParentIdDesc() {
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByStackPrimaryAssetIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.desc);
+      return query.addSortBy(r'stackPrimaryAssetId', Sort.desc);
     });
   }
 
@@ -3003,15 +3009,15 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackParentId() {
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackPrimaryAssetId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.asc);
+      return query.addSortBy(r'stackPrimaryAssetId', Sort.asc);
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackParentIdDesc() {
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByStackPrimaryAssetIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'stackParentId', Sort.desc);
+      return query.addSortBy(r'stackPrimaryAssetId', Sort.desc);
     });
   }
 
@@ -3168,10 +3174,10 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByStackParentId(
+  QueryBuilder<Asset, Asset, QDistinct> distinctByStackPrimaryAssetId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'stackParentId',
+      return query.addDistinctBy(r'stackPrimaryAssetId',
           caseSensitive: caseSensitive);
     });
   }
@@ -3305,9 +3311,9 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Asset, String?, QQueryOperations> stackParentIdProperty() {
+  QueryBuilder<Asset, String?, QQueryOperations> stackPrimaryAssetIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'stackParentId');
+      return query.addPropertyName(r'stackPrimaryAssetId');
     });
   }
 

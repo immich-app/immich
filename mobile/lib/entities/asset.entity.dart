@@ -33,9 +33,9 @@ class Asset {
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
         isOffline = remote.isOffline,
-        // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+        // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
-        stackParentId = remote.stack?.primaryAssetId == remote.id
+        stackPrimaryAssetId = remote.stack?.primaryAssetId == remote.id
             ? null
             : remote.stack?.primaryAssetId,
         stackCount = remote.stack?.assetCount ?? 0,
@@ -89,7 +89,7 @@ class Asset {
     this.isArchived = false,
     this.isTrashed = false,
     this.stackId,
-    this.stackParentId,
+    this.stackPrimaryAssetId,
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
@@ -168,7 +168,7 @@ class Asset {
 
   String? stackId;
 
-  String? stackParentId;
+  String? stackPrimaryAssetId;
 
   int stackCount;
 
@@ -233,7 +233,7 @@ class Asset {
         isArchived == other.isArchived &&
         isTrashed == other.isTrashed &&
         stackCount == other.stackCount &&
-        stackParentId == other.stackParentId &&
+        stackPrimaryAssetId == other.stackPrimaryAssetId &&
         stackId == other.stackId;
   }
 
@@ -259,7 +259,7 @@ class Asset {
       isArchived.hashCode ^
       isTrashed.hashCode ^
       stackCount.hashCode ^
-      stackParentId.hashCode ^
+      stackPrimaryAssetId.hashCode ^
       stackId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
@@ -283,7 +283,7 @@ class Asset {
         a.thumbhash != thumbhash ||
         stackId != a.stackId ||
         stackCount != a.stackCount ||
-        stackParentId == null && a.stackParentId != null;
+        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -313,10 +313,11 @@ class Asset {
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
           stackId: stackId,
-          stackParentId: stackParentId == remoteId ? null : stackParentId,
+          stackPrimaryAssetId:
+              stackPrimaryAssetId == remoteId ? null : stackPrimaryAssetId,
           stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
@@ -333,10 +334,12 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
           stackId: a.stackId,
-          stackParentId: a.stackParentId == a.remoteId ? null : a.stackParentId,
+          stackPrimaryAssetId: a.stackPrimaryAssetId == a.remoteId
+              ? null
+              : a.stackPrimaryAssetId,
           stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
@@ -379,7 +382,7 @@ class Asset {
     bool? isOffline,
     ExifInfo? exifInfo,
     String? stackId,
-    String? stackParentId,
+    String? stackPrimaryAssetId,
     int? stackCount,
     String? thumbhash,
   }) =>
@@ -404,7 +407,7 @@ class Asset {
         isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
         stackId: stackId ?? this.stackId,
-        stackParentId: stackParentId ?? this.stackParentId,
+        stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
         stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
       );
@@ -452,7 +455,7 @@ class Asset {
   "ownerId": $ownerId,
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "stackId": "${stackId ?? "N/A"}",
-  "stackParentId": "${stackParentId ?? "N/A"}",
+  "stackPrimaryAssetId": "${stackPrimaryAssetId ?? "N/A"}",
   "stackCount": "$stackCount",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt",
