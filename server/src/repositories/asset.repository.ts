@@ -823,12 +823,12 @@ export class AssetRepository implements IAssetRepository {
       .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
       .getRawMany();
 
-    return results.map((row: { directoryPath: string }) => row.directoryPath.replace(/\/$/, ''));
+    return results.map((row: { directoryPath: string }) => row.directoryPath.replace(/^\/|\/$/g, ''));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
-    const normalizedPath = partialPath.endsWith('/') ? partialPath.slice(0, -1) : partialPath;
+    const normalizedPath = partialPath.replace(/^\/|\/$/g, '');
 
     const builder = this.getBuilder({
       userIds: [userId],
@@ -842,9 +842,9 @@ export class AssetRepository implements IAssetRepository {
       .where('asset.ownerId = :userId', { userId })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('asset.originalPath LIKE :likePath', { likePath: `${normalizedPath}/%` }).andWhere(
+          qb.where('asset.originalPath LIKE :likePath', { likePath: `%${normalizedPath}/%` }).andWhere(
             'asset.originalPath NOT LIKE :notLikePath',
-            { notLikePath: `${normalizedPath}/%/%` },
+            { notLikePath: `%${normalizedPath}/%/%` },
           );
         }),
       )
