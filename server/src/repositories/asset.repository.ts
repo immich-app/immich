@@ -848,6 +848,7 @@ export class AssetRepository implements IAssetRepository {
           );
         }),
       )
+      .orderBy("regexp_replace(asset.originalPath, '.*/(.+)', '\\1')", 'ASC')
       .getMany();
 
     return assets;
