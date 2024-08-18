@@ -27,11 +27,12 @@
       model,
       includeNull: true,
     });
+
+    makes = results.map((result) => result ?? '');
+
     if (filters.make && !makes.includes(filters.make)) {
       filters.make = undefined;
     }
-
-    makes = results.map((result) => result ?? '');
   }
 
   async function updateModels(make?: string) {
