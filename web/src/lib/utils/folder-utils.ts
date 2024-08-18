@@ -1,4 +1,4 @@
-interface RecursiveObject {
+export interface RecursiveObject {
   [key: string]: RecursiveObject | {};
 }
 

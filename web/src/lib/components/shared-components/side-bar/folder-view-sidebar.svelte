@@ -2,10 +2,10 @@
   import { onMount } from 'svelte';
   import Folder from '$lib/components/folder-browser/Folder.svelte';
   import { getUniqueOriginalPaths } from '@immich/sdk';
-  import { buildFolderTree } from '$lib/utils/folder-utils';
+  import { buildFolderTree, type RecursiveObject } from '$lib/utils/folder-utils';
 
 
-  let folderTree: { [key: string]: any } = {};
+  let folderTree: RecursiveObject = {};
 
   onMount(async () => {
     let data = await getUniqueOriginalPaths(); 
