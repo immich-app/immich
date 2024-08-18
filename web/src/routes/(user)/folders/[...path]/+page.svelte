@@ -29,10 +29,9 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-
-    {#if pathSegments.length > 0} 
+  
+  {#if pathSegments.length > 0} 
     <div>📁 
-      <!-- Breadcrumb Navigation -->
       {#each pathSegments as segment, index}
         <span>
           <a href="#" on:click|preventDefault={() => handleBreadcrumbNavigation(pathSegments.slice(0, index + 1).join('/'))}>
@@ -42,7 +41,7 @@
         </span>
       {/each}
     </div>
-    {/if}
+  {/if}
 
   <section class="flex flex-wrap justify-start gap-4">
     {#if data.path}
@@ -53,6 +52,7 @@
         <div class="mt-2 text-center">Back</div>
       </div>
     {/if}
+    
     {#each data.currentFolders as folder}
       <div class="flex flex-col items-center mb-4 cursor-pointer" on:click|stopPropagation={() => handleNavigation(folder)}>
         <div class="flex justify-center items-center w-[350px] h-[350px]">
@@ -61,18 +61,21 @@
         <div class="mt-2 text-center">{folder}</div>
       </div>
     {/each}
-    {#each data.pathAssets as asset}
-      <div class="flex justify-center flex-[1_0_350px] max-w-[350px]">
-        <Thumbnail
-          url={getAssetThumbnailUrl({
-            id: asset.id,
-            size: AssetMediaSize.Thumbnail,
-            checksum: asset.checksum,
-          })}
-          altText="testing"
-          widthStyle="100%"
-        />
-      </div>
-    {/each}
+    
+    {#if data.pathAssets}
+      {#each data.pathAssets as asset}
+        <div class="flex justify-center flex-[1_0_350px] max-w-[350px]">
+          <Thumbnail
+            url={getAssetThumbnailUrl({
+              id: asset.id,
+              size: AssetMediaSize.Thumbnail,
+              checksum: asset.checksum,
+            })}
+            altText="Asset Thumbnail"
+            widthStyle="100%"
+          />
+        </div>
+      {/each}
+    {/if}
   </section>
 </UserPageLayout>

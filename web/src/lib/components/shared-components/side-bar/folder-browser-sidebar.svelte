@@ -2,18 +2,23 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import FolderBrowser from '$lib/components/folder-browser/folder-browser.svelte';
-  import { getUniqueOriginalPaths } from '@immich/sdk';
   import { buildFolderTree, type RecursiveObject } from '$lib/utils/folder-utils';
+  import { foldersStore } from '$lib/stores/folders.store';
+  import { get } from 'svelte/store';
 
   let folderTree: RecursiveObject = {};
   let currentPath = '';
 
   onMount(async () => {
-    let data = await getUniqueOriginalPaths(); 
-    if (data.length > 0) {
-      folderTree = buildFolderTree(data);
-    }
+    await foldersStore.fetchUniquePaths();
   });
+
+  $: {
+    const { uniquePaths } = get(foldersStore);
+    if (uniquePaths && uniquePaths.length > 0) {
+      folderTree = buildFolderTree(uniquePaths);
+    }
+  }
 
   $: {
     page.subscribe(($page) => {
@@ -24,6 +29,6 @@
 
 <div class="pl-8">
   {#each Object.entries(folderTree) as [folderName, content]}
-    <FolderBrowser {folderName} {content} currentPath={currentPath} basePath="" />
+    <FolderBrowser {folderName} {content} {currentPath} basePath="" />
   {/each}
 </div>
