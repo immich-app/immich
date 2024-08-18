@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 
 export const fromLocalDateTime = (localDateTime: string) =>
-  DateTime.fromISO(localDateTime, { zone: 'UTC', locale: get(locale) });
+  DateTime.fromISO(localDateTime, { locale: get(locale) });
 
 export const groupDateFormat: Intl.DateTimeFormatOptions = {
   weekday: 'short',

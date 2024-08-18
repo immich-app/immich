@@ -227,13 +227,8 @@ export class MetadataService {
     await this.assetRepository.upsertExif(exifData);
 
     const dateTimeOriginal = exifData.dateTimeOriginal;
-    let localDateTime = dateTimeOriginal ?? undefined;
+    const localDateTime = dateTimeOriginal ?? undefined;
 
-    const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
-
-    if (dateTimeOriginal && timeZoneOffset) {
-      localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60_000);
-    }
     await this.assetRepository.update({
       id: asset.id,
       duration: asset.duration,
