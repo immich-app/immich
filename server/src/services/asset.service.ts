@@ -414,12 +414,12 @@ export class AssetService {
     }
   }
 
-  async getAllOriginalPaths(auth: AuthDto): Promise<string[]> {
-    return this.assetRepository.getAllOriginalPaths(auth.user.id);
+  async getUniqueOriginalPaths(auth: AuthDto): Promise<string[]> {
+    return this.assetRepository.getUniqueOriginalPaths(auth.user.id);
   }
 
-  async getByPartialPath(auth: AuthDto, path: string) {
-    const assets = await this.assetRepository.getByPartialPath(auth.user.id, path);
+  async getAssetsByOriginalPath(auth: AuthDto, path: string) {
+    const assets = await this.assetRepository.getAssetsByOriginalPath(auth.user.id, path);
     const ids = assets.map((a) => a.id);
     await this.access.requirePermission(auth, Permission.ASSET_READ, ids);
     return assets;

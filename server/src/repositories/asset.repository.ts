@@ -40,7 +40,6 @@ import {
   In,
   IsNull,
   MoreThan,
-  Like,
   Not,
   Repository,
 } from 'typeorm';
@@ -811,7 +810,7 @@ export class AssetRepository implements IAssetRepository {
     return builder.getMany();
   }
 
-  async getAllOriginalPaths(userId: string): Promise<string[]> {
+  async getUniqueOriginalPaths(userId: string): Promise<string[]> {
     const builder = this.getBuilder({
       userIds: [userId],
       exifInfo: false,
@@ -821,17 +820,36 @@ export class AssetRepository implements IAssetRepository {
     });
 
     const results = await builder
-      .select('DISTINCT substring(asset.originalPath FROM \'^(.*/)[^/]*$\')', 'directoryPath')
+      .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
       .getRawMany();
 
     return results.map((row: { directoryPath: string }) => row.directoryPath.replace(/\/$/, ''));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getByPartialPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
-    const assets = await this.repository.find({
-      where: { ownerId: userId, originalPath: Like(`%${partialPath}%`) },
+  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
+    const normalizedPath = partialPath.endsWith('/') ? partialPath.slice(0, -1) : partialPath;
+
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: false,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
     });
+
+    const assets = await builder
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('asset.originalPath LIKE :likePath', { likePath: `${normalizedPath}/%` }).andWhere(
+            'asset.originalPath NOT LIKE :notLikePath',
+            { notLikePath: `${normalizedPath}/%/%` },
+          );
+        }),
+      )
+      .getMany();
+
     return assets;
   }
 }

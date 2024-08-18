@@ -24,16 +24,16 @@ import { UUIDParamDto } from 'src/validation';
 @Controller(Route.ASSET)
 export class AssetController {
   constructor(private service: AssetService) {}
-  @Get('original-paths')
+  @Get('folder/unique-paths')
   @Authenticated()
-  getAllOriginalPaths(@Auth() auth: AuthDto): Promise<string[]> {
-    return this.service.getAllOriginalPaths(auth);
+  getUniqueOriginalPaths(@Auth() auth: AuthDto): Promise<string[]> {
+    return this.service.getUniqueOriginalPaths(auth);
   }
 
-  @Get('/search-by-path')
+  @Get('folder')
   @Authenticated()
-  getByPartialPath(@Auth() auth: AuthDto, @Query('path') path: string): Promise<AssetEntity[]> {
-    return this.service.getByPartialPath(auth, path);
+  getAssetsByOriginalPath(@Auth() auth: AuthDto, @Query('path') path: string): Promise<AssetEntity[]> {
+    return this.service.getAssetsByOriginalPath(auth, path);
   }
 
   @Get('memory-lane')

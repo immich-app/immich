@@ -3078,25 +3078,18 @@ export function getProfileImage({ id }: {
     }));
 }
 
-
-/**
- * Get all original paths of assets
- */
-export function getAllOriginalPaths(opts?: Oazapfts.RequestOpts) {
+export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
   return oazapfts.ok(
     oazapfts.fetchJson<{
       status: 200;
       data: string[];
-    }>('/assets/original-paths', {
+    }>("/assets/folder/unique-paths", {
       ...opts,
     })
   );
 }
 
-/**
- * Search assets by partial path
- */
-export function searchAssetsByPartialPath(
+export function getAssetsByOriginalPath(
   {
     path,
   }: {
@@ -3109,7 +3102,7 @@ export function searchAssetsByPartialPath(
       status: 200;
       data: AssetResponseDto[];
     }>(
-      `/assets/search-by-path${QS.query(
+      `/assets/folder${QS.query(
         QS.explode({
           path,
         })
