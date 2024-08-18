@@ -53,7 +53,7 @@ class BottomGalleryBar extends ConsumerWidget {
         ? ref.watch(assetStackStateProvider(asset))
         : <Asset>[];
     final stackElements = showStack ? [asset, ...stack] : <Asset>[];
-    bool isParent = asset.remoteId == asset.stackParentId;
+    bool isParent = asset.stackParentId == null;
     final navStack = AutoRouter.of(context).stackData;
     final isTrashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
@@ -137,16 +137,6 @@ class BottomGalleryBar extends ConsumerWidget {
           .deleteStack(asset.stackId!, [asset, ...stack]);
     }
 
-    setPrimaryStackAsset(Asset asset) async {
-      if (asset.stackId == null && asset.remoteId == null) {
-        return;
-      }
-
-      ref
-          .read(stackServiceProvider)
-          .updateStack(asset.stackId!, asset.remoteId!);
-    }
-
     void showStackActionItems() {
       showModalBottomSheet<void>(
         context: context,
@@ -158,24 +148,6 @@ class BottomGalleryBar extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (!isParent)
-                    ListTile(
-                      leading: const Icon(
-                        Icons.bookmark_border_outlined,
-                        size: 24,
-                      ),
-                      onTap: () async {
-                        await setPrimaryStackAsset(
-                          stackElements.elementAt(stackIndex),
-                        );
-                        ctx.pop();
-                        context.maybePop();
-                      },
-                      title: const Text(
-                        "viewer_stack_use_as_main_asset",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ).tr(),
-                    ),
                   ListTile(
                     leading: const Icon(
                       Icons.filter_none_outlined,
@@ -323,7 +295,7 @@ class BottomGalleryBar extends ConsumerWidget {
                   tooltip: 'control_bottom_app_bar_archive'.tr(),
                 ): (_) => handleArchive(),
         },
-      if (isOwner && stack.isNotEmpty)
+      if (isOwner && asset.stackCount > 0)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.burst_mode_outlined),
