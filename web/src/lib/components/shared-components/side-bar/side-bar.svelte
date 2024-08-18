@@ -27,7 +27,7 @@
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
-  import Folders from '$lib/components/shared-components/side-bar/folder-view-sidebar.svelte';
+  import FolderBrowser from '$lib/components/shared-components/side-bar/folder-browser-sidebar.svelte';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -113,15 +113,10 @@
       flippedLogo
       bind:isSelected={isFoldersSelected}
     >
-      <svelte:fragment slot="moreInformation">
-        <MoreInformationAlbums albumCountType="owned" />
-      </svelte:fragment>
     </SideBarLink>
 
     {#if isFoldersSelected}
-      <div class="folders">
-        <Folders />
-      </div>
+        <FolderBrowser />
     {/if}
 
     <SideBarLink
@@ -158,9 +153,3 @@
 
   <BottomInfo />
 </SideBarSection>
-
-<style>
-  .folders {
-    padding-left: 2rem;
-  }
-</style>

@@ -21,44 +21,20 @@
   }
 </script>
 
-<div class="folder">
-  <div class="folder-name">
+<div>
+  <div class="flex items-center font-bold my-1">
     <a href={`/folders${parentPath}/${folderName}`} on:click|preventDefault={handleNavigation}>
-      <span class="folder-icon" on:click|stopPropagation={handleNavigation}>📁</span>
+      <span class="mr-2" on:click|stopPropagation={handleNavigation}>📁</span>
     </a>
-    <span class="folder-name-text" on:click={toggleOpen}>{folderName}</span>
+    <span on:click={toggleOpen}>{folderName}</span>
   </div>
   {#if isOpen}
-    <ul>
+    <ul class="list-none pl-2">
       {#each Object.entries(content) as [subFolderName, subContent]}
-        <li>
+        <li class="my-1">
           <Folder folderName={subFolderName} content={subContent} parentPath={`${parentPath}/${folderName}`} />
         </li>
       {/each}
     </ul>
   {/if}
 </div>
-
-<style>
-  .folder-name {
-    cursor: pointer;
-    font-weight: bold;
-    margin: 5px 0;
-    display: flex;
-    align-items: center;
-  }
-  .folder-icon {
-    margin-right: 5px;
-    cursor: pointer;
-  }
-  .folder-name-text {
-    cursor: pointer;
-  }
-  ul {
-    list-style: none;
-    padding-left: 0.5rem;
-  }
-  li {
-    margin: 5px 0;
-  }
-</style>

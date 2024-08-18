@@ -16,7 +16,7 @@
   });
 </script>
 
-<div class="folders-section">
+<div class="pl-8">
   {#each Object.entries(folderTree) as [folderName, content]}
     <Folder {folderName} {content} />
   {/each}
