@@ -42,7 +42,7 @@
       includeNull: true,
     });
 
-    const models = results.map((result) => result ?? '');
+    models = results.map((result) => result ?? '');
 
     if (filters.model && !models.includes(filters.model)) {
       filters.model = undefined;
