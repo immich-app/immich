@@ -3,13 +3,18 @@ import { formatGroupTitle } from '$lib/utils/timeline-util';
 import { DateTime } from 'luxon';
 
 describe('formatGroupTitle', () => {
+  let originalSystemTimeZone: string | undefined;
+
   beforeAll(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-07-27T12:00:00Z'));
+    originalSystemTimeZone = process.env.TZ;
+    process.env.TZ = 'UTC';
   });
 
   afterAll(() => {
     vi.useRealTimers();
+    process.env.TZ = originalSystemTimeZone;
   });
 
   it('formats today', () => {
