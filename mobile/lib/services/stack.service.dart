@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
 class StackService {
-  StackService(this._api);
+  StackService(this._api, this._db);
 
   final ApiService _api;
+  final Isar _db;
 
   Future<StackResponseDto?> getStack(String stackId) async {
     try {
@@ -44,9 +48,23 @@ class StackService {
     return null;
   }
 
-  Future<void> deleteStack(String stackId) async {
+  Future<void> deleteStack(String stackId, List<Asset> assets) async {
     try {
-      return await _api.stacksApi.deleteStack(stackId);
+      await _api.stacksApi.deleteStack(stackId);
+
+      // Update local database to trigger rerendering
+      final List<Asset> removeAssets = [];
+      for (final asset in assets) {
+        asset.stackId = null;
+        asset.stackParentId = null;
+        asset.stackCount = 0;
+
+        removeAssets.add(asset);
+      }
+
+      _db.writeTxn(() async {
+        await _db.assets.putAll(removeAssets);
+      });
     } catch (error) {
       debugPrint("Error while deleting stack: $error");
     }
@@ -56,5 +74,6 @@ class StackService {
 final stackServiceProvider = Provider(
   (ref) => StackService(
     ref.watch(apiServiceProvider),
+    ref.watch(dbProvider),
   ),
 );

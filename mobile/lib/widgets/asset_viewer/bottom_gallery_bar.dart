@@ -132,7 +132,9 @@ class BottomGalleryBar extends ConsumerWidget {
         return;
       }
 
-      await ref.read(stackServiceProvider).deleteStack(asset.stackId!);
+      await ref
+          .read(stackServiceProvider)
+          .deleteStack(asset.stackId!, [asset, ...stack]);
     }
 
     setPrimaryStackAsset(Asset asset) async {
