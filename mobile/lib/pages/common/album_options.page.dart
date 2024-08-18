@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
@@ -183,6 +184,29 @@ class AlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
+    buildRemoteMappingList() {
+      final albums = ref.watch(albumProvider);
+      final remoteAlbums = albums.where((a) => a.isRemote).toList();
+      return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return DropdownMenu(
+                dropdownMenuEntries: [
+                  DropdownMenuEntry(value: null, label: "None"),
+                  ...remoteAlbums
+                      .map((a) =>
+                          DropdownMenuEntry(value: a.remoteId, label: a.name))
+                      .toList()
+                ],
+                initialSelection: album.remoteAlbumMappingId,
+                onSelected: (value) => {album.remoteAlbumMappingId = value},
+                width: constraints.maxWidth,
+              );
+            },
+          ));
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -193,38 +217,44 @@ class AlbumOptionsPage extends HookConsumerWidget {
         title: Text("translated_text_options".tr()),
       ),
       body: ListView(
-        children: [
-          if (isOwner && album.shared)
-            SwitchListTile.adaptive(
-              value: activityEnabled.value,
-              onChanged: (bool value) async {
-                activityEnabled.value = value;
-                if (await ref
-                    .read(sharedAlbumProvider.notifier)
-                    .setActivityEnabled(album, value)) {
-                  album.activityEnabled = value;
-                }
-              },
-              activeColor: activityEnabled.value
-                  ? context.primaryColor
-                  : context.themeData.disabledColor,
-              dense: true,
-              title: Text(
-                "shared_album_activity_setting_title",
-                style: context.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w500),
-              ).tr(),
-              subtitle: Text(
-                "shared_album_activity_setting_subtitle",
-                style: context.textTheme.labelLarge?.copyWith(
-                  color: context.colorScheme.onSurfaceSecondary,
-                ),
-              ).tr(),
-            ),
-          buildSectionTitle("shared_album_section_people_title".tr()),
-          buildOwnerInfo(),
-          buildSharedUsersList(),
-        ],
+        children: album.isRemote
+            ? [
+                if (isOwner && album.shared)
+                  SwitchListTile.adaptive(
+                    value: activityEnabled.value,
+                    onChanged: (bool value) async {
+                      activityEnabled.value = value;
+                      if (await ref
+                          .read(sharedAlbumProvider.notifier)
+                          .setActivityEnabled(album, value)) {
+                        album.activityEnabled = value;
+                      }
+                    },
+                    activeColor: activityEnabled.value
+                        ? context.primaryColor
+                        : context.themeData.disabledColor,
+                    dense: true,
+                    title: Text(
+                      "shared_album_activity_setting_title",
+                      style: context.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w500),
+                    ).tr(),
+                    subtitle: Text(
+                      "shared_album_activity_setting_subtitle",
+                      style: context.textTheme.labelLarge?.copyWith(
+                        color: context.colorScheme.onSurfaceSecondary,
+                      ),
+                    ).tr(),
+                  ),
+                buildSectionTitle("shared_album_section_people_title".tr()),
+                buildOwnerInfo(),
+                buildSharedUsersList(),
+              ]
+            : [
+                buildSectionTitle(
+                    "local_album_remote_album_mapping_title".tr()),
+                buildRemoteMappingList(),
+              ],
       ),
     );
   }

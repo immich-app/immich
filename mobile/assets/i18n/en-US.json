@@ -266,6 +266,7 @@
   "library_page_sort_most_oldest_photo": "Oldest photo",
   "library_page_sort_most_recent_photo": "Most recent photo",
   "library_page_sort_title": "Album title",
+  "local_album_remote_album_mapping_title": "Backup this album to remote album",
   "location_picker_choose_on_map": "Choose on map",
   "location_picker_latitude": "Latitude",
   "location_picker_latitude_error": "Enter a valid latitude",

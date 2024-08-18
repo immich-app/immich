@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/remote_album_mapping.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
@@ -104,6 +105,7 @@ Future<Isar> loadDb() async {
       ETagSchema,
       if (Platform.isAndroid) AndroidDeviceAssetSchema,
       if (Platform.isIOS) IOSDeviceAssetSchema,
+      RemoteAlbumMappingSchema,
     ],
     directory: dir.path,
     maxSizeMiB: 1024,

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/remote_album_mapping.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -68,6 +70,23 @@ class Album {
     }
 
     return name.join(' ');
+  }
+
+  @ignore
+  String? get remoteAlbumMappingId {
+    final Isar db = Isar.getInstance()!;
+    return db.remoteAlbumMappings
+            .getSync(fastHash(this.localId!))
+            ?.remoteAlbumMappingId ??
+        null;
+  }
+
+  set remoteAlbumMappingId(String? value) {
+    if (this.isRemote) return;
+    final Isar db = Isar.getInstance()!;
+    final mapping = RemoteAlbumMapping(
+        localAlbumMappingId: this.localId!, remoteAlbumMappingId: value);
+    db.writeTxnSync(() => db.remoteAlbumMappings.putSync(mapping));
   }
 
   @override

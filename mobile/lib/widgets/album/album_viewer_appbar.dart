@@ -155,6 +155,17 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void buildBottomSheet() {
+      final optionsActions = [
+        ListTile(
+          leading: const Icon(Icons.settings_rounded),
+          onTap: () => context.navigateTo(AlbumOptionsRoute(album: album)),
+          title: const Text(
+            "translated_text_options",
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ).tr(),
+        ),
+      ];
+
       final ownerActions = [
         ListTile(
           leading: const Icon(Icons.person_add_alt_rounded),
@@ -175,14 +186,6 @@ class AlbumViewerAppbar extends HookConsumerWidget
           },
           title: const Text(
             "control_bottom_app_bar_share",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
-        ),
-        ListTile(
-          leading: const Icon(Icons.settings_rounded),
-          onTap: () => context.navigateTo(AlbumOptionsRoute(album: album)),
-          title: const Text(
-            "translated_text_options",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -212,10 +215,13 @@ class AlbumViewerAppbar extends HookConsumerWidget
               child: ListView(
                 shrinkWrap: true,
                 children: [
-                  ...buildBottomSheetActions(),
-                  if (onAddPhotos != null) ...commonActions,
-                  if (onAddPhotos != null && userId == album.ownerId)
+                  if (album.isRemote) ...buildBottomSheetActions(),
+                  if (onAddPhotos != null && album.isRemote) ...commonActions,
+                  if (onAddPhotos != null &&
+                      userId == album.ownerId &&
+                      album.isRemote)
                     ...ownerActions,
+                  ...optionsActions,
                 ],
               ),
             ),
@@ -289,12 +295,11 @@ class AlbumViewerAppbar extends HookConsumerWidget
       actions: [
         if (album.shared && (album.activityEnabled || comments != 0))
           buildActivitiesButton(),
-        if (album.isRemote)
-          IconButton(
-            splashRadius: 25,
-            onPressed: buildBottomSheet,
-            icon: const Icon(Icons.more_horiz_rounded),
-          ),
+        IconButton(
+          splashRadius: 25,
+          onPressed: buildBottomSheet,
+          icon: const Icon(Icons.more_horiz_rounded),
+        ),
       ],
     );
   }
