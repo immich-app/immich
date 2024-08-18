@@ -1,5 +1,9 @@
-export function buildFolderTree(paths: string[]): any {
-  const root: { [key: string]: any } = {};
+interface RecursiveObject {
+  [key: string]: RecursiveObject | {};
+}
+
+export function buildFolderTree(paths: string[]) {
+  const root: RecursiveObject = {};
   paths.forEach((path) => {
     const parts = path.split('/');
     let current = root;
