@@ -34,7 +34,7 @@ export class StackService {
 
     const stack = await this.stackRepository.create({ ownerId: auth.user.id, assetIds: dto.assetIds });
 
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, dto.assetIds);
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
 
     return mapStack(stack, { auth });
   }
@@ -54,17 +54,23 @@ export class StackService {
 
     const updatedStack = await this.stackRepository.update({ id, primaryAssetId: dto.primaryAssetId });
 
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
+
     return mapStack(updatedStack, { auth });
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.access.requirePermission(auth, Permission.STACK_DELETE, id);
     await this.stackRepository.delete(id);
+
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
   }
 
   async deleteAll(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
     await this.access.requirePermission(auth, Permission.STACK_DELETE, dto.ids);
     await this.stackRepository.deleteAll(dto.ids);
+
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
   }
 
   private async findOrFail(id: string) {

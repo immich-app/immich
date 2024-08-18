@@ -83,11 +83,38 @@ export class StackRepository implements IStackRepository {
   }
 
   async delete(id: string): Promise<void> {
+    const stack = await this.getById(id);
+    if (!stack) {
+      return;
+    }
+
+    const assetIds = stack.assets.map(({ id }) => id);
+
     await this.repository.delete(id);
+
+    // Update assets updatedAt
+    await this.dataSource.manager.update(AssetEntity, assetIds, {
+      updatedAt: new Date(),
+    });
   }
 
   async deleteAll(ids: string[]): Promise<void> {
+    const assetIds = [];
+    for (const id of ids) {
+      const stack = await this.getById(id);
+      if (!stack) {
+        continue;
+      }
+
+      assetIds.push(...stack.assets.map(({ id }) => id));
+    }
+
     await this.repository.delete(ids);
+
+    // Update assets updatedAt
+    await this.dataSource.manager.update(AssetEntity, assetIds, {
+      updatedAt: new Date(),
+    });
   }
 
   update(entity: Partial<StackEntity>) {
