@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
@@ -18,36 +19,36 @@ class MemoryLane extends HookConsumerWidget {
     final memoryLane = memoryLaneFutureProvider
         .whenData(
           (memories) => memories != null
-              ? Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxHeight: 180,
+              ? ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxHeight: 180,
+                  ),
+                  child: CarouselView(
+                    itemExtent: 135,
+                    shrinkExtent: 100.0,
+                    elevation: 2,
+                    itemSnapping: true,
+                    backgroundColor: Colors.black,
+                    overlayColor: WidgetStateProperty.all(
+                      Colors.white.withOpacity(0.1),
                     ),
-                    child: CarouselView(
-                      itemExtent: 130,
-                      shrinkExtent: 1.0,
-                      elevation: 1,
-                      backgroundColor: Colors.black,
-                      overlayColor: WidgetStateProperty.all(
-                        Colors.white.withOpacity(0.1),
-                      ),
-                      onTap: (memoryIndex) {
-                        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-                        context.pushRoute(
-                          MemoryRoute(
-                            memories: memories,
-                            memoryIndex: memoryIndex,
+                    onTap: (memoryIndex) {
+                      ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+                      context.pushRoute(
+                        MemoryRoute(
+                          memories: memories,
+                          memoryIndex: memoryIndex,
+                        ),
+                      );
+                    },
+                    children: memories
+                        .mapIndexed<Widget>(
+                          (index, memory) => MemoryCard(
+                            index: index,
+                            memory: memory,
                           ),
-                        );
-                      },
-                      children:
-                          List<Widget>.generate(memories.length, (int index) {
-                        return MemoryCard(
-                          memory: memories[index],
-                          index: index,
-                        );
-                      }),
-                    ),
+                        )
+                        .toList(),
                   ),
                 )
               : const SizedBox(),
@@ -82,11 +83,11 @@ class MemoryCard extends ConsumerWidget {
             child: ImmichImage(
               memory.assets[0],
               fit: BoxFit.cover,
-              width: 145,
-              height: 200,
+              width: 135,
+              height: 180,
               placeholder: const ThumbnailPlaceholder(
-                width: 145,
-                height: 200,
+                width: 135,
+                height: 180,
               ),
             ),
           ),
