@@ -1,13 +1,17 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Folder from './Folder.svelte';
+  import FolderBrowser from './folder-browser.svelte';
 
   // Exported props
   export let folderName: string;
   export let content: any;
-  export let parentPath: string = '';
+  export let basePath: string;
+  export let currentPath: string = '';
 
   let isOpen = false;
+  let currentFolderPath = `${basePath}/${folderName}`.replace(/^\//, '').replace(/\/$/, '');
+
+  $: isOpen = currentPath.startsWith(currentFolderPath);
 
   function toggleOpen(event: MouseEvent) {
     event.stopPropagation();
@@ -16,14 +20,13 @@
 
   function handleNavigation(event: MouseEvent) {
     event.preventDefault();
-    const folderFullPath = `${parentPath}/${folderName}`.replace(/^\//, '');
-    goto(`/folders/${folderFullPath}`);
+    goto(`/folders/${currentFolderPath}`);
   }
 </script>
 
 <div>
   <div class="flex items-center font-bold my-1">
-    <a href={`/folders${parentPath}/${folderName}`} on:click|preventDefault={handleNavigation}>
+    <a href={`/folders/${currentFolderPath}`} on:click|preventDefault={handleNavigation}>
       <span class="mr-2" on:click|stopPropagation={handleNavigation}>📁</span>
     </a>
     <span on:click={toggleOpen}>{folderName}</span>
@@ -32,7 +35,7 @@
     <ul class="list-none pl-2">
       {#each Object.entries(content) as [subFolderName, subContent]}
         <li class="my-1">
-          <Folder folderName={subFolderName} content={subContent} parentPath={`${parentPath}/${folderName}`} />
+          <FolderBrowser folderName={subFolderName} content={subContent} basePath={currentFolderPath} currentPath={currentPath} />
         </li>
       {/each}
     </ul>
