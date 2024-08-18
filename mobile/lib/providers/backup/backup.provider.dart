@@ -290,7 +290,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
-    debugPrint("UPDATE BACKUP ASSET COUNTTT");
     final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
     final Set<BackupCandidate> assetsFromSelectedAlbums = {};
     final Set<BackupCandidate> assetsFromExcludedAlbums = {};
@@ -311,7 +310,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       final candidate = assets.map(
         (e) => BackupCandidate(
           id: e.id,
-          albumName: [album.albumEntity.name],
+          albumId: [album.albumEntity.id],
           asset: e,
         ),
       );
@@ -335,7 +334,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       final candidate = assets.map(
         (e) => BackupCandidate(
           id: e.id,
-          albumName: [album.albumEntity.name],
+          albumId: [album.albumEntity.name],
           asset: e,
         ),
       );
@@ -365,12 +364,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     /// Merge different album name of the same id
     allUniqueAssets = allUniqueAssets.map((e) {
-      final List<String> albumNames = allUniqueAssets
+      final List<String> albumIds = allUniqueAssets
           .where((a) => a.id == e.id)
-          .map((a) => a.albumName)
+          .map((a) => a.albumId)
           .expand((e) => e)
           .toList();
-      return e.copyWith(albumName: albumNames);
+      return e.copyWith(albumId: albumIds);
     }).toSet();
 
     if (allUniqueAssets.isEmpty) {

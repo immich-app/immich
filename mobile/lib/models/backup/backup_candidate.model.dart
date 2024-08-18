@@ -4,39 +4,37 @@ import 'package:photo_manager/photo_manager.dart';
 
 class BackupCandidate {
   final String id;
-  final List<String> albumName;
+  final List<String> albumId;
   final AssetEntity asset;
 
   BackupCandidate({
     required this.id,
-    required this.albumName,
+    required this.albumId,
     required this.asset,
   });
 
   BackupCandidate copyWith({
     String? id,
-    List<String>? albumName,
+    List<String>? albumId,
     AssetEntity? asset,
   }) {
     return BackupCandidate(
       id: id ?? this.id,
-      albumName: albumName ?? this.albumName,
+      albumId: albumId ?? this.albumId,
       asset: asset ?? this.asset,
     );
   }
 
   @override
-  String toString() => 'BackupCandidate(albumName: $albumName, asset: $asset)';
+  String toString() => 'BackupCandidate(albumId: $albumId, asset: $asset)';
 
   @override
   bool operator ==(covariant BackupCandidate other) {
     if (identical(this, other)) return true;
 
-    return other.id == id &&
-        other.albumName == albumName &&
-        other.asset == asset;
+    return other.id == id && other.albumId == albumId && other.asset == asset;
   }
 
   @override
-  int get hashCode => id.hashCode ^ albumName.hashCode ^ asset.hashCode;
+  int get hashCode => id.hashCode ^ albumId.hashCode ^ asset.hashCode;
 }
