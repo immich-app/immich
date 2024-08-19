@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowDown, mdiArrowRight, mdiFolder, mdiFolderArrowDown } from '@mdi/js';
-  import FolderBrowser from './folder-browser.svelte';
+  import { mdiFolder, mdiFolderArrowDown } from '@mdi/js';
+  import FolderBrowser from './folder-tree.svelte';
 
   // Exported props
   export let folderName: string;

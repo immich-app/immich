@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import FolderBrowser from '$lib/components/folder-browser/folder-browser.svelte';
+  import FolderTree from '$lib/components/folder-tree/folder-tree.svelte';
   import { buildFolderTree, type RecursiveObject } from '$lib/utils/folder-utils';
   import { foldersStore } from '$lib/stores/folders.store';
   import { get } from 'svelte/store';
@@ -31,7 +31,7 @@
   <p class="text-xs m-4 dark:text-white">FOLDER BROWSER</p>
   <div class="overflow-auto">
     {#each Object.entries(folderTree) as [folderName, content]}
-      <FolderBrowser {folderName} {content} {currentPath} basePath="" />
+      <FolderTree {folderName} {content} {currentPath} basePath="" />
     {/each}
   </div>
 </section>
