@@ -466,7 +466,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         return;
       }
 
-      Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
+      Set<BackupCandidate> assetsWillBeBackup = Set.from(state.allUniqueAssets);
       // Remove item that has already been backed up
       for (final assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);

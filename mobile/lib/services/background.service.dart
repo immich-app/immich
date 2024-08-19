@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/main.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -416,7 +417,7 @@ class BackgroundService {
       return false;
     }
 
-    List<AssetEntity> toUpload = await backupService.buildUploadCandidates(
+    List<BackupCandidate> toUpload = await backupService.buildUploadCandidates(
       selectedAlbums,
       excludedAlbums,
     );

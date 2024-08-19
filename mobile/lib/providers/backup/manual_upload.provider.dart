@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -250,7 +251,8 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
         final bool ok = await ref.read(backupServiceProvider).backupAsset(
-              allUploadAssets,
+              allUploadAssets
+                  .map((a) => BackupCandidate(id: a.id, albumId: [], asset: a)),
               state.cancelToken,
               pmProgressHandler,
               _onAssetUploaded,
