@@ -100,14 +100,15 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | 
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | 
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
+*AssetsApi* | [**getAssetsByOriginalPath**](doc//AssetsApi.md#getassetsbyoriginalpath) | **GET** /assets/folder | 
 *AssetsApi* | [**getMemoryLane**](doc//AssetsApi.md#getmemorylane) | **GET** /assets/memory-lane | 
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
+*AssetsApi* | [**getUniqueOriginalPaths**](doc//AssetsApi.md#getuniqueoriginalpaths) | **GET** /assets/folder/unique-paths | 
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
 *AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | 
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | 
 *AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | 
-*AssetsApi* | [**updateStackParent**](doc//AssetsApi.md#updatestackparent) | **PUT** /assets/stack/parent | 
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
@@ -205,6 +206,12 @@ Class | Method | HTTP request | Description
 *SharedLinksApi* | [**removeSharedLink**](doc//SharedLinksApi.md#removesharedlink) | **DELETE** /shared-links/{id} | 
 *SharedLinksApi* | [**removeSharedLinkAssets**](doc//SharedLinksApi.md#removesharedlinkassets) | **DELETE** /shared-links/{id}/assets | 
 *SharedLinksApi* | [**updateSharedLink**](doc//SharedLinksApi.md#updatesharedlink) | **PATCH** /shared-links/{id} | 
+*StacksApi* | [**createStack**](doc//StacksApi.md#createstack) | **POST** /stacks | 
+*StacksApi* | [**deleteStack**](doc//StacksApi.md#deletestack) | **DELETE** /stacks/{id} | 
+*StacksApi* | [**deleteStacks**](doc//StacksApi.md#deletestacks) | **DELETE** /stacks | 
+*StacksApi* | [**getStack**](doc//StacksApi.md#getstack) | **GET** /stacks/{id} | 
+*StacksApi* | [**searchStacks**](doc//StacksApi.md#searchstacks) | **GET** /stacks | 
+*StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | 
 *SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | 
 *SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
@@ -261,9 +268,11 @@ Class | Method | HTTP request | Description
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
+ - [AlbumEntity](doc//AlbumEntity.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
  - [AlbumUserCreateDto](doc//AlbumUserCreateDto.md)
+ - [AlbumUserEntity](doc//AlbumUserEntity.md)
  - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)
  - [AlbumUserRole](doc//AlbumUserRole.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
@@ -275,6 +284,8 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
+ - [AssetEntity](doc//AssetEntity.md)
+ - [AssetFaceEntity](doc//AssetFaceEntity.md)
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
@@ -283,12 +294,14 @@ Class | Method | HTTP request | Description
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
+ - [AssetJobStatusEntity](doc//AssetJobStatusEntity.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
  - [AssetMediaResponseDto](doc//AssetMediaResponseDto.md)
  - [AssetMediaSize](doc//AssetMediaSize.md)
  - [AssetMediaStatus](doc//AssetMediaStatus.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
+ - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
@@ -317,8 +330,10 @@ Class | Method | HTTP request | Description
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
  - [EntityType](doc//EntityType.md)
+ - [ExifEntity](doc//ExifEntity.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
+ - [FaceSearchEntity](doc//FaceSearchEntity.md)
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
  - [FileChecksumDto](doc//FileChecksumDto.md)
  - [FileChecksumResponseDto](doc//FileChecksumResponseDto.md)
@@ -332,6 +347,7 @@ Class | Method | HTTP request | Description
  - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
  - [JobStatusDto](doc//JobStatusDto.md)
+ - [LibraryEntity](doc//LibraryEntity.md)
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
@@ -365,6 +381,7 @@ Class | Method | HTTP request | Description
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)
  - [Permission](doc//Permission.md)
  - [PersonCreateDto](doc//PersonCreateDto.md)
+ - [PersonEntity](doc//PersonEntity.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
@@ -399,11 +416,18 @@ Class | Method | HTTP request | Description
  - [SessionResponseDto](doc//SessionResponseDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
+ - [SharedLinkEntity](doc//SharedLinkEntity.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
+ - [SmartInfoEntity](doc//SmartInfoEntity.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
+ - [SmartSearchEntity](doc//SmartSearchEntity.md)
+ - [StackCreateDto](doc//StackCreateDto.md)
+ - [StackEntity](doc//StackEntity.md)
+ - [StackResponseDto](doc//StackResponseDto.md)
+ - [StackUpdateDto](doc//StackUpdateDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigImageDto](doc//SystemConfigImageDto.md)
@@ -427,6 +451,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
+ - [TagEntity](doc//TagEntity.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagTypeEnum](doc//TagTypeEnum.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
@@ -439,7 +464,6 @@ Class | Method | HTTP request | Description
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
- - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
@@ -447,6 +471,7 @@ Class | Method | HTTP request | Description
  - [UserAdminResponseDto](doc//UserAdminResponseDto.md)
  - [UserAdminUpdateDto](doc//UserAdminUpdateDto.md)
  - [UserAvatarColor](doc//UserAvatarColor.md)
+ - [UserEntity](doc//UserEntity.md)
  - [UserLicense](doc//UserLicense.md)
  - [UserPreferencesResponseDto](doc//UserPreferencesResponseDto.md)
  - [UserPreferencesUpdateDto](doc//UserPreferencesUpdateDto.md)

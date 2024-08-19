@@ -203,12 +203,16 @@ class ApiClient {
           return AdminOnboardingUpdateDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
+        case 'AlbumEntity':
+          return AlbumEntity.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
         case 'AlbumUserAddDto':
           return AlbumUserAddDto.fromJson(value);
         case 'AlbumUserCreateDto':
           return AlbumUserCreateDto.fromJson(value);
+        case 'AlbumUserEntity':
+          return AlbumUserEntity.fromJson(value);
         case 'AlbumUserResponseDto':
           return AlbumUserResponseDto.fromJson(value);
         case 'AlbumUserRole':
@@ -231,6 +235,10 @@ class ApiClient {
           return AssetDeltaSyncDto.fromJson(value);
         case 'AssetDeltaSyncResponseDto':
           return AssetDeltaSyncResponseDto.fromJson(value);
+        case 'AssetEntity':
+          return AssetEntity.fromJson(value);
+        case 'AssetFaceEntity':
+          return AssetFaceEntity.fromJson(value);
         case 'AssetFaceResponseDto':
           return AssetFaceResponseDto.fromJson(value);
         case 'AssetFaceUpdateDto':
@@ -247,6 +255,8 @@ class ApiClient {
           return AssetIdsResponseDto.fromJson(value);
         case 'AssetJobName':
           return AssetJobNameTypeTransformer().decode(value);
+        case 'AssetJobStatusEntity':
+          return AssetJobStatusEntity.fromJson(value);
         case 'AssetJobsDto':
           return AssetJobsDto.fromJson(value);
         case 'AssetMediaResponseDto':
@@ -259,6 +269,8 @@ class ApiClient {
           return AssetOrderTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
+        case 'AssetStackResponseDto':
+          return AssetStackResponseDto.fromJson(value);
         case 'AssetStatsResponseDto':
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
@@ -315,10 +327,14 @@ class ApiClient {
           return EmailNotificationsUpdate.fromJson(value);
         case 'EntityType':
           return EntityTypeTypeTransformer().decode(value);
+        case 'ExifEntity':
+          return ExifEntity.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'FaceDto':
           return FaceDto.fromJson(value);
+        case 'FaceSearchEntity':
+          return FaceSearchEntity.fromJson(value);
         case 'FacialRecognitionConfig':
           return FacialRecognitionConfig.fromJson(value);
         case 'FileChecksumDto':
@@ -345,6 +361,8 @@ class ApiClient {
           return JobSettingsDto.fromJson(value);
         case 'JobStatusDto':
           return JobStatusDto.fromJson(value);
+        case 'LibraryEntity':
+          return LibraryEntity.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
         case 'LibraryStatsResponseDto':
@@ -411,6 +429,8 @@ class ApiClient {
           return PermissionTypeTransformer().decode(value);
         case 'PersonCreateDto':
           return PersonCreateDto.fromJson(value);
+        case 'PersonEntity':
+          return PersonEntity.fromJson(value);
         case 'PersonResponseDto':
           return PersonResponseDto.fromJson(value);
         case 'PersonStatisticsResponseDto':
@@ -479,16 +499,30 @@ class ApiClient {
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
           return SharedLinkEditDto.fromJson(value);
+        case 'SharedLinkEntity':
+          return SharedLinkEntity.fromJson(value);
         case 'SharedLinkResponseDto':
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':
           return SharedLinkTypeTypeTransformer().decode(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
+        case 'SmartInfoEntity':
+          return SmartInfoEntity.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
         case 'SmartSearchDto':
           return SmartSearchDto.fromJson(value);
+        case 'SmartSearchEntity':
+          return SmartSearchEntity.fromJson(value);
+        case 'StackCreateDto':
+          return StackCreateDto.fromJson(value);
+        case 'StackEntity':
+          return StackEntity.fromJson(value);
+        case 'StackResponseDto':
+          return StackResponseDto.fromJson(value);
+        case 'StackUpdateDto':
+          return StackUpdateDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
@@ -535,6 +569,8 @@ class ApiClient {
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':
           return SystemConfigUserDto.fromJson(value);
+        case 'TagEntity':
+          return TagEntity.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
@@ -559,8 +595,6 @@ class ApiClient {
           return UpdateLibraryDto.fromJson(value);
         case 'UpdatePartnerDto':
           return UpdatePartnerDto.fromJson(value);
-        case 'UpdateStackParentDto':
-          return UpdateStackParentDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
         case 'UsageByUserDto':
@@ -575,6 +609,8 @@ class ApiClient {
           return UserAdminUpdateDto.fromJson(value);
         case 'UserAvatarColor':
           return UserAvatarColorTypeTransformer().decode(value);
+        case 'UserEntity':
+          return UserEntity.fromJson(value);
         case 'UserLicense':
           return UserLicense.fromJson(value);
         case 'UserPreferencesResponseDto':

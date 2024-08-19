@@ -391,11 +391,10 @@ export class AssetRepository implements IAssetRepository {
 
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
+        relations = { jobStatus: true };
         where = [
-          { previewPath: IsNull(), isVisible: true },
-          { previewPath: '', isVisible: true },
-          { thumbnailPath: IsNull(), isVisible: true },
-          { thumbnailPath: '', isVisible: true },
+          { jobStatus: { previewAt: IsNull() }, isVisible: true },
+          { jobStatus: { thumbnailAt: IsNull() }, isVisible: true },
           { thumbhash: IsNull(), isVisible: true },
         ];
         break;
@@ -429,7 +428,7 @@ export class AssetRepository implements IAssetRepository {
         };
         where = {
           isVisible: true,
-          previewPath: Not(IsNull()),
+          jobStatus: { previewAt: Not(IsNull()) },
           smartSearch: {
             embedding: IsNull(),
           },
@@ -439,10 +438,10 @@ export class AssetRepository implements IAssetRepository {
 
       case WithoutProperty.DUPLICATE: {
         where = {
-          previewPath: Not(IsNull()),
           isVisible: true,
           smartSearch: true,
           jobStatus: {
+            previewAt: Not(IsNull()),
             duplicatesDetectedAt: IsNull(),
           },
         };
@@ -454,7 +453,9 @@ export class AssetRepository implements IAssetRepository {
           smartInfo: true,
         };
         where = {
-          previewPath: Not(IsNull()),
+          jobStatus: {
+            previewAt: Not(IsNull()),
+          },
           isVisible: true,
           smartInfo: {
             tags: IsNull(),
@@ -469,13 +470,13 @@ export class AssetRepository implements IAssetRepository {
           jobStatus: true,
         };
         where = {
-          previewPath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: IsNull(),
             personId: IsNull(),
           },
           jobStatus: {
+            previewAt: Not(IsNull()),
             facesRecognizedAt: IsNull(),
           },
         };
@@ -487,7 +488,9 @@ export class AssetRepository implements IAssetRepository {
           faces: true,
         };
         where = {
-          previewPath: Not(IsNull()),
+          jobStatus: {
+            previewAt: Not(IsNull()),
+          },
           isVisible: true,
           faces: {
             assetId: Not(IsNull()),

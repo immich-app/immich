@@ -26,12 +26,67 @@
 
   const onDrop = async (e: DragEvent) => {
     dragStartTarget = null;
-    await handleFiles(e.dataTransfer?.files);
+    await handleDataTransfer(e.dataTransfer);
   };
 
-  const onPaste = ({ clipboardData }: ClipboardEvent) => handleFiles(clipboardData?.files);
+  const onPaste = ({ clipboardData }: ClipboardEvent) => handleDataTransfer(clipboardData);
 
-  const handleFiles = async (files?: FileList) => {
+  const handleDataTransfer = async (dataTransfer?: DataTransfer | null) => {
+    if (!dataTransfer) {
+      return;
+    }
+
+    if (!browserSupportsDirectoryUpload()) {
+      return handleFiles(dataTransfer.files);
+    }
+
+    const transferEntries = Array.from(dataTransfer.items)
+      .map((i: DataTransferItem) => i.webkitGetAsEntry())
+      .filter((i) => i !== null);
+    const files = await getAllFilesFromTransferEntries(transferEntries);
+    return handleFiles(files);
+  };
+
+  const browserSupportsDirectoryUpload = () => typeof DataTransferItem.prototype.webkitGetAsEntry === 'function';
+
+  const getAllFilesFromTransferEntries = async (transferEntries: FileSystemEntry[]): Promise<File[]> => {
+    const allFiles: File[] = [];
+    let entriesToCheckForSubDirectories = [...transferEntries];
+    while (entriesToCheckForSubDirectories.length > 0) {
+      const currentEntry = entriesToCheckForSubDirectories.pop();
+
+      if (isFileSystemDirectoryEntry(currentEntry)) {
+        entriesToCheckForSubDirectories = entriesToCheckForSubDirectories.concat(
+          await getContentsFromFileSystemDirectoryEntry(currentEntry),
+        );
+      } else if (isFileSystemFileEntry(currentEntry)) {
+        allFiles.push(await getFileFromFileSystemEntry(currentEntry));
+      }
+    }
+
+    return allFiles;
+  };
+
+  const isFileSystemDirectoryEntry = (entry?: FileSystemEntry): entry is FileSystemDirectoryEntry =>
+    !!entry && entry.isDirectory;
+  const isFileSystemFileEntry = (entry?: FileSystemEntry): entry is FileSystemFileEntry => !!entry && entry.isFile;
+
+  const getFileFromFileSystemEntry = async (fileSystemFileEntry: FileSystemFileEntry): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      fileSystemFileEntry.file(resolve, reject);
+    });
+  };
+
+  const getContentsFromFileSystemDirectoryEntry = async (
+    fileSystemDirectoryEntry: FileSystemDirectoryEntry,
+  ): Promise<FileSystemEntry[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = fileSystemDirectoryEntry.createReader();
+      reader.readEntries(resolve, reject);
+    });
+  };
+
+  const handleFiles = async (files?: FileList | File[]) => {
     if (!files) {
       return;
     }

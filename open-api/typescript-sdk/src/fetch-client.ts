@@ -192,6 +192,11 @@ export type SmartInfoResponseDto = {
     objects?: string[] | null;
     tags?: string[] | null;
 };
+export type AssetStackResponseDto = {
+    assetCount: number;
+    id: string;
+    primaryAssetId: string;
+};
 export type TagResponseDto = {
     id: string;
     name: string;
@@ -226,9 +231,7 @@ export type AssetResponseDto = {
     people?: PersonWithFacesResponseDto[];
     resized: boolean;
     smartInfo?: SmartInfoResponseDto;
-    stack?: AssetResponseDto[];
-    stackCount: number | null;
-    stackParentId?: string | null;
+    stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
     thumbhash: string | null;
     "type": AssetTypeEnum;
@@ -344,8 +347,6 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     longitude?: number;
     rating?: number;
-    removeParent?: boolean;
-    stackParentId?: string;
 };
 export type AssetBulkUploadCheckItem = {
     /** base64 or hex encoded sha1 hash */
@@ -371,6 +372,226 @@ export type CheckExistingAssetsDto = {
 export type CheckExistingAssetsResponseDto = {
     existingIds: string[];
 };
+export type TagEntity = {
+    assets: AssetEntity[];
+    id: string;
+    name: string;
+    renameTagId: string | null;
+    "type": Type;
+    user: UserEntity;
+    userId: string;
+};
+export type UserEntity = {
+    assets: AssetEntity[];
+    createdAt: string;
+    deletedAt: string | null;
+    email: string;
+    id: string;
+    isAdmin: boolean;
+    metadata: string[];
+    name: string;
+    oauthId: string;
+    password?: string;
+    profileImagePath: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number;
+    shouldChangePassword: boolean;
+    status: Status;
+    storageLabel: string | null;
+    tags: TagEntity[];
+    updatedAt: string;
+};
+export type AlbumUserEntity = {
+    album: AlbumEntity;
+    albumId: string;
+    role: Role;
+    user: UserEntity;
+    userId: string;
+};
+export type SharedLinkEntity = {
+    album?: AlbumEntity;
+    albumId: string | null;
+    allowDownload: boolean;
+    allowUpload: boolean;
+    assets: AssetEntity[];
+    createdAt: string;
+    description: string | null;
+    expiresAt: string | null;
+    id: string;
+    key: object;
+    password: string | null;
+    showExif: boolean;
+    "type": Type2;
+    user: UserEntity;
+    userId: string;
+};
+export type AlbumEntity = {
+    albumName: string;
+    albumThumbnailAsset: (AssetEntity) | null;
+    albumThumbnailAssetId: string | null;
+    albumUsers: AlbumUserEntity[];
+    assets: AssetEntity[];
+    createdAt: string;
+    deletedAt: string | null;
+    description: string;
+    id: string;
+    isActivityEnabled: boolean;
+    order: Order;
+    owner: UserEntity;
+    ownerId: string;
+    sharedLinks: SharedLinkEntity[];
+    updatedAt: string;
+};
+export type ExifEntity = {
+    asset?: AssetEntity;
+    assetId: string;
+    autoStackId: string | null;
+    bitsPerSample: number | null;
+    city: string | null;
+    colorspace: string | null;
+    country: string | null;
+    dateTimeOriginal: string | null;
+    description: string;
+    exifImageHeight: number | null;
+    exifImageWidth: number | null;
+    exposureTime: string | null;
+    fNumber: number | null;
+    fileSizeInByte: number | null;
+    focalLength: number | null;
+    fps?: number | null;
+    iso: number | null;
+    latitude: number | null;
+    lensModel: string | null;
+    livePhotoCID: string | null;
+    longitude: number | null;
+    make: string | null;
+    model: string | null;
+    modifyDate: string | null;
+    orientation: string | null;
+    profileDescription: string | null;
+    projectionType: string | null;
+    rating: number | null;
+    state: string | null;
+    timeZone: string | null;
+};
+export type FaceSearchEntity = {
+    embedding: number[];
+    face?: AssetFaceEntity;
+    faceId: string;
+};
+export type PersonEntity = {
+    birthDate: string | null;
+    createdAt: string;
+    faceAsset: (AssetFaceEntity) | null;
+    faceAssetId: string | null;
+    faces: AssetFaceEntity[];
+    id: string;
+    isHidden: boolean;
+    name: string;
+    owner: UserEntity;
+    ownerId: string;
+    thumbnailPath: string;
+    updatedAt: string;
+};
+export type AssetFaceEntity = {
+    asset: AssetEntity;
+    assetId: string;
+    boundingBoxX1: number;
+    boundingBoxX2: number;
+    boundingBoxY1: number;
+    boundingBoxY2: number;
+    faceSearch?: FaceSearchEntity;
+    id: string;
+    imageHeight: number;
+    imageWidth: number;
+    person: (PersonEntity) | null;
+    personId: string | null;
+};
+export type AssetJobStatusEntity = {
+    asset: AssetEntity;
+    assetId: string;
+    duplicatesDetectedAt: string | null;
+    facesRecognizedAt: string | null;
+    metadataExtractedAt: string | null;
+    previewAt: string | null;
+    thumbnailAt: string | null;
+};
+export type LibraryEntity = {
+    assets: AssetEntity[];
+    createdAt: string;
+    deletedAt?: string;
+    exclusionPatterns: string[];
+    id: string;
+    importPaths: string[];
+    name: string;
+    owner: UserEntity;
+    ownerId: string;
+    refreshedAt: string | null;
+    updatedAt: string;
+};
+export type SmartInfoEntity = {
+    asset?: AssetEntity;
+    assetId: string;
+    objects: string[] | null;
+    tags: string[] | null;
+};
+export type SmartSearchEntity = {
+    asset?: AssetEntity;
+    assetId: string;
+    embedding: number[];
+};
+export type StackEntity = {
+    assetCount?: number;
+    assets: AssetEntity[];
+    id: string;
+    owner: UserEntity;
+    ownerId: string;
+    primaryAsset: AssetEntity;
+    primaryAssetId: string;
+};
+export type AssetEntity = {
+    albums?: AlbumEntity[];
+    checksum: object;
+    createdAt: string;
+    deletedAt: string | null;
+    deviceAssetId: string;
+    deviceId: string;
+    duplicateId: string | null;
+    duration: string | null;
+    encodedVideoPath: string | null;
+    exifInfo?: ExifEntity;
+    faces: AssetFaceEntity[];
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+    id: string;
+    isArchived: boolean;
+    isExternal: boolean;
+    isFavorite: boolean;
+    isOffline: boolean;
+    isVisible: boolean;
+    jobStatus?: AssetJobStatusEntity;
+    library?: (LibraryEntity) | null;
+    libraryId?: string | null;
+    livePhotoVideo: (AssetEntity) | null;
+    livePhotoVideoId: string | null;
+    localDateTime: string;
+    originalFileName: string;
+    originalPath: string;
+    owner: UserEntity;
+    ownerId: string;
+    previewPath: string | null;
+    sharedLinks: SharedLinkEntity[];
+    sidecarPath: string | null;
+    smartInfo?: SmartInfoEntity;
+    smartSearch?: SmartSearchEntity;
+    stack?: (StackEntity) | null;
+    stackId?: string | null;
+    tags: TagEntity[];
+    thumbhash: object | null;
+    thumbnailPath: string | null;
+    "type": Type3;
+    updatedAt: string;
+};
 export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
@@ -378,10 +599,6 @@ export type AssetJobsDto = {
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     yearsAgo: number;
-};
-export type UpdateStackParentDto = {
-    newParentId: string;
-    oldParentId: string;
 };
 export type AssetStatsResponseDto = {
     images: number;
@@ -972,6 +1189,18 @@ export type AssetIdsResponseDto = {
     assetId: string;
     error?: Error2;
     success: boolean;
+};
+export type StackResponseDto = {
+    assets: AssetResponseDto[];
+    id: string;
+    primaryAssetId: string;
+};
+export type StackCreateDto = {
+    /** first asset becomes the primary */
+    assetIds: string[];
+};
+export type StackUpdateDto = {
+    primaryAssetId?: string;
 };
 export type AssetDeltaSyncDto = {
     updatedAfter: string;
@@ -1597,6 +1826,26 @@ export function checkExistingAssets({ checkExistingAssetsDto }: {
         body: checkExistingAssetsDto
     })));
 }
+export function getAssetsByOriginalPath({ path }: {
+    path: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEntity[];
+    }>(`/assets/folder${QS.query(QS.explode({
+        path
+    }))}`, {
+        ...opts
+    }));
+}
+export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: string[];
+    }>("/assets/folder/unique-paths", {
+        ...opts
+    }));
+}
 export function runAssetJobs({ assetJobsDto }: {
     assetJobsDto: AssetJobsDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1631,15 +1880,6 @@ export function getRandom({ count }: {
     }))}`, {
         ...opts
     }));
-}
-export function updateStackParent({ updateStackParentDto }: {
-    updateStackParentDto: UpdateStackParentDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/assets/stack/parent", oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: updateStackParentDto
-    })));
 }
 export function getAssetStatistics({ isArchived, isFavorite, isTrashed }: {
     isArchived?: boolean;
@@ -2706,6 +2946,70 @@ export function addSharedLinkAssets({ id, key, assetIdsDto }: {
         body: assetIdsDto
     })));
 }
+export function deleteStacks({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/stacks", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
+export function searchStacks({ primaryAssetId }: {
+    primaryAssetId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StackResponseDto[];
+    }>(`/stacks${QS.query(QS.explode({
+        primaryAssetId
+    }))}`, {
+        ...opts
+    }));
+}
+export function createStack({ stackCreateDto }: {
+    stackCreateDto: StackCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: StackResponseDto;
+    }>("/stacks", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: stackCreateDto
+    })));
+}
+export function deleteStack({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/stacks/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getStack({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StackResponseDto;
+    }>(`/stacks/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateStack({ id, stackUpdateDto }: {
+    id: string;
+    stackUpdateDto: StackUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StackResponseDto;
+    }>(`/stacks/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: stackUpdateDto
+    })));
+}
 export function getDeltaSync({ assetDeltaSyncDto }: {
     assetDeltaSyncDto: AssetDeltaSyncDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3077,43 +3381,6 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
-
-export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
-  return oazapfts.ok(
-    oazapfts.fetchJson<{
-      status: 200;
-      data: string[];
-    }>("/assets/folder/unique-paths", {
-      ...opts,
-    })
-  );
-}
-
-export function getAssetsByOriginalPath(
-  {
-    path,
-  }: {
-    path: string;
-  },
-  opts?: Oazapfts.RequestOpts
-) {
-  return oazapfts.ok(
-    oazapfts.fetchJson<{
-      status: 200;
-      data: AssetResponseDto[];
-    }>(
-      `/assets/folder${QS.query(
-        QS.explode({
-          path,
-        })
-      )}`,
-      {
-        ...opts,
-      }
-    )
-  );
-}
-
 export enum ReactionLevel {
     Album = "album",
     Asset = "asset"
@@ -3224,6 +3491,10 @@ export enum Permission {
     SharedLinkRead = "sharedLink.read",
     SharedLinkUpdate = "sharedLink.update",
     SharedLinkDelete = "sharedLink.delete",
+    StackCreate = "stack.create",
+    StackRead = "stack.read",
+    StackUpdate = "stack.update",
+    StackDelete = "stack.delete",
     SystemConfigRead = "systemConfig.read",
     SystemConfigUpdate = "systemConfig.update",
     SystemMetadataRead = "systemMetadata.read",
@@ -3249,6 +3520,34 @@ export enum Action {
 export enum Reason {
     Duplicate = "duplicate",
     UnsupportedFormat = "unsupported-format"
+}
+export enum Role {
+    Editor = "editor",
+    Viewer = "viewer"
+}
+export enum Status {
+    Active = "active",
+    Removing = "removing",
+    Deleted = "deleted"
+}
+export enum Type {
+    Object = "OBJECT",
+    Face = "FACE",
+    Custom = "CUSTOM"
+}
+export enum Order {
+    Asc = "asc",
+    Desc = "desc"
+}
+export enum Type2 {
+    Album = "ALBUM",
+    Individual = "INDIVIDUAL"
+}
+export enum Type3 {
+    Image = "IMAGE",
+    Video = "VIDEO",
+    Audio = "AUDIO",
+    Other = "OTHER"
 }
 export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",

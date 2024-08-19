@@ -4,7 +4,7 @@ import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetType } from 'src/enum';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -12,7 +12,7 @@ import { IStackRepository } from 'src/interfaces/stack.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
-import { assetStub, stackStub } from 'test/fixtures/asset.stub';
+import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
@@ -253,134 +253,6 @@ describe(AssetService.name, () => {
       await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
       expect(assetMock.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
     });
-
-    /// Stack related
-
-    it('should require asset update access for parent', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      await expect(
-        sut.updateAll(authStub.user1, {
-          ids: ['asset-1'],
-          stackParentId: 'parent',
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should update parent asset updatedAt when children are added', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['parent']));
-      mockGetById([{ ...assetStub.image, id: 'parent' }]);
-      await sut.updateAll(authStub.user1, {
-        ids: [],
-        stackParentId: 'parent',
-      });
-      expect(assetMock.updateAll).toHaveBeenCalledWith(['parent'], { updatedAt: expect.any(Date) });
-    });
-
-    it('should update parent asset when children are removed', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['child-1']));
-      assetMock.getByIds.mockResolvedValue([
-        {
-          id: 'child-1',
-          stackId: 'stack-1',
-          stack: stackStub('stack-1', [{ id: 'parent' } as AssetEntity, { id: 'child-1' } as AssetEntity]),
-        } as AssetEntity,
-      ]);
-      stackMock.getById.mockResolvedValue(stackStub('stack-1', [{ id: 'parent' } as AssetEntity]));
-
-      await sut.updateAll(authStub.user1, {
-        ids: ['child-1'],
-        removeParent: true,
-      });
-      expect(assetMock.updateAll).toHaveBeenCalledWith(expect.arrayContaining(['child-1']), { stack: null });
-      expect(assetMock.updateAll).toHaveBeenCalledWith(expect.arrayContaining(['parent']), {
-        updatedAt: expect.any(Date),
-      });
-      expect(stackMock.delete).toHaveBeenCalledWith('stack-1');
-    });
-
-    it('update parentId for new children', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['child-1', 'child-2']));
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['parent']));
-      const stack = stackStub('stack-1', [
-        { id: 'parent' } as AssetEntity,
-        { id: 'child-1' } as AssetEntity,
-        { id: 'child-2' } as AssetEntity,
-      ]);
-      assetMock.getById.mockResolvedValue({
-        id: 'child-1',
-        stack,
-      } as AssetEntity);
-
-      await sut.updateAll(authStub.user1, {
-        stackParentId: 'parent',
-        ids: ['child-1', 'child-2'],
-      });
-
-      expect(stackMock.update).toHaveBeenCalledWith({
-        ...stackStub('stack-1', [
-          { id: 'child-1' } as AssetEntity,
-          { id: 'child-2' } as AssetEntity,
-          { id: 'parent' } as AssetEntity,
-        ]),
-        primaryAsset: undefined,
-      });
-      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2', 'parent'], { updatedAt: expect.any(Date) });
-    });
-
-    it('remove stack for removed children', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['child-1', 'child-2']));
-      await sut.updateAll(authStub.user1, {
-        removeParent: true,
-        ids: ['child-1', 'child-2'],
-      });
-
-      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'child-2'], { stack: null });
-    });
-
-    it('merge stacks if new child has children', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['child-1']));
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['parent']));
-      assetMock.getById.mockResolvedValue({ ...assetStub.image, id: 'parent' });
-      assetMock.getByIds.mockResolvedValue([
-        {
-          id: 'child-1',
-          stackId: 'stack-1',
-          stack: stackStub('stack-1', [{ id: 'child-1' } as AssetEntity, { id: 'child-2' } as AssetEntity]),
-        } as AssetEntity,
-      ]);
-      stackMock.getById.mockResolvedValue(stackStub('stack-1', [{ id: 'parent' } as AssetEntity]));
-
-      await sut.updateAll(authStub.user1, {
-        ids: ['child-1'],
-        stackParentId: 'parent',
-      });
-
-      expect(stackMock.delete).toHaveBeenCalledWith('stack-1');
-      expect(stackMock.create).toHaveBeenCalledWith({
-        assets: [{ id: 'child-1' }, { id: 'parent' }, { id: 'child-1' }, { id: 'child-2' }],
-        ownerId: 'user-id',
-        primaryAssetId: 'parent',
-      });
-      expect(assetMock.updateAll).toBeCalledWith(['child-1', 'parent', 'child-1', 'child-2'], {
-        updatedAt: expect.any(Date),
-      });
-    });
-
-    it('should send ws asset update event', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['asset-1']));
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['parent']));
-      assetMock.getById.mockResolvedValue(assetStub.image);
-
-      await sut.updateAll(authStub.user1, {
-        ids: ['asset-1'],
-        stackParentId: 'parent',
-      });
-
-      expect(eventMock.clientSend).toHaveBeenCalledWith(ClientEvent.ASSET_STACK_UPDATE, authStub.user1.user.id, [
-        'asset-1',
-        'parent',
-      ]);
-    });
   });
 
   describe('deleteAll', () => {
@@ -530,53 +402,17 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('updateStackParent', () => {
-    it('should require asset update access for new parent', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['old']));
-      await expect(
-        sut.updateStackParent(authStub.user1, {
-          oldParentId: 'old',
-          newParentId: 'new',
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+  describe('getUserAssetsByDeviceId', () => {
+    it('get assets by device id', async () => {
+      const assets = [assetStub.image, assetStub.image1];
+
+      assetMock.getAllByDeviceId.mockResolvedValue(assets.map((asset) => asset.deviceAssetId));
+
+      const deviceId = 'device-id';
+      const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
+
+      expect(result.length).toEqual(2);
+      expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
     });
-
-    it('should require asset read access for old parent', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['new']));
-      await expect(
-        sut.updateStackParent(authStub.user1, {
-          oldParentId: 'old',
-          newParentId: 'new',
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('make old parent the child of new parent', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set([assetStub.image.id]));
-      accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['new']));
-      assetMock.getById.mockResolvedValue({ ...assetStub.image, stackId: 'stack-1' });
-
-      await sut.updateStackParent(authStub.user1, {
-        oldParentId: assetStub.image.id,
-        newParentId: 'new',
-      });
-
-      expect(stackMock.update).toBeCalledWith({ id: 'stack-1', primaryAssetId: 'new' });
-      expect(assetMock.updateAll).toBeCalledWith([assetStub.image.id, 'new', assetStub.image.id], {
-        updatedAt: expect.any(Date),
-      });
-    });
-  });
-
-  it('get assets by device id', async () => {
-    const assets = [assetStub.image, assetStub.image1];
-
-    assetMock.getAllByDeviceId.mockResolvedValue(assets.map((asset) => asset.deviceAssetId));
-
-    const deviceId = 'device-id';
-    const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
-
-    expect(result.length).toEqual(2);
-    expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
   });
 });

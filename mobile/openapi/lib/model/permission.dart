@@ -82,6 +82,10 @@ class Permission {
   static const sharedLinkPeriodRead = Permission._(r'sharedLink.read');
   static const sharedLinkPeriodUpdate = Permission._(r'sharedLink.update');
   static const sharedLinkPeriodDelete = Permission._(r'sharedLink.delete');
+  static const stackPeriodCreate = Permission._(r'stack.create');
+  static const stackPeriodRead = Permission._(r'stack.read');
+  static const stackPeriodUpdate = Permission._(r'stack.update');
+  static const stackPeriodDelete = Permission._(r'stack.delete');
   static const systemConfigPeriodRead = Permission._(r'systemConfig.read');
   static const systemConfigPeriodUpdate = Permission._(r'systemConfig.update');
   static const systemMetadataPeriodRead = Permission._(r'systemMetadata.read');
@@ -156,6 +160,10 @@ class Permission {
     sharedLinkPeriodRead,
     sharedLinkPeriodUpdate,
     sharedLinkPeriodDelete,
+    stackPeriodCreate,
+    stackPeriodRead,
+    stackPeriodUpdate,
+    stackPeriodDelete,
     systemConfigPeriodRead,
     systemConfigPeriodUpdate,
     systemMetadataPeriodRead,
@@ -265,6 +273,10 @@ class PermissionTypeTransformer {
         case r'sharedLink.read': return Permission.sharedLinkPeriodRead;
         case r'sharedLink.update': return Permission.sharedLinkPeriodUpdate;
         case r'sharedLink.delete': return Permission.sharedLinkPeriodDelete;
+        case r'stack.create': return Permission.stackPeriodCreate;
+        case r'stack.read': return Permission.stackPeriodRead;
+        case r'stack.update': return Permission.stackPeriodUpdate;
+        case r'stack.delete': return Permission.stackPeriodDelete;
         case r'systemConfig.read': return Permission.systemConfigPeriodRead;
         case r'systemConfig.update': return Permission.systemConfigPeriodUpdate;
         case r'systemMetadata.read': return Permission.systemMetadataPeriodRead;

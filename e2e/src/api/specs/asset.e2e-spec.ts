@@ -7,7 +7,6 @@ import {
   SharedLinkType,
   getAssetInfo,
   getMyUser,
-  updateAssets,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
@@ -67,11 +66,9 @@ describe('/asset', () => {
   let timeBucketUser: LoginResponseDto;
   let quotaUser: LoginResponseDto;
   let statsUser: LoginResponseDto;
-  let stackUser: LoginResponseDto;
 
   let user1Assets: AssetMediaResponseDto[];
   let user2Assets: AssetMediaResponseDto[];
-  let stackAssets: AssetMediaResponseDto[];
   let locationAsset: AssetMediaResponseDto;
   let ratingAsset: AssetMediaResponseDto;
 
@@ -79,14 +76,13 @@ describe('/asset', () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
 
-    [websocket, user1, user2, statsUser, quotaUser, timeBucketUser, stackUser] = await Promise.all([
+    [websocket, user1, user2, statsUser, quotaUser, timeBucketUser] = await Promise.all([
       utils.connectWebsocket(admin.accessToken),
       utils.userSetup(admin.accessToken, createUserDto.create('1')),
       utils.userSetup(admin.accessToken, createUserDto.create('2')),
       utils.userSetup(admin.accessToken, createUserDto.create('stats')),
       utils.userSetup(admin.accessToken, createUserDto.userQuota),
       utils.userSetup(admin.accessToken, createUserDto.create('time-bucket')),
-      utils.userSetup(admin.accessToken, createUserDto.create('stack')),
     ]);
 
     await utils.createPartner(user1.accessToken, user2.userId);
@@ -148,20 +144,6 @@ describe('/asset', () => {
         assetData: { filename: 'example.mp4' },
       }),
     ]);
-
-    // stacks
-    stackAssets = await Promise.all([
-      utils.createAsset(stackUser.accessToken),
-      utils.createAsset(stackUser.accessToken),
-      utils.createAsset(stackUser.accessToken),
-      utils.createAsset(stackUser.accessToken),
-      utils.createAsset(stackUser.accessToken),
-    ]);
-
-    await updateAssets(
-      { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
-      { headers: asBearerAuth(stackUser.accessToken) },
-    );
 
     const person1 = await utils.createPerson(user1.accessToken, {
       name: 'Test Person',
@@ -826,145 +808,8 @@ describe('/asset', () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
-
-    it('should require a valid parent id', async () => {
-      const { status, body } = await request(app)
-        .put('/assets')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ stackParentId: uuidDto.invalid, ids: [stackAssets[0].id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['stackParentId must be a UUID']));
-    });
-
-    it('should require access to the parent', async () => {
-      const { status, body } = await request(app)
-        .put('/assets')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ stackParentId: stackAssets[3].id, ids: [user1Assets[0].id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should add stack children', async () => {
-      const { status } = await request(app)
-        .put('/assets')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ stackParentId: stackAssets[0].id, ids: [stackAssets[3].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: stackAssets[3].id })]));
-    });
-
-    it('should remove stack children', async () => {
-      const { status } = await request(app)
-        .put('/assets')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ removeParent: true, ids: [stackAssets[1].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: stackAssets[2].id }),
-          expect.objectContaining({ id: stackAssets[3].id }),
-        ]),
-      );
-    });
-
-    it('should remove all stack children', async () => {
-      const { status } = await request(app)
-        .put('/assets')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ removeParent: true, ids: [stackAssets[2].id, stackAssets[3].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).toBeUndefined();
-    });
-
-    it('should merge stack children', async () => {
-      // create stack after previous test removed stack children
-      await updateAssets(
-        { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
-        { headers: asBearerAuth(stackUser.accessToken) },
-      );
-
-      const { status } = await request(app)
-        .put('/assets')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ stackParentId: stackAssets[3].id, ids: [stackAssets[0].id] });
-
-      expect(status).toBe(204);
-
-      const asset = await getAssetInfo({ id: stackAssets[3].id }, { headers: asBearerAuth(stackUser.accessToken) });
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: stackAssets[0].id }),
-          expect.objectContaining({ id: stackAssets[1].id }),
-          expect.objectContaining({ id: stackAssets[2].id }),
-        ]),
-      );
-    });
   });
 
-  describe('PUT /assets/stack/parent', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/assets/stack/parent');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .put('/assets/stack/parent')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ oldParentId: uuidDto.invalid, newParentId: uuidDto.invalid });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
-    });
-
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .put('/assets/stack/parent')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should make old parent child of new parent', async () => {
-      const { status } = await request(app)
-        .put('/assets/stack/parent')
-        .set('Authorization', `Bearer ${stackUser.accessToken}`)
-        .send({ oldParentId: stackAssets[3].id, newParentId: stackAssets[0].id });
-
-      expect(status).toBe(200);
-
-      const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-
-      // new parent
-      expect(asset.stack).not.toBeUndefined();
-      expect(asset.stack).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: stackAssets[1].id }),
-          expect.objectContaining({ id: stackAssets[2].id }),
-          expect.objectContaining({ id: stackAssets[3].id }),
-        ]),
-      );
-    });
-  });
   describe('POST /assets', () => {
     beforeAll(setupTests, 30_000);
 
