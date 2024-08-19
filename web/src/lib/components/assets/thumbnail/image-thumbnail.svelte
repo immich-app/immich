@@ -1,18 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { decodeBase64 } from '$lib/utils';
+
   import { fade } from 'svelte/transition';
-  import { thumbHashToRGBA } from 'thumbhash';
+
   import { mdiEyeOffOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
+  import { thumbhash } from '$lib/actions/thumbhash';
 
   export let url: string;
   export let altText: string | undefined;
   export let title: string | null = null;
   export let heightStyle: string | undefined = undefined;
   export let widthStyle: string;
-  export let thumbhash: string | null = null;
+  export let base64ThumbHash: string | null = null;
   export let curve = false;
   export let shadow = false;
   export let circle = false;
@@ -49,17 +50,6 @@
       img?.removeEventListener('error', _onerror);
     };
   });
-  const loadThumhash = (canvas: HTMLCanvasElement) => {
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const { w, h, rgba } = thumbHashToRGBA(decodeBase64(thumbhash!));
-      const pixels = ctx.createImageData(w, h);
-      canvas.width = w;
-      canvas.height = h;
-      pixels.data.set(rgba);
-      ctx.putImageData(pixels, 0, 0);
-    }
-  };
 </script>
 
 <img
@@ -87,9 +77,9 @@
   </div>
 {/if}
 
-{#if thumbhash && (!loaded || errored)}
+{#if base64ThumbHash && (!loaded || errored)}
   <canvas
-    use:loadThumhash
+    use:thumbhash={{ base64ThumbHash }}
     data-testid="thumbhash"
     style:width={widthStyle}
     style:height={heightStyle}

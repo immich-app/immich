@@ -3,7 +3,7 @@ import { locale } from '$lib/stores/preferences.store';
 import type { AssetResponseDto } from '@immich/sdk';
 import type createJustifiedLayout from 'justified-layout';
 import { groupBy, memoize, sortBy } from 'lodash-es';
-import { DateTime, Interval } from 'luxon';
+import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 
 export type DateGroup = {

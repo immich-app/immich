@@ -2,6 +2,11 @@ export class KeyedPriorityQueue<K, T> {
   private items: { key: K; value: T; priority: number }[] = [];
   private set: Set<K> = new Set();
 
+  clear() {
+    this.items = [];
+    this.set.clear();
+  }
+
   remove(key: K) {
     const removed = this.set.delete(key);
     if (removed) {

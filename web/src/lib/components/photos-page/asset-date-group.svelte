@@ -3,18 +3,12 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import {
-    AssetBucket,
-    queueScrollSensitiveTask,
-    removeAllTasksForComponent,
-    type AssetStore,
-    type Viewport,
-  } from '$lib/stores/assets.store';
+  import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
   import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -41,7 +35,7 @@
   $: dateGroups = bucket.dateGroups;
 
   const {
-    DATEGROUP: { INTERSECTION_DISABLED, INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM, PRIORITY },
+    DATEGROUP: { INTERSECTION_DISABLED, INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
   } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
@@ -97,7 +91,7 @@
   };
 
   onDestroy(() => {
-    removeAllTasksForComponent(componentId);
+    $assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
 </script>
 
@@ -122,9 +116,7 @@
         top: INTERSECTION_ROOT_TOP,
         bottom: INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
-        priority: PRIORITY,
         disabled: INTERSECTION_DISABLED,
-        immediate: true,
       }}
       data-display={display}
       data-date-group={dateGroup.date}
@@ -140,7 +132,7 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           on:mouseenter={() =>
-            queueScrollSensitiveTask({
+            $assetStore.taskManager.queueScrollSensitiveTask({
               componentId,
               task: () => {
                 isMouseOverGroup = true;
@@ -148,7 +140,7 @@
               },
             })}
           on:mouseleave={() => {
-            queueScrollSensitiveTask({
+            $assetStore.taskManager.queueScrollSensitiveTask({
               componentId,
               task: () => {
                 isMouseOverGroup = false;
@@ -213,7 +205,6 @@
                     root: assetGridElement,
                     bottom: renderThumbsAtBottomMargin,
                     top: renderThumbsAtTopMargin,
-                    priority: 5,
                   }}
                   retrieveElement={$assetStore.pendingScrollAssetId === asset.id}
                   onRetrieveElement={(element) => onRetrieveElement(dateGroup, asset, element)}

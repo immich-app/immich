@@ -2,7 +2,7 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { decodeBase64, getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -23,13 +23,14 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { AssetStore, queueScrollSensitiveTask, removeAllTasksForComponent } from '$lib/stores/assets.store';
-  import { thumbHashToRGBA } from 'thumbhash';
-  import { TUNABLES } from '$lib/utils/tunables';
+  import { AssetStore } from '$lib/stores/assets.store';
+
   import type { DateGroup } from '$lib/utils/timeline-util';
 
   import { generateId } from '$lib/utils/generate-id';
   import { onDestroy } from 'svelte';
+  import { TUNABLES } from '$lib/utils/tunables';
+  import { thumbhash } from '$lib/actions/thumbhash';
 
   export let asset: AssetResponseDto;
   export let dateGroup: DateGroup | undefined = undefined;
@@ -63,6 +64,10 @@
   let className = '';
   export { className as class };
 
+  let {
+    IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
+  } = TUNABLES;
+
   const componentId = generateId();
   let element: HTMLElement | undefined;
   let mouseOver = false;
@@ -82,9 +87,6 @@
   $: height = thumbnailSize || thumbnailHeight || 235;
   $: display = intersecting;
 
-  const {
-    THUMBNAIL: { PRIORITY },
-  } = TUNABLES;
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
     e?.preventDefault();
@@ -115,16 +117,16 @@
   };
 
   const onMouseEnter = () => {
-    if (dateGroup) {
-      queueScrollSensitiveTask({ componentId, task: () => _onMouseEnter() });
+    if (dateGroup && assetStore) {
+      assetStore.taskManager.queueScrollSensitiveTask({ componentId, task: () => _onMouseEnter() });
     } else {
       _onMouseEnter();
     }
   };
 
   const onMouseLeave = () => {
-    if (dateGroup) {
-      queueScrollSensitiveTask({ componentId, task: () => (mouseOver = false) });
+    if (dateGroup && assetStore) {
+      assetStore.taskManager.queueScrollSensitiveTask({ componentId, task: () => (mouseOver = false) });
     } else {
       mouseOver = false;
     }
@@ -156,19 +158,9 @@
       intersecting = false;
     }
   };
-  const loadThumhash = (canvas: HTMLCanvasElement) => {
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const { w, h, rgba } = thumbHashToRGBA(decodeBase64(asset.thumbhash!));
-      const pixels = ctx.createImageData(w, h);
-      canvas.width = w;
-      canvas.height = h;
-      pixels.data.set(rgba);
-      ctx.putImageData(pixels, 0, 0);
-    }
-  };
+
   onDestroy(() => {
-    removeAllTasksForComponent(componentId);
+    assetStore?.taskManager.removeAllTasksForComponent(componentId);
   });
 </script>
 
@@ -178,7 +170,6 @@
     ...intersectionConfig,
     onIntersect,
     onSeparate,
-    priority: PRIORITY,
   }}
   data-asset={asset.id}
   data-int={intersecting}
@@ -190,11 +181,11 @@
 >
   {#if !loaded && asset.thumbhash}
     <canvas
-      use:loadThumhash
+      use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
       class="absolute object-cover z-10"
       style:width="{width}px"
       style:height="{height}px"
-      out:fade={{ duration: 150 }}
+      out:fade={{ duration: THUMBHASH_FADE_DURATION }}
     ></canvas>
   {/if}
 
@@ -225,7 +216,6 @@
           href={currentUrlReplaceAssetId(asset.id)}
           on:click={(evt) => evt.preventDefault()}
           tabindex={0}
-          aria-hidden="true"
         >
         </a>
       {/if}

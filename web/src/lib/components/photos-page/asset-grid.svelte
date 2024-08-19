@@ -9,8 +9,6 @@
     AssetBucket,
     AssetStore,
     isSelectingAllAssets,
-    lastScrollTime,
-    removeAllTasksForComponent,
     type BucketListener,
     type ViewportXY,
   } from '$lib/stores/assets.store';
@@ -117,7 +115,6 @@
   const {
     ASSET_GRID: { NAVIGATE_ON_ASSET_IN_VIEW },
     BUCKET: {
-      PRIORITY,
       INTERSECTION_ROOT_TOP: BUCKET_INTERSECTION_ROOT_TOP,
       INTERSECTION_ROOT_BOTTOM: BUCKET_INTERSECTION_ROOT_BOTTOM,
     },
@@ -229,7 +226,7 @@
 
   const scrollTolastIntersectedBucket = (adjustedBucket: AssetBucket, delta: number) => {
     if (!lastIntersectedBucketDate) {
-      updateLastIntersectedBucketDate();
+      _updateLastIntersectedBucketDate();
     }
     if (lastIntersectedBucketDate) {
       const currentIndex = $assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
@@ -238,6 +235,17 @@
       if (deltaIndex < currentIndex) {
         element?.scrollBy(0, delta);
       }
+      console.log(
+        'scroll adjust',
+        adjustedBucket.bucketDate,
+        delta,
+        deltaIndex,
+        currentIndex,
+        lastIntersectedBucketDate,
+        deltaIndex < currentIndex,
+      );
+    } else {
+      console.log('scroll adjust', adjustedBucket.bucketDate, delta);
     }
   };
 
@@ -262,6 +270,7 @@
     const dispose = hmrSupport();
     return () => {
       $assetStore.disconnect();
+      $assetStore.destroy();
       dispose();
     };
   });
@@ -744,7 +753,7 @@
     }
   };
   onDestroy(() => {
-    removeAllTasksForComponent(componentId);
+    assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
 </script>
 
@@ -782,80 +791,76 @@
   tabindex="-1"
   use:resizeObserver={({ height, width }) => ((viewport.width = width), (viewport.height = height))}
   bind:this={element}
-  on:scroll={() => (($lastScrollTime = Date.now()), handleTimelineScroll())}
+  on:scroll={() => ((assetStore.lastScrollTime = Date.now()), handleTimelineScroll())}
 >
-  {#if element}
-    <section
-      use:resizeObserver={({ target, height }) => ((topSectionHeight = height), (topSectionOffset = target.offsetTop))}
-      class:invisible={showSkeleton}
-    >
-      <slot />
-      {#if isEmpty}
-        <!-- (optional) empty placeholder -->
-        <slot name="empty" />
-      {/if}
-    </section>
+  <section
+    use:resizeObserver={({ target, height }) => ((topSectionHeight = height), (topSectionOffset = target.offsetTop))}
+    class:invisible={showSkeleton}
+  >
+    <slot />
+    {#if isEmpty}
+      <!-- (optional) empty placeholder -->
+      <slot name="empty" />
+    {/if}
+  </section>
 
-    <section
-      bind:this={timelineElement}
-      id="virtual-timeline"
-      class:invisible={showSkeleton}
-      style:height={$assetStore.timelineHeight + 'px'}
-    >
-      {#each $assetStore.buckets as bucket (bucket.bucketDate)}
-        {@const isPremeasure = preMeasure.includes(bucket)}
-        {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
-        <div
-          id="buck"
-          use:intersectionObserver={{
-            onIntersect: () => intersectedHandler(bucket),
-            onSeparate: () => seperatedHandler(bucket),
-            top: BUCKET_INTERSECTION_ROOT_TOP,
-            bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
-            root: element,
-            priority: PRIORITY,
-          }}
-          data-bucket-display={bucket.intersecting}
-          data-bucket-date={bucket.bucketDate}
-          style:height={bucket.bucketHeight + 'px'}
-        >
-          {#key bucket}
-            {#if display && !bucket.measured}
-              <MeasureDateGroup
-                {bucket}
-                {assetStore}
-                onMeasured={() => (preMeasure = preMeasure.filter((b) => b !== bucket))}
-              ></MeasureDateGroup>
-            {/if}
-          {/key}
-          {#if !display || !bucket.measured}
-            <Skeleton height={bucket.bucketHeight + 'px'} title={`${bucket.bucketDateFormattted}`} />
-          {/if}
-          {#if display && bucket.measured}
-            <AssetDateGroup
-              assetGridElement={element}
-              renderThumbsAtTopMargin={THUMBNAIL_INTERSECTION_ROOT_TOP}
-              renderThumbsAtBottomMargin={THUMBNAIL_INTERSECTION_ROOT_BOTTOM}
-              {withStacked}
-              {showArchiveIcon}
-              {assetStore}
-              {assetInteractionStore}
-              {isSelectionMode}
-              {singleSelect}
-              {onScrollTarget}
-              {onAssetInGrid}
-              {bucket}
-              viewport={safeViewport}
-              on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
-              on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
-              on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
-            />
-          {/if}
-        </div>
-      {/each}
-      <div class="h-[60px]"></div>
-    </section>
-  {/if}
+  <section
+    bind:this={timelineElement}
+    id="virtual-timeline"
+    class:invisible={showSkeleton}
+    style:height={$assetStore.timelineHeight + 'px'}
+  >
+    {#each $assetStore.buckets as bucket (bucket.bucketDate)}
+      {@const isPremeasure = preMeasure.includes(bucket)}
+      {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
+      <div
+        id="buck"
+        use:intersectionObserver={{
+          onIntersect: () => intersectedHandler(bucket),
+          onSeparate: () => seperatedHandler(bucket),
+          top: BUCKET_INTERSECTION_ROOT_TOP,
+          bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
+          root: element,
+        }}
+        data-bucket-display={bucket.intersecting}
+        data-bucket-date={bucket.bucketDate}
+        style:height={bucket.bucketHeight + 'px'}
+      >
+        {#if display && !bucket.measured}
+          <MeasureDateGroup
+            {bucket}
+            {assetStore}
+            onMeasured={() => (preMeasure = preMeasure.filter((b) => b !== bucket))}
+          ></MeasureDateGroup>
+        {/if}
+
+        {#if !display || !bucket.measured}
+          <Skeleton height={bucket.bucketHeight + 'px'} title={`${bucket.bucketDateFormattted}`} />
+        {/if}
+        {#if display && bucket.measured}
+          <AssetDateGroup
+            assetGridElement={element}
+            renderThumbsAtTopMargin={THUMBNAIL_INTERSECTION_ROOT_TOP}
+            renderThumbsAtBottomMargin={THUMBNAIL_INTERSECTION_ROOT_BOTTOM}
+            {withStacked}
+            {showArchiveIcon}
+            {assetStore}
+            {assetInteractionStore}
+            {isSelectionMode}
+            {singleSelect}
+            {onScrollTarget}
+            {onAssetInGrid}
+            {bucket}
+            viewport={safeViewport}
+            on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
+            on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
+            on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
+          />
+        {/if}
+      </div>
+    {/each}
+    <div class="h-[60px]"></div>
+  </section>
 </section>
 
 <Portal target="body">

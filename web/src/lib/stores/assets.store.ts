@@ -1,14 +1,12 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
+import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { getAssetRatio } from '$lib/utils/asset-utils';
-import { generateId } from '$lib/utils/generate-id';
-import { KeyedPriorityQueue } from '$lib/utils/keyed-priority-queue';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
-import { TUNABLES } from '$lib/utils/tunables';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import createJustifiedLayout from 'justified-layout';
-import { clamp, throttle } from 'lodash-es';
+import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get, writable, type Unsubscriber } from 'svelte/store';
@@ -150,10 +148,14 @@ interface TrashAssets {
   type: 'trash';
   values: string[];
 }
+interface UpdateStackAssets {
+  type: 'update_stack_assets';
+  values: string[];
+}
 
 export const photoViewer = writable<HTMLImageElement | null>(null);
 
-type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets;
+type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | UpdateStackAssets;
 
 export type BucketListener = (
   event:
@@ -211,11 +213,12 @@ export class AssetStore {
   private initializedSignal!: () => void;
   private store$ = writable(this);
 
+  lastScrollTime: number = 0;
   subscribe = this.store$.subscribe;
   /**
    * A promise that resolves once the store is initialized.
    */
-  taskManager = new AssetGridTaskManager();
+  taskManager = new AssetGridTaskManager(this);
   complete!: Promise<void>;
   initialized = false;
   timelineHeight = 0;
@@ -368,7 +371,6 @@ export class AssetStore {
       ...this.options,
       key: getKey(),
     });
-
     this.buckets = timebuckets.map(
       (bucket) => new AssetBucket({ store: this, bucketDate: bucket.timeBucket, bucketCount: bucket.count }),
     );
@@ -377,6 +379,7 @@ export class AssetStore {
   }
 
   public destroy() {
+    this.taskManager.destroy();
     this.listeners = [];
     this.initialized = false;
   }
@@ -417,8 +420,8 @@ export class AssetStore {
     this.emit(false);
   }
 
-  private updateGeometry(bucket: AssetBucket, changedWidth: boolean) {
-    if (changedWidth) {
+  private updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
+    if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
       bucket.measured = false;
       for (const assetGroup of bucket.dateGroups) {
@@ -644,6 +647,8 @@ export class AssetStore {
         const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
         return bDate.diff(aDate).milliseconds;
       });
+      bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
+      this.updateGeometry(bucket, true);
     }
 
     this.emit(true);
@@ -774,6 +779,7 @@ export class AssetStore {
     // Iterate in reverse to allow array splicing.
     for (let index = this.buckets.length - 1; index >= 0; index--) {
       const bucket = this.buckets[index];
+      let changed = false;
       for (let index_ = bucket.assets.length - 1; index_ >= 0; index_--) {
         const asset = bucket.assets[index_];
         if (!idSet.has(asset.id)) {
@@ -781,9 +787,14 @@ export class AssetStore {
         }
 
         bucket.assets.splice(index_, 1);
+        changed = true;
         if (bucket.assets.length === 0) {
           this.buckets.splice(index, 1);
         }
+      }
+      if (changed) {
+        bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
+        this.updateGeometry(bucket, true);
       }
     }
 
@@ -858,460 +869,3 @@ export class AssetStore {
 }
 
 export const isSelectingAllAssets = writable(false);
-
-export const lastScrollTime = writable<number>(0);
-
-interface RequestIdleCallback {
-  didTimeout?: boolean;
-  timeRemaining?(): DOMHighResTimeStamp;
-}
-interface RequestIdleCallbackOptions {
-  timeout?: number;
-}
-
-function fake_requestIdleCallback(cb: (deadline: RequestIdleCallback) => any, _?: RequestIdleCallbackOptions) {
-  const start = Date.now();
-  return setTimeout(cb({ didTimeout: false, timeRemaining: () => Math.max(0, 50 - (Date.now() - start)) }), 100);
-}
-
-function fake_cancelIdleCallback(id: number) {
-  return clearTimeout(id);
-}
-
-const idleCB = window.requestIdleCallback || fake_requestIdleCallback;
-const cancelIdleCB = window.cancelIdleCallback || fake_cancelIdleCallback;
-
-type Task = () => void;
-let queueTimer: ReturnType<typeof setTimeout> | undefined;
-
-function drain() {
-  let count = 0;
-  for (let t = tasks.shift(); t; t = tasks.shift()) {
-    t.value();
-    if (cleaners.has(t.key)) {
-      cleaners.get(t.key)!();
-      cleaners.delete(t.key);
-    }
-    if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
-      scheduleDrain(TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS_DELAY_MS);
-      break;
-    }
-  }
-}
-
-function scheduleDrain(delay: number = TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS) {
-  // console.log('schedule drain intersected', tasks.length);
-  clearTimeout(queueTimer);
-  queueTimer = setTimeout(() => {
-    const delta = Date.now() - get(lastScrollTime);
-    if (delta < TUNABLES.SCROLL_TASK_QUEUE.MIN_DELAY_MS) {
-      let amount = clamp(
-        1 + Math.round(tasks.length / TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_BONUS_FACTOR),
-        1,
-        TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS * 2,
-      );
-
-      const nextDelay = clamp(
-        amount > 1
-          ? Math.round(delay / TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_ACCELERATION_FACTOR)
-          : TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS,
-        TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_ACCELERATED_MIN_DELAY,
-        TUNABLES.SCROLL_TASK_QUEUE.TRICKLE_ACCELERATED_MAX_DELAY,
-      );
-
-      while (amount > 0) {
-        tasks.shift()?.value();
-        amount--;
-      }
-      if (tasks.length > 0) {
-        scheduleDrain(nextDelay);
-      }
-    } else {
-      drain();
-    }
-  }, delay);
-}
-
-const componentTasks = new Map<string, Set<string>>();
-function getOrCreateComponentTasks(componentId: string) {
-  let componentTaskSet = componentTasks.get(componentId);
-  if (!componentTaskSet) {
-    componentTaskSet = new Set<string>();
-    componentTasks.set(componentId, componentTaskSet);
-  }
-
-  return componentTaskSet;
-}
-function deleteFromComponentTasks(componentId: string, taskId: string) {
-  if (componentTasks.has(componentId)) {
-    const componentTaskSet = componentTasks.get(componentId);
-    componentTaskSet?.delete(taskId);
-    if (componentTaskSet?.size === 0) {
-      componentTasks.delete(componentId);
-    }
-  }
-}
-
-const tasks = new KeyedPriorityQueue<string, Task>();
-const cleaners = new Map<string, Task>();
-const seperatedQueue = new Map<string, Task>();
-
-export function removeAllTasksForComponent(componentId: string) {
-  if (componentTasks.has(componentId)) {
-    const tasksIds = componentTasks.get(componentId) || [];
-    for (const taskId of tasksIds) {
-      tasks.remove(taskId);
-      seperatedQueue.delete(taskId);
-      if (cleaners.has(taskId)) {
-        const cleanup = cleaners.get(taskId);
-        cleaners.delete(taskId);
-        cleanup!();
-      }
-    }
-  }
-  componentTasks.delete(componentId);
-}
-
-export function queueScrollSensitiveTask({
-  task,
-  cleanup,
-  componentId,
-  priority = 10,
-  taskId = generateId(),
-}: {
-  task: Task;
-  cleanup?: Task;
-  componentId: string;
-  priority?: number;
-  taskId?: string;
-}) {
-  tasks.push(taskId, task, priority);
-  if (cleanup) {
-    cleaners.set(taskId, cleanup);
-  }
-  getOrCreateComponentTasks(componentId).add(taskId);
-  const lastTime = get(lastScrollTime);
-  const delta = Date.now() - lastTime;
-  if (lastTime != 0 && delta < TUNABLES.SCROLL_TASK_QUEUE.MIN_DELAY_MS) {
-    scheduleDrain();
-  } else {
-    // flush the queue early
-    clearTimeout(queueTimer);
-    drain();
-  }
-}
-let lastIdle: number;
-function scheduleDrainSeparatedQueue() {
-  // console.log('schedule drain seperate', seperatedQueue.size);
-  cancelIdleCB(lastIdle);
-  lastIdle = idleCB(
-    () => {
-      if (tasks.length > 0) {
-        // console.log('tasks queue is', tasks.length);
-      }
-
-      // console.log('starting drain');
-      let count = 0;
-      let entry = seperatedQueue.entries().next().value;
-      while (entry) {
-        const [taskId, task] = entry;
-        seperatedQueue.delete(taskId);
-        task();
-        if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
-          // console.log('hit max', TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS);
-          break;
-        }
-        entry = seperatedQueue.entries().next().value;
-      }
-      if (seperatedQueue.size > 0) {
-        scheduleDrainSeparatedQueue();
-      }
-    },
-    { timeout: 1000 },
-  );
-}
-export function queueSeparateTask({
-  task,
-  cleanup,
-  componentId,
-  taskId,
-}: {
-  task: Task;
-  cleanup: Task;
-  componentId: string;
-  taskId: string;
-}) {
-  seperatedQueue.set(taskId, task);
-  cleaners.set(taskId, cleanup);
-  getOrCreateComponentTasks(componentId).add(taskId);
-  scheduleDrainSeparatedQueue();
-}
-
-export function removeIntersectedTask(componentId: string, taskId: string) {
-  const removed = tasks.remove(taskId);
-  if (cleaners.has(taskId)) {
-    const cleanup = cleaners.get(taskId);
-    cleaners.delete(taskId);
-    cleanup!();
-  }
-  return removed;
-}
-
-export function removeSeparateTask(componentId: string, taskId: string) {
-  const removed = seperatedQueue.delete(taskId);
-  if (cleaners.has(taskId)) {
-    const cleanup = cleaners.get(taskId);
-    cleaners.delete(taskId);
-    cleanup!();
-  }
-  return removed;
-}
-
-class AssetGridTaskManager {
-  tasks: Map<AssetBucket, BucketTask> = new Map();
-  private getOrCreateBucketTask(bucket: AssetBucket) {
-    let bucketTask = this.tasks.get(bucket);
-    if (!bucketTask) {
-      bucketTask = this.createBucketTask(bucket);
-    }
-    return bucketTask;
-  }
-
-  private createBucketTask(bucket: AssetBucket) {
-    const bucketTask = new BucketTask(this, bucket);
-    this.tasks.set(bucket, bucketTask);
-    return bucketTask;
-  }
-
-  intersectedBucket(componentId: string, bucket: AssetBucket, task: Task) {
-    const bucketTask = this.getOrCreateBucketTask(bucket);
-    bucketTask.scheduleIntersected(componentId, task);
-  }
-
-  seperatedBucket(componentId: string, bucket: AssetBucket, seperated: Task) {
-    const bucketTask = this.getOrCreateBucketTask(bucket);
-    bucketTask.scheduleSeparated(componentId, seperated);
-  }
-
-  intersectedDateGroup(componentId: string, dateGroup: DateGroup, intersected: Task) {
-    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
-    bucketTask.intersectedDateGroup(componentId, dateGroup, intersected);
-  }
-
-  seperatedDateGroup(componentId: string, dateGroup: DateGroup, seperated: Task) {
-    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
-    bucketTask.separatedDateGroup(componentId, dateGroup, seperated);
-  }
-
-  intersectedThumbnail(componentId: string, dateGroup: DateGroup, asset: AssetResponseDto, intersected: Task) {
-    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
-    const dateGroupTask = bucketTask.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.intersectedThumbnail(componentId, asset, intersected);
-  }
-
-  seperatedThumbnail(componentId: string, dateGroup: DateGroup, asset: AssetResponseDto, seperated: Task) {
-    const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
-    const dateGroupTask = bucketTask.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.separatedThumbnail(componentId, asset, seperated);
-  }
-}
-class IntersectionTask {
-  seperatedKey;
-  intersectedKey;
-  priority;
-
-  // status = 'unknown';
-
-  intersected: Task | undefined;
-  separated: Task | undefined;
-
-  constructor(keyPrefix: string, key: string, priority: number) {
-    this.seperatedKey = keyPrefix + ':s:' + key;
-    this.intersectedKey = keyPrefix + ':i:' + key;
-    this.priority = priority;
-  }
-
-  trackIntersectedTask(componentId: string, task: Task) {
-    // if (this.seperatedKey.startsWith('t')) {
-    //   console.log('int', componentId, this.intersectedKey);
-    // }
-
-    const execTask = () => {
-      if (this.separated) {
-        console.log('bad bad bad', this.intersectedKey);
-        return;
-      }
-      // console.log('int1', componentId, this.intersectedKey);
-      task?.();
-    };
-    this.intersected = execTask;
-    const cleanup = () => {
-      this.intersected = undefined;
-      deleteFromComponentTasks(componentId, this.intersectedKey);
-    };
-    return { task: execTask, cleanup };
-  }
-
-  trackSeperatedTask(componentId: string, task: Task) {
-    // if (this.seperatedKey.startsWith('t')) {
-    //   console.log('sep', componentId, this.seperatedKey);
-    // }
-    // this.status = 'seperated';
-    const execTask = () => {
-      if (this.intersected) {
-        console.log('bad bad bad', this.seperatedKey);
-        return;
-      }
-
-      // console.log('sep2', componentTasks.has(componentId), componentId, this.seperatedKey);
-      task?.();
-    };
-    this.separated = execTask;
-    const cleanup = () => {
-      this.separated = undefined;
-      deleteFromComponentTasks(componentId, this.seperatedKey);
-    };
-    return { task: execTask, cleanup };
-  }
-
-  removePendingSeparated(componentId: string) {
-    if (this.separated && removeSeparateTask(componentId, this.seperatedKey)) {
-      // console.log('remove seper task!', this.seperatedKey);
-    }
-  }
-  removePendingIntersected(componentId: string) {
-    if (this.intersected && removeIntersectedTask(componentId, this.intersectedKey)) {
-      // console.log('remove inter task!', this.seperatedKey);
-    }
-  }
-
-  scheduleIntersected(componentId: string, intersected: Task) {
-    this.removePendingSeparated(componentId);
-
-    if (this.intersected) {
-      // console.log('ret, inter', componentId, this.intersectedKey);
-      return;
-    }
-    const { task, cleanup } = this.trackIntersectedTask(componentId, intersected);
-    queueScrollSensitiveTask({
-      task,
-      cleanup,
-      componentId: componentId,
-      priority: this.priority,
-      taskId: this.intersectedKey,
-    });
-  }
-
-  scheduleSeparated(componentId: string, separated: Task) {
-    this.removePendingIntersected(componentId);
-
-    if (this.separated) {
-      // console.log('ret, seper', componentId, this.seperatedKey);
-      return;
-    }
-
-    const { task, cleanup } = this.trackSeperatedTask(componentId, separated);
-    queueSeparateTask({
-      task,
-      cleanup,
-      componentId: componentId,
-      taskId: this.seperatedKey,
-    });
-  }
-
-  remove(componentId: string) {
-    this.removePendingIntersected(componentId);
-    this.removePendingSeparated(componentId);
-  }
-}
-class BucketTask extends IntersectionTask {
-  assetBucket: AssetBucket;
-  assetGridTaskManager: AssetGridTaskManager;
-  // indexed by dateGroup's date
-  dateTasks: Map<DateGroup, DateGroupTask> = new Map();
-
-  constructor(parent: AssetGridTaskManager, assetBucket: AssetBucket) {
-    super('b', assetBucket.bucketDate, TUNABLES.BUCKET.PRIORITY);
-    this.assetBucket = assetBucket;
-    this.assetGridTaskManager = parent;
-  }
-
-  getOrCreateDateGroupTask(dateGroup: DateGroup) {
-    let dateGroupTask = this.dateTasks.get(dateGroup);
-    if (!dateGroupTask) {
-      dateGroupTask = this.createDateGroupTask(dateGroup);
-    }
-    return dateGroupTask;
-  }
-
-  createDateGroupTask(dateGroup: DateGroup) {
-    const dateGroupTask = new DateGroupTask(this, dateGroup);
-    this.dateTasks.set(dateGroup, dateGroupTask);
-    return dateGroupTask;
-  }
-
-  removePendingSeparated(componentId: string) {
-    super.removePendingSeparated(componentId);
-    for (const dateGroupTask of this.dateTasks.values()) {
-      dateGroupTask.removePendingSeparated(componentId);
-    }
-  }
-
-  intersectedDateGroup(componentId: string, dateGroup: DateGroup, intersected: Task) {
-    const dateGroupTask = this.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.scheduleIntersected(componentId, intersected);
-  }
-
-  separatedDateGroup(componentId: string, dateGroup: DateGroup, separated: Task) {
-    const dateGroupTask = this.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.scheduleSeparated(componentId, separated);
-  }
-}
-class DateGroupTask extends IntersectionTask {
-  dateGroup: DateGroup;
-  bucketTask: BucketTask;
-  // indexed by thumbnail's asset
-  thumbnailTasks: Map<AssetResponseDto, ThumbnailTask> = new Map();
-
-  constructor(parent: BucketTask, dateGroup: DateGroup) {
-    super('dg', dateGroup.date.toString(), TUNABLES.DATEGROUP.PRIORITY);
-    this.dateGroup = dateGroup;
-    this.bucketTask = parent;
-  }
-
-  removePendingSeparated(componentId: string) {
-    super.removePendingSeparated(componentId);
-    for (const thumbnailTask of this.thumbnailTasks.values()) {
-      thumbnailTask.removePendingSeparated(componentId);
-    }
-  }
-
-  getOrCreateThumbnailTask(asset: AssetResponseDto) {
-    let thumbnailTask = this.thumbnailTasks.get(asset);
-    if (!thumbnailTask) {
-      thumbnailTask = new ThumbnailTask(this, asset);
-      this.thumbnailTasks.set(asset, thumbnailTask);
-    }
-    return thumbnailTask;
-  }
-
-  intersectedThumbnail(componentId: string, asset: AssetResponseDto, intersected: Task) {
-    const thumbnailTask = this.getOrCreateThumbnailTask(asset);
-    thumbnailTask.scheduleIntersected(componentId, intersected);
-  }
-
-  separatedThumbnail(componentId: string, asset: AssetResponseDto, seperated: Task) {
-    const thumbnailTask = this.getOrCreateThumbnailTask(asset);
-    thumbnailTask.scheduleSeparated(componentId, seperated);
-  }
-}
-class ThumbnailTask extends IntersectionTask {
-  asset: AssetResponseDto;
-  dateGroupTask: DateGroupTask;
-
-  constructor(parent: DateGroupTask, asset: AssetResponseDto) {
-    super('t', asset.id, TUNABLES.THUMBNAIL.PRIORITY);
-    this.asset = asset;
-    this.dateGroupTask = parent;
-  }
-}

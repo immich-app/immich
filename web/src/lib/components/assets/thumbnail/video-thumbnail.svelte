@@ -3,10 +3,11 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { queueScrollSensitiveTask, removeAllTasksForComponent } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets.store';
   import { generateId } from '$lib/utils/generate-id';
   import { onDestroy } from 'svelte';
 
+  export let assetStore: AssetStore | undefined = undefined;
   export let url: string;
   export let durationInSeconds = 0;
   export let enablePlayback = false;
@@ -31,8 +32,42 @@
       player.src = '';
     }
   }
+  const onMouseEnter = () => {
+    if (assetStore) {
+      assetStore.taskManager.queueScrollSensitiveTask({
+        componentId,
+        task: () => {
+          if (playbackOnIconHover) {
+            enablePlayback = true;
+          }
+        },
+      });
+    } else {
+      if (playbackOnIconHover) {
+        enablePlayback = true;
+      }
+    }
+  };
+
+  const onMouseLeave = () => {
+    if (assetStore) {
+      assetStore.taskManager.queueScrollSensitiveTask({
+        componentId,
+        task: () => {
+          if (playbackOnIconHover) {
+            enablePlayback = false;
+          }
+        },
+      });
+    } else {
+      if (playbackOnIconHover) {
+        enablePlayback = false;
+      }
+    }
+  };
+
   onDestroy(() => {
-    removeAllTasksForComponent(componentId);
+    assetStore?.taskManager.removeAllTasksForComponent(componentId);
   });
 </script>
 
@@ -44,27 +79,7 @@
   {/if}
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <span
-    class="pr-2 pt-2"
-    on:mouseenter={() =>
-      queueScrollSensitiveTask({
-        componentId,
-        task: () => {
-          if (playbackOnIconHover) {
-            enablePlayback = true;
-          }
-        },
-      })}
-    on:mouseleave={() =>
-      queueScrollSensitiveTask({
-        componentId,
-        task: () => {
-          if (playbackOnIconHover) {
-            enablePlayback = false;
-          }
-        },
-      })}
-  >
+  <span class="pr-2 pt-2" on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
     {#if enablePlayback}
       {#if loading}
         <LoadingSpinner />

@@ -58,7 +58,9 @@ function replaceScrollTarget(url: string, searchParams?: AssetGridRouteSearchPar
   }
 
   const params = new URLSearchParams($page.url.search);
-  assetId ? params.set('at', assetId) : void 0;
+  if (assetId) {
+    params.set('at', assetId);
+  }
   return parsed.pathname + '?' + params.toString();
 }
 
