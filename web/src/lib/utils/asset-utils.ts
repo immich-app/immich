@@ -354,7 +354,7 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
     }
 
     for (const [index, asset] of assets.entries()) {
-      asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length } : null;
+      asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
     }
 
     return assets.slice(1).map((asset) => asset.id);
