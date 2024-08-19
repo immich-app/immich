@@ -178,11 +178,18 @@ export class MediaService {
     }
 
     const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
+    if (!previewPath) {
+      return JobStatus.SKIPPED;
+    }
+
     if (asset.previewPath && asset.previewPath !== previewPath) {
       this.logger.debug(`Deleting old preview for asset ${asset.id}`);
       await this.storageRepository.unlink(asset.previewPath);
     }
+
     await this.assetRepository.update({ id: asset.id, previewPath });
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date() });
+
     return JobStatus.SUCCESS;
   }
 
@@ -257,11 +264,18 @@ export class MediaService {
     }
 
     const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
+    if (!thumbnailPath) {
+      return JobStatus.SKIPPED;
+    }
+
     if (asset.thumbnailPath && asset.thumbnailPath !== thumbnailPath) {
       this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
       await this.storageRepository.unlink(asset.thumbnailPath);
     }
+
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, thumbnailAt: new Date() });
+
     return JobStatus.SUCCESS;
   }
 
