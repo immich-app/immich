@@ -37,6 +37,9 @@ export class SharedLinkCreateDto {
 
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean = true;
+
+  @ValidateBoolean({ optional: true })
+  watermark?: boolean = false;
 }
 
 export class SharedLinkEditDto {
@@ -65,6 +68,9 @@ export class SharedLinkEditDto {
    */
   @ValidateBoolean({ optional: true })
   changeExpiryTime?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  watermark?: boolean = false;
 }
 
 export class SharedLinkPasswordDto {
@@ -95,6 +101,7 @@ export class SharedLinkResponseDto {
 
   allowDownload!: boolean;
   showMetadata!: boolean;
+  watermark!: boolean;
 }
 
 export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
@@ -117,6 +124,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    watermark: sharedLink.watermark,
   };
 }
 
@@ -140,5 +148,6 @@ export function mapSharedLinkWithoutMetadata(sharedLink: SharedLinkEntity): Shar
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    watermark: sharedLink.watermark,
   };
 }

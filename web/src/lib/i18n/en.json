@@ -1238,6 +1238,7 @@
   "visibility_changed": "Visibility changed for {count, plural, one {# person} other {# people}}",
   "waiting": "Waiting",
   "warning": "Warning",
+  "watermark_images": "Watermark images",
   "week": "Week",
   "welcome": "Welcome",
   "welcome_to_immich": "Welcome to immich",

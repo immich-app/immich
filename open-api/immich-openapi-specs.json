@@ -9670,6 +9670,8 @@
           "thumbnail",
           "encoded_video",
           "sidecar",
+          "watermarked_preview",
+          "watermarked_thumbnail",
           "face",
           "profile"
         ],
@@ -10604,6 +10606,10 @@
           },
           "type": {
             "$ref": "#/components/schemas/SharedLinkType"
+          },
+          "watermark": {
+            "default": false,
+            "type": "boolean"
           }
         },
         "required": [
@@ -10635,6 +10641,10 @@
             "type": "string"
           },
           "showMetadata": {
+            "type": "boolean"
+          },
+          "watermark": {
+            "default": false,
             "type": "boolean"
           }
         },
@@ -10692,6 +10702,9 @@
           },
           "userId": {
             "type": "string"
+          },
+          "watermark": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -10706,7 +10719,8 @@
           "password",
           "showMetadata",
           "type",
-          "userId"
+          "userId",
+          "watermark"
         ],
         "type": "object"
       },

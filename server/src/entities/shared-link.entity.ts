@@ -62,4 +62,7 @@ export class SharedLinkEntity {
 
   @Column({ type: 'varchar', nullable: true })
   albumId!: string | null;
+
+  @Column({ type: 'boolean', default: false })
+  watermark!: boolean;
 }

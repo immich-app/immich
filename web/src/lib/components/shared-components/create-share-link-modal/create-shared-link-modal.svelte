@@ -31,6 +31,7 @@
   let password = '';
   let shouldChangeExpirationTime = false;
   let enablePassword = false;
+  let watermark = false;
 
   const dispatch = createEventDispatcher<{
     created: void;
@@ -74,6 +75,7 @@
     allowUpload = editingLink.allowUpload;
     allowDownload = editingLink.allowDownload;
     showMetadata = editingLink.showMetadata;
+    watermark = editingLink.watermark;
 
     albumId = editingLink.album?.id;
     assetIds = editingLink.assets.map(({ id }) => id);
@@ -97,6 +99,7 @@
           password,
           allowDownload,
           showMetadata,
+          watermark,
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
@@ -124,6 +127,7 @@
           allowUpload,
           allowDownload,
           showMetadata,
+          watermark,
         },
       });
 
@@ -210,6 +214,10 @@
 
         <div class="my-3">
           <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')} />
+        </div>
+
+        <div class="my-3">
+          <SettingSwitch bind:checked={watermark} title={$t('watermark_images')} />
         </div>
 
         <div class="text-sm">

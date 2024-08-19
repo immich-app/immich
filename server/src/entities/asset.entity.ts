@@ -175,4 +175,10 @@ export class AssetEntity {
   @Index('IDX_assets_duplicateId')
   @Column({ type: 'uuid', nullable: true })
   duplicateId!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  watermarkedPreviewPath!: string | null;
+
+  @Column({ type: 'varchar', nullable: true, default: '' })
+  watermarkedThumbnailPath!: string | null;
 }

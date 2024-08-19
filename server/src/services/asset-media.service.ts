@@ -238,9 +238,9 @@ export class AssetMediaService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    let filepath = asset.previewPath;
+    let filepath = auth.sharedLink?.watermark ? asset.watermarkedPreviewPath : asset.previewPath;
     if (size === AssetMediaSize.THUMBNAIL && asset.thumbnailPath) {
-      filepath = asset.thumbnailPath;
+      filepath = auth.sharedLink?.watermark ? asset.watermarkedThumbnailPath : asset.thumbnailPath;
     }
 
     if (!filepath) {

@@ -17,6 +17,7 @@ export interface ThumbnailOptions {
   quality: number;
   crop?: CropOptions;
   processInvalidImages: boolean;
+  watermark?: boolean;
 }
 
 export interface VideoStreamInfo {

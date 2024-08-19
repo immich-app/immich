@@ -28,6 +28,8 @@ export enum AssetPathType {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded_video',
   SIDECAR = 'sidecar',
+  WATERMARKED_PREVIEW = 'watermarked_preview',
+  WATERMARKED_THUMBNAIL = 'watermarked_thumbnail',
 }
 
 export enum PersonPathType {

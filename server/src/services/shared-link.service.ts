@@ -94,8 +94,9 @@ export class SharedLinkService {
       password: dto.password,
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,
-      allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
+      allowDownload: dto.showMetadata === false || dto.watermark ? false : (dto.allowDownload ?? true),
       showExif: dto.showMetadata ?? true,
+      watermark: dto.watermark ?? false,
     });
 
     return this.mapToSharedLink(sharedLink, { withExif: true });
@@ -112,6 +113,7 @@ export class SharedLinkService {
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
       showExif: dto.showMetadata,
+      watermark: dto.watermark,
     });
     return this.mapToSharedLink(sharedLink, { withExif: true });
   }

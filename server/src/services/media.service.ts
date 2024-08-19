@@ -29,7 +29,13 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AudioStreamInfo, IMediaRepository, VideoFormat, VideoStreamInfo } from 'src/interfaces/media.interface';
+import {
+  AudioStreamInfo,
+  IMediaRepository,
+  ThumbnailOptions,
+  VideoFormat,
+  VideoStreamInfo,
+} from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -89,6 +95,12 @@ export class MediaService {
         }
         if (!asset.thumbhash) {
           jobs.push({ name: JobName.GENERATE_THUMBHASH, data: { id: asset.id } });
+        }
+        if (!asset.watermarkedPreviewPath) {
+          jobs.push({ name: JobName.GENERATE_WATERMARKED_PREVIEW, data: { id: asset.id } });
+        }
+        if (!asset.watermarkedThumbnailPath) {
+          jobs.push({ name: JobName.GENERATE_WATERMARKED_THUMBNAIL, data: { id: asset.id } });
         }
       }
 
@@ -186,9 +198,37 @@ export class MediaService {
     return JobStatus.SUCCESS;
   }
 
+  async handleGenerateWatermarkedPreview({ id }: IEntityJob): Promise<JobStatus> {
+    const [{ image }, [asset]] = await Promise.all([
+      this.configCore.getConfig({ withCache: true }),
+      this.assetRepository.getByIds([id], { exifInfo: true }),
+    ]);
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    const watermarkedPreviewPath = await this.generateThumbnail(
+      asset,
+      AssetPathType.WATERMARKED_PREVIEW,
+      image.previewFormat,
+    );
+    if (asset.watermarkedPreviewPath && asset.watermarkedPreviewPath !== watermarkedPreviewPath) {
+      this.logger.debug(`Deleting old watermarked preview for asset ${asset.id}`);
+      await this.storageRepository.unlink(asset.watermarkedPreviewPath);
+    }
+    await this.assetRepository.update({ id: asset.id, watermarkedPreviewPath });
+    return JobStatus.SUCCESS;
+  }
+
   private async generateThumbnail(asset: AssetEntity, type: GeneratedImageType, format: ImageFormat) {
     const { image, ffmpeg } = await this.configCore.getConfig({ withCache: true });
-    const size = type === AssetPathType.PREVIEW ? image.previewSize : image.thumbnailSize;
+    const size = [AssetPathType.PREVIEW, AssetPathType.WATERMARKED_PREVIEW].includes(type)
+      ? image.previewSize
+      : image.thumbnailSize;
     const path = StorageCore.getImagePath(asset, type, format);
     this.storageCore.ensureFolders(path);
 
@@ -201,12 +241,13 @@ export class MediaService {
         try {
           const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-          const imageOptions = {
+          const imageOptions: ThumbnailOptions = {
             format,
             size,
             colorspace,
             quality: image.quality,
             processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+            watermark: [AssetPathType.WATERMARKED_PREVIEW, AssetPathType.WATERMARKED_THUMBNAIL].includes(type),
           };
 
           const outputPath = useExtracted ? extractedPath : asset.originalPath;
@@ -262,6 +303,32 @@ export class MediaService {
       await this.storageRepository.unlink(asset.thumbnailPath);
     }
     await this.assetRepository.update({ id: asset.id, thumbnailPath });
+    return JobStatus.SUCCESS;
+  }
+
+  async handleGenerateWatermarkedThumbnail({ id }: IEntityJob): Promise<JobStatus> {
+    const [{ image }, [asset]] = await Promise.all([
+      this.configCore.getConfig({ withCache: true }),
+      this.assetRepository.getByIds([id], { exifInfo: true }),
+    ]);
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
+
+    if (!asset.isVisible) {
+      return JobStatus.SKIPPED;
+    }
+
+    const watermarkedThumbnailPath = await this.generateThumbnail(
+      asset,
+      AssetPathType.WATERMARKED_THUMBNAIL,
+      image.thumbnailFormat,
+    );
+    if (asset.watermarkedThumbnailPath && asset.watermarkedThumbnailPath !== watermarkedThumbnailPath) {
+      this.logger.debug(`Deleting old watermarked thumbnail for asset ${asset.id}`);
+      await this.storageRepository.unlink(asset.watermarkedThumbnailPath);
+    }
+    await this.assetRepository.update({ id: asset.id, watermarkedThumbnailPath });
     return JobStatus.SUCCESS;
   }
 

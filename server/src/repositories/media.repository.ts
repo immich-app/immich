@@ -16,6 +16,7 @@ import {
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
+import { createWatermarkOverlay } from 'src/utils/watermark';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
@@ -52,6 +53,14 @@ export class MediaRepository implements IMediaRepository {
 
     if (options.crop) {
       pipeline.extract(options.crop);
+    }
+
+    if (options.watermark) {
+      const overlaySize = Math.min(options.size / 4, 100);
+      const fontSize = Math.floor(overlaySize / 4);
+      pipeline.composite([
+        createWatermarkOverlay({ text: 'sample', width: overlaySize, height: overlaySize, fontSize }),
+      ]);
     }
 
     await pipeline

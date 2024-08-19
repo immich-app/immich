@@ -41,6 +41,8 @@ export enum JobName {
   GENERATE_THUMBNAIL = 'generate-thumbnail',
   GENERATE_THUMBHASH = 'generate-thumbhash',
   GENERATE_PERSON_THUMBNAIL = 'generate-person-thumbnail',
+  GENERATE_WATERMARKED_PREVIEW = 'generate-watermarked-preview',
+  GENERATE_WATERMARKED_THUMBNAIL = 'generate-watermarked-thumbnail',
 
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
@@ -206,6 +208,8 @@ export type JobItem =
   | { name: JobName.GENERATE_PREVIEW; data: IEntityJob }
   | { name: JobName.GENERATE_THUMBNAIL; data: IEntityJob }
   | { name: JobName.GENERATE_THUMBHASH; data: IEntityJob }
+  | { name: JobName.GENERATE_WATERMARKED_PREVIEW; data: IEntityJob }
+  | { name: JobName.GENERATE_WATERMARKED_THUMBNAIL; data: IEntityJob }
 
   // User
   | { name: JobName.USER_DELETE_CHECK; data?: IBaseJob }

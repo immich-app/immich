@@ -124,6 +124,7 @@ export const sharedLinkStub = {
     album: undefined,
     description: null,
     assets: [assetStub.image],
+    watermark: false,
   } as SharedLinkEntity),
   valid: Object.freeze({
     id: '123',
@@ -141,6 +142,7 @@ export const sharedLinkStub = {
     description: null,
     password: null,
     assets: [],
+    watermark: false,
   } as SharedLinkEntity),
   expired: Object.freeze({
     id: '123',
@@ -157,6 +159,7 @@ export const sharedLinkStub = {
     password: null,
     albumId: null,
     assets: [],
+    watermark: false,
   } as SharedLinkEntity),
   readonlyNoExif: Object.freeze<SharedLinkEntity>({
     id: '123',
@@ -198,6 +201,7 @@ export const sharedLinkStub = {
           type: AssetType.VIDEO,
           originalPath: 'fake_path/jpeg',
           previewPath: '',
+          watermarkedPreviewPath: '',
           checksum: Buffer.from('file hash', 'utf8'),
           fileModifiedAt: today,
           fileCreatedAt: today,
@@ -215,6 +219,7 @@ export const sharedLinkStub = {
             asset: null as any,
           },
           thumbnailPath: '',
+          watermarkedThumbnailPath: '',
           thumbhash: null,
           encodedVideoPath: '',
           duration: null,
@@ -263,6 +268,7 @@ export const sharedLinkStub = {
         },
       ],
     },
+    watermark: false,
   }),
   passwordRequired: Object.freeze<SharedLinkEntity>({
     id: '123',
@@ -279,6 +285,7 @@ export const sharedLinkStub = {
     password: 'password',
     assets: [],
     albumId: null,
+    watermark: false,
   }),
 };
 
@@ -296,6 +303,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.ALBUM,
     userId: 'admin_id',
+    watermark: false,
   }),
   expired: Object.freeze<SharedLinkResponseDto>({
     album: undefined,
@@ -311,6 +319,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.ALBUM,
     userId: 'admin_id',
+    watermark: false,
   }),
   readonly: Object.freeze<SharedLinkResponseDto>({
     id: '123',
@@ -326,6 +335,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     album: albumResponse,
     assets: [assetResponse],
+    watermark: false,
   }),
   readonlyNoMetadata: Object.freeze<SharedLinkResponseDto>({
     id: '123',
@@ -341,5 +351,6 @@ export const sharedLinkResponseStub = {
     showMetadata: false,
     album: { ...albumResponse, startDate: assetResponse.fileCreatedAt, endDate: assetResponse.fileCreatedAt },
     assets: [{ ...assetResponseWithoutMetadata, exifInfo: undefined }],
+    watermark: false,
   }),
 };

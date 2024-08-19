@@ -36,7 +36,11 @@ export interface MoveRequest {
   };
 }
 
-export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL;
+export type GeneratedImageType =
+  | AssetPathType.PREVIEW
+  | AssetPathType.THUMBNAIL
+  | AssetPathType.WATERMARKED_PREVIEW
+  | AssetPathType.WATERMARKED_THUMBNAIL;
 export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDEO;
 
 let instance: StorageCore | null;
