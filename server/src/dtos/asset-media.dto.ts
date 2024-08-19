@@ -64,6 +64,10 @@ export class AssetMediaCreateDto extends AssetMediaBase {
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   [UploadFieldName.SIDECAR_DATA]?: any;
+
+  @Optional()
+  @IsString()
+  toAlbumId?: string;
 }
 
 export class AssetMediaReplaceDto extends AssetMediaBase {}

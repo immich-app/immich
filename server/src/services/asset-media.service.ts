@@ -30,12 +30,15 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetType, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { AlbumService } from 'src/services/album.service';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -59,16 +62,18 @@ export class AssetMediaService {
   private access: AccessCore;
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
+    @Inject(IAlbumUserRepository) private albumUserRepository: IAlbumUserRepository,
   ) {
     this.logger.setContext(AssetMediaService.name);
-    this.access = AccessCore.create(accessRepository);
+    this.access = AccessCore.create(this.accessRepository);
   }
 
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
@@ -177,6 +182,17 @@ export class AssetMediaService {
       }
 
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
+
+      if (dto.toAlbumId) {
+        await new AlbumService(
+          this.accessRepository,
+          this.albumRepository,
+          this.assetRepository,
+          this.eventRepository,
+          this.userRepository,
+          this.albumUserRepository,
+        ).addAssets(auth, dto.toAlbumId, { ids: [asset.id] });
+      }
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 

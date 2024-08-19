@@ -4,6 +4,8 @@ import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos
 import { AssetMediaCreateDto, AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetType } from 'src/enum';
+import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
@@ -16,6 +18,8 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
+import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
@@ -196,6 +200,8 @@ describe(AssetMediaService.name, () => {
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
   let eventMock: Mocked<IEventRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
+  let albumUserMock: Mocked<IAlbumUserRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
@@ -205,8 +211,20 @@ describe(AssetMediaService.name, () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     eventMock = newEventRepositoryMock();
+    albumMock = newAlbumRepositoryMock();
+    albumUserMock = newAlbumUserRepositoryMock();
 
-    sut = new AssetMediaService(accessMock, assetMock, jobMock, storageMock, userMock, eventMock, loggerMock);
+    sut = new AssetMediaService(
+      accessMock,
+      assetMock,
+      jobMock,
+      storageMock,
+      userMock,
+      eventMock,
+      loggerMock,
+      albumMock,
+      albumUserMock,
+    );
   });
 
   describe('getUploadAssetIdByChecksum', () => {
