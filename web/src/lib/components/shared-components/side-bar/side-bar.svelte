@@ -20,6 +20,7 @@
     mdiTrashCanOutline,
     mdiToolbox,
     mdiToolboxOutline,
+    mdiFolderOutline,
   } from '@mdi/js';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
@@ -104,7 +105,7 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title={$t('Folders')} routeId="/(user)/folders" icon={mdiImageAlbum} flippedLogo />
+    <SideBarLink title={$t('Folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
 
     <SideBarLink
       title={$t('utilities')}
