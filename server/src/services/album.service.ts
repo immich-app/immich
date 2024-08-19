@@ -138,6 +138,10 @@ export class AlbumService {
       albumThumbnailAssetId: assets[0]?.id || null,
     });
 
+    for (const { userId } of albumUsers) {
+      await this.eventRepository.emit('onAlbumInvite', { id: album.id, userId });
+    }
+
     return mapAlbumWithAssets(album);
   }
 
