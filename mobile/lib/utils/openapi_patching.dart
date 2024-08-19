@@ -7,6 +7,11 @@ dynamic upgradeDto(dynamic value, String targetType) {
         if (value['rating'] == null) {
           value['rating'] = RatingResponse().toJson();
         }
+
+        if (value['download']['includeEmbeddedVideos'] == null) {
+          value['download'] = DownloadResponse(archiveSize: 2).toJson();
+        }
       }
+      break;
   }
 }
