@@ -12,7 +12,7 @@ describe('ImageThumbnail component', () => {
     const sut = render(ImageThumbnail, {
       url: 'http://localhost/img.png',
       altText: 'test',
-      thumbhash: '1QcSHQRnh493V4dIh4eXh1h4kJUI',
+      base64ThumbHash: '1QcSHQRnh493V4dIh4eXh1h4kJUI',
       widthStyle: '250px',
     });
 
