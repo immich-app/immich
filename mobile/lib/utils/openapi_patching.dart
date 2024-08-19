@@ -9,7 +9,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
         }
 
         if (value['download']['includeEmbeddedVideos'] == null) {
-          value['download'] = DownloadResponse(archiveSize: 2).toJson();
+          value['download']['includeEmbeddedVideos'] = false;
         }
       }
       break;
