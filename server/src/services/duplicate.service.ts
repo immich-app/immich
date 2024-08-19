@@ -39,7 +39,7 @@ export class DuplicateService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
     const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
 
-    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth })));
+    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true })));
   }
 
   async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {

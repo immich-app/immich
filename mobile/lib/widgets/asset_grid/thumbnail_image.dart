@@ -107,16 +107,16 @@ class ThumbnailImage extends ConsumerWidget {
         right: 8,
         child: Row(
           children: [
-            if (asset.stackChildrenCount > 1)
+            if (asset.stackCount > 1)
               Text(
-                "${asset.stackChildrenCount}",
+                "${asset.stackCount}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            if (asset.stackChildrenCount > 1)
+            if (asset.stackCount > 1)
               const SizedBox(
                 width: 3,
               ),
@@ -208,7 +208,7 @@ class ThumbnailImage extends ConsumerWidget {
             ),
           ),
         if (!asset.isImage) buildVideoIcon(),
-        if (asset.stackChildrenCount > 0) buildStackIcon(),
+        if (asset.stackCount > 0) buildStackIcon(),
       ],
     );
   }
