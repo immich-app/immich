@@ -29,7 +29,7 @@
 
 <section id="folder-browser-sidebar">
   <p class="text-xs m-4 dark:text-white">FOLDER BROWSER</p>
-  <div class="max-h-[600px] overflow-y-scroll immich-scrollbar">
+  <div class="overflow-auto">
     {#each Object.entries(folderTree) as [folderName, content]}
       <FolderBrowser {folderName} {content} {currentPath} basePath="" />
     {/each}

@@ -26,7 +26,11 @@
   }
 </script>
 
-<div class="flex items-center mx-4 font-mono">
+<button
+  class="flex items-center pl-4 hover:bg-slate-100 rounded-lg font-mono text-sm hover:font-semibold hover:text-immich-primary dark:hover:text-immich-dark-primary w-full"
+  on:click={toggleOpen}
+  on:dblclick|stopPropagation={handleNavigation}
+>
   <a href={`/folders/${currentFolderPath}`} on:click|preventDefault={handleNavigation}>
     <button class="mr-2" on:click|stopPropagation={handleNavigation}
       ><Icon
@@ -37,10 +41,10 @@
     >
   </a>
   <button class="dark:text-immich-gray" on:click={toggleOpen}>{folderName}</button>
-</div>
+</button>
 
 {#if isOpen}
-  <ul class="list-none pl-2">
+  <ul class="list-none ml-2">
     {#each Object.entries(content) as [subFolderName, subContent]}
       <li class="my-1">
         <FolderBrowser folderName={subFolderName} content={subContent} basePath={currentFolderPath} {currentPath} />
