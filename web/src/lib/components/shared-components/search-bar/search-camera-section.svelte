@@ -27,11 +27,12 @@
       model,
       includeNull: true,
     });
+
+    makes = results.map((result) => result ?? '');
+
     if (filters.make && !makes.includes(filters.make)) {
       filters.make = undefined;
     }
-
-    makes = results.map((result) => result ?? '');
   }
 
   async function updateModels(make?: string) {
@@ -41,7 +42,7 @@
       includeNull: true,
     });
 
-    const models = results.map((result) => result ?? '');
+    models = results.map((result) => result ?? '');
 
     if (filters.model && !models.includes(filters.model)) {
       filters.model = undefined;

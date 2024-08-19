@@ -256,7 +256,7 @@ export class AccessCore {
         return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.MEMORY_WRITE: {
+      case Permission.MEMORY_UPDATE: {
         return this.repository.memory.checkOwnerAccess(auth.user.id, ids);
       }
 
@@ -272,7 +272,7 @@ export class AccessCore {
         return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
       }
 
-      case Permission.PERSON_WRITE: {
+      case Permission.PERSON_UPDATE: {
         return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
       }
 
@@ -290,6 +290,18 @@ export class AccessCore {
 
       case Permission.PARTNER_UPDATE: {
         return await this.repository.partner.checkUpdateAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_READ: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_UPDATE: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
+      }
+
+      case Permission.STACK_DELETE: {
+        return this.repository.stack.checkOwnerAccess(auth.user.id, ids);
       }
 
       default: {

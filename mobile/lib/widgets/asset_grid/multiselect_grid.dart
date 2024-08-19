@@ -11,7 +11,7 @@ import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/services/asset_stack.service.dart';
+import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
@@ -344,11 +344,9 @@ class MultiselectGrid extends HookConsumerWidget {
         if (!selectionEnabledHook.value || selection.value.length < 2) {
           return;
         }
-        final parent = selection.value.elementAt(0);
-        selection.value.remove(parent);
-        await ref.read(assetStackServiceProvider).updateStack(
-              parent,
-              childrenToAdd: selection.value.toList(),
+
+        await ref.read(stackServiceProvider).createStack(
+              selection.value.map((e) => e.remoteId!).toList(),
             );
       } finally {
         processing.value = false;
