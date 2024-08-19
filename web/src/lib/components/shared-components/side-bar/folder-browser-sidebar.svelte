@@ -27,8 +27,11 @@
   }
 </script>
 
-<div class="pl-8">
-  {#each Object.entries(folderTree) as [folderName, content]}
-    <FolderBrowser {folderName} {content} {currentPath} basePath="" />
-  {/each}
-</div>
+<section id="folder-browser-sidebar">
+  <p class="text-xs m-4 dark:text-white">FOLDER BROWSER</p>
+  <div class="max-h-[600px] overflow-y-scroll immich-scrollbar">
+    {#each Object.entries(folderTree) as [folderName, content]}
+      <FolderBrowser {folderName} {content} {currentPath} basePath="" />
+    {/each}
+  </div>
+</section>

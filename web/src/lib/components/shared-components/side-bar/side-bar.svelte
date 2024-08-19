@@ -27,7 +27,6 @@
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
-  import FolderBrowser from '$lib/components/shared-components/side-bar/folder-browser-sidebar.svelte';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -37,7 +36,6 @@
   let isSharingSelected: boolean;
   let isTrashSelected: boolean;
   let isUtilitiesSelected: boolean;
-  let isFoldersSelected: boolean;
 </script>
 
 <SideBarSection>
@@ -106,18 +104,7 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink
-      title={$t('Folders')}
-      routeId="/(user)/folders"
-      icon={mdiImageAlbum}
-      flippedLogo
-      bind:isSelected={isFoldersSelected}
-    >
-    </SideBarLink>
-
-    {#if isFoldersSelected}
-        <FolderBrowser />
-    {/if}
+    <SideBarLink title={$t('Folders')} routeId="/(user)/folders" icon={mdiImageAlbum} flippedLogo />
 
     <SideBarLink
       title={$t('utilities')}

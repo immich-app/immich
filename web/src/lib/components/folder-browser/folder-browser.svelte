@@ -1,5 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiArrowDown, mdiArrowRight, mdiFolder, mdiFolderArrowDown } from '@mdi/js';
   import FolderBrowser from './folder-browser.svelte';
 
   // Exported props
@@ -24,20 +26,25 @@
   }
 </script>
 
-<div>
-  <div class="flex items-center font-bold my-1">
-    <a href={`/folders/${currentFolderPath}`} on:click|preventDefault={handleNavigation}>
-      <span class="mr-2" on:click|stopPropagation={handleNavigation}>📁</span>
-    </a>
-    <span on:click={toggleOpen}>{folderName}</span>
-  </div>
-  {#if isOpen}
-    <ul class="list-none pl-2">
-      {#each Object.entries(content) as [subFolderName, subContent]}
-        <li class="my-1">
-          <FolderBrowser folderName={subFolderName} content={subContent} basePath={currentFolderPath} currentPath={currentPath} />
-        </li>
-      {/each}
-    </ul>
-  {/if}
+<div class="flex items-center mx-4 font-mono">
+  <a href={`/folders/${currentFolderPath}`} on:click|preventDefault={handleNavigation}>
+    <button class="mr-2" on:click|stopPropagation={handleNavigation}
+      ><Icon
+        path={isOpen ? mdiFolderArrowDown : mdiFolder}
+        class={isOpen ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400 dark:text-gray-800'}
+        size={24}
+      /></button
+    >
+  </a>
+  <button class="dark:text-immich-gray" on:click={toggleOpen}>{folderName}</button>
 </div>
+
+{#if isOpen}
+  <ul class="list-none pl-2">
+    {#each Object.entries(content) as [subFolderName, subContent]}
+      <li class="my-1">
+        <FolderBrowser folderName={subFolderName} content={subContent} basePath={currentFolderPath} {currentPath} />
+      </li>
+    {/each}
+  </ul>
+{/if}
