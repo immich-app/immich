@@ -151,7 +151,7 @@
   "change_password_form_password_mismatch": "Les mots de passe ne correspondent pas",
   "change_password_form_reenter_new_password": "Saisissez à nouveau le nouveau mot de passe",
   "client_cert_dialog_msg_confirm": "OK",
-  "client_cert_enter_password": "Enter Password",
+  "client_cert_enter_password": "Saisissez le mot de passe",
   "client_cert_import": "Importer",
   "client_cert_import_success_msg": "Le certificat client est importé",
   "client_cert_invalid_msg": "Certificat invalide ou mot de passe erroné",
