@@ -21,13 +21,12 @@ class MemoryLane extends HookConsumerWidget {
           (memories) => memories != null
               ? ConstrainedBox(
                   constraints: const BoxConstraints(
-                    maxHeight: 180,
+                    maxHeight: 200,
                   ),
                   child: CarouselView(
-                    itemExtent: 135,
-                    shrinkExtent: 100.0,
+                    itemExtent: 145.0,
+                    shrinkExtent: 1.0,
                     elevation: 2,
-                    itemSnapping: true,
                     backgroundColor: Colors.black,
                     overlayColor: WidgetStateProperty.all(
                       Colors.white.withOpacity(0.1),
@@ -71,45 +70,47 @@ class MemoryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Stack(
-      children: [
-        ColorFiltered(
-          colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.2),
-            BlendMode.darken,
-          ),
-          child: Hero(
-            tag: 'memory-${memory.assets[0].id}',
-            child: ImmichImage(
-              memory.assets[0],
-              fit: BoxFit.cover,
-              width: 135,
-              height: 180,
-              placeholder: const ThumbnailPlaceholder(
-                width: 135,
-                height: 180,
+    return Center(
+      child: Stack(
+        children: [
+          ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.2),
+              BlendMode.darken,
+            ),
+            child: Hero(
+              tag: 'memory-${memory.assets[0].id}',
+              child: ImmichImage(
+                memory.assets[0],
+                fit: BoxFit.cover,
+                width: 205,
+                height: 200,
+                placeholder: const ThumbnailPlaceholder(
+                  width: 105,
+                  height: 200,
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: 16,
-          left: 16,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 114,
-            ),
-            child: Text(
-              memory.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                fontSize: 15,
+          Positioned(
+            bottom: 16,
+            left: 16,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 114,
+              ),
+              child: Text(
+                memory.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontSize: 15,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
