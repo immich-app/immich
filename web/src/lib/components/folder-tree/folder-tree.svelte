@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiCircleSmall, mdiDotsCircle, mdiFolder, mdiFolderArrowDown } from '@mdi/js';
+  import { mdiCircleSmall, mdiFolder, mdiFolderOpen } from '@mdi/js';
   import FolderBrowser from './folder-tree.svelte';
 
   // Exported props
@@ -35,9 +35,9 @@
   <a href={`/folders/${currentFolderPath}`} on:click|preventDefault={handleNavigation}>
     <button class="mr-2" on:click|stopPropagation={handleNavigation}
       ><Icon
-        path={isOpen ? mdiFolderArrowDown : mdiFolder}
+        path={isOpen ? mdiFolderOpen : mdiFolder}
         class={isOpen ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400 dark:text-gray-800'}
-        size={24}
+        size={20}
       /></button
     >
   </a>
