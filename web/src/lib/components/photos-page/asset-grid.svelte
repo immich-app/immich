@@ -254,7 +254,7 @@
     if (type === 'intersecting') {
       // updateLastIntersectedBucketDate();
     }
-    if (type === 'buckheight') {
+    if (type === 'bucket-height') {
       const { bucket, delta } = event;
       scrollTolastIntersectedBucket(bucket, delta);
     }
@@ -333,7 +333,7 @@
       let deltas = 0;
       const listen: BucketListener = (event) => {
         const { type } = event;
-        if (type === 'buckheight') {
+        if (type === 'bucket-height') {
           const { bucket: changedBucket } = event;
           // using full buckets here, instead of sub-bucket offsets - but should be close enough
           const currentIndex = $assetStore.buckets.indexOf(bucket);
@@ -814,7 +814,7 @@
       {@const isPremeasure = preMeasure.includes(bucket)}
       {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
       <div
-        id="buck"
+        id="bucket"
         use:intersectionObserver={{
           onIntersect: () => intersectedHandler(bucket),
           onSeparate: () => seperatedHandler(bucket),

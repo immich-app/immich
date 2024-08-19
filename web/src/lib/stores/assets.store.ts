@@ -184,7 +184,7 @@ type BucketCancelEvent = {
   bucket: AssetBucket;
 };
 type BucketHeightEvent = {
-  type: 'buckheight';
+  type: 'bucket-height';
   bucket: AssetBucket;
   delta: number;
 };
@@ -549,7 +549,7 @@ export class AssetStore {
       bucket.isBucketHeightActual = true;
       bucket.bucketHeight = height;
       this.timelineHeight += delta;
-      this.notifyListeners({ type: 'buckheight', bucket, delta });
+      this.notifyListeners({ type: 'bucket-height', bucket, delta });
     }
     if ('intersecting' in properties) {
       bucket.intersecting = properties.intersecting!;
