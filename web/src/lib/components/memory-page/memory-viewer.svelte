@@ -151,7 +151,9 @@
 <svelte:window
   use:shortcuts={[
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => canGoForward && toNext() },
+    { shortcut: { key: 'd' }, onShortcut: () => canGoForward && toNext() },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => canGoBack && toPrevious() },
+    { shortcut: { key: 'a' }, onShortcut: () => canGoBack && toPrevious() },
     { shortcut: { key: 'Escape' }, onShortcut: () => goto(AppRoute.PHOTOS) },
   ]}
 />
