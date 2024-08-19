@@ -98,7 +98,8 @@ class BackupControllerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
+        if (backupState.backupProgress == BackUpProgressEnum.inProgress ||
+            backupState.backupProgress == BackUpProgressEnum.manualInProgress) {
           startScreenDarkenTimer();
           WakelockPlus.enable();
         } else {
@@ -302,7 +303,8 @@ class BackupControllerPage extends HookConsumerWidget {
         if (isScreenDarkened.value) {
           stopScreenDarkenTimer();
         }
-        if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
+        if (backupState.backupProgress == BackUpProgressEnum.inProgress ||
+            backupState.backupProgress == BackUpProgressEnum.manualInProgress) {
           startScreenDarkenTimer();
         }
       },
