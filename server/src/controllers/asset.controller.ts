@@ -31,7 +31,7 @@ export class AssetController {
 
   @Get('folder')
   @Authenticated()
-  getAssetsByOriginalPath(@Auth() auth: AuthDto, @Query('path') path: string): Promise<AssetEntity[]> {
+  getAssetsByOriginalPath(@Auth() auth: AuthDto, @Query('path') path: string): Promise<AssetResponseDto[]> {
     return this.service.getAssetsByOriginalPath(auth, path);
   }
 

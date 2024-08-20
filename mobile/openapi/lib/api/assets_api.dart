@@ -426,7 +426,7 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] path (required):
-  Future<List<AssetEntity>?> getAssetsByOriginalPath(String path,) async {
+  Future<List<AssetResponseDto>?> getAssetsByOriginalPath(String path,) async {
     final response = await getAssetsByOriginalPathWithHttpInfo(path,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -436,8 +436,8 @@ class AssetsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetEntity>') as List)
-        .cast<AssetEntity>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
+        .cast<AssetResponseDto>()
         .toList(growable: false);
 
     }

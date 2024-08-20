@@ -4,7 +4,7 @@
   import type { PageData } from './$types';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { AssetMediaSize } from '@immich/sdk';
+  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import Thumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
@@ -18,8 +18,14 @@
   } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+  import type { Viewport } from '$lib/stores/assets.store';
 
   export let data: PageData;
+  let selectedAssets: Set<AssetResponseDto> = new Set();
+  const viewport: Viewport = { width: 0, height: 0 };
+
+  $: pathSegments = data.path ? data.path.split('/') : [];
 
   function handleNavigation(folderName: string) {
     const folderFullPath = `${data.path ? data.path + '/' : ''}${folderName}`.replace(/^\/|\/$/g, '');
@@ -37,7 +43,7 @@
     goto(`/folders/${targetPath}`);
   }
 
-  $: pathSegments = data.path ? data.path.split('/') : [];
+  const loadNextPage = () => {};
 </script>
 
 <UserPageLayout title={data.meta.title} isFolderView>
@@ -80,20 +86,27 @@
     </div>
 
     <!-- Assets -->
-    {#if data.pathAssets}
-      {#each data.pathAssets as asset}
-        <div class="flex justify-center flex-[1_0_350px] max-w-[350px]">
-          <Thumbnail
-            url={getAssetThumbnailUrl({
-              id: asset.id,
-              size: AssetMediaSize.Thumbnail,
-              checksum: asset.checksum,
-            })}
-            altText="Asset Thumbnail"
-            widthStyle="100%"
-          />
-        </div>
-      {/each}
-    {/if}
+    <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+      {#if data.pathAssets && data.pathAssets.length > 0}
+        {#each data.pathAssets as asset}
+          {asset.resized}
+        {/each}
+        <GalleryViewer assets={data.pathAssets} bind:selectedAssets on:intersected={loadNextPage} {viewport} />
+      {/if}
+
+      {#if data.pathAssets}
+        {#each data.pathAssets as asset}
+          <div class="flex justify-center flex-[1_0_350px] max-w-[350px]">
+            <Thumbnail
+              url={getAssetThumbnailUrl({
+                id: asset.id,
+              })}
+              altText="Asset Thumbnail"
+              widthStyle="50%"
+            />
+          </div>
+        {/each}
+      {/if}
+    </div>
   </section>
 </UserPageLayout>
