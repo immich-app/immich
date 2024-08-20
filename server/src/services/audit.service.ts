@@ -2,7 +2,6 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { AccessCore } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import {
   AuditDeletesDto,
@@ -24,15 +23,14 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class AuditService {
-  private access: AccessCore;
-
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
@@ -41,7 +39,6 @@ export class AuditService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.access = AccessCore.create(accessRepository);
     this.logger.setContext(AuditService.name);
   }
 
@@ -52,7 +49,7 @@ export class AuditService {
 
   async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
     const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    await requireAccess(this.access, { auth, permission: Permission.TIMELINE_READ, ids: [userId] });
 
     const audits = await this.repository.getAfter(dto.after, {
       userIds: [userId],

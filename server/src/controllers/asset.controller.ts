@@ -51,8 +51,8 @@ export class AssetController {
   }
 
   @Post('jobs')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated()
+  @HttpCode(HttpStatus.NO_CONTENT)
   runAssetJobs(@Auth() auth: AuthDto, @Body() dto: AssetJobsDto): Promise<void> {
     return this.service.run(auth, dto);
   }

@@ -201,10 +201,10 @@ class ApiClient {
           return AddUsersDto.fromJson(value);
         case 'AdminOnboardingUpdateDto':
           return AdminOnboardingUpdateDto.fromJson(value);
-        case 'AlbumCountResponseDto':
-          return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
+        case 'AlbumStatisticsResponseDto':
+          return AlbumStatisticsResponseDto.fromJson(value);
         case 'AlbumUserAddDto':
           return AlbumUserAddDto.fromJson(value);
         case 'AlbumUserCreateDto':
