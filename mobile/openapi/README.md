@@ -86,8 +86,8 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**addUsersToAlbum**](doc//AlbumsApi.md#adduserstoalbum) | **PUT** /albums/{id}/users | 
 *AlbumsApi* | [**createAlbum**](doc//AlbumsApi.md#createalbum) | **POST** /albums | 
 *AlbumsApi* | [**deleteAlbum**](doc//AlbumsApi.md#deletealbum) | **DELETE** /albums/{id} | 
-*AlbumsApi* | [**getAlbumCount**](doc//AlbumsApi.md#getalbumcount) | **GET** /albums/count | 
 *AlbumsApi* | [**getAlbumInfo**](doc//AlbumsApi.md#getalbuminfo) | **GET** /albums/{id} | 
+*AlbumsApi* | [**getAlbumStatistics**](doc//AlbumsApi.md#getalbumstatistics) | **GET** /albums/statistics | 
 *AlbumsApi* | [**getAllAlbums**](doc//AlbumsApi.md#getallalbums) | **GET** /albums | 
 *AlbumsApi* | [**removeAssetFromAlbum**](doc//AlbumsApi.md#removeassetfromalbum) | **DELETE** /albums/{id}/assets | 
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | 
@@ -265,8 +265,8 @@ Class | Method | HTTP request | Description
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
- - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
+ - [AlbumStatisticsResponseDto](doc//AlbumStatisticsResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
  - [AlbumUserCreateDto](doc//AlbumUserCreateDto.md)
  - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)

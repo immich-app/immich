@@ -79,7 +79,7 @@
         bind:isSelected={isSharingSelected}
       >
         <svelte:fragment slot="moreInformation">
-          <MoreInformationAlbums albumCountType="shared" />
+          <MoreInformationAlbums albumType="shared" />
         </svelte:fragment>
       </SideBarLink>
     {/if}
@@ -100,7 +100,7 @@
     </SideBarLink>
     <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
       <svelte:fragment slot="moreInformation">
-        <MoreInformationAlbums albumCountType="owned" />
+        <MoreInformationAlbums albumType="owned" />
       </svelte:fragment>
     </SideBarLink>
 

@@ -2,9 +2,9 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore } from 'src/cores/access.core';
 import {
   AddUsersDto,
-  AlbumCountResponseDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
@@ -40,7 +40,7 @@ export class AlbumService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  async getCount(auth: AuthDto): Promise<AlbumCountResponseDto> {
+  async getStatistics(auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
     const [owned, shared, notShared] = await Promise.all([
       this.albumRepository.getOwned(auth.user.id),
       this.albumRepository.getShared(auth.user.id),

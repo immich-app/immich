@@ -660,16 +660,16 @@
         ]
       }
     },
-    "/albums/count": {
+    "/albums/statistics": {
       "get": {
-        "operationId": "getAlbumCount",
+        "operationId": "getAlbumStatistics",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlbumCountResponseDto"
+                  "$ref": "#/components/schemas/AlbumStatisticsResponseDto"
                 }
               }
             },
@@ -7505,25 +7505,6 @@
         ],
         "type": "object"
       },
-      "AlbumCountResponseDto": {
-        "properties": {
-          "notShared": {
-            "type": "integer"
-          },
-          "owned": {
-            "type": "integer"
-          },
-          "shared": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "notShared",
-          "owned",
-          "shared"
-        ],
-        "type": "object"
-      },
       "AlbumResponseDto": {
         "properties": {
           "albumName": {
@@ -7608,6 +7589,25 @@
           "ownerId",
           "shared",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AlbumStatisticsResponseDto": {
+        "properties": {
+          "notShared": {
+            "type": "integer"
+          },
+          "owned": {
+            "type": "integer"
+          },
+          "shared": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "notShared",
+          "owned",
+          "shared"
         ],
         "type": "object"
       },
