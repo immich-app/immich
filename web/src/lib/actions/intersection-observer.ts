@@ -132,7 +132,7 @@ export function intersectionObserver(
   // so accept an array when multiple configurations are needed.
   if (Array.isArray(properties)) {
     if (!properties.every((p) => p.key)) {
-      throw 'Multiple configurations must specify key';
+      throw new Error('Multiple configurations must specify key');
     }
     const observers = properties.map((p) => _intersectionObserver(p.key as string, element, p));
     return {
