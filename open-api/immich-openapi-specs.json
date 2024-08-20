@@ -660,16 +660,16 @@
         ]
       }
     },
-    "/albums/count": {
+    "/albums/statistics": {
       "get": {
-        "operationId": "getAlbumCount",
+        "operationId": "getAlbumStatistics",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlbumCountResponseDto"
+                  "$ref": "#/components/schemas/AlbumStatisticsResponseDto"
                 }
               }
             },
@@ -3722,7 +3722,7 @@
         "operationId": "unlinkOAuthAccount",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4850,10 +4850,8 @@
         ]
       }
     },
-    "/server-info/about": {
+    "/server/about": {
       "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
         "operationId": "getAboutInfo",
         "parameters": [],
         "responses": {
@@ -4880,18 +4878,12 @@
           }
         ],
         "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
+          "Server"
+        ]
       }
     },
-    "/server-info/config": {
+    "/server/config": {
       "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerConfig",
         "parameters": [],
         "responses": {
@@ -4907,18 +4899,12 @@
           }
         },
         "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
+          "Server"
+        ]
       }
     },
-    "/server-info/features": {
+    "/server/features": {
       "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerFeatures",
         "parameters": [],
         "responses": {
@@ -4934,196 +4920,8 @@
           }
         },
         "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/media-types": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getSupportedMediaTypes",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerMediaTypesResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/ping": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "pingServer",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerPingResponse"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/statistics": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getServerStatistics",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStatsResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/storage": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getStorage",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStorageResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/theme": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getTheme",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerThemeDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/version": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getServerVersion",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerVersionResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
+          "Server"
+        ]
       }
     },
     "/server/license": {
@@ -5219,6 +5017,154 @@
             "api_key": []
           }
         ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/media-types": {
+      "get": {
+        "operationId": "getSupportedMediaTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerMediaTypesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/ping": {
+      "get": {
+        "operationId": "pingServer",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerPingResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/statistics": {
+      "get": {
+        "operationId": "getServerStatistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/storage": {
+      "get": {
+        "operationId": "getStorage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStorageResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/theme": {
+      "get": {
+        "operationId": "getTheme",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerThemeDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/version": {
+      "get": {
+        "operationId": "getServerVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
         "tags": [
           "Server"
         ]
@@ -7584,25 +7530,6 @@
         ],
         "type": "object"
       },
-      "AlbumCountResponseDto": {
-        "properties": {
-          "notShared": {
-            "type": "integer"
-          },
-          "owned": {
-            "type": "integer"
-          },
-          "shared": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "notShared",
-          "owned",
-          "shared"
-        ],
-        "type": "object"
-      },
       "AlbumResponseDto": {
         "properties": {
           "albumName": {
@@ -7687,6 +7614,25 @@
           "ownerId",
           "shared",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AlbumStatisticsResponseDto": {
+        "properties": {
+          "notShared": {
+            "type": "integer"
+          },
+          "owned": {
+            "type": "integer"
+          },
+          "shared": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "notShared",
+          "owned",
+          "shared"
         ],
         "type": "object"
       },
@@ -10051,7 +9997,6 @@
           "asset.read",
           "asset.update",
           "asset.delete",
-          "asset.restore",
           "asset.share",
           "asset.view",
           "asset.download",
@@ -10093,6 +10038,9 @@
           "person.statistics",
           "person.merge",
           "person.reassign",
+          "session.read",
+          "session.update",
+          "session.delete",
           "sharedLink.create",
           "sharedLink.read",
           "sharedLink.update",

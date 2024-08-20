@@ -26,8 +26,8 @@ export class StackController {
   }
 
   @Delete()
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.STACK_DELETE })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteStacks(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
