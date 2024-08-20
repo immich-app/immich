@@ -363,6 +363,8 @@ describe('/asset', () => {
         utils.createAsset(user1.accessToken),
         utils.createAsset(user1.accessToken),
       ]);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
     });
 
     it('should require authentication', async () => {
