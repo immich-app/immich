@@ -1,6 +1,5 @@
 import { Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { AccessCore } from 'src/cores/access.core';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
@@ -8,23 +7,20 @@ import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/interfaces/job.interface';
+import { requireAccess } from 'src/utils/access';
 import { usePagination } from 'src/utils/pagination';
 
 export class TrashService {
-  private access: AccessCore;
-
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
-  ) {
-    this.access = AccessCore.create(accessRepository);
-  }
+  ) {}
 
   async restoreAssets(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
     const { ids } = dto;
-    await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_RESTORE, ids });
     await this.restoreAndSend(auth, ids);
   }
 

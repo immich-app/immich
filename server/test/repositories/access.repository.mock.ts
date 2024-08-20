@@ -1,4 +1,3 @@
-import { AccessCore } from 'src/cores/access.core';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { Mocked, vitest } from 'vitest';
 
@@ -14,11 +13,7 @@ export interface IAccessRepositoryMock {
   timeline: Mocked<IAccessRepository['timeline']>;
 }
 
-export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => {
-  if (reset) {
-    AccessCore.reset();
-  }
-
+export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
   return {
     activity: {
       checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
