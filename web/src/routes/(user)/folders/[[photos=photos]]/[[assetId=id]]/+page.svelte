@@ -4,7 +4,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { type AssetResponseDto } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiChevronLeft, mdiChevronRight, mdiFolder } from '@mdi/js';
+  import { mdiArrowUpLeft, mdiChevronLeft, mdiChevronRight, mdiFolder } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import type { Viewport } from '$lib/stores/assets.store';
@@ -39,7 +39,7 @@
 <UserPageLayout title={data.meta.title} isFolderView>
   <section id="path-summary" class="text-immich-primary dark:text-immich-dark-primary rounded-xl flex">
     {#if data.path}
-      <CircleIconButton icon={mdiChevronLeft} title="Back" on:click={handleBackNavigation} class="mr-2" padding="2" />
+      <CircleIconButton icon={mdiArrowUpLeft} title="Back" on:click={handleBackNavigation} class="mr-2" padding="2" />
     {/if}
     <div
       class="flex place-items-center gap-2 bg-slate-50 dark:bg-immich-dark-gray/75 w-full py-2 px-4 rounded-2xl mr-4"
