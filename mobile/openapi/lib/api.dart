@@ -51,7 +51,6 @@ part 'api/partners_api.dart';
 part 'api/people_api.dart';
 part 'api/search_api.dart';
 part 'api/server_api.dart';
-part 'api/server_info_api.dart';
 part 'api/sessions_api.dart';
 part 'api/shared_links_api.dart';
 part 'api/stacks_api.dart';
