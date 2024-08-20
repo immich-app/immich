@@ -326,15 +326,4 @@ export class AssetService {
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
     }
   }
-
-  async getUniqueOriginalPaths(auth: AuthDto): Promise<string[]> {
-    return this.assetRepository.getUniqueOriginalPaths(auth.user.id);
-  }
-
-  async getAssetsByOriginalPath(auth: AuthDto, path: string): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.getAssetsByOriginalPath(auth.user.id, path);
-    const ids = assets.map((a) => a.id);
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: ids });
-    return assets.map((a) => mapAsset(a, { auth }));
-  }
 }

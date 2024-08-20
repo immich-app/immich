@@ -100,10 +100,8 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | 
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | 
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
-*AssetsApi* | [**getAssetsByOriginalPath**](doc//AssetsApi.md#getassetsbyoriginalpath) | **GET** /assets/folder | 
 *AssetsApi* | [**getMemoryLane**](doc//AssetsApi.md#getmemorylane) | **GET** /assets/memory-lane | 
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
-*AssetsApi* | [**getUniqueOriginalPaths**](doc//AssetsApi.md#getuniqueoriginalpaths) | **GET** /assets/folder/unique-paths | 
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
 *AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | 
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
@@ -245,6 +243,8 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**searchUsersAdmin**](doc//UsersAdminApi.md#searchusersadmin) | **GET** /admin/users | 
 *UsersAdminApi* | [**updateUserAdmin**](doc//UsersAdminApi.md#updateuseradmin) | **PUT** /admin/users/{id} | 
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | 
+*ViewApi* | [**getAssetsByOriginalPath**](doc//ViewApi.md#getassetsbyoriginalpath) | **GET** /view/folder | 
+*ViewApi* | [**getUniqueOriginalPaths**](doc//ViewApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | 
 
 
 ## Documentation For Models

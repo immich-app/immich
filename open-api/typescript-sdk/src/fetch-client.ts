@@ -1606,26 +1606,6 @@ export function checkExistingAssets({ checkExistingAssetsDto }: {
         body: checkExistingAssetsDto
     })));
 }
-export function getAssetsByOriginalPath({ path }: {
-    path: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/assets/folder${QS.query(QS.explode({
-        path
-    }))}`, {
-        ...opts
-    }));
-}
-export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: string[];
-    }>("/assets/folder/unique-paths", {
-        ...opts
-    }));
-}
 export function runAssetJobs({ assetJobsDto }: {
     assetJobsDto: AssetJobsDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3131,6 +3111,26 @@ export function getProfileImage({ id }: {
         status: 200;
         data: Blob;
     }>(`/users/${encodeURIComponent(id)}/profile-image`, {
+        ...opts
+    }));
+}
+export function getAssetsByOriginalPath({ path }: {
+    path: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/view/folder${QS.query(QS.explode({
+        path
+    }))}`, {
+        ...opts
+    }));
+}
+export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: string[];
+    }>("/view/folder/unique-paths", {
         ...opts
     }));
 }
