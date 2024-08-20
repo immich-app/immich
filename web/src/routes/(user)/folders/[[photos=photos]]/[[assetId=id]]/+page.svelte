@@ -17,26 +17,26 @@
 
   $: pathSegments = data.path ? data.path.split('/') : [];
 
-  function handleNavigation(folderName: string) {
-    const folderFullPath = `${data.path ? data.path + '/' : ''}${folderName}`.replace(/^\/|\/$/g, '');
-    navigateToView(folderFullPath);
-  }
+  const handleNavigation = async (folderName: string) => {
+    const folderFullPath = `${data.path ? data.path + '/' : ''}${folderName}`.replaceAll(/^\/|\/$/g, '');
+    await navigateToView(folderFullPath);
+  };
 
-  function handleBackNavigation() {
+  const handleBackNavigation = async () => {
     if (data.path) {
       const parentPath = data.path.split('/').slice(0, -1).join('/');
-      navigateToView(parentPath);
+      await navigateToView(parentPath);
     }
-  }
+  };
 
-  function handleBreadcrumbNavigation(targetPath: string) {
-    navigateToView(targetPath);
-  }
+  const handleBreadcrumbNavigation = async (targetPath: string) => {
+    await navigateToView(targetPath);
+  };
 
-  const navigateToView = (folderPath: string) => {
+  const navigateToView = async (folderPath: string) => {
     const url = new URL(AppRoute.FOLDERS, window.location.href);
     url.searchParams.set('folder', folderPath);
-    goto(url);
+    await goto(url);
   };
 
   const loadNextPage = () => {};
@@ -55,6 +55,7 @@
         <button
           class="text-sm font-mono underline hover:font-semibold"
           on:click={() => handleBreadcrumbNavigation(pathSegments.slice(0, index + 1).join('/'))}
+          type="button"
         >
           {segment}
         </button>
@@ -75,6 +76,7 @@
           class="flex flex-col place-items-center gap-2 py-2 px-4 hover:bg-immich-primary/10 dark:hover:bg-immich-primary/40 rounded-xl"
           on:click={() => handleNavigation(subFolder)}
           title={subFolder}
+          type="button"
         >
           <Icon path={mdiFolder} class="text-immich-primary dark:text-immich-dark-primary" size={64} />
           <p class="text-sm dark:text-gray-200 text-nowrap text-ellipsis overflow-clip w-full">{subFolder}</p>

@@ -4,10 +4,11 @@
   import { mdiChevronDown, mdiChevronRight, mdiFolder, mdiFolderEye, mdiFolderOutline } from '@mdi/js';
   import FolderBrowser from './folder-tree.svelte';
   import { AppRoute } from '$lib/constants';
+  import type { RecursiveObject } from '$lib/utils/folder-utils';
 
   // Exported props
   export let folderName: string;
-  export let content: any;
+  export let content: RecursiveObject;
   export let basePath: string;
   export let currentPath: string = '';
 
@@ -22,11 +23,11 @@
     isExpanded = !isExpanded;
   }
 
-  function handleNavigation() {
+  const handleNavigation = async () => {
     const url = new URL(AppRoute.FOLDERS, window.location.href);
     url.searchParams.set('folder', currentFolderPath);
-    goto(url);
-  }
+    await goto(url);
+  };
 </script>
 
 <button
@@ -34,6 +35,7 @@
   on:click={toggleExpand}
   on:dblclick|stopPropagation|preventDefault={handleNavigation}
   title={folderName}
+  type="button"
 >
   <a href={`${AppRoute.FOLDERS}?folder=${currentFolderPath}`} on:click|preventDefault={handleNavigation} class="flex">
     <Icon
@@ -47,7 +49,7 @@
       size={20}
     />
   </a>
-  <button on:click={toggleExpand}>
+  <button on:click={toggleExpand} type="button">
     <p class="text-nowrap overflow-clip">{folderName}</p>
   </button>
 </button>

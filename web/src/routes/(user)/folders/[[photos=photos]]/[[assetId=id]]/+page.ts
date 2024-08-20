@@ -2,7 +2,6 @@ import { foldersStore } from '$lib/stores/folders.store';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
-import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 

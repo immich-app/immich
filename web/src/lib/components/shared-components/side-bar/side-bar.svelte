@@ -105,7 +105,7 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title={$t('Folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
+    <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
 
     <SideBarLink
       title={$t('utilities')}
