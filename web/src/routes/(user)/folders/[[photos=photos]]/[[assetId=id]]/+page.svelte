@@ -69,20 +69,25 @@
 
   <section id="folder-detail-view" class="mt-4">
     <!-- Sub Folders -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 flex-wrap">
+    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
       {#each data.currentFolders as subFolder}
         <button
           class="flex flex-col place-items-center gap-2 py-2 px-4 hover:bg-immich-primary/10 dark:hover:bg-immich-primary/40 rounded-xl"
           on:click={() => handleNavigation(subFolder)}
+          title={subFolder}
         >
-          <Icon path={mdiFolder} class="text-immich-primary dark:text-immich-dark-primary text-center" size={64} />
-          <p class="text-sm dark:text-gray-200">{subFolder}</p>
+          <Icon path={mdiFolder} class="text-immich-primary dark:text-immich-dark-primary" size={64} />
+          <p class="text-sm dark:text-gray-200 text-nowrap text-ellipsis overflow-clip w-full">{subFolder}</p>
         </button>
       {/each}
     </div>
 
     <!-- Assets -->
-    <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <div
+      bind:clientHeight={viewport.height}
+      bind:clientWidth={viewport.width}
+      class:mt-5={data.currentFolders.length > 0}
+    >
       {#if data.pathAssets && data.pathAssets.length > 0}
         <GalleryViewer assets={data.pathAssets} bind:selectedAssets on:intersected={loadNextPage} {viewport} />
       {/if}

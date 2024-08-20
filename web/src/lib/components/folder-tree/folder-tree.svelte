@@ -30,7 +30,7 @@
 </script>
 
 <button
-  class={`flex place-items-center gap-1 pl-3 py-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg font-mono text-sm hover:font-semibold  w-full ${isOpened ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'}`}
+  class={`flex place-items-center gap-1 mt-1 pl-3 py-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg font-mono text-sm hover:font-semibold ${isOpened ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'} `}
   on:click={toggleExpand}
   on:dblclick|stopPropagation|preventDefault={handleNavigation}
   title={folderName}
@@ -48,7 +48,7 @@
     />
   </a>
   <button on:click={toggleExpand}>
-    <p class="text-nowrap">{folderName}</p>
+    <p class="text-nowrap overflow-clip">{folderName}</p>
   </button>
 </button>
 
