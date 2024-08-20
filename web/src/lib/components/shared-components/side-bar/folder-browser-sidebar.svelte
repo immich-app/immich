@@ -5,6 +5,7 @@
   import { buildFolderTree, type RecursiveObject } from '$lib/utils/folder-utils';
   import { foldersStore } from '$lib/stores/folders.store';
   import { get } from 'svelte/store';
+  import { t } from 'svelte-i18n';
 
   let folderTree: RecursiveObject = {};
   let currentPath = '';
@@ -28,8 +29,8 @@
 </script>
 
 <section id="folder-browser-sidebar">
-  <p class="text-xs m-4 dark:text-white">FOLDER BROWSER</p>
-  <div class="overflow-auto">
+  <div class="text-xs pl-4 mb-4 dark:text-white">{$t('explorer').toUpperCase()}</div>
+  <div class="overflow-auto pb-10">
     {#each Object.entries(folderTree) as [folderName, content]}
       <FolderTree {folderName} {content} {currentPath} basePath="" />
     {/each}

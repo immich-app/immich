@@ -1,7 +1,17 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiCircleSmall, mdiFolder, mdiFolderOpen } from '@mdi/js';
+  import {
+    mdiChevronDown,
+    mdiChevronRight,
+    mdiCircleSmall,
+    mdiFolder,
+    mdiFolderEye,
+    mdiFolderEyeOutline,
+    mdiFolderOpen,
+    mdiFolderOpenOutline,
+    mdiFolderOutline,
+  } from '@mdi/js';
   import FolderBrowser from './folder-tree.svelte';
 
   // Exported props
@@ -10,15 +20,15 @@
   export let basePath: string;
   export let currentPath: string = '';
 
-  let isOpen = false;
+  let isExpanded = false;
   let currentFolderPath = `${basePath}/${folderName}`.replace(/^\//, '').replace(/\/$/, '');
 
-  $: isOpen = currentPath.startsWith(currentFolderPath);
-  $: isCurrentFolder = currentPath === currentFolderPath;
+  $: isExpanded = currentPath.startsWith(currentFolderPath);
+  $: isOpened = currentPath === currentFolderPath;
 
   function toggleOpen(event: MouseEvent) {
     event.stopPropagation();
-    isOpen = !isOpen;
+    isExpanded = !isExpanded;
   }
 
   function handleNavigation(event: MouseEvent) {
@@ -28,26 +38,26 @@
 </script>
 
 <button
-  class={`flex items-center pl-4 pt-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg font-mono text-sm hover:font-semibold hover:text-immich-primary dark:hover:text-immich-dark-primary w-full ${isCurrentFolder ? 'bg-slate-100 dark:bg-slate-700 font-semibold' : ''}`}
+  class={`flex place-items-center gap-1 pl-3 py-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg font-mono text-sm hover:font-semibold  w-full ${isOpened ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'}`}
   on:click={toggleOpen}
   on:dblclick|stopPropagation={handleNavigation}
 >
-  <a href={`/folders/${currentFolderPath}`} on:click|preventDefault={handleNavigation}>
-    <button class="mr-2" on:click|stopPropagation={handleNavigation}
-      ><Icon
-        path={isOpen ? mdiFolderOpen : mdiFolder}
-        class={isOpen ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400 dark:text-gray-800'}
-        size={20}
-      /></button
-    >
+  <a href={`/folders/${currentFolderPath}`} on:click={handleNavigation} class="flex">
+    <Icon
+      path={isExpanded ? mdiChevronDown : mdiChevronRight}
+      class={isExpanded ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400 dark:text-gray-700'}
+      size={20}
+    />
+    <Icon
+      path={isOpened ? mdiFolderEye : isExpanded ? mdiFolder : mdiFolderOutline}
+      class={isExpanded ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400 dark:text-gray-700'}
+      size={20}
+    />
   </a>
-  <button class="dark:text-immich-gray" on:click={toggleOpen}>{folderName}</button>
-  {#if isCurrentFolder}
-    <Icon path={mdiCircleSmall} class={'ml-[2px] text-immich-primary dark:text-immich-dark-primary'} size={24} />
-  {/if}
+  <button on:click={toggleOpen}>{folderName}</button>
 </button>
 
-{#if isOpen}
+{#if isExpanded}
   <ul class="list-none ml-2">
     {#each Object.entries(content) as [subFolderName, subContent]}
       <li class="my-1">

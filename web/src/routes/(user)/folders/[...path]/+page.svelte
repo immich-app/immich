@@ -1,28 +1,19 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import type { PageData } from './$types';
+  import type { PageData } from './[photos=photos]/[assetId=id]/$types';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { getAssetThumbnailUrl } from '$lib/utils';
-  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
-  import Thumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import { type AssetResponseDto } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
-  import {
-    mdiAccount,
-    mdiArrowLeft,
-    mdiArrowRight,
-    mdiChevronLeft,
-    mdiChevronRight,
-    mdiFolder,
-    mdiFolderArrowLeft,
-  } from '@mdi/js';
+  import { mdiChevronLeft, mdiChevronRight, mdiFolder } from '@mdi/js';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import type { Viewport } from '$lib/stores/assets.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let data: PageData;
+
   let selectedAssets: Set<AssetResponseDto> = new Set();
+  let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
   const viewport: Viewport = { width: 0, height: 0 };
 
   $: pathSegments = data.path ? data.path.split('/') : [];
@@ -52,12 +43,14 @@
       {#if data.path}
         <CircleIconButton icon={mdiChevronLeft} title="Back" on:click={handleBackNavigation} class="mr-2" padding="2" />
       {/if}
-      <div class="flex place-items-center gap-2 bg-gray-100 dark:bg-immich-dark-gray w-full py-2 px-4 rounded-2xl mr-4">
+      <div
+        class="flex place-items-center gap-2 bg-slate-50 dark:bg-immich-dark-gray/75 w-full py-2 px-4 rounded-2xl mr-4"
+      >
         <Icon path={mdiFolder} class="text-immich-primary dark:text-immich-dark-primary" size={28} />
         {#each pathSegments as segment, index}
           <button
-            class="text-sm font-mono underline"
-            on:click|preventDefault={() => handleBreadcrumbNavigation(pathSegments.slice(0, index + 1).join('/'))}
+            class="text-sm font-mono underline hover:font-semibold"
+            on:click={() => handleBreadcrumbNavigation(pathSegments.slice(0, index + 1).join('/'))}
           >
             {segment}
           </button>
@@ -76,7 +69,7 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 flex-wrap">
       {#each data.currentFolders as subFolder}
         <button
-          class="flex flex-col place-items-center rounded-xl gap-2 py-2 px-4 hover:bg-immich-primary/10 dark:hover:bg-immich-primary/40"
+          class="flex flex-col place-items-center gap-2 py-2 px-4 hover:bg-immich-primary/10 dark:hover:bg-immich-primary/40 rounded-xl"
           on:click={() => handleNavigation(subFolder)}
         >
           <Icon path={mdiFolder} class="text-immich-primary dark:text-immich-dark-primary text-center" size={64} />
