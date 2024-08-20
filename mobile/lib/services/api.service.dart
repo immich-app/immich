@@ -18,7 +18,7 @@ class ApiService implements Authentication {
   late AlbumsApi albumsApi;
   late AssetsApi assetsApi;
   late SearchApi searchApi;
-  late ServerInfoApi serverInfoApi;
+  late ServerApi serverInfoApi;
   late MapApi mapApi;
   late PartnersApi partnersApi;
   late PeopleApi peopleApi;
@@ -50,7 +50,7 @@ class ApiService implements Authentication {
     oAuthApi = OAuthApi(_apiClient);
     albumsApi = AlbumsApi(_apiClient);
     assetsApi = AssetsApi(_apiClient);
-    serverInfoApi = ServerInfoApi(_apiClient);
+    serverInfoApi = ServerApi(_apiClient);
     searchApi = SearchApi(_apiClient);
     mapApi = MapApi(_apiClient);
     partnersApi = PartnersApi(_apiClient);

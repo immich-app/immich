@@ -147,10 +147,6 @@ const checkOtherAccess = async (access: IAccessRepository, request: OtherAccessR
       return await access.asset.checkOwnerAccess(auth.user.id, ids);
     }
 
-    case Permission.ASSET_RESTORE: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids);
-    }
-
     case Permission.ALBUM_READ: {
       const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
       const isShared = await access.album.checkSharedAlbumAccess(

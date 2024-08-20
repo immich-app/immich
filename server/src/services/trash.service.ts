@@ -20,7 +20,7 @@ export class TrashService {
 
   async restoreAssets(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
     const { ids } = dto;
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_RESTORE, ids });
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_DELETE, ids });
     await this.restoreAndSend(auth, ids);
   }
 
