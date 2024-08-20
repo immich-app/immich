@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   AddUsersDto,
-  AlbumCountResponseDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
@@ -37,7 +37,7 @@ export class AlbumService {
     @Inject(IAlbumUserRepository) private albumUserRepository: IAlbumUserRepository,
   ) {}
 
-  async getCount(auth: AuthDto): Promise<AlbumCountResponseDto> {
+  async getStatistics(auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
     const [owned, shared, notShared] = await Promise.all([
       this.albumRepository.getOwned(auth.user.id),
       this.albumRepository.getShared(auth.user.id),

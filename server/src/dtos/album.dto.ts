@@ -95,7 +95,7 @@ export class GetAlbumsDto {
   assetId?: string;
 }
 
-export class AlbumCountResponseDto {
+export class AlbumStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   owned!: number;
 

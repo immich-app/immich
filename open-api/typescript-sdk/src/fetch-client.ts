@@ -268,7 +268,7 @@ export type CreateAlbumDto = {
     assetIds?: string[];
     description?: string;
 };
-export type AlbumCountResponseDto = {
+export type AlbumStatisticsResponseDto = {
     notShared: number;
     owned: number;
     shared: number;
@@ -1369,11 +1369,11 @@ export function createAlbum({ createAlbumDto }: {
         body: createAlbumDto
     })));
 }
-export function getAlbumCount(opts?: Oazapfts.RequestOpts) {
+export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AlbumCountResponseDto;
-    }>("/albums/count", {
+        data: AlbumStatisticsResponseDto;
+    }>("/albums/statistics", {
         ...opts
     }));
 }
