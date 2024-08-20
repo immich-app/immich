@@ -1,7 +1,8 @@
 import { AccessCore } from 'src/cores/access.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { Permission } from 'src/enum';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFileType, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 
@@ -10,6 +11,15 @@ export interface IBulkAsset {
   addAssetIds: (id: string, assetIds: string[]) => Promise<void>;
   removeAssetIds: (id: string, assetIds: string[]) => Promise<void>;
 }
+
+const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType) => {
+  return (files || []).find((file) => file.type === type);
+};
+
+export const getAssetFiles = (files?: AssetFileEntity[]) => ({
+  previewFile: getFileByType(files, AssetFileType.PREVIEW),
+  thumbnailFile: getFileByType(files, AssetFileType.THUMBNAIL),
+});
 
 export const addAssets = async (
   auth: AuthDto,

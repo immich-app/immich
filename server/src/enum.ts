@@ -5,6 +5,11 @@ export enum AssetType {
   OTHER = 'OTHER',
 }
 
+export enum AssetFileType {
+  PREVIEW = 'preview',
+  THUMBNAIL = 'thumbnail',
+}
+
 export enum AlbumUserRole {
   EDITOR = 'editor',
   VIEWER = 'viewer',

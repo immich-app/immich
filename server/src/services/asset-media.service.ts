@@ -36,6 +36,7 @@ import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -238,9 +239,10 @@ export class AssetMediaService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    let filepath = asset.previewPath;
-    if (size === AssetMediaSize.THUMBNAIL && asset.thumbnailPath) {
-      filepath = asset.thumbnailPath;
+    const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
+    let filepath = previewFile?.path;
+    if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
+      filepath = thumbnailFile.path;
     }
 
     if (!filepath) {
@@ -460,7 +462,7 @@ export class AssetMediaService {
   }
 
   private async findOrFail(id: string): Promise<AssetEntity> {
-    const asset = await this.assetRepository.getById(id);
+    const asset = await this.assetRepository.getById(id, { files: true });
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }

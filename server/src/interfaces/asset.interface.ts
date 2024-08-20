@@ -1,7 +1,7 @@
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetOrder, AssetType } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
@@ -191,4 +191,5 @@ export interface IAssetRepository {
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
+  upsertFile(options: { assetId: string; type: AssetFileType; path: string }): Promise<void>;
 }
