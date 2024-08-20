@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ImageFormat } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
-import { AccessCore } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -50,6 +49,7 @@ import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interf
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { checkAccess, requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -59,12 +59,11 @@ import { IsNull } from 'typeorm';
 
 @Injectable()
 export class PersonService {
-  private access: AccessCore;
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
@@ -77,7 +76,6 @@ export class PersonService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.access = AccessCore.create(accessRepository);
     this.logger.setContext(PersonService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
@@ -114,7 +112,7 @@ export class PersonService {
   }
 
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, personId);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
@@ -122,7 +120,7 @@ export class PersonService {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
-        await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
+        await requireAccess(this.access, { auth, permission: Permission.PERSON_CREATE, ids: [face.id] });
         if (person.faceAssetId === null) {
           changeFeaturePhoto.push(person.id);
         }
@@ -143,9 +141,8 @@ export class PersonService {
   }
 
   async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, personId);
-
-    await this.access.requirePermission(auth, Permission.PERSON_CREATE, dto.id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_CREATE, ids: [dto.id] });
     const face = await this.repository.getFaceById(dto.id);
     const person = await this.findOrFail(personId);
 
@@ -161,7 +158,7 @@ export class PersonService {
   }
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.ASSET_READ, dto.id);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [dto.id] });
     const faces = await this.repository.getFaces(dto.id);
     return faces.map((asset) => mapFaces(asset, auth));
   }
@@ -188,17 +185,17 @@ export class PersonService {
   }
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     return this.findOrFail(id).then(mapPerson);
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     return this.repository.getStatistics(id);
   }
 
   async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     const person = await this.repository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
@@ -212,7 +209,7 @@ export class PersonService {
   }
 
   async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     const assets = await this.repository.getAssets(id);
     return assets.map((asset) => mapAsset(asset));
   }
@@ -227,13 +224,13 @@ export class PersonService {
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
     // TODO: set by faceId directly
     let faceId: string | undefined = undefined;
     if (assetId) {
-      await this.access.requirePermission(auth, Permission.ASSET_READ, assetId);
+      await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [assetId] });
       const [face] = await this.repository.getFacesByIds([{ personId: id, assetId }]);
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
@@ -587,13 +584,17 @@ export class PersonService {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
-    await this.access.requirePermission(auth, Permission.PERSON_UPDATE, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
     let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
 
-    const allowedIds = await this.access.checkAccess(auth, Permission.PERSON_MERGE, mergeIds);
+    const allowedIds = await checkAccess(this.access, {
+      auth,
+      permission: Permission.PERSON_MERGE,
+      ids: mergeIds,
+    });
 
     for (const mergeId of mergeIds) {
       const hasAccess = allowedIds.has(mergeId);
