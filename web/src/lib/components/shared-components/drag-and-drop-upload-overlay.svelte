@@ -40,11 +40,23 @@
       return handleFiles(dataTransfer.files);
     }
 
-    const transferEntries = Array.from(dataTransfer.items)
-      .map((i: DataTransferItem) => i.webkitGetAsEntry())
-      .filter((i) => i !== null);
-    const files = await getAllFilesFromTransferEntries(transferEntries);
-    return handleFiles(files);
+    const entries: FileSystemEntry[] = [];
+    const files: File[] = [];
+    for (const item of dataTransfer.items) {
+      const entry = item.webkitGetAsEntry();
+      if (entry) {
+        entries.push(entry);
+        continue;
+      }
+
+      const file = item.getAsFile();
+      if (file) {
+        files.push(file);
+      }
+    }
+
+    const directoryFiles = await getAllFilesFromTransferEntries(entries);
+    return handleFiles([...files, ...directoryFiles]);
   };
 
   const browserSupportsDirectoryUpload = () => typeof DataTransferItem.prototype.webkitGetAsEntry === 'function';
