@@ -210,7 +210,7 @@
     let elem = document.elementFromPoint(safeViewport.x + 1, safeViewport.y + 1);
 
     while (elem != null) {
-      if (elem.id === 'buck') {
+      if (elem.id === 'bucket') {
         break;
       }
       elem = elem.parentElement;
