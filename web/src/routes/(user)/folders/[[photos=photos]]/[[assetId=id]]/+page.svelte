@@ -19,19 +19,25 @@
 
   function handleNavigation(folderName: string) {
     const folderFullPath = `${data.path ? data.path + '/' : ''}${folderName}`.replace(/^\/|\/$/g, '');
-    goto(`${AppRoute.FOLDERS}?folder=${folderFullPath}`);
+    navigateToView(folderFullPath);
   }
 
   function handleBackNavigation() {
     if (data.path) {
       const parentPath = data.path.split('/').slice(0, -1).join('/');
-      goto(`${AppRoute.FOLDERS}?folder=${parentPath}`);
+      navigateToView(parentPath);
     }
   }
 
   function handleBreadcrumbNavigation(targetPath: string) {
-    goto(`${AppRoute.FOLDERS}?folder=${targetPath}`);
+    navigateToView(targetPath);
   }
+
+  const navigateToView = (folderPath: string) => {
+    const url = new URL(AppRoute.FOLDERS, window.location.href);
+    url.searchParams.set('folder', folderPath);
+    goto(url);
+  };
 
   const loadNextPage = () => {};
 </script>

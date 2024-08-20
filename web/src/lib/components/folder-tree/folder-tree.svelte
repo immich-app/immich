@@ -23,7 +23,9 @@
   }
 
   function handleNavigation() {
-    goto(`${AppRoute.FOLDERS}?folder=${currentFolderPath}`);
+    const url = new URL(AppRoute.FOLDERS, window.location.href);
+    url.searchParams.set('folder', currentFolderPath);
+    goto(url);
   }
 </script>
 
@@ -31,6 +33,7 @@
   class={`flex place-items-center gap-1 pl-3 py-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg font-mono text-sm hover:font-semibold  w-full ${isOpened ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'}`}
   on:click={toggleExpand}
   on:dblclick|stopPropagation|preventDefault={handleNavigation}
+  title={folderName}
 >
   <a href={`${AppRoute.FOLDERS}?folder=${currentFolderPath}`} on:click|preventDefault={handleNavigation} class="flex">
     <Icon
@@ -44,7 +47,9 @@
       size={20}
     />
   </a>
-  <button on:click={toggleExpand}>{folderName}</button>
+  <button on:click={toggleExpand}>
+    <p class="text-nowrap">{folderName}</p>
+  </button>
 </button>
 
 {#if isExpanded}

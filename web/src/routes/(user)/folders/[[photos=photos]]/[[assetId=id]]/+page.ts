@@ -8,7 +8,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
   await authenticate();
-
+  const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
 
   await foldersStore.fetchUniquePaths();
@@ -16,7 +16,7 @@ export const load = (async ({ params, url }) => {
 
   let pathAssets = null;
   const path = url.searchParams.get('folder');
-  console.log(path);
+
   if (path) {
     await foldersStore.fetchAssetsByPath(path);
     const updatedStore = get(foldersStore);
@@ -29,8 +29,6 @@ export const load = (async ({ params, url }) => {
     .filter((path) => path.startsWith(currentPath) && path !== currentPath)
     .map((path) => path.replace(currentPath, '').split('/')[0])
     .filter((value, index, self) => self.indexOf(value) === index);
-
-  const asset = await getAssetInfoFromParam(params);
 
   return {
     asset,
