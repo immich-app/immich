@@ -334,7 +334,7 @@ export class AssetService {
   async getAssetsByOriginalPath(auth: AuthDto, path: string): Promise<AssetResponseDto[]> {
     const assets = await this.assetRepository.getAssetsByOriginalPath(auth.user.id, path);
     const ids = assets.map((a) => a.id);
-    await this.access.requirePermission(auth, Permission.ASSET_READ, ids);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: ids });
     return assets.map((a) => mapAsset(a, { auth }));
   }
 }
