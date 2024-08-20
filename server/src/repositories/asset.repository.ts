@@ -363,12 +363,13 @@ export class AssetRepository implements IAssetRepository {
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
-    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+    const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
 
     return this.repository.findOne({
       where: {
         id: Not(otherAssetId),
         ownerId,
+        libraryId: libraryId || IsNull(),
         type,
         exifInfo: {
           livePhotoCID,
