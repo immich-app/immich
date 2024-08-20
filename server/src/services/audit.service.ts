@@ -14,7 +14,7 @@ import {
 } from 'src/dtos/audit.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
-import { DatabaseAction, Permission } from 'src/enum';
+import { AssetFileType, DatabaseAction, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
@@ -24,6 +24,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
@@ -97,12 +98,12 @@ export class AuditService {
         }
 
         case AssetPathType.PREVIEW: {
-          await this.assetRepository.update({ id, previewPath: pathValue });
+          await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.PREVIEW, path: pathValue });
           break;
         }
 
         case AssetPathType.THUMBNAIL: {
-          await this.assetRepository.update({ id, thumbnailPath: pathValue });
+          await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.THUMBNAIL, path: pathValue });
           break;
         }
 
@@ -155,7 +156,7 @@ export class AuditService {
       }
     }
 
-    const track = (filename: string | null) => {
+    const track = (filename: string | null | undefined) => {
       if (!filename) {
         return;
       }
@@ -175,8 +176,9 @@ export class AuditService {
     const orphans: FileReportItemDto[] = [];
     for await (const assets of pagination) {
       assetCount += assets.length;
-      for (const { id, originalPath, previewPath, encodedVideoPath, thumbnailPath, isExternal, checksum } of assets) {
-        for (const file of [originalPath, previewPath, encodedVideoPath, thumbnailPath]) {
+      for (const { id, files, originalPath, encodedVideoPath, isExternal, checksum } of assets) {
+        const { previewFile, thumbnailFile } = getAssetFiles(files);
+        for (const file of [originalPath, previewFile?.path, encodedVideoPath, thumbnailFile?.path]) {
           track(file);
         }
 
@@ -192,11 +194,11 @@ export class AuditService {
         ) {
           orphans.push({ ...entity, pathType: AssetPathType.ORIGINAL, pathValue: originalPath });
         }
-        if (previewPath && !hasFile(thumbFiles, previewPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.PREVIEW, pathValue: previewPath });
+        if (previewFile && !hasFile(thumbFiles, previewFile.path)) {
+          orphans.push({ ...entity, pathType: AssetPathType.PREVIEW, pathValue: previewFile.path });
         }
-        if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: thumbnailPath });
+        if (thumbnailFile && !hasFile(thumbFiles, thumbnailFile.path)) {
+          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: thumbnailFile.path });
         }
         if (encodedVideoPath && !hasFile(videoFiles, encodedVideoPath)) {
           orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: encodedVideoPath });

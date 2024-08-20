@@ -50,6 +50,7 @@ import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interf
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -333,9 +334,11 @@ export class PersonService {
       faces: {
         person: false,
       },
+      files: true,
     };
     const [asset] = await this.assetRepository.getByIds([id], relations);
-    if (!asset || !asset.previewPath || asset.faces?.length > 0) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!asset || !previewFile || asset.faces?.length > 0) {
       return JobStatus.FAILED;
     }
 
@@ -349,11 +352,11 @@ export class PersonService {
 
     const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
-      asset.previewPath,
+      previewFile.path,
       machineLearning.facialRecognition,
     );
 
-    this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
+    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
     if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
@@ -549,7 +552,10 @@ export class PersonService {
       imageHeight: oldHeight,
     } = face;
 
-    const asset = await this.assetRepository.getById(assetId, { exifInfo: true });
+    const asset = await this.assetRepository.getById(assetId, {
+      exifInfo: true,
+      files: true,
+    });
     if (!asset) {
       this.logger.error(`Could not generate person thumbnail: asset ${assetId} does not exist`);
       return JobStatus.FAILED;
@@ -646,7 +652,8 @@ export class PersonService {
       throw new Error(`Asset ${asset.id} dimensions are unknown`);
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       throw new Error(`Asset ${asset.id} has no preview path`);
     }
 
@@ -659,8 +666,8 @@ export class PersonService {
       return { width, height, inputPath: asset.originalPath };
     }
 
-    const { width, height } = await this.mediaRepository.getImageDimensions(asset.previewPath);
-    return { width, height, inputPath: asset.previewPath };
+    const { width, height } = await this.mediaRepository.getImageDimensions(previewFile.path);
+    return { width, height, inputPath: previewFile.path };
   }
 
   private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {

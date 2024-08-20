@@ -205,6 +205,10 @@ describe(AlbumService.name, () => {
 
       expect(userMock.get).toHaveBeenCalledWith('user-id', {});
       expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']));
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInvite', {
+        id: albumStub.empty.id,
+        userId: 'user-id',
+      });
     });
 
     it('should require valid userIds', async () => {
