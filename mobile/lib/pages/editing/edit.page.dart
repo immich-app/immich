@@ -12,6 +12,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:path/path.dart' as p;
 import 'package:immich_mobile/providers/album/album.provider.dart';
 
 /// A stateless widget that provides functionality for editing an image.
@@ -66,7 +67,7 @@ class EditImagePage extends ConsumerWidget {
       final Uint8List imageData = await _imageToUint8List(image);
       await PhotoManager.editor.saveImage(
         imageData,
-        title: "${asset.fileName.split('.').first}_edited.jpg",
+        title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
       );
       await ref.read(albumProvider.notifier).getDeviceAlbums();
       Navigator.of(context).popUntil((route) => route.isFirst);
