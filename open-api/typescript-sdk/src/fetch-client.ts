@@ -869,6 +869,15 @@ export type ServerFeaturesDto = {
     smartSearch: boolean;
     trash: boolean;
 };
+export type LicenseResponseDto = {
+    activatedAt: string;
+    activationKey: string;
+    licenseKey: string;
+};
+export type LicenseKeyDto = {
+    activationKey: string;
+    licenseKey: string;
+};
 export type ServerMediaTypesResponseDto = {
     image: string[];
     sidecar: string[];
@@ -908,15 +917,6 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
-};
-export type LicenseResponseDto = {
-    activatedAt: string;
-    activationKey: string;
-    licenseKey: string;
-};
-export type LicenseKeyDto = {
-    activationKey: string;
-    licenseKey: string;
 };
 export type SessionResponseDto = {
     createdAt: string;
@@ -2168,7 +2168,7 @@ export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {
 }
 export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: UserAdminResponseDto;
     }>("/oauth/unlink", {
         ...opts,
@@ -2458,102 +2458,27 @@ export function getSearchSuggestions({ country, includeNull, make, model, state,
         ...opts
     }));
 }
-/**
- * This property was deprecated in v1.107.0
- */
 export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerAboutResponseDto;
-    }>("/server-info/about", {
+    }>("/server/about", {
         ...opts
     }));
 }
-/**
- * This property was deprecated in v1.107.0
- */
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerConfigDto;
-    }>("/server-info/config", {
+    }>("/server/config", {
         ...opts
     }));
 }
-/**
- * This property was deprecated in v1.107.0
- */
 export function getServerFeatures(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerFeaturesDto;
-    }>("/server-info/features", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getSupportedMediaTypes(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerMediaTypesResponseDto;
-    }>("/server-info/media-types", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function pingServer(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerPingResponseRead;
-    }>("/server-info/ping", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getServerStatistics(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerStatsResponseDto;
-    }>("/server-info/statistics", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getStorage(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerStorageResponseDto;
-    }>("/server-info/storage", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getTheme(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerThemeDto;
-    }>("/server-info/theme", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getServerVersion(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerVersionResponseDto;
-    }>("/server-info/version", {
+    }>("/server/features", {
         ...opts
     }));
 }
@@ -2584,6 +2509,54 @@ export function setServerLicense({ licenseKeyDto }: {
         method: "PUT",
         body: licenseKeyDto
     })));
+}
+export function getSupportedMediaTypes(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerMediaTypesResponseDto;
+    }>("/server/media-types", {
+        ...opts
+    }));
+}
+export function pingServer(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerPingResponseRead;
+    }>("/server/ping", {
+        ...opts
+    }));
+}
+export function getServerStatistics(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerStatsResponseDto;
+    }>("/server/statistics", {
+        ...opts
+    }));
+}
+export function getStorage(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerStorageResponseDto;
+    }>("/server/storage", {
+        ...opts
+    }));
+}
+export function getTheme(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerThemeDto;
+    }>("/server/theme", {
+        ...opts
+    }));
+}
+export function getServerVersion(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerVersionResponseDto;
+    }>("/server/version", {
+        ...opts
+    }));
 }
 export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/sessions", {
@@ -3205,7 +3178,6 @@ export enum Permission {
     AssetRead = "asset.read",
     AssetUpdate = "asset.update",
     AssetDelete = "asset.delete",
-    AssetRestore = "asset.restore",
     AssetShare = "asset.share",
     AssetView = "asset.view",
     AssetDownload = "asset.download",
@@ -3247,6 +3219,9 @@ export enum Permission {
     PersonStatistics = "person.statistics",
     PersonMerge = "person.merge",
     PersonReassign = "person.reassign",
+    SessionRead = "session.read",
+    SessionUpdate = "session.update",
+    SessionDelete = "session.delete",
     SharedLinkCreate = "sharedLink.create",
     SharedLinkRead = "sharedLink.read",
     SharedLinkUpdate = "sharedLink.update",

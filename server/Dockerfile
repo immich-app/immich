@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240813@sha256:2e204a2256c088c9e4a0cf34cc9f70f9196c05e8744004000e7d2889466fc735 AS dev
+FROM ghcr.io/immich-app/base-server-dev:20240820@sha256:a28296b40c1247e539894ac4013e6a3e20588d5aefe697fe2ada15f1bd23f6e5 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
