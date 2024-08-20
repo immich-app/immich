@@ -13,7 +13,6 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';

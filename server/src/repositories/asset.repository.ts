@@ -833,12 +833,12 @@ export class AssetRepository implements IAssetRepository {
       .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
       .getRawMany();
 
-    return results.map((row: { directoryPath: string }) => row.directoryPath.replace(/^\/|\/$/g, ''));
+    return results.map((row: { directoryPath: string }) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
-    const normalizedPath = partialPath.replace(/^\/|\/$/g, '');
+    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
 
     const builder = this.getBuilder({
       userIds: [userId],
@@ -858,7 +858,7 @@ export class AssetRepository implements IAssetRepository {
           );
         }),
       )
-      .orderBy("regexp_replace(asset.originalPath, '.*/(.+)', '\\1')", 'ASC')
+      .orderBy(String.raw`regexp_replace(asset.originalPath, '.*/(.+)', '\1')`, 'ASC')
       .getMany();
 
     return assets;
