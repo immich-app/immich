@@ -4,11 +4,10 @@ import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import { get } from 'svelte/store';
-import type { PageLoad } from './[photos=photos]/[assetId=id]/$types';
+import type { PageLoad } from './$types';
 
-export const load = (async ({ params }) => {
+export const load = (async ({ params, url }) => {
   await authenticate();
-  let asset: AssetResponseDto | undefined = undefined;
 
   const $t = await getFormatter();
 
@@ -16,32 +15,26 @@ export const load = (async ({ params }) => {
   const { uniquePaths } = get(foldersStore);
 
   let pathAssets = null;
-
-  if (params.path) {
-    await foldersStore.fetchAssetsByPath(params.path);
+  const path = url.searchParams.get('folder');
+  console.log(path);
+  if (path) {
+    await foldersStore.fetchAssetsByPath(path);
     const updatedStore = get(foldersStore);
-    pathAssets = updatedStore.assets[params.path] || null;
+    pathAssets = updatedStore.assets[path] || null;
   }
 
-  const currentPath = params.path ? `${params.path}/`.replace('//', '/') : '';
+  const currentPath = path ? `${path}/`.replace('//', '/') : '';
 
   const currentFolders = (uniquePaths || [])
     .filter((path) => path.startsWith(currentPath) && path !== currentPath)
     .map((path) => path.replace(currentPath, '').split('/')[0])
     .filter((value, index, self) => self.indexOf(value) === index);
 
-  const regex = /\/photos\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
-  const hasAssetId = regex.test(params.path);
-  const assetId = params.path.split('/').pop();
-
-  if (hasAssetId && assetId) {
-    asset = await getAssetInfo({ id: assetId });
-    console.log(asset);
-  }
+  const asset = await getAssetInfoFromParam(params);
 
   return {
     asset,
-    path: params.path,
+    path,
     currentFolders,
     pathAssets,
     meta: {

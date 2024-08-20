@@ -8,7 +8,7 @@
   import { t } from 'svelte-i18n';
 
   let folderTree: RecursiveObject = {};
-  let currentPath = '';
+  $: currentPath = $page.url.searchParams.get('folder') || '';
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -19,12 +19,6 @@
     if (uniquePaths && uniquePaths.length > 0) {
       folderTree = buildFolderTree(uniquePaths);
     }
-  }
-
-  $: {
-    page.subscribe(($page) => {
-      currentPath = $page.url.pathname.replace('/folders', '').split('/').filter(Boolean).join('/');
-    });
   }
 </script>
 

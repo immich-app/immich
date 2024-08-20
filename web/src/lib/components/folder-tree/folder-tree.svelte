@@ -1,18 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
-  import {
-    mdiChevronDown,
-    mdiChevronRight,
-    mdiCircleSmall,
-    mdiFolder,
-    mdiFolderEye,
-    mdiFolderEyeOutline,
-    mdiFolderOpen,
-    mdiFolderOpenOutline,
-    mdiFolderOutline,
-  } from '@mdi/js';
+  import { mdiChevronDown, mdiChevronRight, mdiFolder, mdiFolderEye, mdiFolderOutline } from '@mdi/js';
   import FolderBrowser from './folder-tree.svelte';
+  import { AppRoute } from '$lib/constants';
 
   // Exported props
   export let folderName: string;
@@ -26,23 +17,22 @@
   $: isExpanded = currentPath.startsWith(currentFolderPath);
   $: isOpened = currentPath === currentFolderPath;
 
-  function toggleOpen(event: MouseEvent) {
+  function toggleExpand(event: MouseEvent) {
     event.stopPropagation();
     isExpanded = !isExpanded;
   }
 
-  function handleNavigation(event: MouseEvent) {
-    event.preventDefault();
-    goto(`/folders/${currentFolderPath}`);
+  function handleNavigation() {
+    goto(`${AppRoute.FOLDERS}?folder=${currentFolderPath}`);
   }
 </script>
 
 <button
   class={`flex place-items-center gap-1 pl-3 py-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg font-mono text-sm hover:font-semibold  w-full ${isOpened ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'}`}
-  on:click={toggleOpen}
-  on:dblclick|stopPropagation={handleNavigation}
+  on:click={toggleExpand}
+  on:dblclick|stopPropagation|preventDefault={handleNavigation}
 >
-  <a href={`/folders/${currentFolderPath}`} on:click={handleNavigation} class="flex">
+  <a href={`${AppRoute.FOLDERS}?folder=${currentFolderPath}`} on:click|preventDefault={handleNavigation} class="flex">
     <Icon
       path={isExpanded ? mdiChevronDown : mdiChevronRight}
       class={isExpanded ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400 dark:text-gray-700'}
@@ -54,7 +44,7 @@
       size={20}
     />
   </a>
-  <button on:click={toggleOpen}>{folderName}</button>
+  <button on:click={toggleExpand}>{folderName}</button>
 </button>
 
 {#if isExpanded}
