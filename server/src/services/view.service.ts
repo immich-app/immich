@@ -1,13 +1,11 @@
-import { BadRequestException, Inject } from '@nestjs/common';
-import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { Inject } from '@nestjs/common';
+import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.interface';
+import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { requireAccess } from 'src/utils/access';
-import { getMyPartnerIds } from 'src/utils/asset.util';
 
 export class ViewService {
   constructor(

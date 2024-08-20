@@ -145,7 +145,7 @@ export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]>;
-  getUniqueOriginalPaths(id: string): Promise<string[]>;
+  getUniqueOriginalPaths(userId: string): Promise<string[]>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByIds(
     ids: string[],
