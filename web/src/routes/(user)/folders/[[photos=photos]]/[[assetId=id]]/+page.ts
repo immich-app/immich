@@ -19,8 +19,8 @@ export const load = (async ({ params, url }) => {
 
   if (path) {
     await foldersStore.fetchAssetsByPath(path);
-    const updatedStore = get(foldersStore);
-    pathAssets = updatedStore.assets[path] || null;
+    const { assets } = get(foldersStore);
+    pathAssets = assets[path] || null;
   }
 
   const currentPath = path ? `${path}/`.replace('//', '/') : '';
