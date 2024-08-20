@@ -67,7 +67,6 @@ class InternalTaskManager {
   }
 
   scheduleDrainIntersectedQueue(delay: number = TUNABLES.SCROLL_TASK_QUEUE.CHECK_INTERVAL_MS) {
-    // console.log('schedule drain intersected', tasks.length);
     clearTimeout(this.queueTimer);
     this.queueTimer = setTimeout(() => {
       const delta = Date.now() - this.assetStore.lastScrollTime;
@@ -145,17 +144,11 @@ class InternalTaskManager {
   }
 
   scheduleDrainSeparatedQueue() {
-    // console.log('schedule drain seperate', seperatedQueue.size);
     if (this.lastIdle) {
       cancelIdleCB(this.lastIdle);
     }
     this.lastIdle = idleCB(
       () => {
-        if (this.priorityQueue.length > 0) {
-          // console.log('tasks queue is', tasks.length);
-        }
-
-        // console.log('starting drain');
         let count = 0;
         let entry = this.idleQueue.entries().next().value;
         while (entry) {
@@ -163,7 +156,6 @@ class InternalTaskManager {
           this.idleQueue.delete(taskId);
           task();
           if (count++ >= TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS) {
-            // console.log('hit max', TUNABLES.SCROLL_TASK_QUEUE.DRAIN_MAX_TASKS);
             break;
           }
           entry = this.idleQueue.entries().next().value;
@@ -298,8 +290,6 @@ class IntersectionTask {
   intersectedKey;
   priority;
 
-  // status = 'unknown';
-
   intersected: Task | undefined;
   separated: Task | undefined;
 
@@ -311,16 +301,10 @@ class IntersectionTask {
   }
 
   trackIntersectedTask(componentId: string, task: Task) {
-    // if (this.seperatedKey.startsWith('t')) {
-    //   console.log('int', componentId, this.intersectedKey);
-    // }
-
     const execTask = () => {
       if (this.separated) {
-        console.log('bad bad bad', this.intersectedKey);
         return;
       }
-      // console.log('int1', componentId, this.intersectedKey);
       task?.();
     };
     this.intersected = execTask;
@@ -332,17 +316,10 @@ class IntersectionTask {
   }
 
   trackSeperatedTask(componentId: string, task: Task) {
-    // if (this.seperatedKey.startsWith('t')) {
-    //   console.log('sep', componentId, this.seperatedKey);
-    // }
-    // this.status = 'seperated';
     const execTask = () => {
       if (this.intersected) {
-        console.log('bad bad bad', this.seperatedKey);
         return;
       }
-
-      // console.log('sep2', componentTasks.has(componentId), componentId, this.seperatedKey);
       task?.();
     };
     this.separated = execTask;
@@ -354,21 +331,19 @@ class IntersectionTask {
   }
 
   removePendingSeparated() {
-    if (this.separated && this.internalTaskManager.removeSeparateTask(this.seperatedKey)) {
-      // console.log('remove seper task!', this.seperatedKey);
+    if (this.separated) {
+      this.internalTaskManager.removeSeparateTask(this.seperatedKey);
     }
   }
   removePendingIntersected() {
-    if (this.intersected && this.internalTaskManager.removeIntersectedTask(this.intersectedKey)) {
-      // console.log('remove inter task!', this.seperatedKey);
+    if (this.intersected) {
+      this.internalTaskManager.removeIntersectedTask(this.intersectedKey);
     }
   }
 
   scheduleIntersected(componentId: string, intersected: Task) {
     this.removePendingSeparated();
-
     if (this.intersected) {
-      // console.log('ret, inter', componentId, this.intersectedKey);
       return;
     }
     const { task, cleanup } = this.trackIntersectedTask(componentId, intersected);
@@ -385,7 +360,6 @@ class IntersectionTask {
     this.removePendingIntersected();
 
     if (this.separated) {
-      // console.log('ret, seper', componentId, this.seperatedKey);
       return;
     }
 

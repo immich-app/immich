@@ -80,7 +80,7 @@
           class="relative overflow-clip"
           style:height={dateGroup.geometry.containerHeight + 'px'}
           style:width={dateGroup.geometry.containerWidth + 'px'}
-          style:background-color={'white'}
+          style:visibility={'hidden'}
         ></div>
       </div>
     </div>

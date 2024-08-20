@@ -235,25 +235,11 @@
       if (deltaIndex < currentIndex) {
         element?.scrollBy(0, delta);
       }
-      console.log(
-        'scroll adjust',
-        adjustedBucket.bucketDate,
-        delta,
-        deltaIndex,
-        currentIndex,
-        lastIntersectedBucketDate,
-        deltaIndex < currentIndex,
-      );
-    } else {
-      console.log('scroll adjust', adjustedBucket.bucketDate, delta);
     }
   };
 
   const bucketListener: BucketListener = (event) => {
     const { type } = event;
-    if (type === 'intersecting') {
-      // updateLastIntersectedBucketDate();
-    }
     if (type === 'bucket-height') {
       const { bucket, delta } = event;
       scrollTolastIntersectedBucket(bucket, delta);

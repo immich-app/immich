@@ -314,6 +314,7 @@
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
+              {assetStore}
               url={getAssetPlaybackUrl({ id: asset.id, checksum: asset.checksum })}
               enablePlayback={mouseOver && $playVideoThumbnailOnHover}
               curve={selected}
@@ -326,6 +327,7 @@
         {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
+              {assetStore}
               url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, checksum: asset.checksum })}
               pauseIcon={mdiMotionPauseOutline}
               playIcon={mdiMotionPlayOutline}
