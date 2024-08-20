@@ -835,7 +835,7 @@ export class AssetRepository implements IAssetRepository {
 
     const builder = this.getBuilder({
       userIds: [userId],
-      exifInfo: false,
+      exifInfo: true,
       withStacked: false,
       isArchived: false,
       isTrashed: false,

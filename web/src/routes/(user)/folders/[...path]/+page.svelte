@@ -88,24 +88,7 @@
     <!-- Assets -->
     <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
       {#if data.pathAssets && data.pathAssets.length > 0}
-        {#each data.pathAssets as asset}
-          {asset.resized}
-        {/each}
         <GalleryViewer assets={data.pathAssets} bind:selectedAssets on:intersected={loadNextPage} {viewport} />
-      {/if}
-
-      {#if data.pathAssets}
-        {#each data.pathAssets as asset}
-          <div class="flex justify-center flex-[1_0_350px] max-w-[350px]">
-            <Thumbnail
-              url={getAssetThumbnailUrl({
-                id: asset.id,
-              })}
-              altText="Asset Thumbnail"
-              widthStyle="50%"
-            />
-          </div>
-        {/each}
       {/if}
     </div>
   </section>
