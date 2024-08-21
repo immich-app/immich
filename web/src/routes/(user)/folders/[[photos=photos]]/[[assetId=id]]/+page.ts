@@ -22,11 +22,11 @@ export const load = (async ({ params, url }) => {
     pathAssets = assets[path] || null;
   }
 
-  const currentPath = path ? `${path}/`.replace('//', '/') : '';
+  const currentPath = path ? `${path}/`.replaceAll('//', '/') : '';
 
   const currentFolders = (uniquePaths || [])
     .filter((path) => path.startsWith(currentPath) && path !== currentPath)
-    .map((path) => path.replace(currentPath, '').split('/')[0])
+    .map((path) => path.replaceAll(currentPath, '').split('/')[0])
     .filter((value, index, self) => self.indexOf(value) === index);
 
   return {

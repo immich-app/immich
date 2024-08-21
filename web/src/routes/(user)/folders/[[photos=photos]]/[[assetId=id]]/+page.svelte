@@ -75,7 +75,7 @@
     <!-- Sub Folders -->
     {#if data.currentFolders.length > 0}
       <div
-        class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 rounded-2xl border border-gray-100 dark:border-gray-900 max-h-[500px] overflow-auto"
+        class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 rounded-2xl border border-gray-100 dark:border-gray-900 max-h-[500px] overflow-auto immich-scrollbar"
       >
         {#each data.currentFolders as folder}
           <button
@@ -98,7 +98,14 @@
       class:mt-4={data.currentFolders.length > 0}
     >
       {#if data.pathAssets && data.pathAssets.length > 0}
-        <GalleryViewer assets={data.pathAssets} bind:selectedAssets on:intersected={loadNextPage} {viewport} />
+        <GalleryViewer
+          assets={data.pathAssets}
+          bind:selectedAssets
+          on:intersected={loadNextPage}
+          {viewport}
+          disableAssetSelect={true}
+          showAssetName={true}
+        />
       {/if}
     </div>
   </section>

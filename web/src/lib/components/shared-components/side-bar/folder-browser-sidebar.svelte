@@ -24,7 +24,7 @@
 
 <section id="folder-browser-sidebar">
   <div class="text-xs pl-4 mb-4 dark:text-white">{$t('explorer').toUpperCase()}</div>
-  <div class="overflow-auto pb-10">
+  <div class="overflow-auto pb-10 immich-scrollbar">
     {#each Object.entries(folderTree) as [folderName, content]}
       <FolderTree {folderName} {content} {currentPath} basePath="" />
     {/each}
