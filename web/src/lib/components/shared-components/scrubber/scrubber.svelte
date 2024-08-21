@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets.store';
   import type { DateTime } from 'luxon';
-  import { fromLocalDateTime, type ScrollBarListener } from '$lib/utils/timeline-util';
+  import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';
   import { onMount } from 'svelte';
 
@@ -14,9 +14,9 @@
   export let scrubBucketPercent: number = 0;
   export let scrubBucket: { bucketDate: string | undefined } | undefined = undefined;
   export let leadout: boolean = false;
-  export let onScrub: ScrollBarListener | undefined = undefined;
-  export let startScrub: ScrollBarListener | undefined = undefined;
-  export let stopScrub: ScrollBarListener | undefined = undefined;
+  export let onScrub: ScrubberListener | undefined = undefined;
+  export let startScrub: ScrubberListener | undefined = undefined;
+  export let stopScrub: ScrubberListener | undefined = undefined;
 
   let isHover = false;
   let isDragging = false;

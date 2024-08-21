@@ -22,7 +22,7 @@
   import {
     formatGroupTitle,
     splitBucketIntoDateGroups,
-    type ScrollBarListener,
+    type ScrubberListener,
     type ScrollTargetListener,
   } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -30,7 +30,7 @@
   import { throttle } from 'lodash-es';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
-  import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
+  import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
@@ -290,7 +290,7 @@
     element.scrollTop = scrollTop;
   };
 
-  const _onScrub: ScrollBarListener = (
+  const _onScrub: ScrubberListener = (
     bucketDate: string | undefined,
     scrollPercent: number,
     bucketScrollPercent: number,
@@ -311,7 +311,7 @@
   };
   const onScrub = throttle(_onScrub, 16, { leading: false, trailing: true });
 
-  const stopScrub: ScrollBarListener = async (
+  const stopScrub: ScrubberListener = async (
     bucketDate: string | undefined,
     _scrollPercent: number,
     bucketScrollPercent: number,
@@ -350,8 +350,8 @@
         // in the lead-in area
         scrubBucket = undefined;
         scrubBucketPercent = 0;
-        const maxScroll =
-          topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+        const maxScroll = getMaxScroll();
+
         scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
         return;
       }
@@ -761,7 +761,7 @@
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
 
-<Scrollbar
+<Scrubber
   invisible={showSkeleton}
   {assetStore}
   height={safeViewport.height}

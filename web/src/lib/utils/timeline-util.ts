@@ -16,7 +16,7 @@ export type DateGroup = {
   geometry: Geometry;
   bucket: AssetBucket;
 };
-export type ScrollBarListener = (
+export type ScrubberListener = (
   bucketDate: string | undefined,
   overallScrollPercent: number,
   bucketScrollPercent: number,
