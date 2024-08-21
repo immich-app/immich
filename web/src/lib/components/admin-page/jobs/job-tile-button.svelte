@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  export type Colors = 'light-gray' | 'gray';
+  export type Colors = 'light-gray' | 'gray' | 'dark-gray';
 </script>
 
 <script lang="ts">
@@ -7,8 +7,9 @@
   export let disabled = false;
 
   const colorClasses: Record<Colors, string> = {
-    'light-gray': 'bg-gray-300/90 dark:bg-gray-600/90',
-    gray: 'bg-gray-300 dark:bg-gray-600',
+    'light-gray': 'bg-gray-300/80 dark:bg-gray-700',
+    gray: 'bg-gray-300/90 dark:bg-gray-700/90',
+    'dark-gray': 'bg-gray-300 dark:bg-gray-700/80',
   };
 
   const hoverClasses = disabled
