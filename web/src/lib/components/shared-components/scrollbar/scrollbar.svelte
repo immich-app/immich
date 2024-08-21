@@ -12,7 +12,7 @@
   export let invisible = false;
   export let scrubOverallPercent: number = 0;
   export let scrubBucketPercent: number = 0;
-  export let scrubBucket: AssetBucket | undefined = undefined;
+  export let scrubBucket: { bucketDate: string | undefined } | undefined = undefined;
   export let leadout: boolean = false;
   export let onScrub: ScrollBarListener | undefined = undefined;
   export let startScrub: ScrollBarListener | undefined = undefined;
@@ -36,15 +36,11 @@
   const MIN_DOT_DISTANCE = 8;
 
   const toScrollFromBucketPercentage = (
-    scrubBucket: AssetBucket | undefined,
+    scrubBucket: { bucketDate: string | undefined } | undefined,
     scrubBucketPercent: number,
     scrubOverallPercent: number,
   ) => {
-    console.log('hi', scrubBucket, scrubBucketPercent);
     if (scrubBucket) {
-      if (!scrubBucket.bucketDate) {
-        debugger;
-      }
       let offset = relativeTopOffset;
       let match = false;
       for (const segment of segments) {
@@ -56,18 +52,15 @@
         offset += segment.height;
       }
       if (!match) {
-        debugger;
         offset += scrubBucketPercent * relativeBottomOffset;
       }
       // 2px is the height of the indicator
       return offset - 2;
     } else if (leadout) {
-      console.log('out');
       let offset = relativeTopOffset;
       for (const segment of segments) {
         offset += segment.height;
       }
-      debugger;
       offset += scrubOverallPercent * relativeBottomOffset;
       return offset - 2;
     } else {
@@ -79,18 +72,6 @@
   $: timelineFullHeight = $assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset;
   $: relativeTopOffset = toScrollY(timelineTopOffset / timelineFullHeight);
   $: relativeBottomOffset = toScrollY(timelineBottomOffset / timelineFullHeight);
-
-  $: {
-    console.log(
-      'relativeTopOFfset',
-      timelineTopOffset,
-      timelineBottomOffset,
-      relativeTopOffset,
-      $assetStore.timelineHeight,
-      height,
-      HOVER_DATE_HEIGHT,
-    );
-  }
 
   const listener: BucketListener = (event) => {
     const { type } = event;
@@ -116,7 +97,6 @@
   };
 
   const calculateSegments = (buckets: AssetBucket[]) => {
-    debugger;
     let height = 0;
     let dotHeight = 0;
 
@@ -202,7 +182,6 @@
     }
 
     const scrollPercent = toTimelineY(hoverY);
-    console.log('sendovertogrid', segment?.dataset.timeSegmentBucketDate, bucketDate, bucketPercentY, scrollPercent);
     if (wasDragging === false && isDragging) {
       void startScrub?.(bucketDate, scrollPercent, bucketPercentY);
       void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
@@ -260,16 +239,7 @@
       style:top="{scrollY + HOVER_DATE_HEIGHT}px"
     />
   {/if}
-  <div
-    id="lead-in"
-    class="relative"
-    style:height={relativeTopOffset + 'px'}
-    data-label={segments.at(0)?.dateFormatted}
-    style:border-width={'1px'}
-    style:border-color={'green'}
-    style:background-color={'yellow'}
-    style:opacity={'50%'}
-  >
+  <div id="lead-in" class="relative" style:height={relativeTopOffset + 'px'} data-label={segments.at(0)?.dateFormatted}>
     {#if relativeTopOffset > 6}
       <div class="absolute right-[0.75rem] h-[4px] w-[4px] rounded-full bg-gray-300" />
     {/if}
@@ -283,10 +253,6 @@
       data-label={segment.dateFormatted}
       style:height={segment.height + 'px'}
       aria-label={segment.dateFormatted + ' ' + segment.count}
-      style:border-width={'1px'}
-      style:border-color={'black'}
-      style:background-color={'lightblue'}
-      style:opacity={'50%'}
     >
       {#if segment.hasLabel}
         <div
@@ -304,15 +270,7 @@
       {/if}
     </div>
   {/each}
-  <div
-    id="lead-out"
-    class="relative"
-    style:height={relativeBottomOffset + 'px'}
-    style:border-width={'1px'}
-    style:border-color={'red'}
-    style:background-color={'pink'}
-    style:opacity={'50%'}
-  ></div>
+  <div id="lead-out" class="relative" style:height={relativeBottomOffset + 'px'}></div>
 </div>
 
 <style>
