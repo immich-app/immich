@@ -23,6 +23,7 @@
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
   export let viewport: Viewport;
+  export let showAssetName = false;
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
@@ -121,6 +122,7 @@
         class="absolute"
         style="width: {geometry.boxes[i].width}px; height: {geometry.boxes[i].height}px; top: {geometry.boxes[i]
           .top}px; left: {geometry.boxes[i].left}px"
+        title={showAssetName ? asset.originalFileName : ''}
       >
         <Thumbnail
           {asset}
@@ -142,6 +144,13 @@
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}
         />
+        {#if showAssetName}
+          <div
+            class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis"
+          >
+            {asset.originalFileName}
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
