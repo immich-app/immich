@@ -24,6 +24,7 @@
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { preferences, user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
@@ -48,6 +49,10 @@
       return;
     }
   };
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if $isMultiSelectState}

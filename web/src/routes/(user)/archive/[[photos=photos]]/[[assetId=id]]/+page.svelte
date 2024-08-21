@@ -17,6 +17,7 @@
   import type { PageData } from './$types';
   import { mdiPlus, mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   export let data: PageData;
 
@@ -25,6 +26,10 @@
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if $isMultiSelectState}

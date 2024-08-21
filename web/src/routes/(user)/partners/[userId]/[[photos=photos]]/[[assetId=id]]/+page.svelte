@@ -23,6 +23,7 @@
 
   onDestroy(() => {
     assetInteractionStore.clearMultiselect();
+    assetStore.destroy();
   });
 </script>
 

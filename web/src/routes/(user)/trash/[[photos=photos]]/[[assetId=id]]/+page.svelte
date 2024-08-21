@@ -25,6 +25,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   export let data: PageData;
 
@@ -84,6 +85,10 @@
       handleError(error, $t('errors.unable_to_restore_trash'));
     }
   };
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if $isMultiSelectState}
