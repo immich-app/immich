@@ -84,6 +84,7 @@
   import type { PageData } from './$types';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   export let data: PageData;
 
@@ -306,10 +307,12 @@
     }
   };
 
-  const handleCloseSelectAssets = async () => {
+  const setModeToView = async () => {
     viewMode = ViewMode.VIEW;
-    timelineInteractionStore.clearMultiselect();
-
+    assetStore.destroy();
+    assetStore = new AssetStore({ albumId, order: albumOrder });
+    timelineStore.destroy();
+    timelineStore = new AssetStore({ isArchived: false }, albumId);
     await navigate(
       { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
       { replaceState: true, forceNavigate: true },
@@ -317,10 +320,15 @@
     oldAt = null;
   };
 
+  const handleCloseSelectAssets = async () => {
+    timelineInteractionStore.clearMultiselect();
+    await setModeToView();
+  };
+
   const handleSelectFromComputer = async () => {
     await openFileUploadDialog({ albumId: album.id });
     timelineInteractionStore.clearMultiselect();
-    viewMode = ViewMode.VIEW;
+    await setModeToView();
   };
 
   const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
@@ -417,6 +425,11 @@
     if (album.assetCount === 0 && !album.albumName) {
       await deleteAlbum(album);
     }
+  });
+
+  onDestroy(() => {
+    assetStore.destroy();
+    timelineStore.destroy();
   });
 </script>
 

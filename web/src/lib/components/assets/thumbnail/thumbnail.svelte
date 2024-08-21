@@ -51,6 +51,7 @@
     top?: string;
     left?: string;
     priority?: number;
+    disabled?: boolean;
   } = {};
 
   export let retrieveElement: boolean = false;
@@ -306,7 +307,7 @@
             onComplete={() => (loaded = true)}
           />
         {:else}
-          <div class="flex h-full w-full items-center justify-center p-4">
+          <div class="absolute flex h-full w-full items-center justify-center p-4 z-10">
             <Icon path={mdiImageBrokenVariant} size="48" />
           </div>
         {/if}

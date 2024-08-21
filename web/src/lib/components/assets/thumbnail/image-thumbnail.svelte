@@ -3,10 +3,10 @@
 
   import { fade } from 'svelte/transition';
 
-  import { mdiEyeOffOutline } from '@mdi/js';
+  import { thumbhash } from '$lib/actions/thumbhash';
   import Icon from '$lib/components/elements/icon.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
-  import { thumbhash } from '$lib/actions/thumbhash';
+  import { mdiEyeOffOutline, mdiImageBrokenVariant } from '@mdi/js';
 
   export let url: string;
   export let altText: string | undefined;
@@ -29,47 +29,50 @@
 
   let loaded = false;
   let errored = false;
+
   let img: HTMLImageElement;
 
+  const setLoaded = () => {
+    loaded = true;
+    onComplete?.();
+  };
+  const setErrored = () => {
+    errored = true;
+    onComplete?.();
+  };
   onMount(() => {
-    const _onload = () => {
-      loaded = true;
-      onComplete?.();
-    };
-    const _onerror = () => {
-      errored = true;
-      onComplete?.();
-    };
     if (img.complete) {
-      _onload();
+      setLoaded();
     }
-    img.addEventListener('load', _onload);
-    img.addEventListener('error', _onerror);
-    return () => {
-      img?.removeEventListener('load', _onload);
-      img?.removeEventListener('error', _onerror);
-    };
   });
 </script>
 
-<img
-  bind:this={img}
-  loading={preload ? 'eager' : 'lazy'}
-  style:width={widthStyle}
-  style:height={heightStyle}
-  style:filter={hidden ? 'grayscale(50%)' : 'none'}
-  style:opacity={hidden ? '0.5' : '1'}
-  src={url}
-  alt={loaded || errored ? altText : ''}
-  {title}
-  class="object-cover {border ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary' : ''}"
-  class:rounded-xl={curve}
-  class:shadow-lg={shadow}
-  class:rounded-full={circle}
-  class:aspect-square={circle || !heightStyle}
-  class:opacity-0={!thumbhash && !loaded}
-  draggable="false"
-/>
+{#if errored}
+  <div class="absolute flex h-full w-full items-center justify-center p-4 z-10">
+    <Icon path={mdiImageBrokenVariant} size="48" />
+  </div>
+{:else}
+  <img
+    bind:this={img}
+    on:load={setLoaded}
+    on:error={setErrored}
+    loading={preload ? 'eager' : 'lazy'}
+    style:width={widthStyle}
+    style:height={heightStyle}
+    style:filter={hidden ? 'grayscale(50%)' : 'none'}
+    style:opacity={hidden ? '0.5' : '1'}
+    src={url}
+    alt={loaded || errored ? altText : ''}
+    {title}
+    class="object-cover {border ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary' : ''}"
+    class:rounded-xl={curve}
+    class:shadow-lg={shadow}
+    class:rounded-full={circle}
+    class:aspect-square={circle || !heightStyle}
+    class:opacity-0={!thumbhash && !loaded}
+    draggable="false"
+  />
+{/if}
 
 {#if hidden}
   <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">

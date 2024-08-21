@@ -41,6 +41,7 @@
                 if (height !== 0) {
                   $assetStore.updateBucket(bucket.bucketDate, { height: height, measured: true });
                 }
+
                 onMeasured();
                 $assetStore.removeListener(listener);
                 const t2 = Date.now();
