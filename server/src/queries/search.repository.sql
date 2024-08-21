@@ -75,7 +75,6 @@ FROM
         "asset"."fileCreatedAt" >= $1
         AND "exifInfo"."lensModel" = $2
         AND 1 = 1
-        AND 1 = 1
         AND (
           "asset"."isFavorite" = $3
           AND "asset"."isArchived" = $4
@@ -168,7 +167,6 @@ WHERE
   (
     "asset"."fileCreatedAt" >= $1
     AND "exifInfo"."lensModel" = $2
-    AND 1 = 1
     AND 1 = 1
     AND (
       "asset"."isFavorite" = $3

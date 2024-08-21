@@ -288,13 +288,6 @@ describe('/search', () => {
         should: 'should search by takenAfter (no results)',
         deferred: () => ({ dto: { takenAfter: today.plus({ hour: 1 }).toJSDate() }, assets: [] }),
       },
-      //   {
-      //     should: 'should search by originalPath',
-      //     deferred: () => ({
-      //       dto: { originalPath: asset1.originalPath },
-      //       assets: [asset1],
-      //     }),
-      //   },
       {
         should: 'should search by originalFilename',
         deferred: () => ({
