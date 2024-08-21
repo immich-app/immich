@@ -30,19 +30,19 @@ describe('StarRating component', () => {
     expect(radioButtons[2].checked).toBe(false);
 
     // Check the radio button attributes
-    radioButtons.forEach((radioButton, index) => {
+    for (const [index, radioButton] of radioButtons.entries()) {
       expect(radioButton.id).toBe(labels[index].htmlFor);
       expect(radioButton.name).toBe('stars');
       expect(radioButton.value).toBe((index + 1).toString());
       expect(radioButton.disabled).toBe(false);
       expect(radioButton.className).toBe('sr-only');
-    });
+    }
 
     // Check the label attributes
-    labels.forEach((label) => {
+    for (const label of labels) {
       expect(label.className).toBe('cursor-pointer');
       expect(label.tabIndex).toBe(-1);
-    });
+    }
   });
 
   it('renders correctly with readOnly', () => {
@@ -65,14 +65,14 @@ describe('StarRating component', () => {
     expect(radioButtons[2].checked).toBe(false);
 
     // Check the radio button attributes
-    radioButtons.forEach((radioButton, index) => {
+    for (const [index, radioButton] of radioButtons.entries()) {
       expect(radioButton.id).toBe(labels[index].htmlFor);
       expect(radioButton.disabled).toBe(true);
-    });
+    }
 
     // Check the label attributes
-    labels.forEach((label) => {
+    for (const label of labels) {
       expect(label.className).toBe('');
-    });
+    }
   });
 });
