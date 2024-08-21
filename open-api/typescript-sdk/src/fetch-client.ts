@@ -3114,6 +3114,26 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
+export function getAssetsByOriginalPath({ path }: {
+    path: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/view/folder${QS.query(QS.explode({
+        path
+    }))}`, {
+        ...opts
+    }));
+}
+export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: string[];
+    }>("/view/folder/unique-paths", {
+        ...opts
+    }));
+}
 export enum ReactionLevel {
     Album = "album",
     Asset = "asset"
