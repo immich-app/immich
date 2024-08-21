@@ -13,6 +13,6 @@ export class ViewService {
   async getAssetsByOriginalPath(auth: AuthDto, path: string): Promise<AssetResponseDto[]> {
     const assets = await this.assetRepository.getAssetsByOriginalPath(auth.user.id, path);
 
-    return assets.map((a) => mapAsset(a, { auth }));
+    return assets.map((asset) => mapAsset(asset, { auth }));
   }
 }
