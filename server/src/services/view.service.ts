@@ -6,7 +6,7 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 export class ViewService {
   constructor(@Inject(IAssetRepository) private assetRepository: IAssetRepository) {}
 
-  async getUniqueOriginalPaths(auth: AuthDto): Promise<string[]> {
+  getUniqueOriginalPaths(auth: AuthDto): Promise<string[]> {
     return this.assetRepository.getUniqueOriginalPaths(auth.user.id);
   }
 
