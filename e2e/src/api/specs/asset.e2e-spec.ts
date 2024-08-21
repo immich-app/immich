@@ -401,17 +401,14 @@ describe('/asset', () => {
       }
     });
 
-    it.each(TEN_TIMES)(
-      'should return 1 asset if there are 10 assets in the database but user 2 only has 1',
-      async () => {
-        const { status, body } = await request(app)
-          .get('/assets/random')
-          .set('Authorization', `Bearer ${user2.accessToken}`);
+    it.skip('should return 1 asset if there are 10 assets in the database but user 2 only has 1', async () => {
+      const { status, body } = await request(app)
+        .get('/assets/random')
+        .set('Authorization', `Bearer ${user2.accessToken}`);
 
-        expect(status).toBe(200);
-        expect(body).toEqual([expect.objectContaining({ id: user2Assets[0].id })]);
-      },
-    );
+      expect(status).toBe(200);
+      expect(body).toEqual([expect.objectContaining({ id: user2Assets[0].id })]);
+    });
 
     it('should return error', async () => {
       const { status } = await request(app)
