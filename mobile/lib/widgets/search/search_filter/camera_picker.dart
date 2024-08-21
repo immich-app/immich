@@ -55,7 +55,7 @@ class CameraPicker extends HookConsumerWidget {
           return;
         }
         selectedMake.value = value.toString();
-        selectedModel.value = TextEditingValue.empty;
+        modelTextController.value = TextEditingValue.empty;
         onSelect({
           'make': selectedMake.value,
           'model': null,
