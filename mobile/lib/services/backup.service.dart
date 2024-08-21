@@ -353,7 +353,7 @@ class BackupService {
               entity.modifiedDateTime.toUtc().toIso8601String();
           baseRequest.fields['isFavorite'] = entity.isFavorite.toString();
           baseRequest.fields['duration'] = entity.videoDuration.toString();
-          baseRequest.fields['albums'] = json.encode(albums);
+          baseRequest.fields['albums'] = albums.join(',');
 
           baseRequest.files.add(assetRawUploadData);
 
@@ -400,6 +400,7 @@ class BackupService {
             debugPrint(
               "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
             );
+            debugPrint(error);
 
             errorCb(
               ErrorUploadAsset(
