@@ -363,12 +363,13 @@ export class AssetRepository implements IAssetRepository {
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
-    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+    const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
 
     return this.repository.findOne({
       where: {
         id: Not(otherAssetId),
         ownerId,
+        libraryId: libraryId || IsNull(),
         type,
         exifInfo: {
           livePhotoCID,
@@ -818,6 +819,50 @@ export class AssetRepository implements IAssetRepository {
       .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
     return builder.getMany();
+  }
+
+  async getUniqueOriginalPaths(userId: string): Promise<string[]> {
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: false,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
+    });
+
+    const results = await builder
+      .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
+      .getRawMany();
+
+    return results.map((row: { directoryPath: string }) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
+    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
+
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: true,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
+    });
+
+    const assets = await builder
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('asset.originalPath LIKE :likePath', { likePath: `%${normalizedPath}/%` }).andWhere(
+            'asset.originalPath NOT LIKE :notLikePath',
+            { notLikePath: `%${normalizedPath}/%/%` },
+          );
+        }),
+      )
+      .orderBy(String.raw`regexp_replace(asset.originalPath, '.*/(.+)', '\1')`, 'ASC')
+      .getMany();
+
+    return assets;
   }
 
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })

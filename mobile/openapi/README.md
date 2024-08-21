@@ -243,6 +243,8 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**searchUsersAdmin**](doc//UsersAdminApi.md#searchusersadmin) | **GET** /admin/users | 
 *UsersAdminApi* | [**updateUserAdmin**](doc//UsersAdminApi.md#updateuseradmin) | **PUT** /admin/users/{id} | 
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | 
+*ViewApi* | [**getAssetsByOriginalPath**](doc//ViewApi.md#getassetsbyoriginalpath) | **GET** /view/folder | 
+*ViewApi* | [**getUniqueOriginalPaths**](doc//ViewApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | 
 
 
 ## Documentation For Models

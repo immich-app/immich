@@ -173,6 +173,7 @@ export class MetadataService {
     const match = await this.assetRepository.findLivePhotoMatch({
       livePhotoCID: asset.exifInfo.livePhotoCID,
       ownerId: asset.ownerId,
+      libraryId: asset.libraryId,
       otherAssetId: asset.id,
       type: otherType,
     });
