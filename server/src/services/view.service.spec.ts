@@ -1,5 +1,4 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 
 import { ViewService } from 'src/services/view.service';
@@ -50,7 +49,7 @@ describe(ViewService.name, () => {
 
       const result = await sut.getAssetsByOriginalPath(authStub.admin, path);
       expect(result).toEqual(mockAssetReponseDto);
-      expect(assetMock.getAssetsByOriginalPath(authStub.admin.user.id, path)).resolves.toEqual(mockAssets);
+      await expect(assetMock.getAssetsByOriginalPath(authStub.admin.user.id, path)).resolves.toEqual(mockAssets);
     });
   });
 });
