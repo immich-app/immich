@@ -6,7 +6,7 @@ import 'package:openapi/openapi.dart';
 class ServerInfoService with LogContext {
   final Openapi _api;
 
-  ServerInfoApi get _serverInfo => _api.getServerInfoApi();
+  ServerApi get _serverInfo => _api.getServerApi();
 
   ServerInfoService(this._api);
 

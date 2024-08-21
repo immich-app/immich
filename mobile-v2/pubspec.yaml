@@ -14,18 +14,18 @@ dependencies:
     sdk: flutter
 
   # OS specific path
-  path_provider: ^2.0.0
+  path_provider: ^2.1.4
   path: ^1.9.0
   # Bloc
-  flutter_bloc: ^8.1.5
+  flutter_bloc: ^8.1.6
   # Database
-  drift: ^2.18.0
-  sqlite3: ^2.4.2
-  sqlite3_flutter_libs: ^0.5.0
+  drift: ^2.20.0
+  sqlite3: ^2.4.6
+  sqlite3_flutter_libs: ^0.5.24
   # Network
-  dio: ^5.2.0
+  dio: ^5.6.0
   # Route handling
-  auto_route: ^8.1.0
+  auto_route: ^9.2.2
   # Logging
   logging: ^1.2.0
   # Collection Utils
@@ -33,22 +33,22 @@ dependencies:
   # service_locator
   get_it: ^7.7.0
   # Photo Manager
-  photo_manager: ^3.0.0
-  photo_manager_image_provider: ^2.1.0
+  photo_manager: ^3.2.3
+  photo_manager_image_provider: ^2.1.1
   # Dynamic colors - Android
   dynamic_color: ^1.7.0
   # Material symbols
-  material_symbols_icons: ^4.2719.3
+  material_symbols_icons: ^4.2780.0
   # Localization
-  slang: ^3.30.2
-  slang_flutter: ^3.30.0
+  slang: ^3.31.1
+  slang_flutter: ^3.31.0
   # Adaptive scaffold
-  flutter_adaptive_scaffold: ^0.1.10+2
+  flutter_adaptive_scaffold: ^0.2.2
   # URL launching
   url_launcher: ^6.3.0
   # plus_extensions
-  package_info_plus: ^8.0.0
-  device_info_plus: ^10.1.0
+  package_info_plus: ^8.0.2
+  device_info_plus: ^10.1.2
   # oauth login
   flutter_web_auth_2: ^3.1.2
 
@@ -62,13 +62,13 @@ dev_dependencies:
   # Recommended lints
   flutter_lints: ^4.0.0
   # Code generator
-  build_runner: ^2.4.9
+  build_runner: ^2.4.12
   # Database helper
-  drift_dev: ^2.18.0
+  drift_dev: ^2.20.1
   # Route helper
-  auto_route_generator: ^8.0.0
+  auto_route_generator: ^9.0.0
   # Localization generator
-  slang_build_runner: ^3.30.0
+  slang_build_runner: ^3.31.0
   # Assets constant generator
   flutter_gen_runner: ^5.6.0
 

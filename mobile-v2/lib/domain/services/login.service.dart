@@ -18,7 +18,7 @@ class LoginService with LogContext {
 
     final serverAPI =
         Openapi(dio: dio, basePathOverride: baseUrl, interceptors: [])
-            .getServerInfoApi();
+            .getServerApi();
     try {
       await serverAPI.pingServer(validateStatus: (status) => status == 200);
     } catch (e) {

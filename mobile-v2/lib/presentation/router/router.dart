@@ -9,14 +9,21 @@ import 'package:immich_mobile/presentation/modules/settings/pages/advance_settin
 import 'package:immich_mobile/presentation/modules/settings/pages/general_settings.page.dart';
 import 'package:immich_mobile/presentation/modules/settings/pages/settings.page.dart';
 import 'package:immich_mobile/presentation/modules/sharing/pages/sharing.page.dart';
+import 'package:immich_mobile/presentation/router/duplicate_guard.dart';
 import 'package:immich_mobile/presentation/router/pages/splash_screen.page.dart';
 import 'package:immich_mobile/presentation/router/pages/tab_controller.page.dart';
 
 part 'router.gr.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
-class AppRouter extends _$AppRouter implements AutoRouteGuard {
+class AppRouter extends RootStackRouter {
   AppRouter();
+
+  final _duplicateGuard = const DuplicateGuard();
+
+  // Global guards
+  @override
+  late final List<AutoRouteGuard> guards = [_duplicateGuard];
 
   @override
   List<AutoRoute> get routes => [
@@ -42,11 +49,4 @@ class AppRouter extends _$AppRouter implements AutoRouteGuard {
           AutoRoute(page: AdvanceSettingsRoute.page),
         ]),
       ];
-
-  // Global guards
-  @override
-  void onNavigation(NavigationResolver resolver, StackRouter router) {
-    // Prevent duplicates
-    resolver.next(resolver.route.name != router.current.name);
-  }
 }
