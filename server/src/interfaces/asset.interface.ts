@@ -16,6 +16,7 @@ export interface AssetStatsOptions {
 
 export interface LivePhotoSearchOptions {
   ownerId: string;
+  libraryId?: string | null;
   livePhotoCID: string;
   otherAssetId: string;
   type: AssetType;
