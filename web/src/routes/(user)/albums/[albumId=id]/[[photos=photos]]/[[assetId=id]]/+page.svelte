@@ -515,22 +515,28 @@
 
       {#if viewMode === ViewMode.SELECT_ASSETS}
         <ControlAppBar on:close={handleCloseSelectAssets}>
-          <div class="flex">
-            <p class="inline-flex self-center grow pb-5 h-6 text-lg dark:text-immich-dark-fg">
+          <svelte:fragment slot="leading">
+            <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
                 {$t('add_to_album')}
               {:else}
                 {$t('selected_count', { values: { count: $timelineSelected.size } })}
               {/if}
             </p>
+          </svelte:fragment>
 
-            <Button shadow={false} size="sm" rounded="lg" color="text-primary" on:click={handleSelectFromComputer}
-              >{$t('select_from_computer')}</Button
+          <svelte:fragment slot="trailing">
+            <button
+              type="button"
+              on:click={handleSelectFromComputer}
+              class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
+              {$t('select_from_computer')}
+            </button>
             <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
               >{$t('done')}</Button
             >
-          </div>
+          </svelte:fragment>
         </ControlAppBar>
       {/if}
 
