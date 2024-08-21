@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, toStringArray, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export enum AssetMediaSize {
   PREVIEW = 'preview',
@@ -39,6 +39,10 @@ class AssetMediaBase {
   @Optional()
   @IsString()
   duration?: string;
+
+  @Optional()
+  @Transform(toStringArray)
+  albums?: string[];
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
