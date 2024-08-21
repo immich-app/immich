@@ -141,13 +141,13 @@ class BackupService {
     List<BackupAlbum> backupAlbums,
     DateTime now,
   ) async {
-    debugPrint("_fetchAssetsAndUpdateLastBackup");
     Set<BackupCandidate> candidate = {};
 
     for (final album in albums) {
       if (album == null) {
         continue;
       }
+
       final assets = await album.getAssetListRange(
         start: 0,
         end: await album.assetCountAsync,
@@ -220,7 +220,7 @@ class BackupService {
     }
 
     if (existing.isNotEmpty) {
-      candidates.removeWhere((c) => !existing.contains(c.asset.id));
+      candidates.removeWhere((c) => existing.contains(c.asset.id));
     }
 
     return candidates;
@@ -268,15 +268,10 @@ class BackupService {
             },
           )
         : assetList.toList();
-    var count = 0;
     for (final candidate in assetsToUpload) {
       final AssetEntity entity = candidate.asset;
       final List<String> albums = candidate.albums;
-      count++;
-      debugPrint(
-        "[$count] -Uploading asset ${entity.id} | ${albums} | ${entity.createDateTime}",
-      );
-      continue;
+
       File? file;
       File? livePhotoFile;
 
@@ -358,6 +353,7 @@ class BackupService {
               entity.modifiedDateTime.toUtc().toIso8601String();
           baseRequest.fields['isFavorite'] = entity.isFavorite.toString();
           baseRequest.fields['duration'] = entity.videoDuration.toString();
+          baseRequest.fields['albums'] = json.encode(albums);
 
           baseRequest.files.add(assetRawUploadData);
 
