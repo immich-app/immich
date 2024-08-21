@@ -153,7 +153,7 @@ SMTP server setup, for user creation notifications, new albums, etc. More inform
 
 ### External Domain
 
-When set, will override the domain name used when viewing and copying a shared link.
+Overrides the domain name in shared links and email notifications. The URL should not include a trailing slash.
 
 ### Welcome Message
 
