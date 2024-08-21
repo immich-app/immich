@@ -50,6 +50,7 @@ export interface AssetBuilderOptions {
   isTrashed?: boolean;
   isDuplicate?: boolean;
   albumId?: string;
+  tagId?: string;
   personId?: string;
   userIds?: string[];
   withStacked?: boolean;

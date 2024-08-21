@@ -35,8 +35,10 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { usePagination } from 'src/utils/pagination';
+import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
@@ -105,6 +107,7 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ITagRepository) private tagRepository: ITagRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
@@ -225,6 +228,14 @@ export class MetadataService {
 
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
+
+    let tagIds: string[] = [];
+    if (tags.TagsList) {
+      const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags: tags.TagsList });
+      tagIds = results.map((tag) => tag.id);
+    }
+    await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds });
+
     await this.assetRepository.upsertExif(exifData);
 
     const dateTimeOriginal = exifData.dateTimeOriginal;
@@ -235,6 +246,7 @@ export class MetadataService {
     if (dateTimeOriginal && timeZoneOffset) {
       localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60_000);
     }
+
     await this.assetRepository.update({
       id: asset.id,
       duration: asset.duration,

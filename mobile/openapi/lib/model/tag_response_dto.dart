@@ -13,44 +13,50 @@ part of openapi.api;
 class TagResponseDto {
   /// Returns a new [TagResponseDto] instance.
   TagResponseDto({
+    required this.createdAt,
     required this.id,
     required this.name,
-    required this.type,
-    required this.userId,
+    required this.updatedAt,
+    required this.value,
   });
+
+  DateTime createdAt;
 
   String id;
 
   String name;
 
-  TagTypeEnum type;
+  DateTime updatedAt;
 
-  String userId;
+  String value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagResponseDto &&
+    other.createdAt == createdAt &&
     other.id == id &&
     other.name == name &&
-    other.type == type &&
-    other.userId == userId;
+    other.updatedAt == updatedAt &&
+    other.value == value;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (createdAt.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
-    (type.hashCode) +
-    (userId.hashCode);
+    (updatedAt.hashCode) +
+    (value.hashCode);
 
   @override
-  String toString() => 'TagResponseDto[id=$id, name=$name, type=$type, userId=$userId]';
+  String toString() => 'TagResponseDto[createdAt=$createdAt, id=$id, name=$name, updatedAt=$updatedAt, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'type'] = this.type;
-      json[r'userId'] = this.userId;
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'value'] = this.value;
     return json;
   }
 
@@ -62,10 +68,11 @@ class TagResponseDto {
       final json = value.cast<String, dynamic>();
 
       return TagResponseDto(
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        type: TagTypeEnum.fromJson(json[r'type'])!,
-        userId: mapValueOfType<String>(json, r'userId')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        value: mapValueOfType<String>(json, r'value')!,
       );
     }
     return null;
@@ -113,10 +120,11 @@ class TagResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'createdAt',
     'id',
     'name',
-    'type',
-    'userId',
+    'updatedAt',
+    'value',
   };
 }
 

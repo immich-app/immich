@@ -6169,7 +6169,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
+                "$ref": "#/components/schemas/TagCreateDto"
               }
             }
           },
@@ -6181,6 +6181,49 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Tags"
+        ]
+      },
+      "put": {
+        "operationId": "upsertTags",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagUpsertDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -6218,7 +6261,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -6276,56 +6319,6 @@
         "tags": [
           "Tags"
         ]
-      },
-      "patch": {
-        "operationId": "updateTag",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Tags"
-        ]
       }
     },
     "/tags/{id}/assets": {
@@ -6346,7 +6339,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -6358,50 +6351,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Tags"
-        ]
-      },
-      "get": {
-        "operationId": "getTagAssets",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   },
                   "type": "array"
                 }
@@ -6442,7 +6392,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -6454,7 +6404,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   },
                   "type": "array"
                 }
@@ -6547,6 +6497,15 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/TimeBucketSize"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -6682,6 +6641,15 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/TimeBucketSize"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -8689,21 +8657,6 @@
         ],
         "type": "object"
       },
-      "CreateTagDto": {
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          }
-        },
-        "required": [
-          "name",
-          "type"
-        ],
-        "type": "object"
-      },
       "DownloadArchiveInfo": {
         "properties": {
           "assetIds": {
@@ -10057,6 +10010,7 @@
           "tag.read",
           "tag.update",
           "tag.delete",
+          "tag.asset",
           "admin.user.create",
           "admin.user.read",
           "admin.user.update",
@@ -11852,36 +11806,64 @@
         ],
         "type": "object"
       },
+      "TagCreateDto": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
           },
-          "userId": {
+          "value": {
             "type": "string"
           }
         },
         "required": [
+          "createdAt",
           "id",
           "name",
-          "type",
-          "userId"
+          "updatedAt",
+          "value"
         ],
         "type": "object"
       },
-      "TagTypeEnum": {
-        "enum": [
-          "OBJECT",
-          "FACE",
-          "CUSTOM"
+      "TagUpsertDto": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
         ],
-        "type": "string"
+        "type": "object"
       },
       "TimeBucketResponseDto": {
         "properties": {
@@ -12023,14 +12005,6 @@
         "required": [
           "inTimeline"
         ],
-        "type": "object"
-      },
-      "UpdateTagDto": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
         "type": "object"
       },
       "UsageByUserDto": {

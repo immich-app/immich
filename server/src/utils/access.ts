@@ -211,6 +211,13 @@ const checkOtherAccess = async (access: IAccessRepository, request: OtherAccessR
       return await access.authDevice.checkOwnerAccess(auth.user.id, ids);
     }
 
+    case Permission.TAG_ASSET:
+    case Permission.TAG_READ:
+    case Permission.TAG_UPDATE:
+    case Permission.TAG_DELETE: {
+      return await access.tag.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.TIMELINE_READ: {
       const isOwner = ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set<string>();
       const isPartner = await access.timeline.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));

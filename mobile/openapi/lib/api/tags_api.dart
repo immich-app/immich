@@ -19,13 +19,13 @@ class TagsApi {
   /// Performs an HTTP 'POST /tags' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [CreateTagDto] createTagDto (required):
-  Future<Response> createTagWithHttpInfo(CreateTagDto createTagDto,) async {
+  /// * [TagCreateDto] tagCreateDto (required):
+  Future<Response> createTagWithHttpInfo(TagCreateDto tagCreateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/tags';
 
     // ignore: prefer_final_locals
-    Object? postBody = createTagDto;
+    Object? postBody = tagCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -47,9 +47,9 @@ class TagsApi {
 
   /// Parameters:
   ///
-  /// * [CreateTagDto] createTagDto (required):
-  Future<TagResponseDto?> createTag(CreateTagDto createTagDto,) async {
-    final response = await createTagWithHttpInfo(createTagDto,);
+  /// * [TagCreateDto] tagCreateDto (required):
+  Future<TagResponseDto?> createTag(TagCreateDto tagCreateDto,) async {
+    final response = await createTagWithHttpInfo(tagCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -147,57 +147,6 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /tags/{id}/assets' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getTagAssetsWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/tags/{id}/assets'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<List<AssetResponseDto>?> getTagAssets(String id,) async {
-    final response = await getTagAssetsWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
-        .cast<AssetResponseDto>()
-        .toList(growable: false);
-
-    }
-    return null;
-  }
-
   /// Performs an HTTP 'GET /tags/{id}' operation and returns the [Response].
   /// Parameters:
   ///
@@ -251,14 +200,14 @@ class TagsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<Response> tagAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> tagAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/tags/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = assetIdsDto;
+    Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -282,9 +231,9 @@ class TagsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<List<AssetIdsResponseDto>?> tagAssets(String id, AssetIdsDto assetIdsDto,) async {
-    final response = await tagAssetsWithHttpInfo(id, assetIdsDto,);
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<List<BulkIdResponseDto>?> tagAssets(String id, BulkIdsDto bulkIdsDto,) async {
+    final response = await tagAssetsWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -293,8 +242,8 @@ class TagsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
-        .cast<AssetIdsResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
         .toList(growable: false);
 
     }
@@ -306,14 +255,14 @@ class TagsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<Response> untagAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> untagAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/tags/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = assetIdsDto;
+    Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -337,9 +286,9 @@ class TagsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<List<AssetIdsResponseDto>?> untagAssets(String id, AssetIdsDto assetIdsDto,) async {
-    final response = await untagAssetsWithHttpInfo(id, assetIdsDto,);
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<List<BulkIdResponseDto>?> untagAssets(String id, BulkIdsDto bulkIdsDto,) async {
+    final response = await untagAssetsWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -348,27 +297,24 @@ class TagsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
-        .cast<AssetIdsResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
         .toList(growable: false);
 
     }
     return null;
   }
 
-  /// Performs an HTTP 'PATCH /tags/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /tags' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
-  /// * [UpdateTagDto] updateTagDto (required):
-  Future<Response> updateTagWithHttpInfo(String id, UpdateTagDto updateTagDto,) async {
+  /// * [TagUpsertDto] tagUpsertDto (required):
+  Future<Response> upsertTagsWithHttpInfo(TagUpsertDto tagUpsertDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags/{id}'
-      .replaceAll('{id}', id);
+    final path = r'/tags';
 
     // ignore: prefer_final_locals
-    Object? postBody = updateTagDto;
+    Object? postBody = tagUpsertDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -379,7 +325,7 @@ class TagsApi {
 
     return apiClient.invokeAPI(
       path,
-      'PATCH',
+      'PUT',
       queryParams,
       postBody,
       headerParams,
@@ -390,11 +336,9 @@ class TagsApi {
 
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
-  /// * [UpdateTagDto] updateTagDto (required):
-  Future<TagResponseDto?> updateTag(String id, UpdateTagDto updateTagDto,) async {
-    final response = await updateTagWithHttpInfo(id, updateTagDto,);
+  /// * [TagUpsertDto] tagUpsertDto (required):
+  Future<List<TagResponseDto>?> upsertTags(TagUpsertDto tagUpsertDto,) async {
+    final response = await upsertTagsWithHttpInfo(tagUpsertDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -402,8 +346,11 @@ class TagsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto',) as TagResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<TagResponseDto>') as List)
+        .cast<TagResponseDto>()
+        .toList(growable: false);
+
     }
     return null;
   }

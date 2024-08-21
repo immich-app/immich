@@ -18,6 +18,7 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { MetadataService, Orientation } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -37,6 +38,7 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked } from 'vitest';
 
@@ -56,6 +58,7 @@ describe(MetadataService.name, () => {
   let databaseMock: Mocked<IDatabaseRepository>;
   let userMock: Mocked<IUserRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
+  let tagMock: Mocked<ITagRepository>;
   let sut: MetadataService;
 
   beforeEach(() => {
@@ -74,6 +77,7 @@ describe(MetadataService.name, () => {
     databaseMock = newDatabaseRepositoryMock();
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
+    tagMock = newTagRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
@@ -89,6 +93,7 @@ describe(MetadataService.name, () => {
       personMock,
       storageMock,
       systemMock,
+      tagMock,
       userMock,
       loggerMock,
     );

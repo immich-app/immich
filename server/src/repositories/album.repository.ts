@@ -263,8 +263,17 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
-  async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
-    await this.addAssets(this.dataSource.manager, albumId, assetIds);
+  async addAssetIds(tagId: string, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    await this.dataSource.manager
+      .createQueryBuilder()
+      .insert()
+      .into('tag_asset', ['tagsId', 'assetsId'])
+      .values(assetIds.map((assetId) => ({ tagsId: tagId, assetsId: assetId })))
+      .execute();
   }
 
   create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {

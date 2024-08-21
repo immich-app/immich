@@ -2,12 +2,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { normalizeTreePath, type RecursiveObject } from '$lib/utils/tree-utils';
-  import { mdiChevronDown, mdiChevronRight, mdiFolder, mdiFolderOutline } from '@mdi/js';
+  import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 
   export let tree: RecursiveObject;
   export let parent: string;
   export let value: string;
   export let active = '';
+  export let icons: { default: string; active: string };
   export let getLink: (path: string) => string;
 
   $: path = normalizeTreePath(`${parent}/${value}`);
@@ -21,12 +22,16 @@
   title={value}
   class={`flex flex-grow place-items-center pl-2 py-1 text-sm rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:font-semibold ${isTarget ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'}`}
 >
-  <button type="button" on:click|preventDefault={() => (isOpen = !isOpen)}>
+  <button
+    type="button"
+    on:click|preventDefault={() => (isOpen = !isOpen)}
+    class={Object.values(tree).length === 0 ? 'invisible' : ''}
+  >
     <Icon path={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size={20} />
   </button>
   <div>
     <Icon
-      path={isActive ? mdiFolder : mdiFolderOutline}
+      path={isActive ? icons.active : icons.default}
       class={isActive ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400'}
       size={20}
     />
@@ -35,5 +40,5 @@
 </a>
 
 {#if isOpen}
-  <TreeItems parent={path} items={tree} {active} {getLink} />
+  <TreeItems parent={path} items={tree} {icons} {active} {getLink} />
 {/if}

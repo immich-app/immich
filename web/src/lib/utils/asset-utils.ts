@@ -18,6 +18,7 @@ import {
   getBaseUrl,
   getDownloadInfo,
   getStack,
+  tagAssets as tagAllAssets,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -59,6 +60,16 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       },
     });
   }
+};
+
+export const tagAssets = async ({ assetIds, tagIds }: { assetIds: string[]; tagIds: string[] }) => {
+  for (const tagId of tagIds) {
+    await tagAllAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
+  }
+
+  notificationController.show({ message: `Tagged ${assetIds.length} assets`, type: NotificationType.Info });
+
+  return assetIds;
 };
 
 export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {

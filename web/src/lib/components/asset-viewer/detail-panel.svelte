@@ -43,6 +43,7 @@
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
+  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -155,6 +156,7 @@
 
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
+  <DetailPanelTags {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
     <section class="px-4 py-4 text-sm">
