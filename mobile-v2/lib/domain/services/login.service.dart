@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 import 'package:openapi/openapi.dart';
 
@@ -51,5 +53,59 @@ class LoginService with LogContext {
 
     // No well-known, return the baseUrl
     return baseUrl;
+  }
+
+  Future<String?> passwordLogin(String email, String password) async {
+    try {
+      final loginResponse = await di<Openapi>().getAuthenticationApi().login(
+        loginCredentialDto: LoginCredentialDto((builder) {
+          builder.email = email;
+          builder.password = password;
+        }),
+      );
+
+      return loginResponse.data?.accessToken;
+    } catch (e, s) {
+      log.severe("Exception occured while performing password login", e, s);
+    }
+    return null;
+  }
+
+  Future<String?> oAuthLogin() async {
+    const String oAuthCallbackSchema = 'app.immich';
+
+    final oAuthApi = di<Openapi>().getOAuthApi();
+
+    try {
+      final oAuthUrl = await oAuthApi.startOAuth(
+        oAuthConfigDto: OAuthConfigDto((builder) {
+          builder.redirectUri = "$oAuthCallbackSchema:/";
+        }),
+      );
+
+      final oAuthUrlRes = oAuthUrl.data?.url;
+      if (oAuthUrlRes == null) {
+        log.severe(
+          "oAuth Server URL not available. Kindly ensure oAuth login is enabled in the server",
+        );
+        return null;
+      }
+
+      final oAuthCallbackUrl = await FlutterWebAuth2.authenticate(
+        url: oAuthUrlRes,
+        callbackUrlScheme: oAuthCallbackSchema,
+      );
+
+      final loginResponse = await oAuthApi.finishOAuth(
+        oAuthCallbackDto: OAuthCallbackDto((builder) {
+          builder.url = oAuthCallbackUrl;
+        }),
+      );
+
+      return loginResponse.data?.accessToken;
+    } catch (e) {
+      log.severe("Exception occured while performing oauth login", e);
+    }
+    return null;
   }
 }

@@ -24,7 +24,6 @@ extension LevelExtension on Level {
 
 @immutable
 class LogMessage {
-  final int id;
   final String content;
   final LogLevel level;
   final DateTime createdAt;
@@ -33,7 +32,6 @@ class LogMessage {
   final String? stack;
 
   const LogMessage({
-    required this.id,
     required this.content,
     required this.level,
     required this.createdAt,
@@ -51,8 +49,7 @@ class LogMessage {
 
   @override
   int get hashCode {
-    return id.hashCode ^
-        content.hashCode ^
+    return content.hashCode ^
         level.hashCode ^
         createdAt.hashCode ^
         logger.hashCode ^

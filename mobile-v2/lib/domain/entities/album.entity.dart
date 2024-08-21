@@ -4,7 +4,7 @@ class LocalAlbum extends Table {
   const LocalAlbum();
 
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get localId => text()();
+  TextColumn get localId => text().unique()();
   TextColumn get name => text()();
   DateTimeColumn get modifiedTime =>
       dateTime().withDefault(currentDateAndTime)();

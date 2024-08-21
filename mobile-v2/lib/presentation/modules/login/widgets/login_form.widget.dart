@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:immich_mobile/domain/models/server-info/server_feature_config.model.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/components/common/gap.widget.dart';
-import 'package:immich_mobile/presentation/components/common/loading_indaticator.widget.dart';
+import 'package:immich_mobile/presentation/components/common/loading_indicator.widget.dart';
 import 'package:immich_mobile/presentation/components/input/filled_button.widget.dart';
 import 'package:immich_mobile/presentation/components/input/password_form_field.widget.dart';
 import 'package:immich_mobile/presentation/components/input/text_button.widget.dart';
@@ -132,6 +132,7 @@ class _CredentialsPageState extends State<_CredentialsPage> {
                 children: [
                   if (state.features.hasPasswordLogin) ...[
                     ImTextFormField(
+                      controller: widget.emailController,
                       label: context.t.login.label.email,
                       isDisabled: isValidationInProgress,
                       textInputAction: TextInputAction.next,
@@ -139,6 +140,7 @@ class _CredentialsPageState extends State<_CredentialsPage> {
                     ),
                     const SizedGap.mh(),
                     ImPasswordFormField(
+                      controller: widget.passwordController,
                       label: context.t.login.label.password,
                       focusNode: passwordFocusNode,
                       isDisabled: isValidationInProgress,
@@ -148,11 +150,12 @@ class _CredentialsPageState extends State<_CredentialsPage> {
                     ImFilledButton(
                       label: context.t.login.label.login_button,
                       icon: Symbols.login_rounded,
-                      onPressed: () =>
-                          context.read<LoginPageCubit>().passwordLogin(
-                                email: widget.emailController.text,
-                                password: widget.passwordController.text,
-                              ),
+                      onPressed: () => unawaited(
+                        context.read<LoginPageCubit>().passwordLogin(
+                              email: widget.emailController.text,
+                              password: widget.passwordController.text,
+                            ),
+                      ),
                     ),
                     // Divider when both password and oAuth login is enabled
                     if (state.features.hasOAuthLogin) const Divider(),

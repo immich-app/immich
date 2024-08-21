@@ -2,10 +2,14 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+// ignore: depend_on_referenced_packages
+import 'package:drift_dev/api/migrations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/entities/album.entity.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.dart';
 import 'package:immich_mobile/domain/entities/log.entity.dart';
 import 'package:immich_mobile/domain/entities/store.entity.dart';
+import 'package:immich_mobile/domain/entities/user.entity.dart';
 import 'package:immich_mobile/domain/interfaces/database.interface.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -14,7 +18,7 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 import 'database.repository.drift.dart';
 
-@DriftDatabase(tables: [Logs, Store, LocalAlbum, LocalAsset])
+@DriftDatabase(tables: [Logs, Store, LocalAlbum, LocalAsset, User])
 class DriftDatabaseRepository extends $DriftDatabaseRepository
     implements IDatabaseRepository<GeneratedDatabase> {
   DriftDatabaseRepository() : super(_openConnection());
@@ -51,6 +55,18 @@ class DriftDatabaseRepository extends $DriftDatabaseRepository
   @override
   // ignore: no-empty-block
   void migrateDB() {
-    // No migrations yet
+    // Migrations are handled automatically using the migrator field
   }
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        beforeOpen: (details) async {
+          if (kDebugMode) {
+            await validateDatabaseSchema();
+          }
+        },
+        // ignore: no-empty-block
+        onUpgrade: (m, from, to) async {},
+      );
 }

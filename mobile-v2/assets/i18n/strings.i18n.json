@@ -16,7 +16,9 @@
       "error": {
         "empty_server_url": "Kindly provide a server URL",
         "invalid_server_url": "Invalid URL",
-        "server_not_reachable": "Server is not reachable"
+        "server_not_reachable": "Server is not reachable",
+        "error_login": "Error logging in",
+        "error_login_oauth": "Error logging using OAuth, check server URL"
       },
       "label": {
         "email": "Email",

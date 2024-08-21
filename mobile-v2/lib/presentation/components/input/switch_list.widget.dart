@@ -48,8 +48,13 @@ class _ImSwitchListTileState<T> extends State<ImSwitchListTile<T>> {
   @override
   void initState() {
     super.initState();
-    final value = _appSettingService.getSetting(widget.setting);
-    isEnabled = T != bool ? widget.fromAppSetting!(value) : value as bool;
+    _appSettingService.getSetting(widget.setting).then((value) {
+      if (context.mounted) {
+        setState(() {
+          isEnabled = T != bool ? widget.fromAppSetting!(value) : value as bool;
+        });
+      }
+    });
   }
 
   @override

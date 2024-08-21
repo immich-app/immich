@@ -4,7 +4,8 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
-    avoid_single_cascade_in_expression_statements: false
+    - avoid_single_cascade_in_expression_statements: false
+    - unawaited_futures
 
 analyzer:
   exclude:

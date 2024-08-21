@@ -9,19 +9,19 @@ abstract class IStoreConverter<T, U> {
   U toPrimitive(T value);
 
   /// Converts the value back to T? from the primitive type U from the Store
-  T? fromPrimitive(U value);
+  FutureOr<T?> fromPrimitive(U value);
 }
 
 abstract class IStoreRepository {
-  FutureOr<T?> getValue<T, U>(StoreKey<T, U> key);
+  FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key);
 
-  FutureOr<bool> setValue<T, U>(StoreKey<T, U> key, T value);
+  FutureOr<T> get<T, U>(StoreKey<T, U> key);
 
-  FutureOr<void> deleteValue(StoreKey key);
+  FutureOr<bool> set<T, U>(StoreKey<T, U> key, T value);
 
-  Stream<T?> watchValue<T, U>(StoreKey<T, U> key);
+  FutureOr<void> delete(StoreKey key);
 
-  Stream<List<StoreValue>> watchStore();
+  Stream<T?> watch<T, U>(StoreKey<T, U> key);
 
   FutureOr<void> clearStore();
 }

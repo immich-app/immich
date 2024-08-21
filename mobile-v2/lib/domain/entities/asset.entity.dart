@@ -5,9 +5,9 @@ class LocalAsset extends Table {
   const LocalAsset();
 
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get localId => text()();
+  TextColumn get localId => text().unique()();
   TextColumn get name => text()();
-  TextColumn get checksum => text()();
+  TextColumn get checksum => text().unique()();
   IntColumn get height => integer()();
   IntColumn get width => integer()();
   IntColumn get type => intEnum<AssetType>()();

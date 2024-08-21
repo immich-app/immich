@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/entities/store.entity.drift.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
@@ -14,7 +13,7 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
   const StoreDriftRepository(this.db);
 
   @override
-  FutureOr<T?> getValue<T, U>(StoreKey<T, U> key) async {
+  FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key) async {
     final storeData = await db.managers.store
         .filter((s) => s.id.equals(key.id))
         .getSingleOrNull();
@@ -22,7 +21,16 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
   }
 
   @override
-  FutureOr<bool> setValue<T, U>(StoreKey<T, U> key, T value) async {
+  FutureOr<T> get<T, U>(StoreKey<T, U> key) async {
+    final value = await tryGet(key);
+    if (value == null) {
+      throw StoreKeyNotFoundException(key);
+    }
+    return value;
+  }
+
+  @override
+  FutureOr<bool> set<T, U>(StoreKey<T, U> key, T value) async {
     try {
       await db.transaction(() async {
         final storeValue = key.converter.toPrimitive(value);
@@ -42,30 +50,18 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
   }
 
   @override
-  FutureOr<void> deleteValue(StoreKey key) async {
+  FutureOr<void> delete(StoreKey key) async {
     return await db.transaction(() async {
       await db.managers.store.filter((s) => s.id.equals(key.id)).delete();
     });
   }
 
   @override
-  Stream<List<StoreValue>> watchStore() {
-    return (db.select(db.store).map((s) {
-      final key = StoreKey.values.firstWhereOrNull((e) => e.id == s.id);
-      if (key != null) {
-        final value = _getValueFromStoreData(key, s);
-        return StoreValue(id: s.id, value: value);
-      }
-      return StoreValue(id: s.id, value: null);
-    })).watch();
-  }
-
-  @override
-  Stream<T?> watchValue<T, U>(StoreKey<T, U> key) {
+  Stream<T?> watch<T, U>(StoreKey<T, U> key) {
     return db.managers.store
         .filter((s) => s.id.equals(key.id))
         .watchSingleOrNull()
-        .map((e) => _getValueFromStoreData(key, e));
+        .asyncMap((e) async => await _getValueFromStoreData(key, e));
   }
 
   @override
@@ -75,7 +71,10 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
     });
   }
 
-  T? _getValueFromStoreData<T, U>(StoreKey<T, U> key, StoreData? data) {
+  FutureOr<T?> _getValueFromStoreData<T, U>(
+    StoreKey<T, U> key,
+    StoreData? data,
+  ) async {
     final primitive = switch (key.type) {
       const (int) => data?.intValue,
       const (String) => data?.stringValue,

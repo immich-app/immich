@@ -48,6 +48,9 @@ dependencies:
   url_launcher: ^6.3.0
   # plus_extensions
   package_info_plus: ^8.0.0
+  device_info_plus: ^10.1.0
+  # oauth login
+  flutter_web_auth_2: ^3.1.2
 
   openapi:
     path: openapi
@@ -57,7 +60,7 @@ dev_dependencies:
     sdk: flutter
 
   # Recommended lints
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
   # Code generator
   build_runner: ^2.4.9
   # Database helper
@@ -67,7 +70,7 @@ dev_dependencies:
   # Localization generator
   slang_build_runner: ^3.30.0
   # Assets constant generator
-  flutter_gen_runner: 5.5.0+1
+  flutter_gen_runner: ^5.6.0
 
 flutter:
   uses-material-design: true

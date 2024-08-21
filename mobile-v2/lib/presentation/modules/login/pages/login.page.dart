@@ -152,13 +152,20 @@ class _LoginPageState extends State<LoginPage>
       );
     }
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: appBar,
-      body: SafeArea(
-        child: ImAdaptiveScaffoldBody(
-          primaryBody: (_) => primaryBody,
-          secondaryBody: (_) => secondaryBody,
+    return BlocListener<LoginPageCubit, LoginPageState>(
+      listener: (_, loginState) {
+        if (loginState.isLoginSuccessful) {
+          context.replaceRoute(const TabControllerRoute());
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: appBar,
+        body: SafeArea(
+          child: ImAdaptiveScaffoldBody(
+            primaryBody: (_) => primaryBody,
+            secondaryBody: (_) => secondaryBody,
+          ),
         ),
       ),
     );

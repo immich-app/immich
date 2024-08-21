@@ -15,7 +15,7 @@ class ImLoadingIndicator extends StatelessWidget {
       width: dimension ?? 24,
       height: dimension ?? 24,
       child: FittedBox(
-        child: CircularProgressIndicator(strokeWidth: strokeWidth ?? 2),
+        child: CircularProgressIndicator(strokeWidth: strokeWidth ?? 4),
       ),
     );
   }

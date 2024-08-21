@@ -6,7 +6,10 @@ class Store extends Table {
   @override
   String get tableName => 'store';
 
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer()();
   IntColumn get intValue => integer().nullable()();
   TextColumn get stringValue => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
