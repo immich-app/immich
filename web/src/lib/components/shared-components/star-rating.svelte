@@ -64,7 +64,7 @@
   ]}
 >
   <legend class="sr-only">{$t('rating')}</legend>
-  <div class="flex flex-row">
+  <div class="flex flex-row" data-testid="star-container">
     {#each { length: count } as _, index}
       {@const value = index + 1}
       {@const filled = hoverRating >= value || (hoverRating === 0 && ratingSelection >= value)}
@@ -76,7 +76,8 @@
         class:cursor-pointer={!readOnly}
         class:ring-2={focusRating === value}
         on:mouseover={() => setHoverRating(value)}
-        tabindex={readOnly ? undefined : -1}
+        tabindex={-1}
+        data-testid="star"
       >
         <span class="sr-only">{$t('rating_count', { values: { count: value } })}</span>
         <Icon
