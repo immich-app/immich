@@ -1,7 +1,6 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { AccessCore } from 'src/cores/access.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
@@ -39,15 +38,15 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { requireAccess } from 'src/utils/access';
+import { getAssetFiles, getMyPartnerIds } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 export class AssetService {
-  private access: AccessCore;
   private configCore: SystemConfigCore;
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
@@ -58,7 +57,6 @@ export class AssetService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(AssetService.name);
-    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
@@ -71,9 +69,10 @@ export class AssetService {
     const userIds = [auth.user.id, ...partnerIds];
 
     const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
+    const assetsWithThumbnails = assets.filter(({ files }) => !!getAssetFiles(files).thumbnailFile);
     const groups: Record<number, AssetEntity[]> = {};
     const currentYear = new Date().getFullYear();
-    for (const asset of assets) {
+    for (const asset of assetsWithThumbnails) {
       const yearsAgo = currentYear - asset.localDateTime.getFullYear();
       if (!groups[yearsAgo]) {
         groups[yearsAgo] = [];
@@ -108,7 +107,7 @@ export class AssetService {
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await this.access.requirePermission(auth, Permission.ASSET_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [id] });
 
     const asset = await this.assetRepository.getById(
       id,
@@ -126,6 +125,7 @@ export class AssetService {
             exifInfo: true,
           },
         },
+        files: true,
       },
       {
         faces: {
@@ -156,7 +156,7 @@ export class AssetService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
@@ -170,6 +170,7 @@ export class AssetService {
       faces: {
         person: true,
       },
+      files: true,
     });
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -179,7 +180,7 @@ export class AssetService {
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
     const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
-    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids });
 
     for (const id of ids) {
       await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
@@ -223,6 +224,7 @@ export class AssetService {
       library: true,
       stack: { assets: true },
       exifInfo: true,
+      files: true,
     });
 
     if (!asset) {
@@ -260,7 +262,8 @@ export class AssetService {
       }
     }
 
-    const files = [asset.thumbnailPath, asset.previewPath, asset.encodedVideoPath];
+    const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
+    const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
@@ -273,7 +276,7 @@ export class AssetService {
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 
-    await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_DELETE, ids });
 
     if (force) {
       await this.jobRepository.queueAll(
@@ -289,7 +292,7 @@ export class AssetService {
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
-    await this.access.requirePermission(auth, Permission.ASSET_UPDATE, dto.assetIds);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds });
 
     const jobs: JobItem[] = [];
 

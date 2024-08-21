@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
-import { AssetOrder, AssetType } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
 import {
   AssetBuilderOptions,
   AssetCreate,
@@ -59,6 +60,7 @@ const dateTrunc = (options: TimeBucketOptions) =>
 export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
+    @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
@@ -84,7 +86,6 @@ export class AssetRepository implements IAssetRepository {
         `entity.ownerId IN (:...ownerIds)
       AND entity.isVisible = true
       AND entity.isArchived = false
-      AND entity.previewPath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
       AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
@@ -94,6 +95,7 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('entity.files', 'files')
       .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
@@ -128,6 +130,7 @@ export class AssetRepository implements IAssetRepository {
         stack: {
           assets: true,
         },
+        files: true,
       },
       withDeleted: true,
     });
@@ -214,7 +217,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    let builder = this.repository.createQueryBuilder('asset');
+    let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
     return paginatedBuilder<AssetEntity>(builder, {
@@ -360,12 +363,13 @@ export class AssetRepository implements IAssetRepository {
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
-    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+    const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
 
     return this.repository.findOne({
       where: {
         id: Not(otherAssetId),
         ownerId,
+        libraryId: libraryId || IsNull(),
         type,
         exifInfo: {
           livePhotoCID,
@@ -706,7 +710,11 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: AssetBuilderOptions) {
-    const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
+    const builder = this.repository
+      .createQueryBuilder('asset')
+      .where('asset.isVisible = true')
+      .leftJoinAndSelect('asset.files', 'files');
+
     if (options.assetType !== undefined) {
       builder.andWhere('asset.type = :assetType', { assetType: options.assetType });
     }
@@ -811,5 +819,10 @@ export class AssetRepository implements IAssetRepository {
       .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
     return builder.getMany();
+  }
+
+  @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
+  async upsertFile({ assetId, type, path }: { assetId: string; type: AssetFileType; path: string }): Promise<void> {
+    await this.fileRepository.upsert({ assetId, type, path }, { conflictPaths: ['assetId', 'type'] });
   }
 }
