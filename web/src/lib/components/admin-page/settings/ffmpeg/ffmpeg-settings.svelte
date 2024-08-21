@@ -7,13 +7,13 @@
     TranscodeHWAccel,
     TranscodePolicy,
     VideoCodec,
+    VideoContainer,
     type SystemConfigDto,
   } from '@immich/sdk';
   import { mdiHelpCircleOutline } from '@mdi/js';
   import { isEqual, sortBy } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingInputField, {
     SettingInputFieldType,
@@ -23,13 +23,14 @@
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div>
@@ -38,17 +39,21 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          To learn more about the terminology used here, refer to FFmpeg documentation for
-          <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer"
-            >H.264 codec</a
-          >,
-          <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer"
-            >{$t('admin.transcoding_hevc_codec')}</a
-          >
-          and
-          <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer"
-            >VP9 codec</a
-          >.
+          <FormatMessage key="admin.transcoding_codecs_learn_more" let:tag let:message>
+            {#if tag === 'h264-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {:else if tag === 'hevc-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {:else if tag === 'vp9-link'}
+              <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
+                {message}
+              </a>
+            {/if}
+          </FormatMessage>
         </p>
 
         <SettingInputField
@@ -82,6 +87,22 @@
         />
 
         <SettingSelect
+          label={$t('admin.transcoding_video_codec')}
+          {disabled}
+          desc={$t('admin.transcoding_video_codec_description')}
+          bind:value={config.ffmpeg.targetVideoCodec}
+          options={[
+            { value: VideoCodec.H264, text: 'h264' },
+            { value: VideoCodec.Hevc, text: 'hevc' },
+            { value: VideoCodec.Vp9, text: 'vp9' },
+            { value: VideoCodec.Av1, text: 'av1' },
+          ]}
+          name="vcodec"
+          isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
+          on:select={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
+        />
+
+        <SettingSelect
           label={$t('admin.transcoding_audio_codec')}
           {disabled}
           desc={$t('admin.transcoding_audio_codec_description')}
@@ -100,36 +121,6 @@
         />
 
         <SettingCheckboxes
-          label={$t('admin.transcoding_accepted_audio_codecs')}
-          {disabled}
-          desc={$t('admin.transcoding_accepted_audio_codecs_description')}
-          bind:value={config.ffmpeg.acceptedAudioCodecs}
-          name="audioCodecs"
-          options={[
-            { value: AudioCodec.Aac, text: 'AAC' },
-            { value: AudioCodec.Mp3, text: 'MP3' },
-            { value: AudioCodec.Libopus, text: 'Opus' },
-          ]}
-          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
-        />
-
-        <SettingSelect
-          label={$t('admin.transcoding_video_codec')}
-          {disabled}
-          desc={$t('admin.transcoding_video_codec_description')}
-          bind:value={config.ffmpeg.targetVideoCodec}
-          options={[
-            { value: VideoCodec.H264, text: 'h264' },
-            { value: VideoCodec.Hevc, text: 'hevc' },
-            { value: VideoCodec.Vp9, text: 'vp9' },
-            { value: VideoCodec.Av1, text: 'av1' },
-          ]}
-          name="vcodec"
-          isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
-          on:select={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
-        />
-
-        <SettingCheckboxes
           label={$t('admin.transcoding_accepted_video_codecs')}
           {disabled}
           desc={$t('admin.transcoding_accepted_video_codecs_description')}
@@ -144,6 +135,34 @@
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedVideoCodecs), sortBy(savedConfig.ffmpeg.acceptedVideoCodecs))}
         />
 
+        <SettingCheckboxes
+          label={$t('admin.transcoding_accepted_audio_codecs')}
+          {disabled}
+          desc={$t('admin.transcoding_accepted_audio_codecs_description')}
+          bind:value={config.ffmpeg.acceptedAudioCodecs}
+          name="audioCodecs"
+          options={[
+            { value: AudioCodec.Aac, text: 'AAC' },
+            { value: AudioCodec.Mp3, text: 'MP3' },
+            { value: AudioCodec.Libopus, text: 'Opus' },
+          ]}
+          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
+        />
+
+        <SettingCheckboxes
+          label={$t('admin.transcoding_accepted_containers')}
+          {disabled}
+          desc={$t('admin.transcoding_accepted_containers_description')}
+          bind:value={config.ffmpeg.acceptedContainers}
+          name="videoContainers"
+          options={[
+            { value: VideoContainer.Mov, text: 'MOV' },
+            { value: VideoContainer.Ogg, text: 'Ogg' },
+            { value: VideoContainer.Webm, text: 'WebM' },
+          ]}
+          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedContainers), sortBy(savedConfig.ffmpeg.acceptedContainers))}
+        />
+
         <SettingSelect
           label={$t('admin.transcoding_target_resolution')}
           {disabled}
@@ -155,7 +174,7 @@
             { value: '1080', text: '1080p' },
             { value: '720', text: '720p' },
             { value: '480', text: '480p' },
-            { value: 'original', text: 'original' },
+            { value: 'original', text: $t('original') },
           ]}
           name="resolution"
           isEdited={config.ffmpeg.targetResolution !== savedConfig.ffmpeg.targetResolution}
@@ -186,7 +205,7 @@
           bind:value={config.ffmpeg.transcode}
           name="transcode"
           options={[
-            { value: TranscodePolicy.All, text: 'All videos' },
+            { value: TranscodePolicy.All, text: $t('all_videos') },
             {
               value: TranscodePolicy.Optimal,
               text: $t('admin.transcoding_optimal_description'),
@@ -228,7 +247,7 @@
             },
             {
               value: ToneMapping.Disabled,
-              text: 'Disabled',
+              text: $t('disabled'),
             },
           ]}
           isEdited={config.ffmpeg.tonemap !== savedConfig.ffmpeg.tonemap}
@@ -363,8 +382,8 @@
 
       <div class="ml-4">
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['ffmpeg'] })}
-          on:save={() => dispatch('save', { ffmpeg: config.ffmpeg })}
+          onReset={(options) => onReset({ ...options, configKeys: ['ffmpeg'] })}
+          onSave={() => onSave({ ffmpeg: config.ffmpeg })}
           showResetToDefault={!isEqual(savedConfig.ffmpeg, defaultConfig.ffmpeg)}
           {disabled}
         />

@@ -1,12 +1,13 @@
 <script lang="ts">
+  import { shortcuts } from '$lib/actions/shortcut';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ProgressBar, { ProgressBarStatus } from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
-  import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { fly } from 'svelte/transition';
 
   export let isFullScreen: boolean;
   export let onNext = () => {};
@@ -85,7 +86,14 @@
   };
 </script>
 
-<svelte:window on:mousemove={showControlBar} />
+<svelte:window
+  on:mousemove={showControlBar}
+  use:shortcuts={[
+    { shortcut: { key: 'Escape' }, onShortcut: onClose },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: onPrevious },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: onNext },
+  ]}
+/>
 
 {#if showControls}
   <div
@@ -109,7 +117,7 @@
       buttonSize="50"
       icon={mdiCog}
       on:click={() => (showSettings = !showSettings)}
-      title={$t('next')}
+      title={$t('slideshow_settings')}
     />
     {#if !isFullScreen}
       <CircleIconButton

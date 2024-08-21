@@ -1,16 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AssetOrder } from 'src/entities/album.entity';
-import { AssetType } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
+import { AssetOrder, AssetType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
-  @ValidateUUID({ optional: true })
-  libraryId?: string;
+  @ValidateUUID({ optional: true, nullable: true })
+  libraryId?: string | null;
 
   @IsString()
   @IsNotEmpty()
@@ -75,34 +75,29 @@ class BaseSearchDto {
   takenAfter?: Date;
 
   @IsString()
-  @IsNotEmpty()
-  @Optional()
-  city?: string;
+  @Optional({ nullable: true, emptyToNull: true })
+  city?: string | null;
+
+  @IsString()
+  @Optional({ nullable: true, emptyToNull: true })
+  state?: string | null;
 
   @IsString()
   @IsNotEmpty()
-  @Optional()
-  state?: string;
+  @Optional({ nullable: true, emptyToNull: true })
+  country?: string | null;
 
   @IsString()
-  @IsNotEmpty()
-  @Optional()
-  country?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @Optional({ nullable: true, emptyToNull: true })
   make?: string;
 
   @IsString()
-  @IsNotEmpty()
-  @Optional()
-  model?: string;
+  @Optional({ nullable: true, emptyToNull: true })
+  model?: string | null;
 
   @IsString()
-  @IsNotEmpty()
-  @Optional()
-  lensModel?: string;
+  @Optional({ nullable: true, emptyToNull: true })
+  lensModel?: string | null;
 
   @IsInt()
   @Min(1)
@@ -242,6 +237,10 @@ export class SearchSuggestionRequestDto {
   @IsString()
   @Optional()
   model?: string;
+
+  @ValidateBoolean({ optional: true })
+  @PropertyLifecycle({ addedAt: 'v111.0.0' })
+  includeNull?: boolean;
 }
 
 class SearchFacetCountResponseDto {
@@ -289,26 +288,6 @@ export class SearchExploreResponseDto {
   items!: SearchExploreItem[];
 }
 
-export class MapMarkerDto {
-  @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
-
-  @ValidateDate({ optional: true })
-  fileCreatedAfter?: Date;
-
-  @ValidateDate({ optional: true })
-  fileCreatedBefore?: Date;
-
-  @ValidateBoolean({ optional: true })
-  withPartners?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withSharedAlbums?: boolean;
-}
-
 export class MemoryLaneDto {
   @IsInt()
   @Type(() => Number)
@@ -323,23 +302,4 @@ export class MemoryLaneDto {
   @Min(1)
   @ApiProperty({ type: 'integer' })
   month!: number;
-}
-export class MapMarkerResponseDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty({ format: 'double' })
-  lat!: number;
-
-  @ApiProperty({ format: 'double' })
-  lon!: number;
-
-  @ApiProperty()
-  city!: string | null;
-
-  @ApiProperty()
-  state!: string | null;
-
-  @ApiProperty()
-  country!: string | null;
 }

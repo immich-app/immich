@@ -4,10 +4,11 @@ import { getName } from 'i18n-iso-countries';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile, geodataAdmin1Path, geodataAdmin2Path, geodataCities500Path, geodataDatePath } from 'src/constants';
+import { citiesFile, resourcePaths } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { NaturalEarthCountriesEntity } from 'src/entities/natural-earth-countries.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   GeoPoint,
@@ -28,6 +29,8 @@ export class MapRepository implements IMapRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
+    @InjectRepository(NaturalEarthCountriesEntity)
+    private naturalEarthCountriesRepository: Repository<NaturalEarthCountriesEntity>,
     @InjectDataSource() private dataSource: DataSource,
     @Inject(ISystemMetadataRepository) private metadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -37,7 +40,7 @@ export class MapRepository implements IMapRepository {
 
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
-    const geodataDate = await readFile(geodataDatePath, 'utf8');
+    const geodataDate = await readFile(resourcePaths.geodata.dateFile, 'utf8');
 
     // TODO move to service init
     const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
@@ -46,6 +49,7 @@ export class MapRepository implements IMapRepository {
     }
 
     await this.importGeodata();
+    await this.importNaturalEarthCountries();
 
     await this.metadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
       lastUpdate: geodataDate,
@@ -130,28 +134,99 @@ export class MapRepository implements IMapRepository {
       .limit(1)
       .getOne();
 
-    if (!response) {
+    if (response) {
+      this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
+
+      const { countryCode, name: city, admin1Name } = response;
+      const country = getName(countryCode, 'en') ?? null;
+      const state = admin1Name;
+
+      return { country, state, city };
+    }
+
+    this.logger.warn(
+      `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+    );
+
+    const ne_response = await this.naturalEarthCountriesRepository
+      .createQueryBuilder('naturalearth_countries')
+      .where('coordinates @> point (:longitude, :latitude)', point)
+      .limit(1)
+      .getOne();
+
+    if (!ne_response) {
       this.logger.warn(
-        `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+        `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
       );
+
       return null;
     }
 
-    this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
+    this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
 
-    const { countryCode, name: city, admin1Name } = response;
-    const country = getName(countryCode, 'en') ?? null;
-    const state = admin1Name;
+    const { admin_a3 } = ne_response;
+    const country = getName(admin_a3, 'en') ?? null;
+    const state = null;
+    const city = null;
 
     return { country, state, city };
+  }
+
+  private transformCoordinatesToPolygon(coordinates: number[][][]): string {
+    const pointsString = coordinates.map((point) => `(${point[0]},${point[1]})`).join(', ');
+    return `(${pointsString})`;
+  }
+
+  private async importNaturalEarthCountries() {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
+    try {
+      await queryRunner.startTransaction();
+      await queryRunner.manager.clear(NaturalEarthCountriesEntity);
+
+      const fileContent = await readFile(resourcePaths.geodata.naturalEarthCountriesPath, 'utf8');
+      const geoJSONData = JSON.parse(fileContent);
+
+      if (geoJSONData.type !== 'FeatureCollection' || !Array.isArray(geoJSONData.features)) {
+        this.logger.fatal('Invalid GeoJSON FeatureCollection');
+        return;
+      }
+
+      for await (const feature of geoJSONData.features) {
+        for (const polygon of feature.geometry.coordinates) {
+          const featureRecord = new NaturalEarthCountriesEntity();
+          featureRecord.admin = feature.properties.ADMIN;
+          featureRecord.admin_a3 = feature.properties.ADM0_A3;
+          featureRecord.type = feature.properties.TYPE;
+
+          if (feature.geometry.type === 'MultiPolygon') {
+            featureRecord.coordinates = this.transformCoordinatesToPolygon(polygon[0]);
+            await queryRunner.manager.save(featureRecord);
+          } else if (feature.geometry.type === 'Polygon') {
+            featureRecord.coordinates = this.transformCoordinatesToPolygon(polygon);
+            await queryRunner.manager.save(featureRecord);
+            break;
+          }
+        }
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      this.logger.fatal('Error importing natural earth country data', error);
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   private async importGeodata() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
-    const admin1 = await this.loadAdmin(geodataAdmin1Path);
-    const admin2 = await this.loadAdmin(geodataAdmin2Path);
+    const admin1 = await this.loadAdmin(resourcePaths.geodata.admin1);
+    const admin2 = await this.loadAdmin(resourcePaths.geodata.admin2);
 
     try {
       await queryRunner.startTransaction();
@@ -221,8 +296,17 @@ export class MapRepository implements IMapRepository {
           admin1Name: admin1Map.get(`${lineSplit[8]}.${lineSplit[10]}`),
           admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
         }),
-      geodataCities500Path,
-      { entityFilter: (lineSplit) => lineSplit[7] != 'PPLX' },
+      resourcePaths.geodata.cities500,
+      {
+        entityFilter: (lineSplit) => {
+          if (lineSplit[7] === 'PPLX') {
+            // Exclude populated subsections of cities that are not in Australia.
+            // Australia has a lot of PPLX areas, so we include them.
+            return lineSplit[8] === 'AU';
+          }
+          return true;
+        },
+      },
     );
   }
 

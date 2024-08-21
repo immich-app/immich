@@ -8,17 +8,17 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 
   let isConfirmOpen = false;
 
@@ -38,7 +38,7 @@
     }
 
     isConfirmOpen = false;
-    dispatch('save', { passwordLogin: config.passwordLogin, oauth: config.oauth });
+    onSave({ passwordLogin: config.passwordLogin, oauth: config.oauth });
   };
 </script>
 
@@ -50,17 +50,18 @@
   >
     <svelte:fragment slot="prompt">
       <div class="flex flex-col gap-4">
-        <p>Are you sure you want to disable all login methods? Login will be completely disabled.</p>
+        <p>{$t('admin.authentication_settings_disable_all')}</p>
         <p>
-          To re-enable, use a
-          <a
-            href="https://immich.app/docs/administration/server-commands"
-            rel="noreferrer"
-            target="_blank"
-            class="underline"
-          >
-            Server Command</a
-          >.
+          <FormatMessage key="admin.authentication_settings_reenable" let:message>
+            <a
+              href="https://immich.app/docs/administration/server-commands"
+              rel="noreferrer"
+              target="_blank"
+              class="underline"
+            >
+              {message}
+            </a>
+          </FormatMessage>
         </p>
       </div>
     </svelte:fragment>
@@ -78,12 +79,16 @@
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
-              For more details about this feature, refer to the <a
-                href="https://immich.app/docs/administration/oauth"
-                class="underline"
-                target="_blank"
-                rel="noreferrer">docs</a
-              >.
+              <FormatMessage key="admin.oauth_settings_more_details" let:message>
+                <a
+                  href="https://immich.app/docs/administration/oauth"
+                  class="underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {message}
+                </a>
+              </FormatMessage>
             </p>
 
             <SettingSwitch
@@ -137,6 +142,16 @@
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
                 isEdited={!(config.oauth.signingAlgorithm == savedConfig.oauth.signingAlgorithm)}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label={$t('admin.oauth_profile_signing_algorithm').toUpperCase()}
+                desc={$t('admin.oauth_profile_signing_algorithm_description')}
+                bind:value={config.oauth.profileSigningAlgorithm}
+                required={true}
+                disabled={disabled || !config.oauth.enabled}
+                isEdited={!(config.oauth.profileSigningAlgorithm == savedConfig.oauth.profileSigningAlgorithm)}
               />
 
               <SettingInputField
@@ -234,8 +249,8 @@
           showResetToDefault={!isEqual(savedConfig.passwordLogin, defaultConfig.passwordLogin) ||
             !isEqual(savedConfig.oauth, defaultConfig.oauth)}
           {disabled}
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['passwordLogin', 'oauth'] })}
-          on:save={() => handleSave(false)}
+          onReset={(options) => onReset({ ...options, configKeys: ['passwordLogin', 'oauth'] })}
+          onSave={() => handleSave(false)}
         />
       </div>
     </form>

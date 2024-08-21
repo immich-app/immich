@@ -147,10 +147,15 @@ export interface ISidecarWriteJob extends IEntityJob {
   dateTimeOriginal?: string;
   latitude?: number;
   longitude?: number;
+  rating?: number;
 }
 
 export interface IDeferrableJob extends IEntityJob {
   deferred?: boolean;
+}
+
+export interface INightlyJob extends IBaseJob {
+  nightly?: boolean;
 }
 
 export interface IEmailJob {
@@ -229,7 +234,7 @@ export type JobItem =
   // Facial Recognition
   | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
   | { name: JobName.FACE_DETECTION; data: IEntityJob }
-  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
+  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: INightlyJob }
   | { name: JobName.FACIAL_RECOGNITION; data: IDeferrableJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
 

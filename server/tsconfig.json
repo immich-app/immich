@@ -10,6 +10,7 @@
     "resolveJsonModule": true,
     "target": "es2022",
     "moduleResolution": "node16",
+    "lib": ["dom", "es2023"],
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,

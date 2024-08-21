@@ -21,7 +21,7 @@
   import { copyToClipboard } from '$lib/utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiInfinity, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
@@ -59,16 +59,8 @@
     return websocketEvents.on('on_user_delete', onDeleteSuccess);
   });
 
-  const deleteDateFormat: Intl.DateTimeFormatOptions = {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  };
-
-  const getDeleteDate = (deletedAt: string): string => {
-    return DateTime.fromISO(deletedAt)
-      .plus({ days: $serverConfig.userDeleteDelay })
-      .toLocaleString(deleteDateFormat, { locale: $locale });
+  const getDeleteDate = (deletedAt: string): Date => {
+    return DateTime.fromISO(deletedAt).plus({ days: $serverConfig.userDeleteDelay }).toJSDate();
   };
 
   const onUserCreated = async () => {
@@ -217,7 +209,7 @@
                     {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
                       {getByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
-                      <Icon path={mdiClose} size="16" />
+                      <Icon path={mdiInfinity} size="16" />
                     {/if}
                   </div>
                 </td>
@@ -245,7 +237,9 @@
                   {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
                     <CircleIconButton
                       icon={mdiDeleteRestore}
-                      title="Restore user - scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
+                      title={$t('admin.user_restore_scheduled_removal', {
+                        values: { date: getDeleteDate(immichUser.deletedAt) },
+                      })}
                       color="primary"
                       size="16"
                       on:click={() => restoreUserHandler(immichUser)}

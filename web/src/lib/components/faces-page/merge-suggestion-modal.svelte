@@ -38,7 +38,7 @@
         <ImageThumbnail
           circle
           shadow
-          url={getPeopleThumbnailUrl(personMerge1.id)}
+          url={getPeopleThumbnailUrl(personMerge1)}
           altText={personMerge1.name}
           widthStyle="100%"
         />
@@ -65,7 +65,7 @@
           border={potentialMergePeople.length > 0}
           circle
           shadow
-          url={getPeopleThumbnailUrl(personMerge2.id)}
+          url={getPeopleThumbnailUrl(personMerge2)}
           altText={personMerge2.name}
           widthStyle="100%"
         />
@@ -84,7 +84,7 @@
                     border={true}
                     circle
                     shadow
-                    url={getPeopleThumbnailUrl(person.id)}
+                    url={getPeopleThumbnailUrl(person)}
                     altText={person.name}
                     widthStyle="100%"
                     on:click={() => changePersonToMerge(person)}
@@ -99,10 +99,10 @@
   </div>
 
   <div class="flex px-4 md:pt-4">
-    <h1 class="text-xl text-gray-500 dark:text-gray-300">Are these the same person?</h1>
+    <h1 class="text-xl text-gray-500 dark:text-gray-300">{$t('are_these_the_same_person')}</h1>
   </div>
   <div class="flex px-4 pt-2">
-    <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
+    <p class="text-sm text-gray-500 dark:text-gray-300">{$t('they_will_be_merged_together')}</p>
   </div>
   <svelte:fragment slot="sticky-bottom">
     <Button fullwidth color="gray" on:click={() => dispatch('reject')}>{$t('no')}</Button>

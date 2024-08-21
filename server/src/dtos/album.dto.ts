@@ -5,8 +5,8 @@ import _ from 'lodash';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AlbumUserRole } from 'src/entities/album-user.entity';
-import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
+import { AlbumEntity } from 'src/entities/album.entity';
+import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class AlbumInfoDto {
@@ -95,7 +95,7 @@ export class GetAlbumsDto {
   assetId?: string;
 }
 
-export class AlbumCountResponseDto {
+export class AlbumStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   owned!: number;
 

@@ -1,5 +1,5 @@
-import { UserAvatarColor, UserMetadataKey } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { UserAvatarColor, UserMetadataKey } from 'src/enum';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const userDto = {

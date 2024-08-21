@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField, {
@@ -13,13 +12,14 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div class="mt-2">
@@ -70,8 +70,9 @@
             isEdited={config.machineLearning.clip.modelName !== savedConfig.machineLearning.clip.modelName}
           >
             <p slot="desc" class="immich-form-label pb-2 text-sm">
-              The name of a CLIP model listed <a href="https://huggingface.co/immich-app"><u>here</u></a>. Note that you
-              must re-run the 'Smart Search' job for all images upon changing a model.
+              <FormatMessage key="admin.machine_learning_clip_model_description" let:message>
+                <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
+              </FormatMessage>
             </p>
           </SettingInputField>
         </div>
@@ -179,8 +180,8 @@
       </SettingAccordion>
 
       <SettingButtonsRow
-        on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['machineLearning'] })}
-        on:save={() => dispatch('save', { machineLearning: config.machineLearning })}
+        onReset={(options) => onReset({ ...options, configKeys: ['machineLearning'] })}
+        onSave={() => onSave({ machineLearning: config.machineLearning })}
         showResetToDefault={!isEqual(savedConfig.machineLearning, defaultConfig.machineLearning)}
         {disabled}
       />

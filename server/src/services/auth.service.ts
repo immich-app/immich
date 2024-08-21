@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -9,7 +10,7 @@ import { isNumber, isString } from 'class-validator';
 import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
 import { AuthType, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
@@ -19,6 +20,7 @@ import {
   ChangePasswordDto,
   ImmichCookie,
   ImmichHeader,
+  ImmichQuery,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthAuthorizeResponseDto,
@@ -29,6 +31,7 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
+import { Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -36,6 +39,7 @@ import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 
 export interface LoginDetails {
@@ -45,15 +49,24 @@ export interface LoginDetails {
   deviceOS: string;
 }
 
-interface OAuthProfile extends UserinfoResponse {
-  email: string;
-}
+type OAuthProfile = UserinfoResponse;
 
 interface ClaimOptions<T> {
   key: string;
   default: T;
   isValid: (value: unknown) => boolean;
 }
+
+export type ValidateRequest = {
+  headers: IncomingHttpHeaders;
+  queryParams: Record<string, string>;
+  metadata: {
+    sharedLinkRoute: boolean;
+    adminRoute: boolean;
+    permission?: Permission;
+    uri: string;
+  };
+};
 
 @Injectable()
 export class AuthService {
@@ -145,14 +158,35 @@ export class AuthService {
     return mapUserAdmin(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
-    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || params.key) as string;
+  async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
+    const authDto = await this.validate({ headers, queryParams });
+    const { adminRoute, sharedLinkRoute, permission, uri } = metadata;
+
+    if (!authDto.user.isAdmin && adminRoute) {
+      this.logger.warn(`Denied access to admin only route: ${uri}`);
+      throw new ForbiddenException('Forbidden');
+    }
+
+    if (authDto.sharedLink && !sharedLinkRoute) {
+      this.logger.warn(`Denied access to non-shared route: ${uri}`);
+      throw new ForbiddenException('Forbidden');
+    }
+
+    if (authDto.apiKey && permission && !isGranted({ requested: [permission], current: authDto.apiKey.permissions })) {
+      throw new ForbiddenException(`Missing required permission: ${permission}`);
+    }
+
+    return authDto;
+  }
+
+  private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
+    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || queryParams[ImmichQuery.SHARED_LINK_KEY]) as string;
     const session = (headers[ImmichHeader.USER_TOKEN] ||
       headers[ImmichHeader.SESSION_TOKEN] ||
-      params.sessionKey ||
+      queryParams[ImmichQuery.SESSION_KEY] ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[ImmichHeader.API_KEY] || params.apiKey) as string;
+    const apiKey = (headers[ImmichHeader.API_KEY] || queryParams[ImmichQuery.API_KEY]) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
@@ -192,34 +226,35 @@ export class AuthService {
   async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
     const config = await this.configCore.getConfig({ withCache: false });
     const profile = await this.getOAuthProfile(config, dto.url);
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userRepository.getByOAuthId(profile.sub);
 
-    // link existing user
-    if (!user) {
+    // link by email
+    if (!user && profile.email) {
       const emailUser = await this.userRepository.getByEmail(profile.email);
       if (emailUser) {
         if (emailUser.oauthId) {
           throw new BadRequestException('User already exists, but is linked to another account.');
-        } else {
-          user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
         }
+        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
     }
-
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
 
     // register new user
     if (!user) {
       if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.email}. To enable set OAuth Auto Register to true in admin settings.`,
+          `Unable to register ${profile.sub}/${profile.email || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
         );
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
 
-      this.logger.log(`Registering new user: ${profile.email}/${profile.sub}`);
-      this.logger.verbose(`OAuth Profile: ${JSON.stringify(profile)}`);
+      if (!profile.email) {
+        throw new BadRequestException('OAuth profile does not have an email address');
+      }
+
+      this.logger.log(`Registering new user: ${profile.sub}/${profile.email}`);
 
       const storageLabel = this.getClaim(profile, {
         key: storageLabelClaim,
@@ -299,23 +334,21 @@ export class AuthService {
   }
 
   private async getOAuthClient(config: SystemConfig) {
-    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm } = config.oauth;
+    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm, profileSigningAlgorithm } = config.oauth;
 
     if (!enabled) {
       throw new BadRequestException('OAuth2 is not enabled');
     }
 
-    const metadata: ClientMetadata = {
-      client_id: clientId,
-      client_secret: clientSecret,
-      response_types: ['code'],
-    };
-
     try {
       const issuer = await Issuer.discover(issuerUrl);
-      metadata.id_token_signed_response_alg = signingAlgorithm;
-
-      return new issuer.Client(metadata);
+      return new issuer.Client({
+        client_id: clientId,
+        client_secret: clientSecret,
+        response_types: ['code'],
+        userinfo_signed_response_alg: profileSigningAlgorithm === 'none' ? undefined : profileSigningAlgorithm,
+        id_token_signed_response_alg: signingAlgorithm,
+      });
     } catch (error: any | AggregateError) {
       this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });

@@ -20,13 +20,14 @@
     mdiTrashCanOutline,
     mdiToolbox,
     mdiToolboxOutline,
+    mdiFolderOutline,
   } from '@mdi/js';
-  import StatusBox from '../status-box.svelte';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
   import MoreInformationAssets from '$lib/components/shared-components/side-bar/more-information-assets.svelte';
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
+  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -79,7 +80,7 @@
         bind:isSelected={isSharingSelected}
       >
         <svelte:fragment slot="moreInformation">
-          <MoreInformationAlbums albumCountType="shared" />
+          <MoreInformationAlbums albumType="shared" />
         </svelte:fragment>
       </SideBarLink>
     {/if}
@@ -100,9 +101,11 @@
     </SideBarLink>
     <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
       <svelte:fragment slot="moreInformation">
-        <MoreInformationAlbums albumCountType="owned" />
+        <MoreInformationAlbums albumType="owned" />
       </svelte:fragment>
     </SideBarLink>
+
+    <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
 
     <SideBarLink
       title={$t('utilities')}
@@ -136,8 +139,5 @@
     {/if}
   </nav>
 
-  <!-- Status Box -->
-  <div class="mb-6 mt-auto">
-    <StatusBox />
-  </div>
+  <BottomInfo />
 </SideBarSection>

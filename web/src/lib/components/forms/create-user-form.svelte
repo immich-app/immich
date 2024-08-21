@@ -117,7 +117,7 @@
       <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
         {$t('admin.quota_size_gib')}
         {#if quotaSizeWarning}
-          <p class="text-red-400 text-sm">{$t('admin.quota_higher_than_disk_size')}</p>
+          <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
         {/if}
       </label>
       <input class="immich-form-input" id="quotaSize" type="number" min="0" bind:value={quotaSize} />

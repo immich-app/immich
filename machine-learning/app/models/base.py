@@ -5,15 +5,14 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Any, ClassVar
 
-import onnxruntime as ort
 from huggingface_hub import snapshot_download
 
 import ann.ann
-from app.models.constants import SUPPORTED_PROVIDERS
+from app.sessions.ort import OrtSession
 
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
-from .ann import AnnSession
+from ..sessions.ann import AnnSession
 
 
 class InferenceModel(ABC):
@@ -24,19 +23,17 @@ class InferenceModel(ABC):
         self,
         model_name: str,
         cache_dir: Path | str | None = None,
-        providers: list[str] | None = None,
-        provider_options: list[dict[str, Any]] | None = None,
-        sess_options: ort.SessionOptions | None = None,
-        preferred_format: ModelFormat | None = None,
+        model_format: ModelFormat | None = None,
+        session: ModelSession | None = None,
         **model_kwargs: Any,
     ) -> None:
-        self.loaded = False
+        self.loaded = session is not None
+        self.load_attempts = 0
         self.model_name = clean_name(model_name)
-        self.cache_dir = Path(cache_dir) if cache_dir is not None else self.cache_dir_default
-        self.providers = providers if providers is not None else self.providers_default
-        self.provider_options = provider_options if provider_options is not None else self.provider_options_default
-        self.sess_options = sess_options if sess_options is not None else self.sess_options_default
-        self.preferred_format = preferred_format if preferred_format is not None else self.preferred_format_default
+        self.cache_dir = Path(cache_dir) if cache_dir is not None else self._cache_dir_default
+        self.model_format = model_format if model_format is not None else self._model_format_default
+        if session is not None:
+            self.session = session
 
     def download(self) -> None:
         if not self.cached:
@@ -48,9 +45,11 @@ class InferenceModel(ABC):
     def load(self) -> None:
         if self.loaded:
             return
+        self.load_attempts += 1
 
         self.download()
-        log.info(f"Loading {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
+        attempt = f"Attempt #{self.load_attempts} to load" if self.load_attempts > 1 else "Loading"
+        log.info(f"{attempt} {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
         self.session = self._load()
         self.loaded = True
 
@@ -67,7 +66,7 @@ class InferenceModel(ABC):
         pass
 
     def _download(self) -> None:
-        ignore_patterns = [] if self.preferred_format == ModelFormat.ARMNN else ["*.armnn"]
+        ignore_patterns = [] if self.model_format == ModelFormat.ARMNN else ["*.armnn"]
         snapshot_download(
             f"immich-app/{clean_name(self.model_name)}",
             cache_dir=self.cache_dir,
@@ -103,25 +102,13 @@ class InferenceModel(ABC):
 
     def _make_session(self, model_path: Path) -> ModelSession:
         if not model_path.is_file():
-            onnx_path = model_path.with_suffix(".onnx")
-            if not onnx_path.is_file():
-                raise ValueError(f"Model path '{model_path}' does not exist")
-
-            log.warning(
-                f"Could not find model path '{model_path}'. " f"Falling back to ONNX model path '{onnx_path}' instead.",
-            )
-            model_path = onnx_path
+            raise FileNotFoundError(f"Model file not found: {model_path}")
 
         match model_path.suffix:
             case ".armnn":
-                session = AnnSession(model_path)
+                session: ModelSession = AnnSession(model_path)
             case ".onnx":
-                session = ort.InferenceSession(
-                    model_path.as_posix(),
-                    sess_options=self.sess_options,
-                    providers=self.providers,
-                    provider_options=self.provider_options,
-                )
+                session = OrtSession(model_path)
             case _:
                 raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session
@@ -132,7 +119,7 @@ class InferenceModel(ABC):
 
     @property
     def model_path(self) -> Path:
-        return self.model_dir / f"model.{self.preferred_format}"
+        return self.model_dir / f"model.{self.model_format}"
 
     @property
     def model_task(self) -> ModelTask:
@@ -151,7 +138,7 @@ class InferenceModel(ABC):
         self._cache_dir = cache_dir
 
     @property
-    def cache_dir_default(self) -> Path:
+    def _cache_dir_default(self) -> Path:
         return settings.cache_folder / self.model_task.value / self.model_name
 
     @property
@@ -159,95 +146,14 @@ class InferenceModel(ABC):
         return self.model_path.is_file()
 
     @property
-    def providers(self) -> list[str]:
-        return self._providers
+    def model_format(self) -> ModelFormat:
+        return self._model_format
 
-    @providers.setter
-    def providers(self, providers: list[str]) -> None:
-        log.info(
-            (f"Setting '{self.model_name}' execution providers to {providers}, " "in descending order of preference"),
-        )
-        self._providers = providers
+    @model_format.setter
+    def model_format(self, model_format: ModelFormat) -> None:
+        log.debug(f"Setting model format to {model_format}")
+        self._model_format = model_format
 
     @property
-    def providers_default(self) -> list[str]:
-        available_providers = set(ort.get_available_providers())
-        log.debug(f"Available ORT providers: {available_providers}")
-        if (openvino := "OpenVINOExecutionProvider") in available_providers:
-            device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-            log.debug(f"Available OpenVINO devices: {device_ids}")
-
-            gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
-            if not gpu_devices:
-                log.warning("No GPU device found in OpenVINO. Falling back to CPU.")
-                available_providers.remove(openvino)
-        return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
-
-    @property
-    def provider_options(self) -> list[dict[str, Any]]:
-        return self._provider_options
-
-    @provider_options.setter
-    def provider_options(self, provider_options: list[dict[str, Any]]) -> None:
-        log.debug(f"Setting execution provider options to {provider_options}")
-        self._provider_options = provider_options
-
-    @property
-    def provider_options_default(self) -> list[dict[str, Any]]:
-        options = []
-        for provider in self.providers:
-            match provider:
-                case "CPUExecutionProvider" | "CUDAExecutionProvider":
-                    option = {"arena_extend_strategy": "kSameAsRequested"}
-                case "OpenVINOExecutionProvider":
-                    option = {"device_type": "GPU_FP32", "cache_dir": (self.cache_dir / "openvino").as_posix()}
-                case _:
-                    option = {}
-            options.append(option)
-        return options
-
-    @property
-    def sess_options(self) -> ort.SessionOptions:
-        return self._sess_options
-
-    @sess_options.setter
-    def sess_options(self, sess_options: ort.SessionOptions) -> None:
-        log.debug(f"Setting execution_mode to {sess_options.execution_mode.name}")
-        log.debug(f"Setting inter_op_num_threads to {sess_options.inter_op_num_threads}")
-        log.debug(f"Setting intra_op_num_threads to {sess_options.intra_op_num_threads}")
-        self._sess_options = sess_options
-
-    @property
-    def sess_options_default(self) -> ort.SessionOptions:
-        sess_options = ort.SessionOptions()
-        sess_options.enable_cpu_mem_arena = False
-
-        # avoid thread contention between models
-        if settings.model_inter_op_threads > 0:
-            sess_options.inter_op_num_threads = settings.model_inter_op_threads
-        # these defaults work well for CPU, but bottleneck GPU
-        elif settings.model_inter_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
-            sess_options.inter_op_num_threads = 1
-
-        if settings.model_intra_op_threads > 0:
-            sess_options.intra_op_num_threads = settings.model_intra_op_threads
-        elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
-            sess_options.intra_op_num_threads = 2
-
-        if sess_options.inter_op_num_threads > 1:
-            sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
-
-        return sess_options
-
-    @property
-    def preferred_format(self) -> ModelFormat:
-        return self._preferred_format
-
-    @preferred_format.setter
-    def preferred_format(self, preferred_format: ModelFormat) -> None:
-        log.debug(f"Setting preferred format to {preferred_format}")
-        self._preferred_format = preferred_format
-
-    @property
-    def preferred_format_default(self) -> ModelFormat:
+    def _model_format_default(self) -> ModelFormat:
         return ModelFormat.ARMNN if ann.ann.is_available and settings.ann else ModelFormat.ONNX

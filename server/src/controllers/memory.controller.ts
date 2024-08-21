@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto } from 'src/dtos/memory.dto';
+import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MemoryService } from 'src/services/memory.service';
 import { UUIDParamDto } from 'src/validation';
@@ -13,25 +14,25 @@ export class MemoryController {
   constructor(private service: MemoryService) {}
 
   @Get()
-  @Authenticated()
+  @Authenticated({ permission: Permission.MEMORY_READ })
   searchMemories(@Auth() auth: AuthDto): Promise<MemoryResponseDto[]> {
     return this.service.search(auth);
   }
 
   @Post()
-  @Authenticated()
+  @Authenticated({ permission: Permission.MEMORY_CREATE })
   createMemory(@Auth() auth: AuthDto, @Body() dto: MemoryCreateDto): Promise<MemoryResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.MEMORY_READ })
   getMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<MemoryResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.MEMORY_UPDATE })
   updateMemory(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -42,7 +43,7 @@ export class MemoryController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
+  @Authenticated({ permission: Permission.MEMORY_DELETE })
   deleteMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }

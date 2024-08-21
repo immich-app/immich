@@ -3,7 +3,7 @@ import { snakeCase } from 'lodash';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
-import { AssetType } from 'src/entities/asset.entity';
+import { AssetType } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -210,7 +210,7 @@ export class JobService {
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       { name: JobName.USER_SYNC_USAGE },
-      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
+      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
       { name: JobName.CLEAN_OLD_SESSION_TOKENS },
     ]);
   }

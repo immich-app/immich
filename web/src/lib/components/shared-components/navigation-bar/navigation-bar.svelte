@@ -19,6 +19,7 @@
   import AccountInfoPanel from './account-info-panel.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
+  import { foldersStore } from '$lib/stores/folders.store';
 
   export let showUploadButton = true;
 
@@ -31,12 +32,14 @@
 
   const logOut = async () => {
     const { redirectUri } = await logout();
+
     if (redirectUri.startsWith('/')) {
       await goto(redirectUri);
     } else {
       window.location.href = redirectUri;
     }
     resetSavedUser();
+    foldersStore.clearCache();
   };
 </script>
 
@@ -59,9 +62,13 @@
 
       <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
         {#if $featureFlags.search}
-          <a href={AppRoute.SEARCH} id="search-button" class="ml-4 sm:hidden">
-            <CircleIconButton title={$t('go_to_search')} icon={mdiMagnify} />
-          </a>
+          <CircleIconButton
+            href={AppRoute.SEARCH}
+            id="search-button"
+            class="ml-4 sm:hidden"
+            title={$t('go_to_search')}
+            icon={mdiMagnify}
+          />
         {/if}
 
         <ThemeButton />

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { SemVer } from 'semver';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
-export const VECTORS_VERSION_RANGE = '0.2.x';
+export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
 export const NEXT_RELEASE = 'NEXT_RELEASE';
@@ -27,13 +27,29 @@ export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
 export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 
-const GEODATA_ROOT_PATH = process.env.IMMICH_REVERSE_GEOCODING_ROOT || '/usr/src/resources';
-
 export const citiesFile = 'cities500.txt';
-export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
-export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
-export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
-export const geodataCities500Path = join(GEODATA_ROOT_PATH, citiesFile);
+
+const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
+
+const folders = {
+  geodata: join(buildFolder, 'geodata'),
+  web: join(buildFolder, 'www'),
+};
+
+export const resourcePaths = {
+  lockFile: join(buildFolder, 'build-lock.json'),
+  geodata: {
+    dateFile: join(folders.geodata, 'geodata-date.txt'),
+    admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
+    admin2: join(folders.geodata, 'admin2Codes.txt'),
+    cities500: join(folders.geodata, citiesFile),
+    naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
+  },
+  web: {
+    root: folders.web,
+    indexHtml: join(folders.web, 'index.html'),
+  },
+};
 
 export const MOBILE_REDIRECT = 'app.immich:/';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
@@ -77,39 +93,50 @@ export const supportedPresetTokens = [
 
 type ModelInfo = { dimSize: number };
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
-  RN50__openai: { dimSize: 1024 },
-  RN50__yfcc15m: { dimSize: 1024 },
-  RN50__cc12m: { dimSize: 1024 },
   RN101__openai: { dimSize: 512 },
   RN101__yfcc15m: { dimSize: 512 },
-  RN50x4__openai: { dimSize: 640 },
-  RN50x16__openai: { dimSize: 768 },
-  RN50x64__openai: { dimSize: 1024 },
-  'ViT-B-32__openai': { dimSize: 512 },
+  'ViT-B-16__laion400m_e31': { dimSize: 512 },
+  'ViT-B-16__laion400m_e32': { dimSize: 512 },
+  'ViT-B-16__openai': { dimSize: 512 },
+  'ViT-B-32__laion2b-s34b-b79k': { dimSize: 512 },
   'ViT-B-32__laion2b_e16': { dimSize: 512 },
   'ViT-B-32__laion400m_e31': { dimSize: 512 },
   'ViT-B-32__laion400m_e32': { dimSize: 512 },
-  'ViT-B-32__laion2b-s34b-b79k': { dimSize: 512 },
-  'ViT-B-16__openai': { dimSize: 512 },
-  'ViT-B-16__laion400m_e31': { dimSize: 512 },
-  'ViT-B-16__laion400m_e32': { dimSize: 512 },
+  'ViT-B-32__openai': { dimSize: 512 },
+  'XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k': { dimSize: 512 },
+  'XLM-Roberta-Large-Vit-B-32': { dimSize: 512 },
+  RN50x4__openai: { dimSize: 640 },
   'ViT-B-16-plus-240__laion400m_e31': { dimSize: 640 },
   'ViT-B-16-plus-240__laion400m_e32': { dimSize: 640 },
-  'ViT-L-14__openai': { dimSize: 768 },
-  'ViT-L-14__laion400m_e31': { dimSize: 768 },
-  'ViT-L-14__laion400m_e32': { dimSize: 768 },
-  'ViT-L-14__laion2b-s32b-b82k': { dimSize: 768 },
+  'XLM-Roberta-Large-Vit-B-16Plus': { dimSize: 640 },
+  'LABSE-Vit-L-14': { dimSize: 768 },
+  RN50x16__openai: { dimSize: 768 },
+  'ViT-B-16-SigLIP-256__webli': { dimSize: 768 },
+  'ViT-B-16-SigLIP-384__webli': { dimSize: 768 },
+  'ViT-B-16-SigLIP-512__webli': { dimSize: 768 },
+  'ViT-B-16-SigLIP-i18n-256__webli': { dimSize: 768 },
+  'ViT-B-16-SigLIP__webli': { dimSize: 768 },
   'ViT-L-14-336__openai': { dimSize: 768 },
   'ViT-L-14-quickgelu__dfn2b': { dimSize: 768 },
-  'ViT-H-14__laion2b-s32b-b79k': { dimSize: 1024 },
-  'ViT-H-14-quickgelu__dfn5b': { dimSize: 1024 },
-  'ViT-H-14-378-quickgelu__dfn5b': { dimSize: 1024 },
-  'ViT-g-14__laion2b-s12b-b42k': { dimSize: 1024 },
-  'LABSE-Vit-L-14': { dimSize: 768 },
-  'XLM-Roberta-Large-Vit-B-32': { dimSize: 512 },
-  'XLM-Roberta-Large-Vit-B-16Plus': { dimSize: 640 },
+  'ViT-L-14__laion2b-s32b-b82k': { dimSize: 768 },
+  'ViT-L-14__laion400m_e31': { dimSize: 768 },
+  'ViT-L-14__laion400m_e32': { dimSize: 768 },
+  'ViT-L-14__openai': { dimSize: 768 },
   'XLM-Roberta-Large-Vit-L-14': { dimSize: 768 },
-  'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': { dimSize: 1024 },
+  'nllb-clip-base-siglip__mrl': { dimSize: 768 },
   'nllb-clip-base-siglip__v1': { dimSize: 768 },
+  RN50__cc12m: { dimSize: 1024 },
+  RN50__openai: { dimSize: 1024 },
+  RN50__yfcc15m: { dimSize: 1024 },
+  RN50x64__openai: { dimSize: 1024 },
+  'ViT-H-14-378-quickgelu__dfn5b': { dimSize: 1024 },
+  'ViT-H-14-quickgelu__dfn5b': { dimSize: 1024 },
+  'ViT-H-14__laion2b-s32b-b79k': { dimSize: 1024 },
+  'ViT-L-16-SigLIP-256__webli': { dimSize: 1024 },
+  'ViT-L-16-SigLIP-384__webli': { dimSize: 1024 },
+  'ViT-g-14__laion2b-s12b-b42k': { dimSize: 1024 },
+  'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': { dimSize: 1024 },
+  'ViT-SO400M-14-SigLIP-384__webli': { dimSize: 1152 },
+  'nllb-clip-large-siglip__mrl': { dimSize: 1152 },
   'nllb-clip-large-siglip__v1': { dimSize: 1152 },
 };

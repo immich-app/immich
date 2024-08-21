@@ -22,9 +22,8 @@
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
@@ -38,13 +37,10 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { locale } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { handlePromiseError, s } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, isPeopleRoute, isSearchRoute } from '$lib/utils/navigation';
@@ -103,7 +99,6 @@
     SELECT_USERS = 'select-users',
     SELECT_THUMBNAIL = 'select-thumbnail',
     SELECT_ASSETS = 'select-assets',
-    ALBUM_OPTIONS = 'album-options',
     VIEW_USERS = 'view-users',
     VIEW = 'view',
     OPTIONS = 'options',
@@ -112,7 +107,6 @@
   let backUrl: string = AppRoute.ALBUMS;
   let viewMode = ViewMode.VIEW;
   let isCreatingSharedAlbum = false;
-  let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
@@ -173,10 +167,10 @@
       });
       notificationController.show({
         type: NotificationType.Info,
-        message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
+        message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
       });
     } catch (error) {
-      handleError(error, `Can't ${album.isActivityEnabled ? 'disable' : 'enable'} activity`);
+      handleError(error, $t('errors.cant_change_activity', { values: { enabled: album.isActivityEnabled } }));
     }
   };
 
@@ -194,7 +188,7 @@
         reactions = [...reactions, isLiked];
       }
     } catch (error) {
-      handleError(error, "Can't change favorite for asset");
+      handleError(error, $t('errors.cant_change_asset_favorite'));
     }
   };
 
@@ -221,7 +215,7 @@
       const { comments } = await getActivityStatistics({ albumId: album.id });
       setNumberOfComments(comments);
     } catch (error) {
-      handleError(error, "Can't get number of comments");
+      handleError(error, $t('errors.cant_get_number_of_comments'));
     }
   };
 
@@ -288,7 +282,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Added ${count} asset${s(count)}`,
+        message: $t('assets_added_count', { values: { count: count } }),
       });
 
       await refreshAlbum();
@@ -296,18 +290,13 @@
       timelineInteractionStore.clearMultiselect();
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding assets to album');
+      handleError(error, $t('errors.error_adding_assets_to_album'));
     }
   };
 
   const handleCloseSelectAssets = () => {
     viewMode = ViewMode.VIEW;
     timelineInteractionStore.clearMultiselect();
-  };
-
-  const handleOpenAlbumOptions = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event, 'top-left');
-    viewMode = viewMode === ViewMode.VIEW ? ViewMode.ALBUM_OPTIONS : ViewMode.VIEW;
   };
 
   const handleSelectFromComputer = async () => {
@@ -327,7 +316,7 @@
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
-      handleError(error, 'Error adding users to album');
+      handleError(error, $t('errors.error_adding_users_to_album'));
     }
   };
 
@@ -341,7 +330,7 @@
       await refreshAlbum();
       viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
     } catch (error) {
-      handleError(error, $t('errors.unable_to_load_album'));
+      handleError(error, $t('errors.error_deleting_shared_user'));
     }
   };
 
@@ -351,8 +340,7 @@
 
   const handleRemoveAlbum = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'remove-album',
-      prompt: `Are you sure you want to delete the album ${album.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
+      prompt: $t('album_delete_confirmation', { values: { album: album.albumName } }),
     });
 
     if (!isConfirmed) {
@@ -403,7 +391,7 @@
         },
       });
     } catch (error) {
-      handleError(error, 'Unable to update album cover');
+      handleError(error, $t('errors.unable_to_update_album_cover'));
     }
   };
 
@@ -420,14 +408,14 @@
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
         <SelectAllAssets {assetStore} {assetInteractionStore} />
-        <AssetSelectContextMenu icon={mdiPlus} title={$t('add_to')}>
+        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
         {#if isAllUserOwned}
           <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
         {/if}
-        <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if isAllUserOwned}
             <ChangeDate menuItem />
@@ -436,7 +424,7 @@
               <MenuOption
                 text={$t('set_as_album_cover')}
                 icon={mdiImageOutline}
-                on:click={() => updateThumbnailUsingCurrentSelection()}
+                onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
@@ -447,10 +435,10 @@
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
           {/if}
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
       </AssetSelectControlBar>
     {:else}
-      {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
+      {#if viewMode === ViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
             {#if isEditor}
@@ -474,32 +462,15 @@
               <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
-                <div use:clickOutside={{ onOutclick: () => (viewMode = ViewMode.VIEW) }}>
-                  <CircleIconButton
-                    title={$t('album_options')}
-                    on:click={handleOpenAlbumOptions}
-                    icon={mdiDotsVertical}
+                <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+                  <MenuOption
+                    icon={mdiImageOutline}
+                    text={$t('select_album_cover')}
+                    onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
                   />
-                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                    <ContextMenu {...contextMenuPosition}>
-                      <MenuOption
-                        icon={mdiImageOutline}
-                        text={$t('select_album_cover')}
-                        on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
-                      />
-                      <MenuOption
-                        icon={mdiCogOutline}
-                        text={$t('options')}
-                        on:click={() => (viewMode = ViewMode.OPTIONS)}
-                      />
-                      <MenuOption
-                        icon={mdiDeleteOutline}
-                        text={$t('delete_album')}
-                        on:click={() => handleRemoveAlbum()}
-                      />
-                    </ContextMenu>
-                  {/if}
-                </div>
+                  <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
+                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
+                </ButtonContextMenu>
               {/if}
             {/if}
 
@@ -522,9 +493,9 @@
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
-                Add to album
+                {$t('add_to_album')}
               {:else}
-                {$timelineSelected.size.toLocaleString($locale)} selected
+                {$t('selected_count', { values: { count: $timelineSelected.size } })}
               {/if}
             </p>
           </svelte:fragment>
@@ -535,7 +506,7 @@
               on:click={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
-              Select from computer
+              {$t('select_from_computer')}
             </button>
             <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
               >{$t('done')}</Button
@@ -577,7 +548,7 @@
           >
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
-              <section class="pt-24">
+              <section class="pt-8 md:pt-24">
                 <AlbumTitle id={album.id} bind:albumName={album.albumName} {isOwned} />
 
                 {#if album.assetCount > 0}
@@ -633,7 +604,7 @@
                   </div>
                 {/if}
                 <!-- ALBUM DESCRIPTION -->
-                <AlbumDescription id={album.id} description={album.description} {isOwned} />
+                <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
               </section>
             {/if}
 
@@ -663,7 +634,6 @@
               disabled={!album.isActivityEnabled}
               {isLiked}
               numberOfComments={$numberOfComments}
-              {isShowActivity}
               on:favorite={handleFavorite}
               on:openActivityTab={handleOpenAndCloseActivityTab}
             />

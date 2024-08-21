@@ -5,7 +5,7 @@
   import { t } from 'svelte-i18n';
 
   export let title = $t('confirm');
-  export let prompt = 'Are you sure you want to do this?';
+  export let prompt = $t('are_you_sure_to_do_this');
   export let confirmText = $t('confirm');
   export let confirmColor: Color = 'red';
   export let cancelText = $t('cancel');
@@ -16,10 +16,7 @@
   export let onCancel: () => void;
   export let onConfirm: () => void;
 
-  let isConfirmButtonDisabled = false;
-
   const handleConfirm = () => {
-    isConfirmButtonDisabled = true;
     onConfirm();
   };
 </script>
@@ -37,7 +34,7 @@
         {cancelText}
       </Button>
     {/if}
-    <Button color={confirmColor} fullwidth on:click={handleConfirm} disabled={disabled || isConfirmButtonDisabled}>
+    <Button color={confirmColor} fullwidth on:click={handleConfirm} {disabled}>
       {confirmText}
     </Button>
   </svelte:fragment>

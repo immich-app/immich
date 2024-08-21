@@ -13,6 +13,8 @@ import {
   type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { tick } from 'svelte';
+import { t } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
@@ -83,6 +85,7 @@ function getDeviceAssetId(asset: File) {
 async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: string): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const deviceAssetId = getDeviceAssetId(assetFile);
+  const $t = get(t);
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
@@ -103,7 +106,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
     let responseData: AssetMediaResponseDto | undefined;
     const key = getKey();
     if (crypto?.subtle?.digest && !key) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Hashing...' });
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       try {
         const bytes = await assetFile.arrayBuffer();
@@ -124,7 +127,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
     }
 
     if (!responseData) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Uploading...' });
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_uploading') });
       if (replaceAssetId) {
         const response = await uploadRequest<AssetMediaResponseDto>({
           url: getBaseUrl() + getAssetOriginalPath(replaceAssetId) + (key ? `?key=${key}` : ''),
@@ -141,7 +144,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
         });
 
         if (![200, 201].includes(response.status)) {
-          throw new Error('Failed to upload file');
+          throw new Error($t('errors.unable_to_upload_file'));
         }
 
         responseData = response.data;
@@ -155,9 +158,9 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
     }
 
     if (albumId) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Adding to album...' });
-      await addAssetsToAlbum(albumId, [responseData.id]);
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: 'Added to album' });
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_adding_to_album') });
+      await addAssetsToAlbum(albumId, [responseData.id], false);
+      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_added_to_album') });
     }
 
     uploadAssetsStore.updateAsset(deviceAssetId, {
@@ -170,7 +173,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
 
     return responseData.id;
   } catch (error) {
-    handleError(error, 'Unable to upload file');
+    handleError(error, $t('errors.unable_to_upload_file'));
     const reason = getServerErrorMessage(error) || error;
     uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
     return;

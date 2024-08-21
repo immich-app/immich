@@ -13,7 +13,7 @@ test.describe('Registration', () => {
   test('admin registration', async ({ page }) => {
     // welcome
     await page.goto('/');
-    await page.getByRole('button', { name: 'Getting Started' }).click();
+    await page.getByRole('link', { name: 'Getting Started' }).click();
 
     // register
     await expect(page).toHaveTitle(/Admin Registration/);
@@ -33,6 +33,7 @@ test.describe('Registration', () => {
     // onboarding
     await expect(page).toHaveURL('/auth/onboarding');
     await page.getByRole('button', { name: 'Theme' }).click();
+    await page.getByRole('button', { name: 'Privacy' }).click();
     await page.getByRole('button', { name: 'Storage Template' }).click();
     await page.getByRole('button', { name: 'Done' }).click();
 

@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { isEqual } from 'lodash';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
+import { OnEmit } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
   IJobRepository,
@@ -20,6 +21,8 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
+import { getFilenameExtension } from 'src/utils/file';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -39,21 +42,36 @@ export class NotificationService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
-  init() {
-    // TODO
-    return Promise.resolve();
-  }
-
-  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
-  async onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
+  @OnEmit({ event: 'onConfigValidate', priority: -100 })
+  async onConfigValidate({ oldConfig, newConfig }: ArgOf<'onConfigValidate'>) {
     try {
-      if (newConfig.notifications.smtp.enabled) {
+      if (
+        newConfig.notifications.smtp.enabled &&
+        !isEqual(oldConfig.notifications.smtp, newConfig.notifications.smtp)
+      ) {
         await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }
     } catch (error: Error | any) {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
       throw new Error(`Invalid SMTP configuration: ${error}`);
     }
+  }
+
+  @OnEmit({ event: 'onUserSignup' })
+  async onUserSignup({ notify, id, tempPassword }: ArgOf<'onUserSignup'>) {
+    if (notify) {
+      await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id, tempPassword } });
+    }
+  }
+
+  @OnEmit({ event: 'onAlbumUpdate' })
+  async onAlbumUpdate({ id, updatedBy }: ArgOf<'onAlbumUpdate'>) {
+    await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_UPDATE, data: { id, senderId: updatedBy } });
+  }
+
+  @OnEmit({ event: 'onAlbumInvite' })
+  async onAlbumInvite({ id, userId }: ArgOf<'onAlbumInvite'>) {
+    await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id, recipientId: userId } });
   }
 
   async sendTestEmail(id: string, dto: SystemConfigSmtpDto) {
@@ -251,14 +269,15 @@ export class NotificationService {
       return;
     }
 
-    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
-    if (!albumThumbnail?.thumbnailPath) {
+    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId, { files: true });
+    const { thumbnailFile } = getAssetFiles(albumThumbnail?.files);
+    if (!thumbnailFile) {
       return;
     }
 
     return {
-      filename: 'album-thumbnail.jpg',
-      path: albumThumbnail.thumbnailPath,
+      filename: `album-thumbnail${getFilenameExtension(thumbnailFile.path)}`,
+      path: thumbnailFile.path,
       cid: 'album-thumbnail',
     };
   }

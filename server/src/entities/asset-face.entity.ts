@@ -1,6 +1,7 @@
 import { AssetEntity } from 'src/entities/asset.entity';
+import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('asset_faces', { synchronize: false })
 @Index('IDX_asset_faces_assetId_personId', ['assetId', 'personId'])
@@ -15,9 +16,8 @@ export class AssetFaceEntity {
   @Column({ nullable: true, type: 'uuid' })
   personId!: string | null;
 
-  @Index('face_index', { synchronize: false })
-  @Column({ type: 'float4', array: true, select: false, transformer: { from: (v) => JSON.parse(v), to: (v) => v } })
-  embedding!: number[];
+  @OneToOne(() => FaceSearchEntity, (faceSearchEntity) => faceSearchEntity.face, { cascade: ['insert'] })
+  faceSearch?: FaceSearchEntity;
 
   @Column({ default: 0, type: 'int' })
   imageWidth!: number;

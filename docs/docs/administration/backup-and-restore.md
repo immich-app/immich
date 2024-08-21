@@ -45,7 +45,7 @@ docker compose up -d    # Start remainder of Immich apps
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres > "\path\to\backup\dump.sql"
+docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | Set-Content -Encoding utf8 "C:\path\to\backup\dump.sql"
 ```
 
 ```powershell title='Restore'
@@ -76,6 +76,7 @@ services:
   backup:
     container_name: immich_db_dumper
     image: prodrigestivill/postgres-backup-local:14
+    restart: always
     env_file:
       - .env
     environment:
@@ -148,8 +149,20 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
   - Preview images (small thumbnails and large previews) for each asset and thumbnails for recognized faces.
   - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
+
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
+
+- **Postgres**
+
+  - The Immich database containing all the information to allow the system to function properly.  
+    **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
+  - Stored in `UPLOAD_LOCATION/postgres`.
+
+  :::danger
+  A backup of this folder does not constitute a backup of your database!
+  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  :::
 
 </TabItem>
   <TabItem value="Storage Template On" label="Storage Template On">
@@ -186,11 +199,22 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Files uploaded through mobile apps.
   - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
+- **Postgres**
+
+  - The Immich database containing all the information to allow the system to function properly.  
+    **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
+  - Stored in `UPLOAD_LOCATION/postgres`.
+
+  :::danger
+  A backup of this folder does not constitute a backup of your database!
+  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  :::
 
 </TabItem>
+
 </Tabs>
 
 :::danger
-Do not touch the files inside these folders under any circumstances except taking a backup, changing or removing an asset can cause untracked and missing files.
+Do not touch the files inside these folders under any circumstances except taking a backup. Changing or removing an asset can cause untracked and missing files.
 You can think of it as App-Which-Must-Not-Be-Named, the only access to viewing, changing and deleting assets is only through the mobile or browser interface.
 :::

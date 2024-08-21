@@ -20,9 +20,9 @@ describe(StorageService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('init', () => {
+  describe('onBootstrap', () => {
     it('should create the library folder on initialization', () => {
-      sut.init();
+      sut.onBootstrap();
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/library');
     });
   });

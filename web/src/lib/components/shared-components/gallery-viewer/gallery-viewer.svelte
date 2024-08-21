@@ -1,18 +1,20 @@
 <script lang="ts">
-  import Portal from '../portal/portal.svelte';
+  import { goto } from '$app/navigation';
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { type AssetResponseDto } from '@immich/sdk';
-  import { createEventDispatcher, onDestroy } from 'svelte';
-  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import justifiedLayout from 'justified-layout';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import { calculateWidth } from '$lib/utils/timeline-util';
+  import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
-  import { AppRoute, AssetAction } from '$lib/constants';
-  import { goto } from '$app/navigation';
+  import { calculateWidth } from '$lib/utils/timeline-util';
+  import { type AssetResponseDto } from '@immich/sdk';
+  import justifiedLayout from 'justified-layout';
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
+  import Portal from '../portal/portal.svelte';
 
   const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
 
@@ -21,6 +23,7 @@
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
   export let viewport: Viewport;
+  export let showAssetName = false;
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
@@ -52,7 +55,7 @@
         await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
-      handleError(error, 'Cannot navigate to the next asset');
+      handleError(error, $t('errors.cannot_navigate_next_asset'));
     }
   };
 
@@ -63,17 +66,17 @@
         await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
-      handleError(error, 'Cannot navigate to previous asset');
+      handleError(error, $t('errors.cannot_navigate_previous_asset'));
     }
   };
 
-  const handleAction = async (action: AssetAction, asset: AssetResponseDto) => {
-    switch (action) {
+  const handleAction = async (action: Action) => {
+    switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
         assets.splice(
-          assets.findIndex((a) => a.id === asset.id),
+          assets.findIndex((a) => a.id === action.asset.id),
           1,
         );
         assets = assets;
@@ -119,6 +122,7 @@
         class="absolute"
         style="width: {geometry.boxes[i].width}px; height: {geometry.boxes[i].height}px; top: {geometry.boxes[i]
           .top}px; left: {geometry.boxes[i].left}px"
+        title={showAssetName ? asset.originalFileName : ''}
       >
         <Thumbnail
           {asset}
@@ -140,6 +144,13 @@
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}
         />
+        {#if showAssetName}
+          <div
+            class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis"
+          >
+            {asset.originalFileName}
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
@@ -148,11 +159,6 @@
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
   <Portal target="body">
-    <AssetViewer
-      asset={$viewingAsset}
-      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
-      on:previous={handlePrevious}
-      on:next={handleNext}
-    />
+    <AssetViewer asset={$viewingAsset} onAction={handleAction} on:previous={handlePrevious} on:next={handleNext} />
   </Portal>
 {/if}

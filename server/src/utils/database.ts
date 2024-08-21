@@ -44,21 +44,34 @@ export function searchAssetBuilder(
   }
 
   if (hasExifQuery) {
-    options.withExif
-      ? builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo')
-      : builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+    if (options.withExif) {
+      builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
+    } else {
+      builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+    }
 
-    builder.andWhere({ exifInfo });
+    for (const [key, value] of Object.entries(exifInfo)) {
+      if (value === null) {
+        builder.andWhere(`exifInfo.${key} IS NULL`);
+      } else {
+        builder.andWhere(`exifInfo.${key} = :${key}`, { [key]: value });
+      }
+    }
   }
 
   const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
+
+  if (id.libraryId === null) {
+    id.libraryId = IsNull() as unknown as string;
+  }
+
   builder.andWhere(_.omitBy(id, _.isUndefined));
 
   if (options.userIds) {
     builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
   }
 
-  const path = _.pick(options, ['encodedVideoPath', 'originalPath', 'previewPath', 'thumbnailPath']);
+  const path = _.pick(options, ['encodedVideoPath', 'originalPath']);
   builder.andWhere(_.omitBy(path, _.isUndefined));
 
   if (options.originalFileName) {

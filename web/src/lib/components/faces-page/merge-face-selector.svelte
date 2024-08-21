@@ -55,7 +55,7 @@
 
     if (selectedPeople.length >= 5) {
       notificationController.show({
-        message: 'You can only merge up to 5 faces at a time',
+        message: $t('merge_people_limit'),
         type: NotificationType.Info,
       });
       return;
@@ -66,8 +66,7 @@
 
   const handleMerge = async () => {
     const isConfirm = await dialogController.show({
-      id: 'merge-people',
-      prompt: 'Do you want to merge these people?',
+      prompt: $t('merge_people_prompt'),
     });
 
     if (!isConfirm) {
@@ -82,7 +81,7 @@
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
-        message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
+        message: $t('merged_people_count', { values: { count: count } }),
         type: NotificationType.Info,
       });
       dispatch('merge', mergedPerson);
@@ -101,7 +100,7 @@
   <ControlAppBar on:close={onClose}>
     <svelte:fragment slot="leading">
       {#if hasSelection}
-        {$t('selected')} {selectedPeople.length}
+        {$t('selected_count', { values: { count: selectedPeople.length } })}
       {:else}
         {$t('merge_people')}
       {/if}

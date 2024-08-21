@@ -16,6 +16,7 @@ export interface ThumbnailOptions {
   colorspace: string;
   quality: number;
   crop?: CropOptions;
+  processInvalidImages: boolean;
 }
 
 export interface VideoStreamInfo {
@@ -45,6 +46,10 @@ export interface VideoFormat {
 export interface ImageDimensions {
   width: number;
   height: number;
+}
+
+export interface InputDimensions extends ImageDimensions {
+  inputPath: string;
 }
 
 export interface VideoInfo {

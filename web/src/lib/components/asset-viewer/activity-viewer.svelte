@@ -4,7 +4,6 @@
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { autoGrowHeight } from '$lib/actions/autogrow';
-  import { clickOutside } from '$lib/actions/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
@@ -16,7 +15,7 @@
     type AssetTypeEnum,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
+  import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend, mdiDeleteOutline } from '@mdi/js';
   import * as luxon from 'luxon';
   import { createEventDispatcher, onMount } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -26,6 +25,8 @@
   import { locale } from '$lib/stores/preferences.store';
   import { shortcut } from '$lib/actions/shortcut';
   import { t } from 'svelte-i18n';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
@@ -40,7 +41,7 @@
     const diff = dateTime.diffNow().shiftTo(...units);
     const unit = units.find((unit) => diff.get(unit) !== 0) || 'second';
 
-    const relativeFormatter = new Intl.RelativeTimeFormat('en', {
+    const relativeFormatter = new Intl.RelativeTimeFormat($locale, {
       numeric: 'auto',
     });
     return relativeFormatter.format(Math.trunc(diff.as(unit)), unit);
@@ -71,7 +72,6 @@
     close: void;
   }>();
 
-  $: showDeleteReaction = Array.from({ length: reactions.length }).fill(false);
   $: {
     if (innerHeight && activityHeight) {
       divHeight = innerHeight - activityHeight;
@@ -109,15 +109,19 @@
     try {
       await deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
-      showDeleteReaction.splice(index, 1);
       reactions = reactions;
-      if (isLiked && reaction.type === 'like' && reaction.id == isLiked.id) {
+      if (isLiked && reaction.type === ReactionType.Like && reaction.id == isLiked.id) {
         dispatch('deleteLike');
       } else {
         dispatch('deleteComment');
       }
+
+      const deleteMessages: Record<ReactionType, string> = {
+        [ReactionType.Comment]: $t('comment_deleted'),
+        [ReactionType.Like]: $t('like_deleted'),
+      };
       notificationController.show({
-        message: `${reaction.type} deleted`,
+        message: deleteMessages[reaction.type],
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -147,10 +151,6 @@
     }
     isSendingMessage = false;
   };
-
-  const showOptionsMenu = (index: number) => {
-    showDeleteReaction[index] = !showDeleteReaction[index];
-  };
 </script>
 
 <div class="overflow-y-hidden relative h-full" bind:offsetHeight={innerHeight}>
@@ -171,7 +171,7 @@
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
         {#each reactions as reaction, index (reaction.id)}
-          {#if reaction.type === 'comment'}
+          {#if reaction.type === ReactionType.Comment}
             <div class="flex dark:bg-gray-800 bg-gray-200 py-3 pl-3 mt-3 rounded-lg gap-4 justify-start">
               <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
@@ -188,27 +188,23 @@
                 </a>
               {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                <div class="flex items-start w-fit pt-[5px]">
-                  <CircleIconButton
+                <div class="mr-4">
+                  <ButtonContextMenu
                     icon={mdiDotsVertical}
                     title={$t('comment_options')}
+                    align="top-right"
+                    direction="left"
                     size="16"
-                    on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
-                  />
+                  >
+                    <MenuOption
+                      activeColor="bg-red-200"
+                      icon={mdiDeleteOutline}
+                      text={$t('remove')}
+                      onClick={() => handleDeleteReaction(reaction, index)}
+                    />
+                  </ButtonContextMenu>
                 </div>
               {/if}
-              <div>
-                {#if showDeleteReaction[index]}
-                  <button
-                    type="button"
-                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
-                    use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
-                    on:click={() => handleDeleteReaction(reaction, index)}
-                  >
-                    Remove
-                  </button>
-                {/if}
-              </div>
             </div>
 
             {#if (index != reactions.length - 1 && !shouldGroup(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
@@ -219,13 +215,18 @@
                 {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
               </div>
             {/if}
-          {:else if reaction.type === 'like'}
+          {:else if reaction.type === ReactionType.Like}
             <div class="relative">
               <div class="flex py-3 pl-3 mt-3 gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
-                  {`${reaction.user.name} liked ${assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'}`}
+                  {$t('user_liked', {
+                    values: {
+                      user: reaction.user.name,
+                      type: assetType ? getAssetType(assetType).toLowerCase() : null,
+                    },
+                  })}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <a
@@ -240,27 +241,23 @@
                   </a>
                 {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
-                  <div class="flex items-start w-fit">
-                    <CircleIconButton
+                  <div class="mr-4">
+                    <ButtonContextMenu
                       icon={mdiDotsVertical}
                       title={$t('reaction_options')}
+                      align="top-right"
+                      direction="left"
                       size="16"
-                      on:click={() => (showDeleteReaction[index] ? '' : showOptionsMenu(index))}
-                    />
+                    >
+                      <MenuOption
+                        activeColor="bg-red-200"
+                        icon={mdiDeleteOutline}
+                        text={$t('remove')}
+                        onClick={() => handleDeleteReaction(reaction, index)}
+                      />
+                    </ButtonContextMenu>
                   </div>
                 {/if}
-                <div>
-                  {#if showDeleteReaction[index]}
-                    <button
-                      type="button"
-                      class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
-                      use:clickOutside={{ onOutclick: () => (showDeleteReaction[index] = false) }}
-                      on:click={() => handleDeleteReaction(reaction, index)}
-                    >
-                      Remove
-                    </button>
-                  {/if}
-                </div>
               </div>
               {#if (index != reactions.length - 1 && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
                 <div
@@ -314,6 +311,7 @@
                 size="15"
                 icon={mdiSend}
                 class="dark:text-immich-dark-gray"
+                on:click={() => handleSendComment()}
               />
             </div>
           {/if}

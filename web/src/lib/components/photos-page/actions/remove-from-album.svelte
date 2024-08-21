@@ -8,7 +8,6 @@
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { s } from '$lib/utils';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
@@ -20,8 +19,7 @@
 
   const removeFromAlbum = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'remove-from-album',
-      prompt: `Are you sure you want to remove ${getAssets().size} asset${s(getAssets().size)} from the album?`,
+      prompt: $t('remove_assets_album_confirmation', { values: { count: getAssets().size } }),
     });
 
     if (!isConfirmed) {
@@ -42,7 +40,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: `Removed ${count} asset${s(count)}`,
+        message: $t('assets_removed_count', { values: { count: count } }),
       });
 
       clearSelect();
@@ -50,14 +48,14 @@
       console.error('Error [album-viewer] [removeAssetFromAlbum]', error);
       notificationController.show({
         type: NotificationType.Error,
-        message: 'Error removing assets from album, check console for more details',
+        message: $t('errors.error_removing_assets_from_album'),
       });
     }
   };
 </script>
 
 {#if menuItem}
-  <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} on:click={removeFromAlbum} />
+  <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} onClick={removeFromAlbum} />
 {:else}
   <CircleIconButton title={$t('remove_from_album')} icon={mdiDeleteOutline} on:click={removeFromAlbum} />
 {/if}

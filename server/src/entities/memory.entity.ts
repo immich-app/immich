@@ -1,5 +1,6 @@
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { MemoryType } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -11,11 +12,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-export enum MemoryType {
-  /** pictures taken on this day X years ago */
-  ON_THIS_DAY = 'on_this_day',
-}
 
 export type OnThisDayData = { year: number };
 

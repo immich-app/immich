@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingInputField, {
     SettingInputFieldType,
@@ -11,20 +10,21 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 
-  const cronExpressionOptions = [
+  $: cronExpressionOptions = [
     { title: $t('interval.night_at_midnight'), expression: '0 0 * * *' },
     { title: $t('interval.night_at_twoam'), expression: '0 2 * * *' },
     { title: $t('interval.day_at_onepm'), expression: '0 13 * * *' },
     { title: $t('interval.hours', { values: { hours: 6 } }), expression: '0 */6 * * *' },
   ];
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
 </script>
 
 <div>
@@ -46,8 +46,8 @@
 
         <div class="ml-4">
           <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['library'] })}
-            on:save={() => dispatch('save', { library: config.library })}
+            onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
+            onSave={() => onSave({ library: config.library })}
             showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
             {disabled}
           />
@@ -99,12 +99,11 @@
           >
             <svelte:fragment slot="desc">
               <p class="text-sm dark:text-immich-dark-fg">
-                Set the scanning interval using the cron format. For more information please refer to e.g. <a
-                  href="https://crontab.guru"
-                  class="underline"
-                  target="_blank"
-                  rel="noreferrer">{$t('admin.crontab_guru')}</a
-                >
+                <FormatMessage key="admin.library_cron_expression_description" let:message>
+                  <a href="https://crontab.guru" class="underline" target="_blank" rel="noreferrer">
+                    {message}
+                  </a>
+                </FormatMessage>
               </p>
             </svelte:fragment>
           </SettingInputField>
@@ -112,8 +111,8 @@
 
         <div class="ml-4">
           <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['library'] })}
-            on:save={() => dispatch('save', { library: config.library })}
+            onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
+            onSave={() => onSave({ library: config.library })}
             showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
             {disabled}
           />

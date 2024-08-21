@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Inject, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { EndpointLifecycle } from 'src/decorators';
 import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -15,6 +16,7 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
+import { Permission } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { PersonService } from 'src/services/person.service';
@@ -30,31 +32,31 @@ export class PersonController {
   ) {}
 
   @Get()
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_READ })
   getAllPeople(@Auth() auth: AuthDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
     return this.service.getAll(auth, withHidden);
   }
 
   @Post()
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_CREATE })
   createPerson(@Auth() auth: AuthDto, @Body() dto: PersonCreateDto): Promise<PersonResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Put()
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_UPDATE })
   updatePeople(@Auth() auth: AuthDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     return this.service.updateAll(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_READ })
   getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_UPDATE })
   updatePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -64,14 +66,14 @@ export class PersonController {
   }
 
   @Get(':id/statistics')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_STATISTICS })
   getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
     return this.service.getStatistics(auth, id);
   }
 
   @Get(':id/thumbnail')
   @FileResponse()
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_READ })
   async getPersonThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -81,6 +83,7 @@ export class PersonController {
     await sendFile(res, next, () => this.service.getThumbnail(auth, id), this.logger);
   }
 
+  @EndpointLifecycle({ deprecatedAt: 'v1.113.0' })
   @Get(':id/assets')
   @Authenticated()
   getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
@@ -88,7 +91,7 @@ export class PersonController {
   }
 
   @Put(':id/reassign')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_REASSIGN })
   reassignFaces(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -98,7 +101,7 @@ export class PersonController {
   }
 
   @Post(':id/merge')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PERSON_MERGE })
   mergePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

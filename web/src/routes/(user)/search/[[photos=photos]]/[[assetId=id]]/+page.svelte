@@ -11,7 +11,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -211,26 +211,26 @@
       <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
         <CreateSharedLink />
         <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
-        <AssetSelectContextMenu icon={mdiPlus} title={$t('add_to')}>
+        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
         <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
-        <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('add')}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <DeleteAssets menuItem {onAssetDelete} />
-        </AssetSelectContextMenu>
+        </ButtonContextMenu>
       </AssetSelectControlBar>
     </div>
   {:else}
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="w-full flex-1 pl-4">
-          <SearchBar grayTheme={false} searchQuery={terms} />
+          <SearchBar grayTheme={false} value={terms.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>
@@ -259,6 +259,8 @@
             {#await getPersonName(value) then personName}
               {personName}
             {/await}
+          {:else if value === null || value === ''}
+            {$t('unknown')}
           {:else}
             {value}
           {/if}
@@ -279,7 +281,9 @@
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
         <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
-        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
+        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
+          {$t('photos_and_videos').toUpperCase()}
+        </div>
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
@@ -296,7 +300,7 @@
           <div class="flex flex-col content-center items-center text-center">
             <Icon path={mdiImageOffOutline} size="3.5em" />
             <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
-            <p class="text-base font-normal">Try a synonym or more general keyword</p>
+            <p class="text-base font-normal">{$t('no_results_description')}</p>
           </div>
         </div>
       {/if}

@@ -23,6 +23,7 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getLastUpdatedAssetForAlbumId: vitest.fn(),
     getAll: vitest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
     getAllByDeviceId: vitest.fn(),
+    getLivePhotoCount: vitest.fn(),
     updateAll: vitest.fn(),
     updateDuplicates: vitest.fn(),
     getExternalLibraryAssetPaths: vitest.fn(),
@@ -41,5 +42,8 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getAllForUserFullSync: vitest.fn(),
     getChangedDeltaSync: vitest.fn(),
     getDuplicates: vitest.fn(),
+    upsertFile: vitest.fn(),
+    getAssetsByOriginalPath: vitest.fn(),
+    getUniqueOriginalPaths: vitest.fn(),
   };
 };

@@ -19,9 +19,10 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/asset_viewer/bottom_gallery_bar.dart';
-import 'package:immich_mobile/widgets/asset_viewer/exif_sheet/exif_bottom_sheet.dart';
+import 'package:immich_mobile/widgets/asset_viewer/detail_panel/detail_panel.dart';
 import 'package:immich_mobile/widgets/asset_viewer/gallery_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
@@ -34,17 +35,15 @@ import 'package:isar/isar.dart';
 @RoutePage()
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  final Asset Function(int index) loadAsset;
-  final int totalAssets;
   final int initialIndex;
   final int heroOffset;
   final bool showStack;
+  final RenderList renderList;
 
   GalleryViewerPage({
     super.key,
-    required this.initialIndex,
-    required this.loadAsset,
-    required this.totalAssets,
+    required this.renderList,
+    this.initialIndex = 0,
     this.heroOffset = 0,
     this.showStack = false,
   }) : controller = PageController(initialPage: initialIndex);
@@ -54,21 +53,22 @@ class GalleryViewerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsServiceProvider);
-    final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
-    final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
+    final loadAsset = renderList.loadAsset;
+    final totalAssets = useState(renderList.totalAssets);
     final shouldLoopVideo = useState(AppSettingsEnum.loopVideo.defaultValue);
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
     final localPosition = useState<Offset?>(null);
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
+
     // Update is playing motion video
     ref.listen(videoPlaybackValueProvider.select((v) => v.state), (_, state) {
       isPlayingVideo.value = state == VideoPlaybackState.playing;
     });
 
     final stackIndex = useState(-1);
-    final stack = showStack && currentAsset.stackChildrenCount > 0
+    final stack = showStack && currentAsset.stackCount > 0
         ? ref.watch(assetStackStateProvider(currentAsset))
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
@@ -95,10 +95,6 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        isLoadPreview.value =
-            settings.getSetting<bool>(AppSettingsEnum.loadPreview);
-        isLoadOriginal.value =
-            settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
         shouldLoopVideo.value =
             settings.getSetting<bool>(AppSettingsEnum.loopVideo);
         return null;
@@ -112,13 +108,19 @@ class GalleryViewerPage extends HookConsumerWidget {
         debugPrint('Error precaching next image: $exception, $stackTrace');
       }
 
-      if (index < totalAssets && index >= 0) {
-        final asset = loadAsset(index);
-        await precacheImage(
-          ImmichImage.imageProvider(asset: asset),
-          context,
-          onError: onError,
-        );
+      try {
+        if (index < totalAssets.value && index >= 0) {
+          final asset = loadAsset(index);
+          await precacheImage(
+            ImmichImage.imageProvider(asset: asset),
+            context,
+            onError: onError,
+          );
+        }
+      } catch (e) {
+        // swallow error silently
+        debugPrint('Error precaching next image: $e');
+        context.maybePop();
       }
     }
 
@@ -144,7 +146,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       .watch(appSettingsServiceProvider)
                       .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
                   ? AdvancedBottomSheet(assetDetail: asset)
-                  : ExifBottomSheet(asset: asset),
+                  : DetailPanel(asset: asset),
             ),
           );
         },
@@ -262,7 +264,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     return PopScope(
       // Change immersive mode back to normal "edgeToEdge" mode
-      onPopInvoked: (_) =>
+      onPopInvokedWithResult: (didPop, _) =>
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -297,7 +299,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       ? const ScrollPhysics() // Use bouncing physics for iOS
                       : const ClampingScrollPhysics() // Use heavy physics for Android
                   ),
-              itemCount: totalAssets,
+              itemCount: totalAssets.value,
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) async {
                 final next = currentIndex.value < value ? value + 1 : value - 1;
@@ -316,6 +318,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               builder: (context, index) {
                 final a =
                     index == currentIndex.value ? asset : loadAsset(index);
+
                 final ImageProvider provider =
                     ImmichImage.imageProvider(asset: a);
 
@@ -406,11 +409,13 @@ class GalleryViewerPage extends HookConsumerWidget {
                     ),
                   ),
                   BottomGalleryBar(
+                    renderList: renderList,
                     totalAssets: totalAssets,
                     controller: controller,
                     showStack: showStack,
                     stackIndex: stackIndex.value,
                     asset: asset,
+                    assetIndex: currentIndex,
                     showVideoPlayerControls: !asset.isImage && !isMotionPhoto,
                   ),
                 ],

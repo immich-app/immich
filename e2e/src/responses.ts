@@ -13,6 +13,12 @@ export const errorDto = {
     message: expect.any(String),
     correlationId: expect.any(String),
   },
+  missingPermission: (permission: string) => ({
+    error: 'Forbidden',
+    statusCode: 403,
+    message: `Missing required permission: ${permission}`,
+    correlationId: expect.any(String),
+  }),
   wrongPassword: {
     error: 'Bad Request',
     statusCode: 400,
@@ -61,6 +67,12 @@ export const errorDto = {
     message: 'The server already has an admin',
     correlationId: expect.any(String),
   },
+  invalidEmail: {
+    error: 'Bad Request',
+    statusCode: 400,
+    message: ['email must be an email'],
+    correlationId: expect.any(String),
+  },
 };
 
 export const signupResponseDto = {
@@ -81,6 +93,7 @@ export const signupResponseDto = {
     quotaUsageInBytes: 0,
     quotaSizeInBytes: null,
     status: 'active',
+    license: null,
   },
 };
 

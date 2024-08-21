@@ -170,6 +170,30 @@ class ExifInfo {
       state.hashCode ^
       country.hashCode ^
       description.hashCode;
+
+  @override
+  String toString() {
+    return """
+{
+  id: $id,
+  fileSize: $fileSize,
+  dateTimeOriginal: $dateTimeOriginal,
+  timeZone: $timeZone,
+  make: $make,
+  model: $model,
+  lens: $lens,
+  f: $f,
+  mm: $mm,
+  iso: $iso,
+  exposureSeconds: $exposureSeconds,
+  lat: $lat,
+  long: $long,
+  city: $city,
+  state: $state,
+  country: $country,
+  description: $description,
+}""";
+  }
 }
 
 double? _exposureTimeToSeconds(String? s) {

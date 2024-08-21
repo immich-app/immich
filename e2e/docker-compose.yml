@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: immich-e2e
 
 services:
@@ -10,6 +8,11 @@ services:
     build:
       context: ../
       dockerfile: server/Dockerfile
+      args:
+        - BUILD_ID=1234567890
+        - BUILD_IMAGE=e2e
+        - BUILD_SOURCE_REF=e2e
+        - BUILD_SOURCE_COMMIT=e2eeeeeeeeeeeeeeeeee
     environment:
       - DB_HOSTNAME=database
       - DB_USERNAME=postgres
@@ -17,9 +20,12 @@ services:
       - DB_DATABASE_NAME=immich
       - IMMICH_MACHINE_LEARNING_ENABLED=false
       - IMMICH_METRICS=true
+      - IMMICH_ENV=testing
     volumes:
       - upload:/usr/src/app/upload
       - ./test-assets:/test-assets
+    extra_hosts:
+      - 'auth-server:host-gateway'
     depends_on:
       - redis
       - database
@@ -27,7 +33,7 @@ services:
       - 2283:3001
 
   redis:
-    image: redis:6.2-alpine@sha256:d6c2911ac51b289db208767581a5d154544f2b2fe4914ea5056443f62dc6e900
+    image: redis:6.2-alpine@sha256:e3b17ba9479deec4b7d1eeec1548a253acc5374d68d3b27937fcfe4df8d18c7e
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0

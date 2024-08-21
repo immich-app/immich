@@ -6,6 +6,7 @@
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let user: UserResponseDto;
 
@@ -54,19 +55,26 @@
     <div class="flex flex-col gap-4">
       {#if forceDelete}
         <p>
-          <b>{user.name}</b>'s account and assets will be queued for permanent deletion <b>immediately</b>.
+          <FormatMessage key="admin.user_delete_immediately" values={{ user: user.name }} let:message>
+            <b>{message}</b>
+          </FormatMessage>
         </p>
       {:else}
         <p>
-          <b>{user.name}</b>'s account and assets will be scheduled for permanent deletion in {$serverConfig.userDeleteDelay}
-          days.
+          <FormatMessage
+            key="admin.user_delete_delay"
+            values={{ user: user.name, delay: $serverConfig.userDeleteDelay }}
+            let:message
+          >
+            <b>{message}</b>
+          </FormatMessage>
         </p>
       {/if}
 
       <div class="flex justify-center m-4 gap-2">
         <Checkbox
           id="queue-user-deletion-checkbox"
-          label="Queue user and assets for immediate deletion"
+          label={$t('admin.user_delete_immediately_checkbox')}
           labelClass="text-sm dark:text-immich-dark-fg"
           bind:checked={forceDelete}
           on:change={() => {

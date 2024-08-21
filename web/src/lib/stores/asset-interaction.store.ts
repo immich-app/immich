@@ -1,132 +1,70 @@
 import type { AssetResponseDto } from '@immich/sdk';
-import { derived, writable } from 'svelte/store';
+import { derived, readonly, writable } from 'svelte/store';
 
-export interface AssetInteractionStore {
-  selectAsset: (asset: AssetResponseDto) => void;
-  selectAssets: (assets: AssetResponseDto[]) => void;
-  removeAssetFromMultiselectGroup: (asset: AssetResponseDto) => void;
-  addGroupToMultiselectGroup: (group: string) => void;
-  removeGroupFromMultiselectGroup: (group: string) => void;
-  setAssetSelectionCandidates: (assets: AssetResponseDto[]) => void;
-  clearAssetSelectionCandidates: () => void;
-  setAssetSelectionStart: (asset: AssetResponseDto | null) => void;
-  clearMultiselect: () => void;
-  isMultiSelectState: {
-    subscribe: (run: (value: boolean) => void, invalidate?: (value?: boolean) => void) => () => void;
-  };
-  selectedAssets: {
-    subscribe: (
-      run: (value: Set<AssetResponseDto>) => void,
-      invalidate?: (value?: Set<AssetResponseDto>) => void,
-    ) => () => void;
-  };
-  selectedGroup: {
-    subscribe: (run: (value: Set<string>) => void, invalidate?: (value?: Set<string>) => void) => () => void;
-  };
-  assetSelectionCandidates: {
-    subscribe: (
-      run: (value: Set<AssetResponseDto>) => void,
-      invalidate?: (value?: Set<AssetResponseDto>) => void,
-    ) => () => void;
-  };
-  assetSelectionStart: {
-    subscribe: (
-      run: (value: AssetResponseDto | null) => void,
-      invalidate?: (value?: AssetResponseDto | null) => void,
-    ) => () => void;
-  };
-}
+export type AssetInteractionStore = ReturnType<typeof createAssetInteractionStore>;
 
-export function createAssetInteractionStore(): AssetInteractionStore {
-  let _selectedAssets: Set<AssetResponseDto>;
-  let _selectedGroup: Set<string>;
-  let _assetSelectionCandidates: Set<AssetResponseDto>;
-  let _assetSelectionStart: AssetResponseDto | null;
-
-  // Selected assets
-  const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
-  // Selected date groups
-  const selectedGroup = writable<Set<string>>(new Set());
-  // If any asset selected
+export function createAssetInteractionStore() {
+  const selectedAssets = writable(new Set<AssetResponseDto>());
+  const selectedGroup = writable(new Set<string>());
   const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
 
   // Candidates for the range selection. This set includes only loaded assets, so it improves highlight
   // performance. From the user's perspective, range is highlighted almost immediately
-  const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
+  const assetSelectionCandidates = writable(new Set<AssetResponseDto>());
   // The beginning of the selection range
   const assetSelectionStart = writable<AssetResponseDto | null>(null);
 
-  selectedAssets.subscribe((assets) => {
-    _selectedAssets = assets;
-  });
-
-  selectedGroup.subscribe((group) => {
-    _selectedGroup = group;
-  });
-
-  assetSelectionCandidates.subscribe((assets) => {
-    _assetSelectionCandidates = assets;
-  });
-
-  assetSelectionStart.subscribe((asset) => {
-    _assetSelectionStart = asset;
-  });
-
   const selectAsset = (asset: AssetResponseDto) => {
-    _selectedAssets.add(asset);
-    selectedAssets.set(_selectedAssets);
+    selectedAssets.update(($selectedAssets) => $selectedAssets.add(asset));
   };
 
   const selectAssets = (assets: AssetResponseDto[]) => {
-    for (const asset of assets) {
-      _selectedAssets.add(asset);
-    }
-    selectedAssets.set(_selectedAssets);
+    selectedAssets.update(($selectedAssets) => {
+      for (const asset of assets) {
+        $selectedAssets.add(asset);
+      }
+      return $selectedAssets;
+    });
   };
 
   const removeAssetFromMultiselectGroup = (asset: AssetResponseDto) => {
-    _selectedAssets.delete(asset);
-    selectedAssets.set(_selectedAssets);
+    selectedAssets.update(($selectedAssets) => {
+      $selectedAssets.delete(asset);
+      return $selectedAssets;
+    });
   };
 
   const addGroupToMultiselectGroup = (group: string) => {
-    _selectedGroup.add(group);
-    selectedGroup.set(_selectedGroup);
+    selectedGroup.update(($selectedGroup) => $selectedGroup.add(group));
   };
 
   const removeGroupFromMultiselectGroup = (group: string) => {
-    _selectedGroup.delete(group);
-    selectedGroup.set(_selectedGroup);
+    selectedGroup.update(($selectedGroup) => {
+      $selectedGroup.delete(group);
+      return $selectedGroup;
+    });
   };
 
   const setAssetSelectionStart = (asset: AssetResponseDto | null) => {
-    _assetSelectionStart = asset;
-    assetSelectionStart.set(_assetSelectionStart);
+    assetSelectionStart.set(asset);
   };
 
   const setAssetSelectionCandidates = (assets: AssetResponseDto[]) => {
-    _assetSelectionCandidates = new Set(assets);
-    assetSelectionCandidates.set(_assetSelectionCandidates);
+    assetSelectionCandidates.set(new Set(assets));
   };
 
   const clearAssetSelectionCandidates = () => {
-    _assetSelectionCandidates.clear();
-    assetSelectionCandidates.set(_assetSelectionCandidates);
+    assetSelectionCandidates.set(new Set());
   };
 
   const clearMultiselect = () => {
     // Multi-selection
-    _selectedAssets.clear();
-    _selectedGroup.clear();
+    selectedAssets.set(new Set());
+    selectedGroup.set(new Set());
 
     // Range selection
-    _assetSelectionCandidates.clear();
-    _assetSelectionStart = null;
-
-    selectedAssets.set(_selectedAssets);
-    selectedGroup.set(_selectedGroup);
-    assetSelectionCandidates.set(_assetSelectionCandidates);
-    assetSelectionStart.set(_assetSelectionStart);
+    assetSelectionCandidates.set(new Set());
+    assetSelectionStart.set(null);
   };
 
   return {
@@ -139,20 +77,10 @@ export function createAssetInteractionStore(): AssetInteractionStore {
     clearAssetSelectionCandidates,
     setAssetSelectionStart,
     clearMultiselect,
-    isMultiSelectState: {
-      subscribe: isMultiSelectStoreState.subscribe,
-    },
-    selectedAssets: {
-      subscribe: selectedAssets.subscribe,
-    },
-    selectedGroup: {
-      subscribe: selectedGroup.subscribe,
-    },
-    assetSelectionCandidates: {
-      subscribe: assetSelectionCandidates.subscribe,
-    },
-    assetSelectionStart: {
-      subscribe: assetSelectionStart.subscribe,
-    },
+    isMultiSelectState: readonly(isMultiSelectStoreState),
+    selectedAssets: readonly(selectedAssets),
+    selectedGroup: readonly(selectedGroup),
+    assetSelectionCandidates: readonly(assetSelectionCandidates),
+    assetSelectionStart: readonly(assetSelectionStart),
   };
 }

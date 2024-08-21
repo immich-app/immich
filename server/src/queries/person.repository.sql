@@ -37,9 +37,12 @@ ORDER BY
   "person"."isHidden" ASC,
   NULLIF("person"."name", '') IS NULL ASC,
   COUNT("face"."assetId") DESC,
-  NULLIF("person"."name", '') ASC NULLS LAST
+  NULLIF("person"."name", '') ASC NULLS LAST,
+  "person"."createdAt" ASC
 LIMIT
-  500
+  11
+OFFSET
+  10
 
 -- PersonRepository.getAllWithoutFaces
 SELECT
@@ -154,8 +157,6 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
       "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."previewPath" AS "AssetFaceEntity__AssetFaceEntity_asset_previewPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."thumbnailPath" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbnailPath",
       "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
       "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
       "AssetFaceEntity__AssetFaceEntity_asset"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_asset_createdAt",
@@ -252,8 +253,6 @@ FROM
       "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
       "AssetEntity"."type" AS "AssetEntity_type",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-      "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-      "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
       "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
       "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
       "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -319,6 +318,7 @@ FROM
       "AssetEntity__AssetEntity_exifInfo"."profileDescription" AS "AssetEntity__AssetEntity_exifInfo_profileDescription",
       "AssetEntity__AssetEntity_exifInfo"."colorspace" AS "AssetEntity__AssetEntity_exifInfo_colorspace",
       "AssetEntity__AssetEntity_exifInfo"."bitsPerSample" AS "AssetEntity__AssetEntity_exifInfo_bitsPerSample",
+      "AssetEntity__AssetEntity_exifInfo"."rating" AS "AssetEntity__AssetEntity_exifInfo_rating",
       "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps"
     FROM
       "assets" "AssetEntity"
@@ -382,8 +382,6 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
   "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."previewPath" AS "AssetFaceEntity__AssetFaceEntity_asset_previewPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."thumbnailPath" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbnailPath",
   "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
   "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
   "AssetFaceEntity__AssetFaceEntity_asset"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_asset_createdAt",
@@ -434,3 +432,9 @@ WHERE
   (("AssetFaceEntity"."personId" = $1))
 LIMIT
   1
+
+-- PersonRepository.getLatestFaceDate
+SELECT
+  MAX("jobStatus"."facesRecognizedAt")::text AS "latestDate"
+FROM
+  "asset_job_status" "jobStatus"

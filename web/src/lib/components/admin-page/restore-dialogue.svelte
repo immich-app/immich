@@ -1,4 +1,5 @@
 <script lang="ts">
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
@@ -36,6 +37,10 @@
   onCancel={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
-    <p><b>{user.name}</b>'s account will be restored.</p>
+    <p>
+      <FormatMessage key="admin.user_restore_description" values={{ user: user.name }} let:message>
+        <b>{message}</b>
+      </FormatMessage>
+    </p>
   </svelte:fragment>
 </ConfirmDialog>

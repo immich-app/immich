@@ -10,13 +10,13 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
+  VideoContainer,
   defaults,
 } from 'src/config';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -55,6 +55,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
+    acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     maxBitrate: '0',
     bframes: -1,
     refs: 0,
@@ -82,7 +83,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     duplicateDetection: {
       enabled: true,
-      maxDistance: 0.0155,
+      maxDistance: 0.01,
     },
     facialRecognition: {
       enabled: true,
@@ -113,6 +114,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     mobileRedirectUri: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
+    profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
   },
@@ -180,14 +182,13 @@ describe(SystemConfigService.name, () => {
   let systemMock: Mocked<ISystemMetadataRepository>;
   let eventMock: Mocked<IEventRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
-  let smartInfoMock: Mocked<ISearchRepository>;
 
   beforeEach(() => {
     delete process.env.IMMICH_CONFIG_FILE;
     systemMock = newSystemMetadataRepositoryMock();
     eventMock = newEventRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new SystemConfigService(systemMock, eventMock, loggerMock, smartInfoMock);
+    sut = new SystemConfigService(systemMock, eventMock, loggerMock);
   });
 
   it('should work', () => {

@@ -19,7 +19,6 @@ export const newAlbumRepositoryMock = (): Mocked<IAlbumRepository> => {
     removeAsset: vitest.fn(),
     removeAssetIds: vitest.fn(),
     getAssetIds: vitest.fn(),
-    hasAsset: vitest.fn(),
     create: vitest.fn(),
     update: vitest.fn(),
     delete: vitest.fn(),

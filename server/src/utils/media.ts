@@ -384,7 +384,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBaseInputOptions(): string[] {
-    return ['-skip_frame nokey', '-sws_flags accurate_rnd+full_chroma_int'];
+    return ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
   }
 
   getBaseOutputOptions() {
@@ -393,7 +393,7 @@ export class ThumbnailConfig extends BaseConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
     const options = [
-      'fps=12:round=up',
+      'fps=12:eof_action=pass:round=down',
       'thumbnail=12',
       String.raw`select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20)`,
       'trim=end_frame=2',
@@ -732,7 +732,13 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       throw new Error('No QSV device found');
     }
 
-    const options = ['-hwaccel qsv', '-hwaccel_output_format qsv', '-async_depth 4', ...this.getInputThreadOptions()];
+    const options = [
+      '-hwaccel qsv',
+      '-hwaccel_output_format qsv',
+      '-async_depth 4',
+      '-noautorotate',
+      ...this.getInputThreadOptions(),
+    ];
     const hwDevice = this.getPreferredHardwareDevice();
     if (hwDevice) {
       options.push(`-qsv_device ${hwDevice}`);
@@ -910,7 +916,7 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       throw new Error('No RKMPP device found');
     }
 
-    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga'];
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {

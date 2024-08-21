@@ -4,9 +4,16 @@
     value: string;
   };
 
-  export function toComboBoxOptions(items: string[]) {
-    return items.map<ComboBoxOption>((item) => ({ label: item, value: item }));
-  }
+  export const asComboboxOptions = (values: string[]) =>
+    values.map((value) => {
+      if (value === '') {
+        return { label: get(t)('unknown'), value: '' };
+      }
+
+      return { label: value, value };
+    });
+
+  export const asSelectedOption = (value?: string) => (value === undefined ? undefined : asComboboxOptions([value])[0]);
 </script>
 
 <script lang="ts">
@@ -21,6 +28,7 @@
   import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
+  import { get } from 'svelte/store';
 
   export let label: string;
   export let hideLabel = false;
@@ -113,7 +121,7 @@
   };
 </script>
 
-<label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
+<label class="immich-form-label" class:sr-only={hideLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:clickOutside={{ onOutclick: deactivate }}
@@ -228,7 +236,7 @@
           id={`${listboxId}-${0}`}
           on:click={() => closeDropdown()}
         >
-          No results
+          {$t('no_results')}
         </li>
       {/if}
       {#each filteredOptions as option, index (option.label)}

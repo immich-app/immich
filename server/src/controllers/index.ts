@@ -20,8 +20,10 @@ import { PartnerController } from 'src/controllers/partner.controller';
 import { PersonController } from 'src/controllers/person.controller';
 import { SearchController } from 'src/controllers/search.controller';
 import { ServerInfoController } from 'src/controllers/server-info.controller';
+import { ServerController } from 'src/controllers/server.controller';
 import { SessionController } from 'src/controllers/session.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
+import { StackController } from 'src/controllers/stack.controller';
 import { SyncController } from 'src/controllers/sync.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
 import { SystemMetadataController } from 'src/controllers/system-metadata.controller';
@@ -30,6 +32,7 @@ import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
+import { ViewController } from 'src/controllers/view.controller';
 
 export const controllers = [
   APIKeyController,
@@ -53,9 +56,11 @@ export const controllers = [
   PersonController,
   ReportController,
   SearchController,
+  ServerController,
   ServerInfoController,
   SessionController,
   SharedLinkController,
+  StackController,
   SyncController,
   SystemConfigController,
   SystemMetadataController,
@@ -64,4 +69,5 @@ export const controllers = [
   TrashController,
   UserAdminController,
   UserController,
+  ViewController,
 ];

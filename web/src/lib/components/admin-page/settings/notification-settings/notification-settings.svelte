@@ -1,9 +1,8 @@
 <script lang="ts">
   import { sendTestEmail, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
@@ -24,8 +23,10 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
+
   let isSending = false;
-  const dispatch = createEventDispatcher<SettingsEventType>();
 
   const handleSendTestEmail = async () => {
     if (isSending) {
@@ -55,7 +56,9 @@
         message: $t('admin.notification_email_test_email_sent', { values: { email: $user.email } }),
       });
 
-      dispatch('save', { notifications: config.notifications });
+      if (!disabled) {
+        onSave({ notifications: config.notifications });
+      }
     } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));
     } finally {
@@ -138,8 +141,12 @@
             />
 
             <div class="flex gap-2 place-items-center">
-              <Button size="sm" disabled={disabled || !config.notifications.smtp.enabled} on:click={handleSendTestEmail}
-                >{$t('admin.notification_email_sent_test_email_button')}
+              <Button size="sm" disabled={!config.notifications.smtp.enabled} on:click={handleSendTestEmail}>
+                {#if disabled}
+                  {$t('admin.notification_email_test_email')}
+                {:else}
+                  {$t('admin.notification_email_sent_test_email_button')}
+                {/if}
               </Button>
               {#if isSending}
                 <LoadingSpinner />
@@ -150,8 +157,8 @@
       </div>
 
       <SettingButtonsRow
-        on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['notifications'] })}
-        on:save={() => dispatch('save', { notifications: config.notifications })}
+        onReset={(options) => onReset({ ...options, configKeys: ['notifications'] })}
+        onSave={() => onSave({ notifications: config.notifications })}
         showResetToDefault={!isEqual(savedConfig, defaultConfig)}
         {disabled}
       />

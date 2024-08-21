@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { OnEmit } from 'src/decorators';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
-import { DatabaseService } from 'src/services/database.service';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
@@ -14,7 +15,6 @@ import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
-import { SystemConfigService } from 'src/services/system-config.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { otelShutdown } from 'src/utils/instrumentation';
@@ -24,8 +24,6 @@ export class MicroservicesService {
   constructor(
     private auditService: AuditService,
     private assetService: AssetService,
-    private configService: SystemConfigService,
-    private databaseService: DatabaseService,
     private jobService: JobService,
     private libraryService: LibraryService,
     private mediaService: MediaService,
@@ -41,11 +39,12 @@ export class MicroservicesService {
     private versionService: VersionService,
   ) {}
 
-  async init() {
-    await this.databaseService.init();
-    await this.configService.init();
-    await this.libraryService.init();
-    await this.notificationService.init();
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(app: ArgOf<'onBootstrap'>) {
+    if (app !== 'microservices') {
+      return;
+    }
+
     await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
@@ -95,13 +94,9 @@ export class MicroservicesService {
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
       [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
     });
-
-    await this.metadataService.init();
   }
 
-  async teardown() {
-    await this.libraryService.teardown();
-    await this.metadataService.teardown();
+  async onShutdown() {
     await otelShutdown();
   }
 }

@@ -247,7 +247,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
-              iconData: Icons.delete_sweep_rounded,
+              iconData: Icons.remove_circle_outline,
               label: 'album_viewer_appbar_share_remove'.tr(),
               onPressed: enabled ? onRemoveFromAlbum : null,
             ),
@@ -281,7 +281,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
         ScrollController scrollController,
       ) {
         return Card(
-          color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[100],
+          color: context.colorScheme.surfaceContainerLow,
           surfaceTintColor: Colors.transparent,
           elevation: 18.0,
           shape: const RoundedRectangleBorder(

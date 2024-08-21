@@ -23,5 +23,6 @@ export const newUserRepositoryMock = (reset = true): Mocked<IUserRepository> => 
     updateUsage: vitest.fn(),
     syncUsage: vitest.fn(),
     upsertMetadata: vitest.fn(),
+    deleteMetadata: vitest.fn(),
   };
 };

@@ -15,6 +15,40 @@ describe('/server-info', () => {
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
+  describe('GET /server-info/about', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/server-info/about');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should return about information', async () => {
+      const { status, body } = await request(app)
+        .get('/server-info/about')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        version: expect.any(String),
+        versionUrl: expect.any(String),
+        repository: 'immich-app/immich',
+        repositoryUrl: 'https://github.com/immich-app/immich',
+        build: '1234567890',
+        buildUrl: 'https://github.com/immich-app/immich/actions/runs/1234567890',
+        buildImage: 'e2e',
+        buildImageUrl: 'https://github.com/immich-app/immich/pkgs/container/immich-server',
+        sourceRef: 'e2e',
+        sourceCommit: 'e2eeeeeeeeeeeeeeeeee',
+        sourceUrl: 'https://github.com/immich-app/immich/commit/e2eeeeeeeeeeeeeeeeee',
+        nodejs: expect.any(String),
+        ffmpeg: expect.any(String),
+        imagemagick: expect.any(String),
+        libvips: expect.any(String),
+        exiftool: expect.any(String),
+        licensed: false,
+      });
+    });
+  });
+
   describe('GET /server-info/storage', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get('/server-info/storage');

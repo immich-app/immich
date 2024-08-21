@@ -1,14 +1,13 @@
 import { authenticate } from '$lib/utils/auth';
-import { getAllAlbums, getPartners } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
+import { getFormatter } from '$lib/utils/i18n';
+import { PartnerDirection, getAllAlbums, getPartners } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
   const sharedAlbums = await getAllAlbums({ shared: true });
-  const partners = await getPartners({ direction: 'shared-with' });
-  const $t = get(t);
+  const partners = await getPartners({ direction: PartnerDirection.SharedWith });
+  const $t = await getFormatter();
 
   return {
     sharedAlbums,

@@ -26,6 +26,10 @@ export class SystemMetadataRepository implements ISystemMetadataRepository {
     await this.repository.upsert({ key, value }, { conflictPaths: { key: true } });
   }
 
+  async delete<T extends keyof SystemMetadata>(key: T): Promise<void> {
+    await this.repository.delete({ key });
+  }
+
   readFile(filename: string): Promise<string> {
     return readFile(filename, { encoding: 'utf8' });
   }

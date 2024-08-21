@@ -6,16 +6,13 @@
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
   import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import {
     createLibrary,
@@ -35,9 +32,10 @@
   import { fade, slide } from 'svelte/transition';
   import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
   import type { PageData } from './$types';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -50,24 +48,11 @@
   let totalCount: number[] = [];
   let diskUsage: number[] = [];
   let diskUsageUnit: ByteUnit[] = [];
-
-  let confirmDeleteLibrary: LibraryResponseDto | null = null;
-  let deletedLibrary: LibraryResponseDto | null = null;
-
   let editImportPaths: number | null;
   let editScanSettings: number | null;
   let renameLibrary: number | null;
-
   let updateLibraryIndex: number | null;
-
-  let deleteAssetCount = 0;
-
   let dropdownOpen: boolean[] = [];
-  let showContextMenu = false;
-  let contextMenuPosition = { x: 0, y: 0 };
-  let selectedLibraryIndex = 0;
-  let selectedLibrary: LibraryResponseDto | null = null;
-
   let toCreateLibrary = false;
 
   onMount(async () => {
@@ -79,23 +64,10 @@
     editScanSettings = null;
     renameLibrary = null;
     updateLibraryIndex = null;
-    showContextMenu = false;
 
     for (let index = 0; index < dropdownOpen.length; index++) {
       dropdownOpen[index] = false;
     }
-  };
-
-  const showMenu = (event: MouseEvent, library: LibraryResponseDto, index: number) => {
-    contextMenuPosition = getContextMenuPosition(event);
-    showContextMenu = !showContextMenu;
-
-    selectedLibraryIndex = index;
-    selectedLibrary = library;
-  };
-
-  const onMenuExit = () => {
-    showContextMenu = false;
   };
 
   const refreshStats = async (listIndex: number) => {
@@ -144,30 +116,6 @@
       await readLibraryList();
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_library'));
-    }
-  };
-
-  const handleDelete = async () => {
-    if (confirmDeleteLibrary) {
-      deletedLibrary = confirmDeleteLibrary;
-    }
-
-    if (!deletedLibrary) {
-      return;
-    }
-
-    try {
-      await deleteLibrary({ id: deletedLibrary.id });
-      notificationController.show({
-        message: $t('admin.library_deleted'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_library'));
-    } finally {
-      confirmDeleteLibrary = null;
-      deletedLibrary = null;
-      await readLibraryList();
     }
   };
 
@@ -233,85 +181,87 @@
     }
   };
 
-  const onRenameClicked = () => {
+  const onRenameClicked = (index: number) => {
     closeAll();
-    renameLibrary = selectedLibraryIndex;
-    updateLibraryIndex = selectedLibraryIndex;
+    renameLibrary = index;
+    updateLibraryIndex = index;
   };
 
-  const onEditImportPathClicked = () => {
+  const onEditImportPathClicked = (index: number) => {
     closeAll();
-    editImportPaths = selectedLibraryIndex;
-    updateLibraryIndex = selectedLibraryIndex;
+    editImportPaths = index;
+    updateLibraryIndex = index;
   };
 
-  const onScanNewLibraryClicked = async () => {
+  const onScanNewLibraryClicked = async (library: LibraryResponseDto) => {
     closeAll();
 
-    if (selectedLibrary) {
-      await handleScan(selectedLibrary.id);
+    if (library) {
+      await handleScan(library.id);
     }
   };
 
-  const onScanSettingClicked = () => {
+  const onScanSettingClicked = (index: number) => {
     closeAll();
-    editScanSettings = selectedLibraryIndex;
-    updateLibraryIndex = selectedLibraryIndex;
+    editScanSettings = index;
+    updateLibraryIndex = index;
   };
 
-  const onScanAllLibraryFilesClicked = async () => {
+  const onScanAllLibraryFilesClicked = async (library: LibraryResponseDto) => {
     closeAll();
-    if (selectedLibrary) {
-      await handleScanChanges(selectedLibrary.id);
+    if (library) {
+      await handleScanChanges(library.id);
     }
   };
 
-  const onForceScanAllLibraryFilesClicked = async () => {
+  const onForceScanAllLibraryFilesClicked = async (library: LibraryResponseDto) => {
     closeAll();
-    if (selectedLibrary) {
-      await handleForceScan(selectedLibrary.id);
+    if (library) {
+      await handleForceScan(library.id);
     }
   };
 
-  const onRemoveOfflineFilesClicked = async () => {
+  const onRemoveOfflineFilesClicked = async (library: LibraryResponseDto) => {
     closeAll();
-    if (selectedLibrary) {
-      await handleRemoveOffline(selectedLibrary.id);
+    if (library) {
+      await handleRemoveOffline(library.id);
     }
   };
 
-  const onDeleteLibraryClicked = async () => {
+  const handleDelete = async (library: LibraryResponseDto, index: number) => {
     closeAll();
 
-    if (!selectedLibrary) {
+    if (!library) {
       return;
     }
 
-    const isConfirmedLibrary = await dialogController.show({
-      id: 'delete-library',
-      prompt: $t('admin.confirm_delete_library', { values: { library: selectedLibrary.name } }),
+    const isConfirmed = await dialogController.show({
+      prompt: $t('admin.confirm_delete_library', { values: { library: library.name } }),
     });
 
-    if (!isConfirmedLibrary) {
+    if (!isConfirmed) {
       return;
     }
 
-    await refreshStats(selectedLibraryIndex);
-    if (totalCount[selectedLibraryIndex] > 0) {
-      deleteAssetCount = totalCount[selectedLibraryIndex];
-
-      const isConfirmedLibraryAssetCount = await dialogController.show({
-        id: 'delete-library-assets',
-        prompt: $t('admin.confirm_delete_library_assets', { values: { count: deleteAssetCount } }),
+    await refreshStats(index);
+    const assetCount = totalCount[index];
+    if (assetCount > 0) {
+      const isConfirmed = await dialogController.show({
+        prompt: $t('admin.confirm_delete_library_assets', { values: { count: assetCount } }),
       });
 
-      if (!isConfirmedLibraryAssetCount) {
+      if (!isConfirmed) {
         return;
       }
-      await handleDelete();
-    } else {
-      deletedLibrary = selectedLibrary;
-      await handleDelete();
+    }
+
+    try {
+      await deleteLibrary({ id: library.id });
+      notificationController.show({ message: $t('admin.library_deleted'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_remove_library'));
+    } finally {
+      await readLibraryList();
     }
   };
 </script>
@@ -386,52 +336,47 @@
                   </td>
                 {:else}
                   <td class=" text-ellipsis px-4 text-sm">
-                    {totalCount[index]}
+                    {totalCount[index].toLocaleString($locale)}
                   </td>
                   <td class=" text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
                 {/if}
 
                 <td class=" text-ellipsis px-4 text-sm">
-                  <CircleIconButton
+                  <ButtonContextMenu
+                    align="top-right"
+                    direction="left"
                     color="primary"
+                    size="16"
                     icon={mdiDotsVertical}
                     title={$t('library_options')}
-                    size="16"
-                    on:click={(e) => showMenu(e, library, index)}
-                  />
-
-                  {#if showContextMenu}
-                    <Portal target="body">
-                      <ContextMenu {...contextMenuPosition} onClose={() => onMenuExit()}>
-                        <MenuOption on:click={() => onRenameClicked()} text={$t('rename')} />
-
-                        {#if selectedLibrary}
-                          <MenuOption on:click={() => onEditImportPathClicked()} text={$t('edit_import_paths')} />
-                          <MenuOption on:click={() => onScanSettingClicked()} text={$t('scan_settings')} />
-                          <hr />
-                          <MenuOption on:click={() => onScanNewLibraryClicked()} text={$t('scan_new_library_files')} />
-                          <MenuOption
-                            on:click={() => onScanAllLibraryFilesClicked()}
-                            text={$t('scan_all_library_files')}
-                            subtitle={$t('only_refreshes_modified_files')}
-                          />
-                          <MenuOption
-                            on:click={() => onForceScanAllLibraryFilesClicked()}
-                            text={$t('force_re-scan_library_files')}
-                            subtitle={$t('refreshes_every_file')}
-                          />
-                          <hr />
-                          <MenuOption
-                            on:click={() => onRemoveOfflineFilesClicked()}
-                            text={$t('remove_offline_files')}
-                          />
-                          <MenuOption on:click={() => onDeleteLibraryClicked()}>
-                            <p class="text-red-600">{$t('delete_library')}</p>
-                          </MenuOption>
-                        {/if}
-                      </ContextMenu>
-                    </Portal>
-                  {/if}
+                  >
+                    <MenuOption onClick={() => onRenameClicked(index)} text={$t('rename')} />
+                    <MenuOption onClick={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
+                    <MenuOption onClick={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
+                    <hr />
+                    <MenuOption onClick={() => onScanNewLibraryClicked(library)} text={$t('scan_new_library_files')} />
+                    <MenuOption
+                      onClick={() => onScanAllLibraryFilesClicked(library)}
+                      text={$t('scan_all_library_files')}
+                      subtitle={$t('only_refreshes_modified_files')}
+                    />
+                    <MenuOption
+                      onClick={() => onForceScanAllLibraryFilesClicked(library)}
+                      text={$t('force_re-scan_library_files')}
+                      subtitle={$t('refreshes_every_file')}
+                    />
+                    <hr />
+                    <MenuOption
+                      onClick={() => onRemoveOfflineFilesClicked(library)}
+                      text={$t('remove_offline_files')}
+                    />
+                    <MenuOption
+                      text={$t('delete_library')}
+                      activeColor="bg-red-200"
+                      textColor="text-red-600"
+                      onClick={() => handleDelete(library, index)}
+                    />
+                  </ButtonContextMenu>
                 </td>
               </tr>
               {#if renameLibrary === index}

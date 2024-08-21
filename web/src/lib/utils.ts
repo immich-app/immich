@@ -1,5 +1,6 @@
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
-import { locales } from '$lib/constants';
+import { defaultLang, langs, locales } from '$lib/constants';
+import { lang } from '$lib/stores/preferences.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -15,10 +16,13 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
+  type AssetResponseDto,
+  type PersonResponseDto,
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { t } from 'svelte-i18n';
+import { sortBy } from 'lodash-es';
+import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
@@ -28,6 +32,15 @@ interface DownloadRequestOptions<T = unknown> {
   signal?: AbortSignal;
   onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
+
+export const initApp = async () => {
+  const preferenceLang = get(lang);
+  for (const { code, loader } of langs) {
+    register(code, loader);
+  }
+
+  await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
+};
 
 interface UploadRequestOptions {
   url: string;
@@ -193,27 +206,32 @@ export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: s
 
 export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));
 
-export const getPeopleThumbnailUrl = (personId: string) => createUrl(getPeopleThumbnailPath(personId));
+export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
+  createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
-export const getAssetJobName = (job: AssetJobName) => {
-  const names: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshMetadata]: 'Refresh metadata',
-    [AssetJobName.RegenerateThumbnail]: 'Refresh thumbnails',
-    [AssetJobName.TranscodeVideo]: 'Refresh encoded videos',
+export const getAssetJobName = derived(t, ($t) => {
+  return (job: AssetJobName) => {
+    const names: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
+      [AssetJobName.RegenerateThumbnail]: $t('refresh_thumbnails'),
+      [AssetJobName.TranscodeVideo]: $t('refresh_encoded_videos'),
+    };
+
+    return names[job];
   };
+});
 
-  return names[job];
-};
+export const getAssetJobMessage = derived(t, ($t) => {
+  return (job: AssetJobName) => {
+    const messages: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
+      [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
+      [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
+    };
 
-export const getAssetJobMessage = (job: AssetJobName) => {
-  const messages: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshMetadata]: 'Refreshing metadata',
-    [AssetJobName.RegenerateThumbnail]: `Regenerating thumbnails`,
-    [AssetJobName.TranscodeVideo]: `Refreshing encoded video`,
+    return messages[job];
   };
-
-  return messages[job];
-};
+});
 
 export const getAssetJobIcon = (job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
@@ -259,13 +277,14 @@ export const oauth = {
     return false;
   },
   authorize: async (location: Location) => {
+    const $t = get(t);
     try {
       const redirectUri = location.href.split('?')[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
       window.location.href = url;
       return true;
     } catch (error) {
-      handleError(error, 'Unable to login with OAuth');
+      handleError(error, $t('errors.unable_to_login_with_oauth'));
       return false;
     }
   },
@@ -298,9 +317,9 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
 
-export const s = (count: number) => (count === 1 ? '' : 's');
-
-export const memoryLaneTitle = (yearsAgo: number) => `${yearsAgo} year${s(yearsAgo)} ago`;
+export const memoryLaneTitle = derived(t, ($t) => {
+  return (yearsAgo: number) => $t('years_ago', { values: { years: yearsAgo } });
+});
 
 export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {
   try {
@@ -310,3 +329,10 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
     return [error, undefined];
   }
 };
+
+export const suggestDuplicateByFileSize = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
+  return sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
+};
+
+// eslint-disable-next-line unicorn/prefer-code-point
+export const decodeBase64 = (data: string) => Uint8Array.from(atob(data), (c) => c.charCodeAt(0));

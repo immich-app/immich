@@ -14,10 +14,18 @@
     sidebarSettings,
   } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
+  import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
   import { onMount } from 'svelte';
+  import { locale as i18nLocale, t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { t, init } from 'svelte-i18n';
   import { invalidateAll } from '$app/navigation';
+  import { preferences } from '$lib/stores/user.store';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { handleError } from '../../utils/handle-error';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
 
   let time = new Date();
 
@@ -37,6 +45,8 @@
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,
   };
+  $: closestLanguage = getClosestAvailableLocale([$lang], langCodes);
+  $: ratingEnabled = $preferences?.rating?.enabled;
 
   onMount(() => {
     const interval = setInterval(() => {
@@ -78,13 +88,7 @@
   const handleLanguageChange = async (newLang: string | undefined) => {
     if (newLang) {
       $lang = newLang;
-
-      if (newLang === 'dev') {
-        // Reload required, because fallbackLocale cannot be cleared.
-        window.location.reload();
-      }
-
-      await init({ fallbackLocale: defaultLang.code, initialLocale: newLang });
+      await i18nLocale.set(newLang);
       await invalidateAll();
     }
   };
@@ -92,6 +96,17 @@
   const handleLocaleChange = (newLocale: string | undefined) => {
     if (newLocale) {
       $locale = newLocale;
+    }
+  };
+
+  const handleRatingChange = async (enabled: boolean) => {
+    try {
+      const data = await updateMyPreferences({ userPreferencesUpdateDto: { rating: { enabled } } });
+      $preferences.rating.enabled = data.rating.enabled;
+
+      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_settings'));
     }
   };
 </script>
@@ -111,7 +126,7 @@
       <div class="ml-4">
         <SettingCombobox
           comboboxPlaceholder={$t('language')}
-          selectedOption={langOptions.find(({ value }) => value === $lang) || defaultLangOption}
+          selectedOption={langOptions.find(({ value }) => value === closestLanguage) || defaultLangOption}
           options={langOptions}
           title={$t('language')}
           subtitle={$t('language_setting_description')}
@@ -187,6 +202,14 @@
           title={$t('sharing')}
           subtitle={$t('sharing_sidebar_description')}
           bind:checked={$sidebarSettings.sharing}
+        />
+      </div>
+      <div class="ml-4">
+        <SettingSwitch
+          title={$t('rating')}
+          subtitle={$t('rating_description')}
+          bind:checked={ratingEnabled}
+          on:toggle={({ detail: enabled }) => handleRatingChange(enabled)}
         />
       </div>
     </div>

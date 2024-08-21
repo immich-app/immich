@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
-import { envName, excludePaths, isDev, serverVersion, WEB_ROOT } from 'src/constants';
+import { envName, excludePaths, isDev, resourcePaths, serverVersion } from 'src/constants';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
@@ -14,9 +14,18 @@ import { useSwagger } from 'src/utils/misc';
 
 const host = process.env.HOST;
 
+function parseTrustedProxy(input?: string) {
+  if (!input) {
+    return [];
+  }
+  // Split on ',' char to allow multiple IPs
+  return input.split(',');
+}
+
 async function bootstrap() {
   process.title = 'immich-api';
   const otelPort = Number.parseInt(process.env.IMMICH_API_METRICS_PORT ?? '8081');
+  const trustedProxies = parseTrustedProxy(process.env.IMMICH_TRUSTED_PROXIES ?? '');
 
   otelStart(otelPort);
 
@@ -27,7 +36,7 @@ async function bootstrap() {
   logger.setAppName('Api');
   logger.setContext('Bootstrap');
   app.useLogger(logger);
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal', ...trustedProxies]);
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
@@ -38,11 +47,11 @@ async function bootstrap() {
   useSwagger(app);
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
-  if (existsSync(WEB_ROOT)) {
+  if (existsSync(resourcePaths.web.root)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46
     // provides serving of precompressed assets and caching of immutable assets
     app.use(
-      sirv(WEB_ROOT, {
+      sirv(resourcePaths.web.root, {
         etag: true,
         gzip: true,
         brotli: true,

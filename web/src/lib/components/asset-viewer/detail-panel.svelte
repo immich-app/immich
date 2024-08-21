@@ -7,7 +7,6 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
-  import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import {
@@ -30,7 +29,7 @@
     mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { slide } from 'svelte/transition';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -41,7 +40,9 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -97,14 +98,6 @@
 
   $: unassignedFaces = asset.unassignedFaces || [];
 
-  onMount(() => {
-    return websocketEvents.on('on_asset_update', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
-  });
-
   const dispatch = createEventDispatcher<{
     close: void;
   }>();
@@ -153,8 +146,7 @@
         <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">{$t('asset_offline')}</div>
         <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            This asset is offline. Immich can not access its file location. Please ensure the asset is available and
-            then rescan the library.
+            {$t('asset_offline_description')}
           </p>
         </div>
       </div>
@@ -162,6 +154,7 @@
   {/if}
 
   <DetailPanelDescription {asset} {isOwner} />
+  <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
     <section class="px-4 py-4 text-sm">
@@ -170,8 +163,8 @@
         <div class="flex gap-2 items-center">
           {#if unassignedFaces.length > 0}
             <Icon
-              ariaLabel="Asset has unassigned faces"
-              title="Asset has unassigned faces"
+              ariaLabel={$t('asset_has_unassigned_faces')}
+              title={$t('asset_has_unassigned_faces')}
               color="currentColor"
               path={mdiAccountOff}
               size="24"
@@ -214,7 +207,7 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={getPeopleThumbnailUrl(person.id)}
+                  url={getPeopleThumbnailUrl(person)}
                   altText={person.name}
                   title={person.name}
                   widthStyle="90px"
@@ -243,11 +236,11 @@
                     )}
                   >
                     {#if ageInMonths <= 11}
-                      Age {ageInMonths} months
+                      {$t('age_months', { values: { months: ageInMonths } })}
                     {:else if ageInMonths > 12 && ageInMonths <= 23}
-                      Age 1 year, {ageInMonths - 12} months
+                      {$t('age_year_months', { values: { months: ageInMonths - 12 } })}
                     {:else}
-                      Age {age}
+                      {$t('age_years', { values: { years: age } })}
                     {/if}
                   </p>
                 {/if}
@@ -391,7 +384,7 @@
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
-              <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+              <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
             {/if}
 
             {#if asset.exifInfo.exposureTime}
@@ -439,20 +432,21 @@
           },
         ]}
         center={latlng}
-        zoom={15}
+        zoom={12.5}
         simplified
         useLocationPin
+        onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
         <svelte:fragment slot="popup" let:marker>
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
             <a
-              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
               class="font-medium text-immich-primary"
             >
-              Open in OpenStreetMap
+              {$t('open_in_openstreetmap')}
             </a>
           </div>
         </svelte:fragment>

@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation';
+import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
@@ -6,29 +7,32 @@ import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, getKey, s, withError } from '$lib/utils';
+import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
-import { encodeHTMLSpecialChars } from '$lib/utils/string-utils';
 import {
   addAssetsToAlbum as addAssets,
+  createStack,
+  deleteStacks,
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
+  getStack,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { t as translate } from 'svelte-i18n';
+import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
-export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
+export const addAssetsToAlbum = async (albumId: string, assetIds: string[], showNotification = true) => {
   const result = await addAssets({
     id: albumId,
     bulkIdsDto: {
@@ -37,20 +41,24 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[]) => {
     key: getKey(),
   });
   const count = result.filter(({ success }) => success).length;
-  notificationController.show({
-    type: NotificationType.Info,
-    timeout: 5000,
-    message:
-      count > 0
-        ? `Added ${count} asset${s(count)} to the album`
-        : `Asset${assetIds.length === 1 ? ' was' : 's were'} already part of the album`,
-    button: {
-      text: 'View Album',
-      onClick() {
-        return goto(`${AppRoute.ALBUMS}/${albumId}`);
+  const $t = get(t);
+
+  if (showNotification) {
+    notificationController.show({
+      type: NotificationType.Info,
+      timeout: 5000,
+      message:
+        count > 0
+          ? $t('assets_added_to_album_count', { values: { count: count } })
+          : $t('assets_were_part_of_album_count', { values: { count: assetIds.length } }),
+      button: {
+        text: $t('view_album'),
+        onClick() {
+          return goto(`${AppRoute.ALBUMS}/${albumId}`);
+        },
       },
-    },
-  });
+    });
+  }
 };
 
 export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {
@@ -58,14 +66,19 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
   if (!album) {
     return;
   }
-  const displayName = albumName ? `<b>${encodeHTMLSpecialChars(albumName)}</b>` : 'new album';
+  const $t = get(t);
   notificationController.show({
     type: NotificationType.Info,
     timeout: 5000,
-    message: `Added ${assetIds.length} asset${s(assetIds.length)} to ${displayName}`,
-    html: true,
+    component: {
+      type: FormatBoldMessage,
+      props: {
+        key: 'assets_added_to_name_count',
+        values: { count: assetIds.length, name: albumName, hasName: !!albumName },
+      },
+    },
     button: {
-      text: 'View Album',
+      text: $t('view_album'),
       onClick() {
         return goto(`${AppRoute.ALBUMS}/${album.id}`);
       },
@@ -95,12 +108,13 @@ export const downloadBlob = (data: Blob, filename: string) => {
 };
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
-  const $preferences = get(preferences);
-  const dto = { ...options, archiveSize: $preferences.download.archiveSize };
+  const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
+  const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
 
   const [error, downloadInfo] = await withError(() => getDownloadInfo({ downloadInfoDto: dto, key: getKey() }));
   if (error) {
-    handleError(error, 'Unable to download files');
+    const $t = get(t);
+    handleError(error, $t('errors.unable_to_download_files'));
     return;
   }
 
@@ -134,7 +148,8 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 
       downloadBlob(data, archiveName);
     } catch (error) {
-      handleError(error, 'Unable to download files');
+      const $t = get(t);
+      handleError(error, $t('errors.unable_to_download_files'));
       downloadManager.clear(downloadKey);
       return;
     } finally {
@@ -144,10 +159,11 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 };
 
 export const downloadFile = async (asset: AssetResponseDto) => {
+  const $t = get(t);
   if (asset.isOffline) {
     notificationController.show({
       type: NotificationType.Info,
-      message: `Asset ${asset.originalFileName} is offline`,
+      message: $t('asset_filename_is_offline', { values: { filename: asset.originalFileName } }),
     });
     return;
   }
@@ -159,13 +175,19 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     },
   ];
 
+  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
+    return asset.originalPath.includes('encoded-video');
+  };
+
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
-    assets.push({
-      filename: motionAsset.originalFileName,
-      id: asset.livePhotoVideoId,
-      size: motionAsset.exifInfo?.fileSizeInByte || 0,
-    });
+    if (!isAndroidMotionVideo(motionAsset) || get(preferences).download.includeEmbeddedVideos) {
+      assets.push({
+        filename: motionAsset.originalFileName,
+        id: asset.livePhotoVideoId,
+        size: motionAsset.exifInfo?.fileSizeInByte || 0,
+      });
+    }
   }
 
   for (const { filename, id, size } of assets) {
@@ -178,7 +200,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       notificationController.show({
         type: NotificationType.Info,
-        message: `Downloading asset ${asset.originalFileName}`,
+        message: $t('downloading_asset_filename', { values: { filename: asset.originalFileName } }),
       });
 
       // TODO use sdk once it supports progress events
@@ -191,7 +213,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       downloadBlob(data, filename);
     } catch (error) {
-      handleError(error, `Error downloading ${filename}`);
+      handleError(error, $t('errors.error_downloading', { values: { filename: filename } }));
       downloadManager.clear(downloadKey);
     } finally {
       setTimeout(() => downloadManager.clear(downloadKey), 5000);
@@ -267,6 +289,11 @@ const supportedImageMimeTypes = new Set([
   'image/webp',
 ]);
 
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
+if (isSafari) {
+  supportedImageMimeTypes.add('image/heic').add('image/heif');
+}
+
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
  */
@@ -297,88 +324,74 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
   if (numberOfIssues > 0) {
+    const $t = get(t);
     notificationController.show({
-      message: `Can't change metadata of ${numberOfIssues} asset${s(numberOfIssues)}`,
+      message: $t('errors.cant_change_metadata_assets_count', { values: { count: numberOfIssues } }),
       type: NotificationType.Warning,
     });
   }
   return ids;
 };
 
-export const stackAssets = async (assets: AssetResponseDto[]) => {
+export const stackAssets = async (assets: AssetResponseDto[], showNotification = true) => {
   if (assets.length < 2) {
     return false;
   }
 
-  const parent = assets[0];
-  const children = assets.slice(1);
-  const ids = children.map(({ id }) => id);
+  const $t = get(t);
 
   try {
-    await updateAssets({
-      assetBulkUpdateDto: {
-        ids,
-        stackParentId: parent.id,
-      },
-    });
+    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
+    if (showNotification) {
+      notificationController.show({
+        message: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
+        type: NotificationType.Info,
+        button: {
+          text: $t('view_stack'),
+          onClick: () => assetViewingStore.setAssetId(stack.primaryAssetId),
+        },
+      });
+    }
+
+    for (const [index, asset] of assets.entries()) {
+      asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
+    }
+
+    return assets.slice(1).map((asset) => asset.id);
   } catch (error) {
-    handleError(error, 'Failed to stack assets');
+    handleError(error, $t('errors.failed_to_stack_assets'));
     return false;
   }
-
-  let grandChildren: AssetResponseDto[] = [];
-  for (const asset of children) {
-    asset.stackParentId = parent.id;
-    if (asset.stack) {
-      // Add grand-children to new parent
-      grandChildren = grandChildren.concat(asset.stack);
-      // Reset children stack info
-      asset.stackCount = null;
-      asset.stack = [];
-    }
-  }
-
-  parent.stack ??= [];
-  parent.stack = parent.stack.concat(children, grandChildren);
-  parent.stackCount = parent.stack.length + 1;
-
-  notificationController.show({
-    message: `Stacked ${parent.stackCount} assets`,
-    type: NotificationType.Info,
-    button: {
-      text: 'View Stack',
-      onClick() {
-        return assetViewingStore.setAssetId(parent.id);
-      },
-    },
-  });
-
-  return ids;
 };
 
-export const unstackAssets = async (assets: AssetResponseDto[]) => {
-  const ids = assets.map(({ id }) => id);
-  try {
-    await updateAssets({
-      assetBulkUpdateDto: {
-        ids,
-        removeParent: true,
-      },
-    });
-  } catch (error) {
-    handleError(error, 'Failed to un-stack assets');
+export const deleteStack = async (stackIds: string[]) => {
+  const ids = [...new Set(stackIds)];
+  if (ids.length === 0) {
     return;
   }
-  for (const asset of assets) {
-    asset.stackParentId = null;
-    asset.stackCount = null;
-    asset.stack = [];
+
+  const $t = get(t);
+
+  try {
+    const stacks = await Promise.all(ids.map((id) => getStack({ id })));
+    const count = stacks.reduce((sum, stack) => sum + stack.assets.length, 0);
+
+    await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('unstacked_assets_count', { values: { count } }),
+    });
+
+    const assets = stacks.flatMap((stack) => stack.assets);
+    for (const asset of assets) {
+      asset.stack = null;
+    }
+
+    return assets;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_unstack_assets'));
   }
-  notificationController.show({
-    type: NotificationType.Info,
-    message: `Un-stacked ${assets.length} assets`,
-  });
-  return assets;
 };
 
 export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
@@ -404,12 +417,14 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
       await delay(0);
     }
   } catch (error) {
-    handleError(error, 'Error selecting all assets');
+    const $t = get(t);
+    handleError(error, $t('errors.error_selecting_all_assets'));
     isSelectingAllAssets.set(false);
   }
 };
 
 export const toggleArchive = async (asset: AssetResponseDto) => {
+  const $t = get(t);
   try {
     const data = await updateAsset({
       id: asset.id,
@@ -422,10 +437,10 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
 
     notificationController.show({
       type: NotificationType.Info,
-      message: asset.isArchived ? `Added to archive` : `Removed from archive`,
+      message: asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`),
     });
   } catch (error) {
-    handleError(error, `Unable to ${asset.isArchived ? `remove asset from` : `add asset to`} archive`);
+    handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
   }
 
   return asset;
@@ -434,6 +449,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
 export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean) => {
   const isArchived = archive;
   const ids = assets.map(({ id }) => id);
+  const $t = get(t);
 
   try {
     if (ids.length > 0) {
@@ -444,13 +460,14 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
       asset.isArchived = isArchived;
     }
 
-    const t = get(translate);
     notificationController.show({
-      message: `${isArchived ? t('archived') : t('unarchived')} ${ids.length}`,
+      message: isArchived
+        ? $t('archived_count', { values: { count: ids.length } })
+        : $t('unarchived_count', { values: { count: ids.length } }),
       type: NotificationType.Info,
     });
   } catch (error) {
-    handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
+    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: isArchived } }));
   }
 
   return ids;

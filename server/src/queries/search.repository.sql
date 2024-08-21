@@ -14,8 +14,6 @@ FROM
       "asset"."deviceId" AS "asset_deviceId",
       "asset"."type" AS "asset_type",
       "asset"."originalPath" AS "asset_originalPath",
-      "asset"."previewPath" AS "asset_previewPath",
-      "asset"."thumbnailPath" AS "asset_thumbnailPath",
       "asset"."thumbhash" AS "asset_thumbhash",
       "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
       "asset"."createdAt" AS "asset_createdAt",
@@ -37,6 +35,7 @@ FROM
       "asset"."stackId" AS "asset_stackId",
       "asset"."duplicateId" AS "asset_duplicateId",
       "stack"."id" AS "stack_id",
+      "stack"."ownerId" AS "stack_ownerId",
       "stack"."primaryAssetId" AS "stack_primaryAssetId",
       "stackedAssets"."id" AS "stackedAssets_id",
       "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
@@ -45,8 +44,6 @@ FROM
       "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
       "stackedAssets"."type" AS "stackedAssets_type",
       "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-      "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
-      "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
       "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
       "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
       "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -110,8 +107,6 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -133,6 +128,7 @@ SELECT
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
   "stack"."id" AS "stack_id",
+  "stack"."ownerId" AS "stack_ownerId",
   "stack"."primaryAssetId" AS "stack_primaryAssetId",
   "stackedAssets"."id" AS "stackedAssets_id",
   "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
@@ -141,8 +137,6 @@ SELECT
   "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
   "stackedAssets"."type" AS "stackedAssets_type",
   "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
-  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
   "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
   "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
   "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -241,15 +235,16 @@ WITH
       "faces"."boundingBoxY1" AS "boundingBoxY1",
       "faces"."boundingBoxX2" AS "boundingBoxX2",
       "faces"."boundingBoxY2" AS "boundingBoxY2",
-      "faces"."embedding" <= > $1 AS "distance"
+      "search"."embedding" <= > $1 AS "distance"
     FROM
       "asset_faces" "faces"
       INNER JOIN "assets" "asset" ON "asset"."id" = "faces"."assetId"
       AND ("asset"."deletedAt" IS NULL)
+      INNER JOIN "face_search" "search" ON "search"."faceId" = "faces"."id"
     WHERE
       "asset"."ownerId" IN ($2)
     ORDER BY
-      "faces"."embedding" <= > $1 ASC
+      "search"."embedding" <= > $1 ASC
     LIMIT
       100
   )
@@ -350,8 +345,6 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -399,8 +392,11 @@ SELECT
   "exif"."profileDescription" AS "exif_profileDescription",
   "exif"."colorspace" AS "exif_colorspace",
   "exif"."bitsPerSample" AS "exif_bitsPerSample",
+  "exif"."rating" AS "exif_rating",
   "exif"."fps" AS "exif_fps"
 FROM
   "assets" "asset"
   INNER JOIN "exif" "exif" ON "exif"."assetId" = "asset"."id"
   INNER JOIN cte ON asset.id = cte."assetId"
+ORDER BY
+  exif.city

@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/providers/image/exceptions/image_loading_exception.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/api.service.dart';
 
 /// Loads the codec from the URI and sends the events to the [chunkEvents] stream
 ///
@@ -17,9 +17,7 @@ class ImageLoader {
     required ImageDecoderCallback decode,
     StreamController<ImageChunkEvent>? chunkEvents,
   }) async {
-    final headers = {
-      'x-immich-user-token': Store.get(StoreKey.accessToken),
-    };
+    final headers = ApiService.getRequestHeaders();
 
     final stream = cache.getFileStream(
       uri,

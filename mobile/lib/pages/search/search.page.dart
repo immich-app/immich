@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
@@ -13,7 +14,7 @@ import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
 import 'package:immich_mobile/widgets/search/curated_people_row.dart';
 import 'package:immich_mobile/widgets/search/curated_places_row.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
-import 'package:immich_mobile/widgets/search/search_row_title.dart';
+import 'package:immich_mobile/widgets/search/search_row_section.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -31,14 +32,14 @@ class SearchPage extends HookConsumerWidget {
     final curatedPeople = ref.watch(getAllPeopleProvider);
     final isMapEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.map));
-    double imageSize = math.min(context.width / 3, 150);
+    final double imageSize = math.min(context.width / 3, 150);
 
     TextStyle categoryTitleStyle = const TextStyle(
       fontWeight: FontWeight.w500,
       fontSize: 15.0,
     );
 
-    Color categoryIconColor = context.isDarkTheme ? Colors.white : Colors.black;
+    Color categoryIconColor = context.colorScheme.onSurface;
 
     showNameEditModel(
       String personId,
@@ -53,16 +54,15 @@ class SearchPage extends HookConsumerWidget {
     }
 
     buildPeople() {
-      return SizedBox(
-        height: imageSize,
-        child: curatedPeople.widgetWhen(
-          onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
-          onData: (people) => Padding(
-            padding: const EdgeInsets.only(
-              left: 16,
-              top: 8,
-            ),
+      return curatedPeople.widgetWhen(
+        onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
+        onData: (people) {
+          return SearchRowSection(
+            onViewAllPressed: () => context.pushRoute(const AllPeopleRoute()),
+            title: "search_page_people".tr(),
+            isEmpty: people.isEmpty,
             child: CuratedPeopleRow(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               content: people
                   .map((e) => SearchCuratedContent(label: e.name, id: e.id))
                   .take(12)
@@ -79,42 +79,46 @@ class SearchPage extends HookConsumerWidget {
                 showNameEditModel(person.id, person.label),
               },
             ),
-          ),
-        ),
+          );
+        },
       );
     }
 
     buildPlaces() {
-      return SizedBox(
-        height: imageSize,
-        child: places.widgetWhen(
-          onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
-          onData: (data) => CuratedPlacesRow(
-            isMapEnabled: isMapEnabled,
-            content: data,
-            imageSize: imageSize,
-            onTap: (content, index) {
-              context.pushRoute(
-                SearchInputRoute(
-                  prefilter: SearchFilter(
-                    people: {},
-                    location: SearchLocationFilter(
-                      city: content.label,
+      return places.widgetWhen(
+        onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
+        onData: (data) {
+          return SearchRowSection(
+            onViewAllPressed: () => context.pushRoute(const AllPlacesRoute()),
+            title: "search_page_places".tr(),
+            isEmpty: !isMapEnabled && data.isEmpty,
+            child: CuratedPlacesRow(
+              isMapEnabled: isMapEnabled,
+              content: data,
+              imageSize: imageSize,
+              onTap: (content, index) {
+                context.pushRoute(
+                  SearchInputRoute(
+                    prefilter: SearchFilter(
+                      people: {},
+                      location: SearchLocationFilter(
+                        city: content.label,
+                      ),
+                      camera: SearchCameraFilter(),
+                      date: SearchDateFilter(),
+                      display: SearchDisplayFilters(
+                        isNotInAlbum: false,
+                        isArchive: false,
+                        isFavorite: false,
+                      ),
+                      mediaType: AssetType.other,
                     ),
-                    camera: SearchCameraFilter(),
-                    date: SearchDateFilter(),
-                    display: SearchDisplayFilters(
-                      isNotInAlbum: false,
-                      isArchive: false,
-                      isFavorite: false,
-                    ),
-                    mediaType: AssetType.other,
                   ),
-                ),
-              );
-            },
-          ),
-        ),
+                );
+              },
+            ),
+          );
+        },
       );
     }
 
@@ -125,13 +129,9 @@ class SearchPage extends HookConsumerWidget {
         },
         child: Card(
           elevation: 0,
+          color: context.colorScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: context.isDarkTheme
-                  ? Colors.grey[800]!
-                  : const Color.fromARGB(255, 225, 225, 225),
-            ),
+            borderRadius: BorderRadius.circular(50),
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Padding(
@@ -141,13 +141,15 @@ class SearchPage extends HookConsumerWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.search, color: context.primaryColor),
+                Icon(
+                  Icons.search,
+                  color: context.colorScheme.onSurfaceSecondary,
+                ),
                 const SizedBox(width: 16.0),
                 Text(
                   "search_bar_hint",
                   style: context.textTheme.bodyLarge?.copyWith(
-                    color:
-                        context.isDarkTheme ? Colors.white70 : Colors.black54,
+                    color: context.colorScheme.onSurfaceSecondary,
                     fontWeight: FontWeight.w400,
                   ),
                 ).tr(),
@@ -160,88 +162,73 @@ class SearchPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: const ImmichAppBar(),
-      body: Stack(
+      body: ListView(
         children: [
-          ListView(
-            children: [
-              buildSearchButton(),
-              SearchRowTitle(
-                title: "search_page_people".tr(),
-                onViewAllPressed: () =>
-                    context.pushRoute(const AllPeopleRoute()),
+          buildSearchButton(),
+          const SizedBox(height: 8.0),
+          buildPeople(),
+          const SizedBox(height: 8.0),
+          buildPlaces(),
+          const SizedBox(height: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'search_page_your_activity',
+              style: context.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              buildPeople(),
-              SearchRowTitle(
-                title: "search_page_places".tr(),
-                onViewAllPressed: () =>
-                    context.pushRoute(const AllPlacesRoute()),
-                top: 0,
+            ).tr(),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.favorite_border_rounded,
+              color: categoryIconColor,
+            ),
+            title:
+                Text('search_page_favorites', style: categoryTitleStyle).tr(),
+            onTap: () => context.pushRoute(const FavoritesRoute()),
+          ),
+          const CategoryDivider(),
+          ListTile(
+            leading: Icon(
+              Icons.schedule_outlined,
+              color: categoryIconColor,
+            ),
+            title: Text(
+              'search_page_recently_added',
+              style: categoryTitleStyle,
+            ).tr(),
+            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+          ),
+          const SizedBox(height: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              'search_page_categories',
+              style: context.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              const SizedBox(height: 10.0),
-              buildPlaces(),
-              const SizedBox(height: 24.0),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'search_page_your_activity',
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ).tr(),
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.favorite_border_rounded,
-                  color: categoryIconColor,
-                ),
-                title: Text('search_page_favorites', style: categoryTitleStyle)
-                    .tr(),
-                onTap: () => context.pushRoute(const FavoritesRoute()),
-              ),
-              const CategoryDivider(),
-              ListTile(
-                leading: Icon(
-                  Icons.schedule_outlined,
-                  color: categoryIconColor,
-                ),
-                title: Text(
-                  'search_page_recently_added',
-                  style: categoryTitleStyle,
-                ).tr(),
-                onTap: () => context.pushRoute(const RecentlyAddedRoute()),
-              ),
-              const SizedBox(height: 24.0),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'search_page_categories',
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ).tr(),
-              ),
-              ListTile(
-                title:
-                    Text('search_page_videos', style: categoryTitleStyle).tr(),
-                leading: Icon(
-                  Icons.play_circle_outline,
-                  color: categoryIconColor,
-                ),
-                onTap: () => context.pushRoute(const AllVideosRoute()),
-              ),
-              const CategoryDivider(),
-              ListTile(
-                title: Text(
-                  'search_page_motion_photos',
-                  style: categoryTitleStyle,
-                ).tr(),
-                leading: Icon(
-                  Icons.motion_photos_on_outlined,
-                  color: categoryIconColor,
-                ),
-                onTap: () => context.pushRoute(const AllMotionPhotosRoute()),
-              ),
-            ],
+            ).tr(),
+          ),
+          ListTile(
+            title: Text('search_page_videos', style: categoryTitleStyle).tr(),
+            leading: Icon(
+              Icons.play_circle_outline,
+              color: categoryIconColor,
+            ),
+            onTap: () => context.pushRoute(const AllVideosRoute()),
+          ),
+          const CategoryDivider(),
+          ListTile(
+            title: Text(
+              'search_page_motion_photos',
+              style: categoryTitleStyle,
+            ).tr(),
+            leading: Icon(
+              Icons.motion_photos_on_outlined,
+              color: categoryIconColor,
+            ),
+            onTap: () => context.pushRoute(const AllMotionPhotosRoute()),
           ),
         ],
       ),

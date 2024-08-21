@@ -4,6 +4,10 @@ import { loadConfig } from '$lib/stores/server-config.store';
 import { initSDK } from '$lib/utils/server';
 import { init, register } from 'svelte-i18n';
 import { get } from 'svelte/store';
+
+import { initApp } from '$lib/utils';
+import { defaults } from '@immich/sdk';
+
 import type { LayoutLoad } from './$types';
 
 export const ssr = false;
@@ -22,6 +26,7 @@ export const load = (async ({ fetch }) => {
   try {
     await initLanguage();
     initSDK(fetch);
+    await initApp();
     await loadConfig();
   } catch (error_) {
     error = error_;

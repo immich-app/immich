@@ -2,13 +2,16 @@ import 'dart:collection';
 import 'dart:developer';
 import 'dart:math';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_drag_region.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
@@ -259,12 +262,15 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       shrinkWrap: widget.shrinkWrap,
     );
 
-    final child = useDragScrolling
+    final child = (useDragScrolling && ModalRoute.of(context) != null)
         ? DraggableScrollbar.semicircle(
+            viewPortHeight: context.height,
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
-            backgroundColor: context.themeData.hintColor,
+            backgroundColor: context.isDarkTheme
+                ? context.colorScheme.primary.darken(amount: .5)
+                : context.colorScheme.primary,
             labelTextBuilder: _labelBuilder,
             padding: appBarOffset()
                 ? const EdgeInsets.only(top: 60)
@@ -276,6 +282,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             child: listWidget,
           )
         : listWidget;
+
     return widget.onRefresh == null
         ? child
         : appBarOffset()
@@ -523,7 +530,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: !(widget.selectionActive && _selectedAssets.isNotEmpty),
-      onPopInvoked: (didPop) => !didPop ? _deselectAll() : null,
+      onPopInvokedWithResult: (didPop, _) => !didPop ? _deselectAll() : null,
       child: Stack(
         children: [
           AssetDragRegion(
@@ -815,6 +822,7 @@ class _AssetRow extends StatelessWidget {
       key: key,
       children: assets.mapIndexed((int index, Asset asset) {
         final bool last = index + 1 == assetsPerRow;
+        final isSelected = isSelectionActive && selectedAssets.contains(asset);
         return Container(
           width: width * widthDistribution[index],
           height: width,
@@ -822,21 +830,40 @@ class _AssetRow extends StatelessWidget {
             bottom: margin,
             right: last ? 0.0 : margin,
           ),
-          child: AssetIndexWrapper(
-            rowIndex: rowStartIndex + index,
-            sectionIndex: sectionIndex,
-            child: ThumbnailImage(
-              asset: asset,
-              index: absoluteOffset + index,
-              loadAsset: renderList.loadAsset,
-              totalAssets: renderList.totalAssets,
-              multiselectEnabled: selectionActive,
-              isSelected: isSelectionActive && selectedAssets.contains(asset),
-              onSelect: () => onSelect?.call(asset),
-              onDeselect: () => onDeselect?.call(asset),
-              showStorageIndicator: showStorageIndicator,
-              heroOffset: heroOffset,
-              showStack: showStack,
+          child: GestureDetector(
+            onTap: () {
+              if (selectionActive) {
+                if (isSelected) {
+                  onDeselect?.call(asset);
+                } else {
+                  onSelect?.call(asset);
+                }
+              } else {
+                context.pushRoute(
+                  GalleryViewerRoute(
+                    renderList: renderList,
+                    initialIndex: absoluteOffset + index,
+                    heroOffset: heroOffset,
+                    showStack: showStack,
+                  ),
+                );
+              }
+            },
+            onLongPress: () {
+              onSelect?.call(asset);
+              HapticFeedback.heavyImpact();
+            },
+            child: AssetIndexWrapper(
+              rowIndex: rowStartIndex + index,
+              sectionIndex: sectionIndex,
+              child: ThumbnailImage(
+                asset: asset,
+                multiselectEnabled: selectionActive,
+                isSelected: isSelectionActive && selectedAssets.contains(asset),
+                showStorageIndicator: showStorageIndicator,
+                heroOffset: heroOffset,
+                showStack: showStack,
+              ),
             ),
           ),
         );

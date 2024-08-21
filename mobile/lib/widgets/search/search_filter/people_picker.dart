@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
-import 'package:immich_mobile/entities/store.entity.dart' as local_store;
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -18,10 +18,7 @@ class PeoplePicker extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var imageSize = 45.0;
     final people = ref.watch(getAllPeopleProvider);
-    final headers = {
-      "x-immich-user-token":
-          local_store.Store.get(local_store.StoreKey.accessToken),
-    };
+    final headers = ApiService.getRequestHeaders();
     final selectedPeople = useState<Set<PersonResponseDto>>(filter ?? {});
 
     return people.widgetWhen(

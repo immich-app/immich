@@ -11,8 +11,10 @@ import {
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
+import { AssetType } from 'src/enum';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
@@ -51,11 +53,17 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
-  stackParentId?: string | null;
-  stack?: AssetResponseDto[];
-  @ApiProperty({ type: 'integer' })
-  stackCount!: number | null;
+  stack?: AssetStackResponseDto | null;
   duplicateId?: string | null;
+}
+
+export class AssetStackResponseDto {
+  id!: string;
+
+  primaryAssetId!: string;
+
+  @ApiProperty({ type: 'integer' })
+  assetCount!: number;
 }
 
 export type AssetMapOptions = {
@@ -82,6 +90,18 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
   return result;
 };
 
+const mapStack = (entity: AssetEntity) => {
+  if (!entity.stack) {
+    return null;
+  }
+
+  return {
+    id: entity.stack.id,
+    primaryAssetId: entity.stack.primaryAssetId,
+    assetCount: entity.stack.assetCount ?? entity.stack.assets.length,
+  };
+};
+
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
@@ -92,7 +112,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash?.toString('base64') ?? null,
       localDateTime: entity.localDateTime,
-      resized: !!entity.previewPath,
+      resized: !!getAssetFiles(entity.files).previewFile,
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
@@ -111,7 +131,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
-    resized: !!entity.previewPath,
+    resized: !!getAssetFiles(entity.files).previewFile,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
@@ -128,13 +148,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
-    stackParentId: withStack ? entity.stack?.primaryAssetId : undefined,
-    stack: withStack
-      ? entity.stack?.assets
-          ?.filter((a) => a.id !== entity.stack?.primaryAssetId)
-          ?.map((a) => mapAsset(a, { stripMetadata, auth: options.auth }))
-      : undefined,
-    stackCount: entity.stack?.assetCount ?? entity.stack?.assets?.length ?? null,
+    stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,

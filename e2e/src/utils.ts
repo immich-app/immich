@@ -7,6 +7,7 @@ import {
   CreateAlbumDto,
   CreateLibraryDto,
   MetadataSearchDto,
+  Permission,
   PersonCreateDto,
   SharedLinkCreateDto,
   UserAdminCreateDto,
@@ -47,14 +48,13 @@ import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
 
 type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
-type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete';
+type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete' | 'assetHidden';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
-type AssetData = { bytes?: Buffer; filename: string };
+type FileData = { bytes?: Buffer; filename: string };
 
 const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
-const baseUrl = 'http://127.0.0.1:2283';
-
+export const baseUrl = 'http://127.0.0.1:2283';
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
@@ -64,13 +64,13 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]);
+  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]).promise;
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
 
 const executeCommand = (command: string, args: string[]) => {
   let _resolve: (value: CommandResponse) => void;
-  const deferred = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
+  const promise = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
   const child = spawn(command, args, { stdio: 'pipe' });
 
   let stdout = '';
@@ -86,12 +86,13 @@ const executeCommand = (command: string, args: string[]) => {
     });
   });
 
-  return deferred;
+  return { promise, child };
 };
 
 let client: pg.Client | null = null;
 
 const events: Record<EventType, Set<string>> = {
+  assetHidden: new Set<string>(),
   assetUpload: new Set<string>(),
   assetUpdate: new Set<string>(),
   assetDelete: new Set<string>(),
@@ -151,10 +152,6 @@ export const utils = {
 
       const sql: string[] = [];
 
-      if (tables.includes('asset_stack')) {
-        sql.push('UPDATE "assets" SET "stackId" = NULL;');
-      }
-
       for (const table of tables) {
         if (table === 'system_metadata') {
           // prevent reverse geocoder from being re-initialized
@@ -203,6 +200,7 @@ export const utils = {
         .on('connect', () => resolve(websocket))
         .on('on_upload_success', (data: AssetResponseDto) => onEvent({ event: 'assetUpload', id: data.id }))
         .on('on_asset_update', (data: AssetResponseDto) => onEvent({ event: 'assetUpdate', id: data.id }))
+        .on('on_asset_hidden', (assetId: string) => onEvent({ event: 'assetHidden', id: assetId }))
         .on('on_asset_delete', (assetId: string) => onEvent({ event: 'assetDelete', id: assetId }))
         .on('on_user_delete', (userId: string) => onEvent({ event: 'userDelete', id: userId }))
         .connect();
@@ -282,8 +280,8 @@ export const utils = {
     });
   },
 
-  createApiKey: (accessToken: string) => {
-    return createApiKey({ apiKeyCreateDto: { name: 'e2e' } }, { headers: asBearerAuth(accessToken) });
+  createApiKey: (accessToken: string, permissions: Permission[]) => {
+    return createApiKey({ apiKeyCreateDto: { name: 'e2e', permissions } }, { headers: asBearerAuth(accessToken) });
   },
 
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
@@ -294,7 +292,10 @@ export const utils = {
 
   createAsset: async (
     accessToken: string,
-    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData' | 'sidecarData'>> & {
+      assetData?: FileData;
+      sidecarData?: FileData;
+    },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -316,6 +317,10 @@ export const utils = {
       .attach('assetData', assetData, filename)
       .set('Authorization', `Bearer ${accessToken}`);
 
+    if (dto?.sidecarData?.bytes) {
+      void builder.attach('sidecarData', dto.sidecarData.bytes, dto.sidecarData.filename);
+    }
+
     for (const [key, value] of Object.entries(_dto)) {
       void builder.field(key, String(value));
     }
@@ -328,7 +333,7 @@ export const utils = {
   replaceAsset: async (
     accessToken: string,
     assetId: string,
-    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: AssetData },
+    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: FileData },
   ) => {
     const _dto = {
       deviceAssetId: 'test-1',
@@ -398,14 +403,7 @@ export const utils = {
       return;
     }
 
-    const vector = Array.from({ length: 512 }, Math.random);
-    const embedding = `[${vector.join(',')}]`;
-
-    await client.query('INSERT INTO asset_faces ("assetId", "personId", "embedding") VALUES ($1, $2, $3)', [
-      assetId,
-      personId,
-      embedding,
-    ]);
+    await client.query('INSERT INTO asset_faces ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
   },
 
   setPersonThumbnail: async (personId: string) => {
@@ -427,12 +425,12 @@ export const utils = {
 
   createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
 
-  setAuthCookies: async (context: BrowserContext, accessToken: string) =>
+  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
     await context.addCookies([
       {
         name: 'immich_access_token',
         value: accessToken,
-        domain: '127.0.0.1',
+        domain,
         path: '/',
         expires: 1_742_402_728,
         httpOnly: true,
@@ -442,7 +440,7 @@ export const utils = {
       {
         name: 'immich_auth_type',
         value: 'password',
-        domain: '127.0.0.1',
+        domain,
         path: '/',
         expires: 1_742_402_728,
         httpOnly: true,
@@ -452,7 +450,7 @@ export const utils = {
       {
         name: 'immich_is_authenticated',
         value: 'true',
-        domain: '127.0.0.1',
+        domain,
         path: '/',
         expires: 1_742_402_728,
         httpOnly: false,
@@ -495,7 +493,7 @@ export const utils = {
   },
 
   cliLogin: async (accessToken: string) => {
-    const key = await utils.createApiKey(accessToken);
+    const key = await utils.createApiKey(accessToken, [Permission.All]);
     await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
   },

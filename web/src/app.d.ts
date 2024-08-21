@@ -18,12 +18,12 @@ declare namespace App {
   }
 }
 
-// Source: https://stackoverflow.com/questions/63814432/typescript-typing-of-non-standard-window-event-in-svelte
-// To fix the <svelte:window... in components/asset-viewer/photo-viewer.svelte
-declare namespace svelteHTML {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface HTMLAttributes<T> {
-    'on:copyImage'?: () => void;
-    'on:zoomImage'?: () => void;
-  }
+declare module '$env/static/public' {
+  export const PUBLIC_IMMICH_PAY_HOST: string;
+  export const PUBLIC_IMMICH_BUY_HOST: string;
+}
+
+interface Element {
+  // Make optional, because it's unavailable on iPhones.
+  requestFullscreen?(options?: FullscreenOptions): Promise<void>;
 }

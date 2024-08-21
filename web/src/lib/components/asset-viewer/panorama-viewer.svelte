@@ -4,6 +4,7 @@
   import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { t } from 'svelte-i18n';
   export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
 
   const photoSphereConfigs =
@@ -35,6 +36,6 @@
   {:then [data, module, adapter, plugins, navbar]}
     <svelte:component this={module.default} panorama={data} plugins={plugins ?? undefined} {navbar} {adapter} />
   {:catch}
-    Failed to load asset
+    {$t('errors.failed_to_load_asset')}
   {/await}
 </div>

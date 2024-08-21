@@ -2,8 +2,8 @@ import { BinaryField } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import { AssetType } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { AssetType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -95,16 +95,16 @@ describe(MetadataService.name, () => {
   });
 
   afterEach(async () => {
-    await sut.teardown();
+    await sut.onShutdown();
   });
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('init', () => {
+  describe('onBootstrapEvent', () => {
     it('should pause and resume queue during init', async () => {
-      await sut.init();
+      await sut.onBootstrap('microservices');
 
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
       expect(mapMock.init).toHaveBeenCalledTimes(1);
@@ -114,7 +114,7 @@ describe(MetadataService.name, () => {
     it('should return if reverse geocoding is disabled', async () => {
       systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: false } });
 
-      await sut.init();
+      await sut.onBootstrap('microservices');
 
       expect(jobMock.pause).not.toHaveBeenCalled();
       expect(mapMock.init).not.toHaveBeenCalled();
@@ -217,6 +217,29 @@ describe(MetadataService.name, () => {
         assetStub.livePhotoMotionAsset.ownerId,
         assetStub.livePhotoMotionAsset.id,
       );
+    });
+
+    it('should search by libraryId', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        {
+          ...assetStub.livePhotoStillAsset,
+          libraryId: 'library-id',
+          exifInfo: { livePhotoCID: 'CID' } as ExifEntity,
+        },
+      ]);
+      assetMock.findLivePhotoMatch.mockResolvedValue(null);
+
+      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
+        JobStatus.SKIPPED,
+      );
+
+      expect(assetMock.findLivePhotoMatch).toHaveBeenCalledWith({
+        ownerId: 'user-id',
+        otherAssetId: 'live-photo-still-asset',
+        livePhotoCID: 'CID',
+        libraryId: 'library-id',
+        type: 'VIDEO',
+      });
     });
   });
 
@@ -606,6 +629,7 @@ describe(MetadataService.name, () => {
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
         tz: '+02:00',
+        Rating: 3,
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue(tags);
@@ -638,6 +662,7 @@ describe(MetadataService.name, () => {
         profileDescription: tags.ProfileDescription,
         projectionType: 'EQUIRECTANGULAR',
         timeZone: tags.tz,
+        rating: tags.Rating,
       });
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
@@ -647,13 +672,19 @@ describe(MetadataService.name, () => {
       });
     });
 
-    it('should handle duration', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Duration: 6.21 });
+    it('should extract duration', async () => {
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.video }]);
+      mediaMock.probe.mockResolvedValue({
+        ...probeStub.videoStreamH264,
+        format: {
+          ...probeStub.videoStreamH264.format,
+          duration: 6.21,
+        },
+      });
 
-      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
       expect(assetMock.upsertExif).toHaveBeenCalled();
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -663,10 +694,15 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('should handle duration in ISO time string', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Duration: '00:00:08.41' });
-
+    it('only extracts duration for videos', async () => {
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.image }]);
+      mediaMock.probe.mockResolvedValue({
+        ...probeStub.videoStreamH264,
+        format: {
+          ...probeStub.videoStreamH264.format,
+          duration: 6.21,
+        },
+      });
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
@@ -674,39 +710,83 @@ describe(MetadataService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: assetStub.image.id,
-          duration: '00:00:08.410',
+          duration: null,
         }),
       );
     });
 
-    it('should handle duration as an object without Scale', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Duration: { Value: 6.2 } });
+    it('omits duration of zero', async () => {
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.video }]);
+      mediaMock.probe.mockResolvedValue({
+        ...probeStub.videoStreamH264,
+        format: {
+          ...probeStub.videoStreamH264.format,
+          duration: 0,
+        },
+      });
 
-      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
       expect(assetMock.upsertExif).toHaveBeenCalled();
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: assetStub.image.id,
-          duration: '00:00:06.200',
+          duration: null,
         }),
       );
     });
 
-    it('should handle duration with scale', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Duration: { Scale: 1.111_111_111_111_11e-5, Value: 558_720 } });
+    it('handles duration of 1 week', async () => {
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.video }]);
+      mediaMock.probe.mockResolvedValue({
+        ...probeStub.videoStreamH264,
+        format: {
+          ...probeStub.videoStreamH264.format,
+          duration: 604_800,
+        },
+      });
 
-      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
       expect(assetMock.upsertExif).toHaveBeenCalled();
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: assetStub.image.id,
-          duration: '00:00:06.207',
+          id: assetStub.video.id,
+          duration: '168:00:00.000',
+        }),
+      );
+    });
+
+    it('trims whitespace from description', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Description: '\t \v \f \n \r' });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '',
+        }),
+      );
+
+      metadataMock.readTags.mockResolvedValue({ ImageDescription: ' my\n description' });
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'my\n description',
+        }),
+      );
+    });
+
+    it('handles a numeric description', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Description: 1000 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '1000',
         }),
       );
     });
@@ -889,8 +969,9 @@ describe(MetadataService.name, () => {
         }),
       ).resolves.toBe(JobStatus.SUCCESS);
       expect(metadataMock.writeTags).toHaveBeenCalledWith(assetStub.sidecar.sidecarPath, {
+        Description: description,
         ImageDescription: description,
-        CreationDate: date,
+        DateTimeOriginal: date,
         GPSLatitude: gps,
         GPSLongitude: gps,
       });

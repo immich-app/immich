@@ -59,6 +59,8 @@ class DraggableScrollbar extends StatefulWidget {
 
   final Function(bool scrolling) scrollStateListener;
 
+  final double viewPortHeight;
+
   DraggableScrollbar.semicircle({
     super.key,
     Key? scrollThumbKey,
@@ -67,6 +69,7 @@ class DraggableScrollbar extends StatefulWidget {
     required this.controller,
     required this.itemPositionsListener,
     required this.scrollStateListener,
+    required this.viewPortHeight,
     this.heightScrollThumb = 48.0,
     this.backgroundColor = Colors.white,
     this.padding,
@@ -251,7 +254,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
   }
 
   double get barMaxScrollExtent =>
-      (context.size?.height ?? 0) -
+      widget.viewPortHeight -
       widget.heightScrollThumb -
       (widget.heightOffset ?? 0);
 
@@ -316,37 +319,39 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     }
 
     setState(() {
-      int firstItemIndex =
-          widget.itemPositionsListener.itemPositions.value.first.index;
+      try {
+        int firstItemIndex =
+            widget.itemPositionsListener.itemPositions.value.first.index;
 
-      if (notification is ScrollUpdateNotification) {
-        _barOffset = (firstItemIndex / maxItemCount) * barMaxScrollExtent;
+        if (notification is ScrollUpdateNotification) {
+          _barOffset = (firstItemIndex / maxItemCount) * barMaxScrollExtent;
 
-        if (_barOffset < barMinScrollExtent) {
-          _barOffset = barMinScrollExtent;
-        }
-        if (_barOffset > barMaxScrollExtent) {
-          _barOffset = barMaxScrollExtent;
-        }
-      }
-
-      if (notification is ScrollUpdateNotification ||
-          notification is OverscrollNotification) {
-        if (_thumbAnimationController.status != AnimationStatus.forward) {
-          _thumbAnimationController.forward();
+          if (_barOffset < barMinScrollExtent) {
+            _barOffset = barMinScrollExtent;
+          }
+          if (_barOffset > barMaxScrollExtent) {
+            _barOffset = barMaxScrollExtent;
+          }
         }
 
-        if (itemPos < maxItemCount) {
-          _currentItem = itemPos;
-        }
+        if (notification is ScrollUpdateNotification ||
+            notification is OverscrollNotification) {
+          if (_thumbAnimationController.status != AnimationStatus.forward) {
+            _thumbAnimationController.forward();
+          }
 
-        _fadeoutTimer?.cancel();
-        _fadeoutTimer = Timer(widget.scrollbarTimeToFade, () {
-          _thumbAnimationController.reverse();
-          _labelAnimationController.reverse();
-          _fadeoutTimer = null;
-        });
-      }
+          if (itemPos < maxItemCount) {
+            _currentItem = itemPos;
+          }
+
+          _fadeoutTimer?.cancel();
+          _fadeoutTimer = Timer(widget.scrollbarTimeToFade, () {
+            _thumbAnimationController.reverse();
+            _labelAnimationController.reverse();
+            _fadeoutTimer = null;
+          });
+        }
+      } catch (_) {}
     });
   }
 

@@ -6,7 +6,7 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
-  import { playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl } from '$lib/utils';
   import {
     mdiArchiveArrowDownOutline,
@@ -170,14 +170,14 @@
 
         <!-- Stacked asset -->
 
-        {#if asset.stackCount && showStackedIcon}
+        {#if asset.stack && showStackedIcon}
           <div
             class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == undefined
               ? 'top-0 right-0'
               : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
           >
             <span class="pr-2 pt-2 flex place-items-center gap-1">
-              <p>{asset.stackCount}</p>
+              <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>
           </div>
@@ -186,7 +186,7 @@
         {#if asset.resized}
           <ImageThumbnail
             url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
-            altText={getAltText(asset)}
+            altText={$getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}

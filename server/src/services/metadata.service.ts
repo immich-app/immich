@@ -1,20 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ExifDateTime, Tags } from 'exiftool-vendored';
+import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
-import { Subscription } from 'rxjs';
+import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { OnEmit } from 'src/decorators';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { AssetType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -34,7 +36,6 @@ import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 /** look for a date from these tags (in order) */
@@ -48,17 +49,6 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'MediaCreateDate',
   'DateTimeCreated',
 ];
-
-interface DirectoryItem {
-  Length?: number;
-  Mime: string;
-  Padding?: number;
-  Semantic?: string;
-}
-
-interface DirectoryEntry {
-  Item: DirectoryItem;
-}
 
 export enum Orientation {
   Horizontal = '1',
@@ -100,7 +90,6 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 export class MetadataService {
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
-  private subscription: Subscription | null = null;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -132,12 +121,21 @@ export class MetadataService {
     );
   }
 
-  async init() {
-    if (!this.subscription) {
-      this.subscription = this.configCore.config$.subscribe(() => handlePromiseError(this.init(), this.logger));
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(app: ArgOf<'onBootstrap'>) {
+    if (app !== 'microservices') {
+      return;
     }
+    const config = await this.configCore.getConfig({ withCache: false });
+    await this.init(config);
+  }
 
-    const { reverseGeocoding } = await this.configCore.getConfig({ withCache: false });
+  @OnEmit({ event: 'onConfigUpdate' })
+  async onConfigUpdate({ newConfig }: ArgOf<'onConfigUpdate'>) {
+    await this.init(newConfig);
+  }
+
+  private async init({ reverseGeocoding }: SystemConfig) {
     const { enabled } = reverseGeocoding;
 
     if (!enabled) {
@@ -155,8 +153,8 @@ export class MetadataService {
     }
   }
 
-  async teardown() {
-    this.subscription?.unsubscribe();
+  @OnEmit({ event: 'onShutdown' })
+  async onShutdown() {
     await this.repository.teardown();
   }
 
@@ -175,6 +173,7 @@ export class MetadataService {
     const match = await this.assetRepository.findLivePhotoMatch({
       livePhotoCID: asset.exifInfo.livePhotoCID,
       ownerId: asset.ownerId,
+      libraryId: asset.libraryId,
       otherAssetId: asset.id,
       type: otherType,
     });
@@ -221,28 +220,7 @@ export class MetadataService {
     const { exifData, tags } = await this.exifData(asset);
 
     if (asset.type === AssetType.VIDEO) {
-      const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
-
-      if (videoStreams[0]) {
-        switch (videoStreams[0].rotation) {
-          case -90: {
-            exifData.orientation = Orientation.Rotate90CW;
-            break;
-          }
-          case 0: {
-            exifData.orientation = Orientation.Horizontal;
-            break;
-          }
-          case 90: {
-            exifData.orientation = Orientation.Rotate270CW;
-            break;
-          }
-          case 180: {
-            exifData.orientation = Orientation.Rotate180;
-            break;
-          }
-        }
-      }
+      await this.applyVideoMetadata(asset, exifData);
     }
 
     await this.applyMotionPhotos(asset, tags);
@@ -259,7 +237,7 @@ export class MetadataService {
     }
     await this.assetRepository.update({
       id: asset.id,
-      duration: tags.Duration ? this.getDuration(tags.Duration) : null,
+      duration: asset.duration,
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
@@ -301,7 +279,7 @@ export class MetadataService {
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
-    const { id, description, dateTimeOriginal, latitude, longitude } = job;
+    const { id, description, dateTimeOriginal, latitude, longitude, rating } = job;
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -310,10 +288,12 @@ export class MetadataService {
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
     const exif = _.omitBy<Tags>(
       {
+        Description: description,
         ImageDescription: description,
-        CreationDate: dateTimeOriginal,
+        DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
+        Rating: rating,
       },
       _.isUndefined,
     );
@@ -357,13 +337,14 @@ export class MetadataService {
       return;
     }
 
-    const rawDirectory = tags.Directory;
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
     const hasMotionPhotoVideo = tags.MotionPhotoVideo;
     const hasEmbeddedVideoFile = tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideoFile;
-    const directory = Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null;
+    const directory = Array.isArray(tags.ContainerDirectory)
+      ? (tags.ContainerDirectory as ContainerDirectoryItem[])
+      : null;
 
     let length = 0;
     let padding = 0;
@@ -508,7 +489,7 @@ export class MetadataService {
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-      description: (tags.ImageDescription || tags.Description) ?? '',
+      description: String(tags.ImageDescription || tags.Description || '').trim(),
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,
@@ -529,6 +510,7 @@ export class MetadataService {
       profileDescription: tags.ProfileDescription || null,
       projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
       timeZone: tags.tz ?? null,
+      rating: tags.Rating ?? null,
     };
 
     if (exifData.latitude === 0 && exifData.longitude === 0) {
@@ -572,16 +554,33 @@ export class MetadataService {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: ImmichTags['Duration']): string {
-    let _seconds = seconds as number;
+  private async applyVideoMetadata(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
+    const { videoStreams, format } = await this.mediaRepository.probe(asset.originalPath);
 
-    if (typeof seconds === 'object') {
-      _seconds = seconds.Value * (seconds?.Scale || 1);
-    } else if (typeof seconds === 'string') {
-      _seconds = Duration.fromISOTime(seconds).as('seconds');
+    if (videoStreams[0]) {
+      switch (videoStreams[0].rotation) {
+        case -90: {
+          exifData.orientation = Orientation.Rotate90CW;
+          break;
+        }
+        case 0: {
+          exifData.orientation = Orientation.Horizontal;
+          break;
+        }
+        case 90: {
+          exifData.orientation = Orientation.Rotate270CW;
+          break;
+        }
+        case 180: {
+          exifData.orientation = Orientation.Rotate180;
+          break;
+        }
+      }
     }
 
-    return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
+    if (format.duration) {
+      asset.duration = Duration.fromObject({ seconds: format.duration }).toFormat('hh:mm:ss.SSS');
+    }
   }
 
   private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {

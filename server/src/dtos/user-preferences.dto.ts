@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
+import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { UserPreferences } from 'src/entities/user-metadata.entity';
+import { UserAvatarColor } from 'src/enum';
 import { Optional, ValidateBoolean } from 'src/validation';
 
 class AvatarUpdate {
@@ -12,6 +13,11 @@ class AvatarUpdate {
 }
 
 class MemoryUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+}
+
+class RatingUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 }
@@ -27,15 +33,32 @@ class EmailNotificationsUpdate {
   albumUpdate?: boolean;
 }
 
-class DownloadUpdate {
+class DownloadUpdate implements Partial<DownloadResponse> {
   @Optional()
   @IsInt()
   @IsPositive()
   @ApiProperty({ type: 'integer' })
   archiveSize?: number;
+
+  @ValidateBoolean({ optional: true })
+  includeEmbeddedVideos?: boolean;
+}
+
+class PurchaseUpdate {
+  @ValidateBoolean({ optional: true })
+  showSupportBadge?: boolean;
+
+  @IsDateString()
+  @Optional()
+  hideBuyButtonUntil?: string;
 }
 
 export class UserPreferencesUpdateDto {
+  @Optional()
+  @ValidateNested()
+  @Type(() => RatingUpdate)
+  rating?: RatingUpdate;
+
   @Optional()
   @ValidateNested()
   @Type(() => AvatarUpdate)
@@ -55,11 +78,20 @@ export class UserPreferencesUpdateDto {
   @ValidateNested()
   @Type(() => DownloadUpdate)
   download?: DownloadUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => PurchaseUpdate)
+  purchase?: PurchaseUpdate;
 }
 
 class AvatarResponse {
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   color!: UserAvatarColor;
+}
+
+class RatingResponse {
+  enabled: boolean = false;
 }
 
 class MemoryResponse {
@@ -75,13 +107,22 @@ class EmailNotificationsResponse {
 class DownloadResponse {
   @ApiProperty({ type: 'integer' })
   archiveSize!: number;
+
+  includeEmbeddedVideos: boolean = false;
+}
+
+class PurchaseResponse {
+  showSupportBadge!: boolean;
+  hideBuyButtonUntil!: string;
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
+  rating!: RatingResponse;
   memories!: MemoryResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
+  purchase!: PurchaseResponse;
 }
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {

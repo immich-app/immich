@@ -2,7 +2,9 @@ import { BadRequestException, NotFoundException, UnauthorizedException } from '@
 import { Stats } from 'node:fs';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
+import { AssetType } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
@@ -149,15 +151,14 @@ const assetEntity = Object.freeze({
   deviceId: 'device_id_1',
   type: AssetType.VIDEO,
   originalPath: 'fake_path/asset_1.jpeg',
-  previewPath: '',
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
   isArchived: false,
-  thumbnailPath: '',
   encodedVideoPath: '',
   duration: '0:00:00.000000',
+  files: [] as AssetFileEntity[],
   exifInfo: {
     latitude: 49.533_547,
     longitude: 10.703_075,
@@ -255,13 +256,11 @@ describe(AssetMediaService.name, () => {
         }
 
         it('should be sorted (valid)', () => {
-          // TODO: use toSorted in NodeJS 20.
-          expect(valid).toEqual([...valid].sort());
+          expect(valid).toEqual(valid.toSorted());
         });
 
         it('should be sorted (invalid)', () => {
-          // TODO: use toSorted in NodeJS 20.
-          expect(invalid).toEqual([...invalid].sort());
+          expect(invalid).toEqual(invalid.toSorted());
         });
       });
     }
@@ -419,7 +418,7 @@ describe(AssetMediaService.name, () => {
 
       await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(NotFoundException);
 
-      expect(assetMock.getById).toHaveBeenCalledWith('asset-1');
+      expect(assetMock.getById).toHaveBeenCalledWith('asset-1', { files: true });
     });
 
     it('should download a file', async () => {

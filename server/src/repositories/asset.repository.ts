@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { PartnerEntity } from 'src/entities/partner.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
+import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
 import {
   AssetBuilderOptions,
   AssetCreate,
@@ -60,11 +60,10 @@ const dateTrunc = (options: TimeBucketOptions) =>
 export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
+    @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
-    @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
-    @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -87,7 +86,6 @@ export class AssetRepository implements IAssetRepository {
         `entity.ownerId IN (:...ownerIds)
       AND entity.isVisible = true
       AND entity.isArchived = false
-      AND entity.previewPath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
       AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
@@ -97,6 +95,7 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('entity.files', 'files')
       .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
@@ -131,6 +130,7 @@ export class AssetRepository implements IAssetRepository {
         stack: {
           assets: true,
         },
+        files: true,
       },
       withDeleted: true,
     });
@@ -188,7 +188,8 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
-      where: { library: { id: libraryId }, originalPath: originalPath },
+      where: { library: { id: libraryId }, originalPath },
+      withDeleted: true,
     });
   }
 
@@ -216,7 +217,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    let builder = this.repository.createQueryBuilder('asset');
+    let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
     return paginatedBuilder<AssetEntity>(builder, {
@@ -246,6 +247,16 @@ export class AssetRepository implements IAssetRepository {
     });
 
     return items.map((asset) => asset.deviceAssetId);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getLivePhotoCount(motionId: string): Promise<number> {
+    return this.repository.count({
+      where: {
+        livePhotoVideoId: motionId,
+      },
+      withDeleted: true,
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -352,12 +363,13 @@ export class AssetRepository implements IAssetRepository {
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
-    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+    const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
 
     return this.repository.findOne({
       where: {
         id: Not(otherAssetId),
         ownerId,
+        libraryId: libraryId || IsNull(),
         type,
         exifInfo: {
           livePhotoCID,
@@ -383,11 +395,10 @@ export class AssetRepository implements IAssetRepository {
 
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
+        relations = { jobStatus: true };
         where = [
-          { previewPath: IsNull(), isVisible: true },
-          { previewPath: '', isVisible: true },
-          { thumbnailPath: IsNull(), isVisible: true },
-          { thumbnailPath: '', isVisible: true },
+          { jobStatus: { previewAt: IsNull() }, isVisible: true },
+          { jobStatus: { thumbnailAt: IsNull() }, isVisible: true },
           { thumbhash: IsNull(), isVisible: true },
         ];
         break;
@@ -421,7 +432,7 @@ export class AssetRepository implements IAssetRepository {
         };
         where = {
           isVisible: true,
-          previewPath: Not(IsNull()),
+          jobStatus: { previewAt: Not(IsNull()) },
           smartSearch: {
             embedding: IsNull(),
           },
@@ -431,10 +442,10 @@ export class AssetRepository implements IAssetRepository {
 
       case WithoutProperty.DUPLICATE: {
         where = {
-          previewPath: Not(IsNull()),
           isVisible: true,
           smartSearch: true,
           jobStatus: {
+            previewAt: Not(IsNull()),
             duplicatesDetectedAt: IsNull(),
           },
         };
@@ -446,7 +457,9 @@ export class AssetRepository implements IAssetRepository {
           smartInfo: true,
         };
         where = {
-          previewPath: Not(IsNull()),
+          jobStatus: {
+            previewAt: Not(IsNull()),
+          },
           isVisible: true,
           smartInfo: {
             tags: IsNull(),
@@ -461,13 +474,13 @@ export class AssetRepository implements IAssetRepository {
           jobStatus: true,
         };
         where = {
-          previewPath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: IsNull(),
             personId: IsNull(),
           },
           jobStatus: {
+            previewAt: Not(IsNull()),
             facesRecognizedAt: IsNull(),
           },
         };
@@ -479,7 +492,9 @@ export class AssetRepository implements IAssetRepository {
           faces: true,
         };
         where = {
-          previewPath: Not(IsNull()),
+          jobStatus: {
+            previewAt: Not(IsNull()),
+          },
           isVisible: true,
           faces: {
             assetId: Not(IsNull()),
@@ -695,7 +710,11 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: AssetBuilderOptions) {
-    const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
+    const builder = this.repository
+      .createQueryBuilder('asset')
+      .where('asset.isVisible = true')
+      .leftJoinAndSelect('asset.files', 'files');
+
     if (options.assetType !== undefined) {
       builder.andWhere('asset.type = :assetType', { assetType: options.assetType });
     }
@@ -800,5 +819,54 @@ export class AssetRepository implements IAssetRepository {
       .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
     return builder.getMany();
+  }
+
+  async getUniqueOriginalPaths(userId: string): Promise<string[]> {
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: false,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
+    });
+
+    const results = await builder
+      .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
+      .getRawMany();
+
+    return results.map((row: { directoryPath: string }) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
+    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
+
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: true,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
+    });
+
+    const assets = await builder
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('asset.originalPath LIKE :likePath', { likePath: `%${normalizedPath}/%` }).andWhere(
+            'asset.originalPath NOT LIKE :notLikePath',
+            { notLikePath: `%${normalizedPath}/%/%` },
+          );
+        }),
+      )
+      .orderBy(String.raw`regexp_replace(asset.originalPath, '.*/(.+)', '\1')`, 'ASC')
+      .getMany();
+
+    return assets;
+  }
+
+  @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
+  async upsertFile({ assetId, type, path }: { assetId: string; type: AssetFileType; path: string }): Promise<void> {
+    await this.fileRepository.upsert({ assetId, type, path }, { conflictPaths: ['assetId', 'type'] });
   }
 }

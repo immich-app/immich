@@ -12,7 +12,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -38,6 +38,7 @@
   import { tweened } from 'svelte/motion';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { locale } from '$lib/stores/preferences.store';
 
   const parseIndex = (s: string | null, max: number | null) =>
     Math.max(Math.min(Number.parseInt(s ?? '') || 0, max ?? 0), 0);
@@ -81,18 +82,33 @@
   let paused = false;
 
   // Play or pause progress when the paused state changes.
-  $: paused ? handlePromiseError(pause()) : handlePromiseError(play());
+  $: {
+    if (paused) {
+      handlePromiseError(pause());
+    } else {
+      handlePromiseError(play());
+    }
+  }
 
   // Progress should be paused when it's no longer possible to advance.
   $: paused ||= !canGoForward || galleryInView;
 
   // Advance to the next asset or memory when progress is complete.
-  $: $progress === 1 && handlePromiseError(toNext());
+  $: {
+    if ($progress === 1) {
+      handlePromiseError(toNext());
+    }
+  }
 
   // Progress should be resumed when reset and not paused.
-  $: !$progress && !paused && handlePromiseError(play());
+  $: {
+    if (!$progress && !paused) {
+      handlePromiseError(play());
+    }
+  }
 
   // Progress should be reset when the current memory or asset changes.
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   $: memoryIndex, assetIndex, handlePromiseError(reset());
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
@@ -146,20 +162,20 @@
       <CreateSharedLink />
       <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
 
-      <AssetSelectContextMenu icon={mdiPlus} title={$t('add_to')}>
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
         <AddToAlbum shared />
-      </AssetSelectContextMenu>
+      </ButtonContextMenu>
 
       <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
-      <AssetSelectContextMenu icon={mdiDotsVertical} title={$t('add')}>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
         <DownloadAction menuItem />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
         <DeleteAssets menuItem {onAssetDelete} />
-      </AssetSelectContextMenu>
+      </ButtonContextMenu>
     </AssetSelectControlBar>
   </div>
 {/if}
@@ -169,7 +185,7 @@
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} forceDark>
       <svelte:fragment slot="leading">
         <p class="text-lg">
-          {memoryLaneTitle(currentMemory.yearsAgo)}
+          {$memoryLaneTitle(currentMemory.yearsAgo)}
         </p>
       </svelte:fragment>
 
@@ -201,7 +217,7 @@
 
           <div>
             <p class="text-small">
-              {assetIndex + 1}/{currentMemory.assets.length}
+              {(assetIndex + 1).toLocaleString($locale)}/{currentMemory.assets.length.toLocaleString($locale)}
             </p>
           </div>
         </div>
@@ -210,7 +226,7 @@
 
     {#if galleryInView}
       <div
-        class="sticky top-20 z-30 flex place-content-center place-items-center transition-opacity"
+        class="fixed top-20 z-30 left-1/2 -translate-x-1/2 transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -261,7 +277,7 @@
             {#if previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('previous').toUpperCase()}</p>
-                <p class="text-xl">{memoryLaneTitle(previousMemory.yearsAgo)}</p>
+                <p class="text-xl">{$memoryLaneTitle(previousMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>
@@ -344,7 +360,7 @@
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('up_next').toUpperCase()}</p>
-                <p class="text-xl">{memoryLaneTitle(nextMemory.yearsAgo)}</p>
+                <p class="text-xl">{$memoryLaneTitle(nextMemory.yearsAgo)}</p>
               </div>
             {/if}
           </button>
@@ -353,9 +369,9 @@
     </section>
 
     <!-- GALLERY VIEWER -->
-    <section class="bg-immich-dark-gray m-4">
+    <section class="bg-immich-dark-gray p-4">
       <div
-        class="sticky mb-10 mt-4 flex place-content-center place-items-center transition-all"
+        class="sticky mb-10 flex place-content-center place-items-center transition-all"
         class:opacity-0={galleryInView}
         class:opacity-100={!galleryInView}
       >

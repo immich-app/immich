@@ -12,6 +12,7 @@
   import SearchBar from '../elements/search-bar.svelte';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
+  import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
 
   export let asset: AssetResponseDto | undefined = undefined;
 
@@ -34,9 +35,9 @@
     confirm: Point;
   }>();
 
-  $: lat = asset?.exifInfo?.latitude || 0;
-  $: lng = asset?.exifInfo?.longitude || 0;
-  $: zoom = lat && lng ? 15 : 1;
+  $: lat = asset?.exifInfo?.latitude ?? undefined;
+  $: lng = asset?.exifInfo?.longitude ?? undefined;
+  $: zoom = lat !== undefined && lng !== undefined ? 12.5 : 1;
 
   $: {
     if (places) {
@@ -68,15 +69,18 @@
   };
 
   const handleSearchPlaces = () => {
-    if (searchWord === '') {
-      return;
-    }
-
     if (latestSearchTimeout) {
       clearTimeout(latestSearchTimeout);
     }
     showLoadingSpinner = true;
+
     const searchTimeout = window.setTimeout(() => {
+      if (searchWord === '') {
+        places = [];
+        showLoadingSpinner = false;
+        return;
+      }
+
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening
@@ -89,7 +93,7 @@
           // skip error when a newer search is happening
           if (latestSearchTimeout === searchTimeout) {
             places = [];
-            handleError(error, $t('cant_search_places'));
+            handleError(error, $t('errors.cant_search_places'));
             showLoadingSpinner = false;
           }
         });
@@ -148,7 +152,7 @@
         {/if}
       </div>
     </div>
-    <label for="datetime">{$t('pick_a_location')}</label>
+    <span>{$t('pick_a_location')}</span>
     <div class="h-[500px] min-h-[300px] w-full">
       {#await import('../shared-components/map/map.svelte')}
         {#await delay(timeToLoadTheMap) then}
@@ -157,10 +161,9 @@
             <LoadingSpinner />
           </div>
         {/await}
-      {:then component}
-        <svelte:component
-          this={component.default}
-          mapMarkers={lat && lng && asset
+      {:then { default: Map }}
+        <Map
+          mapMarkers={lat !== undefined && lng !== undefined && asset
             ? [
                 {
                   id: asset.id,
@@ -180,6 +183,17 @@
           on:clickedPoint={({ detail: point }) => handleSelect(point)}
         />
       {/await}
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4 text-sm text-left mt-4">
+      <CoordinatesInput
+        lat={point ? point.lat : lat}
+        lng={point ? point.lng : lng}
+        onUpdate={(lat, lng) => {
+          point = { lat, lng };
+          addClipMapMarker(lng, lat);
+        }}
+      />
     </div>
   </div>
 </ConfirmDialog>

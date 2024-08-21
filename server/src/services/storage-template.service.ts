@@ -15,14 +15,15 @@ import {
 } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { OnEmit } from 'src/decorators';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
+import { AssetType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -88,8 +89,8 @@ export class StorageTemplateService {
     );
   }
 
-  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
-  onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
+  @OnEmit({ event: 'onConfigValidate' })
+  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {
@@ -147,7 +148,7 @@ export class StorageTemplateService {
       return JobStatus.SKIPPED;
     }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { withExif: true }),
+      this.assetRepository.getAll(pagination, { withExif: true, withArchived: true }),
     );
     const users = await this.userRepository.getList();
 

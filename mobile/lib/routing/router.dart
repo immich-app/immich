@@ -5,7 +5,6 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
@@ -24,9 +23,12 @@ import 'package:immich_mobile/pages/common/app_log.page.dart';
 import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
 import 'package:immich_mobile/pages/common/create_album.page.dart';
 import 'package:immich_mobile/pages/common/gallery_viewer.page.dart';
+import 'package:immich_mobile/pages/common/headers_settings.page.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_controller.page.dart';
+import 'package:immich_mobile/pages/editing/edit.page.dart';
+import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/pages/library/archive.page.dart';
 import 'package:immich_mobile/pages/library/favorite.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
@@ -58,6 +60,7 @@ import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:photo_manager/photo_manager.dart' hide LatLng;
@@ -65,7 +68,7 @@ import 'package:photo_manager/photo_manager.dart' hide LatLng;
 part 'router.gr.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
-class AppRouter extends _$AppRouter {
+class AppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
   late final DuplicateGuard _duplicateGuard;
   late final BackupPermissionGuard _backupPermissionGuard;
@@ -131,6 +134,8 @@ class AppRouter extends _$AppRouter {
       page: CreateAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(page: EditImageRoute.page),
+    AutoRoute(page: CropImageRoute.page),
     AutoRoute(page: FavoritesRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AllVideosRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(
@@ -221,6 +226,10 @@ class AppRouter extends _$AppRouter {
       page: SearchInputRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.noTransition,
+    ),
+    AutoRoute(
+      page: HeaderSettingsRoute.page,
+      guards: [_duplicateGuard],
     ),
   ];
 }

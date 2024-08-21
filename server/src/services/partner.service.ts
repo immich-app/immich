@@ -1,21 +1,19 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { PartnerResponseDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
+import { PartnerResponseDto, PartnerSearchDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { PartnerEntity } from 'src/entities/partner.entity';
+import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IPartnerRepository, PartnerDirection, PartnerIds } from 'src/interfaces/partner.interface';
+import { requireAccess } from 'src/utils/access';
 
 @Injectable()
 export class PartnerService {
-  private access: AccessCore;
   constructor(
     @Inject(IPartnerRepository) private repository: IPartnerRepository,
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
-  ) {
-    this.access = AccessCore.create(accessRepository);
-  }
+    @Inject(IAccessRepository) private access: IAccessRepository,
+  ) {}
 
   async create(auth: AuthDto, sharedWithId: string): Promise<PartnerResponseDto> {
     const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId };
@@ -38,7 +36,7 @@ export class PartnerService {
     await this.repository.remove(partner);
   }
 
-  async getAll(auth: AuthDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
+  async search(auth: AuthDto, { direction }: PartnerSearchDto): Promise<PartnerResponseDto[]> {
     const partners = await this.repository.getAll(auth.user.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners
@@ -48,7 +46,7 @@ export class PartnerService {
   }
 
   async update(auth: AuthDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
-    await this.access.requirePermission(auth, Permission.PARTNER_UPDATE, sharedById);
+    await requireAccess(this.access, { auth, permission: Permission.PARTNER_UPDATE, ids: [sharedById] });
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });

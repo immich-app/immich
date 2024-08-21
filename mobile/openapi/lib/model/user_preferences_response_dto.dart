@@ -17,6 +17,8 @@ class UserPreferencesResponseDto {
     required this.download,
     required this.emailNotifications,
     required this.memories,
+    required this.purchase,
+    required this.rating,
   });
 
   AvatarResponse avatar;
@@ -27,12 +29,18 @@ class UserPreferencesResponseDto {
 
   MemoryResponse memories;
 
+  PurchaseResponse purchase;
+
+  RatingResponse rating;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
     other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
-    other.memories == memories;
+    other.memories == memories &&
+    other.purchase == purchase &&
+    other.rating == rating;
 
   @override
   int get hashCode =>
@@ -40,10 +48,12 @@ class UserPreferencesResponseDto {
     (avatar.hashCode) +
     (download.hashCode) +
     (emailNotifications.hashCode) +
-    (memories.hashCode);
+    (memories.hashCode) +
+    (purchase.hashCode) +
+    (rating.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories]';
+  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -51,6 +61,8 @@ class UserPreferencesResponseDto {
       json[r'download'] = this.download;
       json[r'emailNotifications'] = this.emailNotifications;
       json[r'memories'] = this.memories;
+      json[r'purchase'] = this.purchase;
+      json[r'rating'] = this.rating;
     return json;
   }
 
@@ -66,6 +78,8 @@ class UserPreferencesResponseDto {
         download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
         memories: MemoryResponse.fromJson(json[r'memories'])!,
+        purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
+        rating: RatingResponse.fromJson(json[r'rating'])!,
       );
     }
     return null;
@@ -117,6 +131,8 @@ class UserPreferencesResponseDto {
     'download',
     'emailNotifications',
     'memories',
+    'purchase',
+    'rating',
   };
 }
 

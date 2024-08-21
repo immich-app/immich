@@ -36,7 +36,7 @@
         return;
       } catch (error) {
         console.error('Error [login-form] [oauth.callback]', error);
-        oauthError = getServerErrorMessage(error) || 'Unable to complete OAuth login';
+        oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
         oauthLoading = false;
       }
     }
@@ -48,7 +48,7 @@
         return;
       }
     } catch (error) {
-      handleError(error, 'Unable to connect!');
+      handleError(error, $t('errors.unable_to_connect'));
     }
 
     oauthLoading = false;
@@ -74,7 +74,7 @@
       await onSuccess();
       return;
     } catch (error) {
-      errorMessage = getServerErrorMessage(error) || 'Incorrect email or password';
+      errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
       loading = false;
       return;
     }
@@ -86,7 +86,7 @@
     const success = await oauth.authorize(window.location);
     if (!success) {
       oauthLoading = false;
-      oauthError = 'Unable to login with OAuth';
+      oauthError = $t('errors.unable_to_login_with_oauth');
     }
   };
 </script>
@@ -124,7 +124,7 @@
             <LoadingSpinner />
           </span>
         {:else}
-          Login
+          {$t('to_login')}
         {/if}
       </Button>
     </div>
@@ -138,7 +138,7 @@
       <span
         class="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-immich-dark-gray dark:text-white"
       >
-        or
+        {$t('or')}
       </span>
     </div>
   {/if}

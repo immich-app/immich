@@ -103,11 +103,17 @@ String parameterToString(dynamic value) {
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
   }
+  if (value is PartnerDirection) {
+    return PartnerDirectionTypeTransformer().encode(value).toString();
+  }
   if (value is PathEntityType) {
     return PathEntityTypeTypeTransformer().encode(value).toString();
   }
   if (value is PathType) {
     return PathTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is Permission) {
+    return PermissionTypeTransformer().encode(value).toString();
   }
   if (value is ReactionLevel) {
     return ReactionLevelTypeTransformer().encode(value).toString();
@@ -144,6 +150,9 @@ String parameterToString(dynamic value) {
   }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();
+  }
+  if (value is VideoContainer) {
+    return VideoContainerTypeTransformer().encode(value).toString();
   }
   return value.toString();
 }

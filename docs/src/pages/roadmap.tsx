@@ -14,6 +14,7 @@ import {
   mdiCheckboxMarked,
   mdiCloudUploadOutline,
   mdiCollage,
+  mdiContentDuplicate,
   mdiDevices,
   mdiEmailOutline,
   mdiExpansionCard,
@@ -28,12 +29,14 @@ import {
   mdiForum,
   mdiHandshakeOutline,
   mdiHeart,
+  mdiHistory,
   mdiImage,
   mdiImageAlbum,
   mdiImageEdit,
   mdiImageMultipleOutline,
   mdiImageSearch,
   mdiKeyboardSettingsOutline,
+  mdiLockOutline,
   mdiMagnify,
   mdiMagnifyScan,
   mdiMap,
@@ -63,14 +66,17 @@ import {
   mdiVectorCombine,
   mdiVideo,
   mdiWeb,
-  mdiContentDuplicate,
+  mdiLicense,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
-  'v1.106.0': new Date(2024, 5, 11),
+  // TODO
+  'v1.110.0': new Date(2024, 5, 11),
+  'v1.109.0': new Date(2024, 6, 18),
+  'v1.106.1': new Date(2024, 5, 11),
   'v1.104.0': new Date(2024, 4, 13),
   'v1.103.0': new Date(2024, 3, 29),
   'v1.102.0': new Date(2024, 3, 15),
@@ -161,6 +167,14 @@ const withRelease = ({
 const roadmap: Item[] = [
   {
     done: false,
+    icon: mdiLockOutline,
+    iconColor: 'sandybrown',
+    title: 'Private/locked photos',
+    description: 'Private assets with extra protections',
+    getDateLabel: () => 'Planned for 2024',
+  },
+  {
+    done: false,
     icon: mdiRocketLaunch,
     iconColor: 'indianred',
     title: 'Stable release',
@@ -201,14 +215,6 @@ const roadmap: Item[] = [
   },
   {
     done: false,
-    icon: mdiWeb,
-    iconColor: 'royalblue',
-    title: 'Web translations',
-    description: 'Translate the web application to multiple languages',
-    getDateLabel: () => 'Planned for 2024',
-  },
-  {
-    done: false,
     icon: mdiCameraBurst,
     iconColor: 'rebeccapurple',
     title: 'Auto stacking',
@@ -218,18 +224,45 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  {
+    icon: mdiStar,
+    iconColor: 'gold',
+    title: '40,000 Stars',
+    description: 'Reached 40K Stars on GitHub!',
+    getDateLabel: withLanguage(new Date(2024, 6, 21)),
+  },
+  withRelease({
+    icon: mdiLicense,
+    iconColor: 'gold',
+    title: 'Supporter Badge',
+    description: 'The option to buy Immich to support its development!',
+    release: 'v1.109.0',
+  }),
+  withRelease({
+    icon: mdiHistory,
+    title: 'Versioned documentation',
+    description: 'View documentation as it was at the time of past releases',
+    release: 'v1.106.1',
+  }),
+  withRelease({
+    icon: mdiWeb,
+    iconColor: 'royalblue',
+    title: 'Web translations',
+    description: 'Translate the web application to multiple languages',
+    release: 'v1.106.1',
+  }),
   withRelease({
     icon: mdiContentDuplicate,
     title: 'Similar image detection',
-    description: 'Detect duplicate assets that aren’t exactly identical',
-    release: 'v1.106.0',
+    description: "Detect duplicate assets that aren't exactly identical",
+    release: 'v1.106.1',
   }),
   withRelease({
     icon: mdiVectorCombine,
     title: 'Container consolidation',
     description:
       'The microservices container can be run as a worker within the server image, allowing us to remove it from the default stack.',
-    release: 'v1.106.0',
+    release: 'v1.106.1',
   }),
   withRelease({
     icon: mdiPencil,
