@@ -71,7 +71,7 @@ class BackupService {
           _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
-  Future<List<AssetEntity>> buildUploadCandidates(
+  Future<Set<BackupCandidate>> buildUploadCandidates(
     List<BackupAlbum> selectedBackupAlbums,
     List<BackupAlbum> excludedBackupAlbums,
   ) async {
@@ -82,34 +82,30 @@ class BackupService {
       imageOption: const FilterOption(needTitle: true),
       videoOption: const FilterOption(needTitle: true),
     );
+
     final now = DateTime.now();
     final List<AssetPathEntity?> selectedAlbums =
         await _loadAlbumsWithTimeFilter(selectedBackupAlbums, filter, now);
     if (selectedAlbums.every((e) => e == null)) {
-      return [];
+      return {};
     }
-    final int allIdx = selectedAlbums.indexWhere((e) => e != null && e.isAll);
-    if (allIdx != -1) {
-      final List<AssetPathEntity?> excludedAlbums =
-          await _loadAlbumsWithTimeFilter(excludedBackupAlbums, filter, now);
-      final List<AssetEntity> toAdd = await _fetchAssetsAndUpdateLastBackup(
-        selectedAlbums.slice(allIdx, allIdx + 1),
-        selectedBackupAlbums.slice(allIdx, allIdx + 1),
-        now,
-      );
-      final List<AssetEntity> toRemove = await _fetchAssetsAndUpdateLastBackup(
-        excludedAlbums,
-        excludedBackupAlbums,
-        now,
-      );
-      return toAdd.toSet().difference(toRemove.toSet()).toList();
-    } else {
-      return await _fetchAssetsAndUpdateLastBackup(
-        selectedAlbums,
-        selectedBackupAlbums,
-        now,
-      );
-    }
+
+    final List<AssetPathEntity?> excludedAlbums =
+        await _loadAlbumsWithTimeFilter(excludedBackupAlbums, filter, now);
+
+    final Set<BackupCandidate> toAdd = await _fetchAssetsAndUpdateLastBackup(
+      selectedAlbums,
+      selectedBackupAlbums,
+      now,
+    );
+
+    final Set<BackupCandidate> toRemove = await _fetchAssetsAndUpdateLastBackup(
+      excludedAlbums,
+      excludedBackupAlbums,
+      now,
+    );
+
+    return toAdd.difference(toRemove);
   }
 
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
@@ -140,48 +136,75 @@ class BackupService {
     return result;
   }
 
-  Future<List<AssetEntity>> _fetchAssetsAndUpdateLastBackup(
+  Future<Set<BackupCandidate>> _fetchAssetsAndUpdateLastBackup(
     List<AssetPathEntity?> albums,
     List<BackupAlbum> backupAlbums,
     DateTime now,
   ) async {
-    List<AssetEntity> result = [];
-    for (int i = 0; i < albums.length; i++) {
-      final AssetPathEntity? a = albums[i];
-      if (a != null &&
-          a.lastModified?.isBefore(backupAlbums[i].lastBackup) != true) {
-        result.addAll(
-          await a.getAssetListRange(start: 0, end: await a.assetCountAsync),
-        );
-        backupAlbums[i].lastBackup = now;
+    debugPrint("_fetchAssetsAndUpdateLastBackup");
+    Set<BackupCandidate> candidate = {};
+
+    for (final album in albums) {
+      if (album == null) {
+        continue;
       }
+      final assets = await album.getAssetListRange(
+        start: 0,
+        end: await album.assetCountAsync,
+      );
+
+      // Add album's name to the asset info
+      for (final asset in assets) {
+        List<String> albums = [album.name];
+
+        final existingAsset = candidate.firstWhereOrNull(
+          (a) => a.asset.id == asset.id,
+        );
+
+        if (existingAsset != null) {
+          albums.addAll(existingAsset.albums);
+          candidate.remove(existingAsset);
+        }
+
+        candidate.add(
+          BackupCandidate(
+            asset: asset,
+            albums: albums,
+          ),
+        );
+      }
+
+      final idx = albums.indexOf(album);
+      backupAlbums[idx].lastBackup = now;
     }
-    return result;
+
+    return candidate;
   }
 
   /// Returns a new list of assets not yet uploaded
-  Future<List<AssetEntity>> removeAlreadyUploadedAssets(
-    List<AssetEntity> candidates,
+  Future<Set<BackupCandidate>> removeAlreadyUploadedAssets(
+    Set<BackupCandidate> candidates,
   ) async {
     if (candidates.isEmpty) {
       return candidates;
     }
+
     final Set<String> duplicatedAssetIds = await getDuplicatedAssetIds();
-    candidates = duplicatedAssetIds.isEmpty
-        ? candidates
-        : candidates
-            .whereNot((asset) => duplicatedAssetIds.contains(asset.id))
-            .toList();
+    candidates.removeWhere(
+      (candidate) => duplicatedAssetIds.contains(candidate.asset.id),
+    );
+
     if (candidates.isEmpty) {
       return candidates;
     }
+
     final Set<String> existing = {};
     try {
       final String deviceId = Store.get(StoreKey.deviceId);
       final CheckExistingAssetsResponseDto? duplicates =
           await _apiService.assetsApi.checkExistingAssets(
         CheckExistingAssetsDto(
-          deviceAssetIds: candidates.map((e) => e.id).toList(),
+          deviceAssetIds: candidates.map((c) => c.asset.id).toList(),
           deviceId: deviceId,
         ),
       );
@@ -195,9 +218,12 @@ class BackupService {
         existing.addAll(allAssetsInDatabase);
       }
     }
-    return existing.isEmpty
-        ? candidates
-        : candidates.whereNot((e) => existing.contains(e.id)).toList();
+
+    if (existing.isNotEmpty) {
+      candidates.removeWhere((c) => !existing.contains(c.asset.id));
+    }
+
+    return candidates;
   }
 
   Future<bool> backupAsset(
@@ -243,12 +269,12 @@ class BackupService {
           )
         : assetList.toList();
     var count = 0;
-    for (var candidate in assetsToUpload) {
+    for (final candidate in assetsToUpload) {
       final AssetEntity entity = candidate.asset;
       final List<String> albums = candidate.albums;
       count++;
-      print(
-        "[$count] Uploading asset ${entity.id} | ${albums} | ${entity.createDateTime}",
+      debugPrint(
+        "[$count] -Uploading asset ${entity.id} | ${albums} | ${entity.createDateTime}",
       );
       continue;
       File? file;

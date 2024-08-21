@@ -294,7 +294,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<BackupCandidate> assetsFromSelectedAlbums = {};
     final Set<BackupCandidate> assetsFromExcludedAlbums = {};
 
-    debugPrint("Selected Albums: ${state.selectedBackupAlbums}");
     for (final album in state.selectedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
 
@@ -307,29 +306,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         end: assetCount,
       );
 
+      // Add album's name to the asset info
       for (final asset in assets) {
-        List<String> existingAlbums = [album.name];
+        List<String> albums = [album.name];
 
-        final inOtherAlbum = assetsFromSelectedAlbums.firstWhereOrNull(
+        final existingAsset = assetsFromSelectedAlbums.firstWhereOrNull(
           (a) => a.asset.id == asset.id,
         );
 
-        if (inOtherAlbum != null) {
-          existingAlbums.addAll(inOtherAlbum.albums);
-          assetsFromSelectedAlbums.remove(inOtherAlbum);
+        if (existingAsset != null) {
+          albums.addAll(existingAsset.albums);
+          assetsFromSelectedAlbums.remove(existingAsset);
         }
 
         assetsFromSelectedAlbums.add(
           BackupCandidate(
             asset: asset,
-            albums: existingAlbums,
+            albums: albums,
           ),
         );
       }
-    }
-
-    for (final bc in assetsFromSelectedAlbums) {
-      debugPrint("Asset: ${bc.asset.id} | Albums: ${bc.albums}");
     }
 
     for (final album in state.excludedBackupAlbums) {
