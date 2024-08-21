@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -200,7 +201,7 @@ class BackupService {
   }
 
   Future<bool> backupAsset(
-    Iterable<AssetEntity> assetList,
+    Iterable<BackupCandidate> assetList,
     http.CancellationToken cancelToken,
     PMProgressHandler? pmProgressHandler,
     Function(String, String, bool) uploadSuccessCb,
@@ -230,19 +231,26 @@ class BackupService {
       await PhotoManager.requestPermissionExtend();
     }
 
-    List<AssetEntity> assetsToUpload = sortAssets
+    List<BackupCandidate> assetsToUpload = sortAssets
         // Upload images before video assets
         // these are further sorted by using their creation date
         ? assetList.sorted(
             (a, b) {
-              final cmp = a.typeInt - b.typeInt;
+              final cmp = a.asset.typeInt - b.asset.typeInt;
               if (cmp != 0) return cmp;
-              return a.createDateTime.compareTo(b.createDateTime);
+              return a.asset.createDateTime.compareTo(b.asset.createDateTime);
             },
           )
         : assetList.toList();
-
-    for (var entity in assetsToUpload) {
+    var count = 0;
+    for (var candidate in assetsToUpload) {
+      final AssetEntity entity = candidate.asset;
+      final List<String> albums = candidate.albums;
+      count++;
+      print(
+        "[$count] Uploading asset ${entity.id} | ${albums} | ${entity.createDateTime}",
+      );
+      continue;
       File? file;
       File? livePhotoFile;
 

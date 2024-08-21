@@ -249,15 +249,16 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             state.copyWith(showDetailedNotification: showDetailedNotification);
         final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
-        final bool ok = await ref.read(backupServiceProvider).backupAsset(
-              allUploadAssets,
-              state.cancelToken,
-              pmProgressHandler,
-              _onAssetUploaded,
-              _onProgress,
-              _onSetCurrentBackupAsset,
-              _onAssetUploadError,
-            );
+        // final bool ok = await ref.read(backupServiceProvider).backupAsset(
+        //       allUploadAssets,
+        //       state.cancelToken,
+        //       pmProgressHandler,
+        //       _onAssetUploaded,
+        //       _onProgress,
+        //       _onSetCurrentBackupAsset,
+        //       _onAssetUploadError,
+        //     );
+        final ok = true;
 
         // Close detailed notification
         await _localNotificationService.closeNotification(

@@ -457,23 +457,23 @@ class BackgroundService {
     _cancellationToken = CancellationToken();
     final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
-    final bool ok = await backupService.backupAsset(
-      toUpload,
-      _cancellationToken!,
-      pmProgressHandler,
-      notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId, isDup) {},
-      notifySingleProgress ? _onProgress : (sent, total) {},
-      notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
-      _onBackupError,
-      sortAssets: true,
-    );
-    if (!ok && !_cancellationToken!.isCancelled) {
-      _showErrorNotification(
-        title: "backup_background_service_error_title".tr(),
-        content: "backup_background_service_backup_failed_message".tr(),
-      );
-    }
-    return ok;
+    // final bool ok = await backupService.backupAsset(
+    //   toUpload,
+    //   _cancellationToken!,
+    //   pmProgressHandler,
+    //   notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId, isDup) {},
+    //   notifySingleProgress ? _onProgress : (sent, total) {},
+    //   notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
+    //   _onBackupError,
+    //   sortAssets: true,
+    // );
+    // if (!ok && !_cancellationToken!.isCancelled) {
+    //   _showErrorNotification(
+    //     title: "backup_background_service_error_title".tr(),
+    //     content: "backup_background_service_backup_failed_message".tr(),
+    //   );
+    // }
+    return true;
   }
 
   void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
