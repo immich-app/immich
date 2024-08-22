@@ -4,19 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/backup/album_info_card.dart';
 import 'package:immich_mobile/widgets/backup/album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
+import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 @RoutePage()
 class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final availableAlbums = ref.watch(backupProvider).availableAlbums;
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
+    final mirroUploadAlbum =
+        useAppSettingsState(AppSettingsEnum.mirrorUploadAlbum);
     final isDarkTheme = context.isDarkTheme;
     final albums = ref.watch(backupProvider).availableAlbums;
 
@@ -48,33 +53,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             }),
             childCount: albums.length,
           ),
-        ),
-      );
-    }
-
-    buildAlbumSelectionGrid() {
-      if (albums.isEmpty) {
-        return const SliverToBoxAdapter(
-          child: Center(
-            child: ImmichLoadingIndicator(),
-          ),
-        );
-      }
-
-      return SliverPadding(
-        padding: const EdgeInsets.all(12.0),
-        sliver: SliverGrid.builder(
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-          ),
-          itemCount: albums.length,
-          itemBuilder: ((context, index) {
-            return AlbumInfoCard(
-              album: albums[index],
-            );
-          }),
         ),
       );
     }
@@ -144,47 +122,13 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       }).toSet();
     }
 
-    // buildSearchBar() {
-    //   return Padding(
-    //     padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 8.0),
-    //     child: TextFormField(
-    //       onChanged: (searchValue) {
-    //         // if (searchValue.isEmpty) {
-    //         //   albums = availableAlbums;
-    //         // } else {
-    //         //   albums.value = availableAlbums
-    //         //       .where(
-    //         //         (album) => album.name
-    //         //             .toLowerCase()
-    //         //             .contains(searchValue.toLowerCase()),
-    //         //       )
-    //         //       .toList();
-    //         // }
-    //       },
-    //       decoration: InputDecoration(
-    //         contentPadding: const EdgeInsets.symmetric(
-    //           horizontal: 8.0,
-    //           vertical: 8.0,
-    //         ),
-    //         hintText: "Search",
-    //         hintStyle: TextStyle(
-    //           color: isDarkTheme ? Colors.white : Colors.grey,
-    //           fontSize: 14.0,
-    //         ),
-    //         prefixIcon: const Icon(
-    //           Icons.search,
-    //           color: Colors.grey,
-    //         ),
-    //         border: OutlineInputBorder(
-    //           borderRadius: BorderRadius.circular(10),
-    //           borderSide: BorderSide.none,
-    //         ),
-    //         filled: true,
-    //         fillColor: isDarkTheme ? Colors.white30 : Colors.grey[200],
-    //       ),
-    //     ),
-    //   );
-    // }
+    handleMirrorAlbumToggle(bool isEnable) async {
+      if (isEnable) {
+        for (final album in selectedBackupAlbums) {
+          await ref.read(albumProvider.notifier).createMirrorAlbum(album.name);
+        }
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -224,6 +168,20 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       ...buildExcludedAlbumNameChip(),
                     ],
                   ),
+                ),
+
+                SettingsSwitchListTile(
+                  valueNotifier: mirroUploadAlbum,
+                  title: "mirror_album_setting_title".tr(),
+                  subtitle: "mirror_album_setting_subtitle".tr(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                  titleStyle: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  subtitleStyle: context.textTheme.labelLarge?.copyWith(
+                    color: context.colorScheme.primary,
+                  ),
+                  onChanged: handleMirrorAlbumToggle,
                 ),
 
                 ListTile(
@@ -296,15 +254,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               ],
             ),
           ),
-          SliverLayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.crossAxisExtent > 600) {
-                return buildAlbumSelectionGrid();
-              } else {
-                return buildAlbumSelectionList();
-              }
-            },
-          ),
+          buildAlbumSelectionList(),
         ],
       ),
     );

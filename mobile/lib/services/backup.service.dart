@@ -258,17 +258,19 @@ class BackupService {
       await PhotoManager.requestPermissionExtend();
     }
 
-    List<BackupCandidate> candidates = sortAssets
-        // Upload images before video assets
-        // these are further sorted by using their creation date
-        ? assetList.sorted(
-            (a, b) {
-              final cmp = a.asset.typeInt - b.asset.typeInt;
-              if (cmp != 0) return cmp;
-              return a.asset.createDateTime.compareTo(b.asset.createDateTime);
-            },
-          )
-        : assetList.toList();
+    List<BackupCandidate> candidates = assetList.toList();
+
+    // Upload images before video assets for background tasks
+    // these are further sorted by using their creation date
+    if (sortAssets) {
+      candidates = assetList.sorted(
+        (a, b) {
+          final cmp = a.asset.typeInt - b.asset.typeInt;
+          if (cmp != 0) return cmp;
+          return a.asset.createDateTime.compareTo(b.asset.createDateTime);
+        },
+      );
+    }
 
     for (final candidate in candidates) {
       final AssetEntity entity = candidate.asset;
@@ -452,9 +454,11 @@ class BackupService {
         }
       }
     }
+
     if (duplicatedAssetIds.isNotEmpty) {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
+
     return !anyErrors;
   }
 

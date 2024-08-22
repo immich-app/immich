@@ -234,6 +234,8 @@ enum StoreKey<T> {
   primaryColor<String>(128, type: String),
   dynamicTheme<bool>(129, type: bool),
   colorfulInterface<bool>(130, type: bool),
+
+  mirrorUploadAlbum<bool>(131, type: bool),
   ;
 
   const StoreKey(

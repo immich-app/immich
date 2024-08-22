@@ -441,4 +441,8 @@ class AlbumService {
       return false;
     }
   }
+
+  Future<Album?> getAlbumByName(String albumName) async {
+    return await _db.albums.filter().nameEqualTo(albumName).findFirst();
+  }
 }

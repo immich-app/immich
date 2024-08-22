@@ -23,6 +23,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     });
     _streamSub = query.watch().listen((data) => state = data);
   }
+
   final AlbumService _albumService;
   late final StreamSubscription<List<Album>> _streamSub;
 
@@ -40,6 +41,18 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     Set<Asset> assets,
   ) =>
       _albumService.createAlbum(albumTitle, assets, []);
+
+  Future<Album?> getAlbumByName(String albumName) =>
+      _albumService.getAlbumByName(albumName);
+
+  Future<void> createMirrorAlbum(
+    String albumTitle,
+  ) {
+    print("createMirrorAlbum $albumTitle");
+    // _albumService.createAlbum(albumTitle, {}, []);
+
+    return Future.value();
+  }
 
   @override
   void dispose() {

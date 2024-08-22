@@ -5,9 +5,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoListTile extends HookConsumerWidget {
@@ -22,6 +26,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(album);
     var assetCount = useState(0);
+    final mirroUploadAlbum = ref
+        .watch(appSettingsServiceProvider)
+        .getSetting(AppSettingsEnum.mirrorUploadAlbum);
 
     useEffect(
       () {
@@ -98,6 +105,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
             ref.read(backupProvider.notifier).removeAlbumForBackup(album);
           } else {
             ref.read(backupProvider.notifier).addAlbumForBackup(album);
+            if (mirroUploadAlbum) {
+              ref.read(albumProvider.notifier).createMirrorAlbum(album.name);
+            }
           }
         },
         leading: buildIcon(),
