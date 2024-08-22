@@ -1,5 +1,5 @@
-import { AlbumUserRole } from 'src/entities/album-user.entity';
-import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
+import { AlbumEntity } from 'src/entities/album.entity';
+import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';

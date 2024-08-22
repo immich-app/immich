@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEmit } from 'src/decorators';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { OnEvents, SystemConfigUpdateEvent } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -17,11 +18,12 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class SmartInfoService implements OnEvents {
+export class SmartInfoService {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -37,7 +39,8 @@ export class SmartInfoService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async onBootstrapEvent(app: 'api' | 'microservices') {
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(app: ArgOf<'onBootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -46,7 +49,8 @@ export class SmartInfoService implements OnEvents {
     await this.init(config);
   }
 
-  onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
+  @OnEmit({ event: 'onConfigValidate' })
+  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
     try {
       getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
     } catch {
@@ -56,7 +60,8 @@ export class SmartInfoService implements OnEvents {
     }
   }
 
-  async onConfigUpdateEvent({ oldConfig, newConfig }: SystemConfigUpdateEvent) {
+  @OnEmit({ event: 'onConfigUpdate' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'onConfigUpdate'>) {
     await this.init(newConfig, oldConfig);
   }
 
@@ -131,7 +136,7 @@ export class SmartInfoService implements OnEvents {
       return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -140,13 +145,14 @@ export class SmartInfoService implements OnEvents {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       return JobStatus.FAILED;
     }
 
     const embedding = await this.machineLearning.encodeImage(
       machineLearning.url,
-      asset.previewPath,
+      previewFile.path,
       machineLearning.clip,
     );
 

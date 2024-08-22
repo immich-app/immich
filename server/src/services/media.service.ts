@@ -14,8 +14,9 @@ import {
 import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
+import { AssetFileType, AssetType } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
@@ -35,6 +36,7 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
@@ -73,7 +75,11 @@ export class MediaService {
   async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { isVisible: true, withDeleted: true, withArchived: true })
+        ? this.assetRepository.getAll(pagination, {
+            isVisible: true,
+            withDeleted: true,
+            withArchived: true,
+          })
         : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
     });
 
@@ -81,13 +87,17 @@ export class MediaService {
       const jobs: JobItem[] = [];
 
       for (const asset of assets) {
-        if (!asset.previewPath || force) {
+        const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
+
+        if (!previewFile || force) {
           jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id: asset.id } });
           continue;
         }
-        if (!asset.thumbnailPath) {
+
+        if (!thumbnailFile) {
           jobs.push({ name: JobName.GENERATE_THUMBNAIL, data: { id: asset.id } });
         }
+
         if (!asset.thumbhash) {
           jobs.push({ name: JobName.GENERATE_THUMBHASH, data: { id: asset.id } });
         }
@@ -153,7 +163,7 @@ export class MediaService {
 
   async handleAssetMigration({ id }: IEntityJob): Promise<JobStatus> {
     const { image } = await this.configCore.getConfig({ withCache: true });
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -179,11 +189,20 @@ export class MediaService {
     }
 
     const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
-    if (asset.previewPath && asset.previewPath !== previewPath) {
-      this.logger.debug(`Deleting old preview for asset ${asset.id}`);
-      await this.storageRepository.unlink(asset.previewPath);
+    if (!previewPath) {
+      return JobStatus.SKIPPED;
     }
-    await this.assetRepository.update({ id: asset.id, previewPath });
+
+    const { previewFile } = getAssetFiles(asset.files);
+    if (previewFile && previewFile.path !== previewPath) {
+      this.logger.debug(`Deleting old preview for asset ${asset.id}`);
+      await this.storageRepository.unlink(previewFile.path);
+    }
+
+    await this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.PREVIEW, path: previewPath });
+    await this.assetRepository.update({ id: asset.id, updatedAt: new Date() });
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date() });
+
     return JobStatus.SUCCESS;
   }
 
@@ -255,7 +274,7 @@ export class MediaService {
   async handleGenerateThumbnail({ id }: IEntityJob): Promise<JobStatus> {
     const [{ image }, [asset]] = await Promise.all([
       this.configCore.getConfig({ withCache: true }),
-      this.assetRepository.getByIds([id], { exifInfo: true }),
+      this.assetRepository.getByIds([id], { exifInfo: true, files: true }),
     ]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -266,16 +285,25 @@ export class MediaService {
     }
 
     const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
-    if (asset.thumbnailPath && asset.thumbnailPath !== thumbnailPath) {
-      this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
-      await this.storageRepository.unlink(asset.thumbnailPath);
+    if (!thumbnailPath) {
+      return JobStatus.SKIPPED;
     }
-    await this.assetRepository.update({ id: asset.id, thumbnailPath });
+
+    const { thumbnailFile } = getAssetFiles(asset.files);
+    if (thumbnailFile && thumbnailFile.path !== thumbnailPath) {
+      this.logger.debug(`Deleting old thumbnail for asset ${asset.id}`);
+      await this.storageRepository.unlink(thumbnailFile.path);
+    }
+
+    await this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.THUMBNAIL, path: thumbnailPath });
+    await this.assetRepository.update({ id: asset.id, updatedAt: new Date() });
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, thumbnailAt: new Date() });
+
     return JobStatus.SUCCESS;
   }
 
   async handleGenerateThumbhash({ id }: IEntityJob): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -284,11 +312,12 @@ export class MediaService {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       return JobStatus.FAILED;
     }
 
-    const thumbhash = await this.mediaRepository.generateThumbhash(asset.previewPath);
+    const thumbhash = await this.mediaRepository.generateThumbhash(previewFile.path);
     await this.assetRepository.update({ id: asset.id, thumbhash });
 
     return JobStatus.SUCCESS;

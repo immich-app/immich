@@ -68,7 +68,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     });
 
     final stackIndex = useState(-1);
-    final stack = showStack && currentAsset.stackChildrenCount > 0
+    final stack = showStack && currentAsset.stackCount > 0
         ? ref.watch(assetStackStateProvider(currentAsset))
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
@@ -264,7 +264,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     return PopScope(
       // Change immersive mode back to normal "edgeToEdge" mode
-      onPopInvoked: (_) =>
+      onPopInvokedWithResult: (didPop, _) =>
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
       child: Scaffold(
         backgroundColor: Colors.black,

@@ -19,6 +19,7 @@
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
@@ -37,6 +38,9 @@
       handlePromiseError(fileUploadHandler(value.files, album.id));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
+  });
+  onDestroy(() => {
+    assetStore.destroy();
   });
 </script>
 
@@ -94,7 +98,7 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  <AssetGrid {album} {assetStore} {assetInteractionStore}>
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteractionStore}>
     <section class="pt-8 md:pt-24">
       <!-- ALBUM TITLE -->
       <h1

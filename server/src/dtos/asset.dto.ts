@@ -14,7 +14,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetType } from 'src/entities/asset.entity';
+import { AssetType } from 'src/enum';
 import { AssetStats } from 'src/interfaces/asset.interface';
 import { CropOptions, ExifOrientation } from 'src/interfaces/metadata.interface';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
@@ -60,12 +60,6 @@ export class UpdateAssetBase {
 export class AssetBulkUpdateDto extends UpdateAssetBase {
   @ValidateUUID({ each: true })
   ids!: string[];
-
-  @ValidateUUID({ optional: true })
-  stackParentId?: string;
-
-  @ValidateBoolean({ optional: true })
-  removeParent?: boolean;
 
   @Optional()
   duplicateId?: string | null;

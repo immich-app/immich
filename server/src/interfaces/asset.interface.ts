@@ -1,7 +1,7 @@
-import { AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
@@ -16,6 +16,7 @@ export interface AssetStatsOptions {
 
 export interface LivePhotoSearchOptions {
   ownerId: string;
+  libraryId?: string | null;
   livePhotoCID: string;
   otherAssetId: string;
   type: AssetType;
@@ -144,6 +145,8 @@ export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffli
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
+  getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]>;
+  getUniqueOriginalPaths(userId: string): Promise<string[]>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByIds(
     ids: string[],
@@ -191,4 +194,5 @@ export interface IAssetRepository {
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
+  upsertFile(options: { assetId: string; type: AssetFileType; path: string }): Promise<void>;
 }

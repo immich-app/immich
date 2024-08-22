@@ -177,7 +177,7 @@ class TabControllerPage extends HookConsumerWidget {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
-          onPopInvoked: (didPop) =>
+          onPopInvokedWithResult: (didPop, _) =>
               !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: LayoutBuilder(
             builder: (context, constraints) {

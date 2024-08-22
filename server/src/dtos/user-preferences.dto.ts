@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { UserAvatarColor, UserPreferences } from 'src/entities/user-metadata.entity';
+import { UserPreferences } from 'src/entities/user-metadata.entity';
+import { UserAvatarColor } from 'src/enum';
 import { Optional, ValidateBoolean } from 'src/validation';
 
 class AvatarUpdate {
@@ -32,12 +33,15 @@ class EmailNotificationsUpdate {
   albumUpdate?: boolean;
 }
 
-class DownloadUpdate {
+class DownloadUpdate implements Partial<DownloadResponse> {
   @Optional()
   @IsInt()
   @IsPositive()
   @ApiProperty({ type: 'integer' })
   archiveSize?: number;
+
+  @ValidateBoolean({ optional: true })
+  includeEmbeddedVideos?: boolean;
 }
 
 class PurchaseUpdate {
@@ -103,6 +107,8 @@ class EmailNotificationsResponse {
 class DownloadResponse {
   @ApiProperty({ type: 'integer' })
   archiveSize!: number;
+
+  includeEmbeddedVideos: boolean = false;
 }
 
 class PurchaseResponse {
