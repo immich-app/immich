@@ -29,11 +29,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Thoroslives/immich_remove_offline_files',
   },
   {
-    title: 'Create albums from folders',
-    description: 'A Python script to create albums based on the folder structure of an external library.',
-    url: 'https://github.com/Salvoxia/immich-folder-album-creator',
-  },
-  {
     title: 'Immich-Tools',
     description: 'Provides scripts for handling problems on the repair page.',
     url: 'https://github.com/clumsyCoder00/Immich-Tools',
