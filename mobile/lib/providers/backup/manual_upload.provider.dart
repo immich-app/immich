@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -116,11 +117,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     }
   }
 
-  void _onAssetUploaded(
-    String deviceAssetId,
-    String deviceId,
-    bool isDuplicated,
-  ) {
+  void _onAssetUploaded(SuccessUploadAsset result) {
     state = state.copyWith(successfulUploads: state.successfulUploads + 1);
     _backupProvider.updateDiskInfo();
   }
@@ -255,11 +252,11 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         final bool ok = await ref.read(backupServiceProvider).backupAsset(
               allUploadAssets,
               state.cancelToken,
-              pmProgressHandler,
-              _onAssetUploaded,
-              _onProgress,
-              _onSetCurrentBackupAsset,
-              _onAssetUploadError,
+              pmProgressHandler: pmProgressHandler,
+              onSuccess: _onAssetUploaded,
+              onProgress: _onProgress,
+              onCurrentAsset: _onSetCurrentBackupAsset,
+              onError: _onAssetUploadError,
             );
 
         // Close detailed notification

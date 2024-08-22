@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -461,28 +462,29 @@ class BackgroundService {
     final bool ok = await backupService.backupAsset(
       toUpload,
       _cancellationToken!,
-      pmProgressHandler,
-      onSuccess:
-          notifyTotalProgress ? onAssetUploaded : (assetId, deviceId, isDup) {},
-      onProgress: notifySingleProgress ? _onProgress : (bytes, totalBytes) {},
-      onCurrentAsset:
-          notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
+      pmProgressHandler: pmProgressHandler,
+      onSuccess: (result) =>
+          _onAssetUploaded(result: result, shouldNotify: notifyTotalProgress),
+      onProgress: (bytes, totalBytes) =>
+          _onProgress(bytes, totalBytes, shouldNotify: notifySingleProgress),
+      onCurrentAsset: (asset) =>
+          _onSetCurrentBackupAsset(asset, shouldNotify: notifySingleProgress),
       onError: _onBackupError,
       sortAssets: true,
     );
+
     if (!ok && !_cancellationToken!.isCancelled) {
       _showErrorNotification(
         title: "backup_background_service_error_title".tr(),
         content: "backup_background_service_backup_failed_message".tr(),
       );
     }
+
     return ok;
   }
 
-  void onAssetUploaded(
-    String deviceAssetId,
-    String deviceId,
-    bool isDuplicate, {
+  void _onAssetUploaded({
+    required SuccessUploadAsset result,
     bool shouldNotify = false,
   }) {
     if (!shouldNotify) {
@@ -493,8 +495,12 @@ class BackgroundService {
     _throttledNotifiy();
   }
 
-  void _onProgress(int sent, int total) {
-    _throttledDetailNotify(progress: sent, total: total);
+  void _onProgress(int bytes, int totalBytes, {bool shouldNotify = false}) {
+    if (!shouldNotify) {
+      return;
+    }
+
+    _throttledDetailNotify(progress: bytes, total: totalBytes);
   }
 
   void _updateDetailProgress(String? title, int progress, int total) {
@@ -534,7 +540,14 @@ class BackgroundService {
     );
   }
 
-  void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
+  void _onSetCurrentBackupAsset(
+    CurrentUploadAsset currentUploadAsset, {
+    bool shouldNotify = false,
+  }) {
+    if (!shouldNotify) {
+      return;
+    }
+
     _throttledDetailNotify.title =
         "backup_background_service_current_upload_notification"
             .tr(args: [currentUploadAsset.fileName]);

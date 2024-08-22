@@ -12,6 +12,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -228,14 +229,10 @@ class BackupService {
 
   Future<bool> backupAsset(
     Iterable<BackupCandidate> assetList,
-    http.CancellationToken cancelToken,
-    PMProgressHandler? pmProgressHandler, {
+    http.CancellationToken cancelToken, {
     bool sortAssets = false,
-    required void Function({
-      BackupCandidate asset,
-      String deviceId,
-      bool isDuplicate,
-    }) onSuccess,
+    PMProgressHandler? pmProgressHandler,
+    required void Function(SuccessUploadAsset result) onSuccess,
     required void Function(int bytes, int totalBytes) onProgress,
     required void Function(CurrentUploadAsset asset) onCurrentAsset,
     required void Function(ErrorUploadAsset error) onError,
@@ -431,9 +428,11 @@ class BackupService {
           }
 
           onSuccess(
-            asset: candidate,
-            deviceId: deviceId,
-            isDuplicate: isDuplicate,
+            SuccessUploadAsset(
+              asset: candidate,
+              deviceAssetId: deviceId,
+              isDuplicate: isDuplicate,
+            ),
           );
         }
       } on http.CancelledException {

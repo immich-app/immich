@@ -10,6 +10,7 @@ import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
@@ -483,11 +484,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await _backupService.backupAsset(
         assetsWillBeBackup,
         state.cancelToken,
-        pmProgressHandler,
-        _onAssetUploaded,
-        _onUploadProgress,
-        _onSetCurrentBackupAsset,
-        _onBackupError,
+        pmProgressHandler: pmProgressHandler,
+        onSuccess: _onAssetUploaded,
+        onProgress: _onUploadProgress,
+        onCurrentAsset: _onSetCurrentBackupAsset,
+        onError: _onBackupError,
       );
       await notifyBackgroundServiceCanRun();
     } else {
@@ -524,24 +525,23 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _onAssetUploaded(
-    String deviceAssetId,
-    String deviceId,
-    bool isDuplicated,
-  ) {
-    if (isDuplicated) {
+  void _onAssetUploaded(SuccessUploadAsset result) {
+    if (result.isDuplicate) {
       state = state.copyWith(
         allUniqueAssets: state.allUniqueAssets
-            .where((candidate) => candidate.asset.id != deviceAssetId)
+            .where((candidate) => candidate.asset.id != result.deviceAssetId)
             .toSet(),
       );
     } else {
       state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {
           ...state.selectedAlbumsBackupAssetsIds,
-          deviceAssetId,
+          result.deviceAssetId,
         },
-        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+        allAssetsInDatabase: [
+          ...state.allAssetsInDatabase,
+          result.deviceAssetId,
+        ],
       );
     }
 
