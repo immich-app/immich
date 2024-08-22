@@ -21,6 +21,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       relations: {
         assets: {
           exifInfo: true,
+          files: true,
         },
         album: {
           assets: {
