@@ -694,8 +694,8 @@ export class PersonService {
     );
 
     return {
-      left: middleX - newHalfSize,
-      top: middleY - newHalfSize,
+      x: middleX - newHalfSize,
+      y: middleY - newHalfSize,
       width: newHalfSize * 2,
       height: newHalfSize * 2,
     };

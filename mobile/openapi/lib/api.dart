@@ -121,6 +121,7 @@ part 'model/create_album_dto.dart';
 part 'model/create_library_dto.dart';
 part 'model/create_profile_image_response_dto.dart';
 part 'model/create_tag_dto.dart';
+part 'model/crop_options_dto.dart';
 part 'model/download_archive_info.dart';
 part 'model/download_info_dto.dart';
 part 'model/download_response.dart';

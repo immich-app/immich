@@ -297,6 +297,8 @@ class ApiClient {
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
           return CreateTagDto.fromJson(value);
+        case 'CropOptionsDto':
+          return CropOptionsDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':

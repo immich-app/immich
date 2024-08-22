@@ -1,8 +1,8 @@
-import type { CropSettings } from '$lib/stores/asset-editor.store';
+import type { CropOptionsDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { cropFrame, overlayEl } from './crop-store';
 
-export function draw(crop: CropSettings) {
+export function draw(crop: CropOptionsDto) {
   const mCropFrame = get(cropFrame);
 
   if (!mCropFrame) {
@@ -17,7 +17,7 @@ export function draw(crop: CropSettings) {
   drawOverlay(crop);
 }
 
-export function drawOverlay(crop: CropSettings) {
+export function drawOverlay(crop: CropOptionsDto) {
   const overlay = get(overlayEl);
   if (!overlay) {
     return;

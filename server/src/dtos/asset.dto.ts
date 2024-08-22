@@ -65,6 +65,28 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
   duplicateId?: string | null;
 }
 
+export class CropOptionsDto implements CropOptions {
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  x!: number;
+
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  y!: number;
+
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  width!: number;
+
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  height!: number;
+}
+
 export class UpdateAssetDto extends UpdateAssetBase {
   @Optional()
   @IsString()
@@ -76,7 +98,7 @@ export class UpdateAssetDto extends UpdateAssetBase {
   orientation?: ExifOrientation;
 
   @Optional()
-  crop?: CropOptions;
+  crop?: CropOptionsDto;
 }
 
 export class RandomAssetsDto {

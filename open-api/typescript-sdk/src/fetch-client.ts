@@ -389,8 +389,14 @@ export type AssetStatsResponseDto = {
     total: number;
     videos: number;
 };
+export type CropOptionsDto = {
+    height: number;
+    width: number;
+    x: number;
+    y: number;
+};
 export type UpdateAssetDto = {
-    crop?: object;
+    crop?: CropOptionsDto;
     dateTimeOriginal?: string;
     description?: string;
     isArchived?: boolean;

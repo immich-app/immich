@@ -3,7 +3,7 @@ import { mdiCropRotate } from '@mdi/js';
 import { derived, get, writable } from 'svelte/store';
 
 //---------crop
-export const cropSettings = writable<CropSettings>({ x: 0, y: 0, width: 100, height: 100 });
+export const cropSettings = writable<CropOptionsDto>({ x: 0, y: 0, width: 100, height: 100 });
 export const cropImageSize = writable([1000, 1000]);
 export const cropImageScale = writable(1);
 export const cropAspectRatio = writable<CropAspectRatio>('free');
@@ -64,10 +64,3 @@ export type CropAspectRatio =
   | '5:7'
   | 'free'
   | 'reset';
-
-export type CropSettings = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};

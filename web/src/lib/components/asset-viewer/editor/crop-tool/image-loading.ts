@@ -1,4 +1,4 @@
-import { cropImageScale, cropImageSize, cropSettings, type CropSettings } from '$lib/stores/asset-editor.store';
+import { cropImageScale, cropImageSize, cropSettings, type CropOptionsDto } from '$lib/stores/asset-editor.store';
 import { get } from 'svelte/store';
 import { cropAreaEl, cropFrame, imgElement } from './crop-store';
 import { draw } from './drawing';
@@ -62,7 +62,7 @@ export function calculateScale(img: HTMLImageElement, containerWidth: number, co
   return scale;
 }
 
-export function normalizeCropArea(crop: CropSettings, img: HTMLImageElement, scale: number) {
+export function normalizeCropArea(crop: CropOptionsDto, img: HTMLImageElement, scale: number) {
   const prevScale = get(cropImageScale);
   const scaleRatio = scale / prevScale;
 

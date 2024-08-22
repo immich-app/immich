@@ -7,8 +7,8 @@ import {
   normaizedRorateDegrees,
   rotateDegrees,
   showCancelConfirmDialog,
-  type CropSettings,
 } from '$lib/stores/asset-editor.store';
+import type { CropOptionsDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { adjustDimensions, keepAspectRatio } from './crop-settings';
 import {
@@ -125,7 +125,7 @@ function getBoundingClientRectCached(el: HTMLElement | null) {
   return getBoundingClientRectCache.data;
 }
 
-function isOnCropBoundary(mouseX: number, mouseY: number, crop: CropSettings) {
+function isOnCropBoundary(mouseX: number, mouseY: number, crop: CropOptionsDto) {
   const { x, y, width, height } = crop;
   const sensitivity = 10;
   const cornerSensitivity = 15;
@@ -184,7 +184,7 @@ function isOnCropBoundary(mouseX: number, mouseY: number, crop: CropSettings) {
   };
 }
 
-function isInCropArea(mouseX: number, mouseY: number, crop: CropSettings) {
+function isInCropArea(mouseX: number, mouseY: number, crop: CropOptionsDto) {
   const { x, y, width, height } = crop;
   return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
 }

@@ -19,8 +19,8 @@ export enum ExifOrientation {
 }
 
 export interface CropOptions {
-  top: number;
-  left: number;
+  x: number;
+  y: number;
   width: number;
   height: number;
 }

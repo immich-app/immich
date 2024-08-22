@@ -1,14 +1,15 @@
-import type { CropAspectRatio, CropSettings } from '$lib/stores/asset-editor.store';
+import type { CropAspectRatio } from '$lib/stores/asset-editor.store';
+import type { CropOptionsDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { cropAreaEl } from './crop-store';
 import { checkEdits } from './mouse-handlers';
 
 export function recalculateCrop(
-  crop: CropSettings,
+  crop: CropOptionsDto,
   canvas: HTMLElement,
   aspectRatio: CropAspectRatio,
   returnNewCrop = false,
-): CropSettings | null {
+): CropOptionsDto | null {
   const canvasW = canvas.clientWidth;
   const canvasH = canvas.clientHeight;
 
@@ -52,7 +53,7 @@ export function recalculateCrop(
   }
 }
 
-export function animateCropChange(crop: CropSettings, newCrop: CropSettings, draw: () => void, duration = 100) {
+export function animateCropChange(crop: CropOptionsDto, newCrop: CropOptionsDto, draw: () => void, duration = 100) {
   const cropArea = get(cropAreaEl);
   if (!cropArea) {
     return;

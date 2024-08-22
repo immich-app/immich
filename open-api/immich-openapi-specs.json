@@ -8704,6 +8704,33 @@
         ],
         "type": "object"
       },
+      "CropOptionsDto": {
+        "properties": {
+          "height": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "width": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "x": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "y": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "height",
+          "width",
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
       "DownloadArchiveInfo": {
         "properties": {
           "assetIds": {
@@ -12002,7 +12029,7 @@
       "UpdateAssetDto": {
         "properties": {
           "crop": {
-            "type": "object"
+            "$ref": "#/components/schemas/CropOptionsDto"
           },
           "dateTimeOriginal": {
             "type": "string"

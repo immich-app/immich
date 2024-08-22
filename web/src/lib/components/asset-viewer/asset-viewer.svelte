@@ -320,12 +320,12 @@
     dispatch(order);
   };
 
-  // const showEditorHandler = () => {
-  //   if (isShowActivity) {
-  //     isShowActivity = false;
-  //   }
-  //   isShowEditor = !isShowEditor;
-  // };
+  const showEditorHandler = () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
+    isShowEditor = !isShowEditor;
+  };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -417,6 +417,7 @@
         {album}
         {stack}
         showDetailButton={enableDetailPanel}
+        {showEditorHandler}
         showSlideshow={!!assetStore}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}

@@ -30,7 +30,7 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Object? crop;
+  CropOptionsDto? crop;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -184,7 +184,7 @@ class UpdateAssetDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateAssetDto(
-        crop: mapValueOfType<Object>(json, r'crop'),
+        crop: CropOptionsDto.fromJson(json[r'crop']),
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
