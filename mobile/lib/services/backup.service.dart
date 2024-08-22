@@ -272,7 +272,6 @@ class BackupService {
 
     for (final candidate in candidates) {
       final AssetEntity entity = candidate.asset;
-      final List<String> albums = candidate.albums;
 
       File? file;
       File? livePhotoFile;
@@ -354,7 +353,6 @@ class BackupService {
               entity.modifiedDateTime.toUtc().toIso8601String();
           baseRequest.fields['isFavorite'] = entity.isFavorite.toString();
           baseRequest.fields['duration'] = entity.videoDuration.toString();
-          baseRequest.fields['albums'] = albums.join(',');
 
           baseRequest.files.add(assetRawUploadData);
 
