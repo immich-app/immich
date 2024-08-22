@@ -229,12 +229,16 @@ class BackupService {
   Future<bool> backupAsset(
     Iterable<BackupCandidate> assetList,
     http.CancellationToken cancelToken,
-    PMProgressHandler? pmProgressHandler,
-    Function(String, String, bool) uploadSuccessCb,
-    Function(int, int) uploadProgressCb,
-    Function(CurrentUploadAsset) setCurrentUploadAssetCb,
-    Function(ErrorUploadAsset) errorCb, {
+    PMProgressHandler? pmProgressHandler, {
     bool sortAssets = false,
+    required void Function({
+      BackupCandidate asset,
+      String deviceId,
+      bool isDuplicate,
+    }) onSuccess,
+    required void Function(int bytes, int totalBytes) onProgress,
+    required void Function(CurrentUploadAsset asset) onCurrentAsset,
+    required void Function(ErrorUploadAsset error) onError,
   }) async {
     final bool isIgnoreIcloudAssets =
         _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
@@ -257,7 +261,7 @@ class BackupService {
       await PhotoManager.requestPermissionExtend();
     }
 
-    List<BackupCandidate> assetsToUpload = sortAssets
+    List<BackupCandidate> candidates = sortAssets
         // Upload images before video assets
         // these are further sorted by using their creation date
         ? assetList.sorted(
@@ -268,7 +272,8 @@ class BackupService {
             },
           )
         : assetList.toList();
-    for (final candidate in assetsToUpload) {
+
+    for (final candidate in candidates) {
       final AssetEntity entity = candidate.asset;
       final List<String> albums = candidate.albums;
 
@@ -286,7 +291,7 @@ class BackupService {
             continue;
           }
 
-          setCurrentUploadAssetCb(
+          onCurrentAsset(
             CurrentUploadAsset(
               id: entity.id,
               fileCreatedAt: entity.createDateTime.year == 1970
@@ -328,19 +333,18 @@ class BackupService {
             }
           }
 
-          var fileStream = file.openRead();
-          var assetRawUploadData = http.MultipartFile(
+          final fileStream = file.openRead();
+          final assetRawUploadData = http.MultipartFile(
             "assetData",
             fileStream,
             file.lengthSync(),
             filename: originalFileName,
           );
 
-          var baseRequest = MultipartRequest(
+          final baseRequest = MultipartRequest(
             'POST',
             Uri.parse('$savedEndpoint/assets'),
-            onProgress: ((bytes, totalBytes) =>
-                uploadProgressCb(bytes, totalBytes)),
+            onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
           );
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
           baseRequest.headers["Transfer-Encoding"] = "chunked";
@@ -357,9 +361,9 @@ class BackupService {
 
           baseRequest.files.add(assetRawUploadData);
 
-          var fileSize = file.lengthSync();
+          final fileSize = file.lengthSync();
 
-          setCurrentUploadAssetCb(
+          onCurrentAsset(
             CurrentUploadAsset(
               id: entity.id,
               fileCreatedAt: entity.createDateTime.year == 1970
@@ -386,23 +390,23 @@ class BackupService {
             baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          var response = await httpClient.send(
+          final response = await httpClient.send(
             baseRequest,
             cancellationToken: cancelToken,
           );
 
-          var responseBody = jsonDecode(await response.stream.bytesToString());
+          final responseBody =
+              jsonDecode(await response.stream.bytesToString());
 
           if (![200, 201].contains(response.statusCode)) {
-            var error = responseBody;
-            var errorMessage = error['message'] ?? error['error'];
+            final error = responseBody;
+            final errorMessage = error['message'] ?? error['error'];
 
             debugPrint(
               "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
             );
-            debugPrint(error);
 
-            errorCb(
+            onError(
               ErrorUploadAsset(
                 asset: entity,
                 id: entity.id,
@@ -420,13 +424,17 @@ class BackupService {
             continue;
           }
 
-          var isDuplicate = false;
+          bool isDuplicate = false;
           if (response.statusCode == 200) {
             isDuplicate = true;
             duplicatedAssetIds.add(entity.id);
           }
 
-          uploadSuccessCb(entity.id, deviceId, isDuplicate);
+          onSuccess(
+            asset: candidate,
+            deviceId: deviceId,
+            isDuplicate: isDuplicate,
+          );
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");

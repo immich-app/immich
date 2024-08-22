@@ -462,10 +462,12 @@ class BackgroundService {
       toUpload,
       _cancellationToken!,
       pmProgressHandler,
-      notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId, isDup) {},
-      notifySingleProgress ? _onProgress : (sent, total) {},
-      notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
-      _onBackupError,
+      onSuccess:
+          notifyTotalProgress ? onAssetUploaded : (assetId, deviceId, isDup) {},
+      onProgress: notifySingleProgress ? _onProgress : (bytes, totalBytes) {},
+      onCurrentAsset:
+          notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
+      onError: _onBackupError,
       sortAssets: true,
     );
     if (!ok && !_cancellationToken!.isCancelled) {
@@ -477,7 +479,16 @@ class BackgroundService {
     return ok;
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
+  void onAssetUploaded(
+    String deviceAssetId,
+    String deviceId,
+    bool isDuplicate, {
+    bool shouldNotify = false,
+  }) {
+    if (!shouldNotify) {
+      return;
+    }
+
     _uploadedAssetsCount++;
     _throttledNotifiy();
   }
