@@ -9,7 +9,6 @@
   export let data: PageData;
 </script>
 
-hi
 {#if $featureFlags.loaded}
   <FullscreenContainer title={data.meta.title} showMessage={!!$serverConfig.loginPageMessage}>
     <p slot="message">
