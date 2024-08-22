@@ -11,10 +11,8 @@ import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
@@ -29,7 +27,6 @@ import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -41,7 +38,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._backgroundService,
     this._galleryPermissionNotifier,
     this._albumService,
-    this._apiService,
     this._db,
     this.ref,
   ) : super(
@@ -91,7 +87,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
   final AlbumService _albumService;
-  final ApiService _apiService;
   final Isar _db;
   final Ref ref;
 
@@ -758,7 +753,6 @@ final backupProvider =
     ref.watch(backgroundServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
     ref.watch(albumServiceProvider),
-    ref.watch(apiServiceProvider),
     ref.watch(dbProvider),
     ref,
   );
