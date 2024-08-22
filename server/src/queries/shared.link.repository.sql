@@ -77,6 +77,12 @@ FROM
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."bitsPerSample" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_bitsPerSample",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."rating" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_rating",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."fps" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_fps",
+      "5e686b2bfbc913096da73b011ed521eb7cd9a2c5"."id" AS "5e686b2bfbc913096da73b011ed521eb7cd9a2c5_id",
+      "5e686b2bfbc913096da73b011ed521eb7cd9a2c5"."assetId" AS "5e686b2bfbc913096da73b011ed521eb7cd9a2c5_assetId",
+      "5e686b2bfbc913096da73b011ed521eb7cd9a2c5"."createdAt" AS "5e686b2bfbc913096da73b011ed521eb7cd9a2c5_createdAt",
+      "5e686b2bfbc913096da73b011ed521eb7cd9a2c5"."updatedAt" AS "5e686b2bfbc913096da73b011ed521eb7cd9a2c5_updatedAt",
+      "5e686b2bfbc913096da73b011ed521eb7cd9a2c5"."type" AS "5e686b2bfbc913096da73b011ed521eb7cd9a2c5_type",
+      "5e686b2bfbc913096da73b011ed521eb7cd9a2c5"."path" AS "5e686b2bfbc913096da73b011ed521eb7cd9a2c5_path",
       "SharedLinkEntity__SharedLinkEntity_album"."id" AS "SharedLinkEntity__SharedLinkEntity_album_id",
       "SharedLinkEntity__SharedLinkEntity_album"."ownerId" AS "SharedLinkEntity__SharedLinkEntity_album_ownerId",
       "SharedLinkEntity__SharedLinkEntity_album"."albumName" AS "SharedLinkEntity__SharedLinkEntity_album_albumName",
@@ -165,6 +171,7 @@ FROM
         "SharedLinkEntity__SharedLinkEntity_assets"."deletedAt" IS NULL
       )
       LEFT JOIN "exif" "9b1d35b344d838023994a3233afd6ffe098be6d8" ON "9b1d35b344d838023994a3233afd6ffe098be6d8"."assetId" = "SharedLinkEntity__SharedLinkEntity_assets"."id"
+      LEFT JOIN "asset_files" "5e686b2bfbc913096da73b011ed521eb7cd9a2c5" ON "5e686b2bfbc913096da73b011ed521eb7cd9a2c5"."assetId" = "SharedLinkEntity__SharedLinkEntity_assets"."id"
       LEFT JOIN "albums" "SharedLinkEntity__SharedLinkEntity_album" ON "SharedLinkEntity__SharedLinkEntity_album"."id" = "SharedLinkEntity"."albumId"
       AND (
         "SharedLinkEntity__SharedLinkEntity_album"."deletedAt" IS NULL
