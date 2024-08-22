@@ -4,10 +4,6 @@
 A great option to get assistance with troubleshooting is to join our [Discord](https://discord.immich.app) server, where we have a dedicated channel for `#contributing`.
 :::
 
-:::info Cursed knowledge
-[Cursed knowledge](/cursed-knowledge) we have learned as a result of building Immich that we wish we never knew.
-:::
-
 ## Known Issues
 
 ### Running on Windows

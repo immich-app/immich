@@ -74,9 +74,9 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Tomasinjo/gatekeeper',
   },
   {
-    title: 'Gatekeeper',
-    description: 'A simple network access control system for your self hosted services.',
-    url: 'https://github.com/Tomasinjo/gatekeeper',
+    title: 'Immich Power Tools',
+    description: 'Power tools for organizing your immich library.',
+    url: 'https://github.com/varun-raj/immich-power-tools',
   },
 ];
 
