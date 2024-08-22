@@ -43,12 +43,12 @@ describe(AlbumService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('getCount', () => {
+  describe('getStatistics', () => {
     it('should get the album count', async () => {
       albumMock.getOwned.mockResolvedValue([]);
       albumMock.getShared.mockResolvedValue([]);
       albumMock.getNotShared.mockResolvedValue([]);
-      await expect(sut.getCount(authStub.admin)).resolves.toEqual({
+      await expect(sut.getStatistics(authStub.admin)).resolves.toEqual({
         owned: 0,
         shared: 0,
         notShared: 0,
@@ -205,6 +205,10 @@ describe(AlbumService.name, () => {
 
       expect(userMock.get).toHaveBeenCalledWith('user-id', {});
       expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']));
+      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInvite', {
+        id: albumStub.empty.id,
+        userId: 'user-id',
+      });
     });
 
     it('should require valid userIds', async () => {

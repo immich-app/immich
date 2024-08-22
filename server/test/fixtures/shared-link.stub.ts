@@ -76,7 +76,6 @@ const assetResponse: AssetResponseDto = {
   isTrashed: false,
   libraryId: 'library-id',
   hasMetadata: true,
-  stackCount: 0,
 };
 
 const assetResponseWithoutMetadata = {
@@ -197,7 +196,6 @@ export const sharedLinkStub = {
           deviceId: 'device_id_1',
           type: AssetType.VIDEO,
           originalPath: 'fake_path/jpeg',
-          previewPath: '',
           checksum: Buffer.from('file hash', 'utf8'),
           fileModifiedAt: today,
           fileCreatedAt: today,
@@ -214,7 +212,7 @@ export const sharedLinkStub = {
             objects: ['a', 'b', 'c'],
             asset: null as any,
           },
-          thumbnailPath: '',
+          files: [],
           thumbhash: null,
           encodedVideoPath: '',
           duration: null,

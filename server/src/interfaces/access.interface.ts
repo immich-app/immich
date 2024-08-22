@@ -42,4 +42,8 @@ export interface IAccessRepository {
   partner: {
     checkUpdateAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
+
+  stack: {
+    checkOwnerAccess(userId: string, stackIds: Set<string>): Promise<Set<string>>;
+  };
 }
