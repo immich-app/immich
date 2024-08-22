@@ -16,12 +16,12 @@
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { setKey } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
+  import Error from '$lib/components/error.svelte';
 
   let showNavigationLoadingBar = false;
   $: changeTheme($colorTheme);
@@ -30,10 +30,6 @@
     openWebsocketConnection();
   } else {
     closeWebsocketConnection();
-  }
-
-  $: if ($page.data.error) {
-    handleError($page.data.error, 'Unable to connect to server');
   }
 
   const changeTheme = (theme: ThemeSetting) => {
@@ -122,7 +118,11 @@
   </FullscreenContainer>
 </noscript>
 
-<slot />
+{#if $page.data.error}
+  <Error error={$page.data.error}></Error>
+{:else}
+  <slot />
+{/if}
 
 {#if showNavigationLoadingBar}
   <NavigationLoadingBar />
