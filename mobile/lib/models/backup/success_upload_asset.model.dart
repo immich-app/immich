@@ -1,42 +1,42 @@
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 
 class SuccessUploadAsset {
-  final BackupCandidate asset;
-  final String deviceAssetId;
+  final BackupCandidate candidate;
+  final String remoteAssetId;
   final bool isDuplicate;
 
   SuccessUploadAsset({
-    required this.asset,
-    required this.deviceAssetId,
+    required this.candidate,
+    required this.remoteAssetId,
     required this.isDuplicate,
   });
 
   SuccessUploadAsset copyWith({
-    BackupCandidate? asset,
-    String? deviceAssetId,
+    BackupCandidate? candidate,
+    String? remoteAssetId,
     bool? isDuplicate,
   }) {
     return SuccessUploadAsset(
-      asset: asset ?? this.asset,
-      deviceAssetId: deviceAssetId ?? this.deviceAssetId,
+      candidate: candidate ?? this.candidate,
+      remoteAssetId: remoteAssetId ?? this.remoteAssetId,
       isDuplicate: isDuplicate ?? this.isDuplicate,
     );
   }
 
   @override
   String toString() =>
-      'SuccessUploadAsset(asset: $asset, deviceId: $deviceAssetId, isDuplicate: $isDuplicate)';
+      'SuccessUploadAsset(asset: $candidate, remoteAssetId: $remoteAssetId, isDuplicate: $isDuplicate)';
 
   @override
   bool operator ==(covariant SuccessUploadAsset other) {
     if (identical(this, other)) return true;
 
-    return other.asset == asset &&
-        other.deviceAssetId == deviceAssetId &&
+    return other.candidate == candidate &&
+        other.remoteAssetId == remoteAssetId &&
         other.isDuplicate == isDuplicate;
   }
 
   @override
   int get hashCode =>
-      asset.hashCode ^ deviceAssetId.hashCode ^ isDuplicate.hashCode;
+      candidate.hashCode ^ remoteAssetId.hashCode ^ isDuplicate.hashCode;
 }

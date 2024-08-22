@@ -429,8 +429,8 @@ class BackupService {
 
           onSuccess(
             SuccessUploadAsset(
-              asset: candidate,
-              deviceAssetId: deviceId,
+              candidate: candidate,
+              remoteAssetId: responseBody['id'] as String,
               isDuplicate: isDuplicate,
             ),
           );

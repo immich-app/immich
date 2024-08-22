@@ -235,7 +235,7 @@ enum StoreKey<T> {
   dynamicTheme<bool>(129, type: bool),
   colorfulInterface<bool>(130, type: bool),
 
-  mirrorUploadAlbum<bool>(131, type: bool),
+  shouldSyncUploadAlbum<bool>(131, type: bool),
   ;
 
   const StoreKey(

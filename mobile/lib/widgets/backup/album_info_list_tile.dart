@@ -11,7 +11,6 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoListTile extends HookConsumerWidget {
