@@ -442,7 +442,14 @@ class AlbumService {
     }
   }
 
-  Future<Album?> getAlbumByName(String albumName) async {
-    return await _db.albums.filter().nameEqualTo(albumName).findFirst();
+  Future<Album?> getAlbumByName(String name, bool remoteOnly) async {
+    final query = _db.albums.filter().nameEqualTo(name).sharedEqualTo(false);
+
+    if (remoteOnly) {
+      print("find album by name remoteOnly");
+      return query.localIdIsNull().findFirst();
+    }
+
+    return query.findFirst();
   }
 }

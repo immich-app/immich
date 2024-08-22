@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
@@ -42,16 +43,24 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   ) =>
       _albumService.createAlbum(albumTitle, assets, []);
 
-  Future<Album?> getAlbumByName(String albumName) =>
-      _albumService.getAlbumByName(albumName);
+  Future<Album?> getAlbumByName(String albumName, {bool remoteOnly = false}) =>
+      _albumService.getAlbumByName(albumName, remoteOnly);
 
+  /// Creat an album on the server with the same name as the selected album for backup
+  /// First this will check if the album already exists on the server with name
+  /// If it does not exist, it will create the album on the server
   Future<void> createMirrorAlbum(
-    String albumTitle,
-  ) {
-    print("createMirrorAlbum $albumTitle");
-    // _albumService.createAlbum(albumTitle, {}, []);
+    String albumName,
+  ) async {
+    final album = await getAlbumByName(albumName, remoteOnly: true);
+    print("Album: $album ${album?.localId} ${album?.remoteId}");
+    if (album != null) {
+      return;
+    }
 
-    return Future.value();
+    await createAlbum(albumName, {});
+
+    debugPrint("Create album $albumName on server");
   }
 
   @override
