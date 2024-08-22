@@ -15,7 +15,6 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { navigate } from '$lib/utils/navigation';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -70,7 +69,8 @@
   } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
-    close: void;
+    action: { type: AssetAction; asset: AssetResponseDto };
+    close: { asset: AssetResponseDto };
     next: void;
     previous: void;
   }>();
@@ -201,7 +201,6 @@
       websocketEvents.on('on_asset_update', onAssetUpdate),
     );
 
-    await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -268,9 +267,8 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const closeViewer = async () => {
-    dispatch('close');
-    await navigate({ targetRoute: 'current', assetId: null });
+  const closeViewer = () => {
+    dispatch('close', { asset });
   };
 
   const closeEditor = () => {
@@ -378,9 +376,7 @@
     }
   };
 
-  const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
-    const { isMouseOver } = e.detail;
-
+  const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
@@ -392,8 +388,7 @@
       }
 
       case AssetAction.UNSTACK: {
-        await closeViewer();
-        break;
+        closeViewer();
       }
     }
 
@@ -585,12 +580,11 @@
                 ? 'bg-transparent border-2 border-white'
                 : 'bg-gray-700/40'} inline-block hover:bg-transparent"
               asset={stackedAsset}
-              onClick={(stackedAsset, event) => {
-                event.preventDefault();
+              onClick={(stackedAsset) => {
                 asset = stackedAsset;
                 preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
-              on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               readonly
               thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
               showStackedIcon={false}

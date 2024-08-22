@@ -4,25 +4,25 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { BucketPosition, Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { calculateWidth } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
   import justifiedLayout from 'justified-layout';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import Portal from '../portal/portal.svelte';
-
-  const dispatch = createEventDispatcher<{ intersected: { container: HTMLDivElement; position: BucketPosition } }>();
+  import { handlePromiseError } from '$lib/utils';
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
   export let viewport: Viewport;
+  export let onIntersected: (() => void) | undefined = undefined;
   export let showAssetName = false;
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
@@ -127,18 +127,15 @@
         <Thumbnail
           {asset}
           readonly={disableAssetSelect}
-          onClick={async (asset, e) => {
-            e.preventDefault();
-
+          onClick={(asset) => {
             if (isMultiSelectionMode) {
               selectAssetHandler(asset);
               return;
             }
-            await viewAssetHandler(asset);
+            void viewAssetHandler(asset);
           }}
-          on:select={(e) => selectAssetHandler(e.detail.asset)}
-          on:intersected={(event) =>
-            i === Math.max(1, assets.length - 7) ? dispatch('intersected', event.detail) : undefined}
+          onSelect={(asset) => selectAssetHandler(asset)}
+          onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           selected={selectedAssets.has(asset)}
           {showArchiveIcon}
           thumbnailWidth={geometry.boxes[i].width}
@@ -159,6 +156,15 @@
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
   <Portal target="body">
-    <AssetViewer asset={$viewingAsset} onAction={handleAction} on:previous={handlePrevious} on:next={handleNext} />
+    <AssetViewer
+      asset={$viewingAsset}
+      onAction={handleAction}
+      on:previous={handlePrevious}
+      on:next={handleNext}
+      on:close={() => {
+        assetViewingStore.showAssetViewer(false);
+        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+      }}
+    />
   </Portal>
 {/if}
