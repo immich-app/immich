@@ -19,6 +19,7 @@
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   export let data: PageData;
 
@@ -27,6 +28,10 @@
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 <!-- Multiselection mode app bar -->
@@ -50,7 +55,7 @@
 {/if}
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
-  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
+  <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
     <EmptyPlaceholder text={$t('no_favorites_message')} slot="empty" />
   </AssetGrid>
 </UserPageLayout>
