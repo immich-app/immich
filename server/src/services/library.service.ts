@@ -17,8 +17,6 @@ import {
   ValidateLibraryResponseDto,
   mapLibrary,
 } from 'src/dtos/library.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetType } from 'src/enum';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -615,7 +613,6 @@ export class LibraryService {
       `Finished queuing scan of assets on disk for ${library.id}, now queuing online status check of existing assets...`,
     );
 
-    let existingAssetsDone = false;
     const onlineAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );

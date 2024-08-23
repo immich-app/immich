@@ -14,6 +14,7 @@ import {
   ILibraryOfflineJob,
   ILibraryRefreshJob,
   JobName,
+  JOBS_ASSET_PAGINATION_SIZE,
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
@@ -173,7 +174,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
-        yield '/data/user1/photo.jpg';
+        yield ['/data/user1/photo.jpg'];
       });
       assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
@@ -209,7 +210,11 @@ describe(LibraryService.name, () => {
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.LIBRARY_CHECK_OFFLINE,
-          data: { id: assetStub.external.id, importPaths: libraryStub.externalLibrary1.importPaths },
+          data: {
+            id: assetStub.external.id,
+            importPaths: libraryStub.externalLibrary1.importPaths,
+            exclusionPatterns: [],
+          },
         },
       ]);
     });
@@ -237,7 +242,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       // eslint-disable-next-line @typescript-eslint/require-await
       storageMock.walk.mockImplementation(async function* generator() {
-        yield '/data/user1/photo.jpg';
+        yield ['/data/user1/photo.jpg'];
       });
       assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
@@ -278,13 +283,14 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false, take: 1000 });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
       expect(storageMock.walk).toHaveBeenCalledWith({
         pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
         exclusionPatterns: [],
+        take: JOBS_ASSET_PAGINATION_SIZE,
       });
     });
   });
