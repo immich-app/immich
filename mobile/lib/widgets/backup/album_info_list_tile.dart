@@ -105,7 +105,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
           } else {
             ref.read(backupProvider.notifier).addAlbumForBackup(album);
             if (shouldSyncUploadAlbum) {
-              ref.read(albumProvider.notifier).createMirrorAlbum(album.name);
+              ref.read(albumProvider.notifier).createSyncAlbum(album.name);
             }
           }
         },

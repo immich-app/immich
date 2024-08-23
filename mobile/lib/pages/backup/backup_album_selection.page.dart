@@ -125,7 +125,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       if (isEnable) {
         await ref.read(albumProvider.notifier).getAllAlbums();
         for (final album in selectedBackupAlbums) {
-          await ref.read(albumProvider.notifier).createMirrorAlbum(album.name);
+          await ref.read(albumProvider.notifier).createSyncAlbum(album.name);
         }
       }
     }

@@ -118,15 +118,11 @@ class BackupService {
       now,
     );
 
-    print("toAdd: ${toAdd.length}");
-
     final Set<BackupCandidate> toRemove = await _fetchAssetsAndUpdateLastBackup(
       excludedAlbums,
       excludedBackupAlbums,
       now,
     );
-
-    print("toRemove: ${toRemove.length}");
 
     return toAdd.difference(toRemove);
   }
