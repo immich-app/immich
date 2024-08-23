@@ -4,7 +4,7 @@ import {
   cropImageSize,
   cropSettings,
   cropSettingsChanged,
-  normalizedRorateDegrees,
+  normalizedRotateDegrees,
   rotateDegrees,
   showCancelConfirmDialog,
 } from '$lib/stores/asset-editor.store';
@@ -89,7 +89,7 @@ function getMousePosition(e: MouseEvent) {
   let offsetX = e.clientX;
   let offsetY = e.clientY;
   const clienRect = getBoundingClientRectCached(get(cropAreaEl));
-  const rotateDeg = get(normalizedRorateDegrees);
+  const rotateDeg = get(normalizedRotateDegrees);
 
   if (rotateDeg == 90) {
     offsetX = e.clientY - (clienRect?.top ?? 0);
@@ -429,7 +429,7 @@ function updateCursor(mouseX: number, mouseY: number) {
   }
 
   const crop = get(cropSettings);
-  const rotateDeg = get(normalizedRorateDegrees);
+  const rotateDeg = get(normalizedRotateDegrees);
 
   let {
     onLeftBoundary,
