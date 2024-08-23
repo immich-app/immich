@@ -23,7 +23,6 @@
   import { createEventDispatcher, tick } from 'svelte';
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { clickOutside } from '$lib/actions/click-outside';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
@@ -124,7 +123,6 @@
 <label class="immich-form-label" class:sr-only={hideLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
-  use:clickOutside={{ onOutclick: deactivate }}
   use:focusOutside={{ onFocusOut: deactivate }}
   use:shortcuts={[
     {
