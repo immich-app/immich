@@ -1,11 +1,9 @@
-import { loadConfig } from '$lib/stores/server-config.store';
-import { initApp } from '$lib/utils';
+import { retrieveServerConfig } from '$lib/stores/server-config.store';
+import { initLanguage } from '$lib/utils';
 import { defaults } from '@immich/sdk';
+import { memoize } from 'lodash-es';
 
 type fetchType = typeof fetch;
-let initialized = false;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let initError: any;
 
 export function initSDK(fetch: fetchType) {
   // set event.fetch on the fetch-client used by @immich/sdk
@@ -14,20 +12,10 @@ export function initSDK(fetch: fetchType) {
   defaults.fetch = fetch;
 }
 
-export async function init(fetch: fetchType) {
-  if (initError) {
-    throw initError;
-  }
-  if (initialized) {
-    return;
-  }
-  try {
-    initSDK(fetch);
-    await initApp();
-    await loadConfig();
-
-    initialized = true;
-  } catch (error) {
-    initError = error;
-  }
+async function _init(fetch: fetchType) {
+  initSDK(fetch);
+  await initLanguage();
+  await retrieveServerConfig();
 }
+
+export const init = memoize(_init, () => 'singlevalue');
