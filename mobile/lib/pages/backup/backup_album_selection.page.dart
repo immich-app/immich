@@ -19,8 +19,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
-    final mirroUploadAlbum =
-        useAppSettingsState(AppSettingsEnum.mirrorUploadAlbum);
+    final enableSyncUploadAlbum =
+        useAppSettingsState(AppSettingsEnum.enableSyncUploadAlbum);
     final isDarkTheme = context.isDarkTheme;
     final albums = ref.watch(backupProvider).availableAlbums;
 
@@ -170,9 +170,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 ),
 
                 SettingsSwitchListTile(
-                  valueNotifier: mirroUploadAlbum,
-                  title: "mirror_album_setting_title".tr(),
-                  subtitle: "mirror_album_setting_subtitle".tr(),
+                  valueNotifier: enableSyncUploadAlbum,
+                  title: "sync_upload_album_setting_title".tr(),
+                  subtitle: "sync_upload_album_setting_subtitle".tr(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16),
                   titleStyle: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,

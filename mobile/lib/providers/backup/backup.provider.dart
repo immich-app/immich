@@ -539,7 +539,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     } else {
       final shouldSyncUploadAlbum =
-          Store.get<bool>(StoreKey.shouldSyncUploadAlbum, false);
+          Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
 
       if (shouldSyncUploadAlbum) {
         await _albumService.syncUploadAlbums(

@@ -76,7 +76,7 @@ enum AppSettingsEnum<T> {
     false,
   ),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
-  mirrorUploadAlbum<bool>(StoreKey.shouldSyncUploadAlbum, null, false),
+  enableSyncUploadAlbum<bool>(StoreKey.enableSyncUploadAlbum, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

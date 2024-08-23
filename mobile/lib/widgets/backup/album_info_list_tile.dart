@@ -25,9 +25,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(album);
     var assetCount = useState(0);
-    final mirroUploadAlbum = ref
+    final shouldSyncUploadAlbum = ref
         .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.mirrorUploadAlbum);
+        .getSetting(AppSettingsEnum.enableSyncUploadAlbum);
 
     useEffect(
       () {
@@ -104,7 +104,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
             ref.read(backupProvider.notifier).removeAlbumForBackup(album);
           } else {
             ref.read(backupProvider.notifier).addAlbumForBackup(album);
-            if (mirroUploadAlbum) {
+            if (shouldSyncUploadAlbum) {
               ref.read(albumProvider.notifier).createMirrorAlbum(album.name);
             }
           }
