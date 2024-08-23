@@ -6,7 +6,7 @@ import path_provider_ios
 import photo_manager
 import permission_handler_apple
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     
   override func application(

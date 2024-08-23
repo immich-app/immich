@@ -38,11 +38,17 @@ FROM python:3.11-slim-bookworm@sha256:1c0c54195c7c7b46e61a2f3b906e9b55a8165f2038
 
 FROM prod-cpu AS prod-openvino
 
-COPY scripts/configure-apt.sh ./
-RUN ./configure-apt.sh && \
-    apt-get update && \
-    apt-get install -t unstable --no-install-recommends -yqq intel-opencl-icd && \
-    rm configure-apt.sh
+RUN apt-get update && \
+    apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-core_1.0.17193.4_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-opencl_1.0.17193.4_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/intel-opencl-icd-dbgsym_24.26.30049.6_amd64.ddeb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/intel-opencl-icd_24.26.30049.6_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/libigdgmm12_22.3.20_amd64.deb && \
+    dpkg -i *.deb && \
+    rm *.deb && \
+    apt-get remove wget -yqq && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04@sha256:fa44193567d1908f7ca1f3abf8623ce9c63bc8cba7bcfdb32702eb04d326f7a8 AS prod-cuda
 

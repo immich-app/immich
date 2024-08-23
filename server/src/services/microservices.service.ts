@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { OnEvents } from 'src/interfaces/event.interface';
+import { OnEmit } from 'src/decorators';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
@@ -19,7 +20,7 @@ import { VersionService } from 'src/services/version.service';
 import { otelShutdown } from 'src/utils/instrumentation';
 
 @Injectable()
-export class MicroservicesService implements OnEvents {
+export class MicroservicesService {
   constructor(
     private auditService: AuditService,
     private assetService: AssetService,
@@ -38,7 +39,8 @@ export class MicroservicesService implements OnEvents {
     private versionService: VersionService,
   ) {}
 
-  async onBootstrapEvent(app: 'api' | 'microservices') {
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(app: ArgOf<'onBootstrap'>) {
     if (app !== 'microservices') {
       return;
     }

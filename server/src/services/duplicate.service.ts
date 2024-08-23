@@ -17,6 +17,7 @@ import {
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetDuplicateResult, ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -39,7 +40,7 @@ export class DuplicateService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
     const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
 
-    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth })));
+    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true })));
   }
 
   async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
@@ -69,7 +70,7 @@ export class DuplicateService {
       return JobStatus.SKIPPED;
     }
 
-    const asset = await this.assetRepository.getById(id, { smartSearch: true });
+    const asset = await this.assetRepository.getById(id, { files: true, smartSearch: true });
     if (!asset) {
       this.logger.error(`Asset ${id} not found`);
       return JobStatus.FAILED;
@@ -80,7 +81,8 @@ export class DuplicateService {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       this.logger.warn(`Asset ${id} is missing preview image`);
       return JobStatus.FAILED;
     }

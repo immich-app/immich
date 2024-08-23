@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { UserAvatarColor, UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
-import { UserEntity, UserStatus } from 'src/entities/user.entity';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
+import { UserEntity } from 'src/entities/user.entity';
+import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { getPreferences } from 'src/utils/preferences';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 

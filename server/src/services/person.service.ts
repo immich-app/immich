@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ImageFormat } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -23,10 +22,10 @@ import {
   mapPerson,
 } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { AssetType, Permission, SystemMetadataKey } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -50,6 +49,8 @@ import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interf
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { checkAccess, requireAccess } from 'src/utils/access';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -58,12 +59,11 @@ import { IsNull } from 'typeorm';
 
 @Injectable()
 export class PersonService {
-  private access: AccessCore;
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
 
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
@@ -76,7 +76,6 @@ export class PersonService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.access = AccessCore.create(accessRepository);
     this.logger.setContext(PersonService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
@@ -113,7 +112,7 @@ export class PersonService {
   }
 
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
@@ -121,7 +120,7 @@ export class PersonService {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
-        await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
+        await requireAccess(this.access, { auth, permission: Permission.PERSON_CREATE, ids: [face.id] });
         if (person.faceAssetId === null) {
           changeFeaturePhoto.push(person.id);
         }
@@ -142,9 +141,8 @@ export class PersonService {
   }
 
   async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
-
-    await this.access.requirePermission(auth, Permission.PERSON_CREATE, dto.id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_CREATE, ids: [dto.id] });
     const face = await this.repository.getFaceById(dto.id);
     const person = await this.findOrFail(personId);
 
@@ -160,7 +158,7 @@ export class PersonService {
   }
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.ASSET_READ, dto.id);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [dto.id] });
     const faces = await this.repository.getFaces(dto.id);
     return faces.map((asset) => mapFaces(asset, auth));
   }
@@ -187,17 +185,17 @@ export class PersonService {
   }
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     return this.findOrFail(id).then(mapPerson);
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     return this.repository.getStatistics(id);
   }
 
   async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     const person = await this.repository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
@@ -211,7 +209,7 @@ export class PersonService {
   }
 
   async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
     const assets = await this.repository.getAssets(id);
     return assets.map((asset) => mapAsset(asset));
   }
@@ -226,13 +224,13 @@ export class PersonService {
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
     // TODO: set by faceId directly
     let faceId: string | undefined = undefined;
     if (assetId) {
-      await this.access.requirePermission(auth, Permission.ASSET_READ, assetId);
+      await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [assetId] });
       const [face] = await this.repository.getFacesByIds([{ personId: id, assetId }]);
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
@@ -333,9 +331,11 @@ export class PersonService {
       faces: {
         person: false,
       },
+      files: true,
     };
     const [asset] = await this.assetRepository.getByIds([id], relations);
-    if (!asset || !asset.previewPath || asset.faces?.length > 0) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!asset || !previewFile || asset.faces?.length > 0) {
       return JobStatus.FAILED;
     }
 
@@ -349,11 +349,11 @@ export class PersonService {
 
     const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       machineLearning.url,
-      asset.previewPath,
+      previewFile.path,
       machineLearning.facialRecognition,
     );
 
-    this.logger.debug(`${faces.length} faces detected in ${asset.previewPath}`);
+    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
     if (faces.length > 0) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
@@ -549,7 +549,10 @@ export class PersonService {
       imageHeight: oldHeight,
     } = face;
 
-    const asset = await this.assetRepository.getById(assetId, { exifInfo: true });
+    const asset = await this.assetRepository.getById(assetId, {
+      exifInfo: true,
+      files: true,
+    });
     if (!asset) {
       this.logger.error(`Could not generate person thumbnail: asset ${assetId} does not exist`);
       return JobStatus.FAILED;
@@ -581,13 +584,17 @@ export class PersonService {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
-    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
+    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
     let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
 
-    const allowedIds = await this.access.checkAccess(auth, Permission.PERSON_MERGE, mergeIds);
+    const allowedIds = await checkAccess(this.access, {
+      auth,
+      permission: Permission.PERSON_MERGE,
+      ids: mergeIds,
+    });
 
     for (const mergeId of mergeIds) {
       const hasAccess = allowedIds.has(mergeId);
@@ -646,7 +653,8 @@ export class PersonService {
       throw new Error(`Asset ${asset.id} dimensions are unknown`);
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       throw new Error(`Asset ${asset.id} has no preview path`);
     }
 
@@ -659,8 +667,8 @@ export class PersonService {
       return { width, height, inputPath: asset.originalPath };
     }
 
-    const { width, height } = await this.mediaRepository.getImageDimensions(asset.previewPath);
-    return { width, height, inputPath: asset.previewPath };
+    const { width, height } = await this.mediaRepository.getImageDimensions(previewFile.path);
+    return { width, height, inputPath: previewFile.path };
   }
 
   private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {

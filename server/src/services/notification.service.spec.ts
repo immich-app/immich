@@ -1,6 +1,7 @@
 import { defaults, SystemConfig } from 'src/config';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
-import { UserMetadataKey } from 'src/entities/user-metadata.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -90,7 +91,7 @@ describe(NotificationService.name, () => {
       const newConfig = configs.smtpEnabled;
 
       notificationMock.verifySmtp.mockResolvedValue(true);
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
     });
 
@@ -99,7 +100,7 @@ describe(NotificationService.name, () => {
       const newConfig = configs.smtpTransport;
 
       notificationMock.verifySmtp.mockResolvedValue(true);
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).toHaveBeenCalledWith(newConfig.notifications.smtp.transport);
     });
 
@@ -107,7 +108,7 @@ describe(NotificationService.name, () => {
       const oldConfig = { ...configs.smtpEnabled };
       const newConfig = { ...configs.smtpEnabled };
 
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
     });
 
@@ -115,19 +116,19 @@ describe(NotificationService.name, () => {
       const oldConfig = { ...configs.smtpEnabled };
       const newConfig = { ...configs.smtpDisabled };
 
-      await expect(sut.onConfigValidateEvent({ oldConfig, newConfig })).resolves.not.toThrow();
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
     });
   });
 
   describe('onUserSignupEvent', () => {
     it('skips when notify is false', async () => {
-      await sut.onUserSignupEvent({ id: '', notify: false });
+      await sut.onUserSignup({ id: '', notify: false });
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should queue notify signup event if notify is true', async () => {
-      await sut.onUserSignupEvent({ id: '', notify: true });
+      await sut.onUserSignup({ id: '', notify: true });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_SIGNUP,
         data: { id: '', tempPassword: undefined },
@@ -137,7 +138,7 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumUpdateEvent', () => {
     it('should queue notify album update event', async () => {
-      await sut.onAlbumUpdateEvent({ id: '', updatedBy: '42' });
+      await sut.onAlbumUpdate({ id: '', updatedBy: '42' });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_UPDATE,
         data: { id: '', senderId: '42' },
@@ -147,7 +148,7 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumInviteEvent', () => {
     it('should queue notify album invite event', async () => {
-      await sut.onAlbumInviteEvent({ id: '', userId: '42' });
+      await sut.onAlbumInvite({ id: '', userId: '42' });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_INVITE,
         data: { id: '', recipientId: '42' },
@@ -333,7 +334,9 @@ describe(NotificationService.name, () => {
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId);
+      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
+        files: true,
+      });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -358,10 +361,15 @@ describe(NotificationService.name, () => {
       });
       systemMock.get.mockResolvedValue({ server: {} });
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
-      assetMock.getById.mockResolvedValue({ ...assetStub.image, thumbnailPath: 'path-to-thumb.jpg' });
+      assetMock.getById.mockResolvedValue({
+        ...assetStub.image,
+        files: [{ assetId: 'asset-id', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' } as AssetFileEntity],
+      });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId);
+      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
+        files: true,
+      });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -389,7 +397,9 @@ describe(NotificationService.name, () => {
       assetMock.getById.mockResolvedValue(assetStub.image);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId);
+      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
+        files: true,
+      });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({

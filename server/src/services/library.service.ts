@@ -5,6 +5,7 @@ import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEmit } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -16,11 +17,13 @@ import {
   ValidateLibraryResponseDto,
   mapLibrary,
 } from 'src/dtos/library.dto';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
+import { AssetType } from 'src/enum';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { OnEvents, SystemConfigUpdateEvent } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -44,7 +47,7 @@ import { validateCronExpression } from 'src/validation';
 const LIBRARY_SCAN_BATCH_SIZE = 1000;
 
 @Injectable()
-export class LibraryService implements OnEvents {
+export class LibraryService {
   private configCore: SystemConfigCore;
   private watchLibraries = false;
   private watchLock = false;
@@ -64,7 +67,8 @@ export class LibraryService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async onBootstrapEvent() {
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap() {
     const config = await this.configCore.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
@@ -101,7 +105,7 @@ export class LibraryService implements OnEvents {
     });
   }
 
-  onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
+  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
@@ -186,7 +190,8 @@ export class LibraryService implements OnEvents {
     }
   }
 
-  async onShutdownEvent() {
+  @OnEmit({ event: 'onShutdown' })
+  async onShutdown() {
     await this.unwatchAll();
   }
 

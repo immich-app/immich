@@ -1,28 +1,28 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { StorageCore } from 'src/cores/storage.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ImmichReadStream, IStorageRepository } from 'src/interfaces/storage.interface';
+import { requireAccess } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class DownloadService {
-  private access: AccessCore;
-
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.access = AccessCore.create(accessRepository);
     this.logger.setContext(DownloadService.name);
   }
 
@@ -31,12 +31,22 @@ export class DownloadService {
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
 
+    const preferences = getPreferences(auth.user);
+
     const assetPagination = await this.getDownloadAssets(auth, dto);
     for await (const assets of assetPagination) {
       // motion part of live photos
-      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
+      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter((id): id is string => !!id);
       if (motionIds.length > 0) {
-        assets.push(...(await this.assetRepository.getByIds(motionIds, { exifInfo: true })));
+        const motionAssets = await this.assetRepository.getByIds(motionIds, { exifInfo: true });
+        for (const motionAsset of motionAssets) {
+          if (
+            !StorageCore.isAndroidMotionPath(motionAsset.originalPath) ||
+            preferences.download.includeEmbeddedVideos
+          ) {
+            assets.push(motionAsset);
+          }
+        }
       }
 
       for (const asset of assets) {
@@ -63,7 +73,7 @@ export class DownloadService {
   }
 
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, dto.assetIds);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_DOWNLOAD, ids: dto.assetIds });
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
@@ -106,20 +116,20 @@ export class DownloadService {
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
-      await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
+      await requireAccess(this.access, { auth, permission: Permission.ASSET_DOWNLOAD, ids: assetIds });
       const assets = await this.assetRepository.getByIds(assetIds, { exifInfo: true });
       return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {
       const albumId = dto.albumId;
-      await this.access.requirePermission(auth, Permission.ALBUM_DOWNLOAD, albumId);
+      await requireAccess(this.access, { auth, permission: Permission.ALBUM_DOWNLOAD, ids: [albumId] });
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
     }
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(auth, Permission.TIMELINE_DOWNLOAD, userId);
+      await requireAccess(this.access, { auth, permission: Permission.TIMELINE_DOWNLOAD, ids: [userId] });
       return usePagination(PAGINATION_SIZE, (pagination) =>
         this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
       );

@@ -74,7 +74,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
         ],
       ),
       body: PopScope(
-        onPopInvoked: (_) => saveHeaders(headers.value),
+        onPopInvokedWithResult: (didPop, _) => saveHeaders(headers.value),
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
           itemCount: list.length,

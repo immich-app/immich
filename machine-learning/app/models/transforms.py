@@ -1,3 +1,4 @@
+import string
 from io import BytesIO
 from typing import IO
 
@@ -7,6 +8,7 @@ from numpy.typing import NDArray
 from PIL import Image
 
 _PIL_RESAMPLING_METHODS = {resampling.name.lower(): resampling for resampling in Image.Resampling}
+_PUNCTUATION_TRANS = str.maketrans("", "", string.punctuation)
 
 
 def resize_pil(img: Image.Image, size: int) -> Image.Image:
@@ -60,3 +62,10 @@ def decode_cv2(image_bytes: NDArray[np.uint8] | bytes | Image.Image) -> NDArray[
     if isinstance(image_bytes, Image.Image):
         return pil_to_cv2(image_bytes)
     return image_bytes
+
+
+def clean_text(text: str, canonicalize: bool = False) -> str:
+    text = " ".join(text.split())
+    if canonicalize:
+        text = text.translate(_PUNCTUATION_TRANS).lower()
+    return text

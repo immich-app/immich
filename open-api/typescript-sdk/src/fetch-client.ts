@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.112.0
+ * 1.112.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -86,6 +86,7 @@ export type AvatarResponse = {
 };
 export type DownloadResponse = {
     archiveSize: number;
+    includeEmbeddedVideos: boolean;
 };
 export type EmailNotificationsResponse = {
     albumInvite: boolean;
@@ -115,6 +116,7 @@ export type AvatarUpdate = {
 };
 export type DownloadUpdate = {
     archiveSize?: number;
+    includeEmbeddedVideos?: boolean;
 };
 export type EmailNotificationsUpdate = {
     albumInvite?: boolean;
@@ -190,6 +192,11 @@ export type SmartInfoResponseDto = {
     objects?: string[] | null;
     tags?: string[] | null;
 };
+export type AssetStackResponseDto = {
+    assetCount: number;
+    id: string;
+    primaryAssetId: string;
+};
 export type TagResponseDto = {
     id: string;
     name: string;
@@ -222,11 +229,8 @@ export type AssetResponseDto = {
     owner?: UserResponseDto;
     ownerId: string;
     people?: PersonWithFacesResponseDto[];
-    resized: boolean;
     smartInfo?: SmartInfoResponseDto;
-    stack?: AssetResponseDto[];
-    stackCount: number | null;
-    stackParentId?: string | null;
+    stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
     thumbhash: string | null;
     "type": AssetTypeEnum;
@@ -263,7 +267,7 @@ export type CreateAlbumDto = {
     assetIds?: string[];
     description?: string;
 };
-export type AlbumCountResponseDto = {
+export type AlbumStatisticsResponseDto = {
     notShared: number;
     owned: number;
     shared: number;
@@ -297,10 +301,12 @@ export type ApiKeyResponseDto = {
     createdAt: string;
     id: string;
     name: string;
+    permissions: Permission[];
     updatedAt: string;
 };
 export type ApiKeyCreateDto = {
     name?: string;
+    permissions: Permission[];
 };
 export type ApiKeyCreateResponseDto = {
     apiKey: ApiKeyResponseDto;
@@ -340,8 +346,6 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     longitude?: number;
     rating?: number;
-    removeParent?: boolean;
-    stackParentId?: string;
 };
 export type AssetBulkUploadCheckItem = {
     /** base64 or hex encoded sha1 hash */
@@ -374,10 +378,6 @@ export type AssetJobsDto = {
 export type MemoryLaneResponseDto = {
     assets: AssetResponseDto[];
     yearsAgo: number;
-};
-export type UpdateStackParentDto = {
-    newParentId: string;
-    oldParentId: string;
 };
 export type AssetStatsResponseDto = {
     images: number;
@@ -868,6 +868,15 @@ export type ServerFeaturesDto = {
     smartSearch: boolean;
     trash: boolean;
 };
+export type LicenseResponseDto = {
+    activatedAt: string;
+    activationKey: string;
+    licenseKey: string;
+};
+export type LicenseKeyDto = {
+    activationKey: string;
+    licenseKey: string;
+};
 export type ServerMediaTypesResponseDto = {
     image: string[];
     sidecar: string[];
@@ -907,15 +916,6 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
-};
-export type LicenseResponseDto = {
-    activatedAt: string;
-    activationKey: string;
-    licenseKey: string;
-};
-export type LicenseKeyDto = {
-    activationKey: string;
-    licenseKey: string;
 };
 export type SessionResponseDto = {
     createdAt: string;
@@ -968,6 +968,18 @@ export type AssetIdsResponseDto = {
     assetId: string;
     error?: Error2;
     success: boolean;
+};
+export type StackResponseDto = {
+    assets: AssetResponseDto[];
+    id: string;
+    primaryAssetId: string;
+};
+export type StackCreateDto = {
+    /** first asset becomes the primary */
+    assetIds: string[];
+};
+export type StackUpdateDto = {
+    primaryAssetId?: string;
 };
 export type AssetDeltaSyncDto = {
     updatedAfter: string;
@@ -1356,11 +1368,11 @@ export function createAlbum({ createAlbumDto }: {
         body: createAlbumDto
     })));
 }
-export function getAlbumCount(opts?: Oazapfts.RequestOpts) {
+export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AlbumCountResponseDto;
-    }>("/albums/count", {
+        data: AlbumStatisticsResponseDto;
+    }>("/albums/statistics", {
         ...opts
     }));
 }
@@ -1627,15 +1639,6 @@ export function getRandom({ count }: {
     }))}`, {
         ...opts
     }));
-}
-export function updateStackParent({ updateStackParentDto }: {
-    updateStackParentDto: UpdateStackParentDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/assets/stack/parent", oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: updateStackParentDto
-    })));
 }
 export function getAssetStatistics({ isArchived, isFavorite, isTrashed }: {
     isArchived?: boolean;
@@ -2164,7 +2167,7 @@ export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {
 }
 export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: UserAdminResponseDto;
     }>("/oauth/unlink", {
         ...opts,
@@ -2454,102 +2457,27 @@ export function getSearchSuggestions({ country, includeNull, make, model, state,
         ...opts
     }));
 }
-/**
- * This property was deprecated in v1.107.0
- */
 export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerAboutResponseDto;
-    }>("/server-info/about", {
+    }>("/server/about", {
         ...opts
     }));
 }
-/**
- * This property was deprecated in v1.107.0
- */
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerConfigDto;
-    }>("/server-info/config", {
+    }>("/server/config", {
         ...opts
     }));
 }
-/**
- * This property was deprecated in v1.107.0
- */
 export function getServerFeatures(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: ServerFeaturesDto;
-    }>("/server-info/features", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getSupportedMediaTypes(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerMediaTypesResponseDto;
-    }>("/server-info/media-types", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function pingServer(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerPingResponseRead;
-    }>("/server-info/ping", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getServerStatistics(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerStatsResponseDto;
-    }>("/server-info/statistics", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getStorage(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerStorageResponseDto;
-    }>("/server-info/storage", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getTheme(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerThemeDto;
-    }>("/server-info/theme", {
-        ...opts
-    }));
-}
-/**
- * This property was deprecated in v1.107.0
- */
-export function getServerVersion(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerVersionResponseDto;
-    }>("/server-info/version", {
+    }>("/server/features", {
         ...opts
     }));
 }
@@ -2580,6 +2508,54 @@ export function setServerLicense({ licenseKeyDto }: {
         method: "PUT",
         body: licenseKeyDto
     })));
+}
+export function getSupportedMediaTypes(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerMediaTypesResponseDto;
+    }>("/server/media-types", {
+        ...opts
+    }));
+}
+export function pingServer(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerPingResponseRead;
+    }>("/server/ping", {
+        ...opts
+    }));
+}
+export function getServerStatistics(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerStatsResponseDto;
+    }>("/server/statistics", {
+        ...opts
+    }));
+}
+export function getStorage(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerStorageResponseDto;
+    }>("/server/storage", {
+        ...opts
+    }));
+}
+export function getTheme(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerThemeDto;
+    }>("/server/theme", {
+        ...opts
+    }));
+}
+export function getServerVersion(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerVersionResponseDto;
+    }>("/server/version", {
+        ...opts
+    }));
 }
 export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/sessions", {
@@ -2700,6 +2676,70 @@ export function addSharedLinkAssets({ id, key, assetIdsDto }: {
         ...opts,
         method: "PUT",
         body: assetIdsDto
+    })));
+}
+export function deleteStacks({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/stacks", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
+export function searchStacks({ primaryAssetId }: {
+    primaryAssetId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StackResponseDto[];
+    }>(`/stacks${QS.query(QS.explode({
+        primaryAssetId
+    }))}`, {
+        ...opts
+    }));
+}
+export function createStack({ stackCreateDto }: {
+    stackCreateDto: StackCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: StackResponseDto;
+    }>("/stacks", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: stackCreateDto
+    })));
+}
+export function deleteStack({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/stacks/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function getStack({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StackResponseDto;
+    }>(`/stacks/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+export function updateStack({ id, stackUpdateDto }: {
+    id: string;
+    stackUpdateDto: StackUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StackResponseDto;
+    }>(`/stacks/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: stackUpdateDto
     })));
 }
 export function getDeltaSync({ assetDeltaSyncDto }: {
@@ -3073,6 +3113,26 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
+export function getAssetsByOriginalPath({ path }: {
+    path: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/view/folder${QS.query(QS.explode({
+        path
+    }))}`, {
+        ...opts
+    }));
+}
+export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: string[];
+    }>("/view/folder/unique-paths", {
+        ...opts
+    }));
+}
 export enum ReactionLevel {
     Album = "album",
     Asset = "asset"
@@ -3122,6 +3182,85 @@ export enum Error {
     NoPermission = "no_permission",
     NotFound = "not_found",
     Unknown = "unknown"
+}
+export enum Permission {
+    All = "all",
+    ActivityCreate = "activity.create",
+    ActivityRead = "activity.read",
+    ActivityUpdate = "activity.update",
+    ActivityDelete = "activity.delete",
+    ActivityStatistics = "activity.statistics",
+    ApiKeyCreate = "apiKey.create",
+    ApiKeyRead = "apiKey.read",
+    ApiKeyUpdate = "apiKey.update",
+    ApiKeyDelete = "apiKey.delete",
+    AssetRead = "asset.read",
+    AssetUpdate = "asset.update",
+    AssetDelete = "asset.delete",
+    AssetShare = "asset.share",
+    AssetView = "asset.view",
+    AssetDownload = "asset.download",
+    AssetUpload = "asset.upload",
+    AlbumCreate = "album.create",
+    AlbumRead = "album.read",
+    AlbumUpdate = "album.update",
+    AlbumDelete = "album.delete",
+    AlbumStatistics = "album.statistics",
+    AlbumAddAsset = "album.addAsset",
+    AlbumRemoveAsset = "album.removeAsset",
+    AlbumShare = "album.share",
+    AlbumDownload = "album.download",
+    AuthDeviceDelete = "authDevice.delete",
+    ArchiveRead = "archive.read",
+    FaceCreate = "face.create",
+    FaceRead = "face.read",
+    FaceUpdate = "face.update",
+    FaceDelete = "face.delete",
+    LibraryCreate = "library.create",
+    LibraryRead = "library.read",
+    LibraryUpdate = "library.update",
+    LibraryDelete = "library.delete",
+    LibraryStatistics = "library.statistics",
+    TimelineRead = "timeline.read",
+    TimelineDownload = "timeline.download",
+    MemoryCreate = "memory.create",
+    MemoryRead = "memory.read",
+    MemoryUpdate = "memory.update",
+    MemoryDelete = "memory.delete",
+    PartnerCreate = "partner.create",
+    PartnerRead = "partner.read",
+    PartnerUpdate = "partner.update",
+    PartnerDelete = "partner.delete",
+    PersonCreate = "person.create",
+    PersonRead = "person.read",
+    PersonUpdate = "person.update",
+    PersonDelete = "person.delete",
+    PersonStatistics = "person.statistics",
+    PersonMerge = "person.merge",
+    PersonReassign = "person.reassign",
+    SessionRead = "session.read",
+    SessionUpdate = "session.update",
+    SessionDelete = "session.delete",
+    SharedLinkCreate = "sharedLink.create",
+    SharedLinkRead = "sharedLink.read",
+    SharedLinkUpdate = "sharedLink.update",
+    SharedLinkDelete = "sharedLink.delete",
+    StackCreate = "stack.create",
+    StackRead = "stack.read",
+    StackUpdate = "stack.update",
+    StackDelete = "stack.delete",
+    SystemConfigRead = "systemConfig.read",
+    SystemConfigUpdate = "systemConfig.update",
+    SystemMetadataRead = "systemMetadata.read",
+    SystemMetadataUpdate = "systemMetadata.update",
+    TagCreate = "tag.create",
+    TagRead = "tag.read",
+    TagUpdate = "tag.update",
+    TagDelete = "tag.delete",
+    AdminUserCreate = "admin.user.create",
+    AdminUserRead = "admin.user.read",
+    AdminUserUpdate = "admin.user.update",
+    AdminUserDelete = "admin.user.delete"
 }
 export enum AssetMediaStatus {
     Created = "created",

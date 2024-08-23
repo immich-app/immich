@@ -3,10 +3,11 @@ import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
 import { isDev, serverVersion } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
+import { OnEmit, OnServerEvent } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { SystemMetadataKey, VersionCheckMetadata } from 'src/entities/system-metadata.entity';
-import { ClientEvent, IEventRepository, OnEvents, ServerEvent, ServerEventMap } from 'src/interfaces/event.interface';
+import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
+import { ClientEvent, IEventRepository, ServerEvent, ServerEventMap } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
@@ -22,7 +23,7 @@ const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): Re
 };
 
 @Injectable()
-export class VersionService implements OnEvents {
+export class VersionService {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -36,7 +37,8 @@ export class VersionService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async onBootstrapEvent(): Promise<void> {
+  @OnEmit({ event: 'onBootstrap' })
+  async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
   }
 
