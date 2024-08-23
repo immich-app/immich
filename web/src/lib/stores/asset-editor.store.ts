@@ -28,8 +28,8 @@ export const editTypes = [
     lossless: true,
     async apply(asset: AssetResponseDto) {
       const crop = get(cropSettings);
-      await updateAsset({ id: asset.id, updateAssetDto: { crop } });
-      const { x, y, width, height } = crop;
+      const [x, y, width, height] = [crop.x, crop.y, crop.width, crop.height].map((v) => Math.round(v));
+      await updateAsset({ id: asset.id, updateAssetDto: { crop: { x, y, width, height } } });
       asset.exifInfo = { ...asset.exifInfo, cropLeft: x, cropTop: y, cropWidth: width, cropHeight: height };
     },
   },
