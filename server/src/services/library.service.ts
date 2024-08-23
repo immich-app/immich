@@ -337,27 +337,36 @@ export class LibraryService {
   }
 
   async handleDeleteLibrary(job: IEntityJob): Promise<JobStatus> {
-    const library = await this.repository.get(job.id, true);
+    const libraryId = job.id;
+
+    const library = await this.repository.get(libraryId, true);
     if (!library) {
-      return JobStatus.FAILED;
+      return JobStatus.SKIPPED;
     }
 
-    // TODO use pagination
-    const assetIds = await this.repository.getAssetIds(job.id, true);
-    this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    await this.jobRepository.queueAll(
-      assetIds.map((assetId) => ({
-        name: JobName.ASSET_DELETION,
-        data: {
-          id: assetId,
-          deleteOnDisk: false,
-        },
-      })),
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination, { libraryId: libraryId, withDeleted: true }),
     );
 
-    if (assetIds.length === 0) {
-      this.logger.log(`Deleting library ${job.id}`);
-      await this.repository.delete(job.id);
+    let assetsFound = false;
+
+    this.logger.debug(`Will delete all assets in library ${libraryId}`);
+    for await (const assets of assetPagination) {
+      assetsFound = true;
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: JobName.ASSET_DELETION,
+          data: {
+            id: asset.id,
+            deleteOnDisk: false,
+          },
+        })),
+      );
+    }
+
+    if (!assetsFound) {
+      this.logger.log(`Deleting library ${libraryId}`);
+      await this.repository.delete(libraryId);
     }
     return JobStatus.SUCCESS;
   }
