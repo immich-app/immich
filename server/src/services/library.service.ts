@@ -44,8 +44,6 @@ import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { validateCronExpression } from 'src/validation';
 
-const LIBRARY_SCAN_BATCH_SIZE = 1000;
-
 @Injectable()
 export class LibraryService {
   private configCore: SystemConfigCore;
@@ -602,63 +600,37 @@ export class LibraryService {
       }
     }
 
-    const crawledAssets = this.storageRepository.walk({
+    const assetsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
+      take: JOBS_ASSET_PAGINATION_SIZE,
     });
 
-    let crawlDone = false;
-    let crawlCounter = 0;
-    let crawledAssetPaths: string[] = [];
-
-    // (Re-)import all assets found on disk
-    while (!crawlDone) {
-      const assetGenerator = await crawledAssets.next();
-      crawlDone = assetGenerator.done ?? true;
-
-      if (!crawlDone) {
-        crawledAssetPaths.push(assetGenerator.value);
-        crawlCounter++;
-      }
-
-      if (crawledAssetPaths.length % LIBRARY_SCAN_BATCH_SIZE === 0 || crawlDone) {
-        // We have reached the batch size or the end of the generator, scan the batch
-        this.logger.log(`Queueing scan of ${crawledAssetPaths.length} crawled asset(s) in library ${library.id}...`);
-
-        await this.scanAssets(job.id, crawledAssetPaths, library.ownerId, job.refreshAllFiles ?? false);
-        crawlCounter += crawledAssetPaths.length;
-        crawledAssetPaths = [];
-      }
-    }
-
-    let existingAssetsDone = false;
-    let existingAssetCounter = 0;
-    const onlineAssets = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
-    );
-
-    // Check all existing online assets to see if they are still online
-    while (!existingAssetsDone) {
-      const existingAssetPage = await onlineAssets.next();
-      existingAssetsDone = existingAssetPage.done ?? true;
-
-      if (existingAssetPage.value) {
-        existingAssetCounter += existingAssetPage.value.length;
-        this.logger.log(
-          `Queuing online check of ${existingAssetPage.value.length} asset(s) in library ${library.id}...`,
-        );
-        await this.jobRepository.queueAll(
-          existingAssetPage.value.map((asset: AssetEntity) => ({
-            name: JobName.LIBRARY_CHECK_OFFLINE,
-            data: { id: asset.id, importPaths: validImportPaths },
-          })),
-        );
-      }
+    for await (const assetBatch of assetsOnDisk) {
+      this.logger.log(`Queueing scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
+      await this.scanAssets(job.id, assetBatch, library.ownerId, job.refreshAllFiles ?? false);
     }
 
     this.logger.log(
-      `Queued scan of ${crawlCounter} crawled and ${existingAssetCounter} existing asset(s) in library ${library.id}`,
+      `Finished queuing scan of assets on disk for ${library.id}, now queuing online status check of existing assets...`,
     );
+
+    let existingAssetsDone = false;
+    const onlineAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
+    );
+
+    for await (const assets of onlineAssets) {
+      this.logger.log(`Queuing online check of ${assets.values.length} asset(s) in library ${library.id}...`);
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: JobName.LIBRARY_CHECK_OFFLINE,
+          data: { id: asset.id, importPaths: validImportPaths, exclusionPatterns: library.exclusionPatterns },
+        })),
+      );
+    }
+
+    this.logger.log(`Finished checking online status of existing assets for library ${library.id}`);
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 

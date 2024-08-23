@@ -54,6 +54,10 @@ export class CrawlOptionsDto {
   exclusionPatterns?: string[];
 }
 
+export class WalkOptionsDto extends CrawlOptionsDto {
+  take? = 1;
+}
+
 export class ValidateLibraryDto {
   @Optional()
   @IsString({ each: true })
