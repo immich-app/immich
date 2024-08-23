@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { file } from 'mock-fs/lib/filesystem';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
