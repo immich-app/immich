@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { access } from '$lib/stores/access.store';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -17,7 +18,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import { getAssetJobName } from '$lib/utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import {
     AssetJobName,
@@ -44,7 +45,6 @@
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
   export let stack: StackResponseDto | null = null;
-  export let showDetailButton: boolean;
   export let showSlideshow = false;
   export let onZoomImage: () => void;
   export let onCopyImage: () => void;
@@ -55,10 +55,7 @@
   // export let showEditorHandler: () => void;
   export let onClose: () => void;
 
-  const sharedLink = getSharedLink();
-
   $: isOwner = $user && asset.ownerId === $user?.id;
-  $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -80,7 +77,7 @@
     class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
     data-testid="asset-viewer-navbar-actions"
   >
-    {#if !asset.isTrashed && $user}
+    {#if $access({ asset, access: 'asset.share' })}
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
@@ -102,15 +99,16 @@
       <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} on:click={onCopyImage} />
     {/if}
 
-    {#if !isOwner && showDownloadButton}
+    <!-- owner already has download in the overflow menu -->
+    {#if !isOwner && !asset.isOffline && $access({ asset, access: 'asset.download' })}
       <DownloadAction {asset} />
     {/if}
 
-    {#if showDetailButton}
+    {#if asset.hasMetadata}
       <ShowDetailAction {onShowDetail} />
     {/if}
 
-    {#if isOwner}
+    {#if $access({ asset, access: 'asset.favorite' })}
       <FavoriteAction {asset} {onAction} />
     {/if}
     <!-- {#if showEditorButton}
@@ -124,16 +122,18 @@
     {/if} -->
 
     {#if isOwner}
-      <DeleteAction {asset} {onAction} />
+      {#if !asset.isTrashed && $access({ asset, access: 'asset.delete' })}
+        <DeleteAction {asset} {onAction} />
+      {/if}
 
       <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
-        {#if showDownloadButton}
+        {#if !asset.isOffline && $access({ asset, access: 'asset.download' })}
           <DownloadAction {asset} menuItem />
         {/if}
-        {#if asset.isTrashed}
+        {#if asset.isTrashed && $access({ asset, access: 'asset.delete' })}
           <RestoreAction {asset} {onAction} />
         {:else}
           <AddToAlbumAction {asset} {onAction} />
@@ -141,10 +141,11 @@
         {/if}
 
         {#if isOwner}
-          {#if stack}
+          {#if stack && $access({ asset, access: 'asset.stack' })}
             <UnstackAction {stack} {onAction} />
           {/if}
-          {#if album}
+
+          {#if album && $access({ album, access: 'album.update' })}
             <SetAlbumCoverAction {asset} {album} />
           {/if}
           {#if asset.type === AssetTypeEnum.Image}

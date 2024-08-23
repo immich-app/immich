@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { accessManager } from '$lib/stores/access.store';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
@@ -23,6 +24,9 @@ export const loadUser = async () => {
       [user, preferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
       user$.set(user);
       preferences$.set(preferences);
+
+      // TODO invert (emit an event that accessManager listens to)
+      await accessManager.init();
 
       // Check for license status
       if (serverInfo.licensed || user.license?.activatedAt) {

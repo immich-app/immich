@@ -9,7 +9,6 @@ describe('AssetViewerNavBar component', () => {
   const additionalProps = {
     showCopyButton: false,
     showZoomButton: false,
-    showDetailButton: false,
     showDownloadButton: false,
     showMotionPlayButton: false,
     showShareButton: false,

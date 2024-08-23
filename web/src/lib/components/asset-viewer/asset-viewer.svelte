@@ -77,7 +77,6 @@
   let appearsInAlbums: AlbumResponseDto[] = [];
   let shouldPlayMotionPhoto = false;
   let sharedLink = getSharedLink();
-  let enableDetailPanel = asset.hasMetadata;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
@@ -415,7 +414,6 @@
         {asset}
         {album}
         {stack}
-        showDetailButton={enableDetailPanel}
         showSlideshow={!!assetStore}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
@@ -531,7 +529,7 @@
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
+  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
