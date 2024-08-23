@@ -1,4 +1,5 @@
 import CropTool from '$lib/components/asset-viewer/editor/crop-tool/crop-tool.svelte';
+import type { CropOptionsDto } from '@immich/sdk';
 import { mdiCropRotate } from '@mdi/js';
 import { derived, get, writable } from 'svelte/store';
 

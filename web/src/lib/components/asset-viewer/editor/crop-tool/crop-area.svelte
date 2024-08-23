@@ -17,8 +17,10 @@
     resetGlobalCropStore,
     rotateDegrees,
   } from '$lib/stores/asset-editor.store';
+  import type { AssetResponseDto } from '@immich/sdk';
+  import _ from 'lodash';
 
-  export let asset;
+  export let asset: AssetResponseDto;
   let img: HTMLImageElement;
 
   $: imgElement.set(img);
@@ -40,7 +42,12 @@
 
     img.src = getAssetOriginalUrl({ id: asset.id, checksum: asset.checksum });
 
-    img.addEventListener('load', () => onImageLoad(true));
+    const { cropLeft, cropTop, cropWidth, cropHeight } = asset.exifInfo ?? {};
+    const crop = _.every([cropLeft, cropTop, cropWidth, cropHeight], _.isNumber)
+      ? { x: cropLeft!, y: cropTop!, width: cropWidth!, height: cropHeight! }
+      : null;
+
+    img.addEventListener('load', () => onImageLoad({ crop }));
     img.addEventListener('error', (error) => {
       handleError(error, $t('error_loading_image'));
     });

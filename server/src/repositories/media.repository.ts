@@ -52,7 +52,8 @@ export class MediaRepository implements IMediaRepository {
     }).pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16');
 
     if (options.crop) {
-      pipeline.extract(options.crop);
+      const { x, y, width, height } = options.crop;
+      pipeline.extract({ left: x, top: y, width, height });
     }
 
     pipeline = sharp(await pipeline.toBuffer());

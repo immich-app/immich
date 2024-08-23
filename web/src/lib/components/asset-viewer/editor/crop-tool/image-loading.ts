@@ -1,9 +1,10 @@
-import { cropImageScale, cropImageSize, cropSettings, type CropOptionsDto } from '$lib/stores/asset-editor.store';
+import { cropImageScale, cropImageSize, cropSettings } from '$lib/stores/asset-editor.store';
+import type { CropOptionsDto } from '@immich/sdk';
 import { get } from 'svelte/store';
 import { cropAreaEl, cropFrame, imgElement } from './crop-store';
 import { draw } from './drawing';
 
-export function onImageLoad(resetSize: boolean = false) {
+export function onImageLoad(resetSize: { crop: CropOptionsDto | null } | null = null) {
   const img = get(imgElement);
   const cropArea = get(cropAreaEl);
 
@@ -19,11 +20,12 @@ export function onImageLoad(resetSize: boolean = false) {
   cropImageSize.set([img.width, img.height]);
 
   if (resetSize) {
+    const rect = resetSize.crop ?? { x: 0, y: 0, width: img.width, height: img.height };
     cropSettings.update((crop) => {
-      crop.x = 0;
-      crop.y = 0;
-      crop.width = img.width * scale;
-      crop.height = img.height * scale;
+      crop.x = rect.x * scale;
+      crop.y = rect.y * scale;
+      crop.width = rect.width * scale;
+      crop.height = rect.height * scale;
       return crop;
     });
   } else {

@@ -223,7 +223,7 @@ export class MediaService {
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
           const { cropLeft, cropTop, cropWidth, cropHeight } = asset.exifInfo ?? {};
           const crop = _.every([cropLeft, cropTop, cropWidth, cropHeight], _.isNumber)
-            ? { left: cropLeft!, top: cropTop!, width: cropWidth!, height: cropHeight! }
+            ? { x: cropLeft!, y: cropTop!, width: cropWidth!, height: cropHeight! }
             : undefined;
           const imageOptions = {
             format,
