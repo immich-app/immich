@@ -28,7 +28,7 @@ export const editTypes = [
   },
 ];
 
-export function closeEditorCofirm(closeCallback: CallableFunction) {
+export function closeEditorConfirm(closeCallback: CallableFunction) {
   if (get(hasChanges)) {
     showCancelConfirmDialog.set(closeCallback);
   } else {
