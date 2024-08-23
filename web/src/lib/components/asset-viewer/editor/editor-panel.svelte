@@ -21,6 +21,7 @@
 
   export let onUpdateSelectedType: (type: string) => void;
   export let onClose: () => void;
+  export let onSave: () => void;
 
   let selectedType: string = editTypes[0].name;
   $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
@@ -37,9 +38,18 @@
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
-  <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
-    <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
+  <div class="flex place-items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
+      <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
+    </div>
+    <button
+      type="button"
+      class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
+      on:click={() => onSave()}
+    >
+      {$t('done')}
+    </button>
   </div>
   <section class="px-4 py-4">
     <ul class="flex w-full justify-around">
