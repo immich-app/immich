@@ -17,7 +17,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { getSelectedAlbumGroupOption, type AlbumGroup } from '$lib/utils/album-utils';
+  import {
+    getSelectedAlbumGroupOption,
+    type AlbumGroup,
+    getDeleteAlbumConfirmationDialog,
+  } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { user } from '$lib/stores/user.store';
   import {
@@ -31,7 +35,6 @@
   } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
   export let ownedAlbums: AlbumResponseDto[] = [];
@@ -302,9 +305,7 @@
       return;
     }
 
-    const isConfirmed = await dialogController.show({
-      prompt: $t('album_delete_confirmation', { values: { album: albumToDelete.albumName } }),
-    });
+    const isConfirmed = await getDeleteAlbumConfirmationDialog(albumToDelete);
 
     if (!isConfirmed) {
       return;

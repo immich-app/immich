@@ -82,9 +82,9 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import { getDeleteAlbumConfirmationDialog } from '$lib/utils/album-utils';
 
   export let data: PageData;
 
@@ -365,9 +365,7 @@
   };
 
   const handleRemoveAlbum = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('album_delete_confirmation', { values: { album: album.albumName } }),
-    });
+    const isConfirmed = await getDeleteAlbumConfirmationDialog(album);
 
     if (!isConfirmed) {
       viewMode = ViewMode.VIEW;

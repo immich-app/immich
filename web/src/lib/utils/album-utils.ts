@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation';
+import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 import { AppRoute } from '$lib/constants';
 import {
   AlbumFilter,
@@ -198,4 +199,17 @@ export const collapseAllAlbumGroups = (groupIds: string[]) => {
 
 export const expandAllAlbumGroups = () => {
   collapseAllAlbumGroups([]);
+};
+
+export const getDeleteAlbumConfirmationDialog = async (album: AlbumResponseDto) => {
+  const $t = get(t);
+  const confirmation =
+    album.albumName.length > 0
+      ? $t('album_delete_confirmation', { values: { album: album.albumName } })
+      : $t('unnamed_album_delete_confirmation');
+
+  const description = $t('album_delete_confirmation_description');
+  const prompt = `${confirmation} ${description}`;
+
+  return dialogController.show({ prompt });
 };
