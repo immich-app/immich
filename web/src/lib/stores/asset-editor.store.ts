@@ -11,11 +11,11 @@ export const cropAspectRatio = writable<CropAspectRatio>('free');
 export const cropSettingsChanged = writable<boolean>(false);
 //---------rotate
 export const rotateDegrees = writable<number>(0);
-export const normaizedRorateDegrees = derived(rotateDegrees, (v) => {
+export const normalizedRorateDegrees = derived(rotateDegrees, (v) => {
   const newAngle = v % 360;
   return newAngle < 0 ? newAngle + 360 : newAngle;
 });
-export const changedOriention = derived(normaizedRorateDegrees, () => get(normaizedRorateDegrees) % 180 > 0);
+export const changedOriention = derived(normalizedRorateDegrees, () => get(normalizedRorateDegrees) % 180 > 0);
 //-----other
 export const showCancelConfirmDialog = writable<boolean | CallableFunction>(false);
 
