@@ -974,6 +974,8 @@
   "purchase_server_title": "Server",
   "purchase_settings_server_activated": "The server product key is managed by the admin",
   "rating": "Star rating",
+  "rating_clear": "Clear rating",
+  "rating_count": "{count, plural, one {# star} other {# stars}}",
   "rating_description": "Display the exif rating in the info panel",
   "reaction_options": "Reaction options",
   "read_changelog": "Read Changelog",
