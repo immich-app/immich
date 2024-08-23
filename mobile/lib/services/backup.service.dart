@@ -40,7 +40,11 @@ class BackupService {
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
 
-  BackupService(this._apiService, this._db, this._appSetting);
+  BackupService(
+    this._apiService,
+    this._db,
+    this._appSetting,
+  );
 
   Future<List<String>?> getDeviceBackupAsset() async {
     final String deviceId = Store.get(StoreKey.deviceId);
@@ -72,10 +76,12 @@ class BackupService {
           _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
+  /// if `ignoreTimeFilter` is set to true, all assets will be returned
   Future<Set<BackupCandidate>> buildUploadCandidates(
     List<BackupAlbum> selectedBackupAlbums,
-    List<BackupAlbum> excludedBackupAlbums,
-  ) async {
+    List<BackupAlbum> excludedBackupAlbums, {
+    bool ignoreTimeFilter = false,
+  }) async {
     final filter = FilterOptionGroup(
       containsPathModified: true,
       orders: [const OrderOption(type: OrderOptionType.updateDate)],
@@ -85,14 +91,26 @@ class BackupService {
     );
 
     final now = DateTime.now();
+
     final List<AssetPathEntity?> selectedAlbums =
-        await _loadAlbumsWithTimeFilter(selectedBackupAlbums, filter, now);
+        await _loadAlbumsWithTimeFilter(
+      selectedBackupAlbums,
+      filter,
+      now,
+      ignoreTimeFilter: ignoreTimeFilter,
+    );
+
     if (selectedAlbums.every((e) => e == null)) {
       return {};
     }
 
     final List<AssetPathEntity?> excludedAlbums =
-        await _loadAlbumsWithTimeFilter(excludedBackupAlbums, filter, now);
+        await _loadAlbumsWithTimeFilter(
+      excludedBackupAlbums,
+      filter,
+      now,
+      ignoreTimeFilter: ignoreTimeFilter,
+    );
 
     final Set<BackupCandidate> toAdd = await _fetchAssetsAndUpdateLastBackup(
       selectedAlbums,
@@ -100,11 +118,15 @@ class BackupService {
       now,
     );
 
+    print("toAdd: ${toAdd.length}");
+
     final Set<BackupCandidate> toRemove = await _fetchAssetsAndUpdateLastBackup(
       excludedAlbums,
       excludedBackupAlbums,
       now,
     );
+
+    print("toRemove: ${toRemove.length}");
 
     return toAdd.difference(toRemove);
   }
@@ -112,20 +134,25 @@ class BackupService {
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
     List<BackupAlbum> albums,
     FilterOptionGroup filter,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    bool ignoreTimeFilter = false,
+  }) async {
     List<AssetPathEntity?> result = [];
-    for (BackupAlbum a in albums) {
+
+    for (BackupAlbum backupAlbum in albums) {
       try {
         final AssetPathEntity album =
             await AssetPathEntity.obtainPathFromProperties(
-          id: a.id,
+          id: backupAlbum.id,
           optionGroup: filter.copyWith(
-            updateTimeCond: DateTimeCond(
-              // subtract 2 seconds to prevent missing assets due to rounding issues
-              min: a.lastBackup.subtract(const Duration(seconds: 2)),
-              max: now,
-            ),
+            updateTimeCond: ignoreTimeFilter
+                ? null
+                : DateTimeCond(
+                    // subtract 2 seconds to prevent missing assets due to rounding issues
+                    min: backupAlbum.lastBackup
+                        .subtract(const Duration(seconds: 2)),
+                    max: now,
+                  ),
           ),
           maxDateTimeToNow: false,
         );

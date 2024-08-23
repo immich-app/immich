@@ -544,7 +544,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       if (shouldSyncUploadAlbum) {
         await _albumService.syncUploadAlbums(
           result.candidate.albums,
-          result.remoteAssetId,
+          [result.remoteAssetId],
         );
       }
 

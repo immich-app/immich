@@ -455,14 +455,17 @@ class AlbumService {
   ///
   /// Add the uploaded asset to the selected albums
   ///
-  Future<void> syncUploadAlbums(List<String> albumNames, String assetId) async {
+  Future<void> syncUploadAlbums(
+    List<String> albumNames,
+    List<String> assetIds,
+  ) async {
     for (final albumName in albumNames) {
       final album = await getAlbumByName(albumName, true);
 
       if (album != null && album.remoteId != null) {
         await _apiService.albumsApi.addAssetsToAlbum(
           album.remoteId!,
-          BulkIdsDto(ids: [assetId]),
+          BulkIdsDto(ids: assetIds),
         );
       }
     }

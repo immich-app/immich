@@ -2,15 +2,20 @@
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:isar/isar.dart';
@@ -23,6 +28,8 @@ final assetServiceProvider = Provider(
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(userServiceProvider),
+    ref.watch(backupServiceProvider),
+    ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
   ),
 );
@@ -31,6 +38,8 @@ class AssetService {
   final ApiService _apiService;
   final SyncService _syncService;
   final UserService _userService;
+  final BackupService _backupService;
+  final AlbumService _albumService;
   final log = Logger('AssetService');
   final Isar _db;
 
@@ -38,6 +47,8 @@ class AssetService {
     this._apiService,
     this._syncService,
     this._userService,
+    this._backupService,
+    this._albumService,
     this._db,
   );
 
@@ -282,6 +293,63 @@ class AssetService {
     } catch (error, stack) {
       log.severe("Error while changing location status", error, stack);
       return Future.value(null);
+    }
+  }
+
+  Future<void> syncUploadedAssetToAlbums() async {
+    try {
+      final selectedAlbums = _backupService.selectedAlbumsQuery().findAllSync();
+      final excludedAlbums = _backupService.excludedAlbumsQuery().findAllSync();
+
+      final candidates = await _backupService.buildUploadCandidates(
+        selectedAlbums,
+        excludedAlbums,
+        ignoreTimeFilter: true,
+      );
+
+      final duplicates = await _apiService.assetsApi.checkExistingAssets(
+        CheckExistingAssetsDto(
+          deviceAssetIds: candidates.map((c) => c.asset.id).toList(),
+          deviceId: Store.get(StoreKey.deviceId),
+        ),
+      );
+
+      if (duplicates != null) {
+        candidates
+            .removeWhere((c) => !duplicates.existingIds.contains(c.asset.id));
+      }
+
+      await refreshRemoteAssets();
+      final remoteAssets = await _db.assets
+          .filter()
+          .localIdIsNotNull()
+          .remoteIdIsNotNull()
+          .findAll();
+
+      /// Map<AlbumName, [AssetId]>
+      Map<String, List<String>> assetToAlbums = {};
+
+      for (BackupCandidate candidate in candidates) {
+        final asset = remoteAssets.firstWhereOrNull(
+          (a) => a.localId == candidate.asset.id,
+        );
+
+        if (asset != null) {
+          for (final albumName in candidate.albums) {
+            assetToAlbums.putIfAbsent(albumName, () => []).add(asset.remoteId!);
+          }
+        }
+      }
+
+      for (final entry in assetToAlbums.entries) {
+        final albumName = entry.key;
+        final assetIds = entry.value;
+
+        await _albumService.syncUploadAlbums([albumName], assetIds);
+      }
+    } catch (error, stack) {
+      print(error);
+      log.severe("Error while syncing uploaded asset to albums", error, stack);
     }
   }
 }
