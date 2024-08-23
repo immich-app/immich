@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { file } from 'mock-fs/lib/filesystem';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
@@ -535,24 +536,39 @@ export class LibraryService {
   async handleOfflineCheck(job: ILibraryOfflineJob): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
 
-    if (!asset || asset.isOffline) {
+    if (!asset) {
+      // Asset is no longer in the database, skip
       return JobStatus.SKIPPED;
     }
 
-    const exists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
-
-    if (exists) {
-      const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
-
-      if (isInPath) {
-        this.logger.verbose(`Asset is still online: ${asset.originalPath}`);
-        return JobStatus.SUCCESS;
-      }
+    if (asset.isOffline) {
+      this.logger.verbose(`Asset is already offline: ${asset.originalPath}`);
+      return JobStatus.SUCCESS;
     }
 
-    // Either asset path does not exist, or it is outside of any import path
-    this.logger.debug(`Marking asset as offline: ${asset.originalPath}`);
-    await this.assetRepository.update({ id: asset.id, isOffline: true });
+    const fileExists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
+
+    if (!fileExists) {
+      this.logger.debug(
+        `Asset is no longer found on disk or is covered by exclusion pattern, marking offline: ${asset.originalPath}`,
+      );
+      await this.assetRepository.update({ id: asset.id, isOffline: true });
+      return JobStatus.SUCCESS;
+    }
+
+    const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
+
+    if (!isInPath) {
+      this.logger.debug(
+        `Asset exists on disk, but is no longer in an import path, marking offline: ${asset.originalPath}`,
+      );
+      await this.assetRepository.update({ id: asset.id, isOffline: true });
+      return JobStatus.SUCCESS;
+    }
+
+    this.logger.verbose(
+      `Asset is found on disk, not covered by an exclusion pattern, and is in an import path, keeping online: ${asset.originalPath}`,
+    );
 
     return JobStatus.SUCCESS;
   }
