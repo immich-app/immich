@@ -275,6 +275,7 @@ export class MetadataService {
     }
 
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
+    this.logger.warn(`Writing sidecar for asset ${asset.id} with ${JSON.stringify(job)}`);
     const exif = _.omitBy<WriteTags>(
       {
         Description: description,

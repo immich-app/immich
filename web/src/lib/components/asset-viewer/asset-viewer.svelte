@@ -8,7 +8,7 @@
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetStore } from '$lib/stores/assets.store';
+  import { type AssetStore, photoViewer } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -48,7 +48,7 @@
   import VideoViewer from './video-wrapper-viewer.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
   import CropArea from './editor/crop-tool/crop-area.svelte';
-  import { closeEditorConfirm as closeEditorConfirm } from '$lib/stores/asset-editor.store';
+  import { applyChanges, closeEditorConfirm as closeEditorConfirm } from '$lib/stores/asset-editor.store';
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
@@ -277,6 +277,13 @@
     });
   };
 
+  const closeEditorAfterSave = async () => {
+    await applyChanges(asset, () => {});
+    await new Promise((resolve) => setTimeout(resolve, 500)); // TODO: otherwise it doesn't work
+    isShowEditor = false;
+    await refreshEditedAsset();
+  };
+
   const navigateAssetRandom = async () => {
     if (!assetStore) {
       return;
@@ -395,6 +402,17 @@
     onAction?.(action);
   };
 
+  const refreshEditedAsset = async () => {
+    await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name: AssetJobName.RegenerateThumbnail } });
+    setTimeout(() => {
+      // force the image to refresh the thumbnail
+      // TODO: this is not reliable. Ultimately the new files table will be used.
+      const oldSrc = new URL($photoViewer!.src);
+      oldSrc.searchParams.set('t', Date.now().toString());
+      $photoViewer!.src = oldSrc.toString();
+    }, 500);
+  };
+
   let selectedEditType: string = '';
 
   function handleUpdateSelectedEditType(type: string) {
@@ -418,6 +436,7 @@
         {stack}
         showDetailButton={enableDetailPanel}
         {showEditorHandler}
+        {refreshEditedAsset}
         showSlideshow={!!assetStore}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
@@ -559,7 +578,12 @@
       class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
-      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
+      <EditorPanel
+        {asset}
+        onUpdateSelectedType={handleUpdateSelectedEditType}
+        onClose={closeEditor}
+        onSave={closeEditorAfterSave}
+      />
     </div>
   {/if}
 

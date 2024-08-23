@@ -57,6 +57,7 @@
   export let onShowDetail: () => void;
   export let showEditorHandler: () => void;
   export let onClose: () => void;
+  export let refreshEditedAsset: () => Promise<void>;
 
   const sharedLink = getSharedLink();
 
@@ -145,8 +146,8 @@
 
         {#if isOwner}
           {#if !asset.isTrashed}
-            <RotateAction {asset} {onAction} to="left" />
-            <RotateAction {asset} {onAction} to="right" />
+            <RotateAction {asset} {onAction} {refreshEditedAsset} to="left" />
+            <RotateAction {asset} {onAction} {refreshEditedAsset} to="right" />
           {/if}
           {#if stack}
             <UnstackAction {stack} {onAction} />

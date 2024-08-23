@@ -1,5 +1,5 @@
 import CropTool from '$lib/components/asset-viewer/editor/crop-tool/crop-tool.svelte';
-import type { CropOptionsDto } from '@immich/sdk';
+import { updateAsset, type AssetResponseDto, type CropOptionsDto } from '@immich/sdk';
 import { mdiCropRotate } from '@mdi/js';
 import { derived, get, writable } from 'svelte/store';
 
@@ -25,6 +25,13 @@ export const editTypes = [
     icon: mdiCropRotate,
     component: CropTool,
     changesFlag: cropSettingsChanged,
+    lossless: true,
+    async apply(asset: AssetResponseDto) {
+      const crop = get(cropSettings);
+      await updateAsset({ id: asset.id, updateAssetDto: { crop } });
+      const { x, y, width, height } = crop;
+      asset.exifInfo = { ...asset.exifInfo, cropLeft: x, cropTop: y, cropWidth: width, cropHeight: height };
+    },
   },
 ];
 
@@ -42,6 +49,28 @@ export const hasChanges = derived(
     return $flags.some(Boolean);
   },
 );
+
+export const hasLossyChanges = derived(
+  editTypes.filter((t) => !t.lossless).map((t) => t.changesFlag),
+  ($flags) => {
+    return $flags.some(Boolean);
+  },
+);
+
+export async function applyChanges(asset: AssetResponseDto, closeCallback: CallableFunction) {
+  if (get(hasLossyChanges)) {
+    closeCallback();
+    return; // not supported yet
+  }
+
+  for (const type of editTypes) {
+    if (get(type.changesFlag)) {
+      await type.apply(asset);
+    }
+  }
+
+  setTimeout(closeCallback, 1000);
+}
 
 export function resetGlobalCropStore() {
   cropSettings.set({ x: 0, y: 0, width: 100, height: 100 });

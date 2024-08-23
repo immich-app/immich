@@ -5,9 +5,10 @@
   import { onMount } from 'svelte';
   import CircleIconButton from '../../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
+  import { editTypes, showCancelConfirmDialog, hasLossyChanges, applyChanges } from '$lib/stores/asset-editor.store';
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { shortcut } from '$lib/actions/shortcut';
+  import { get } from 'svelte/store';
 
   export let asset: AssetResponseDto;
 
@@ -21,7 +22,7 @@
 
   export let onUpdateSelectedType: (type: string) => void;
   export let onClose: () => void;
-  export let onSave: () => void;
+  export let onSave: () => Promise<void>;
 
   let selectedType: string = editTypes[0].name;
   $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
@@ -46,9 +47,9 @@
     <button
       type="button"
       class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
-      on:click={() => onSave()}
+      on:click={onSave}
     >
-      {$t('done')}
+      {get(hasLossyChanges) ? $t('save_copy') : $t('save')}
     </button>
   </div>
   <section class="px-4 py-4">

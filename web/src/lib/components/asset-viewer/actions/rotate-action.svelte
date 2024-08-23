@@ -14,6 +14,7 @@
 
   export let asset: AssetResponseDto;
   export let onAction: OnAction;
+  export let refreshEditedAsset: () => Promise<void>;
   export let to: 'left' | 'right';
 
   const handleRotateAsset = async () => {
@@ -29,19 +30,14 @@
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { orientation: newOrientation } });
       asset.exifInfo = { ...asset.exifInfo, orientation: newOrientation };
-      await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name: AssetJobName.RegenerateThumbnail } });
       notificationController.show({
         type: NotificationType.Info,
         message: $t('edited_asset'),
       });
 
       onAction({ type: AssetAction.ROTATE, asset });
-      setTimeout(() => {
-        // force the image to refresh the thumbnail
-        const oldSrc = new URL($photoViewer!.src);
-        oldSrc.searchParams.set('t', Date.now().toString());
-        $photoViewer!.src = oldSrc.toString();
-      }, 500);
+
+      await refreshEditedAsset();
     } catch (error) {
       handleError(error, $t('errors.unable_to_edit_asset'));
     }
