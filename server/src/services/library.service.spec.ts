@@ -296,13 +296,38 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleOfflineCheck', () => {
-    it('should set missing assets offline', async () => {
+    it('should skip missing assets', async () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/'],
       };
 
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      assetMock.getById.mockResolvedValue(null);
+
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SKIPPED);
+
+      expect(assetMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing with already-offline assets', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.offline);
+
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should offline assets no longer on disk or matching exclusion pattern', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+      };
+
       assetMock.getById.mockResolvedValue(assetStub.external);
 
       await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
@@ -310,19 +335,32 @@ describe(LibraryService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
     });
 
-    it('should set an asset outside of import paths as offline', async () => {
+    it('should set assets outside of import paths as offline', async () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/data/user2'],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.external);
-
       storageMock.checkFileExists.mockResolvedValue(true);
 
       await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
       expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+    });
+
+    it('should do nothing with online assets', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.external);
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.update).not.toHaveBeenCalled();
     });
   });
 
