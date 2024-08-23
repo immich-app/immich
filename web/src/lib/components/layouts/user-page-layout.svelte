@@ -3,7 +3,6 @@
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
   import SideBar from '../shared-components/side-bar/side-bar.svelte';
   import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
-  import FolderSideBar from '$lib/components/shared-components/side-bar/folder-side-bar.svelte';
 
   export let hideNavbar = false;
   export let showUploadButton = false;
@@ -11,7 +10,6 @@
   export let description: string | undefined = undefined;
   export let scrollbar = true;
   export let admin = false;
-  export let isFolderView = false;
 
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden';
   $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
@@ -31,8 +29,6 @@
   <slot name="sidebar">
     {#if admin}
       <AdminSideBar />
-    {:else if isFolderView}
-      <FolderSideBar />
     {:else}
       <SideBar />
     {/if}

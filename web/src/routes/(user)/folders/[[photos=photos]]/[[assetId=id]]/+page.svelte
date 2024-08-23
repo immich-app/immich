@@ -1,14 +1,22 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import type { PageData } from './$types';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { type AssetResponseDto } from '@immich/sdk';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowUpLeft, mdiChevronRight, mdiFolder, mdiFolderHome } from '@mdi/js';
+  import { page } from '$app/stores';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+  import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
+  import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
+  import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
-  import { AppRoute } from '$lib/constants';
+  import { foldersStore } from '$lib/stores/folders.store';
+  import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+  import { type AssetResponseDto } from '@immich/sdk';
+  import { mdiArrowUpLeft, mdiChevronRight, mdiFolder, mdiFolderHome } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -16,10 +24,15 @@
   const viewport: Viewport = { width: 0, height: 0 };
 
   $: pathSegments = data.path ? data.path.split('/') : [];
+  $: tree = buildTree($foldersStore?.uniquePaths || []);
+  $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
+
+  onMount(async () => {
+    await foldersStore.fetchUniquePaths();
+  });
 
   const handleNavigation = async (folderName: string) => {
-    const folderFullPath = `${data.path ? data.path + '/' : ''}${folderName}`.replaceAll(/^\/|\/$/g, '');
-    await navigateToView(folderFullPath);
+    await navigateToView(normalizeTreePath(`${data.path || ''}/${folderName}`));
   };
 
   const handleBackNavigation = async () => {
@@ -33,16 +46,25 @@
     await navigateToView(targetPath);
   };
 
-  const navigateToView = async (folderPath: string) => {
+  const getLink = (path: string) => {
     const url = new URL(AppRoute.FOLDERS, window.location.href);
-    url.searchParams.set('folder', folderPath);
-    await goto(url);
+    url.searchParams.set(QueryParameter.PATH, path);
+    return url.href;
   };
 
-  const loadNextPage = () => {};
+  const navigateToView = (path: string) => goto(getLink(path));
 </script>
 
-<UserPageLayout title={data.meta.title} isFolderView>
+<UserPageLayout title={data.meta.title}>
+  <SideBarSection slot="sidebar">
+    <section>
+      <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+      <div class="h-full">
+        <TreeItems items={tree} active={currentPath} {getLink} />
+      </div>
+    </section>
+  </SideBarSection>
+
   <section id="path-summary" class="text-immich-primary dark:text-immich-dark-primary rounded-xl flex">
     {#if data.path}
       <CircleIconButton icon={mdiArrowUpLeft} title="Back" on:click={handleBackNavigation} class="mr-2" padding="2" />
@@ -71,42 +93,20 @@
     </div>
   </section>
 
-  <section id="folder-detail-view" class="mt-2">
-    <!-- Sub Folders -->
-    {#if data.currentFolders.length > 0}
-      <div
-        class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 rounded-2xl border border-gray-100 dark:border-gray-900 max-h-[500px] overflow-auto immich-scrollbar"
-      >
-        {#each data.currentFolders as folder}
-          <button
-            class="flex flex-col place-items-center gap-2 py-2 px-4 hover:bg-immich-primary/10 dark:hover:bg-immich-primary/40 rounded-xl"
-            on:click={() => handleNavigation(folder)}
-            title={folder}
-            type="button"
-          >
-            <Icon path={mdiFolder} class="text-immich-primary dark:text-immich-dark-primary" size={64} />
-            <p class="text-sm dark:text-gray-200 text-nowrap text-ellipsis overflow-clip w-full">{folder}</p>
-          </button>
-        {/each}
-      </div>
-    {/if}
+  <section class="mt-2">
+    <TreeItemThumbnails items={data.currentFolders} icon={mdiFolder} onClick={handleNavigation} />
 
     <!-- Assets -->
-    <div
-      bind:clientHeight={viewport.height}
-      bind:clientWidth={viewport.width}
-      class:mt-4={data.currentFolders.length > 0}
-    >
-      {#if data.pathAssets && data.pathAssets.length > 0}
+    {#if data.pathAssets && data.pathAssets.length > 0}
+      <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
           assets={data.pathAssets}
           bind:selectedAssets
-          on:intersected={loadNextPage}
           {viewport}
           disableAssetSelect={true}
           showAssetName={true}
         />
-      {/if}
-    </div>
+      </div>
+    {/if}
   </section>
 </UserPageLayout>
