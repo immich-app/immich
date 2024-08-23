@@ -1192,18 +1192,9 @@ describe(LibraryService.name, () => {
   });
 
   describe('handleDeleteLibrary', () => {
-    it('should not delete a nonexistent library', async () => {
-      libraryMock.get.mockResolvedValue(null);
-
-      libraryMock.getAssetIds.mockResolvedValue([]);
-      libraryMock.delete.mockImplementation(async () => {});
-
-      await expect(sut.handleDeleteLibrary({ id: libraryStub.externalLibrary1.id })).resolves.toBe(JobStatus.FAILED);
-    });
-
     it('should delete an empty library', async () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      libraryMock.getAssetIds.mockResolvedValue([]);
+      assetMock.getAll.mockResolvedValue({ items: [], hasNextPage: false });
       libraryMock.delete.mockImplementation(async () => {});
 
       await expect(sut.handleDeleteLibrary({ id: libraryStub.externalLibrary1.id })).resolves.toBe(JobStatus.SUCCESS);
@@ -1211,7 +1202,7 @@ describe(LibraryService.name, () => {
 
     it('should delete a library with assets', async () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      libraryMock.getAssetIds.mockResolvedValue([assetStub.image1.id]);
+      assetMock.getAll.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
       libraryMock.delete.mockImplementation(async () => {});
 
       assetMock.getById.mockResolvedValue(assetStub.image1);

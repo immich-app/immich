@@ -339,11 +339,6 @@ export class LibraryService {
   async handleDeleteLibrary(job: IEntityJob): Promise<JobStatus> {
     const libraryId = job.id;
 
-    const library = await this.repository.get(libraryId, true);
-    if (!library) {
-      return JobStatus.SKIPPED;
-    }
-
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination, { libraryId: libraryId, withDeleted: true }),
     );

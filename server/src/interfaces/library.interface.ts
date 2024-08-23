@@ -1,6 +1,5 @@
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { Paginated, PaginationOptions } from 'src/utils/pagination';
 
 export const ILibraryRepository = 'ILibraryRepository';
 
