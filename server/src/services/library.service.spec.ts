@@ -283,7 +283,7 @@ describe(LibraryService.name, () => {
       };
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false, take: 1000 });
+      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 

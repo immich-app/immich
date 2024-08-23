@@ -330,8 +330,8 @@
                   {:else}{owner[index].name}{/if}
                 </td>
 
-                <td class=" text-ellipsis px-4 text-sm">
-                  {#if totalCount[index] == undefined}
+                {#if totalCount[index] == undefined}
+                  <td class=" text-ellipsis px-4 text-sm">
                     <LoadingSpinner size="40" />
                   </td>
                 {:else}
