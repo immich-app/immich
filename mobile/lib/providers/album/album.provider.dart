@@ -46,7 +46,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   Future<Album?> getAlbumByName(String albumName, {bool remoteOnly = false}) =>
       _albumService.getAlbumByName(albumName, remoteOnly);
 
-  /// Creat an album on the server with the same name as the selected album for backup
+  /// Create an album on the server with the same name as the selected album for backup
   /// First this will check if the album already exists on the server with name
   /// If it does not exist, it will create the album on the server
   Future<void> createSyncAlbum(

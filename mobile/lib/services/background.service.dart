@@ -12,6 +12,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
+import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -20,6 +22,9 @@ import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/partner.service.dart';
+import 'package:immich_mobile/services/sync.service.dart';
+import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
@@ -349,6 +354,13 @@ class BackgroundService {
     AppSettingsService settingService = AppSettingsService();
     BackupService backupService = BackupService(apiService, db, settingService);
     AppSettingsService settingsService = AppSettingsService();
+    PartnerService partnerService = PartnerService(apiService, db);
+    HashService hashService = HashService(db, this);
+    SyncService syncSerive = SyncService(db, hashService);
+    UserService userService =
+        UserService(apiService, db, syncSerive, partnerService);
+    AlbumService albumService =
+        AlbumService(apiService, userService, syncSerive, db, backupService);
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
     final excludedAlbums = backupService.excludedAlbumsQuery().findAllSync();
@@ -364,6 +376,7 @@ class BackgroundService {
         settingsService,
         selectedAlbums,
         excludedAlbums,
+        albumService,
       );
       if (backupOk) {
         await Store.delete(StoreKey.backupFailedSince);
@@ -407,6 +420,7 @@ class BackgroundService {
     AppSettingsService settingsService,
     List<BackupAlbum> selectedAlbums,
     List<BackupAlbum> excludedAlbums,
+    AlbumService albumService,
   ) async {
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
     final bool notifyTotalProgress = settingsService
@@ -463,8 +477,11 @@ class BackgroundService {
       toUpload,
       _cancellationToken!,
       pmProgressHandler: pmProgressHandler,
-      onSuccess: (result) =>
-          _onAssetUploaded(result: result, shouldNotify: notifyTotalProgress),
+      onSuccess: (result) => _onAssetUploaded(
+        result: result,
+        shouldNotify: notifyTotalProgress,
+        albumService: albumService,
+      ),
       onProgress: (bytes, totalBytes) =>
           _onProgress(bytes, totalBytes, shouldNotify: notifySingleProgress),
       onCurrentAsset: (asset) =>
@@ -485,8 +502,19 @@ class BackgroundService {
 
   void _onAssetUploaded({
     required SuccessUploadAsset result,
+    required AlbumService albumService,
     bool shouldNotify = false,
-  }) {
+  }) async {
+    final shouldSyncUploadAlbum =
+        Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
+
+    if (shouldSyncUploadAlbum && !result.isDuplicate) {
+      await albumService.syncUploadAlbums(
+        result.candidate.albums,
+        [result.remoteAssetId],
+      );
+    }
+
     if (!shouldNotify) {
       return;
     }

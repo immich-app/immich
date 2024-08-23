@@ -467,6 +467,10 @@ class AlbumService {
           album.remoteId!,
           BulkIdsDto(ids: assetIds),
         );
+
+        print(
+          "------------- finished putting assets $assetIds to album $albumName",
+        );
       }
     }
   }
