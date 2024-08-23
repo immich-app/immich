@@ -13,7 +13,7 @@
   import { foldersStore } from '$lib/stores/folders.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiArrowUpLeft, mdiChevronRight, mdiFolder, mdiFolderHome } from '@mdi/js';
+  import { mdiArrowUpLeft, mdiChevronRight, mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -60,7 +60,12 @@
     <section>
       <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
       <div class="h-full">
-        <TreeItems items={tree} active={currentPath} {getLink} />
+        <TreeItems
+          icons={{ default: mdiFolderOutline, active: mdiFolder }}
+          items={tree}
+          active={currentPath}
+          {getLink}
+        />
       </div>
     </section>
   </SideBarSection>
