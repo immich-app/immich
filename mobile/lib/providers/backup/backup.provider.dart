@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
@@ -449,7 +451,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   Future<void> startBackupProcess() async {
     debugPrint("Start backup process");
-    assert(state.backupProgress == BackUpProgressEnum.idle);
+    // assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
@@ -538,16 +540,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             .toSet(),
       );
     } else {
-      final shouldSyncUploadAlbum =
-          Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
-
-      if (shouldSyncUploadAlbum) {
-        await _albumService.syncUploadAlbums(
-          result.candidate.albums,
-          [result.remoteAssetId],
-        );
-      }
-
       state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {
           ...state.selectedAlbumsBackupAssetsIds,
@@ -583,6 +575,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         progressInFileSpeedUpdateSentBytes: 0,
       );
       _updatePersistentAlbumsSelection();
+    }
+
+    final shouldSyncUploadAlbum =
+        Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
+
+    if (shouldSyncUploadAlbum && !result.isDuplicate) {
+      await _albumService.syncUploadAlbums(
+        result.candidate.albums,
+        [result.remoteAssetId],
+      );
     }
 
     updateDiskInfo();

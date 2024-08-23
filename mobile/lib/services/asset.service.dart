@@ -341,6 +341,7 @@ class AssetService {
         }
       }
 
+      // Upload assets to albums
       for (final entry in assetToAlbums.entries) {
         final albumName = entry.key;
         final assetIds = entry.value;

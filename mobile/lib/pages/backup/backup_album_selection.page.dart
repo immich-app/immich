@@ -121,8 +121,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       }).toSet();
     }
 
-    handleMirrorAlbumToggle(bool isEnable) async {
+    handleSyncAlbumToggle(bool isEnable) async {
       if (isEnable) {
+        await ref.read(albumProvider.notifier).getAllAlbums();
         for (final album in selectedBackupAlbums) {
           await ref.read(albumProvider.notifier).createMirrorAlbum(album.name);
         }
@@ -180,7 +181,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   subtitleStyle: context.textTheme.labelLarge?.copyWith(
                     color: context.colorScheme.primary,
                   ),
-                  onChanged: handleMirrorAlbumToggle,
+                  onChanged: handleSyncAlbumToggle,
                 ),
 
                 ListTile(
