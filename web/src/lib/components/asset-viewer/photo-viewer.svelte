@@ -1,5 +1,7 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
@@ -9,15 +11,13 @@
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
-  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
   import { onDestroy, onMount } from 'svelte';
-
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
@@ -137,7 +137,7 @@
   ]}
 />
 {#if imageError}
-  <div class="h-full flex items-center justify-center">{$t('error_loading_image')}</div>
+  <BrokenAsset square />
 {/if}
 <!-- svelte-ignore a11y-missing-attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
