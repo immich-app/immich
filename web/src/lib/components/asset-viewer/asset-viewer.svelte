@@ -48,7 +48,7 @@
   import VideoViewer from './video-wrapper-viewer.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
   import CropArea from './editor/crop-tool/crop-area.svelte';
-  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
+  import { closeEditorCofirm as closeEditorConfirm } from '$lib/stores/asset-editor.store';
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
@@ -272,7 +272,7 @@
   };
 
   const closeEditor = () => {
-    closeEditorCofirm(() => {
+    closeEditorConfirm(() => {
       isShowEditor = false;
     });
   };
