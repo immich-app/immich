@@ -291,7 +291,7 @@
         <GalleryViewer
           assets={searchResultAssets}
           bind:selectedAssets
-          on:intersected={loadNextPage}
+          onIntersected={loadNextPage}
           showArchiveIcon={true}
           {viewport}
         />

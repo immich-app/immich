@@ -8347,9 +8347,6 @@
             },
             "type": "array"
           },
-          "resized": {
-            "type": "boolean"
-          },
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
@@ -8402,7 +8399,6 @@
           "originalFileName",
           "originalPath",
           "ownerId",
-          "resized",
           "thumbhash",
           "type",
           "updatedAt"
