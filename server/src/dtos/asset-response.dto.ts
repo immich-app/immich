@@ -14,7 +14,6 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { AssetType } from 'src/enum';
-import { getAssetFiles } from 'src/utils/asset.util';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
@@ -23,7 +22,6 @@ export class SanitizedAssetResponseDto {
   type!: AssetType;
   thumbhash!: string | null;
   originalMimeType?: string;
-  resized!: boolean;
   localDateTime!: Date;
   duration!: string;
   livePhotoVideoId?: string | null;
@@ -112,7 +110,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash?.toString('base64') ?? null,
       localDateTime: entity.localDateTime,
-      resized: !!getAssetFiles(entity.files).previewFile,
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
@@ -131,7 +128,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
-    resized: !!getAssetFiles(entity.files).previewFile,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,

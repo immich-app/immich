@@ -710,10 +710,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: AssetBuilderOptions) {
-    const builder = this.repository
-      .createQueryBuilder('asset')
-      .where('asset.isVisible = true')
-      .leftJoinAndSelect('asset.files', 'files');
+    const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
 
     if (options.assetType !== undefined) {
       builder.andWhere('asset.type = :assetType', { assetType: options.assetType });

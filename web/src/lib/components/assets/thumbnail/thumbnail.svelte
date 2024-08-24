@@ -13,7 +13,6 @@
     mdiCameraBurst,
     mdiCheckCircle,
     mdiHeart,
-    mdiImageBrokenVariant,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
@@ -297,20 +296,14 @@
           </div>
         {/if}
 
-        {#if asset.resized}
-          <ImageThumbnail
-            url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
-            altText={$getAltText(asset)}
-            widthStyle="{width}px"
-            heightStyle="{height}px"
-            curve={selected}
-            onComplete={() => (loaded = true)}
-          />
-        {:else}
-          <div class="absolute flex h-full w-full items-center justify-center p-4 z-10">
-            <Icon path={mdiImageBrokenVariant} size="48" />
-          </div>
-        {/if}
+        <ImageThumbnail
+          url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
+          altText={$getAltText(asset)}
+          widthStyle="{width}px"
+          heightStyle="{height}px"
+          curve={selected}
+          onComplete={() => (loaded = true)}
+        />
 
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">
