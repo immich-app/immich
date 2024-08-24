@@ -183,21 +183,21 @@ class BackupService {
 
       // Add album's name to the asset info
       for (final asset in assets) {
-        List<String> albums = [album.name];
+        List<String> albumNames = [album.name];
 
         final existingAsset = candidate.firstWhereOrNull(
           (a) => a.asset.id == asset.id,
         );
 
         if (existingAsset != null) {
-          albums.addAll(existingAsset.albumNames);
+          albumNames.addAll(existingAsset.albumNames);
           candidate.remove(existingAsset);
         }
 
         candidate.add(
           BackupCandidate(
             asset: asset,
-            albumNames: albums,
+            albumNames: albumNames,
           ),
         );
       }
