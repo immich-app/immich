@@ -94,14 +94,10 @@ class BackupService {
       videoOption: const FilterOption(needTitle: true),
     );
 
-    final now = DateTime.now();
-
     final List<AssetPathEntity?> selectedAlbums =
         await _loadAlbumsWithTimeFilter(
       selectedBackupAlbums,
       filter,
-      now,
-      ignoreTimeFilter: ignoreTimeFilter,
     );
 
     if (selectedAlbums.every((e) => e == null)) {
@@ -112,20 +108,16 @@ class BackupService {
         await _loadAlbumsWithTimeFilter(
       excludedBackupAlbums,
       filter,
-      now,
-      ignoreTimeFilter: ignoreTimeFilter,
     );
 
     final Set<BackupCandidate> toAdd = await _fetchAssetsAndUpdateLastBackup(
       selectedAlbums,
       selectedBackupAlbums,
-      now,
     );
 
     final Set<BackupCandidate> toRemove = await _fetchAssetsAndUpdateLastBackup(
       excludedAlbums,
       excludedBackupAlbums,
-      now,
     );
 
     return toAdd.difference(toRemove);
@@ -134,9 +126,7 @@ class BackupService {
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
     List<BackupAlbum> albums,
     FilterOptionGroup filter,
-    DateTime now, {
-    bool ignoreTimeFilter = false,
-  }) async {
+  ) async {
     List<AssetPathEntity?> result = [];
 
     for (BackupAlbum backupAlbum in albums) {
@@ -144,16 +134,7 @@ class BackupService {
         final AssetPathEntity album =
             await AssetPathEntity.obtainPathFromProperties(
           id: backupAlbum.id,
-          optionGroup: filter.copyWith(
-            updateTimeCond: ignoreTimeFilter
-                ? null
-                : DateTimeCond(
-                    // subtract 2 seconds to prevent missing assets due to rounding issues
-                    min: backupAlbum.lastBackup
-                        .subtract(const Duration(seconds: 2)),
-                    max: now,
-                  ),
-          ),
+          optionGroup: filter,
           maxDateTimeToNow: false,
         );
         result.add(album);
@@ -167,7 +148,6 @@ class BackupService {
   Future<Set<BackupCandidate>> _fetchAssetsAndUpdateLastBackup(
     List<AssetPathEntity?> albums,
     List<BackupAlbum> backupAlbums,
-    DateTime now,
   ) async {
     Set<BackupCandidate> candidate = {};
 
@@ -201,9 +181,6 @@ class BackupService {
           ),
         );
       }
-
-      final idx = albums.indexOf(album);
-      backupAlbums[idx].lastBackup = now;
     }
 
     return candidate;
@@ -247,9 +224,14 @@ class BackupService {
       }
     }
 
+    print(
+      "[AAAA] before remove existing: ${candidates.length} - Existing: ${existing.length}",
+    );
     if (existing.isNotEmpty) {
       candidates.removeWhere((c) => existing.contains(c.asset.id));
     }
+
+    print("[AAAA] after remove existing: ${candidates.length}");
 
     return candidates;
   }
@@ -315,6 +297,9 @@ class BackupService {
 
     for (final candidate in candidates) {
       final AssetEntity entity = candidate.asset;
+      print(
+        "[AAAA] Uploading asset: ${entity.id} | albums ${candidate.albumNames}",
+      );
       File? file;
       File? livePhotoFile;
 
@@ -384,9 +369,9 @@ class BackupService {
             Uri.parse('$savedEndpoint/assets'),
             onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
           );
+
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
           baseRequest.headers["Transfer-Encoding"] = "chunked";
-
           baseRequest.fields['deviceAssetId'] = entity.id;
           baseRequest.fields['deviceId'] = deviceId;
           baseRequest.fields['fileCreatedAt'] =
@@ -395,10 +380,7 @@ class BackupService {
               entity.modifiedDateTime.toUtc().toIso8601String();
           baseRequest.fields['isFavorite'] = entity.isFavorite.toString();
           baseRequest.fields['duration'] = entity.videoDuration.toString();
-
           baseRequest.files.add(assetRawUploadData);
-
-          final fileSize = file.lengthSync();
 
           onCurrentAsset(
             CurrentUploadAsset(
@@ -408,7 +390,7 @@ class BackupService {
                   : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
-              fileSize: fileSize,
+              fileSize: file.lengthSync(),
               iCloudAsset: false,
             ),
           );
