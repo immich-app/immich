@@ -201,7 +201,7 @@ export const expandAllAlbumGroups = () => {
   collapseAllAlbumGroups([]);
 };
 
-export const getDeleteAlbumConfirmationDialog = async (album: AlbumResponseDto) => {
+export const confirmAlbumDelete = async (album: AlbumResponseDto) => {
   const $t = get(t);
   const confirmation =
     album.albumName.length > 0

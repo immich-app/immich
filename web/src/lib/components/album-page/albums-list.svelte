@@ -20,7 +20,7 @@
   import {
     getSelectedAlbumGroupOption,
     type AlbumGroup,
-    getDeleteAlbumConfirmationDialog,
+    confirmAlbumDelete,
   } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { user } from '$lib/stores/user.store';
@@ -305,7 +305,7 @@
       return;
     }
 
-    const isConfirmed = await getDeleteAlbumConfirmationDialog(albumToDelete);
+    const isConfirmed = await confirmAlbumDelete(albumToDelete);
 
     if (!isConfirmed) {
       return;

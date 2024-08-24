@@ -84,7 +84,7 @@
   import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
-  import { getDeleteAlbumConfirmationDialog } from '$lib/utils/album-utils';
+  import { confirmAlbumDelete } from '$lib/utils/album-utils';
 
   export let data: PageData;
 
@@ -365,7 +365,7 @@
   };
 
   const handleRemoveAlbum = async () => {
-    const isConfirmed = await getDeleteAlbumConfirmationDialog(album);
+    const isConfirmed = await confirmAlbumDelete(album);
 
     if (!isConfirmed) {
       viewMode = ViewMode.VIEW;
