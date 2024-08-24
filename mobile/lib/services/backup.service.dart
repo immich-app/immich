@@ -190,14 +190,14 @@ class BackupService {
         );
 
         if (existingAsset != null) {
-          albums.addAll(existingAsset.albums);
+          albums.addAll(existingAsset.albumNames);
           candidate.remove(existingAsset);
         }
 
         candidate.add(
           BackupCandidate(
             asset: asset,
-            albums: albums,
+            albumNames: albums,
           ),
         );
       }
@@ -254,6 +254,37 @@ class BackupService {
     return candidates;
   }
 
+  Future<bool> _checkPermissions() async {
+    if (Platform.isAndroid &&
+        !(await pm.Permission.accessMediaLocation.status).isGranted) {
+      // double check that permission is granted here, to guard against
+      // uploading corrupt assets without EXIF information
+      _log.warning("Media location permission is not granted. "
+          "Cannot access original assets for backup.");
+
+      return false;
+    }
+
+    // DON'T KNOW WHY BUT THIS HELPS BACKGROUND BACKUP TO WORK ON IOS
+    if (Platform.isIOS) {
+      await PhotoManager.requestPermissionExtend();
+    }
+
+    return true;
+  }
+
+  /// Upload images before video assets for background tasks
+  /// these are further sorted by using their creation date
+  List<BackupCandidate> sortVideosFirst(List<BackupCandidate> candidates) {
+    return candidates.sorted(
+      (a, b) {
+        final cmp = a.asset.typeInt - b.asset.typeInt;
+        if (cmp != 0) return cmp;
+        return a.asset.createDateTime.compareTo(b.asset.createDateTime);
+      },
+    );
+  }
+
   Future<bool> backupAsset(
     Iterable<BackupCandidate> assetList,
     http.CancellationToken cancelToken, {
@@ -266,42 +297,25 @@ class BackupService {
   }) async {
     final bool isIgnoreIcloudAssets =
         _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
-
-    if (Platform.isAndroid &&
-        !(await pm.Permission.accessMediaLocation.status).isGranted) {
-      // double check that permission is granted here, to guard against
-      // uploading corrupt assets without EXIF information
-      _log.warning("Media location permission is not granted. "
-          "Cannot access original assets for backup.");
-      return false;
-    }
+    final shouldSyncAlbums = _appSetting.getSetting(AppSettingsEnum.syncAlbums);
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
+    bool anyErrors = false;
 
-    // DON'T KNOW WHY BUT THIS HELPS BACKGROUND BACKUP TO WORK ON IOS
-    if (Platform.isIOS) {
-      await PhotoManager.requestPermissionExtend();
+    final hasPermission = await _checkPermissions();
+    if (!hasPermission) {
+      return false;
     }
 
     List<BackupCandidate> candidates = assetList.toList();
 
-    // Upload images before video assets for background tasks
-    // these are further sorted by using their creation date
     if (sortAssets) {
-      candidates = assetList.sorted(
-        (a, b) {
-          final cmp = a.asset.typeInt - b.asset.typeInt;
-          if (cmp != 0) return cmp;
-          return a.asset.createDateTime.compareTo(b.asset.createDateTime);
-        },
-      );
+      candidates = sortVideosFirst(candidates);
     }
 
     for (final candidate in candidates) {
       final AssetEntity entity = candidate.asset;
-
       File? file;
       File? livePhotoFile;
 
@@ -462,12 +476,9 @@ class BackupService {
             ),
           );
 
-          final shouldSyncUploadAlbum =
-              Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
-
-          if (shouldSyncUploadAlbum && !isDuplicate) {
+          if (shouldSyncAlbums && !isDuplicate) {
             await _albumService.syncUploadAlbums(
-              candidate.albums,
+              candidate.albumNames,
               [responseBody['id'] as String],
             );
           }

@@ -335,7 +335,7 @@ class AssetService {
         );
 
         if (asset != null) {
-          for (final albumName in candidate.albums) {
+          for (final albumName in candidate.albumNames) {
             assetToAlbums.putIfAbsent(albumName, () => []).add(asset.remoteId!);
           }
         }

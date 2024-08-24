@@ -1,10 +1,10 @@
 import 'package:photo_manager/photo_manager.dart';
 
 class BackupCandidate {
-  BackupCandidate({required this.asset, required this.albums});
+  BackupCandidate({required this.asset, required this.albumNames});
 
   AssetEntity asset;
-  List<String> albums;
+  List<String> albumNames;
 
   @override
   int get hashCode => asset.hashCode;

@@ -13,7 +13,6 @@ import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
-import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
@@ -38,7 +37,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._authState,
     this._backgroundService,
     this._galleryPermissionNotifier,
-    this._albumService,
     this._db,
     this.ref,
   ) : super(
@@ -87,7 +85,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final AuthenticationState _authState;
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
-  final AlbumService _albumService;
   final Isar _db;
   final Ref ref;
 
@@ -313,21 +310,21 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       // Add album's name to the asset info
       for (final asset in assets) {
-        List<String> albums = [album.name];
+        List<String> albumNames = [album.name];
 
         final existingAsset = assetsFromSelectedAlbums.firstWhereOrNull(
           (a) => a.asset.id == asset.id,
         );
 
         if (existingAsset != null) {
-          albums.addAll(existingAsset.albums);
+          albumNames.addAll(existingAsset.albumNames);
           assetsFromSelectedAlbums.remove(existingAsset);
         }
 
         assetsFromSelectedAlbums.add(
           BackupCandidate(
             asset: asset,
-            albums: albums,
+            albumNames: albumNames,
           ),
         );
       }
@@ -347,7 +344,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       assets.forEach((asset) {
         assetsFromExcludedAlbums.add(
-          BackupCandidate(asset: asset, albums: [album.name]),
+          BackupCandidate(asset: asset, albumNames: [album.name]),
         );
       });
     }
@@ -743,7 +740,6 @@ final backupProvider =
     ref.watch(authenticationProvider),
     ref.watch(backgroundServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
-    ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
     ref,
   );

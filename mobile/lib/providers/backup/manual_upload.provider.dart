@@ -208,7 +208,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         }
 
         Set<BackupCandidate> allUploadAssets = allAssetsFromDevice.nonNulls
-            .map((a) => BackupCandidate(asset: a, albums: []))
+            .map((asset) => BackupCandidate(asset: a, albumNames: []))
             .toSet();
 
         if (allUploadAssets.isEmpty) {

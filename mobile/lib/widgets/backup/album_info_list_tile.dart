@@ -27,7 +27,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
     var assetCount = useState(0);
     final shouldSyncUploadAlbum = ref
         .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.enableSyncUploadAlbum);
+        .getSetting(AppSettingsEnum.syncAlbums);
 
     useEffect(
       () {
