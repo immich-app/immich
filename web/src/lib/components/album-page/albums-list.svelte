@@ -17,11 +17,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import {
-    getSelectedAlbumGroupOption,
-    type AlbumGroup,
-    confirmAlbumDelete,
-  } from '$lib/utils/album-utils';
+  import { getSelectedAlbumGroupOption, type AlbumGroup, confirmAlbumDelete } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { user } from '$lib/stores/user.store';
   import {
