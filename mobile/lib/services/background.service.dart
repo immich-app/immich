@@ -485,7 +485,7 @@ class BackgroundService {
       onCurrentAsset: (asset) =>
           _onSetCurrentBackupAsset(asset, shouldNotify: notifySingleProgress),
       onError: _onBackupError,
-      sortAssets: true,
+      isBackground: true,
     );
 
     if (!ok && !_cancellationToken!.isCancelled) {

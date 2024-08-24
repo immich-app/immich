@@ -275,7 +275,7 @@ class BackupService {
 
   /// Upload images before video assets for background tasks
   /// these are further sorted by using their creation date
-  List<BackupCandidate> sortVideosFirst(List<BackupCandidate> candidates) {
+  List<BackupCandidate> _sortPhotosFirst(List<BackupCandidate> candidates) {
     return candidates.sorted(
       (a, b) {
         final cmp = a.asset.typeInt - b.asset.typeInt;
@@ -286,9 +286,9 @@ class BackupService {
   }
 
   Future<bool> backupAsset(
-    Iterable<BackupCandidate> assetList,
+    Iterable<BackupCandidate> assets,
     http.CancellationToken cancelToken, {
-    bool sortAssets = false,
+    bool isBackground = false,
     PMProgressHandler? pmProgressHandler,
     required void Function(SuccessUploadAsset result) onSuccess,
     required void Function(int bytes, int totalBytes) onProgress,
@@ -308,10 +308,9 @@ class BackupService {
       return false;
     }
 
-    List<BackupCandidate> candidates = assetList.toList();
-
-    if (sortAssets) {
-      candidates = sortVideosFirst(candidates);
+    List<BackupCandidate> candidates = assets.toList();
+    if (isBackground) {
+      candidates = _sortPhotosFirst(candidates);
     }
 
     for (final candidate in candidates) {
