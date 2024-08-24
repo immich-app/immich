@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';

@@ -352,7 +352,6 @@ class BackgroundService {
     ApiService apiService = ApiService();
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
     AppSettingsService settingService = AppSettingsService();
-    BackupService backupService = BackupService(apiService, db, settingService);
     AppSettingsService settingsService = AppSettingsService();
     PartnerService partnerService = PartnerService(apiService, db);
     HashService hashService = HashService(db, this);
@@ -360,7 +359,9 @@ class BackgroundService {
     UserService userService =
         UserService(apiService, db, syncSerive, partnerService);
     AlbumService albumService =
-        AlbumService(apiService, userService, syncSerive, db, backupService);
+        AlbumService(apiService, userService, syncSerive, db);
+    BackupService backupService =
+        BackupService(apiService, db, settingService, albumService);
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
     final excludedAlbums = backupService.excludedAlbumsQuery().findAllSync();
@@ -376,7 +377,6 @@ class BackgroundService {
         settingsService,
         selectedAlbums,
         excludedAlbums,
-        albumService,
       );
       if (backupOk) {
         await Store.delete(StoreKey.backupFailedSince);
@@ -420,7 +420,6 @@ class BackgroundService {
     AppSettingsService settingsService,
     List<BackupAlbum> selectedAlbums,
     List<BackupAlbum> excludedAlbums,
-    AlbumService albumService,
   ) async {
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
     final bool notifyTotalProgress = settingsService
@@ -480,7 +479,6 @@ class BackgroundService {
       onSuccess: (result) => _onAssetUploaded(
         result: result,
         shouldNotify: notifyTotalProgress,
-        albumService: albumService,
       ),
       onProgress: (bytes, totalBytes) =>
           _onProgress(bytes, totalBytes, shouldNotify: notifySingleProgress),
@@ -502,19 +500,8 @@ class BackgroundService {
 
   void _onAssetUploaded({
     required SuccessUploadAsset result,
-    required AlbumService albumService,
     bool shouldNotify = false,
   }) async {
-    final shouldSyncUploadAlbum =
-        Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
-
-    if (shouldSyncUploadAlbum && !result.isDuplicate) {
-      await albumService.syncUploadAlbums(
-        result.candidate.albums,
-        [result.remoteAssetId],
-      );
-    }
-
     if (!shouldNotify) {
       return;
     }

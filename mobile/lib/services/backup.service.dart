@@ -16,6 +16,7 @@ import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:isar/isar.dart';
@@ -30,6 +31,7 @@ final backupServiceProvider = Provider(
     ref.watch(apiServiceProvider),
     ref.watch(dbProvider),
     ref.watch(appSettingsServiceProvider),
+    ref.watch(albumServiceProvider),
   ),
 );
 
@@ -39,11 +41,13 @@ class BackupService {
   final Isar _db;
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
+  final AlbumService _albumService;
 
   BackupService(
     this._apiService,
     this._db,
     this._appSetting,
+    this._albumService,
   );
 
   Future<List<String>?> getDeviceBackupAsset() async {
@@ -457,6 +461,16 @@ class BackupService {
               isDuplicate: isDuplicate,
             ),
           );
+
+          final shouldSyncUploadAlbum =
+              Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
+
+          if (shouldSyncUploadAlbum && !isDuplicate) {
+            await _albumService.syncUploadAlbums(
+              candidate.albums,
+              [responseBody['id'] as String],
+            );
+          }
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");

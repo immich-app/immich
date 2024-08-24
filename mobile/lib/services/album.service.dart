@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -28,7 +27,6 @@ final albumServiceProvider = Provider(
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),
-    ref.watch(backupServiceProvider),
   ),
 );
 
@@ -37,7 +35,6 @@ class AlbumService {
   final UserService _userService;
   final SyncService _syncService;
   final Isar _db;
-  final BackupService _backupService;
   final Logger _log = Logger('AlbumService');
   Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);
@@ -47,8 +44,14 @@ class AlbumService {
     this._userService,
     this._syncService,
     this._db,
-    this._backupService,
   );
+
+  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
+      selectedAlbumsQuery() =>
+          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.select);
+  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
+      excludedAlbumsQuery() =>
+          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Checks all selected device albums for changes of albums and their assets
   /// Updates the local database and returns `true` if there were any changes
@@ -63,9 +66,9 @@ class AlbumService {
     bool changes = false;
     try {
       final List<String> excludedIds =
-          await _backupService.excludedAlbumsQuery().idProperty().findAll();
+          await excludedAlbumsQuery().idProperty().findAll();
       final List<String> selectedIds =
-          await _backupService.selectedAlbumsQuery().idProperty().findAll();
+          await selectedAlbumsQuery().idProperty().findAll();
       if (selectedIds.isEmpty) {
         final numLocal = await _db.albums.where().localIdIsNotNull().count();
         if (numLocal > 0) {
@@ -466,10 +469,6 @@ class AlbumService {
         await _apiService.albumsApi.addAssetsToAlbum(
           album.remoteId!,
           BulkIdsDto(ids: assetIds),
-        );
-
-        print(
-          "------------- finished putting assets $assetIds to album $albumName",
         );
       }
     }

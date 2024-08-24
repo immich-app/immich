@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
