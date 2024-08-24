@@ -576,16 +576,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _updatePersistentAlbumsSelection();
     }
 
-    final shouldSyncUploadAlbum =
-        Store.get<bool>(StoreKey.enableSyncUploadAlbum, false);
-
-    if (shouldSyncUploadAlbum && !result.isDuplicate) {
-      await _albumService.syncUploadAlbums(
-        result.candidate.albums,
-        [result.remoteAssetId],
-      );
-    }
-
     updateDiskInfo();
   }
 
