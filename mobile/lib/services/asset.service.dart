@@ -304,7 +304,6 @@ class AssetService {
       final candidates = await _backupService.buildUploadCandidates(
         selectedAlbums,
         excludedAlbums,
-        ignoreTimeFilter: true,
       );
 
       final duplicates = await _apiService.assetsApi.checkExistingAssets(

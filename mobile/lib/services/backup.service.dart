@@ -83,9 +83,8 @@ class BackupService {
   /// if `ignoreTimeFilter` is set to true, all assets will be returned
   Future<Set<BackupCandidate>> buildUploadCandidates(
     List<BackupAlbum> selectedBackupAlbums,
-    List<BackupAlbum> excludedBackupAlbums, {
-    bool ignoreTimeFilter = false,
-  }) async {
+    List<BackupAlbum> excludedBackupAlbums,
+  ) async {
     final filter = FilterOptionGroup(
       containsPathModified: true,
       orders: [const OrderOption(type: OrderOptionType.updateDate)],
@@ -297,9 +296,6 @@ class BackupService {
 
     for (final candidate in candidates) {
       final AssetEntity entity = candidate.asset;
-      print(
-        "[AAAA] Uploading asset: ${entity.id} | albums ${candidate.albumNames}",
-      );
       File? file;
       File? livePhotoFile;
 
@@ -440,6 +436,7 @@ class BackupService {
               anyErrors = true;
               break;
             }
+
             continue;
           }
 
@@ -468,8 +465,8 @@ class BackupService {
         debugPrint("Backup was cancelled by the user");
         anyErrors = true;
         break;
-      } catch (e) {
-        debugPrint("ERROR backupAsset: ${e.toString()}");
+      } catch (error, stackTrace) {
+        debugPrint("Error backup asset: ${error.toString()}: $stackTrace");
         anyErrors = true;
         continue;
       } finally {
