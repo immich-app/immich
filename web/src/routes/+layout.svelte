@@ -15,13 +15,14 @@
 
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-  import { setKey } from '$lib/utils';
+  import { copyToClipboard, setKey } from '$lib/utils';
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
   import Error from '$lib/components/error.svelte';
+  import { shortcut } from '$lib/actions/shortcut';
 
   let showNavigationLoadingBar = false;
   $: changeTheme($colorTheme);
@@ -48,6 +49,10 @@
     if ($colorTheme.system) {
       handleToggleTheme();
     }
+  };
+
+  const getMyImmichLink = () => {
+    return new URL($page.url.pathname + $page.url.search, 'https://my.immich.app');
   };
 
   onMount(() => {
@@ -117,6 +122,13 @@
     To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
   </FullscreenContainer>
 </noscript>
+
+<svelte:window
+  use:shortcut={{
+    shortcut: { ctrl: true, shift: true, key: 'm' },
+    onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
+  }}
+/>
 
 {#if $page.data.error}
   <Error error={$page.data.error}></Error>
