@@ -25,6 +25,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   export let data: PageData;
 
@@ -84,6 +85,10 @@
       handleError(error, $t('errors.unable_to_restore_trash'));
     }
   };
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if $isMultiSelectState}
@@ -111,7 +116,7 @@
       </LinkButton>
     </div>
 
-    <AssetGrid {assetStore} {assetInteractionStore}>
+    <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>

@@ -79,7 +79,11 @@
       "schedule": "on tuesday"
     }
   ],
-  "ignorePaths": ["mobile/openapi/pubspec.yaml", "mobile/ios", "mobile/android"],
+  "ignorePaths": [
+    "mobile/openapi/pubspec.yaml",
+    "mobile/ios",
+    "mobile/android"
+  ],
   "ignoreDeps": ["http", "intl"],
-  "labels": ["dependencies"]
+  "labels": ["dependencies", "changelog:skip"]
 }

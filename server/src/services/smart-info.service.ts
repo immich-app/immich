@@ -18,6 +18,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -135,7 +136,7 @@ export class SmartInfoService {
       return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -144,13 +145,14 @@ export class SmartInfoService {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       return JobStatus.FAILED;
     }
 
     const embedding = await this.machineLearning.encodeImage(
       machineLearning.url,
-      asset.previewPath,
+      previewFile.path,
       machineLearning.clip,
     );
 
