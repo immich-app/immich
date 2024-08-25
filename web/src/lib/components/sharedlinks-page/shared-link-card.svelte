@@ -41,7 +41,7 @@
     href={isExpired ? undefined : `${AppRoute.SHARE}/${link.key}`}
     class="flex gap-4 w-full py-4"
   >
-    <ShareCover class="size-24 transition-all duration-300 hover:shadow-lg" {link} />
+    <ShareCover class="transition-all duration-300 hover:shadow-lg" {link} />
 
     <div class="flex flex-col justify-between">
       <div class="info-top">

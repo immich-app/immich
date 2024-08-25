@@ -21,6 +21,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
 import { getPreferences } from 'src/utils/preferences';
 
@@ -268,14 +269,15 @@ export class NotificationService {
       return;
     }
 
-    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
-    if (!albumThumbnail?.thumbnailPath) {
+    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId, { files: true });
+    const { thumbnailFile } = getAssetFiles(albumThumbnail?.files);
+    if (!thumbnailFile) {
       return;
     }
 
     return {
-      filename: `album-thumbnail${getFilenameExtension(albumThumbnail.thumbnailPath)}`,
-      path: albumThumbnail.thumbnailPath,
+      filename: `album-thumbnail${getFilenameExtension(thumbnailFile.path)}`,
+      path: thumbnailFile.path,
       cid: 'album-thumbnail',
     };
   }

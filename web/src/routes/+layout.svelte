@@ -13,13 +13,14 @@
   import { loadConfig, serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-  import { setKey } from '$lib/utils';
+  import { copyToClipboard, setKey } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
+  import { shortcut } from '$lib/actions/shortcut';
 
   let showNavigationLoadingBar = false;
   $: changeTheme($colorTheme);
@@ -47,6 +48,10 @@
     if ($colorTheme.system) {
       handleToggleTheme();
     }
+  };
+
+  const getMyImmichLink = () => {
+    return new URL($page.url.pathname + $page.url.search, 'https://my.immich.app');
   };
 
   onMount(() => {
@@ -123,6 +128,12 @@
   </FullscreenContainer>
 </noscript>
 
+<svelte:window
+  use:shortcut={{
+    shortcut: { ctrl: true, shift: true, key: 'm' },
+    onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
+  }}
+/>
 <slot />
 
 {#if showNavigationLoadingBar}

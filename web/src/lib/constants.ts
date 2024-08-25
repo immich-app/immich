@@ -45,6 +45,8 @@ export enum AppRoute {
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
+
+  FOLDERS = '/folders',
 }
 
 export enum ProjectionType {
@@ -78,6 +80,7 @@ export enum QueryParameter {
   SEARCHED_PEOPLE = 'searchedPeople',
   SMART_SEARCH = 'smartSearch',
   PAGE = 'page',
+  PATH = 'path',
 }
 
 export enum OpenSettingQueryParameterValue {

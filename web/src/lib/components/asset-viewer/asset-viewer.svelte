@@ -4,9 +4,9 @@
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
+  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -15,7 +15,6 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { navigate } from '$lib/utils/navigation';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -26,12 +25,13 @@
     getActivities,
     getActivityStatistics,
     getAllAlbums,
+    getStack,
     runAssetJobs,
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
+    type StackResponseDto,
   } from '@immich/sdk';
-  import { mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -41,13 +41,13 @@
   import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
+  import CropArea from './editor/crop-tool/crop-area.svelte';
+  import EditorPanel from './editor/editor-panel.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-  import EditorPanel from './editor/editor-panel.svelte';
-  import CropArea from './editor/crop-tool/crop-area.svelte';
-  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
+
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
@@ -68,13 +68,13 @@
   } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
-    close: void;
+    action: { type: AssetAction; asset: AssetResponseDto };
+    close: { asset: AssetResponseDto };
     next: void;
     previous: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
-  let stackedAssets: AssetResponseDto[] = [];
   let shouldPlayMotionPhoto = false;
   let sharedLink = getSharedLink();
   let enableDetailPanel = asset.hasMetadata;
@@ -92,22 +92,28 @@
 
   $: isFullScreen = fullscreenElement !== null;
 
-  $: {
-    if (asset.stackCount && asset.stack) {
-      stackedAssets = asset.stack;
-      stackedAssets = [...stackedAssets, asset].sort(
-        (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
-      );
+  let stack: StackResponseDto | null = null;
 
-      // if its a stack, add the next stack image in addition to the next asset
-      if (asset.stackCount > 1) {
-        preloadAssets.push(stackedAssets[1]);
-      }
+  const refreshStack = async () => {
+    if (isSharedLink()) {
+      return;
     }
 
-    if (!stackedAssets.map((a) => a.id).includes(asset.id)) {
-      stackedAssets = [];
+    if (asset.stack) {
+      stack = await getStack({ id: asset.stack.id });
     }
+
+    if (!stack?.assets.some(({ id }) => id === asset.id)) {
+      stack = null;
+    }
+
+    if (stack && stack?.assets.length > 1) {
+      preloadAssets.push(stack.assets[1]);
+    }
+  };
+
+  $: if (asset) {
+    handlePromiseError(refreshStack());
   }
 
   $: {
@@ -194,7 +200,6 @@
       websocketEvents.on('on_asset_update', onAssetUpdate),
     );
 
-    await navigate({ targetRoute: 'current', assetId: asset.id });
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -214,15 +219,6 @@
 
     if (!sharedLink) {
       await handleGetAllAlbums();
-    }
-
-    if (asset.stackCount && asset.stack) {
-      stackedAssets = asset.stack;
-      stackedAssets = [...stackedAssets, asset].sort(
-        (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
-      );
-    } else {
-      stackedAssets = [];
     }
   });
 
@@ -270,9 +266,8 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const closeViewer = async () => {
-    dispatch('close');
-    await navigate({ targetRoute: 'current', assetId: null });
+  const closeViewer = () => {
+    dispatch('close', { asset });
   };
 
   const closeEditor = () => {
@@ -380,9 +375,7 @@
     }
   };
 
-  const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
-    const { isMouseOver } = e.detail;
-
+  const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
@@ -392,8 +385,9 @@
         await handleGetAllAlbums();
         break;
       }
+
       case AssetAction.UNSTACK: {
-        await closeViewer();
+        closeViewer();
       }
     }
 
@@ -420,10 +414,9 @@
       <AssetViewerNavBar
         {asset}
         {album}
-        {stackedAssets}
+        {stack}
         showDetailButton={enableDetailPanel}
         showSlideshow={!!assetStore}
-        hasStackChildren={stackedAssets.length > 0}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
         onAction={handleAction}
@@ -487,15 +480,7 @@
       {/key}
     {:else}
       {#key asset.id}
-        {#if !asset.resized}
-          <div class="flex h-full w-full justify-center">
-            <div
-              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-            >
-              <Icon path={mdiImageBrokenVariant} size="25%" />
-            </div>
-          </div>
-        {:else if asset.type === AssetTypeEnum.Image}
+        {#if asset.type === AssetTypeEnum.Image}
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
@@ -568,7 +553,8 @@
     </div>
   {/if}
 
-  {#if stackedAssets.length > 0 && withStacked}
+  {#if stack && withStacked}
+    {@const stackedAssets = stack.assets}
     <div
       id="stack-slideshow"
       class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
@@ -585,12 +571,11 @@
                 ? 'bg-transparent border-2 border-white'
                 : 'bg-gray-700/40'} inline-block hover:bg-transparent"
               asset={stackedAsset}
-              onClick={(stackedAsset, event) => {
-                event.preventDefault();
+              onClick={(stackedAsset) => {
                 asset = stackedAsset;
                 preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
-              on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               readonly
               thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
               showStackedIcon={false}

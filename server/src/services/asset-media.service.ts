@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { AccessCore } from 'src/cores/access.core';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import {
   AssetBulkUploadCheckResponseDto,
@@ -36,6 +35,8 @@ import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { requireAccess, requireUploadAccess } from 'src/utils/access';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -56,10 +57,8 @@ export interface UploadFile {
 
 @Injectable()
 export class AssetMediaService {
-  private access: AccessCore;
-
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -68,7 +67,6 @@ export class AssetMediaService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(AssetMediaService.name);
-    this.access = AccessCore.create(accessRepository);
   }
 
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
@@ -85,7 +83,7 @@ export class AssetMediaService {
   }
 
   canUploadFile({ auth, fieldName, file }: UploadRequest): true {
-    this.access.requireUploadAccess(auth);
+    requireUploadAccess(auth);
 
     const filename = file.originalName;
 
@@ -117,7 +115,7 @@ export class AssetMediaService {
   }
 
   getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
-    this.access.requireUploadAccess(auth);
+    requireUploadAccess(auth);
 
     const originalExtension = extname(file.originalName);
 
@@ -131,7 +129,7 @@ export class AssetMediaService {
   }
 
   getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
-    auth = this.access.requireUploadAccess(auth);
+    auth = requireUploadAccess(auth);
 
     let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
@@ -150,12 +148,12 @@ export class AssetMediaService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await this.access.requirePermission(
+      await requireAccess(this.access, {
         auth,
-        Permission.ASSET_UPLOAD,
+        permission: Permission.ASSET_UPLOAD,
         // do not need an id here, but the interface requires it
-        auth.user.id,
-      );
+        ids: [auth.user.id],
+      });
 
       this.requireQuota(auth, file.size);
 
@@ -194,7 +192,7 @@ export class AssetMediaService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
+      await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
       const asset = (await this.assetRepository.getById(id)) as AssetEntity;
 
       this.requireQuota(auth, file.size);
@@ -218,7 +216,7 @@ export class AssetMediaService {
   }
 
   async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
 
     const asset = await this.findOrFail(id);
     if (!asset) {
@@ -233,14 +231,15 @@ export class AssetMediaService {
   }
 
   async viewThumbnail(auth: AuthDto, id: string, dto: AssetMediaOptionsDto): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.ASSET_VIEW, id);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    let filepath = asset.previewPath;
-    if (size === AssetMediaSize.THUMBNAIL && asset.thumbnailPath) {
-      filepath = asset.thumbnailPath;
+    const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
+    let filepath = previewFile?.path;
+    if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
+      filepath = thumbnailFile.path;
     }
 
     if (!filepath) {
@@ -255,7 +254,7 @@ export class AssetMediaService {
   }
 
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.access.requirePermission(auth, Permission.ASSET_VIEW, id);
+    await requireAccess(this.access, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
     if (!asset) {
@@ -460,7 +459,7 @@ export class AssetMediaService {
   }
 
   private async findOrFail(id: string): Promise<AssetEntity> {
-    const asset = await this.assetRepository.getById(id);
+    const asset = await this.assetRepository.getById(id, { files: true });
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }

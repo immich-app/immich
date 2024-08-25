@@ -86,8 +86,8 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**addUsersToAlbum**](doc//AlbumsApi.md#adduserstoalbum) | **PUT** /albums/{id}/users | 
 *AlbumsApi* | [**createAlbum**](doc//AlbumsApi.md#createalbum) | **POST** /albums | 
 *AlbumsApi* | [**deleteAlbum**](doc//AlbumsApi.md#deletealbum) | **DELETE** /albums/{id} | 
-*AlbumsApi* | [**getAlbumCount**](doc//AlbumsApi.md#getalbumcount) | **GET** /albums/count | 
 *AlbumsApi* | [**getAlbumInfo**](doc//AlbumsApi.md#getalbuminfo) | **GET** /albums/{id} | 
+*AlbumsApi* | [**getAlbumStatistics**](doc//AlbumsApi.md#getalbumstatistics) | **GET** /albums/statistics | 
 *AlbumsApi* | [**getAllAlbums**](doc//AlbumsApi.md#getallalbums) | **GET** /albums | 
 *AlbumsApi* | [**removeAssetFromAlbum**](doc//AlbumsApi.md#removeassetfromalbum) | **DELETE** /albums/{id}/assets | 
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | 
@@ -107,7 +107,6 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | 
 *AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | 
-*AssetsApi* | [**updateStackParent**](doc//AssetsApi.md#updatestackparent) | **PUT** /assets/stack/parent | 
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
@@ -116,16 +115,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
-*DeprecatedApi* | [**getAboutInfo**](doc//DeprecatedApi.md#getaboutinfo) | **GET** /server-info/about | 
 *DeprecatedApi* | [**getPersonAssets**](doc//DeprecatedApi.md#getpersonassets) | **GET** /people/{id}/assets | 
-*DeprecatedApi* | [**getServerConfig**](doc//DeprecatedApi.md#getserverconfig) | **GET** /server-info/config | 
-*DeprecatedApi* | [**getServerFeatures**](doc//DeprecatedApi.md#getserverfeatures) | **GET** /server-info/features | 
-*DeprecatedApi* | [**getServerStatistics**](doc//DeprecatedApi.md#getserverstatistics) | **GET** /server-info/statistics | 
-*DeprecatedApi* | [**getServerVersion**](doc//DeprecatedApi.md#getserverversion) | **GET** /server-info/version | 
-*DeprecatedApi* | [**getStorage**](doc//DeprecatedApi.md#getstorage) | **GET** /server-info/storage | 
-*DeprecatedApi* | [**getSupportedMediaTypes**](doc//DeprecatedApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
-*DeprecatedApi* | [**getTheme**](doc//DeprecatedApi.md#gettheme) | **GET** /server-info/theme | 
-*DeprecatedApi* | [**pingServer**](doc//DeprecatedApi.md#pingserver) | **GET** /server-info/ping | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
@@ -183,17 +173,17 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | 
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | 
 *ServerApi* | [**deleteServerLicense**](doc//ServerApi.md#deleteserverlicense) | **DELETE** /server/license | 
+*ServerApi* | [**getAboutInfo**](doc//ServerApi.md#getaboutinfo) | **GET** /server/about | 
+*ServerApi* | [**getServerConfig**](doc//ServerApi.md#getserverconfig) | **GET** /server/config | 
+*ServerApi* | [**getServerFeatures**](doc//ServerApi.md#getserverfeatures) | **GET** /server/features | 
 *ServerApi* | [**getServerLicense**](doc//ServerApi.md#getserverlicense) | **GET** /server/license | 
+*ServerApi* | [**getServerStatistics**](doc//ServerApi.md#getserverstatistics) | **GET** /server/statistics | 
+*ServerApi* | [**getServerVersion**](doc//ServerApi.md#getserverversion) | **GET** /server/version | 
+*ServerApi* | [**getStorage**](doc//ServerApi.md#getstorage) | **GET** /server/storage | 
+*ServerApi* | [**getSupportedMediaTypes**](doc//ServerApi.md#getsupportedmediatypes) | **GET** /server/media-types | 
+*ServerApi* | [**getTheme**](doc//ServerApi.md#gettheme) | **GET** /server/theme | 
+*ServerApi* | [**pingServer**](doc//ServerApi.md#pingserver) | **GET** /server/ping | 
 *ServerApi* | [**setServerLicense**](doc//ServerApi.md#setserverlicense) | **PUT** /server/license | 
-*ServerInfoApi* | [**getAboutInfo**](doc//ServerInfoApi.md#getaboutinfo) | **GET** /server-info/about | 
-*ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
-*ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
-*ServerInfoApi* | [**getServerStatistics**](doc//ServerInfoApi.md#getserverstatistics) | **GET** /server-info/statistics | 
-*ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
-*ServerInfoApi* | [**getStorage**](doc//ServerInfoApi.md#getstorage) | **GET** /server-info/storage | 
-*ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
-*ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
-*ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *SessionsApi* | [**deleteAllSessions**](doc//SessionsApi.md#deleteallsessions) | **DELETE** /sessions | 
 *SessionsApi* | [**deleteSession**](doc//SessionsApi.md#deletesession) | **DELETE** /sessions/{id} | 
 *SessionsApi* | [**getSessions**](doc//SessionsApi.md#getsessions) | **GET** /sessions | 
@@ -205,6 +195,12 @@ Class | Method | HTTP request | Description
 *SharedLinksApi* | [**removeSharedLink**](doc//SharedLinksApi.md#removesharedlink) | **DELETE** /shared-links/{id} | 
 *SharedLinksApi* | [**removeSharedLinkAssets**](doc//SharedLinksApi.md#removesharedlinkassets) | **DELETE** /shared-links/{id}/assets | 
 *SharedLinksApi* | [**updateSharedLink**](doc//SharedLinksApi.md#updatesharedlink) | **PATCH** /shared-links/{id} | 
+*StacksApi* | [**createStack**](doc//StacksApi.md#createstack) | **POST** /stacks | 
+*StacksApi* | [**deleteStack**](doc//StacksApi.md#deletestack) | **DELETE** /stacks/{id} | 
+*StacksApi* | [**deleteStacks**](doc//StacksApi.md#deletestacks) | **DELETE** /stacks | 
+*StacksApi* | [**getStack**](doc//StacksApi.md#getstack) | **GET** /stacks/{id} | 
+*StacksApi* | [**searchStacks**](doc//StacksApi.md#searchstacks) | **GET** /stacks | 
+*StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | 
 *SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | 
 *SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
@@ -247,6 +243,8 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**searchUsersAdmin**](doc//UsersAdminApi.md#searchusersadmin) | **GET** /admin/users | 
 *UsersAdminApi* | [**updateUserAdmin**](doc//UsersAdminApi.md#updateuseradmin) | **PUT** /admin/users/{id} | 
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | 
+*ViewApi* | [**getAssetsByOriginalPath**](doc//ViewApi.md#getassetsbyoriginalpath) | **GET** /view/folder | 
+*ViewApi* | [**getUniqueOriginalPaths**](doc//ViewApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | 
 
 
 ## Documentation For Models
@@ -260,8 +258,8 @@ Class | Method | HTTP request | Description
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
- - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
+ - [AlbumStatisticsResponseDto](doc//AlbumStatisticsResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
  - [AlbumUserCreateDto](doc//AlbumUserCreateDto.md)
  - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)
@@ -289,6 +287,7 @@ Class | Method | HTTP request | Description
  - [AssetMediaStatus](doc//AssetMediaStatus.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
+ - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
@@ -404,6 +403,9 @@ Class | Method | HTTP request | Description
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
+ - [StackCreateDto](doc//StackCreateDto.md)
+ - [StackResponseDto](doc//StackResponseDto.md)
+ - [StackUpdateDto](doc//StackUpdateDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigImageDto](doc//SystemConfigImageDto.md)
@@ -439,7 +441,6 @@ Class | Method | HTTP request | Description
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
- - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
