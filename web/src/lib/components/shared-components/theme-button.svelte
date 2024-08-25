@@ -7,7 +7,7 @@
 
   $: icon = $colorTheme.value === Theme.LIGHT ? moonPath : sunPath;
   $: viewBox = $colorTheme.value === Theme.LIGHT ? moonViewBox : sunViewBox;
-  $: isPressed = $colorTheme.value === Theme.DARK;
+  $: isDark = $colorTheme.value === Theme.DARK;
 </script>
 
 {#if !$colorTheme.system}
@@ -15,7 +15,8 @@
     title={$t('toggle_theme')}
     {icon}
     {viewBox}
-    aria-pressed={isPressed ? 'true' : 'false'}
+    role="switch"
+    aria-checked={isDark ? 'true' : 'false'}
     on:click={handleToggleTheme}
   />
 {/if}
