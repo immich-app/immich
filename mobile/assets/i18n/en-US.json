@@ -574,6 +574,8 @@
   "version_announcement_overlay_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "viewer_unstack": "Un-Stack",
-  "sync_upload_album_setting_title": "Sync albums",
-  "sync_upload_album_setting_subtitle": "Create and upload your photos and videos to the selected albums on Immich"
+  "sync_albums": "Sync albums",
+  "sync_upload_album_setting_subtitle": "Create and upload your photos and videos to the selected albums on Immich",
+  "sync_albums_manual_subtitle": "Sync all uploaded videos and photos to the selected backup albums",
+  "sync": "Sync"
 }

@@ -172,7 +172,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
                 SettingsSwitchListTile(
                   valueNotifier: enableSyncUploadAlbum,
-                  title: "sync_upload_album_setting_title".tr(),
+                  title: "sync_albums".tr(),
                   subtitle: "sync_upload_album_setting_subtitle".tr(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16),
                   titleStyle: context.textTheme.bodyLarge?.copyWith(
