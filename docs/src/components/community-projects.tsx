@@ -54,6 +54,11 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/giejay/Immich-Android-TV',
   },
   {
+    title: 'Create albums from folders',
+    description: 'A Python script to create albums based on the folder structure of an external library.',
+    url: 'https://github.com/Salvoxia/immich-folder-album-creator',
+  },
+  {
     title: 'Powershell Module PSImmich',
     description: 'Powershell Module for the Immich API',
     url: 'https://github.com/hanpq/PSImmich',
@@ -62,11 +67,6 @@ const projects: CommunityProjectProps[] = [
     title: 'Immich Distribution',
     description: 'Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.',
     url: 'https://immich-distribution.nsg.cc',
-  },
-  {
-    title: 'Support mTLS with Home Assistant',
-    description: 'Allows access to Immich from public IP that did mTLS with Home Assistant.',
-    url: 'https://github.com/Tomasinjo/gatekeeper',
   },
   {
     title: 'Immich Power Tools',
