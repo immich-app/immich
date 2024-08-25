@@ -33,7 +33,7 @@ test.describe('Photo Viewer', () => {
     await page.waitForLoadState('load');
     // this is the spinner
     await page.waitForSelector('svg[role=status]');
-    await expect(page.getByRole('status')).toBeVisible();
+    await expect(page.getByTestId('loading-spinner')).toBeVisible();
   });
 
   test('loads high resolution photo when zoomed', async ({ page }) => {
