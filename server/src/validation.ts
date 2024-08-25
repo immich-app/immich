@@ -167,8 +167,6 @@ export function validateCronExpression(expression: string) {
 
 type IValue = { value: unknown };
 
-export const toStringArray = ({ value }: IValue) => (typeof value === 'string' ? value.split(',') : value);
-
 export const toEmail = ({ value }: IValue) => (typeof value === 'string' ? value.toLowerCase() : value);
 
 export const toSanitized = ({ value }: IValue) => {

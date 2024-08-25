@@ -8131,12 +8131,6 @@
       },
       "AssetMediaCreateDto": {
         "properties": {
-          "albums": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
           "assetData": {
             "format": "binary",
             "type": "string"
@@ -8190,12 +8184,6 @@
       },
       "AssetMediaReplaceDto": {
         "properties": {
-          "albums": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
           "assetData": {
             "format": "binary",
             "type": "string"
