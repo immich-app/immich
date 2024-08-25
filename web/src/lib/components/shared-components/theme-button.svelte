@@ -7,8 +7,15 @@
 
   $: icon = $colorTheme.value === Theme.LIGHT ? moonPath : sunPath;
   $: viewBox = $colorTheme.value === Theme.LIGHT ? moonViewBox : sunViewBox;
+  $: isPressed = $colorTheme.value === Theme.DARK;
 </script>
 
 {#if !$colorTheme.system}
-  <CircleIconButton title={$t('toggle_theme')} {icon} {viewBox} on:click={handleToggleTheme} />
+  <CircleIconButton
+    title={$t('toggle_theme')}
+    {icon}
+    {viewBox}
+    aria-pressed={isPressed ? 'true' : 'false'}
+    on:click={handleToggleTheme}
+  />
 {/if}
