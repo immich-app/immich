@@ -61,6 +61,11 @@ On iOS (iPhone and iPad), the operating system determines if a particular app ca
 No, Immich does not touch the original file under any circumstances,  
 all edited metadata are saved in the companion sidecar file and the database.
 
+### Why do my file names appear as a random string in the file manager?
+
+When Storage Template is off (default) Immich saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names. To retrieve the original file names, you must enable the Storage Template and then run the STORAGE TEMPLATE MIGRATION job.
+It is recommended to read about [Storage Template](https://immich.app/docs/administration/storage-template) before activation.
+
 ### Can I add my existing photo library?
 
 Yes, with an [External Library](/docs/features/libraries.md).
