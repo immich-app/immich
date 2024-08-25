@@ -1341,7 +1341,7 @@ describe(LibraryService.name, () => {
       assetMock.getWith.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
       assetMock.getById.mockResolvedValue(assetStub.image1);
 
-      await expect(sut.handleOfflineRemoval({ id: libraryStub.externalLibrary1.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleRemoveOffline({ id: libraryStub.externalLibrary1.id })).resolves.toBe(JobStatus.SUCCESS);
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         { name: JobName.ASSET_DELETION, data: { id: assetStub.image1.id, deleteOnDisk: false } },

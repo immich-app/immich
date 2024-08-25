@@ -29,7 +29,7 @@ import {
   ILibraryFileJob,
   ILibraryOfflineJob,
   ILibraryRefreshJob,
-  JOBS_ASSET_PAGINATION_SIZE,
+  JOBS_LIBRARY_PAGINATION_SIZE,
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
@@ -250,7 +250,7 @@ export class LibraryService {
   }
 
   private async scanAssets(libraryId: string, assetPaths: string[], ownerId: string, force = false) {
-    this.logger.verbose(`Queuing refresh of ${assetPaths.length} asset(s)`);
+    this.logger.verbose(`Queueing refresh of ${assetPaths.length} asset(s)`);
 
     await this.jobRepository.queueAll(
       assetPaths.map((assetPath) => ({
@@ -339,7 +339,7 @@ export class LibraryService {
   async handleDeleteLibrary(job: IEntityJob): Promise<JobStatus> {
     const libraryId = job.id;
 
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+    const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination, { libraryId: libraryId, withDeleted: true }),
     );
 
@@ -348,6 +348,7 @@ export class LibraryService {
     this.logger.debug(`Will delete all assets in library ${libraryId}`);
     for await (const assets of assetPagination) {
       assetsFound = true;
+      this.logger.debug(`Queueing deletion of ${assets.length} asset(s) in library ${libraryId}`);
       await this.jobRepository.queueAll(
         assets.map((asset) => ({
           name: JobName.ASSET_DELETION,
@@ -488,7 +489,7 @@ export class LibraryService {
       return JobStatus.SKIPPED;
     }
 
-    this.logger.debug(`Queuing metadata extraction for: ${assetPath}`);
+    this.logger.debug(`Queueing metadata extraction for: ${assetPath}`);
 
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: assetId, source: 'upload' } });
 
@@ -513,7 +514,7 @@ export class LibraryService {
   }
 
   async queueRemoveOffline(id: string) {
-    this.logger.verbose(`Removing offline files from library: ${id}`);
+    this.logger.verbose(`Queueing offline file removal from library ${id}`);
     await this.jobRepository.queue({ name: JobName.LIBRARY_REMOVE_OFFLINE, data: { id } });
   }
 
@@ -549,21 +550,19 @@ export class LibraryService {
       return JobStatus.SUCCESS;
     }
 
+    const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
+
+    if (!isInPath) {
+      this.logger.debug(`Asset is no longer in an import path, marking offline: ${asset.originalPath}`);
+      await this.assetRepository.update({ id: asset.id, isOffline: true });
+      return JobStatus.SUCCESS;
+    }
+
     const fileExists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
 
     if (!fileExists) {
       this.logger.debug(
         `Asset is no longer found on disk or is covered by exclusion pattern, marking offline: ${asset.originalPath}`,
-      );
-      await this.assetRepository.update({ id: asset.id, isOffline: true });
-      return JobStatus.SUCCESS;
-    }
-
-    const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
-
-    if (!isInPath) {
-      this.logger.debug(
-        `Asset exists on disk, but is no longer in an import path, marking offline: ${asset.originalPath}`,
       );
       await this.assetRepository.update({ id: asset.id, isOffline: true });
       return JobStatus.SUCCESS;
@@ -576,8 +575,10 @@ export class LibraryService {
     return JobStatus.SUCCESS;
   }
 
-  async handleOfflineRemoval(job: IEntityJob): Promise<JobStatus> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+  async handleRemoveOffline(job: IEntityJob): Promise<JobStatus> {
+    this.logger.debug(`Removing offline assets for library ${job.id}`);
+
+    const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
     );
 
@@ -600,11 +601,10 @@ export class LibraryService {
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<JobStatus> {
     const library = await this.repository.get(job.id);
     if (!library) {
-      this.logger.warn('Library not found');
-      return JobStatus.FAILED;
+      return JobStatus.SKIPPED;
     }
 
-    this.logger.log(`Refreshing library: ${job.id}`);
+    this.logger.log(`Refreshing library ${library.id}`);
 
     const validImportPaths: string[] = [];
 
@@ -613,31 +613,42 @@ export class LibraryService {
       if (validation.isValid) {
         validImportPaths.push(path.normalize(importPath));
       } else {
-        this.logger.error(`Skipping invalid import path: ${importPath}. Reason: ${validation.message}`);
+        this.logger.warn(`Skipping invalid import path: ${importPath}. Reason: ${validation.message}`);
       }
+    }
+
+    if (validImportPaths.length === 0) {
+      this.logger.warn(`No valid import paths found for library ${library.id}`);
     }
 
     const assetsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       exclusionPatterns: library.exclusionPatterns,
-      take: JOBS_ASSET_PAGINATION_SIZE,
+      take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
+    let foundAssets = false;
+
     for await (const assetBatch of assetsOnDisk) {
-      this.logger.log(`Queueing scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
+      foundAssets = true;
+      this.logger.debug(`Queueing scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
       await this.scanAssets(job.id, assetBatch, library.ownerId, job.refreshAllFiles ?? false);
     }
 
-    this.logger.log(
-      `Finished queuing scan of assets on disk for ${library.id}, now queuing online status check of existing assets...`,
+    if (!foundAssets) {
+      this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
+    }
+
+    this.logger.debug(
+      `Finished queueing scan of assets on disk for library ${library.id}, now queueing online status check of existing assets...`,
     );
 
-    const onlineAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+    const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 
     for await (const assets of onlineAssets) {
-      this.logger.log(`Queuing online check of ${assets.values.length} asset(s) in library ${library.id}...`);
+      this.logger.debug(`Queueing online check of ${assets.length} asset(s) in library ${library.id}...`);
       await this.jobRepository.queueAll(
         assets.map((asset) => ({
           name: JobName.LIBRARY_CHECK_OFFLINE,
@@ -646,7 +657,7 @@ export class LibraryService {
       );
     }
 
-    this.logger.log(`Finished checking online status of existing assets for library ${library.id}`);
+    this.logger.log(`Finished queueing online checks of existing assets for library ${library.id}`);
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
