@@ -10,16 +10,18 @@
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
-  import { loadConfig, serverConfig } from '$lib/stores/server-config.store';
+
+  import { serverConfig } from '$lib/stores/server-config.store';
+
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { copyToClipboard, setKey } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
+  import Error from '$lib/components/error.svelte';
   import { shortcut } from '$lib/actions/shortcut';
 
   let showNavigationLoadingBar = false;
@@ -33,8 +35,7 @@
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
-      theme.value =
-        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+      theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
 
     if (theme.value === Theme.LIGHT) {
@@ -55,6 +56,8 @@
   };
 
   onMount(() => {
+    const element = document.querySelector('#stencil');
+    element?.remove();
     // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
@@ -76,14 +79,6 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
-  });
-
-  onMount(async () => {
-    try {
-      await loadConfig();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_connect_to_server'));
-    }
   });
 </script>
 
@@ -134,7 +129,12 @@
     onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
   }}
 />
-<slot />
+
+{#if $page.data.error}
+  <Error error={$page.data.error}></Error>
+{:else}
+  <slot />
+{/if}
 
 {#if showNavigationLoadingBar}
   <NavigationLoadingBar />
