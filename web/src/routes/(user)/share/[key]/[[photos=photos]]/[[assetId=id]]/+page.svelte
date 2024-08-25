@@ -11,8 +11,13 @@
   import type { PageData } from './$types';
   import { setSharedLink } from '$lib/utils';
   import { t } from 'svelte-i18n';
+  import { navigate } from '$lib/utils/navigation';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { tick } from 'svelte';
 
   export let data: PageData;
+
+  let { gridScrollTarget } = assetViewingStore;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
   let { title, description } = meta;
   let isOwned = $user ? $user.id === sharedLink?.userId : false;
@@ -29,6 +34,11 @@
       description =
         sharedLink.description ||
         $t('shared_photos_and_videos_count', { values: { assetCount: sharedLink.assets.length } });
+      await tick();
+      await navigate(
+        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+        { forceNavigate: true, replaceState: true },
+      );
     } catch (error) {
       handleError(error, $t('errors.unable_to_get_shared_link'));
     }

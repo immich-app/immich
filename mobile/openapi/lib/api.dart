@@ -62,6 +62,7 @@ part 'api/timeline_api.dart';
 part 'api/trash_api.dart';
 part 'api/users_api.dart';
 part 'api/users_admin_api.dart';
+part 'api/view_api.dart';
 
 part 'model/api_key_create_dto.dart';
 part 'model/api_key_create_response_dto.dart';
