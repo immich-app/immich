@@ -18,32 +18,28 @@ class LogDriftRepository implements ILogRepository {
   }
 
   @override
-  Future<void> truncateLogs({int limit = 250}) {
-    return db.transaction(() async {
-      final totalCount = await db.managers.logs.count();
-      if (totalCount > limit) {
-        final rowsToDelete = totalCount - limit;
-        await db.managers.logs
-            .orderBy((o) => o.createdAt.desc())
-            .limit(rowsToDelete)
-            .delete();
-      }
-    });
+  Future<void> truncateLogs({int limit = 250}) async {
+    final totalCount = await db.managers.logs.count();
+    if (totalCount > limit) {
+      final rowsToDelete = totalCount - limit;
+      await db.managers.logs
+          .orderBy((o) => o.createdAt.desc())
+          .limit(rowsToDelete)
+          .delete();
+    }
   }
 
   @override
   FutureOr<bool> add(LogMessage log) async {
     try {
-      await db.transaction(() async {
-        await db.into(db.logs).insert(LogsCompanion.insert(
-              content: log.content,
-              level: log.level,
-              createdAt: Value(log.createdAt),
-              error: Value(log.error),
-              logger: Value(log.logger),
-              stack: Value(log.stack),
-            ));
-      });
+      await db.into(db.logs).insert(LogsCompanion.insert(
+            content: log.content,
+            level: log.level,
+            createdAt: Value(log.createdAt),
+            error: Value(log.error),
+            logger: Value(log.logger),
+            stack: Value(log.stack),
+          ));
       return true;
     } catch (e) {
       debugPrint("Error while adding a log to the DB - $e");

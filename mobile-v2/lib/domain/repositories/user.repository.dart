@@ -23,8 +23,8 @@ class UserDriftRepository with LogContext implements IUserRepository {
   @override
   FutureOr<bool> insertUser(User user) async {
     try {
-      return await db.transaction(() async {
-        await db.into(db.user).insertOnConflictUpdate(UserCompanion.insert(
+      await db.into(db.user).insertOnConflictUpdate(
+            UserCompanion.insert(
               id: user.id,
               name: user.name,
               email: user.email,
@@ -36,9 +36,9 @@ class UserDriftRepository with LogContext implements IUserRepository {
               quotaSizeInBytes: Value(user.quotaSizeInBytes),
               quotaUsageInBytes: Value(user.quotaSizeInBytes),
               updatedAt: Value(user.updatedAt),
-            ));
-        return true;
-      });
+            ),
+          );
+      return true;
     } catch (e, s) {
       log.severe("Cannot insert User into table - $user", e, s);
       return false;

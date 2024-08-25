@@ -1,26 +1,28 @@
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/service_locator.dart';
+import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
-import 'package:openapi/openapi.dart';
+import 'package:openapi/api.dart';
 
 class LoginService with LogContext {
   const LoginService();
 
-  Future<bool> isEndpointAvailable(Uri uri, {Dio? dio}) async {
+  Future<bool> isEndpointAvailable(Uri uri, {ImmichApiClient? client}) async {
     String baseUrl = uri.toString();
 
     if (!baseUrl.endsWith('/api')) {
       baseUrl += '/api';
     }
 
-    final serverAPI =
-        Openapi(dio: dio, basePathOverride: baseUrl, interceptors: [])
-            .getServerApi();
+    final serverAPI = client?.getServerApi() ??
+        ImmichApiClient(endpoint: baseUrl).getServerApi();
     try {
-      await serverAPI.pingServer(validateStatus: (status) => status == 200);
+      await serverAPI.pingServer();
     } catch (e) {
       log.severe("Exception occured while validating endpoint", e);
       return false;
@@ -28,25 +30,24 @@ class LoginService with LogContext {
     return true;
   }
 
-  Future<String> resolveEndpoint(Uri uri, {Dio? dio}) async {
-    final d = dio ?? Dio();
+  Future<String> resolveEndpoint(Uri uri, {Client? client}) async {
     String baseUrl = uri.toString();
+    final d = client ?? ImmichApiClient(endpoint: baseUrl).client;
 
     try {
       // Check for well-known endpoint
       final res = await d.get(
-        "$baseUrl/.well-known/immich",
-        options: Options(
-          headers: {"Accept": "application/json"},
-          validateStatus: (status) => status == 200,
-        ),
+        Uri.parse("$baseUrl/.well-known/immich"),
+        headers: {"Accept": "application/json"},
       );
 
-      final data = jsonDecode(res.data);
-      final endpoint = data['api']['endpoint'].toString();
+      if (res.statusCode == HttpStatus.ok) {
+        final data = await compute(jsonDecode, res.body);
+        final endpoint = data['api']['endpoint'].toString();
 
-      // Full URL is relative to base
-      return endpoint.startsWith('/') ? "$baseUrl$endpoint" : endpoint;
+        // Full URL is relative to base
+        return endpoint.startsWith('/') ? "$baseUrl$endpoint" : endpoint;
+      }
     } catch (e) {
       log.fine("Could not locate /.well-known/immich at $baseUrl", e);
     }
@@ -57,14 +58,12 @@ class LoginService with LogContext {
 
   Future<String?> passwordLogin(String email, String password) async {
     try {
-      final loginResponse = await di<Openapi>().getAuthenticationApi().login(
-        loginCredentialDto: LoginCredentialDto((builder) {
-          builder.email = email;
-          builder.password = password;
-        }),
-      );
+      final loginResponse =
+          await di<ImmichApiClient>().getAuthenticationApi().login(
+                LoginCredentialDto(email: email, password: password),
+              );
 
-      return loginResponse.data?.accessToken;
+      return loginResponse?.accessToken;
     } catch (e, s) {
       log.severe("Exception occured while performing password login", e, s);
     }
@@ -74,16 +73,14 @@ class LoginService with LogContext {
   Future<String?> oAuthLogin() async {
     const String oAuthCallbackSchema = 'app.immich';
 
-    final oAuthApi = di<Openapi>().getOAuthApi();
+    final oAuthApi = di<ImmichApiClient>().getOAuthApi();
 
     try {
       final oAuthUrl = await oAuthApi.startOAuth(
-        oAuthConfigDto: OAuthConfigDto((builder) {
-          builder.redirectUri = "$oAuthCallbackSchema:/";
-        }),
+        OAuthConfigDto(redirectUri: "$oAuthCallbackSchema:/"),
       );
 
-      final oAuthUrlRes = oAuthUrl.data?.url;
+      final oAuthUrlRes = oAuthUrl?.url;
       if (oAuthUrlRes == null) {
         log.severe(
           "oAuth Server URL not available. Kindly ensure oAuth login is enabled in the server",
@@ -97,12 +94,10 @@ class LoginService with LogContext {
       );
 
       final loginResponse = await oAuthApi.finishOAuth(
-        oAuthCallbackDto: OAuthCallbackDto((builder) {
-          builder.url = oAuthCallbackUrl;
-        }),
+        OAuthCallbackDto(url: oAuthCallbackUrl),
       );
 
-      return loginResponse.data?.accessToken;
+      return loginResponse?.accessToken;
     } catch (e) {
       log.severe("Exception occured while performing oauth login", e);
     }

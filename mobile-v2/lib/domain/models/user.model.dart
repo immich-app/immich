@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:openapi/openapi.dart' as api;
+import 'package:openapi/api.dart' as api;
 
 class User {
   const User({

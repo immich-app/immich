@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 enum AssetType {
   // do not change this order!
   other,
@@ -8,10 +6,8 @@ enum AssetType {
   audio,
 }
 
-@immutable
-class LocalAsset {
+class Asset {
   final int id;
-  final String localId;
   final String name;
   final String checksum;
   final int height;
@@ -22,9 +18,8 @@ class LocalAsset {
   final int duration;
   final bool isLivePhoto;
 
-  const LocalAsset({
+  const Asset({
     required this.id,
-    required this.localId,
     required this.name,
     required this.checksum,
     required this.height,
@@ -36,16 +31,36 @@ class LocalAsset {
     required this.isLivePhoto,
   });
 
-  @override
-  String toString() {
-    return 'LocalAsset(id: $id, localId: $localId, name: $name, checksum: $checksum, height: $height, width: $width, type: $type, createdTime: $createdTime, modifiedTime: $modifiedTime, duration: $duration, isLivePhoto: $isLivePhoto)';
+  Asset copyWith({
+    int? id,
+    String? name,
+    String? checksum,
+    int? height,
+    int? width,
+    AssetType? type,
+    DateTime? createdTime,
+    DateTime? modifiedTime,
+    int? duration,
+    bool? isLivePhoto,
+  }) {
+    return Asset(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      checksum: checksum ?? this.checksum,
+      height: height ?? this.height,
+      width: width ?? this.width,
+      type: type ?? this.type,
+      createdTime: createdTime ?? this.createdTime,
+      modifiedTime: modifiedTime ?? this.modifiedTime,
+      duration: duration ?? this.duration,
+      isLivePhoto: isLivePhoto ?? this.isLivePhoto,
+    );
   }
 
-  String toJSON() {
-    return """
+  @override
+  String toString() => """
 {
   "id": $id,
-  "localId": "$localId",
   "name": "$name",
   "checksum": "$checksum",
   "height": $height,
@@ -56,19 +71,26 @@ class LocalAsset {
   "duration": "$duration",
   "isLivePhoto": "$isLivePhoto",
 }""";
-  }
 
   @override
-  bool operator ==(covariant LocalAsset other) {
+  bool operator ==(covariant Asset other) {
     if (identical(this, other)) return true;
 
-    return other.hashCode == hashCode;
+    return other.id == id &&
+        other.name == name &&
+        other.checksum == checksum &&
+        other.height == height &&
+        other.width == width &&
+        other.type == type &&
+        other.createdTime == createdTime &&
+        other.modifiedTime == modifiedTime &&
+        other.duration == duration &&
+        other.isLivePhoto == isLivePhoto;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-        localId.hashCode ^
         name.hashCode ^
         checksum.hashCode ^
         height.hashCode ^

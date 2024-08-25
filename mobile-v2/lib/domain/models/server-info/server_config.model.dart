@@ -1,4 +1,4 @@
-import 'package:openapi/openapi.dart';
+import 'package:openapi/api.dart';
 
 class ServerConfig {
   final String? oauthButtonText;

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
@@ -11,10 +10,9 @@ import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/modules/common/states/server_info/server_feature_config.state.dart';
 import 'package:immich_mobile/presentation/modules/login/models/login_page.model.dart';
 import 'package:immich_mobile/service_locator.dart';
-import 'package:immich_mobile/utils/immich_auth_interceptor.dart';
+import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 import 'package:immich_mobile/utils/snackbar_manager.dart';
-import 'package:openapi/openapi.dart';
 
 class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
   LoginPageCubit() : super(LoginPageState.reset());
@@ -66,7 +64,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
       url = await loginService.resolveEndpoint(uri);
 
       di<IStoreRepository>().set(StoreKey.serverEndpoint, url);
-      await ServiceLocator.registerPostValidationServices(url);
+      ServiceLocator.registerPostValidationServices(url);
 
       // Fetch server features
       await di<ServerFeatureConfigCubit>().getFeatures();
@@ -92,6 +90,9 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
       }
 
       await _postLogin(accessToken);
+    } catch (e, s) {
+      SnackbarManager.showError(t.login.error.error_login);
+      log.severe("Cannot perform password login", e, s);
     } finally {
       emit(state.copyWith(isValidationInProgress: false));
     }
@@ -109,6 +110,9 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
       }
 
       await _postLogin(accessToken);
+    } catch (e, s) {
+      SnackbarManager.showError(t.login.error.error_login_oauth);
+      log.severe("Cannot perform oauth login", e, s);
     } finally {
       emit(state.copyWith(isValidationInProgress: false));
     }
@@ -118,12 +122,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
     await di<IStoreRepository>().set(StoreKey.accessToken, accessToken);
 
     /// Set token to interceptor
-    final interceptor = di<Openapi>()
-            .dio
-            .interceptors
-            .firstWhereOrNull((i) => i is ImmichAuthInterceptor)
-        as ImmichAuthInterceptor?;
-    interceptor?.setAccessToken(accessToken);
+    await di<ImmichApiClient>().init(accessToken: accessToken);
 
     final user = await di<UserService>().getMyUser();
     if (user == null) {
@@ -137,7 +136,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
 
     emit(state.copyWith(
       isValidationInProgress: false,
-      isServerValidated: true,
+      isLoginSuccessful: true,
     ));
   }
 

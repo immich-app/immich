@@ -14,7 +14,6 @@ import 'package:logging/logging.dart';
 class LogManager {
   LogManager._();
   static final LogManager _instance = LogManager._();
-
   // ignore: match-getter-setter-field-names
   static LogManager get I => _instance;
 

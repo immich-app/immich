@@ -32,16 +32,14 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
   @override
   FutureOr<bool> set<T, U>(StoreKey<T, U> key, T value) async {
     try {
-      await db.transaction(() async {
-        final storeValue = key.converter.toPrimitive(value);
-        final intValue = (key.type == int) ? storeValue as int : null;
-        final stringValue = (key.type == String) ? storeValue as String : null;
-        await db.into(db.store).insertOnConflictUpdate(StoreCompanion.insert(
-              id: Value(key.id),
-              intValue: Value(intValue),
-              stringValue: Value(stringValue),
-            ));
-      });
+      final storeValue = key.converter.toPrimitive(value);
+      final intValue = (key.type == int) ? storeValue as int : null;
+      final stringValue = (key.type == String) ? storeValue as String : null;
+      await db.into(db.store).insertOnConflictUpdate(StoreCompanion.insert(
+            id: Value(key.id),
+            intValue: Value(intValue),
+            stringValue: Value(stringValue),
+          ));
       return true;
     } catch (e, s) {
       log.severe("Cannot set store value - ${key.name}; id - ${key.id}", e, s);
@@ -51,9 +49,7 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
 
   @override
   FutureOr<void> delete(StoreKey key) async {
-    return await db.transaction(() async {
-      await db.managers.store.filter((s) => s.id.equals(key.id)).delete();
-    });
+    await db.managers.store.filter((s) => s.id.equals(key.id)).delete();
   }
 
   @override
@@ -66,9 +62,8 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
 
   @override
   FutureOr<void> clearStore() async {
-    return await db.transaction(() async {
-      await db.managers.store.delete();
-    });
+    await db.managers.store.delete();
+    ;
   }
 
   FutureOr<T?> _getValueFromStoreData<T, U>(

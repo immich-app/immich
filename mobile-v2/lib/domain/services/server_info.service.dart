@@ -1,10 +1,11 @@
 import 'package:immich_mobile/domain/models/server-info/server_config.model.dart';
 import 'package:immich_mobile/domain/models/server-info/server_features.model.dart';
+import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
-import 'package:openapi/openapi.dart';
+import 'package:openapi/api.dart';
 
 class ServerInfoService with LogContext {
-  final Openapi _api;
+  final ImmichApiClient _api;
 
   ServerApi get _serverInfo => _api.getServerApi();
 
@@ -12,8 +13,7 @@ class ServerInfoService with LogContext {
 
   Future<ServerFeatures?> getServerFeatures() async {
     try {
-      final response = await _serverInfo.getServerFeatures();
-      final dto = response.data;
+      final dto = await _serverInfo.getServerFeatures();
       if (dto != null) {
         return ServerFeatures.fromDto(dto);
       }
@@ -25,8 +25,7 @@ class ServerInfoService with LogContext {
 
   Future<ServerConfig?> getServerConfig() async {
     try {
-      final response = await _serverInfo.getServerConfig();
-      final dto = response.data;
+      final dto = await _serverInfo.getServerConfig();
       if (dto != null) {
         return ServerConfig.fromDto(dto);
       }

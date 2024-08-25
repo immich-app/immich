@@ -262,22 +262,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-  dio:
-    dependency: "direct main"
-    description:
-      name: dio
-      sha256: "0dfb6b6a1979dac1c1245e17cef824d7b452ea29bd33d3467269f9bef3715fb0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.6.0"
-  dio_web_adapter:
-    dependency: transitive
-    description:
-      name: dio_web_adapter
-      sha256: "33259a9276d6cea88774a0000cfae0d861003497755969c92faa223108620dc8"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   drift:
     dependency: "direct main"
     description:
@@ -451,7 +435,7 @@ packages:
     source: hosted
     version: "2.0.0"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: b9c29a161230ee03d3ccf545097fccd9b87a5264228c5d348202e0f0c28f9010
@@ -618,22 +602,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  one_of:
-    dependency: transitive
-    description:
-      name: one_of
-      sha256: "25fe0fcf181e761c6fcd604caf9d5fdf952321be17584ba81c72c06bdaa511f0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.5.0"
-  one_of_serializer:
-    dependency: transitive
-    description:
-      name: one_of_serializer
-      sha256: "3f3dfb5c1578ba3afef1cb47fcc49e585e797af3f2b6c2cc7ed90aad0c5e7b83"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.5.0"
   openapi:
     dependency: "direct main"
     description:
@@ -801,14 +769,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
-  quiver:
-    dependency: transitive
-    description:
-      name: quiver
-      sha256: b1c1ac5ce6688d77f65f3375a9abb9319b3cb32486bdc7a1e0fdf004d7ba4e47
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.1"
   recase:
     dependency: transitive
     description:

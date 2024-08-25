@@ -1,11 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
 
-class LocalAsset extends Table {
-  const LocalAsset();
+class Asset extends Table {
+  const Asset();
 
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get localId => text().unique()();
+
   TextColumn get name => text()();
   TextColumn get checksum => text().unique()();
   IntColumn get height => integer()();
