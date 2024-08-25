@@ -348,7 +348,6 @@ class AssetService {
         await _albumService.syncUploadAlbums([albumName], assetIds);
       }
     } catch (error, stack) {
-      print(error);
       log.severe("Error while syncing uploaded asset to albums", error, stack);
     }
   }

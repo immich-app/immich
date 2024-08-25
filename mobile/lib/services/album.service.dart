@@ -464,10 +464,7 @@ class AlbumService {
   ) async {
     for (final albumName in albumNames) {
       Album? album = await getAlbumByName(albumName, true);
-
-      if (album == null) {
-        album = await createAlbum(albumName, []);
-      }
+      album ??= await createAlbum(albumName, []);
 
       if (album != null && album.remoteId != null) {
         await _apiService.albumsApi.addAssetsToAlbum(

@@ -223,14 +223,9 @@ class BackupService {
       }
     }
 
-    print(
-      "[AAAA] before remove existing: ${candidates.length} - Existing: ${existing.length}",
-    );
     if (existing.isNotEmpty) {
       candidates.removeWhere((c) => existing.contains(c.asset.id));
     }
-
-    print("[AAAA] after remove existing: ${candidates.length}");
 
     return candidates;
   }

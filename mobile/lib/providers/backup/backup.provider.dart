@@ -342,11 +342,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         end: assetCount,
       );
 
-      assets.forEach((asset) {
+      for (final asset in assets) {
         assetsFromExcludedAlbums.add(
           BackupCandidate(asset: asset, albumNames: [album.name]),
         );
-      });
+      }
     }
 
     final Set<BackupCandidate> allUniqueAssets =

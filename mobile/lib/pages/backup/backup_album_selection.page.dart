@@ -174,7 +174,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   valueNotifier: enableSyncUploadAlbum,
                   title: "sync_albums".tr(),
                   subtitle: "sync_upload_album_setting_subtitle".tr(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   titleStyle: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
