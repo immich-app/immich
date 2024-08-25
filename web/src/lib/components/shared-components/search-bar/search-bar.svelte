@@ -2,7 +2,6 @@
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
-  import { clickOutside } from '$lib/actions/click-outside';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import SearchHistoryBox from './search-history-box.svelte';
   import SearchFilterBox from './search-filter-box.svelte';
@@ -142,7 +141,7 @@
   ]}
 />
 
-<div class="w-full relative" use:clickOutside={{ onOutclick: onFocusOut }} use:focusOutside={{ onFocusOut }}>
+<div class="w-full relative" use:focusOutside={{ onFocusOut }} tabindex="-1">
   <form
     draggable="false"
     autocomplete="off"
@@ -153,7 +152,7 @@
     on:focusin={onFocusIn}
     role="search"
   >
-    <div use:focusOutside={{ onFocusOut: closeDropdown }}>
+    <div use:focusOutside={{ onFocusOut: closeDropdown }} tabindex="-1">
       <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
       <input
         type="text"

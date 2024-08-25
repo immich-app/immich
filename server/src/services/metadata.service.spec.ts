@@ -220,6 +220,29 @@ describe(MetadataService.name, () => {
         assetStub.livePhotoMotionAsset.id,
       );
     });
+
+    it('should search by libraryId', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        {
+          ...assetStub.livePhotoStillAsset,
+          libraryId: 'library-id',
+          exifInfo: { livePhotoCID: 'CID' } as ExifEntity,
+        },
+      ]);
+      assetMock.findLivePhotoMatch.mockResolvedValue(null);
+
+      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
+        JobStatus.SKIPPED,
+      );
+
+      expect(assetMock.findLivePhotoMatch).toHaveBeenCalledWith({
+        ownerId: 'user-id',
+        otherAssetId: 'live-photo-still-asset',
+        livePhotoCID: 'CID',
+        libraryId: 'library-id',
+        type: 'VIDEO',
+      });
+    });
   });
 
   describe('handleQueueMetadataExtraction', () => {

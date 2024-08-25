@@ -13,7 +13,6 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
-import { UpdateStackParentDto } from 'src/dtos/stack.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';
@@ -52,8 +51,8 @@ export class AssetController {
   }
 
   @Post('jobs')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated()
+  @HttpCode(HttpStatus.NO_CONTENT)
   runAssetJobs(@Auth() auth: AuthDto, @Body() dto: AssetJobsDto): Promise<void> {
     return this.service.run(auth, dto);
   }
@@ -70,13 +69,6 @@ export class AssetController {
   @Authenticated()
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
-  }
-
-  @Put('stack/parent')
-  @HttpCode(HttpStatus.OK)
-  @Authenticated()
-  updateStackParent(@Auth() auth: AuthDto, @Body() dto: UpdateStackParentDto): Promise<void> {
-    return this.service.updateStackParent(auth, dto);
   }
 
   @Get(':id')

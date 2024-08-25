@@ -34,7 +34,6 @@ Asset makeAsset({
     isFavorite: false,
     isArchived: false,
     isTrashed: false,
-    stackCount: 0,
     exifInfo: exifInfo,
   );
 }

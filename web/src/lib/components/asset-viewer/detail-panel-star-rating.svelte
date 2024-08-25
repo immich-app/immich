@@ -21,7 +21,7 @@
 </script>
 
 {#if !isSharedLink() && $preferences?.rating?.enabled}
-  <section class="relative flex px-4 pt-2">
+  <section class="px-4 pt-2">
     <StarRating {rating} readOnly={!isOwner} onRating={(rating) => handlePromiseError(handleChangeRating(rating))} />
   </section>
 {/if}

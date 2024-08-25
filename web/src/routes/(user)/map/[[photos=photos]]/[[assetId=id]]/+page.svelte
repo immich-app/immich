@@ -124,7 +124,10 @@
           showNavigation={viewingAssets.length > 1}
           on:next={navigateNext}
           on:previous={navigatePrevious}
-          on:close={() => assetViewingStore.showAssetViewer(false)}
+          on:close={() => {
+            assetViewingStore.showAssetViewer(false);
+            handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+          }}
           isShared={false}
         />
       {/await}

@@ -52,7 +52,7 @@
     mdiEyeOutline,
     mdiPlus,
   } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
@@ -155,6 +155,7 @@
     }
     if (previousPersonId !== data.person.id) {
       handlePromiseError(updateAssetCount());
+      assetStore.destroy();
       assetStore = new AssetStore({
         isArchived: false,
         personId: data.person.id,
@@ -344,6 +345,10 @@
       await goto($page.url);
     }
   };
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
@@ -442,6 +447,7 @@
 <main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
   {#key refreshAssetGrid}
     <AssetGrid
+      enableRouting={true}
       {assetStore}
       {assetInteractionStore}
       isSelectionMode={viewMode === ViewMode.SELECT_PERSON}

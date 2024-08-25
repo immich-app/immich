@@ -3,6 +3,7 @@ import 'package:crop_image/crop_image.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'edit.page.dart';
 import 'package:auto_route/auto_route.dart';
 
@@ -14,7 +15,8 @@ import 'package:auto_route/auto_route.dart';
 @RoutePage()
 class CropImagePage extends HookWidget {
   final Image image;
-  const CropImagePage({super.key, required this.image});
+  final Asset asset;
+  const CropImagePage({super.key, required this.image, required this.asset});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,13 @@ class CropImagePage extends HookWidget {
             ),
             onPressed: () async {
               final croppedImage = await cropController.croppedImage();
-              context.pushRoute(EditImageRoute(image: croppedImage));
+              context.pushRoute(
+                EditImageRoute(
+                  asset: asset,
+                  image: croppedImage,
+                  isEdited: true,
+                ),
+              );
             },
           ),
         ],
