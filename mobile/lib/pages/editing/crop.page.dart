@@ -11,7 +11,7 @@ import 'package:auto_route/auto_route.dart';
 /// This widget uses [HookWidget] to manage its lifecycle and state. It allows
 /// users to crop an image and then navigate to the [EditImagePage] with the
 /// cropped image.
- 
+
 @RoutePage()
 class CropImagePage extends HookWidget {
   final Image image;
