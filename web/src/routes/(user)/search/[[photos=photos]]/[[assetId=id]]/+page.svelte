@@ -40,6 +40,8 @@
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
+  import { afterUpdate, tick } from 'svelte';
+  import { searchScrollYStore } from '$lib/stores/search-scroll.store';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -54,6 +56,7 @@
   let searchResultAlbums: AlbumResponseDto[] = [];
   let searchResultAssets: AssetResponseDto[] = [];
   let isLoading = true;
+  let scrollY = 0;
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -69,6 +72,18 @@
     }
     $preventRaceConditionSearchBar = false;
   };
+
+  // save and restore scroll position
+  afterNavigate(async () => {
+    await tick();
+    window.scrollTo(scrollX, $searchScrollYStore);
+  });
+
+  afterUpdate(() => {
+    if (scrollY) {
+      $searchScrollYStore = scrollY;
+    }
+  });
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
@@ -203,7 +218,7 @@
   }
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
+<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />
 
 <section>
   {#if isMultiSelectionMode}
