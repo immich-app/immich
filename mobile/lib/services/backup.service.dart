@@ -83,8 +83,9 @@ class BackupService {
   /// if `ignoreTimeFilter` is set to true, all assets will be returned
   Future<Set<BackupCandidate>> buildUploadCandidates(
     List<BackupAlbum> selectedBackupAlbums,
-    List<BackupAlbum> excludedBackupAlbums,
-  ) async {
+    List<BackupAlbum> excludedBackupAlbums, {
+    bool useTimeFilter = true,
+  }) async {
     final filter = FilterOptionGroup(
       containsPathModified: true,
       orders: [const OrderOption(type: OrderOptionType.updateDate)],
@@ -99,6 +100,7 @@ class BackupService {
       selectedBackupAlbums,
       filter,
       now,
+      useTimeFilter: useTimeFilter,
     );
 
     if (selectedAlbums.every((e) => e == null)) {
@@ -110,18 +112,21 @@ class BackupService {
       excludedBackupAlbums,
       filter,
       now,
+      useTimeFilter: useTimeFilter,
     );
 
     final Set<BackupCandidate> toAdd = await _fetchAssetsAndUpdateLastBackup(
       selectedAlbums,
       selectedBackupAlbums,
       now,
+      useTimeFilter: useTimeFilter,
     );
 
     final Set<BackupCandidate> toRemove = await _fetchAssetsAndUpdateLastBackup(
       excludedAlbums,
       excludedBackupAlbums,
       now,
+      useTimeFilter: useTimeFilter,
     );
 
     return toAdd.difference(toRemove);
@@ -130,22 +135,28 @@ class BackupService {
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
     List<BackupAlbum> albums,
     FilterOptionGroup filter,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    bool useTimeFilter = true,
+  }) async {
     List<AssetPathEntity?> result = [];
     for (BackupAlbum backupAlbum in albums) {
       try {
+        final optionGroup = useTimeFilter
+            ? filter.copyWith(
+                updateTimeCond: DateTimeCond(
+                  // subtract 2 seconds to prevent missing assets due to rounding issues
+                  min: backupAlbum.lastBackup
+                      .subtract(const Duration(seconds: 2)),
+                  max: now,
+                ),
+              )
+            : filter;
+
         final AssetPathEntity album =
             await AssetPathEntity.obtainPathFromProperties(
           id: backupAlbum.id,
-          optionGroup: filter.copyWith(
-            updateTimeCond: DateTimeCond(
-              // subtract 2 seconds to prevent missing assets due to rounding issues
-              min: backupAlbum.lastBackup.subtract(const Duration(seconds: 2)),
-              max: now,
-            ),
-          ),
-          maxDateTimeToNow: true,
+          optionGroup: optionGroup,
+          maxDateTimeToNow: false,
         );
 
         result.add(album);
@@ -160,8 +171,9 @@ class BackupService {
   Future<Set<BackupCandidate>> _fetchAssetsAndUpdateLastBackup(
     List<AssetPathEntity?> localAlbums,
     List<BackupAlbum> backupAlbums,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    bool useTimeFilter = true,
+  }) async {
     Set<BackupCandidate> candidate = {};
 
     for (int i = 0; i < localAlbums.length; i++) {
@@ -170,8 +182,9 @@ class BackupService {
         continue;
       }
 
-      if (localAlbum.lastModified?.isBefore(backupAlbums[i].lastBackup) ==
-          true) {
+      if (useTimeFilter &&
+          localAlbum.lastModified?.isBefore(backupAlbums[i].lastBackup) ==
+              true) {
         continue;
       }
 

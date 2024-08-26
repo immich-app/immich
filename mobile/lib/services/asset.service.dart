@@ -298,12 +298,15 @@ class AssetService {
 
   Future<void> syncUploadedAssetToAlbums() async {
     try {
-      final selectedAlbums = _backupService.selectedAlbumsQuery().findAllSync();
-      final excludedAlbums = _backupService.excludedAlbumsQuery().findAllSync();
+      final [selectedAlbums, excludedAlbums] = await Future.wait([
+        _backupService.selectedAlbumsQuery().findAll(),
+        _backupService.excludedAlbumsQuery().findAll(),
+      ]);
 
       final candidates = await _backupService.buildUploadCandidates(
         selectedAlbums,
         excludedAlbums,
+        useTimeFilter: false,
       );
 
       final duplicates = await _apiService.assetsApi.checkExistingAssets(
