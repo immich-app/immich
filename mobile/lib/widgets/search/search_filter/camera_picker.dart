@@ -51,10 +51,14 @@ class CameraPicker extends HookConsumerWidget {
       controller: makeTextController,
       leadingIcon: const Icon(Icons.photo_camera_rounded),
       onSelected: (value) {
+        if (value.toString() == selectedMake.value) {
+          return;
+        }
         selectedMake.value = value.toString();
+        modelTextController.value = TextEditingValue.empty;
         onSelect({
           'make': selectedMake.value,
-          'model': selectedModel.value,
+          'model': null,
         });
       },
     );
