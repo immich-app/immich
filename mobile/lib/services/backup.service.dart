@@ -141,7 +141,7 @@ class BackupService {
           optionGroup: filter.copyWith(
             updateTimeCond: DateTimeCond(
               // subtract 2 seconds to prevent missing assets due to rounding issues
-              min: backupAlbum.lastBackup.subtract(Duration(seconds: 2)),
+              min: backupAlbum.lastBackup.subtract(const Duration(seconds: 2)),
               max: now,
             ),
           ),
