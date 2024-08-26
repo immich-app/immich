@@ -2,7 +2,7 @@
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -41,7 +41,7 @@ class BackUpState {
   final Set<AvailableAlbum> excludedBackupAlbums;
 
   /// Assets that are not overlapping in selected backup albums and excluded backup albums
-  final Set<AssetEntity> allUniqueAssets;
+  final Set<BackupCandidate> allUniqueAssets;
 
   /// All assets from the selected albums that have been backup
   final Set<String> selectedAlbumsBackupAssetsIds;
@@ -94,7 +94,7 @@ class BackUpState {
     List<AvailableAlbum>? availableAlbums,
     Set<AvailableAlbum>? selectedBackupAlbums,
     Set<AvailableAlbum>? excludedBackupAlbums,
-    Set<AssetEntity>? allUniqueAssets,
+    Set<BackupCandidate>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
     CurrentUploadAsset? currentUploadAsset,
   }) {
