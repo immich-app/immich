@@ -320,8 +320,9 @@ class AssetService {
 
       await refreshRemoteAssets();
       final remoteAssets = await _db.assets
-          .filter()
+          .where()
           .localIdIsNotNull()
+          .filter()
           .remoteIdIsNotNull()
           .findAll();
 

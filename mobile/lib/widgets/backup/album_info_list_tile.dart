@@ -24,8 +24,8 @@ class AlbumInfoListTile extends HookConsumerWidget {
         ref.watch(backupProvider).selectedBackupAlbums.contains(album);
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(album);
-    var assetCount = useState(0);
-    final shouldSyncUploadAlbum = ref
+    final assetCount = useState(0);
+    final syncAlbum = ref
         .watch(appSettingsServiceProvider)
         .getSetting(AppSettingsEnum.syncAlbums);
 
@@ -104,7 +104,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
             ref.read(backupProvider.notifier).removeAlbumForBackup(album);
           } else {
             ref.read(backupProvider.notifier).addAlbumForBackup(album);
-            if (shouldSyncUploadAlbum) {
+            if (syncAlbum) {
               ref.read(albumProvider.notifier).createSyncAlbum(album.name);
             }
           }
