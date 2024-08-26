@@ -76,7 +76,7 @@
   // save and restore scroll position
   afterNavigate(async () => {
     await tick();
-    window.scrollTo(scrollX, $searchScrollYStore);
+    window.scrollTo(0, $searchScrollYStore);
   });
 
   afterUpdate(() => {
