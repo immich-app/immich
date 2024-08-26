@@ -80,7 +80,7 @@ class BackupService {
           _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
-  /// if `ignoreTimeFilter` is set to true, all assets will be returned
+  /// if `useTimeFilter` is set to true, all assets will be returned
   Future<Set<BackupCandidate>> buildUploadCandidates(
     List<BackupAlbum> selectedBackupAlbums,
     List<BackupAlbum> excludedBackupAlbums, {
