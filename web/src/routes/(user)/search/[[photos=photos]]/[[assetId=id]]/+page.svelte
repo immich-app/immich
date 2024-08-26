@@ -41,7 +41,6 @@
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
   import { afterUpdate, tick } from 'svelte';
-  import { searchScrollYStore } from '$lib/stores/search-scroll.store';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -57,6 +56,7 @@
   let searchResultAssets: AssetResponseDto[] = [];
   let isLoading = true;
   let scrollY = 0;
+  let scrollYHistory = 0;
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -76,7 +76,7 @@
   // save and restore scroll position
   afterUpdate(() => {
     if (scrollY) {
-      $searchScrollYStore = scrollY;
+      scrollYHistory = scrollY;
     }
   });
 
@@ -97,7 +97,7 @@
 
     tick()
       .then(() => {
-        window.scrollTo(0, $searchScrollYStore);
+        window.scrollTo(0, scrollYHistory);
       })
       .catch(() => {
         // do nothing
