@@ -19,6 +19,7 @@ const raw: Record<string, string[]> = {
   '.kdc': ['image/kdc', 'image/x-kodak-kdc'],
   '.mrw': ['image/mrw', 'image/x-minolta-mrw'],
   '.nef': ['image/nef', 'image/x-nikon-nef'],
+  '.nrw': ['image/nrw', 'image/x-nikon-nrw'],
   '.orf': ['image/orf', 'image/x-olympus-orf'],
   '.ori': ['image/ori', 'image/x-olympus-ori'],
   '.pef': ['image/pef', 'image/x-pentax-pef'],
