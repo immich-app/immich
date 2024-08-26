@@ -33,7 +33,7 @@ interface DownloadRequestOptions<T = unknown> {
   onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
-export const initApp = async () => {
+export const initLanguage = async () => {
   const preferenceLang = get(lang);
   for (const { code, loader } of langs) {
     register(code, loader);

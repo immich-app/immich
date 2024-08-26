@@ -28,6 +28,6 @@
     "directory": "open-api/typescript-sdk"
   },
   "volta": {
-    "node": "20.16.0"
+    "node": "20.17.0"
   }
 }
