@@ -329,17 +329,21 @@
                     <LoadingSpinner size="40" />
                   {:else}{owner[index].name}{/if}
                 </td>
-
-                {#if totalCount[index] == undefined}
-                  <td class=" text-ellipsis px-4 text-sm">
+                <td class=" text-ellipsis px-4 text-sm">
+                  {#if totalCount[index] == undefined}
                     <LoadingSpinner size="40" />
-                  </td>
-                {:else}
-                  <td class=" text-ellipsis px-4 text-sm">
+                  {:else}
                     {totalCount[index].toLocaleString($locale)}
-                  </td>
-                  <td class=" text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
-                {/if}
+                  {/if}
+                </td>
+                <td class=" text-ellipsis px-4 text-sm">
+                  {#if diskUsage[index] == undefined}
+                    <LoadingSpinner size="40" />
+                  {:else}
+                    {diskUsage[index]}
+                    {diskUsageUnit[index]}
+                  {/if}
+                </td>
 
                 <td class=" text-ellipsis px-4 text-sm">
                   <ButtonContextMenu
