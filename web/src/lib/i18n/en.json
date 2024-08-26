@@ -498,6 +498,8 @@
   "delete_library": "Delete library",
   "delete_link": "Delete link",
   "delete_shared_link": "Delete shared link",
+  "delete_tag": "Delete tag",
+  "delete_tag_confirmation_prompt": "Are you sure you want to delete {tagName} tag?",
   "delete_user": "Delete user",
   "deleted_shared_link": "Deleted shared link",
   "description": "Description",

@@ -21,11 +21,12 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { mdiChevronRight, mdiPlus, mdiTag, mdiTagMultiple, mdiTagOutline } from '@mdi/js';
+  import { deleteTag, getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import { mdiChevronRight, mdiPlus, mdiTag, mdiTagMultiple, mdiTagOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
   export let data: PageData;
 
@@ -89,6 +90,30 @@
 
     isOpen = false;
   };
+
+  const handleDelete = async () => {
+    if (!tag) {
+      return;
+    }
+
+    const isConfirm = await dialogController.show({
+      title: $t('delete_tag'),
+      prompt: $t('delete_tag_confirmation_prompt', { values: { tagName: tag.value } }),
+      confirmText: $t('delete'),
+      cancelText: $t('cancel'),
+    });
+
+    if (!isConfirm) {
+      return;
+    }
+
+    await deleteTag({ id: tag.id });
+    tags = await getAllTags();
+
+    // navigate to parent
+    const parentPath = pathSegments.slice(0, -1).join('/');
+    await navigateToView(parentPath);
+  };
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={false}>
@@ -108,6 +133,15 @@
         <p class="hidden md:block">{$t('create_tag')}</p>
       </div>
     </LinkButton>
+
+    {#if pathSegments.length > 0 && tag}
+      <LinkButton on:click={handleDelete}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiTrashCanOutline} size="18" />
+          <p class="hidden md:block">{$t('delete_tag')}</p>
+        </div>
+      </LinkButton>
+    {/if}
   </section>
 
   <section
