@@ -67,8 +67,10 @@ class EditImagePage extends ConsumerWidget {
   ) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
-      await PhotoManager.editor.saveImage(imageData,
-          title: "${p.withoutExtension(asset.fileName)}_edited.jpg",);
+      await PhotoManager.editor.saveImage(
+        imageData,
+        title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
+      );
       await ref.read(albumProvider.notifier).getDeviceAlbums();
       Navigator.of(context).popUntil((route) => route.isFirst);
       ImmichToast.show(
