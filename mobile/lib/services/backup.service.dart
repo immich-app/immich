@@ -92,11 +92,13 @@ class BackupService {
       imageOption: const FilterOption(needTitle: true),
       videoOption: const FilterOption(needTitle: true),
     );
+    final now = DateTime.now();
 
     final List<AssetPathEntity?> selectedAlbums =
         await _loadAlbumsWithTimeFilter(
       selectedBackupAlbums,
       filter,
+      now,
     );
 
     if (selectedAlbums.every((e) => e == null)) {
@@ -107,16 +109,19 @@ class BackupService {
         await _loadAlbumsWithTimeFilter(
       excludedBackupAlbums,
       filter,
+      now,
     );
 
     final Set<BackupCandidate> toAdd = await _fetchAssetsAndUpdateLastBackup(
       selectedAlbums,
       selectedBackupAlbums,
+      now,
     );
 
     final Set<BackupCandidate> toRemove = await _fetchAssetsAndUpdateLastBackup(
       excludedAlbums,
       excludedBackupAlbums,
+      now,
     );
 
     return toAdd.difference(toRemove);
@@ -125,44 +130,59 @@ class BackupService {
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
     List<BackupAlbum> albums,
     FilterOptionGroup filter,
+    DateTime now,
   ) async {
     List<AssetPathEntity?> result = [];
-
     for (BackupAlbum backupAlbum in albums) {
       try {
         final AssetPathEntity album =
             await AssetPathEntity.obtainPathFromProperties(
           id: backupAlbum.id,
-          optionGroup: filter,
-          maxDateTimeToNow: false,
+          optionGroup: filter.copyWith(
+            updateTimeCond: DateTimeCond(
+              // subtract 2 seconds to prevent missing assets due to rounding issues
+              min: backupAlbum.lastBackup.subtract(Duration(seconds: 2)),
+              max: now,
+            ),
+          ),
+          maxDateTimeToNow: true,
         );
+
         result.add(album);
       } on StateError {
         // either there are no assets matching the filter criteria OR the album no longer exists
       }
     }
+
     return result;
   }
 
   Future<Set<BackupCandidate>> _fetchAssetsAndUpdateLastBackup(
-    List<AssetPathEntity?> albums,
+    List<AssetPathEntity?> localAlbums,
     List<BackupAlbum> backupAlbums,
+    DateTime now,
   ) async {
     Set<BackupCandidate> candidate = {};
 
-    for (final album in albums) {
-      if (album == null) {
+    for (int i = 0; i < localAlbums.length; i++) {
+      final localAlbum = localAlbums[i];
+      if (localAlbum == null) {
         continue;
       }
 
-      final assets = await album.getAssetListRange(
+      if (localAlbum.lastModified?.isBefore(backupAlbums[i].lastBackup) ==
+          true) {
+        continue;
+      }
+
+      final assets = await localAlbum.getAssetListRange(
         start: 0,
-        end: await album.assetCountAsync,
+        end: await localAlbum.assetCountAsync,
       );
 
       // Add album's name to the asset info
       for (final asset in assets) {
-        List<String> albumNames = [album.name];
+        List<String> albumNames = [localAlbum.name];
 
         final existingAsset = candidate.firstWhereOrNull(
           (a) => a.asset.id == asset.id,
@@ -180,6 +200,8 @@ class BackupService {
           ),
         );
       }
+
+      backupAlbums[i].lastBackup = now;
     }
 
     return candidate;
