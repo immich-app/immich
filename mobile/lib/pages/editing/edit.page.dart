@@ -7,12 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:path/path.dart' as p;
 
 /// A stateless widget that provides functionality for editing an image.
 ///
@@ -64,17 +67,21 @@ class EditImagePage extends ConsumerWidget {
   ) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
-      await PhotoManager.editor.saveImage(
-        imageData,
-        title: "${asset.fileName.split('.').first}_edited.jpg",
-      );
+      await PhotoManager.editor.saveImage(imageData,
+          title: "${p.withoutExtension(asset.fileName)}_edited.jpg",);
       await ref.read(albumProvider.notifier).getDeviceAlbums();
       Navigator.of(context).popUntil((route) => route.isFirst);
+      ImmichToast.show(
+        durationInSecond: 3,
+        context: context,
+        msg: 'Image Saved!',
+        gravity: ToastGravity.CENTER,
+      );
     } catch (e) {
       ImmichToast.show(
         durationInSecond: 6,
         context: context,
-        msg: 'Error: $e',
+        msg: "error_saving_image".tr(args: [e.toString()]),
         gravity: ToastGravity.CENTER,
       );
     }
@@ -87,12 +94,12 @@ class EditImagePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit'),
-        backgroundColor: Theme.of(context).canvasColor,
+        title: Text("edit_image_title".tr()),
+        backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
           icon: Icon(
             Icons.close_rounded,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
             size: 24,
           ),
           onPressed: () =>
@@ -104,15 +111,15 @@ class EditImagePage extends ConsumerWidget {
                 ? () => _saveEditedImage(context, asset, image, ref)
                 : null,
             child: Text(
-              'Save to gallery',
+              "save_to_gallery".tr(),
               style: TextStyle(
-                color: isEdited ? Theme.of(context).primaryColor : Colors.grey,
+                color: isEdited ? context.primaryColor : Colors.grey,
               ),
             ),
           ),
         ],
       ),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: context.scaffoldBackgroundColor,
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -145,7 +152,7 @@ class EditImagePage extends ConsumerWidget {
         height: 70,
         margin: const EdgeInsets.only(bottom: 60, right: 10, left: 10, top: 10),
         decoration: BoxDecoration(
-          color: Theme.of(context).bottomAppBarTheme.color,
+          color: context.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Column(
@@ -165,7 +172,7 @@ class EditImagePage extends ConsumerWidget {
                 );
               },
             ),
-            Text('Crop', style: Theme.of(context).textTheme.displayMedium),
+            Text("crop".tr(), style: context.textTheme.displayMedium),
           ],
         ),
       ),
