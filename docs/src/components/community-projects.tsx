@@ -68,6 +68,16 @@ const projects: CommunityProjectProps[] = [
     description: 'Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.',
     url: 'https://immich-distribution.nsg.cc',
   },
+  {
+    title: 'Immich Kiosk',
+    description: 'Lightweight slideshow to run on kiosk devices and browsers.',
+    url: 'https://github.com/damongolding/immich-kiosk',
+  },
+  {
+    title: 'Immich Power Tools',
+    description: 'An unofficial immich client providing tools to speed up your workflows in Immich to organize your people and albums.',
+    url: 'https://github.com/varun-raj/immich-power-tools',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
