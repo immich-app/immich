@@ -250,8 +250,6 @@ export class LibraryService {
   }
 
   private async scanAssets(libraryId: string, assetPaths: string[], ownerId: string, force = false) {
-    this.logger.verbose(`Queueing refresh of ${assetPaths.length} asset(s)`);
-
     await this.jobRepository.queueAll(
       assetPaths.map((assetPath) => ({
         name: JobName.LIBRARY_SCAN_ASSET,
@@ -627,37 +625,41 @@ export class LibraryService {
       take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
-    let foundAssets = false;
+    let crawledAssets = 0;
 
     for await (const assetBatch of assetsOnDisk) {
-      foundAssets = true;
-      this.logger.debug(`Queueing scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
+      crawledAssets += assetBatch.length;
+      this.logger.debug(`Discovered ${crawledAssets} asset(s) on disk for library ${library.id}...`);
       await this.scanAssets(job.id, assetBatch, library.ownerId, job.refreshAllFiles ?? false);
+      this.logger.verbose(`Queued scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
     }
 
-    if (!foundAssets) {
+    if (crawledAssets) {
+      this.logger.debug(`Finished queueing scan of ${crawledAssets} assets on disk for library ${library.id}`);
+    } else {
       this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
     }
-
-    this.logger.debug(
-      `Finished queueing scan of assets on disk for library ${library.id}, now queueing online status check of existing assets...`,
-    );
 
     const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 
+    let onlineAssetCount = 0;
     for await (const assets of onlineAssets) {
-      this.logger.debug(`Queueing online check of ${assets.length} asset(s) in library ${library.id}...`);
+      onlineAssetCount += assets.length;
+      this.logger.debug(`Discovered ${onlineAssetCount} asset(s) in library ${library.id}...`);
       await this.jobRepository.queueAll(
         assets.map((asset) => ({
           name: JobName.LIBRARY_CHECK_OFFLINE,
           data: { id: asset.id, importPaths: validImportPaths, exclusionPatterns: library.exclusionPatterns },
         })),
       );
+      this.logger.debug(`Queued online check of ${assets.length} asset(s) in library ${library.id}...`);
     }
 
-    this.logger.log(`Finished queueing online checks of existing assets for library ${library.id}`);
+    if (onlineAssetCount) {
+      this.logger.log(`Finished queueing online check of ${onlineAssetCount} assets for library ${library.id}`);
+    }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
