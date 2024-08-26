@@ -74,11 +74,6 @@
   };
 
   // save and restore scroll position
-  afterNavigate(async () => {
-    await tick();
-    window.scrollTo(0, $searchScrollYStore);
-  });
-
   afterUpdate(() => {
     if (scrollY) {
       $searchScrollYStore = scrollY;
@@ -99,6 +94,14 @@
     if (isAlbumsRoute(route)) {
       previousRoute = AppRoute.EXPLORE;
     }
+
+    tick()
+      .then(() => {
+        window.scrollTo(0, $searchScrollYStore);
+      })
+      .catch(() => {
+        // do nothing
+      });
   });
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
