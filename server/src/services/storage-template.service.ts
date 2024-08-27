@@ -89,8 +89,8 @@ export class StorageTemplateService {
     );
   }
 
-  @OnEmit({ event: 'onConfigValidate' })
-  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {
