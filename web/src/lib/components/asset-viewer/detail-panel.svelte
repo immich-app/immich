@@ -158,7 +158,7 @@
   <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
-    <section class="px-4 py-4 text-sm">
+    <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
@@ -473,11 +473,11 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="p-6 dark:text-immich-dark-fg">
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <div class="flex gap-4 py-2 hover:cursor-pointer items-center">
+        <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
