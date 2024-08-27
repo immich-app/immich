@@ -1,13 +1,13 @@
 <script lang="ts">
-  import Badge from '$lib/components/elements/badge.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { isSharedLink } from '$lib/utils';
-  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { mdiPlus } from '@mdi/js';
+  import { getAssetInfo, type AssetResponseDto, type TagResponseDto } from '@immich/sdk';
+  import { mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { tagAssets } from '$lib/utils/asset-utils';
+  import { remoteTag, tagAssets } from '$lib/utils/asset-utils';
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
+  import { fade } from 'svelte/transition';
 
   export let asset: AssetResponseDto;
   export let isOwner: boolean;
@@ -29,6 +29,14 @@
 
     asset = await getAssetInfo({ id: asset.id });
   };
+
+  const handleRemove = async (tagId: string) => {
+    const ids = await remoteTag({ tagIds: [tagId], assetIds: [asset.id] });
+
+    if (ids) {
+      asset = await getAssetInfo({ id: asset.id });
+    }
+  };
 </script>
 
 {#if isOwner && !isSharedLink()}
@@ -38,9 +46,24 @@
     </div>
     <section class="flex flex-wrap pt-2 gap-1">
       {#each tags as tag (tag.id)}
-        <a href={encodeURI(`${AppRoute.TAGS}/?path=${tag.value}`)}>
-          <Badge rounded="full"><span class="text-sm px-1" title={tag.value}>{tag.value}</span></Badge>
-        </a>
+        <div class="flex group transition-all">
+          <a
+            class="inline-block h-min whitespace-nowrap pl-3 pr-1 group-hover:pl-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-immich-primary dark:bg-immich-dark-primary rounded-tl-full rounded-bl-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            href={encodeURI(`${AppRoute.TAGS}/?path=${tag.value}`)}
+          >
+            <p class="text-sm">
+              {tag.value}
+            </p>
+          </a>
+
+          <button
+            class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-tr-full rounded-br-full place-items-center place-content-center pr-2 pl-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            title="Remove tag"
+            on:click={() => handleRemove(tag.id)}
+          >
+            <Icon path={mdiClose} />
+          </button>
+        </div>
       {/each}
       <button
         type="button"

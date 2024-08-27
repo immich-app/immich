@@ -19,6 +19,7 @@ import {
   getDownloadInfo,
   getStack,
   tagAssets as tagAllAssets,
+  untagAssets,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -77,6 +78,26 @@ export const tagAssets = async ({
 
   if (showNotification) {
     notificationController.show({ message: `Tagged ${assetIds.length} assets`, type: NotificationType.Info });
+  }
+
+  return assetIds;
+};
+
+export const remoteTag = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  for (const tagId of tagIds) {
+    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
+  }
+
+  if (showNotification) {
+    notificationController.show({ message: `Remove tag for ${assetIds.length} assets`, type: NotificationType.Info });
   }
 
   return assetIds;

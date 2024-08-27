@@ -13,6 +13,7 @@
   import { fly } from 'svelte/transition';
   import PasswordField from '../password-field.svelte';
   import { t } from 'svelte-i18n';
+  import { onMount, tick } from 'svelte';
 
   export let inputType: SettingInputFieldType;
   export let value: string | number;
@@ -25,7 +26,10 @@
   export let required = false;
   export let disabled = false;
   export let isEdited = false;
+  export let autofocus = false;
   export let passwordAutocomplete: string = 'current-password';
+
+  let input: HTMLInputElement;
 
   const handleChange: FormEventHandler<HTMLInputElement> = (e) => {
     value = e.currentTarget.value;
@@ -41,6 +45,14 @@
       value = newValue;
     }
   };
+
+  onMount(() => {
+    if (autofocus) {
+      tick()
+        .then(() => input?.focus())
+        .catch((_) => {});
+    }
+  });
 </script>
 
 <div class="mb-4 w-full">
@@ -70,6 +82,7 @@
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
     <input
+      bind:this={input}
       class="immich-form-input w-full pb-2"
       aria-describedby={desc ? `${label}-desc` : undefined}
       aria-labelledby="{label}-label"

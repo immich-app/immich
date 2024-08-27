@@ -227,6 +227,7 @@
           label={$t('tag').toUpperCase()}
           bind:value={newTagValue}
           required={true}
+          autofocus={true}
         />
       </div>
     </form>
