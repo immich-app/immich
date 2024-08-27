@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class GalleryAppBar extends ConsumerWidget {
   final Asset asset;
@@ -93,6 +95,45 @@ class GalleryAppBar extends ConsumerWidget {
       );
     }
 
+    showPartnerInfo(Asset asset, User user) {
+      showDialog(
+        context: context,
+        builder: (BuildContext _) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 5,
+            icon: UserCircleAvatar(
+              user: user,
+              radius: 20,
+              size: 30,
+            ).build(context, ref),
+            title: Text(
+              user.name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: const SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text(
+                    "from Partner Sharing",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     handleDownloadAsset() {
       ref.read(imageViewerStateProvider.notifier).downloadAsset(asset, context);
     }
@@ -117,6 +158,7 @@ class GalleryAppBar extends ConsumerWidget {
             onToggleMotionVideo: onToggleMotionVideo,
             onAddToAlbumPressed: () => addToAlbum(asset),
             onActivitiesPressed: handleActivities,
+            onPartnerPressed: showPartnerInfo,
           ),
         ),
       ),

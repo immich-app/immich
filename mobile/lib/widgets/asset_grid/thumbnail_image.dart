@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 import 'package:isar/isar.dart';
 
 class ThumbnailImage extends ConsumerWidget {
@@ -47,6 +50,7 @@ class ThumbnailImage extends ConsumerWidget {
         : context.primaryColor.lighten(amount: 0.8);
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = asset.id == Isar.autoIncrement;
+    final userService = ref.watch(userServiceProvider);
 
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
@@ -206,6 +210,18 @@ class ThumbnailImage extends ConsumerWidget {
               color: Colors.white,
               size: 18,
             ),
+          ),
+        // Not possible to favorite photos belonging to other users, so reuse lower left corner for partner images
+        if (asset.ownerId != Store.get(StoreKey.currentUser).isarId)
+          Positioned(
+            left: 8,
+            bottom: 5,
+            child: UserCircleAvatar(
+              user: userService.lookupUserById(asset.ownerId),
+              radius: 8,
+              size: 18,
+            ).build(context, ref),
+            // userAvatar(context, Store.get(StoreKey.currentUser), radius: 8),
           ),
         if (!asset.isImage) buildVideoIcon(),
         if (asset.stackCount > 0) buildStackIcon(),

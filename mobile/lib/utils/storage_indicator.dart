@@ -12,3 +12,14 @@ IconData storageIcon(Asset asset) {
       return Icons.cloud_done_outlined;
   }
 }
+
+String storageText(Asset asset) {
+  switch (asset.storage) {
+    case AssetState.local:
+      return "On Device (Not backed up)";
+    case AssetState.remote:
+      return "Immich Server only";
+    case AssetState.merged:
+      return "Backed up to Immich Server";
+  }
+}
