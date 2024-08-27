@@ -174,7 +174,7 @@ class TopControlAppBar extends HookConsumerWidget {
           user: user,
           radius: 10,
           size: 20,
-        ).build(context, ref),
+        ).build(context),
       );
     }
 

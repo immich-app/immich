@@ -2,14 +2,13 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/common/transparent_image.dart';
 
 // ignore: must_be_immutable
-class UserCircleAvatar extends ConsumerWidget {
+class UserCircleAvatar extends StatelessWidget {
   final User? user;
   double radius;
   double size;
@@ -22,7 +21,7 @@ class UserCircleAvatar extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (user == null) {
       return Icon(
         Icons.person_off,

@@ -41,6 +41,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
   final int assetsPerRow;
   final double margin;
   final bool showStorageIndicator;
+  final bool showUserThumbnail;
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
   final Future<void> Function()? onRefresh;
@@ -61,6 +62,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
     required this.renderList,
     required this.assetsPerRow,
     required this.showStorageIndicator,
+    required this.showUserThumbnail,
     this.listener,
     this.margin = 5.0,
     this.selectionActive = false,
@@ -187,6 +189,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     final section = widget.renderList.elements[index];
     return _Section(
       showStorageIndicator: widget.showStorageIndicator,
+      showUserThumbnail: widget.showUserThumbnail,
       selectedAssets: _selectedAssets,
       selectionActive: widget.selectionActive,
       sectionIndex: index,
@@ -602,6 +605,7 @@ class _Section extends StatelessWidget {
   final bool showStack;
   final int heroOffset;
   final bool showStorageIndicator;
+  final bool showUserThumbnail;
 
   const _Section({
     required this.section,
@@ -619,6 +623,7 @@ class _Section extends StatelessWidget {
     required this.showStack,
     required this.heroOffset,
     required this.showStorageIndicator,
+    required this.showUserThumbnail,
   });
 
   @override
@@ -681,6 +686,7 @@ class _Section extends StatelessWidget {
                       showStack: showStack,
                       heroOffset: heroOffset,
                       showStorageIndicator: showStorageIndicator,
+                      showUserThumbnail: showUserThumbnail,
                       selectionActive: selectionActive,
                       onSelect: (asset) => selectAssets([asset]),
                       onDeselect: (asset) => deselectAssets([asset]),
@@ -764,6 +770,7 @@ class _AssetRow extends StatelessWidget {
   final RenderList renderList;
   final bool selectionActive;
   final bool showStorageIndicator;
+  final bool showUserThumbnail;
   final int heroOffset;
   final bool showStack;
   final Function(Asset)? onSelect;
@@ -783,6 +790,7 @@ class _AssetRow extends StatelessWidget {
     required this.renderList,
     required this.selectionActive,
     required this.showStorageIndicator,
+    required this.showUserThumbnail,
     required this.heroOffset,
     required this.showStack,
     required this.isSelectionActive,
@@ -860,6 +868,7 @@ class _AssetRow extends StatelessWidget {
                 asset: asset,
                 multiselectEnabled: selectionActive,
                 isSelected: isSelectionActive && selectedAssets.contains(asset),
+                showUserThumbnail: showUserThumbnail,
                 showStorageIndicator: showStorageIndicator,
                 heroOffset: heroOffset,
                 showStack: showStack,

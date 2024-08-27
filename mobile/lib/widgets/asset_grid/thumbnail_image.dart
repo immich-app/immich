@@ -17,6 +17,9 @@ class ThumbnailImage extends ConsumerWidget {
   /// Whether to show the storage indicator icont over the image or not
   final bool showStorageIndicator;
 
+  /// Whether to show the user thumbnail for partner assets over the image or not
+  final bool showUserThumbnail;
+
   /// Whether to show the show stack icon over the image or not
   final bool showStack;
 
@@ -36,6 +39,7 @@ class ThumbnailImage extends ConsumerWidget {
     super.key,
     required this.asset,
     this.showStorageIndicator = true,
+    this.showUserThumbnail = true,
     this.showStack = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
@@ -212,7 +216,8 @@ class ThumbnailImage extends ConsumerWidget {
             ),
           ),
         // Not possible to favorite photos belonging to other users, so reuse lower left corner for partner images
-        if (asset.ownerId != Store.get(StoreKey.currentUser).isarId)
+        if (asset.ownerId != Store.get(StoreKey.currentUser).isarId &&
+            showUserThumbnail)
           Positioned(
             left: 8,
             bottom: 5,
@@ -220,7 +225,7 @@ class ThumbnailImage extends ConsumerWidget {
               user: userService.lookupUserById(asset.ownerId),
               radius: 8,
               size: 18,
-            ).build(context, ref),
+            ).build(context),
             // userAvatar(context, Store.get(StoreKey.currentUser), radius: 8),
           ),
         if (!asset.isImage) buildVideoIcon(),

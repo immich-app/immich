@@ -99,36 +99,50 @@ class GalleryAppBar extends ConsumerWidget {
       showDialog(
         context: context,
         builder: (BuildContext _) {
-          return AlertDialog(
+          return SimpleDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             elevation: 5,
-            icon: UserCircleAvatar(
-              user: user,
-              radius: 20,
-              size: 30,
-            ).build(context, ref),
-            title: Text(
-              user.name,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            title: const Center(
+              heightFactor: 0.8,
+              child: Text(
+                "Partner Sharing",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            content: const SingleChildScrollView(
-              child: ListBody(
-                children: [
-                  Text(
-                    "from Partner Sharing",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
+            children: [
+              SimpleDialogOption(
+                onPressed: () {
+                  // Need to determine if we are viewing from the partner sharing view
+                  // Navigator.of(context, rootNavigator: true).pop();
+                  // context.pushRoute((PartnerDetailRoute(partner: user)));
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    UserCircleAvatar(
+                      user: user,
+                      radius: 15,
+                      size: 30,
+                    ).build(context),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 16.0),
+                      child: Text(
+                        user.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           );
         },
       );

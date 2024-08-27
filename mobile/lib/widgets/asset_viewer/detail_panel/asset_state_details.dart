@@ -36,7 +36,7 @@ class AssetStateInfo extends ConsumerWidget {
               user: user,
               radius: 12,
               size: 30,
-            ).build(context, ref),
+            ).build(context),
       title: Text(
         (user == null) ? storageText(asset) : "From Partner Sharing",
         style: context.textTheme.labelLarge,
