@@ -111,7 +111,7 @@ export enum JobName {
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
-export const JOBS_LIBRARY_PAGINATION_SIZE = 100000;
+export const JOBS_LIBRARY_PAGINATION_SIZE = 100_000;
 
 export interface IBaseJob {
   force?: boolean;
