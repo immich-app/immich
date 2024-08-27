@@ -9,11 +9,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:isar/isar.dart';
@@ -28,6 +31,7 @@ final backupServiceProvider = Provider(
     ref.watch(apiServiceProvider),
     ref.watch(dbProvider),
     ref.watch(appSettingsServiceProvider),
+    ref.watch(albumServiceProvider),
   ),
 );
 
@@ -37,8 +41,14 @@ class BackupService {
   final Isar _db;
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
+  final AlbumService _albumService;
 
-  BackupService(this._apiService, this._db, this._appSetting);
+  BackupService(
+    this._apiService,
+    this._db,
+    this._appSetting,
+    this._albumService,
+  );
 
   Future<List<String>?> getDeviceBackupAsset() async {
     final String deviceId = Store.get(StoreKey.deviceId);
@@ -70,10 +80,12 @@ class BackupService {
           _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
-  Future<List<AssetEntity>> buildUploadCandidates(
+  /// if `useTimeFilter` is set to true, all assets will be returned
+  Future<Set<BackupCandidate>> buildUploadCandidates(
     List<BackupAlbum> selectedBackupAlbums,
-    List<BackupAlbum> excludedBackupAlbums,
-  ) async {
+    List<BackupAlbum> excludedBackupAlbums, {
+    bool useTimeFilter = true,
+  }) async {
     final filter = FilterOptionGroup(
       containsPathModified: true,
       orders: [const OrderOption(type: OrderOptionType.updateDate)],
@@ -82,105 +94,156 @@ class BackupService {
       videoOption: const FilterOption(needTitle: true),
     );
     final now = DateTime.now();
+
     final List<AssetPathEntity?> selectedAlbums =
-        await _loadAlbumsWithTimeFilter(selectedBackupAlbums, filter, now);
+        await _loadAlbumsWithTimeFilter(
+      selectedBackupAlbums,
+      filter,
+      now,
+      useTimeFilter: useTimeFilter,
+    );
+
     if (selectedAlbums.every((e) => e == null)) {
-      return [];
+      return {};
     }
-    final int allIdx = selectedAlbums.indexWhere((e) => e != null && e.isAll);
-    if (allIdx != -1) {
-      final List<AssetPathEntity?> excludedAlbums =
-          await _loadAlbumsWithTimeFilter(excludedBackupAlbums, filter, now);
-      final List<AssetEntity> toAdd = await _fetchAssetsAndUpdateLastBackup(
-        selectedAlbums.slice(allIdx, allIdx + 1),
-        selectedBackupAlbums.slice(allIdx, allIdx + 1),
-        now,
-      );
-      final List<AssetEntity> toRemove = await _fetchAssetsAndUpdateLastBackup(
-        excludedAlbums,
-        excludedBackupAlbums,
-        now,
-      );
-      return toAdd.toSet().difference(toRemove.toSet()).toList();
-    } else {
-      return await _fetchAssetsAndUpdateLastBackup(
-        selectedAlbums,
-        selectedBackupAlbums,
-        now,
-      );
-    }
+
+    final List<AssetPathEntity?> excludedAlbums =
+        await _loadAlbumsWithTimeFilter(
+      excludedBackupAlbums,
+      filter,
+      now,
+      useTimeFilter: useTimeFilter,
+    );
+
+    final Set<BackupCandidate> toAdd = await _fetchAssetsAndUpdateLastBackup(
+      selectedAlbums,
+      selectedBackupAlbums,
+      now,
+      useTimeFilter: useTimeFilter,
+    );
+
+    final Set<BackupCandidate> toRemove = await _fetchAssetsAndUpdateLastBackup(
+      excludedAlbums,
+      excludedBackupAlbums,
+      now,
+      useTimeFilter: useTimeFilter,
+    );
+
+    return toAdd.difference(toRemove);
   }
 
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
     List<BackupAlbum> albums,
     FilterOptionGroup filter,
-    DateTime now,
-  ) async {
+    DateTime now, {
+    bool useTimeFilter = true,
+  }) async {
     List<AssetPathEntity?> result = [];
-    for (BackupAlbum a in albums) {
+    for (BackupAlbum backupAlbum in albums) {
       try {
+        final optionGroup = useTimeFilter
+            ? filter.copyWith(
+                updateTimeCond: DateTimeCond(
+                  // subtract 2 seconds to prevent missing assets due to rounding issues
+                  min: backupAlbum.lastBackup
+                      .subtract(const Duration(seconds: 2)),
+                  max: now,
+                ),
+              )
+            : filter;
+
         final AssetPathEntity album =
             await AssetPathEntity.obtainPathFromProperties(
-          id: a.id,
-          optionGroup: filter.copyWith(
-            updateTimeCond: DateTimeCond(
-              // subtract 2 seconds to prevent missing assets due to rounding issues
-              min: a.lastBackup.subtract(const Duration(seconds: 2)),
-              max: now,
-            ),
-          ),
+          id: backupAlbum.id,
+          optionGroup: optionGroup,
           maxDateTimeToNow: false,
         );
+
         result.add(album);
       } on StateError {
         // either there are no assets matching the filter criteria OR the album no longer exists
       }
     }
+
     return result;
   }
 
-  Future<List<AssetEntity>> _fetchAssetsAndUpdateLastBackup(
-    List<AssetPathEntity?> albums,
+  Future<Set<BackupCandidate>> _fetchAssetsAndUpdateLastBackup(
+    List<AssetPathEntity?> localAlbums,
     List<BackupAlbum> backupAlbums,
-    DateTime now,
-  ) async {
-    List<AssetEntity> result = [];
-    for (int i = 0; i < albums.length; i++) {
-      final AssetPathEntity? a = albums[i];
-      if (a != null &&
-          a.lastModified?.isBefore(backupAlbums[i].lastBackup) != true) {
-        result.addAll(
-          await a.getAssetListRange(start: 0, end: await a.assetCountAsync),
-        );
-        backupAlbums[i].lastBackup = now;
+    DateTime now, {
+    bool useTimeFilter = true,
+  }) async {
+    Set<BackupCandidate> candidate = {};
+
+    for (int i = 0; i < localAlbums.length; i++) {
+      final localAlbum = localAlbums[i];
+      if (localAlbum == null) {
+        continue;
       }
+
+      if (useTimeFilter &&
+          localAlbum.lastModified?.isBefore(backupAlbums[i].lastBackup) ==
+              true) {
+        continue;
+      }
+
+      final assets = await localAlbum.getAssetListRange(
+        start: 0,
+        end: await localAlbum.assetCountAsync,
+      );
+
+      // Add album's name to the asset info
+      for (final asset in assets) {
+        List<String> albumNames = [localAlbum.name];
+
+        final existingAsset = candidate.firstWhereOrNull(
+          (a) => a.asset.id == asset.id,
+        );
+
+        if (existingAsset != null) {
+          albumNames.addAll(existingAsset.albumNames);
+          candidate.remove(existingAsset);
+        }
+
+        candidate.add(
+          BackupCandidate(
+            asset: asset,
+            albumNames: albumNames,
+          ),
+        );
+      }
+
+      backupAlbums[i].lastBackup = now;
     }
-    return result;
+
+    return candidate;
   }
 
   /// Returns a new list of assets not yet uploaded
-  Future<List<AssetEntity>> removeAlreadyUploadedAssets(
-    List<AssetEntity> candidates,
+  Future<Set<BackupCandidate>> removeAlreadyUploadedAssets(
+    Set<BackupCandidate> candidates,
   ) async {
     if (candidates.isEmpty) {
       return candidates;
     }
+
     final Set<String> duplicatedAssetIds = await getDuplicatedAssetIds();
-    candidates = duplicatedAssetIds.isEmpty
-        ? candidates
-        : candidates
-            .whereNot((asset) => duplicatedAssetIds.contains(asset.id))
-            .toList();
+    candidates.removeWhere(
+      (candidate) => duplicatedAssetIds.contains(candidate.asset.id),
+    );
+
     if (candidates.isEmpty) {
       return candidates;
     }
+
     final Set<String> existing = {};
     try {
       final String deviceId = Store.get(StoreKey.deviceId);
       final CheckExistingAssetsResponseDto? duplicates =
           await _apiService.assetsApi.checkExistingAssets(
         CheckExistingAssetsDto(
-          deviceAssetIds: candidates.map((e) => e.id).toList(),
+          deviceAssetIds: candidates.map((c) => c.asset.id).toList(),
           deviceId: deviceId,
         ),
       );
@@ -194,55 +257,75 @@ class BackupService {
         existing.addAll(allAssetsInDatabase);
       }
     }
-    return existing.isEmpty
-        ? candidates
-        : candidates.whereNot((e) => existing.contains(e.id)).toList();
+
+    if (existing.isNotEmpty) {
+      candidates.removeWhere((c) => existing.contains(c.asset.id));
+    }
+
+    return candidates;
   }
 
-  Future<bool> backupAsset(
-    Iterable<AssetEntity> assetList,
-    http.CancellationToken cancelToken,
-    PMProgressHandler? pmProgressHandler,
-    Function(String, String, bool) uploadSuccessCb,
-    Function(int, int) uploadProgressCb,
-    Function(CurrentUploadAsset) setCurrentUploadAssetCb,
-    Function(ErrorUploadAsset) errorCb, {
-    bool sortAssets = false,
-  }) async {
-    final bool isIgnoreIcloudAssets =
-        _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
-
+  Future<bool> _checkPermissions() async {
     if (Platform.isAndroid &&
         !(await pm.Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
       // uploading corrupt assets without EXIF information
       _log.warning("Media location permission is not granted. "
           "Cannot access original assets for backup.");
+
       return false;
     }
-    final String deviceId = Store.get(StoreKey.deviceId);
-    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    bool anyErrors = false;
-    final List<String> duplicatedAssetIds = [];
 
     // DON'T KNOW WHY BUT THIS HELPS BACKGROUND BACKUP TO WORK ON IOS
     if (Platform.isIOS) {
       await PhotoManager.requestPermissionExtend();
     }
 
-    List<AssetEntity> assetsToUpload = sortAssets
-        // Upload images before video assets
-        // these are further sorted by using their creation date
-        ? assetList.sorted(
-            (a, b) {
-              final cmp = a.typeInt - b.typeInt;
-              if (cmp != 0) return cmp;
-              return a.createDateTime.compareTo(b.createDateTime);
-            },
-          )
-        : assetList.toList();
+    return true;
+  }
 
-    for (var entity in assetsToUpload) {
+  /// Upload images before video assets for background tasks
+  /// these are further sorted by using their creation date
+  List<BackupCandidate> _sortPhotosFirst(List<BackupCandidate> candidates) {
+    return candidates.sorted(
+      (a, b) {
+        final cmp = a.asset.typeInt - b.asset.typeInt;
+        if (cmp != 0) return cmp;
+        return a.asset.createDateTime.compareTo(b.asset.createDateTime);
+      },
+    );
+  }
+
+  Future<bool> backupAsset(
+    Iterable<BackupCandidate> assets,
+    http.CancellationToken cancelToken, {
+    bool isBackground = false,
+    PMProgressHandler? pmProgressHandler,
+    required void Function(SuccessUploadAsset result) onSuccess,
+    required void Function(int bytes, int totalBytes) onProgress,
+    required void Function(CurrentUploadAsset asset) onCurrentAsset,
+    required void Function(ErrorUploadAsset error) onError,
+  }) async {
+    final bool isIgnoreIcloudAssets =
+        _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
+    final shouldSyncAlbums = _appSetting.getSetting(AppSettingsEnum.syncAlbums);
+    final String deviceId = Store.get(StoreKey.deviceId);
+    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+    final List<String> duplicatedAssetIds = [];
+    bool anyErrors = false;
+
+    final hasPermission = await _checkPermissions();
+    if (!hasPermission) {
+      return false;
+    }
+
+    List<BackupCandidate> candidates = assets.toList();
+    if (isBackground) {
+      candidates = _sortPhotosFirst(candidates);
+    }
+
+    for (final candidate in candidates) {
+      final AssetEntity entity = candidate.asset;
       File? file;
       File? livePhotoFile;
 
@@ -257,7 +340,7 @@ class BackupService {
             continue;
           }
 
-          setCurrentUploadAssetCb(
+          onCurrentAsset(
             CurrentUploadAsset(
               id: entity.id,
               fileCreatedAt: entity.createDateTime.year == 1970
@@ -299,23 +382,22 @@ class BackupService {
             }
           }
 
-          var fileStream = file.openRead();
-          var assetRawUploadData = http.MultipartFile(
+          final fileStream = file.openRead();
+          final assetRawUploadData = http.MultipartFile(
             "assetData",
             fileStream,
             file.lengthSync(),
             filename: originalFileName,
           );
 
-          var baseRequest = MultipartRequest(
+          final baseRequest = MultipartRequest(
             'POST',
             Uri.parse('$savedEndpoint/assets'),
-            onProgress: ((bytes, totalBytes) =>
-                uploadProgressCb(bytes, totalBytes)),
+            onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
           );
+
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
           baseRequest.headers["Transfer-Encoding"] = "chunked";
-
           baseRequest.fields['deviceAssetId'] = entity.id;
           baseRequest.fields['deviceId'] = deviceId;
           baseRequest.fields['fileCreatedAt'] =
@@ -324,12 +406,9 @@ class BackupService {
               entity.modifiedDateTime.toUtc().toIso8601String();
           baseRequest.fields['isFavorite'] = entity.isFavorite.toString();
           baseRequest.fields['duration'] = entity.videoDuration.toString();
-
           baseRequest.files.add(assetRawUploadData);
 
-          var fileSize = file.lengthSync();
-
-          setCurrentUploadAssetCb(
+          onCurrentAsset(
             CurrentUploadAsset(
               id: entity.id,
               fileCreatedAt: entity.createDateTime.year == 1970
@@ -337,7 +416,7 @@ class BackupService {
                   : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
-              fileSize: fileSize,
+              fileSize: file.lengthSync(),
               iCloudAsset: false,
             ),
           );
@@ -356,22 +435,23 @@ class BackupService {
             baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          var response = await httpClient.send(
+          final response = await httpClient.send(
             baseRequest,
             cancellationToken: cancelToken,
           );
 
-          var responseBody = jsonDecode(await response.stream.bytesToString());
+          final responseBody =
+              jsonDecode(await response.stream.bytesToString());
 
           if (![200, 201].contains(response.statusCode)) {
-            var error = responseBody;
-            var errorMessage = error['message'] ?? error['error'];
+            final error = responseBody;
+            final errorMessage = error['message'] ?? error['error'];
 
             debugPrint(
               "Error(${error['statusCode']}) uploading ${entity.id} | $originalFileName | Created on ${entity.createDateTime} | ${error['error']}",
             );
 
-            errorCb(
+            onError(
               ErrorUploadAsset(
                 asset: entity,
                 id: entity.id,
@@ -386,23 +466,37 @@ class BackupService {
               anyErrors = true;
               break;
             }
+
             continue;
           }
 
-          var isDuplicate = false;
+          bool isDuplicate = false;
           if (response.statusCode == 200) {
             isDuplicate = true;
             duplicatedAssetIds.add(entity.id);
           }
 
-          uploadSuccessCb(entity.id, deviceId, isDuplicate);
+          onSuccess(
+            SuccessUploadAsset(
+              candidate: candidate,
+              remoteAssetId: responseBody['id'] as String,
+              isDuplicate: isDuplicate,
+            ),
+          );
+
+          if (shouldSyncAlbums && !isDuplicate) {
+            await _albumService.syncUploadAlbums(
+              candidate.albumNames,
+              [responseBody['id'] as String],
+            );
+          }
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");
         anyErrors = true;
         break;
-      } catch (e) {
-        debugPrint("ERROR backupAsset: ${e.toString()}");
+      } catch (error, stackTrace) {
+        debugPrint("Error backup asset: ${error.toString()}: $stackTrace");
         anyErrors = true;
         continue;
       } finally {
@@ -416,9 +510,11 @@ class BackupService {
         }
       }
     }
+
     if (duplicatedAssetIds.isNotEmpty) {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
+
     return !anyErrors;
   }
 

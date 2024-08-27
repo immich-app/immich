@@ -10,6 +10,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/main.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
+import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -18,6 +22,9 @@ import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/partner.service.dart';
+import 'package:immich_mobile/services/sync.service.dart';
+import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
@@ -345,8 +352,16 @@ class BackgroundService {
     ApiService apiService = ApiService();
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
     AppSettingsService settingService = AppSettingsService();
-    BackupService backupService = BackupService(apiService, db, settingService);
     AppSettingsService settingsService = AppSettingsService();
+    PartnerService partnerService = PartnerService(apiService, db);
+    HashService hashService = HashService(db, this);
+    SyncService syncSerive = SyncService(db, hashService);
+    UserService userService =
+        UserService(apiService, db, syncSerive, partnerService);
+    AlbumService albumService =
+        AlbumService(apiService, userService, syncSerive, db);
+    BackupService backupService =
+        BackupService(apiService, db, settingService, albumService);
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
     final excludedAlbums = backupService.excludedAlbumsQuery().findAllSync();
@@ -416,7 +431,7 @@ class BackgroundService {
       return false;
     }
 
-    List<AssetEntity> toUpload = await backupService.buildUploadCandidates(
+    Set<BackupCandidate> toUpload = await backupService.buildUploadCandidates(
       selectedAlbums,
       excludedAlbums,
     );
@@ -460,29 +475,47 @@ class BackgroundService {
     final bool ok = await backupService.backupAsset(
       toUpload,
       _cancellationToken!,
-      pmProgressHandler,
-      notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId, isDup) {},
-      notifySingleProgress ? _onProgress : (sent, total) {},
-      notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},
-      _onBackupError,
-      sortAssets: true,
+      pmProgressHandler: pmProgressHandler,
+      onSuccess: (result) => _onAssetUploaded(
+        result: result,
+        shouldNotify: notifyTotalProgress,
+      ),
+      onProgress: (bytes, totalBytes) =>
+          _onProgress(bytes, totalBytes, shouldNotify: notifySingleProgress),
+      onCurrentAsset: (asset) =>
+          _onSetCurrentBackupAsset(asset, shouldNotify: notifySingleProgress),
+      onError: _onBackupError,
+      isBackground: true,
     );
+
     if (!ok && !_cancellationToken!.isCancelled) {
       _showErrorNotification(
         title: "backup_background_service_error_title".tr(),
         content: "backup_background_service_backup_failed_message".tr(),
       );
     }
+
     return ok;
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId, bool isDup) {
+  void _onAssetUploaded({
+    required SuccessUploadAsset result,
+    bool shouldNotify = false,
+  }) async {
+    if (!shouldNotify) {
+      return;
+    }
+
     _uploadedAssetsCount++;
     _throttledNotifiy();
   }
 
-  void _onProgress(int sent, int total) {
-    _throttledDetailNotify(progress: sent, total: total);
+  void _onProgress(int bytes, int totalBytes, {bool shouldNotify = false}) {
+    if (!shouldNotify) {
+      return;
+    }
+
+    _throttledDetailNotify(progress: bytes, total: totalBytes);
   }
 
   void _updateDetailProgress(String? title, int progress, int total) {
@@ -522,7 +555,14 @@ class BackgroundService {
     );
   }
 
-  void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
+  void _onSetCurrentBackupAsset(
+    CurrentUploadAsset currentUploadAsset, {
+    bool shouldNotify = false,
+  }) {
+    if (!shouldNotify) {
+      return;
+    }
+
     _throttledDetailNotify.title =
         "backup_background_service_current_upload_notification"
             .tr(args: [currentUploadAsset.fileName]);

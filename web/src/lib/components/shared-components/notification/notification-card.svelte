@@ -91,6 +91,8 @@
       size="20"
       padding="2"
       on:click={discard}
+      aria-hidden="true"
+      tabindex={-1}
     />
   </div>
 
@@ -108,6 +110,8 @@
         type="button"
         class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
         on:click={handleButtonClick}
+        aria-hidden="true"
+        tabindex={-1}
       >
         {notification.button.text}
       </button>
