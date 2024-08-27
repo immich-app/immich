@@ -579,5 +579,9 @@
   "save_to_gallery": "Save to Gallery",
   "error_saving_image": "Error: {}",
   "crop_text": "Crop",
-  "image_saved_successfully": "Image saved!"
+  "image_saved_successfully": "Image saved!",
+  "sync_albums": "Sync albums",
+  "sync_upload_album_setting_subtitle": "Create and upload your photos and videos to the selected albums on Immich",
+  "sync_albums_manual_subtitle": "Sync all uploaded videos and photos to the selected backup albums",
+  "sync": "Sync"
 }
