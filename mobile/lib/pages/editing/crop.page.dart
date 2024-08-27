@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:crop_image/crop_image.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'edit.page.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 
 /// A widget for cropping an image.
@@ -25,13 +27,14 @@ class CropImagePage extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).bottomAppBarTheme.color,
-        leading: CloseButton(color: Theme.of(context).iconTheme.color),
+        backgroundColor: context.scaffoldBackgroundColor,
+        title: Text("crop".tr()),
+        leading: CloseButton(color: context.primaryColor),
         actions: [
           IconButton(
             icon: Icon(
               Icons.done_rounded,
-              color: Theme.of(context).iconTheme.color,
+              color: context.primaryColor,
               size: 24,
             ),
             onPressed: () async {
@@ -47,13 +50,14 @@ class CropImagePage extends HookWidget {
           ),
         ],
       ),
+      backgroundColor: context.scaffoldBackgroundColor,
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Column(
             children: [
               Container(
                 padding: const EdgeInsets.only(top: 20),
-                width: double.infinity,
+                width: constraints.maxWidth * 0.9,
                 height: constraints.maxHeight * 0.6,
                 child: CropImage(
                   controller: cropController,
@@ -65,7 +69,7 @@ class CropImagePage extends HookWidget {
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).bottomAppBarTheme.color,
+                    color: context.scaffoldBackgroundColor,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -196,7 +200,7 @@ class _AspectRatioButton extends StatelessWidget {
           icon: Icon(
             iconData,
             color: aspectRatio.value == ratio
-                ? Colors.indigo
+                ? context.primaryColor
                 : Theme.of(context).iconTheme.color,
           ),
           onPressed: () {
@@ -205,7 +209,7 @@ class _AspectRatioButton extends StatelessWidget {
             cropController.aspectRatio = ratio;
           },
         ),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(label, style: context.textTheme.displayMedium),
       ],
     );
   }
