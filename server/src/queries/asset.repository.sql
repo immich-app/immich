@@ -187,6 +187,7 @@ SELECT
   "AssetEntity__AssetEntity_tags"."value" AS "AssetEntity__AssetEntity_tags_value",
   "AssetEntity__AssetEntity_tags"."createdAt" AS "AssetEntity__AssetEntity_tags_createdAt",
   "AssetEntity__AssetEntity_tags"."updatedAt" AS "AssetEntity__AssetEntity_tags_updatedAt",
+  "AssetEntity__AssetEntity_tags"."color" AS "AssetEntity__AssetEntity_tags_color",
   "AssetEntity__AssetEntity_tags"."userId" AS "AssetEntity__AssetEntity_tags_userId",
   "AssetEntity__AssetEntity_tags"."parentId" AS "AssetEntity__AssetEntity_tags_parentId",
   "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",

@@ -9,10 +9,12 @@ export const newTagRepositoryMock = (): Mocked<ITagRepository> => {
 
     get: vitest.fn(),
     create: vitest.fn(),
+    update: vitest.fn(),
     delete: vitest.fn(),
 
     getAssetIds: vitest.fn(),
     addAssetIds: vitest.fn(),
     removeAssetIds: vitest.fn(),
+    upsertAssetIds: vitest.fn(),
   };
 };

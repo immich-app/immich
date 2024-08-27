@@ -18,7 +18,7 @@
     tags = await getAllTags();
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     onTag([...selectedTags]);
     selectedTags.clear();
   };

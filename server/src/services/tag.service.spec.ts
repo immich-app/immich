@@ -46,6 +46,23 @@ describe(TagService.name, () => {
     });
   });
 
+  describe('update', () => {
+    it('should throw an error for no update permission', async () => {
+      accessMock.tag.checkOwnerAccess.mockResolvedValue(new Set());
+      await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(tagMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should update a tag', async () => {
+      accessMock.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
+      tagMock.update.mockResolvedValue(tagStub.color1);
+      await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).resolves.toEqual(tagResponseStub.color1);
+      expect(tagMock.update).toHaveBeenCalledWith({ id: 'tag-1', color: '#000000' });
+    });
+  });
+
   describe('create', () => {
     it('should throw an error for a duplicate tag', async () => {
       tagMock.getByValue.mockResolvedValue(tagStub.tag1);
