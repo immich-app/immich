@@ -14,7 +14,7 @@ import {
   ILibraryOfflineJob,
   ILibraryRefreshJob,
   JobName,
-  JOBS_ASSET_PAGINATION_SIZE,
+  JOBS_LIBRARY_PAGINATION_SIZE,
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
@@ -228,7 +228,7 @@ describe(LibraryService.name, () => {
 
       libraryMock.get.mockResolvedValue(null);
 
-      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.FAILED);
+      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SKIPPED);
     });
 
     it('should force queue new assets', async () => {
@@ -290,7 +290,7 @@ describe(LibraryService.name, () => {
       expect(storageMock.walk).toHaveBeenCalledWith({
         pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
         exclusionPatterns: [],
-        take: JOBS_ASSET_PAGINATION_SIZE,
+        take: JOBS_LIBRARY_PAGINATION_SIZE,
       });
     });
   });
