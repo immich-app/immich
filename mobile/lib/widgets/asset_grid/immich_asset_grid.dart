@@ -18,6 +18,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final int? assetsPerRow;
   final double margin;
   final bool? showStorageIndicator;
+  final bool? showUserThumbnail;
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
   final List<Asset>? assets;
@@ -41,6 +42,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.renderList,
     this.assetsPerRow,
     this.showStorageIndicator,
+    this.showUserThumbnail,
     this.listener,
     this.margin = 2.0,
     this.selectionActive = false,
@@ -105,6 +107,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
           listener: listener,
           showStorageIndicator: showStorageIndicator ??
               settings.getSetting(AppSettingsEnum.storageIndicator),
+          showUserThumbnail: showUserThumbnail ??
+              settings.getSetting(AppSettingsEnum.showPartnerIconInTimeline),
           renderList: renderList,
           margin: margin,
           selectionActive: selectionActive,

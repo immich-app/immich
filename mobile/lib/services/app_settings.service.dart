@@ -70,6 +70,11 @@ enum AppSettingsEnum<T> {
   mapRelativeDate<int>(StoreKey.mapRelativeDate, null, 0),
   allowSelfSignedSSLCert<bool>(StoreKey.selfSignedCert, null, false),
   ignoreIcloudAssets<bool>(StoreKey.ignoreIcloudAssets, null, false),
+  showPartnerIconInTimeline<bool>(
+    StoreKey.showPartnerIconInTimeline,
+    null,
+    true,
+  ),
   selectedAlbumSortReverse<bool>(
     StoreKey.selectedAlbumSortReverse,
     null,

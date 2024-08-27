@@ -27,6 +27,7 @@ class UserService {
   final IUserRepository _userRepository;
   final SyncService _syncService;
   final Logger _log = Logger("UserService");
+  final Map<Id, User> inMemoryUserMap = {};
 
   UserService(
     this._partnerApiRepository,
@@ -100,6 +101,22 @@ class UserService {
   Future<bool> refreshUsers() async {
     final users = await getUsersFromServer();
     if (users == null) return false;
-    return _syncService.syncUsersFromServer(users);
+    final isSyncSuccess = await _syncService.syncUsersFromServer(users);
+    if (isSyncSuccess) {
+      inMemoryUserMap.clear();
+      final users = await getUsersInDb(self: true);
+      for (var user in users) {
+        inMemoryUserMap[user.isarId] = user;
+      }
+    }
+    return isSyncSuccess;
+  }
+
+  User? lookupUserById(Id userId) {
+    if (inMemoryUserMap.containsKey(userId)) {
+      return inMemoryUserMap[userId];
+    } else {
+      return null;
+    }
   }
 }
