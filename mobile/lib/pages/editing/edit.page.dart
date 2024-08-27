@@ -7,13 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:path/path.dart' as p;
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:path/path.dart' as p;
 
 /// A stateless widget that provides functionality for editing an image.
 ///
@@ -71,11 +73,17 @@ class EditImagePage extends ConsumerWidget {
       );
       await ref.read(albumProvider.notifier).getDeviceAlbums();
       Navigator.of(context).popUntil((route) => route.isFirst);
+      ImmichToast.show(
+        durationInSecond: 3,
+        context: context,
+        msg: 'Image Saved!',
+        gravity: ToastGravity.CENTER,
+      );
     } catch (e) {
       ImmichToast.show(
         durationInSecond: 6,
         context: context,
-        msg: 'Error: $e',
+        msg: "error_saving_image".tr(args: [e.toString()]),
         gravity: ToastGravity.CENTER,
       );
     }
@@ -88,11 +96,12 @@ class EditImagePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: Text("edit_image_title".tr()),
+        backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
           icon: Icon(
             Icons.close_rounded,
-            color: Theme.of(context).iconTheme.color,
+            color: context.primaryColor,
             size: 24,
           ),
           onPressed: () =>
@@ -104,31 +113,48 @@ class EditImagePage extends ConsumerWidget {
                 ? () => _saveEditedImage(context, asset, image, ref)
                 : null,
             child: Text(
-              'Save to gallery',
+              "save_to_gallery".tr(),
               style: TextStyle(
-                color:
-                    isEdited ? Theme.of(context).iconTheme.color : Colors.grey,
+                color: isEdited ? context.primaryColor : Colors.grey,
               ),
             ),
           ),
         ],
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: image,
+      backgroundColor: context.scaffoldBackgroundColor,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
           ),
-          Container(
-            height: 80,
-            color: Theme.of(context).bottomAppBarTheme.color,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(7),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(7),
+              child: Image(
+                image: image.image,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
-        ],
+        ),
       ),
       bottomNavigationBar: Container(
-        height: 80,
-        margin: const EdgeInsets.only(bottom: 20, right: 10, left: 10, top: 10),
+        height: 70,
+        margin: const EdgeInsets.only(bottom: 60, right: 10, left: 10, top: 10),
         decoration: BoxDecoration(
-          color: Theme.of(context).bottomAppBarTheme.color,
+          color: context.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Column(
@@ -140,6 +166,7 @@ class EditImagePage extends ConsumerWidget {
                     ? Icons.crop_rotate_rounded
                     : Icons.crop_rotate_rounded,
                 color: Theme.of(context).iconTheme.color,
+                size: 25,
               ),
               onPressed: () {
                 context.pushRoute(
@@ -147,7 +174,7 @@ class EditImagePage extends ConsumerWidget {
                 );
               },
             ),
-            Text('Crop', style: Theme.of(context).textTheme.displayMedium),
+            Text("crop".tr(), style: context.textTheme.displayMedium),
           ],
         ),
       ),
