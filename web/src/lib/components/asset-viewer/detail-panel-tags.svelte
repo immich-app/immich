@@ -1,13 +1,12 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
+  import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
   import { AppRoute } from '$lib/constants';
   import { isSharedLink } from '$lib/utils';
-  import { getAssetInfo, type AssetResponseDto, type TagResponseDto } from '@immich/sdk';
+  import { remoteTag, tagAssets } from '$lib/utils/asset-utils';
+  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { remoteTag, tagAssets } from '$lib/utils/asset-utils';
-  import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
-  import { fade } from 'svelte/transition';
 
   export let asset: AssetResponseDto;
   export let isOwner: boolean;
@@ -57,6 +56,7 @@
           </a>
 
           <button
+            type="button"
             class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-tr-full rounded-br-full place-items-center place-content-center pr-2 pl-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
             title="Remove tag"
             on:click={() => handleRemove(tag.id)}
