@@ -62,12 +62,22 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
   }
 };
 
-export const tagAssets = async ({ assetIds, tagIds }: { assetIds: string[]; tagIds: string[] }) => {
+export const tagAssets = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
   for (const tagId of tagIds) {
     await tagAllAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
   }
 
-  notificationController.show({ message: `Tagged ${assetIds.length} assets`, type: NotificationType.Info });
+  if (showNotification) {
+    notificationController.show({ message: `Tagged ${assetIds.length} assets`, type: NotificationType.Info });
+  }
 
   return assetIds;
 };
