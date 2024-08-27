@@ -156,7 +156,6 @@
 
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
-  <DetailPanelTags {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
     <section class="px-4 py-4 text-sm">
@@ -502,6 +501,10 @@
     {/each}
   </section>
 {/if}
+
+<section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+  <DetailPanelTags {asset} {isOwner} />
+</section>
 
 {#if showEditFaces}
   <PersonSidePanel
