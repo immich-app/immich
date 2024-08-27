@@ -104,11 +104,11 @@ class GalleryAppBar extends ConsumerWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             elevation: 5,
-            title: const Center(
+            title: Center(
               heightFactor: 0.8,
               child: Text(
-                "Partner Sharing",
-                style: TextStyle(
+                "partner_sharing_dialog_title".tr(),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),

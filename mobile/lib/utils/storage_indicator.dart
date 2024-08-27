@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 
@@ -16,10 +17,10 @@ IconData storageIcon(Asset asset) {
 String storageText(Asset asset) {
   switch (asset.storage) {
     case AssetState.local:
-      return "On Device (Not backed up)";
+      return "storage_asset_local".tr();
     case AssetState.remote:
-      return "Immich Server only";
+      return "storage_asset_remote".tr();
     case AssetState.merged:
-      return "Backed up to Immich Server";
+      return "storage_asset_merged".tr();
   }
 }

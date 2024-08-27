@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -38,7 +39,7 @@ class AssetStateInfo extends ConsumerWidget {
               size: 30,
             ).build(context),
       title: Text(
-        (user == null) ? storageText(asset) : "From Partner Sharing",
+        (user == null) ? storageText(asset) : "storage_asset_partner".tr(),
         style: context.textTheme.labelLarge,
       ),
       subtitle: (user == null)
