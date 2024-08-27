@@ -37,6 +37,12 @@ SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e
 SELECT * FROM "assets" WHERE "checksum" = '\x69de19c87658c4c15d9cacb9967b8e033bf74dd1'; -- alternate notation
 ```
 
+```sql title="Find duplicate assets with identical checksum (SHA-1) (excluding trashed files)"
+SELECT checksum FROM assets T1
+  WHERE (SELECT COUNT(*) FROM assets T2 WHERE T1.checksum = T2.checksum AND T1."deletedAt" IS NULL AND T2."deletedAt" IS NULL) > 1
+  ORDER BY "fileCreatedAt";
+```
+
 ```sql title="Live photos"
 SELECT * FROM "assets" WHERE "livePhotoVideoId" IS NOT NULL;
 ```
