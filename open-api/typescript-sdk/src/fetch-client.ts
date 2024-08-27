@@ -1179,6 +1179,13 @@ export type TagCreateDto = {
 export type TagUpsertDto = {
     tags: string[];
 };
+export type TagBulkAssetsDto = {
+    assetIds: string[];
+    tagIds: string[];
+};
+export type TagBulkAssetsResponseDto = {
+    count: number;
+};
 export type TimeBucketResponseDto = {
     count: number;
     timeBucket: string;
@@ -2858,6 +2865,18 @@ export function upsertTags({ tagUpsertDto }: {
         ...opts,
         method: "PUT",
         body: tagUpsertDto
+    })));
+}
+export function bulkTagAssets({ tagBulkAssetsDto }: {
+    tagBulkAssetsDto: TagBulkAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TagBulkAssetsResponseDto;
+    }>("/tags/assets", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: tagBulkAssetsDto
     })));
 }
 export function deleteTag({ id }: {

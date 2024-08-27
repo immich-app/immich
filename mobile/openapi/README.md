@@ -210,6 +210,7 @@ Class | Method | HTTP request | Description
 *SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | 
 *SystemMetadataApi* | [**getReverseGeocodingState**](doc//SystemMetadataApi.md#getreversegeocodingstate) | **GET** /system-metadata/reverse-geocoding-state | 
 *SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | 
+*TagsApi* | [**bulkTagAssets**](doc//TagsApi.md#bulktagassets) | **PUT** /tags/assets | 
 *TagsApi* | [**createTag**](doc//TagsApi.md#createtag) | **POST** /tags | 
 *TagsApi* | [**deleteTag**](doc//TagsApi.md#deletetag) | **DELETE** /tags/{id} | 
 *TagsApi* | [**getAllTags**](doc//TagsApi.md#getalltags) | **GET** /tags | 
@@ -427,6 +428,8 @@ Class | Method | HTTP request | Description
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
+ - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
+ - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
  - [TagCreateDto](doc//TagCreateDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagUpsertDto](doc//TagUpsertDto.md)

@@ -1,12 +1,19 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { TagCreateDto, TagResponseDto, TagUpsertDto, mapTag } from 'src/dtos/tag.dto';
+import {
+  TagBulkAssetsDto,
+  TagBulkAssetsResponseDto,
+  TagCreateDto,
+  TagResponseDto,
+  TagUpsertDto,
+  mapTag,
+} from 'src/dtos/tag.dto';
 import { TagEntity } from 'src/entities/tag.entity';
 import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { ITagRepository } from 'src/interfaces/tag.interface';
-import { requireAccess } from 'src/utils/access';
+import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
+import { checkAccess, requireAccess } from 'src/utils/access';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { upsertTags } from 'src/utils/tag';
 
@@ -58,6 +65,23 @@ export class TagService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await requireAccess(this.access, { auth, permission: Permission.TAG_DELETE, ids: [id] });
     await this.repository.delete(id);
+  }
+
+  async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    const [tagIds, assetIds] = await Promise.all([
+      checkAccess(this.access, { auth, permission: Permission.TAG_ASSET, ids: dto.tagIds }),
+      checkAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds }),
+    ]);
+
+    const items: AssetTagItem[] = [];
+    for (const tagId of tagIds) {
+      for (const assetId of assetIds) {
+        items.push({ tagId, assetId });
+      }
+    }
+
+    const results = await this.repository.upsertAssetIds(items);
+    return { count: results.length };
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {

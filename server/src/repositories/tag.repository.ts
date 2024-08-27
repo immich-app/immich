@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { TagEntity } from 'src/entities/tag.entity';
-import { ITagRepository } from 'src/interfaces/tag.interface';
+import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, Repository } from 'typeorm';
 
@@ -89,6 +89,24 @@ export class TagRepository implements ITagRepository {
         assetsId: In(assetIds),
       })
       .execute();
+  }
+
+  async upsertAssetIds(items: AssetTagItem[]): Promise<AssetTagItem[]> {
+    if (items.length === 0) {
+      return [];
+    }
+
+    const { identifiers } = await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into('tag_asset', ['assetsId', 'tagsId'])
+      .values(items.map(({ assetId, tagId }) => ({ assetsId: assetId, tagsId: tagId })))
+      .execute();
+
+    return (identifiers as Array<{ assetsId: string; tagsId: string }>).map(({ assetsId, tagsId }) => ({
+      assetId: assetsId,
+      tagId: tagsId,
+    }));
   }
 
   async upsertAssetTags({ assetId, tagIds }: { assetId: string; tagIds: string[] }) {

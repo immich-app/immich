@@ -160,6 +160,72 @@ describe('/tags', () => {
     });
   });
 
+  describe('PUT /tags/assets', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).put(`/tags/assets`).send({ tagIds: [], assetIds: [] });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should not work without permission', async () => {
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
+      const { status, body } = await request(app)
+        .put('/tags/assets')
+        .set('x-api-key', secret)
+        .send({ assetIds: [], tagIds: [] });
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('tag.asset'));
+    });
+
+    it('should skip assets that are not owned by the user', async () => {
+      const [tagA, tagB, tagC, assetA, assetB] = await Promise.all([
+        create(user.accessToken, { name: 'TagA' }),
+        create(user.accessToken, { name: 'TagB' }),
+        create(user.accessToken, { name: 'TagC' }),
+        utils.createAsset(user.accessToken),
+        utils.createAsset(admin.accessToken),
+      ]);
+      const { status, body } = await request(app)
+        .put(`/tags/assets`)
+        .send({ tagIds: [tagA.id, tagB.id, tagC.id], assetIds: [assetA.id, assetB.id] })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ count: 3 });
+    });
+
+    it('should skip tags that are not owned by the user', async () => {
+      const [tagA, tagB, tagC, assetA, assetB] = await Promise.all([
+        create(user.accessToken, { name: 'TagA' }),
+        create(user.accessToken, { name: 'TagB' }),
+        create(admin.accessToken, { name: 'TagC' }),
+        utils.createAsset(user.accessToken),
+        utils.createAsset(user.accessToken),
+      ]);
+      const { status, body } = await request(app)
+        .put(`/tags/assets`)
+        .send({ tagIds: [tagA.id, tagB.id, tagC.id], assetIds: [assetA.id, assetB.id] })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ count: 4 });
+    });
+
+    it('should bulk tag assets', async () => {
+      const [tagA, tagB, tagC, assetA, assetB] = await Promise.all([
+        create(user.accessToken, { name: 'TagA' }),
+        create(user.accessToken, { name: 'TagB' }),
+        create(user.accessToken, { name: 'TagC' }),
+        utils.createAsset(user.accessToken),
+        utils.createAsset(user.accessToken),
+      ]);
+      const { status, body } = await request(app)
+        .put(`/tags/assets`)
+        .send({ tagIds: [tagA.id, tagB.id, tagC.id], assetIds: [assetA.id, assetB.id] })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ count: 6 });
+    });
+  });
+
   describe('GET /tags/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get(`/tags/${uuidDto.notFound}`);

@@ -243,6 +243,8 @@ part 'model/system_config_template_storage_option_dto.dart';
 part 'model/system_config_theme_dto.dart';
 part 'model/system_config_trash_dto.dart';
 part 'model/system_config_user_dto.dart';
+part 'model/tag_bulk_assets_dto.dart';
+part 'model/tag_bulk_assets_response_dto.dart';
 part 'model/tag_create_dto.dart';
 part 'model/tag_response_dto.dart';
 part 'model/tag_upsert_dto.dart';

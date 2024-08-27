@@ -2,7 +2,13 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put }
 import { ApiTags } from '@nestjs/swagger';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { TagCreateDto, TagResponseDto, TagUpsertDto } from 'src/dtos/tag.dto';
+import {
+  TagBulkAssetsDto,
+  TagBulkAssetsResponseDto,
+  TagCreateDto,
+  TagResponseDto,
+  TagUpsertDto,
+} from 'src/dtos/tag.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { TagService } from 'src/services/tag.service';
@@ -29,6 +35,12 @@ export class TagController {
   @Authenticated({ permission: Permission.TAG_CREATE })
   upsertTags(@Auth() auth: AuthDto, @Body() dto: TagUpsertDto): Promise<TagResponseDto[]> {
     return this.service.upsert(auth, dto);
+  }
+
+  @Put('assets')
+  @Authenticated({ permission: Permission.TAG_ASSET })
+  bulkTagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    return this.service.bulkTagAssets(auth, dto);
   }
 
   @Get(':id')

@@ -541,6 +541,10 @@ class ApiClient {
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':
           return SystemConfigUserDto.fromJson(value);
+        case 'TagBulkAssetsDto':
+          return TagBulkAssetsDto.fromJson(value);
+        case 'TagBulkAssetsResponseDto':
+          return TagBulkAssetsResponseDto.fromJson(value);
         case 'TagCreateDto':
           return TagCreateDto.fromJson(value);
         case 'TagResponseDto':
