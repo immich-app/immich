@@ -15,6 +15,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { StorageTemplateService } from 'src/services/storage-template.service';
+import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
@@ -83,7 +84,7 @@ describe(StorageTemplateService.name, () => {
           newConfig: {
             storageTemplate: {
               template:
-                '{{y}}{{M}}{{W}}{{d}}{{h}}{{m}}{{s}}{{filename}}{{ext}}{{filetype}}{{filetypefull}}{{assetId}}{{album}}',
+                '{{y}}{{M}}{{W}}{{d}}{{h}}{{m}}{{s}}{{filename}}{{ext}}{{filetype}}{{filetypefull}}{{assetId}}{{#if album}}{{album}}{{else}}other{{/if}}',
             },
           } as SystemConfig,
           oldConfig: {} as SystemConfig,
@@ -161,6 +162,47 @@ describe(StorageTemplateService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
         originalPath: newMotionPicturePath,
+      });
+    });
+    it('Should use handlebar if condition for album', async () => {
+      const asset = assetStub.image;
+      const user = userStub.user1;
+      const album = albumStub.oneAsset;
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other/{{MM}}{{/if}}/{{filename}}';
+      SystemConfigCore.create(systemMock, loggerMock).config$.next(config);
+
+      userMock.get.mockResolvedValue(user);
+      assetMock.getByIds.mockResolvedValueOnce([asset]);
+      albumMock.getByAssetId.mockResolvedValueOnce([album]);
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+
+      expect(moveMock.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${album.albumName}/${asset.originalFileName}`,
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.ORIGINAL,
+      });
+    });
+    it('Should use handlebar else condition for album', async () => {
+      const asset = assetStub.image;
+      const user = userStub.user1;
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other//{{MM}}{{/if}}/{{filename}}';
+      SystemConfigCore.create(systemMock, loggerMock).config$.next(config);
+
+      userMock.get.mockResolvedValue(user);
+      assetMock.getByIds.mockResolvedValueOnce([asset]);
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+
+      const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
+      expect(moveMock.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/other/${month}/${asset.originalFileName}`,
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.ORIGINAL,
       });
     });
     it('should migrate previously failed move from original path when it still exists', async () => {
