@@ -63,7 +63,7 @@ We recommend using a real SSL certificate from a free provider, for example [Let
 
 ### Does Immich change the file?
 
-No, Immich does not touch the original file under any circumstances,  
+No, Immich does not touch the original file under any circumstances,
 all edited metadata are saved in the companion sidecar file and the database.
 
 ### Can I add my existing photo library?
@@ -161,6 +161,17 @@ We haven't implemented an official mechanism for creating albums from external l
 ### What happens to duplicates in external libraries?
 
 Duplicate checking only exists for upload libraries, using the file hash. Furthermore, duplicate checking is not global, but _per library_. Therefore, a situation where the same file appears twice in the timeline is possible, especially for external libraries.
+
+### Why are my edits to files not being saved in read-only external libraries?
+
+In external libraries mounted as read-only (`:ro`), Immich is unable to create the `.xmp` sidecar files to store edited file metadata.
+For this reason, the metadata (timestamp, location, description, star rating, etc.) cannot be edited for files in read-only external libraries.
+Images in read-write external libraries (the default) can be edited as normal.
+
+### How are deletions of files handled in external libraries?
+
+Immich will attempt to delete original files when the trash is emptied. In read-write external libraries (the default), Immich will delete the original file.
+In read-only libraries, files can be trashed in the web UI, but when the trash is emptied, they will re-appear in the main timeline since Immich is unable to delete the original file.
 
 ---
 
