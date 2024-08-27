@@ -11,6 +11,7 @@ export interface ITagRepository extends IBulkAsset {
 
   create(tag: Partial<TagEntity>): Promise<TagEntity>;
   get(id: string): Promise<TagEntity | null>;
+  update(tag: { id: string } & Partial<TagEntity>): Promise<TagEntity>;
   delete(id: string): Promise<void>;
 
   upsertAssetTags({ assetId, tagIds }: { assetId: string; tagIds: string[] }): Promise<void>;

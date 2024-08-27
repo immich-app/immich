@@ -10,11 +10,13 @@
   export let active = '';
   export let icons: { default: string; active: string };
   export let getLink: (path: string) => string;
+  export let getColor: (path: string) => string | undefined;
 
   $: path = normalizeTreePath(`${parent}/${value}`);
   $: isActive = active.startsWith(path);
   $: isOpen = isActive;
   $: isTarget = active === path;
+  $: color = getColor(path);
 </script>
 
 <a
@@ -33,6 +35,7 @@
     <Icon
       path={isActive ? icons.active : icons.default}
       class={isActive ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400'}
+      {color}
       size={20}
     />
   </div>
@@ -40,5 +43,5 @@
 </a>
 
 {#if isOpen}
-  <TreeItems parent={path} items={tree} {icons} {active} {getLink} />
+  <TreeItems parent={path} items={tree} {icons} {active} {getLink} {getColor} />
 {/if}

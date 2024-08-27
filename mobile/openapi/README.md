@@ -217,6 +217,7 @@ Class | Method | HTTP request | Description
 *TagsApi* | [**getTagById**](doc//TagsApi.md#gettagbyid) | **GET** /tags/{id} | 
 *TagsApi* | [**tagAssets**](doc//TagsApi.md#tagassets) | **PUT** /tags/{id}/assets | 
 *TagsApi* | [**untagAssets**](doc//TagsApi.md#untagassets) | **DELETE** /tags/{id}/assets | 
+*TagsApi* | [**updateTag**](doc//TagsApi.md#updatetag) | **PUT** /tags/{id} | 
 *TagsApi* | [**upsertTags**](doc//TagsApi.md#upserttags) | **PUT** /tags | 
 *TimelineApi* | [**getTimeBucket**](doc//TimelineApi.md#gettimebucket) | **GET** /timeline/bucket | 
 *TimelineApi* | [**getTimeBuckets**](doc//TimelineApi.md#gettimebuckets) | **GET** /timeline/buckets | 
@@ -432,6 +433,7 @@ Class | Method | HTTP request | Description
  - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
  - [TagCreateDto](doc//TagCreateDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
+ - [TagUpdateDto](doc//TagUpdateDto.md)
  - [TagUpsertDto](doc//TagUpsertDto.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
  - [TimeBucketSize](doc//TimeBucketSize.md)

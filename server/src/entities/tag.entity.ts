@@ -19,7 +19,7 @@ export class TagEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ unique: true })
   value!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
@@ -27,6 +27,9 @@ export class TagEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  color!: string | null;
 
   @TreeParent({ onDelete: 'CASCADE' })
   parent?: TagEntity;

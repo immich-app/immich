@@ -285,6 +285,56 @@ describe('/tags', () => {
     });
   });
 
+  describe('PUT /tags/:id', () => {
+    it('should require authentication', async () => {
+      const tag = await create(user.accessToken, { name: 'TagA' });
+      const { status, body } = await request(app).put(`/tags/${tag.id}`).send({ color: '#000000' });
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should not work without permission', async () => {
+      const tag = await create(user.accessToken, { name: 'TagA' });
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}`)
+        .set('x-api-key', secret)
+        .send({ color: '#000000' });
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('tag.update'));
+    });
+
+    it('should require tag access', async () => {
+      const tag = await create(admin.accessToken, { name: 'tagA' });
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}`)
+        .send({ color: '#000000' })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should update a tag', async () => {
+      const tag = await create(user.accessToken, { name: 'tagA' });
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}`)
+        .send({ color: '#000000' })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ color: `#000000` }));
+    });
+
+    it('should update a tag color without a # prefix', async () => {
+      const tag = await create(user.accessToken, { name: 'tagA' });
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}`)
+        .send({ color: '000000' })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ color: `#000000` }));
+    });
+  });
+
   describe('DELETE /tags/:id', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).delete(`/tags/${uuidDto.notFound}`);
@@ -378,7 +428,6 @@ describe('/tags', () => {
         .set('Authorization', `Bearer ${user.accessToken}`)
         .send({ ids: [userAsset.id, userAsset.id] });
 
-      console.log(body);
       expect(status).toBe(200);
       expect(body).toEqual([
         expect.objectContaining({ id: userAsset.id, success: true }),

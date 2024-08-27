@@ -37,6 +37,10 @@ export class TagRepository implements ITagRepository {
     return this.save(tag);
   }
 
+  update(tag: Partial<TagEntity>): Promise<TagEntity> {
+    return this.save(tag);
+  }
+
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }
@@ -91,6 +95,8 @@ export class TagRepository implements ITagRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagId: DummyValue.UUID }]] })
+  @Chunked()
   async upsertAssetIds(items: AssetTagItem[]): Promise<AssetTagItem[]> {
     if (items.length === 0) {
       return [];

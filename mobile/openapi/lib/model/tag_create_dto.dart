@@ -13,9 +13,18 @@ part of openapi.api;
 class TagCreateDto {
   /// Returns a new [TagCreateDto] instance.
   TagCreateDto({
+    this.color,
     required this.name,
     this.parentId,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? color;
 
   String name;
 
@@ -23,20 +32,27 @@ class TagCreateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagCreateDto &&
+    other.color == color &&
     other.name == name &&
     other.parentId == parentId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (color == null ? 0 : color!.hashCode) +
     (name.hashCode) +
     (parentId == null ? 0 : parentId!.hashCode);
 
   @override
-  String toString() => 'TagCreateDto[name=$name, parentId=$parentId]';
+  String toString() => 'TagCreateDto[color=$color, name=$name, parentId=$parentId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+    //  json[r'color'] = null;
+    }
       json[r'name'] = this.name;
     if (this.parentId != null) {
       json[r'parentId'] = this.parentId;
@@ -54,6 +70,7 @@ class TagCreateDto {
       final json = value.cast<String, dynamic>();
 
       return TagCreateDto(
+        color: mapValueOfType<String>(json, r'color'),
         name: mapValueOfType<String>(json, r'name')!,
         parentId: mapValueOfType<String>(json, r'parentId'),
       );

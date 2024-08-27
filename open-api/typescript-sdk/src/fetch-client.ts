@@ -198,6 +198,7 @@ export type AssetStackResponseDto = {
     primaryAssetId: string;
 };
 export type TagResponseDto = {
+    color?: string;
     createdAt: string;
     id: string;
     name: string;
@@ -1173,6 +1174,7 @@ export type ReverseGeocodingStateResponseDto = {
     lastUpdate: string | null;
 };
 export type TagCreateDto = {
+    color?: string;
     name: string;
     parentId?: string | null;
 };
@@ -1185,6 +1187,9 @@ export type TagBulkAssetsDto = {
 };
 export type TagBulkAssetsResponseDto = {
     count: number;
+};
+export type TagUpdateDto = {
+    color?: string | null;
 };
 export type TimeBucketResponseDto = {
     count: number;
@@ -2896,6 +2901,19 @@ export function getTagById({ id }: {
     }>(`/tags/${encodeURIComponent(id)}`, {
         ...opts
     }));
+}
+export function updateTag({ id, tagUpdateDto }: {
+    id: string;
+    tagUpdateDto: TagUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TagResponseDto;
+    }>(`/tags/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: tagUpdateDto
+    })));
 }
 export function untagAssets({ id, bulkIdsDto }: {
     id: string;

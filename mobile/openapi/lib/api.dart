@@ -247,6 +247,7 @@ part 'model/tag_bulk_assets_dto.dart';
 part 'model/tag_bulk_assets_response_dto.dart';
 part 'model/tag_create_dto.dart';
 part 'model/tag_response_dto.dart';
+part 'model/tag_update_dto.dart';
 part 'model/tag_upsert_dto.dart';
 part 'model/time_bucket_response_dto.dart';
 part 'model/time_bucket_size.dart';

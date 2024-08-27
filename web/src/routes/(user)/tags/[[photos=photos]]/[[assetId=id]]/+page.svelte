@@ -21,8 +21,8 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import { deleteTag, getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { mdiChevronRight, mdiPlus, mdiTag, mdiTagMultiple, mdiTagOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import { mdiChevronRight, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -45,8 +45,6 @@
   $: tag = currentPath ? tagsMap[currentPath] : null;
   $: tree = buildTree(tags.map((tag) => tag.value));
 
-  // $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
-
   onDestroy(() => {
     assetStore?.destroy();
   });
@@ -65,30 +63,53 @@
     return url.href;
   };
 
+  const getColor = (path: string) => tagsMap[path]?.color;
+
   const navigateToView = (path: string) => goto(getLink(path));
 
-  let isOpen = false;
+  let isNewOpen = false;
   let newTagValue = '';
-  const handleOpen = () => {
+  const handleCreate = () => {
     newTagValue = tag ? tag.value + '/' : '';
-    isOpen = true;
+    isNewOpen = true;
   };
-  const handleCancel = () => (isOpen = false);
+
+  let isEditOpen = false;
+  let newTagColor = '';
+  const handleEdit = () => {
+    newTagColor = tag?.color ?? '';
+    isEditOpen = true;
+  };
+
+  const handleCancel = () => {
+    isNewOpen = false;
+    isEditOpen = false;
+  };
+
   const handleSubmit = async () => {
-    if (!newTagValue) {
-      return;
+    if (tag && isEditOpen && newTagColor) {
+      await updateTag({ id: tag.id, tagUpdateDto: { color: newTagColor } });
+
+      notificationController.show({
+        message: $t('tag_updated', { values: { tag: tag.value } }),
+        type: NotificationType.Info,
+      });
+
+      tags = await getAllTags();
+      isEditOpen = false;
     }
 
-    const [newTag] = await upsertTags({ tagUpsertDto: { tags: [newTagValue] } });
+    if (isNewOpen && newTagValue) {
+      const [newTag] = await upsertTags({ tagUpsertDto: { tags: [newTagValue] } });
 
-    notificationController.show({
-      message: $t('tag_created', { values: { tag: newTag.value } }),
-      type: NotificationType.Info,
-    });
+      notificationController.show({
+        message: $t('tag_created', { values: { tag: newTag.value } }),
+        type: NotificationType.Info,
+      });
 
-    tags = await getAllTags();
-
-    isOpen = false;
+      tags = await getAllTags();
+      isNewOpen = false;
+    }
   };
 
   const handleDelete = async () => {
@@ -121,16 +142,23 @@
     <section>
       <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
       <div class="h-full">
-        <TreeItems icons={{ default: mdiTagOutline, active: mdiTag }} items={tree} active={currentPath} {getLink} />
+        <TreeItems icons={{ default: mdiTag, active: mdiTag }} items={tree} active={currentPath} {getLink} {getColor} />
       </div>
     </section>
   </SideBarSection>
 
   <section slot="buttons">
-    <LinkButton on:click={handleOpen}>
+    <LinkButton on:click={handleCreate}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiPlus} size="18" />
         <p class="hidden md:block">{$t('create_tag')}</p>
+      </div>
+    </LinkButton>
+
+    <LinkButton on:click={handleEdit}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <Icon path={mdiPencil} size="18" />
+        <p class="hidden md:block">{$t('edit_tag')}</p>
       </div>
     </LinkButton>
 
@@ -184,7 +212,7 @@
   </section>
 </UserPageLayout>
 
-{#if isOpen}
+{#if isNewOpen}
   <FullScreenModal title={$t('create_tag')} icon={mdiTag} onClose={handleCancel}>
     <div class="text-immich-primary dark:text-immich-dark-primary">
       <p class="text-sm dark:text-immich-dark-fg">
@@ -205,6 +233,24 @@
     <svelte:fragment slot="sticky-bottom">
       <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
       <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
+    </svelte:fragment>
+  </FullScreenModal>
+{/if}
+
+{#if isEditOpen}
+  <FullScreenModal title={$t('edit_tag')} icon={mdiTag} onClose={handleCancel}>
+    <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="edit-tag-form">
+      <div class="my-4 flex flex-col gap-2">
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label={$t('color').toUpperCase()}
+          bind:value={newTagColor}
+        />
+      </div>
+    </form>
+    <svelte:fragment slot="sticky-bottom">
+      <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button type="submit" fullwidth form="edit-tag-form">{$t('save')}</Button>
     </svelte:fragment>
   </FullScreenModal>
 {/if}

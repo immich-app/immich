@@ -6361,6 +6361,56 @@
         "tags": [
           "Tags"
         ]
+      },
+      "put": {
+        "operationId": "updateTag",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Tags"
+        ]
       }
     },
     "/tags/{id}/assets": {
@@ -11880,6 +11930,9 @@
       },
       "TagCreateDto": {
         "properties": {
+          "color": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -11896,6 +11949,9 @@
       },
       "TagResponseDto": {
         "properties": {
+          "color": {
+            "type": "string"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -11921,6 +11977,15 @@
           "updatedAt",
           "value"
         ],
+        "type": "object"
+      },
+      "TagUpdateDto": {
+        "properties": {
+          "color": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "TagUpsertDto": {

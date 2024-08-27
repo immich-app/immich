@@ -7,6 +7,7 @@ import {
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
+  TagUpdateDto,
   TagUpsertDto,
 } from 'src/dtos/tag.dto';
 import { Permission } from 'src/enum';
@@ -47,6 +48,12 @@ export class TagController {
   @Authenticated({ permission: Permission.TAG_READ })
   getTagById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<TagResponseDto> {
     return this.service.get(auth, id);
+  }
+
+  @Put(':id')
+  @Authenticated({ permission: Permission.TAG_UPDATE })
+  updateTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: TagUpdateDto): Promise<TagResponseDto> {
+    return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')

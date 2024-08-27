@@ -6,6 +6,7 @@ import {
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
+  TagUpdateDto,
   TagUpsertDto,
   mapTag,
 } from 'src/dtos/tag.dto';
@@ -54,6 +55,14 @@ export class TagService {
 
     const tag = await this.repository.create({ userId, value, parent });
 
+    return mapTag(tag);
+  }
+
+  async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
+    await requireAccess(this.access, { auth, permission: Permission.TAG_UPDATE, ids: [id] });
+
+    const { color } = dto;
+    const tag = await this.repository.update({ id, color });
     return mapTag(tag);
   }
 
