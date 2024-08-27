@@ -580,17 +580,28 @@ export class LibraryService {
       this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
     );
 
+    let offlineAssets = 0;
     for await (const assets of assetPagination) {
-      this.logger.debug(`Removing ${assets.length} offline assets`);
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: JobName.ASSET_DELETION,
-          data: {
-            id: asset.id,
-            deleteOnDisk: false,
-          },
-        })),
-      );
+      offlineAssets += assets.length;
+      if (assets.length > 0) {
+        this.logger.debug(`Discovered ${offlineAssets} offline assets in library ${job.id}`);
+        await this.jobRepository.queueAll(
+          assets.map((asset) => ({
+            name: JobName.ASSET_DELETION,
+            data: {
+              id: asset.id,
+              deleteOnDisk: false,
+            },
+          })),
+        );
+        this.logger.verbose(`Queued deletion of ${assets.length} offline assets in library ${job.id}`);
+      }
+    }
+
+    if (offlineAssets) {
+      this.logger.debug(`Finished queueing deletion of ${offlineAssets} offline assets for library ${job.id}`);
+    } else {
+      this.logger.debug(`Found no offline assets to delete from library ${job.id}`);
     }
 
     return JobStatus.SUCCESS;
