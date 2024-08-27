@@ -28,7 +28,7 @@ class CropImagePage extends HookWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: context.scaffoldBackgroundColor,
-        title: Text("crop_image_title".tr()),
+        title: Text("crop".tr()),
         leading: CloseButton(color: context.primaryColor),
         actions: [
           IconButton(
