@@ -38,7 +38,7 @@ SELECT * FROM "assets" WHERE "checksum" = '\x69de19c87658c4c15d9cacb9967b8e033bf
 ```
 
 ```sql title="Find duplicate assets with identical checksum (SHA-1) (excluding trashed files)"
-SELECT T1."checksum", array_agg(T2."id") ids FROM assets T1
+SELECT T1."checksum", array_agg(T2."id") ids FROM "assets" T1
   INNER JOIN "assets" T2 ON T1."checksum" = T2."checksum" AND T1."id" != T2."id" AND T2."deletedAt" IS NULL
   WHERE T1."deletedAt" IS NULL GROUP BY T1."checksum";
 ```
