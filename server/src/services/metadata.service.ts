@@ -290,22 +290,35 @@ export class MetadataService {
     return this.processSidecar(id, false);
   }
 
+  @OnEmit({ event: 'asset.tag' })
+  async handleTagAsset({ assetId }: ArgOf<'asset.tag'>) {
+    await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
+  }
+
+  @OnEmit({ event: 'asset.untag' })
+  async handleUntagAsset({ assetId }: ArgOf<'asset.untag'>) {
+    await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
+  }
+
   async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
-    const { id, description, dateTimeOriginal, latitude, longitude, rating } = job;
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
+    const [asset] = await this.assetRepository.getByIds([id], { tags: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
 
+    const tagsList = (asset.tags || []).map((tag) => tag.value);
+
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
-    const exif = _.omitBy<Tags>(
-      {
+    const exif = _.omitBy(
+      <Tags>{
         Description: description,
         ImageDescription: description,
         DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
+        TagsList: tags ? tagsList : undefined,
       },
       _.isUndefined,
     );

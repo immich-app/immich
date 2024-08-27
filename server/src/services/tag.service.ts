@@ -13,6 +13,7 @@ import {
 import { TagEntity } from 'src/entities/tag.entity';
 import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
@@ -22,6 +23,7 @@ import { upsertTags } from 'src/utils/tag';
 export class TagService {
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ITagRepository) private repository: ITagRepository,
   ) {}
 
@@ -73,6 +75,9 @@ export class TagService {
 
   async remove(auth: AuthDto, id: string): Promise<void> {
     await requireAccess(this.access, { auth, permission: Permission.TAG_DELETE, ids: [id] });
+
+    // TODO sync tag changes for affected assets
+
     await this.repository.delete(id);
   }
 
@@ -90,6 +95,10 @@ export class TagService {
     }
 
     const results = await this.repository.upsertAssetIds(items);
+    for (const assetId of new Set(results.map((item) => item.assetId))) {
+      await this.eventRepository.emit('asset.tag', { assetId });
+    }
+
     return { count: results.length };
   }
 
@@ -102,6 +111,12 @@ export class TagService {
       { parentId: id, assetIds: dto.ids },
     );
 
+    for (const { id: assetId, success } of results) {
+      if (success) {
+        await this.eventRepository.emit('asset.tag', { assetId });
+      }
+    }
+
     return results;
   }
 
@@ -113,6 +128,12 @@ export class TagService {
       { access: this.access, bulk: this.repository },
       { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.TAG_DELETE },
     );
+
+    for (const { id: assetId, success } of results) {
+      if (success) {
+        await this.eventRepository.emit('asset.untag', { assetId });
+      }
+    }
 
     return results;
   }

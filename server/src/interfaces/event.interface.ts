@@ -17,6 +17,10 @@ type EmitEventMap = {
   onAlbumUpdate: [{ id: string; updatedBy: string }];
   onAlbumInvite: [{ id: string; userId: string }];
 
+  // tag events
+  'asset.tag': [{ assetId: string }];
+  'asset.untag': [{ assetId: string }];
+
   // user events
   onUserSignup: [{ notify: boolean; id: string; tempPassword?: string }];
 };
