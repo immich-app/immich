@@ -66,8 +66,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   npm --prefix server run build
   make open-api
   npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
-  # TODO use $SERVER_PUMP once we pass 2.2.x
-  npm --prefix cli version patch
+  npm --prefix cli version "$SERVER_PUMP"
   npm --prefix cli i --package-lock-only
   npm --prefix web version "$SERVER_PUMP"
   npm --prefix web i --package-lock-only
