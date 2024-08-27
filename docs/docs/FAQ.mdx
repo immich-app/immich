@@ -52,6 +52,11 @@ On iOS (iPhone and iPad), the operating system determines if a particular app ca
 - Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
 - Use the Immich app more often.
 
+### Why are features not working with a self-signed cert or mTLS?
+
+Due to limitations in the upstream app/video library, using a self-signed TLS certificate or mutual TLS may break video playback or asset upload (both foreground and/or background).
+We recommend using a real SSL certificate from a free provider, for example [Let's Encrypt](https://letsencrypt.org/).
+
 ---
 
 ## Assets
