@@ -29,11 +29,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Thoroslives/immich_remove_offline_files',
   },
   {
-    title: 'Create albums from folders',
-    description: 'A Python script to create albums based on the folder structure of an external library.',
-    url: 'https://github.com/Salvoxia/immich-folder-album-creator',
-  },
-  {
     title: 'Immich-Tools',
     description: 'Provides scripts for handling problems on the repair page.',
     url: 'https://github.com/clumsyCoder00/Immich-Tools',
@@ -59,6 +54,11 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/giejay/Immich-Android-TV',
   },
   {
+    title: 'Create albums from folders',
+    description: 'A Python script to create albums based on the folder structure of an external library.',
+    url: 'https://github.com/Salvoxia/immich-folder-album-creator',
+  },
+  {
     title: 'Powershell Module PSImmich',
     description: 'Powershell Module for the Immich API',
     url: 'https://github.com/hanpq/PSImmich',
@@ -75,8 +75,7 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'Immich Power Tools',
-    description:
-      'An unofficial immich client providing tools to speed up your workflows in Immich to organize your people and albums.',
+    description: 'Power tools for organizing your immich library.',
     url: 'https://github.com/varun-raj/immich-power-tools',
   },
 ];
