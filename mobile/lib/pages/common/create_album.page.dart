@@ -191,6 +191,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     createNonSharedAlbum() async {
+      onBackgroundTapped();
       var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
             ref.watch(albumTitleProvider),
             selectedAssets.value,
