@@ -63,7 +63,7 @@ export class LibraryService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
+  @OnEmit({ event: 'app.bootstrap' })
   async onBootstrap() {
     const config = await this.configCore.getConfig({ withCache: false });
 
@@ -101,7 +101,7 @@ export class LibraryService {
     });
   }
 
-  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
@@ -186,7 +186,7 @@ export class LibraryService {
     }
   }
 
-  @OnEmit({ event: 'onShutdown' })
+  @OnEmit({ event: 'app.shutdown' })
   async onShutdown() {
     await this.unwatchAll();
   }
@@ -549,7 +549,6 @@ export class LibraryService {
     }
 
     const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
-
     if (!isInPath) {
       this.logger.debug(`Asset is no longer in an import path, marking offline: ${asset.originalPath}`);
       await this.assetRepository.update({ id: asset.id, isOffline: true });
@@ -557,7 +556,6 @@ export class LibraryService {
     }
 
     const fileExists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
-
     if (!fileExists) {
       this.logger.debug(
         `Asset is no longer found on disk or is covered by exclusion pattern, marking offline: ${asset.originalPath}`,
@@ -632,6 +630,7 @@ export class LibraryService {
 
     const assetsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
+      includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
       take: JOBS_LIBRARY_PAGINATION_SIZE,
     });

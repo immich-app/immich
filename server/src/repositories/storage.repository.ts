@@ -172,18 +172,17 @@ export class StorageRepository implements IStorageRepository {
       ignore: exclusionPatterns,
     });
 
-    let pathBatch = [] as string[];
-
+    let batch: string[] = [];
     for await (const value of stream) {
-      pathBatch.push(value.toString());
-      if (pathBatch.length === walkOptions.take) {
-        yield pathBatch;
-        pathBatch = [];
+      batch.push(value.toString());
+      if (batch.length === walkOptions.take) {
+        yield batch;
+        batch = [];
       }
     }
 
-    if (pathBatch.length > 0) {
-      yield pathBatch;
+    if (batch.length > 0) {
+      yield batch;
     }
   }
 

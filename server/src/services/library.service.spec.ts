@@ -290,6 +290,7 @@ describe(LibraryService.name, () => {
       expect(storageMock.walk).toHaveBeenCalledWith({
         pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
         exclusionPatterns: [],
+        includeHidden: false,
         take: JOBS_LIBRARY_PAGINATION_SIZE,
       });
     });

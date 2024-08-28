@@ -45,8 +45,8 @@ export interface IStorageRepository {
   checkDiskUsage(folder: string): Promise<DiskUsage>;
   readdir(folder: string): Promise<string[]>;
   stat(filepath: string): Promise<Stats>;
-  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
-  walk(crawlOptions: WalkOptionsDto): AsyncGenerator<string[]>;
+  crawl(options: CrawlOptionsDto): Promise<string[]>;
+  walk(options: WalkOptionsDto): AsyncGenerator<string[]>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>): () => Promise<void>;
