@@ -66,6 +66,7 @@ export class UserController {
     @Auth() auth: AuthDto,
     @Body() dto: UserPreferencesUpdateDto,
   ): Promise<UserPreferencesResponseDto> {
+    console.log('dto', dto);
     return this.service.updateMyPreferences(auth, dto);
   }
 

@@ -69,10 +69,29 @@ class PurchaseUpdate {
 }
 
 class MetadataUpdate {
+  @Optional()
+  @ValidateNested()
+  @Type(() => FolderUpdate)
   folder?: FolderUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => MemoryUpdate)
   memory?: MemoryUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => PeopleUpdate)
   people?: PeopleUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => RatingUpdate)
   rating?: RatingUpdate;
+
+  @Optional()
+  @ValidateNested()
+  @Type(() => TagUpdate)
   tag?: TagUpdate;
 }
 
