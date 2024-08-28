@@ -253,8 +253,9 @@ export class AssetStore {
 
   connect() {
     this.unsubscribers.push(
-      websocketEvents.on('on_upload_success', (asset) => {
-        this.addPendingChanges({ type: 'add', values: [asset] });
+      websocketEvents.on('on_upload_success', (_) => {
+        // TODO!: Temporarily disable to avoid flashing effect of the timeline
+        // this.addPendingChanges({ type: 'add', values: [asset] });
       }),
       websocketEvents.on('on_asset_trash', (ids) => {
         this.addPendingChanges({ type: 'trash', values: ids });

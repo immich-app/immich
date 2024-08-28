@@ -423,11 +423,13 @@ describe('AuthService', () => {
 
   describe('getMobileRedirect', () => {
     it('should pass along the query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual('app.immich:/?code=123&state=456');
+      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual(
+        'app.immich:///oauth-callback?code=123&state=456',
+      );
     });
 
     it('should work if called without query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:/?');
+      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:///oauth-callback?');
     });
   });
 
@@ -488,25 +490,23 @@ describe('AuthService', () => {
       expect(userMock.create).toHaveBeenCalledTimes(1);
     });
 
-    it('should use the mobile redirect override', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
-      userMock.getByOAuthId.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
+    for (const url of [
+      'app.immich:/',
+      'app.immich://',
+      'app.immich:///',
+      'app.immich:/oauth-callback?code=abc123',
+      'app.immich://oauth-callback?code=abc123',
+      'app.immich:///oauth-callback?code=abc123',
+    ]) {
+      it(`should use the mobile redirect override for a url of ${url}`, async () => {
+        systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
+        userMock.getByOAuthId.mockResolvedValue(userStub.user1);
+        sessionMock.create.mockResolvedValue(sessionStub.valid);
 
-      await sut.callback({ url: `app.immich:/?code=abc123` }, loginDetails);
-
-      expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
-    });
-
-    it('should use the mobile redirect override for ios urls with multiple slashes', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
-      userMock.getByOAuthId.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
-
-      await sut.callback({ url: `app.immich:///?code=abc123` }, loginDetails);
-
-      expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
-    });
+        await sut.callback({ url }, loginDetails);
+        expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
+      });
+    }
 
     it('should use the default quota', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
