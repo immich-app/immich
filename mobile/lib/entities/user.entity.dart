@@ -38,7 +38,7 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = preferences?.memories.enabled ?? false,
+        memoryEnabled = preferences?.metadata.memory.enabled ?? false,
         avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = false,
         quotaUsageInBytes = dto.quotaUsageInBytes ?? 0,
