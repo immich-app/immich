@@ -101,6 +101,7 @@ export class LibraryService {
     });
   }
 
+  @OnEmit({ event: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {

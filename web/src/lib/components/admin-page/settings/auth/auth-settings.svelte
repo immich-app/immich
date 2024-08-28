@@ -209,7 +209,9 @@
 
               <SettingSwitch
                 title={$t('admin.oauth_mobile_redirect_uri_override').toUpperCase()}
-                subtitle={$t('admin.oauth_mobile_redirect_uri_override_description')}
+                subtitle={$t('admin.oauth_mobile_redirect_uri_override_description', {
+                  values: { callback: 'app.immich:///oauth-callback' },
+                })}
                 disabled={disabled || !config.oauth.enabled}
                 on:click={() => handleToggleOverride()}
                 bind:checked={config.oauth.mobileOverrideEnabled}
