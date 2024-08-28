@@ -88,6 +88,7 @@
 
   const handleSubmit = async () => {
     if (tag && isEditOpen && newTagColor) {
+      console.log('update tag', tag.id, newTagColor);
       await updateTag({ id: tag.id, tagUpdateDto: { color: newTagColor } });
 
       notificationController.show({
@@ -243,7 +244,7 @@
     <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="edit-tag-form">
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
+          inputType={SettingInputFieldType.COLOR}
           label={$t('color').toUpperCase()}
           bind:value={newTagColor}
         />

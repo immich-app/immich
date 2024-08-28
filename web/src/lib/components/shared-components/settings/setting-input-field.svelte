@@ -4,6 +4,7 @@
     TEXT = 'text',
     NUMBER = 'number',
     PASSWORD = 'password',
+    COLOR = 'color',
   }
 </script>
 
@@ -81,23 +82,46 @@
   {/if}
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
-    <input
-      bind:this={input}
-      class="immich-form-input w-full pb-2"
-      aria-describedby={desc ? `${label}-desc` : undefined}
-      aria-labelledby="{label}-label"
-      id={label}
-      name={label}
-      type={inputType}
-      min={min.toString()}
-      max={max.toString()}
-      {step}
-      {required}
-      {value}
-      on:change={handleChange}
-      {disabled}
-      {title}
-    />
+    <div class="flex place-items-center place-content-center">
+      {#if inputType === SettingInputFieldType.COLOR}
+        <input
+          bind:this={input}
+          class="immich-form-input w-full pb-2 rounded-none mr-1"
+          aria-describedby={desc ? `${label}-desc` : undefined}
+          aria-labelledby="{label}-label"
+          id={label}
+          name={label}
+          type="text"
+          min={min.toString()}
+          max={max.toString()}
+          {step}
+          {required}
+          {value}
+          on:change={handleChange}
+          {disabled}
+          {title}
+        />
+      {/if}
+
+      <input
+        bind:this={input}
+        class="immich-form-input w-full pb-2"
+        class:color-picker={inputType === SettingInputFieldType.COLOR}
+        aria-describedby={desc ? `${label}-desc` : undefined}
+        aria-labelledby="{label}-label"
+        id={label}
+        name={label}
+        type={inputType}
+        min={min.toString()}
+        max={max.toString()}
+        {step}
+        {required}
+        {value}
+        on:change={handleChange}
+        {disabled}
+        {title}
+      />
+    </div>
   {:else}
     <PasswordField
       aria-describedby={desc ? `${label}-desc` : undefined}
@@ -113,3 +137,28 @@
     />
   {/if}
 </div>
+
+<style>
+  .color-picker {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 52px;
+    height: 52px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+  }
+
+  .color-picker::-webkit-color-swatch {
+    border-radius: 14px;
+    border: none;
+  }
+
+  .color-picker::-moz-color-swatch {
+    border-radius: 14px;
+    border: none;
+  }
+</style>
