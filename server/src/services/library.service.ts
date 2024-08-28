@@ -565,9 +565,7 @@ export class LibraryService {
 
     const fileExists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
     if (!fileExists) {
-      this.logger.debug(
-        `Asset is no longer found on disk or is covered by exclusion pattern, marking offline: ${asset.originalPath}`,
-      );
+      this.logger.debug(`Asset is no longer found on disk, marking offline: ${asset.originalPath}`);
       await this.assetRepository.update({ id: asset.id, isOffline: true });
       return JobStatus.SUCCESS;
     }
