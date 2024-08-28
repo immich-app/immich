@@ -4,9 +4,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/utils/hooks/timer_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/center_play_button.dart';
 import 'package:immich_mobile/widgets/common/delayed_loading_indicator.dart';
-import 'package:immich_mobile/utils/hooks/timer_hook.dart';
 
 class CustomVideoPlayerControls extends HookConsumerWidget {
   final Duration hideTimerDuration;
@@ -86,12 +86,8 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
               )
             else
               GestureDetector(
-                onTap: () {
-                  if (state != VideoPlaybackState.playing) {
-                    togglePlay();
-                  }
-                  ref.read(showControlsProvider.notifier).show = false;
-                },
+                onTap: () =>
+                    ref.read(showControlsProvider.notifier).show = false,
                 child: CenterPlayButton(
                   backgroundColor: Colors.black54,
                   iconColor: Colors.white,

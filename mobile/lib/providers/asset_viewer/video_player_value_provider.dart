@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:native_video_player/native_video_player.dart';
 import 'package:video_player/video_player.dart';
 
 enum VideoPlaybackState {
@@ -28,6 +29,32 @@ class VideoPlaybackValue {
     required this.state,
     required this.volume,
   });
+
+  factory VideoPlaybackValue.fromNativeController(
+    NativeVideoPlayerController controller,
+  ) {
+    final playbackInfo = controller.playbackInfo;
+    final videoInfo = controller.videoInfo;
+    late VideoPlaybackState s;
+    if (playbackInfo?.status == null) {
+      s = VideoPlaybackState.initializing;
+    } else if (playbackInfo?.status == PlaybackStatus.stopped &&
+        (playbackInfo?.positionFraction == 1 ||
+            playbackInfo?.positionFraction == 0)) {
+      s = VideoPlaybackState.completed;
+    } else if (playbackInfo?.status == PlaybackStatus.playing) {
+      s = VideoPlaybackState.playing;
+    } else {
+      s = VideoPlaybackState.paused;
+    }
+
+    return VideoPlaybackValue(
+      position: Duration(seconds: playbackInfo?.position ?? 0),
+      duration: Duration(seconds: videoInfo?.duration ?? 0),
+      state: s,
+      volume: playbackInfo?.volume ?? 0.0,
+    );
+  }
 
   factory VideoPlaybackValue.fromController(VideoPlayerController? controller) {
     final video = controller?.value;
