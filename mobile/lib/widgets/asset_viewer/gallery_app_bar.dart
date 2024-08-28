@@ -37,6 +37,7 @@ class GalleryAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentAlbumProvider);
+    final isInAlbum = album?.isRemote ?? false;
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
 
     final isPartner = ref
@@ -107,7 +108,9 @@ class GalleryAppBar extends ConsumerWidget {
             title: Center(
               heightFactor: 0.8,
               child: Text(
-                "partner_sharing_dialog_title".tr(),
+                isInAlbum
+                    ? "album_thumbnail_shared_by".tr(args: [":"])
+                    : "partner_sharing_dialog_title".tr(),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
