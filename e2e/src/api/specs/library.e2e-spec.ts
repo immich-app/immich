@@ -7,6 +7,7 @@ import {
   scanLibrary,
 } from '@immich/sdk';
 import { cpSync, existsSync } from 'node:fs';
+import { afterEach } from 'node:test';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -440,7 +441,7 @@ describe('/libraries', () => {
       await request(app)
         .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ exclusionPattern: ['**/directoryB/**'] });
+        .send({ exclusionPatterns: ['**/directoryB/**'] });
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
