@@ -71,7 +71,6 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
-    "mnemonist": "^0.39.8",
     "nest-commander": "^3.11.1",
     "nestjs-cls": "^4.3.0",
     "nestjs-otel": "^6.0.0",
