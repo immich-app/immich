@@ -9119,6 +9119,25 @@
         ],
         "type": "object"
       },
+      "FolderReponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "FolderUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "ImageFormat": {
         "enum": [
           "jpeg",
@@ -9806,6 +9825,26 @@
         },
         "type": "object"
       },
+      "MetadataUpdate": {
+        "properties": {
+          "folder": {
+            "$ref": "#/components/schemas/FolderUpdate"
+          },
+          "memory": {
+            "$ref": "#/components/schemas/MemoryUpdate"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleUpdate"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/RatingUpdate"
+          },
+          "tag": {
+            "$ref": "#/components/schemas/TagUpdate"
+          }
+        },
+        "type": "object"
+      },
       "OAuthAuthorizeResponseDto": {
         "properties": {
           "url": {
@@ -9908,6 +9947,17 @@
         ],
         "type": "string"
       },
+      "PeopleReponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
       "PeopleResponseDto": {
         "properties": {
           "hasNextPage": {
@@ -9932,6 +9982,14 @@
           "people",
           "total"
         ],
+        "type": "object"
+      },
+      "PeopleUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "PeopleUpdateDto": {
@@ -11848,6 +11906,17 @@
         ],
         "type": "object"
       },
+      "TagReponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
           "id": {
@@ -11878,6 +11947,14 @@
           "CUSTOM"
         ],
         "type": "string"
+      },
+      "TagUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "TimeBucketResponseDto": {
         "properties": {
@@ -12253,6 +12330,33 @@
         ],
         "type": "object"
       },
+      "UserMetadataReponse": {
+        "properties": {
+          "folder": {
+            "$ref": "#/components/schemas/FolderReponse"
+          },
+          "memory": {
+            "$ref": "#/components/schemas/MemoryResponse"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleReponse"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/RatingResponse"
+          },
+          "tag": {
+            "$ref": "#/components/schemas/TagReponse"
+          }
+        },
+        "required": [
+          "folder",
+          "memory",
+          "people",
+          "rating",
+          "tag"
+        ],
+        "type": "object"
+      },
       "UserPreferencesResponseDto": {
         "properties": {
           "avatar": {
@@ -12264,23 +12368,19 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
-          "memories": {
-            "$ref": "#/components/schemas/MemoryResponse"
+          "metadata": {
+            "$ref": "#/components/schemas/UserMetadataReponse"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
-          },
-          "rating": {
-            "$ref": "#/components/schemas/RatingResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
-          "memories",
-          "purchase",
-          "rating"
+          "metadata",
+          "purchase"
         ],
         "type": "object"
       },
@@ -12295,14 +12395,11 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
-          "memories": {
-            "$ref": "#/components/schemas/MemoryUpdate"
+          "metadata": {
+            "$ref": "#/components/schemas/MetadataUpdate"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"
-          },
-          "rating": {
-            "$ref": "#/components/schemas/RatingUpdate"
           }
         },
         "type": "object"

@@ -16,9 +16,8 @@ class UserPreferencesUpdateDto {
     this.avatar,
     this.download,
     this.emailNotifications,
-    this.memories,
+    this.metadata,
     this.purchase,
-    this.rating,
   });
 
   ///
@@ -51,7 +50,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  MemoryUpdate? memories;
+  MetadataUpdate? metadata;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -61,22 +60,13 @@ class UserPreferencesUpdateDto {
   ///
   PurchaseUpdate? purchase;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  RatingUpdate? rating;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesUpdateDto &&
     other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
-    other.memories == memories &&
-    other.purchase == purchase &&
-    other.rating == rating;
+    other.metadata == metadata &&
+    other.purchase == purchase;
 
   @override
   int get hashCode =>
@@ -84,12 +74,11 @@ class UserPreferencesUpdateDto {
     (avatar == null ? 0 : avatar!.hashCode) +
     (download == null ? 0 : download!.hashCode) +
     (emailNotifications == null ? 0 : emailNotifications!.hashCode) +
-    (memories == null ? 0 : memories!.hashCode) +
-    (purchase == null ? 0 : purchase!.hashCode) +
-    (rating == null ? 0 : rating!.hashCode);
+    (metadata == null ? 0 : metadata!.hashCode) +
+    (purchase == null ? 0 : purchase!.hashCode);
 
   @override
-  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase, rating=$rating]';
+  String toString() => 'UserPreferencesUpdateDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, metadata=$metadata, purchase=$purchase]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -108,20 +97,15 @@ class UserPreferencesUpdateDto {
     } else {
     //  json[r'emailNotifications'] = null;
     }
-    if (this.memories != null) {
-      json[r'memories'] = this.memories;
+    if (this.metadata != null) {
+      json[r'metadata'] = this.metadata;
     } else {
-    //  json[r'memories'] = null;
+    //  json[r'metadata'] = null;
     }
     if (this.purchase != null) {
       json[r'purchase'] = this.purchase;
     } else {
     //  json[r'purchase'] = null;
-    }
-    if (this.rating != null) {
-      json[r'rating'] = this.rating;
-    } else {
-    //  json[r'rating'] = null;
     }
     return json;
   }
@@ -137,9 +121,8 @@ class UserPreferencesUpdateDto {
         avatar: AvatarUpdate.fromJson(json[r'avatar']),
         download: DownloadUpdate.fromJson(json[r'download']),
         emailNotifications: EmailNotificationsUpdate.fromJson(json[r'emailNotifications']),
-        memories: MemoryUpdate.fromJson(json[r'memories']),
+        metadata: MetadataUpdate.fromJson(json[r'metadata']),
         purchase: PurchaseUpdate.fromJson(json[r'purchase']),
-        rating: RatingUpdate.fromJson(json[r'rating']),
       );
     }
     return null;

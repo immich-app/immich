@@ -22,6 +22,21 @@ class RatingUpdate {
   enabled?: boolean;
 }
 
+class FolderUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+}
+
+class PeopleUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+}
+
+class TagUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+}
+
 class EmailNotificationsUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
@@ -53,21 +68,24 @@ class PurchaseUpdate {
   hideBuyButtonUntil?: string;
 }
 
+class MetadataUpdate {
+  folder?: FolderUpdate;
+  memory?: MemoryUpdate;
+  people?: PeopleUpdate;
+  rating?: RatingUpdate;
+  tag?: TagUpdate;
+}
+
 export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
-  @Type(() => RatingUpdate)
-  rating?: RatingUpdate;
+  @Type(() => MetadataUpdate)
+  metadata?: MetadataUpdate;
 
   @Optional()
   @ValidateNested()
   @Type(() => AvatarUpdate)
   avatar?: AvatarUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => MemoryUpdate)
-  memories?: MemoryUpdate;
 
   @Optional()
   @ValidateNested()
@@ -98,6 +116,18 @@ class MemoryResponse {
   enabled!: boolean;
 }
 
+class FolderReponse {
+  enabled!: boolean;
+}
+
+class PeopleReponse {
+  enabled!: boolean;
+}
+
+class TagReponse {
+  enabled!: boolean;
+}
+
 class EmailNotificationsResponse {
   enabled!: boolean;
   albumInvite!: boolean;
@@ -116,9 +146,16 @@ class PurchaseResponse {
   hideBuyButtonUntil!: string;
 }
 
-export class UserPreferencesResponseDto implements UserPreferences {
+class UserMetadataReponse {
+  folder!: FolderReponse;
+  memory!: MemoryResponse;
+  people!: PeopleReponse;
   rating!: RatingResponse;
-  memories!: MemoryResponse;
+  tag!: TagReponse;
+}
+
+export class UserPreferencesResponseDto implements UserPreferences {
+  metadata!: UserMetadataReponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;

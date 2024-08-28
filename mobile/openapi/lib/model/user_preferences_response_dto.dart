@@ -16,9 +16,8 @@ class UserPreferencesResponseDto {
     required this.avatar,
     required this.download,
     required this.emailNotifications,
-    required this.memories,
+    required this.metadata,
     required this.purchase,
-    required this.rating,
   });
 
   AvatarResponse avatar;
@@ -27,20 +26,17 @@ class UserPreferencesResponseDto {
 
   EmailNotificationsResponse emailNotifications;
 
-  MemoryResponse memories;
+  UserMetadataReponse metadata;
 
   PurchaseResponse purchase;
-
-  RatingResponse rating;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
     other.avatar == avatar &&
     other.download == download &&
     other.emailNotifications == emailNotifications &&
-    other.memories == memories &&
-    other.purchase == purchase &&
-    other.rating == rating;
+    other.metadata == metadata &&
+    other.purchase == purchase;
 
   @override
   int get hashCode =>
@@ -48,21 +44,19 @@ class UserPreferencesResponseDto {
     (avatar.hashCode) +
     (download.hashCode) +
     (emailNotifications.hashCode) +
-    (memories.hashCode) +
-    (purchase.hashCode) +
-    (rating.hashCode);
+    (metadata.hashCode) +
+    (purchase.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, memories=$memories, purchase=$purchase, rating=$rating]';
+  String toString() => 'UserPreferencesResponseDto[avatar=$avatar, download=$download, emailNotifications=$emailNotifications, metadata=$metadata, purchase=$purchase]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'avatar'] = this.avatar;
       json[r'download'] = this.download;
       json[r'emailNotifications'] = this.emailNotifications;
-      json[r'memories'] = this.memories;
+      json[r'metadata'] = this.metadata;
       json[r'purchase'] = this.purchase;
-      json[r'rating'] = this.rating;
     return json;
   }
 
@@ -77,9 +71,8 @@ class UserPreferencesResponseDto {
         avatar: AvatarResponse.fromJson(json[r'avatar'])!,
         download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
-        memories: MemoryResponse.fromJson(json[r'memories'])!,
+        metadata: UserMetadataReponse.fromJson(json[r'metadata'])!,
         purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
-        rating: RatingResponse.fromJson(json[r'rating'])!,
       );
     }
     return null;
@@ -130,9 +123,8 @@ class UserPreferencesResponseDto {
     'avatar',
     'download',
     'emailNotifications',
-    'memories',
+    'metadata',
     'purchase',
-    'rating',
   };
 }
 

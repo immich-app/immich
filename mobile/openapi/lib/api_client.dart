@@ -333,6 +333,10 @@ class ApiClient {
           return FileReportFixDto.fromJson(value);
         case 'FileReportItemDto':
           return FileReportItemDto.fromJson(value);
+        case 'FolderReponse':
+          return FolderReponse.fromJson(value);
+        case 'FolderUpdate':
+          return FolderUpdate.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
         case 'JobCommand':
@@ -387,6 +391,8 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':
           return MetadataSearchDto.fromJson(value);
+        case 'MetadataUpdate':
+          return MetadataUpdate.fromJson(value);
         case 'OAuthAuthorizeResponseDto':
           return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
@@ -403,8 +409,12 @@ class ApiClient {
           return PathEntityTypeTypeTransformer().decode(value);
         case 'PathType':
           return PathTypeTypeTransformer().decode(value);
+        case 'PeopleReponse':
+          return PeopleReponse.fromJson(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
+        case 'PeopleUpdate':
+          return PeopleUpdate.fromJson(value);
         case 'PeopleUpdateDto':
           return PeopleUpdateDto.fromJson(value);
         case 'PeopleUpdateItem':
@@ -543,10 +553,14 @@ class ApiClient {
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':
           return SystemConfigUserDto.fromJson(value);
+        case 'TagReponse':
+          return TagReponse.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
           return TagTypeEnumTypeTransformer().decode(value);
+        case 'TagUpdate':
+          return TagUpdate.fromJson(value);
         case 'TimeBucketResponseDto':
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketSize':
@@ -583,6 +597,8 @@ class ApiClient {
           return UserAvatarColorTypeTransformer().decode(value);
         case 'UserLicense':
           return UserLicense.fromJson(value);
+        case 'UserMetadataReponse':
+          return UserMetadataReponse.fromJson(value);
         case 'UserPreferencesResponseDto':
           return UserPreferencesResponseDto.fromJson(value);
         case 'UserPreferencesUpdateDto':

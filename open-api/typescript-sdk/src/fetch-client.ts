@@ -93,23 +93,38 @@ export type EmailNotificationsResponse = {
     albumUpdate: boolean;
     enabled: boolean;
 };
+export type FolderReponse = {
+    enabled: boolean;
+};
 export type MemoryResponse = {
     enabled: boolean;
+};
+export type PeopleReponse = {
+    enabled: boolean;
+};
+export type RatingResponse = {
+    enabled: boolean;
+};
+export type TagReponse = {
+    enabled: boolean;
+};
+export type UserMetadataReponse = {
+    folder: FolderReponse;
+    memory: MemoryResponse;
+    people: PeopleReponse;
+    rating: RatingResponse;
+    tag: TagReponse;
 };
 export type PurchaseResponse = {
     hideBuyButtonUntil: string;
     showSupportBadge: boolean;
 };
-export type RatingResponse = {
-    enabled: boolean;
-};
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
-    memories: MemoryResponse;
+    metadata: UserMetadataReponse;
     purchase: PurchaseResponse;
-    rating: RatingResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -123,23 +138,38 @@ export type EmailNotificationsUpdate = {
     albumUpdate?: boolean;
     enabled?: boolean;
 };
+export type FolderUpdate = {
+    enabled?: boolean;
+};
 export type MemoryUpdate = {
     enabled?: boolean;
+};
+export type PeopleUpdate = {
+    enabled?: boolean;
+};
+export type RatingUpdate = {
+    enabled?: boolean;
+};
+export type TagUpdate = {
+    enabled?: boolean;
+};
+export type MetadataUpdate = {
+    folder?: FolderUpdate;
+    memory?: MemoryUpdate;
+    people?: PeopleUpdate;
+    rating?: RatingUpdate;
+    tag?: TagUpdate;
 };
 export type PurchaseUpdate = {
     hideBuyButtonUntil?: string;
     showSupportBadge?: boolean;
 };
-export type RatingUpdate = {
-    enabled?: boolean;
-};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
-    memories?: MemoryUpdate;
+    metadata?: MetadataUpdate;
     purchase?: PurchaseUpdate;
-    rating?: RatingUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
