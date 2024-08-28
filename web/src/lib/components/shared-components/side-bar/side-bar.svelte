@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import {
     mdiAccount,
@@ -28,6 +27,7 @@
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
+  import { preferences } from '$lib/stores/user.store';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -64,7 +64,7 @@
       />
     {/if}
 
-    {#if $sidebarSettings.people}
+    {#if $preferences.metadata.people.enabled}
       <SideBarLink
         title={$t('people')}
         routeId="/(user)/people"
@@ -72,18 +72,17 @@
         icon={isPeopleSelected ? mdiAccount : mdiAccountOutline}
       />
     {/if}
-    {#if $sidebarSettings.sharing}
-      <SideBarLink
-        title={$t('sharing')}
-        routeId="/(user)/sharing"
-        icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
-        bind:isSelected={isSharingSelected}
-      >
-        <svelte:fragment slot="moreInformation">
-          <MoreInformationAlbums albumType="shared" />
-        </svelte:fragment>
-      </SideBarLink>
-    {/if}
+
+    <SideBarLink
+      title={$t('sharing')}
+      routeId="/(user)/sharing"
+      icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
+      bind:isSelected={isSharingSelected}
+    >
+      <svelte:fragment slot="moreInformation">
+        <MoreInformationAlbums albumType="shared" />
+      </svelte:fragment>
+    </SideBarLink>
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
       <p class="hidden p-6 group-hover:sm:block md:block">{$t('library').toUpperCase()}</p>
@@ -105,7 +104,9 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
+    {#if $preferences.metadata.folder.enabled}
+      <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
+    {/if}
 
     <SideBarLink
       title={$t('utilities')}
