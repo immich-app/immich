@@ -16,7 +16,7 @@ When sharing shared albums, whats shared is:
 
 - Download all assets as zip file (Web only).
   :::info Archive size limited.
-  If the size of the album exceeds 4GB, the archive files will be divided into 4GB each.
+  If the size of the album exceeds 4GB, the archive files will by default be divided into 4GB each. This can be changed on the user settings page.
   :::
 - Add a description to the album (Web only).
 - Slideshow view (Web only).
@@ -152,7 +152,7 @@ Some of the features are not available on mobile, to understand what the full fe
 
 ## Sharing Between Users
 
-#### Add or remove users from the album.
+#### Add or remove users from the album
 
 :::info remove user(s)
 When a user is removed from the album, the photos he uploaded will still appear in the album.

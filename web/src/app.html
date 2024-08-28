@@ -20,43 +20,27 @@
         height: 100%;
         width: 100%;
       }
+
       body,
       html {
         margin: 0;
         padding: 0;
       }
+
       @keyframes delayedVisibility {
         to {
           visibility: visible;
         }
       }
-      @keyframes stencil-pulse {
-        0% {
-          transform: scale(0.93);
-          filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.7));
-        }
 
-        70% {
-          transform: scale(1);
-          filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0));
-        }
-
-        100% {
-          transform: scale(0.93);
-          filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
-        }
-      }
       @keyframes loadspin {
         100% {
           transform: rotate(360deg);
         }
       }
-      #stencil svg {
-        height: 35%;
-        animation: stencil-pulse 1s linear infinite;
-      }
+
       #stencil {
-        --stencil-width: 25vw;
+        --stencil-width: 150px;
         display: flex;
         width: var(--stencil-width);
         margin-left: auto;
@@ -69,11 +53,13 @@
         visibility: hidden;
         animation:
           0s linear 0.3s forwards delayedVisibility,
-          loadspin 2s linear infinite;
+          loadspin 8s linear infinite;
       }
+
       .bg-immich-bg {
         background-color: white;
       }
+
       .dark .dark\:bg-immich-dark-bg {
         background-color: black;
       }

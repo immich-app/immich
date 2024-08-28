@@ -1,5 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
-import { groupBy } from 'lodash';
+import { groupBy, sortBy } from 'lodash';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ValidateUUID } from 'src/validation';
 
@@ -19,7 +19,8 @@ export function mapDuplicateResponse(assets: AssetResponseDto[]): DuplicateRespo
 
   const grouped = groupBy(assets, (a) => a.duplicateId);
 
-  for (const [duplicateId, assets] of Object.entries(grouped)) {
+  for (const [duplicateId, unsortedAssets] of Object.entries(grouped)) {
+    const assets = sortBy(unsortedAssets, (asset) => asset.localDateTime);
     result.push({ duplicateId, assets });
   }
 

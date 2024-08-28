@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 
-// Redirect URL = app.immich://
+// Redirect URL = app.immich:///oauth-callback
 
 class OAuthService {
   final ApiService _apiService;
@@ -16,28 +16,40 @@ class OAuthService {
   ) async {
     // Resolve API server endpoint from user provided serverUrl
     await _apiService.resolveAndSetEndpoint(serverUrl);
+    final redirectUri = '$callbackUrlScheme:///oauth-callback';
+    log.info(
+      "Starting OAuth flow with redirect URI: $redirectUri",
+    );
 
     final dto = await _apiService.oAuthApi.startOAuth(
-      OAuthConfigDto(redirectUri: '$callbackUrlScheme:/'),
+      OAuthConfigDto(redirectUri: redirectUri),
     );
-    return dto?.url;
+
+    final authUrl = dto?.url;
+    log.info('Received Authorization URL: $authUrl');
+
+    return authUrl;
   }
 
   Future<LoginResponseDto?> oAuthLogin(String oauthUrl) async {
-    try {
-      var result = await FlutterWebAuth.authenticate(
-        url: oauthUrl,
-        callbackUrlScheme: callbackUrlScheme,
-      );
+    String result = await FlutterWebAuth.authenticate(
+      url: oauthUrl,
+      callbackUrlScheme: callbackUrlScheme,
+    );
 
-      return await _apiService.oAuthApi.finishOAuth(
-        OAuthCallbackDto(
-          url: result,
-        ),
+    log.info('Received OAuth callback: $result');
+
+    if (result.startsWith('app.immich:/oauth-callback')) {
+      result = result.replaceAll(
+        'app.immich:/oauth-callback',
+        'app.immich:///oauth-callback',
       );
-    } catch (e, stack) {
-      log.severe("OAuth login failed", e, stack);
-      return null;
     }
+
+    return await _apiService.oAuthApi.finishOAuth(
+      OAuthCallbackDto(
+        url: result,
+      ),
+    );
   }
 }
