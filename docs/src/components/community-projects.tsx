@@ -69,6 +69,11 @@ const projects: CommunityProjectProps[] = [
     url: 'https://immich-distribution.nsg.cc',
   },
   {
+    title: 'Immich Kiosk',
+    description: 'Lightweight slideshow to run on kiosk devices and browsers.',
+    url: 'https://github.com/damongolding/immich-kiosk',
+  },
+  {
     title: 'Immich Power Tools',
     description: 'Power tools for organizing your immich library.',
     url: 'https://github.com/varun-raj/immich-power-tools',

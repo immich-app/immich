@@ -39,8 +39,8 @@ export class MicroservicesService {
     private versionService: VersionService,
   ) {}
 
-  @OnEmit({ event: 'onBootstrap' })
-  async onBootstrap(app: ArgOf<'onBootstrap'>) {
+  @OnEmit({ event: 'app.bootstrap' })
+  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }

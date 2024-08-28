@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-
-  import { fade } from 'svelte/transition';
-
   import { thumbhash } from '$lib/actions/thumbhash';
+  import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
-  import { mdiEyeOffOutline, mdiImageBrokenVariant } from '@mdi/js';
+  import { mdiEyeOffOutline } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   export let url: string;
   export let altText: string | undefined;
@@ -48,9 +48,9 @@
 </script>
 
 {#if errored}
-  <div class="absolute flex h-full w-full items-center justify-center p-4 z-10">
-    <Icon path={mdiImageBrokenVariant} size="48" />
-  </div>
+  <BrokenAsset>
+    <div slot="message" class="absolute top-2/3">{$t('error_loading_image')}</div>
+  </BrokenAsset>
 {:else}
   <img
     bind:this={img}

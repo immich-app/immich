@@ -29,6 +29,7 @@ class SearchDropdown<T> extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return DropdownMenu(
+          controller: controller,
           leadingIcon: leadingIcon,
           width: constraints.maxWidth,
           dropdownMenuEntries: dropdownMenuEntries,

@@ -843,7 +843,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: '8bit-sRGB.avif',
-          resized: true,
           exifInfo: {
             description: '',
             exifImageHeight: 1080,
@@ -859,7 +858,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: 'el_torcal_rocks.jpg',
-          resized: true,
           exifInfo: {
             dateTimeOriginal: '2012-08-05T11:39:59.000Z',
             exifImageWidth: 512,
@@ -883,7 +881,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: '8bit-sRGB.jxl',
-          resized: true,
           exifInfo: {
             description: '',
             exifImageHeight: 1080,
@@ -899,7 +896,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: 'IMG_2682.heic',
-          resized: true,
           fileCreatedAt: '2019-03-21T16:04:22.348Z',
           exifInfo: {
             dateTimeOriginal: '2019-03-21T16:04:22.348Z',
@@ -924,7 +920,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: 'density_plot.png',
-          resized: true,
           exifInfo: {
             exifImageWidth: 800,
             exifImageHeight: 800,
@@ -939,7 +934,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: 'glarus.nef',
-          resized: true,
           fileCreatedAt: '2010-07-20T17:27:12.000Z',
           exifInfo: {
             make: 'NIKON CORPORATION',
@@ -961,7 +955,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: 'philadelphia.nef',
-          resized: true,
           fileCreatedAt: '2016-09-22T22:10:29.060Z',
           exifInfo: {
             make: 'NIKON CORPORATION',
@@ -984,7 +977,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: '4_3.rw2',
-          resized: true,
           fileCreatedAt: '2018-05-10T08:42:37.842Z',
           exifInfo: {
             make: 'Panasonic',
@@ -1008,7 +1000,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: '12bit-compressed-(3_2).arw',
-          resized: true,
           fileCreatedAt: '2016-09-27T10:51:44.000Z',
           exifInfo: {
             make: 'SONY',
@@ -1033,7 +1024,6 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: '14bit-uncompressed-(3_2).arw',
-          resized: true,
           fileCreatedAt: '2016-01-08T14:08:01.000Z',
           exifInfo: {
             make: 'SONY',

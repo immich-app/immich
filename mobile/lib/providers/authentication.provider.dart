@@ -190,6 +190,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         error,
         stackTrace,
       );
+      debugPrint(
+        "Error getting user information from the server [CATCH ALL] $error $stackTrace",
+      );
     }
 
     // If the user information is successfully retrieved, update the store

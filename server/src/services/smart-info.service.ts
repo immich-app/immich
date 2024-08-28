@@ -39,8 +39,8 @@ export class SmartInfoService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
-  async onBootstrap(app: ArgOf<'onBootstrap'>) {
+  @OnEmit({ event: 'app.bootstrap' })
+  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -49,8 +49,8 @@ export class SmartInfoService {
     await this.init(config);
   }
 
-  @OnEmit({ event: 'onConfigValidate' })
-  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
     } catch {
@@ -60,8 +60,8 @@ export class SmartInfoService {
     }
   }
 
-  @OnEmit({ event: 'onConfigUpdate' })
-  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'onConfigUpdate'>) {
+  @OnEmit({ event: 'config.update' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig, oldConfig);
   }
 
