@@ -7,7 +7,6 @@ import {
   scanLibrary,
 } from '@immich/sdk';
 import { cpSync, existsSync } from 'node:fs';
-import { afterEach } from 'node:test';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
