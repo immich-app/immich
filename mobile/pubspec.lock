@@ -1027,10 +1027,11 @@ packages:
   native_video_player:
     dependency: "direct main"
     description:
-      name: native_video_player
-      sha256: "8df92df138c13ebf9df6b30525f9c4198534705fd450a98da14856d3a0e48cd4"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: "feat/headers"
+      resolved-ref: "568c76e1552791f06dcf44b45d3373cad12913ed"
+      url: "https://github.com/immich-app/native_video_player"
+    source: git
     version: "1.3.1"
   nested:
     dependency: transitive
