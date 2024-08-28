@@ -208,9 +208,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     canCreateNonSharedAlbum() {
       return albumTitleController.text.isNotEmpty &&
-          (selectedAssets.value.isEmpty
-              && albumTitleController.text != "Untitled")
-          || (selectedAssets.value.isNotEmpty);
+          (selectedAssets.value.isEmpty || selectedAssets.value.isNotEmpty);
     }
 
     return Scaffold(
