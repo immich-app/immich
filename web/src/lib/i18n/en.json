@@ -864,7 +864,7 @@
   "ok": "Ok",
   "oldest_first": "Oldest first",
   "onboarding": "Onboarding",
-  "onboarding_privacy_description": "The following (optional) features rely on external services, and can by disabled at any time in the administration settings.",
+  "onboarding_privacy_description": "The following (optional) features rely on external services, and can be disabled at any time in the administration settings.",
   "onboarding_theme_description": "Choose a color theme for your instance. You can change this later in your settings.",
   "onboarding_welcome_description": "Let's get your instance set up with some common settings.",
   "onboarding_welcome_user": "Welcome, {user}",
