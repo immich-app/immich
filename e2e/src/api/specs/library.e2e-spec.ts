@@ -383,7 +383,7 @@ describe('/libraries', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(newAssets.count).toBe(2);
+      expect(newAssets.count).toBe(3);
 
       expect(newAssets.items).toEqual(
         expect.arrayContaining([
@@ -447,8 +447,14 @@ describe('/libraries', () => {
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
+      expect(assets.count).toBe(2);
+
       expect(assets.items).toEqual(
         expect.arrayContaining([
+          expect.objectContaining({
+            isOffline: false,
+            originalFileName: 'assetA.png',
+          }),
           expect.objectContaining({
             isOffline: true,
             originalFileName: 'assetB.png',
@@ -500,6 +506,8 @@ describe('/libraries', () => {
       await utils.waitForWebsocketEvent({ event: 'assetDelete', total: 1 });
 
       expect(existsSync(`${testAssetDir}/temp/offline1/assetA.png`)).toBe(true);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
     });
 
     it('should scan new files', async () => {
