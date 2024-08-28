@@ -325,11 +325,25 @@ describe(LibraryService.name, () => {
       expect(assetMock.update).not.toHaveBeenCalled();
     });
 
-    it('should offline assets no longer on disk or matching exclusion pattern', async () => {
+    it('should offline assets no longer on disk', async () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/'],
         exclusionPatterns: [],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.external);
+
+      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+    });
+
+    it('should offline assets matching an exclusion pattern', async () => {
+      const mockAssetJob: ILibraryOfflineJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+        exclusionPatterns: ['**/user1/**'],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.external);
