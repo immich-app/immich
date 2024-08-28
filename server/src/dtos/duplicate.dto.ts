@@ -20,7 +20,7 @@ export function mapDuplicateResponse(assets: AssetResponseDto[]): DuplicateRespo
   const grouped = groupBy(assets, (a) => a.duplicateId);
 
   for (const [duplicateId, unsortedAssets] of Object.entries(grouped)) {
-    const assets = sortBy(unsortedAssets, (a) => a.localDateTime);
+    const assets = sortBy(unsortedAssets, (asset) => asset.localDateTime);
     result.push({ duplicateId, assets });
   }
 
