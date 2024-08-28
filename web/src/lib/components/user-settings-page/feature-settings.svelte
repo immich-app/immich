@@ -11,6 +11,7 @@
   import { preferences } from '$lib/stores/user.store';
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
 
   let memoriesEnabled = $preferences?.memories?.enabled ?? true;
   let folderEnabled = $preferences?.folders?.enabled ?? false;
@@ -47,37 +48,43 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="ml-4">
-          <SettingSwitch
-            title={$t('folders')}
-            subtitle={$t('folders_sidebar_description')}
-            bind:checked={folderEnabled}
-          />
-        </div>
+        <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
+          <div class="ml-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={folderEnabled} />
+          </div>
+          <div class="ml-4 mt-6">
+            <SettingSwitch
+              title={$t('folders')}
+              subtitle={$t('folders_sidebar_description')}
+              bind:checked={folderEnabled}
+            />
+          </div>
+        </SettingAccordion>
 
-        <div class="ml-4 mt-4">
-          <SettingSwitch
-            title={$t('time_based_memories')}
-            subtitle={$t('photos_from_previous_years')}
-            bind:checked={memoriesEnabled}
-          />
-        </div>
+        <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
+          <div class="ml-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={memoriesEnabled} />
+          </div>
+        </SettingAccordion>
 
-        <div class="ml-4 mt-4">
-          <SettingSwitch
-            title={$t('people')}
-            subtitle={$t('people_sidebar_description')}
-            bind:checked={peopleEnabled}
-          />
-        </div>
+        <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>
+          <div class="ml-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={peopleEnabled} />
+          </div>
+        </SettingAccordion>
 
-        <div class="ml-4 mt-4">
-          <SettingSwitch title={$t('rating')} subtitle={$t('rating_description')} bind:checked={ratingEnabled} />
-        </div>
+        <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('people_feature_description')}>
+          <div class="ml-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={ratingEnabled} />
+          </div>
+        </SettingAccordion>
 
-        <div class="ml-4 mt-4">
-          <SettingSwitch title={$t('tags')} subtitle={$t('tag_view_description')} bind:checked={tagEnabled} />
-        </div>
+        <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('people_feature_description')}>
+          <div class="ml-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={tagEnabled} />
+          </div>
+        </SettingAccordion>
+
         <div class="flex justify-end">
           <Button type="submit" size="sm" on:click={() => handleSave()}>{$t('save')}</Button>
         </div>

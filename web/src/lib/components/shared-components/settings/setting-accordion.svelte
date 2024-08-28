@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
   import { onDestroy } from 'svelte';
 
@@ -9,6 +9,7 @@
   export let subtitle = '';
   export let key: string;
   export let isOpen = $accordionState.has(key);
+  export let autoScrollTo = false;
 
   let accordionElement: HTMLDivElement;
 
@@ -18,12 +19,14 @@
     if (isOpen) {
       $accordionState = $accordionState.add(key);
 
-      setTimeout(() => {
-        accordionElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-      }, 200);
+      if (autoScrollTo) {
+        setTimeout(() => {
+          accordionElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 200);
+      }
     } else {
       $accordionState.delete(key);
       $accordionState = $accordionState;
@@ -72,7 +75,7 @@
   </button>
 
   {#if isOpen}
-    <ul transition:slide={{ duration: 250 }} class="mb-2 ml-4">
+    <ul in:fade={{ duration: 150 }} class="mb-2 ml-4">
       <slot />
     </ul>
   {/if}
