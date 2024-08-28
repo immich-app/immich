@@ -50,7 +50,7 @@ export class UpdateLibraryDto {
 
 export interface CrawlOptionsDto {
   pathsToCrawl: string[];
-  includeHidden: boolean;
+  includeHidden?: boolean;
   exclusionPatterns?: string[];
 }
 
