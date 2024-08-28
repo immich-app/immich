@@ -93,38 +93,38 @@ export type EmailNotificationsResponse = {
     albumUpdate: boolean;
     enabled: boolean;
 };
-export type FolderResponse = {
+export type FoldersResponse = {
     enabled: boolean;
+    sidebarWeb: boolean;
 };
-export type MemoryResponse = {
+export type MemoriesResponse = {
     enabled: boolean;
 };
 export type PeopleResponse = {
     enabled: boolean;
-};
-export type RatingResponse = {
-    enabled: boolean;
-};
-export type TagResponse = {
-    enabled: boolean;
-};
-export type UserMetadataResponse = {
-    folder: FolderResponse;
-    memory: MemoryResponse;
-    people: PeopleResponse;
-    rating: RatingResponse;
-    tag: TagResponse;
+    sidebarWeb: boolean;
 };
 export type PurchaseResponse = {
     hideBuyButtonUntil: string;
     showSupportBadge: boolean;
 };
+export type RatingsResponse = {
+    enabled: boolean;
+};
+export type TagsResponse = {
+    enabled: boolean;
+    sidebarWeb: boolean;
+};
 export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
-    metadata: UserMetadataResponse;
+    folders: FoldersResponse;
+    memories: MemoriesResponse;
+    people: PeopleResponse;
     purchase: PurchaseResponse;
+    ratings: RatingsResponse;
+    tags: TagsResponse;
 };
 export type AvatarUpdate = {
     color?: UserAvatarColor;
@@ -138,38 +138,38 @@ export type EmailNotificationsUpdate = {
     albumUpdate?: boolean;
     enabled?: boolean;
 };
-export type FolderUpdate = {
+export type FoldersUpdate = {
     enabled?: boolean;
+    sidebarWeb?: boolean;
 };
-export type MemoryUpdate = {
+export type MemoriesUpdate = {
     enabled?: boolean;
 };
 export type PeopleUpdate = {
     enabled?: boolean;
-};
-export type RatingUpdate = {
-    enabled?: boolean;
-};
-export type TagUpdate = {
-    enabled?: boolean;
-};
-export type MetadataUpdate = {
-    folder?: FolderUpdate;
-    memory?: MemoryUpdate;
-    people?: PeopleUpdate;
-    rating?: RatingUpdate;
-    tag?: TagUpdate;
+    sidebarWeb?: boolean;
 };
 export type PurchaseUpdate = {
     hideBuyButtonUntil?: string;
     showSupportBadge?: boolean;
 };
+export type RatingsUpdate = {
+    enabled?: boolean;
+};
+export type TagsUpdate = {
+    enabled?: boolean;
+    sidebarWeb?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     avatar?: AvatarUpdate;
     download?: DownloadUpdate;
     emailNotifications?: EmailNotificationsUpdate;
-    metadata?: MetadataUpdate;
+    folders?: FoldersUpdate;
+    memories?: MemoriesUpdate;
+    people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
+    ratings?: RatingsUpdate;
+    tags?: TagsUpdate;
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;

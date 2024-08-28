@@ -64,7 +64,7 @@
       />
     {/if}
 
-    {#if $preferences.metadata.people.enabled}
+    {#if $preferences.people.enabled}
       <SideBarLink
         title={$t('people')}
         routeId="/(user)/people"
@@ -104,7 +104,7 @@
       </svelte:fragment>
     </SideBarLink>
 
-    {#if $preferences.metadata.folder.enabled}
+    {#if $preferences.folders.enabled}
       <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
     {/if}
 

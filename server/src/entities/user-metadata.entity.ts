@@ -19,22 +19,23 @@ export class UserMetadataEntity<T extends keyof UserMetadata = UserMetadataKey> 
 }
 
 export interface UserPreferences {
-  metadata: {
-    folder: {
-      enabled: boolean;
-    };
-    memory: {
-      enabled: boolean;
-    };
-    people: {
-      enabled: boolean;
-    };
-    rating: {
-      enabled: boolean;
-    };
-    tag: {
-      enabled: boolean;
-    };
+  folders: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  memories: {
+    enabled: boolean;
+  };
+  people: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  ratings: {
+    enabled: boolean;
+  };
+  tags: {
+    enabled: boolean;
+    sidebarWeb: boolean;
   };
   avatar: {
     color: UserAvatarColor;
@@ -61,22 +62,23 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
   );
 
   return {
-    metadata: {
-      folder: {
-        enabled: false,
-      },
-      memory: {
-        enabled: true,
-      },
-      people: {
-        enabled: false,
-      },
-      rating: {
-        enabled: false,
-      },
-      tag: {
-        enabled: false,
-      },
+    folders: {
+      enabled: false,
+      sidebarWeb: false,
+    },
+    memories: {
+      enabled: true,
+    },
+    people: {
+      enabled: true,
+      sidebarWeb: false,
+    },
+    ratings: {
+      enabled: false,
+    },
+    tags: {
+      enabled: false,
+      sidebarWeb: false,
     },
     avatar: {
       color: values[randomIndex],

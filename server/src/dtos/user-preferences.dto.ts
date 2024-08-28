@@ -12,29 +12,38 @@ class AvatarUpdate {
   color?: UserAvatarColor;
 }
 
-class MemoryUpdate {
+class MemoriesUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 }
 
-class RatingUpdate {
+class RatingsUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 }
 
-class FolderUpdate {
+class FoldersUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  sidebarWeb?: boolean;
 }
 
 class PeopleUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  sidebarWeb?: boolean;
 }
 
-class TagUpdate {
+class TagsUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  sidebarWeb?: boolean;
 }
 
 class EmailNotificationsUpdate {
@@ -68,16 +77,16 @@ class PurchaseUpdate {
   hideBuyButtonUntil?: string;
 }
 
-class MetadataUpdate {
+export class UserPreferencesUpdateDto {
   @Optional()
   @ValidateNested()
-  @Type(() => FolderUpdate)
-  folder?: FolderUpdate;
+  @Type(() => FoldersUpdate)
+  folders?: FoldersUpdate;
 
   @Optional()
   @ValidateNested()
-  @Type(() => MemoryUpdate)
-  memory?: MemoryUpdate;
+  @Type(() => MemoriesUpdate)
+  memories?: MemoriesUpdate;
 
   @Optional()
   @ValidateNested()
@@ -86,20 +95,13 @@ class MetadataUpdate {
 
   @Optional()
   @ValidateNested()
-  @Type(() => RatingUpdate)
-  rating?: RatingUpdate;
+  @Type(() => RatingsUpdate)
+  ratings?: RatingsUpdate;
 
   @Optional()
   @ValidateNested()
-  @Type(() => TagUpdate)
-  tag?: TagUpdate;
-}
-
-export class UserPreferencesUpdateDto {
-  @Optional()
-  @ValidateNested()
-  @Type(() => MetadataUpdate)
-  metadata?: MetadataUpdate;
+  @Type(() => TagsUpdate)
+  tags?: TagsUpdate;
 
   @Optional()
   @ValidateNested()
@@ -127,24 +129,27 @@ class AvatarResponse {
   color!: UserAvatarColor;
 }
 
-class RatingResponse {
+class RatingsResponse {
   enabled: boolean = false;
 }
 
-class MemoryResponse {
+class MemoriesResponse {
   enabled!: boolean;
 }
 
-class FolderResponse {
+class FoldersResponse {
   enabled!: boolean;
+  sidebarWeb!: boolean;
 }
 
 class PeopleResponse {
   enabled!: boolean;
+  sidebarWeb!: boolean;
 }
 
-class TagResponse {
+class TagsResponse {
   enabled!: boolean;
+  sidebarWeb!: boolean;
 }
 
 class EmailNotificationsResponse {
@@ -165,16 +170,12 @@ class PurchaseResponse {
   hideBuyButtonUntil!: string;
 }
 
-class UserMetadataResponse {
-  folder!: FolderResponse;
-  memory!: MemoryResponse;
-  people!: PeopleResponse;
-  rating!: RatingResponse;
-  tag!: TagResponse;
-}
-
 export class UserPreferencesResponseDto implements UserPreferences {
-  metadata!: UserMetadataResponse;
+  folders!: FoldersResponse;
+  memories!: MemoriesResponse;
+  people!: PeopleResponse;
+  ratings!: RatingsResponse;
+  tags!: TagsResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;

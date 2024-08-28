@@ -14,6 +14,7 @@ class PeopleUpdate {
   /// Returns a new [PeopleUpdate] instance.
   PeopleUpdate({
     this.enabled,
+    this.sidebarWeb,
   });
 
   ///
@@ -24,17 +25,27 @@ class PeopleUpdate {
   ///
   bool? enabled;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? sidebarWeb;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdate &&
-    other.enabled == enabled;
+    other.enabled == enabled &&
+    other.sidebarWeb == sidebarWeb;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (enabled == null ? 0 : enabled!.hashCode);
+    (enabled == null ? 0 : enabled!.hashCode) +
+    (sidebarWeb == null ? 0 : sidebarWeb!.hashCode);
 
   @override
-  String toString() => 'PeopleUpdate[enabled=$enabled]';
+  String toString() => 'PeopleUpdate[enabled=$enabled, sidebarWeb=$sidebarWeb]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -42,6 +53,11 @@ class PeopleUpdate {
       json[r'enabled'] = this.enabled;
     } else {
     //  json[r'enabled'] = null;
+    }
+    if (this.sidebarWeb != null) {
+      json[r'sidebarWeb'] = this.sidebarWeb;
+    } else {
+    //  json[r'sidebarWeb'] = null;
     }
     return json;
   }
@@ -55,6 +71,7 @@ class PeopleUpdate {
 
       return PeopleUpdate(
         enabled: mapValueOfType<bool>(json, r'enabled'),
+        sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb'),
       );
     }
     return null;

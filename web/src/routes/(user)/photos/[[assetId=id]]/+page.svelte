@@ -96,7 +96,7 @@
     on:escape={handleEscape}
     withStacked
   >
-    {#if $preferences.metadata.memory.enabled}
+    {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
     <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} slot="empty" />

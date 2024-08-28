@@ -9119,20 +9119,27 @@
         ],
         "type": "object"
       },
-      "FolderResponse": {
+      "FoldersResponse": {
         "properties": {
           "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
             "type": "boolean"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "sidebarWeb"
         ],
         "type": "object"
       },
-      "FolderUpdate": {
+      "FoldersUpdate": {
         "properties": {
           "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
             "type": "boolean"
           }
         },
@@ -9508,6 +9515,25 @@
         ],
         "type": "string"
       },
+      "MemoriesResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "MemoriesUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "MemoryCreateDto": {
         "properties": {
           "assetIds": {
@@ -9557,17 +9583,6 @@
         "required": [
           "assets",
           "yearsAgo"
-        ],
-        "type": "object"
-      },
-      "MemoryResponse": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
         ],
         "type": "object"
       },
@@ -9633,14 +9648,6 @@
           "on_this_day"
         ],
         "type": "string"
-      },
-      "MemoryUpdate": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "type": "object"
       },
       "MemoryUpdateDto": {
         "properties": {
@@ -9825,26 +9832,6 @@
         },
         "type": "object"
       },
-      "MetadataUpdate": {
-        "properties": {
-          "folder": {
-            "$ref": "#/components/schemas/FolderUpdate"
-          },
-          "memory": {
-            "$ref": "#/components/schemas/MemoryUpdate"
-          },
-          "people": {
-            "$ref": "#/components/schemas/PeopleUpdate"
-          },
-          "rating": {
-            "$ref": "#/components/schemas/RatingUpdate"
-          },
-          "tag": {
-            "$ref": "#/components/schemas/TagUpdate"
-          }
-        },
-        "type": "object"
-      },
       "OAuthAuthorizeResponseDto": {
         "properties": {
           "url": {
@@ -9951,10 +9938,14 @@
         "properties": {
           "enabled": {
             "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "sidebarWeb"
         ],
         "type": "object"
       },
@@ -9987,6 +9978,9 @@
       "PeopleUpdate": {
         "properties": {
           "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
             "type": "boolean"
           }
         },
@@ -10312,7 +10306,7 @@
         ],
         "type": "object"
       },
-      "RatingResponse": {
+      "RatingsResponse": {
         "properties": {
           "enabled": {
             "default": false,
@@ -10324,7 +10318,7 @@
         ],
         "type": "object"
       },
-      "RatingUpdate": {
+      "RatingsUpdate": {
         "properties": {
           "enabled": {
             "type": "boolean"
@@ -11906,17 +11900,6 @@
         ],
         "type": "object"
       },
-      "TagResponse": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
       "TagResponseDto": {
         "properties": {
           "id": {
@@ -11948,9 +11931,27 @@
         ],
         "type": "string"
       },
-      "TagUpdate": {
+      "TagsResponse": {
         "properties": {
           "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "TagsUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
             "type": "boolean"
           }
         },
@@ -12330,33 +12331,6 @@
         ],
         "type": "object"
       },
-      "UserMetadataResponse": {
-        "properties": {
-          "folder": {
-            "$ref": "#/components/schemas/FolderResponse"
-          },
-          "memory": {
-            "$ref": "#/components/schemas/MemoryResponse"
-          },
-          "people": {
-            "$ref": "#/components/schemas/PeopleResponse"
-          },
-          "rating": {
-            "$ref": "#/components/schemas/RatingResponse"
-          },
-          "tag": {
-            "$ref": "#/components/schemas/TagResponse"
-          }
-        },
-        "required": [
-          "folder",
-          "memory",
-          "people",
-          "rating",
-          "tag"
-        ],
-        "type": "object"
-      },
       "UserPreferencesResponseDto": {
         "properties": {
           "avatar": {
@@ -12368,19 +12342,35 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/UserMetadataResponse"
+          "folders": {
+            "$ref": "#/components/schemas/FoldersResponse"
+          },
+          "memories": {
+            "$ref": "#/components/schemas/MemoriesResponse"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleResponse"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
+          },
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsResponse"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
-          "metadata",
-          "purchase"
+          "folders",
+          "memories",
+          "people",
+          "purchase",
+          "ratings",
+          "tags"
         ],
         "type": "object"
       },
@@ -12395,11 +12385,23 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/MetadataUpdate"
+          "folders": {
+            "$ref": "#/components/schemas/FoldersUpdate"
+          },
+          "memories": {
+            "$ref": "#/components/schemas/MemoriesUpdate"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleUpdate"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"
+          },
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsUpdate"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsUpdate"
           }
         },
         "type": "object"

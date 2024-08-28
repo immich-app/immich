@@ -12,31 +12,29 @@
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
 
-  let memoriesEnabled = $preferences?.metadata?.memory?.enabled ?? true;
-  let folderEnabled = $preferences?.metadata?.folder?.enabled ?? false;
-  let peopleEnabled = $preferences?.metadata?.people?.enabled ?? false;
-  let ratingEnabled = $preferences?.metadata?.rating?.enabled ?? false;
-  let tagEnabled = $preferences?.metadata?.tag?.enabled ?? false;
+  let memoriesEnabled = $preferences?.memories?.enabled ?? true;
+  let folderEnabled = $preferences?.folders?.enabled ?? false;
+  let peopleEnabled = $preferences?.people?.enabled ?? false;
+  let ratingEnabled = $preferences?.ratings?.enabled ?? false;
+  let tagEnabled = $preferences?.tags?.enabled ?? false;
 
   const handleSave = async () => {
     try {
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
-          metadata: {
-            folder: { enabled: folderEnabled },
-            memory: { enabled: memoriesEnabled },
-            people: { enabled: peopleEnabled },
-            rating: { enabled: ratingEnabled },
-            tag: { enabled: tagEnabled },
-          },
+          folders: { enabled: folderEnabled },
+          memories: { enabled: memoriesEnabled },
+          people: { enabled: peopleEnabled },
+          ratings: { enabled: ratingEnabled },
+          tags: { enabled: tagEnabled },
         },
       });
 
-      $preferences.metadata.folder.enabled = data.metadata.folder.enabled;
-      $preferences.metadata.memory.enabled = data.metadata.memory.enabled;
-      $preferences.metadata.people.enabled = data.metadata.people.enabled;
-      $preferences.metadata.rating.enabled = data.metadata.rating.enabled;
-      $preferences.metadata.tag.enabled = data.metadata.tag.enabled;
+      $preferences.folders.enabled = data.folders.enabled;
+      $preferences.memories.enabled = data.memories.enabled;
+      $preferences.people.enabled = data.people.enabled;
+      $preferences.ratings.enabled = data.ratings.enabled;
+      $preferences.tags.enabled = data.tags.enabled;
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {

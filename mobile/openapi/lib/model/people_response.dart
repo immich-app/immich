@@ -14,25 +14,31 @@ class PeopleResponse {
   /// Returns a new [PeopleResponse] instance.
   PeopleResponse({
     required this.enabled,
+    required this.sidebarWeb,
   });
 
   bool enabled;
 
+  bool sidebarWeb;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponse &&
-    other.enabled == enabled;
+    other.enabled == enabled &&
+    other.sidebarWeb == sidebarWeb;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (enabled.hashCode);
+    (enabled.hashCode) +
+    (sidebarWeb.hashCode);
 
   @override
-  String toString() => 'PeopleResponse[enabled=$enabled]';
+  String toString() => 'PeopleResponse[enabled=$enabled, sidebarWeb=$sidebarWeb]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
+      json[r'sidebarWeb'] = this.sidebarWeb;
     return json;
   }
 
@@ -45,6 +51,7 @@ class PeopleResponse {
 
       return PeopleResponse(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb')!,
       );
     }
     return null;
@@ -93,6 +100,7 @@ class PeopleResponse {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'enabled',
+    'sidebarWeb',
   };
 }
 
