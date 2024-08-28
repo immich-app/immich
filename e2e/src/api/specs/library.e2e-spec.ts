@@ -429,8 +429,6 @@ describe('/libraries', () => {
     });
 
     it('should offline a file covered by exclusion pattern', async () => {
-      utils.createImageFile(`${testAssetDir}/temp/dir/assetA.png`);
-      utils.createImageFile(`${testAssetDir}/temp/dir/assetB.png`);
       utils.createImageFile(`${testAssetDir}/temp/ignore/assetC.png`);
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
@@ -467,7 +465,7 @@ describe('/libraries', () => {
         ]),
       );
 
-      utils.removeImageFile(`${testAssetDir}/temp/directoryB/assetC.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/ignore/assetC.png`);
     });
 
     it('should not try to delete offline files', async () => {
