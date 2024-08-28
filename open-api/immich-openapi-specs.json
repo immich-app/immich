@@ -9119,7 +9119,7 @@
         ],
         "type": "object"
       },
-      "FolderReponse": {
+      "FolderResponse": {
         "properties": {
           "enabled": {
             "type": "boolean"
@@ -9947,7 +9947,7 @@
         ],
         "type": "string"
       },
-      "PeopleReponse": {
+      "PeopleResponse": {
         "properties": {
           "enabled": {
             "type": "boolean"
@@ -11906,7 +11906,7 @@
         ],
         "type": "object"
       },
-      "TagReponse": {
+      "TagResponse": {
         "properties": {
           "enabled": {
             "type": "boolean"
@@ -12330,22 +12330,22 @@
         ],
         "type": "object"
       },
-      "UserMetadataReponse": {
+      "UserMetadataResponse": {
         "properties": {
           "folder": {
-            "$ref": "#/components/schemas/FolderReponse"
+            "$ref": "#/components/schemas/FolderResponse"
           },
           "memory": {
             "$ref": "#/components/schemas/MemoryResponse"
           },
           "people": {
-            "$ref": "#/components/schemas/PeopleReponse"
+            "$ref": "#/components/schemas/PeopleResponse"
           },
           "rating": {
             "$ref": "#/components/schemas/RatingResponse"
           },
           "tag": {
-            "$ref": "#/components/schemas/TagReponse"
+            "$ref": "#/components/schemas/TagResponse"
           }
         },
         "required": [
@@ -12369,7 +12369,7 @@
             "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
           "metadata": {
-            "$ref": "#/components/schemas/UserMetadataReponse"
+            "$ref": "#/components/schemas/UserMetadataResponse"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"

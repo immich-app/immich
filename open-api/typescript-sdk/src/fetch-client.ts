@@ -93,27 +93,27 @@ export type EmailNotificationsResponse = {
     albumUpdate: boolean;
     enabled: boolean;
 };
-export type FolderReponse = {
+export type FolderResponse = {
     enabled: boolean;
 };
 export type MemoryResponse = {
     enabled: boolean;
 };
-export type PeopleReponse = {
+export type PeopleResponse = {
     enabled: boolean;
 };
 export type RatingResponse = {
     enabled: boolean;
 };
-export type TagReponse = {
+export type TagResponse = {
     enabled: boolean;
 };
-export type UserMetadataReponse = {
-    folder: FolderReponse;
+export type UserMetadataResponse = {
+    folder: FolderResponse;
     memory: MemoryResponse;
-    people: PeopleReponse;
+    people: PeopleResponse;
     rating: RatingResponse;
-    tag: TagReponse;
+    tag: TagResponse;
 };
 export type PurchaseResponse = {
     hideBuyButtonUntil: string;
@@ -123,7 +123,7 @@ export type UserPreferencesResponseDto = {
     avatar: AvatarResponse;
     download: DownloadResponse;
     emailNotifications: EmailNotificationsResponse;
-    metadata: UserMetadataReponse;
+    metadata: UserMetadataResponse;
     purchase: PurchaseResponse;
 };
 export type AvatarUpdate = {

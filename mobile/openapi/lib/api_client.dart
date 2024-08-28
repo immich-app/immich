@@ -333,8 +333,8 @@ class ApiClient {
           return FileReportFixDto.fromJson(value);
         case 'FileReportItemDto':
           return FileReportItemDto.fromJson(value);
-        case 'FolderReponse':
-          return FolderReponse.fromJson(value);
+        case 'FolderResponse':
+          return FolderResponse.fromJson(value);
         case 'FolderUpdate':
           return FolderUpdate.fromJson(value);
         case 'ImageFormat':
@@ -409,8 +409,8 @@ class ApiClient {
           return PathEntityTypeTypeTransformer().decode(value);
         case 'PathType':
           return PathTypeTypeTransformer().decode(value);
-        case 'PeopleReponse':
-          return PeopleReponse.fromJson(value);
+        case 'PeopleResponse':
+          return PeopleResponse.fromJson(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
         case 'PeopleUpdate':
@@ -553,8 +553,8 @@ class ApiClient {
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':
           return SystemConfigUserDto.fromJson(value);
-        case 'TagReponse':
-          return TagReponse.fromJson(value);
+        case 'TagResponse':
+          return TagResponse.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagTypeEnum':
@@ -597,8 +597,8 @@ class ApiClient {
           return UserAvatarColorTypeTransformer().decode(value);
         case 'UserLicense':
           return UserLicense.fromJson(value);
-        case 'UserMetadataReponse':
-          return UserMetadataReponse.fromJson(value);
+        case 'UserMetadataResponse':
+          return UserMetadataResponse.fromJson(value);
         case 'UserPreferencesResponseDto':
           return UserPreferencesResponseDto.fromJson(value);
         case 'UserPreferencesUpdateDto':

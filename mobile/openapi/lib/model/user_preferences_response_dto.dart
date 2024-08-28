@@ -26,7 +26,7 @@ class UserPreferencesResponseDto {
 
   EmailNotificationsResponse emailNotifications;
 
-  UserMetadataReponse metadata;
+  UserMetadataResponse metadata;
 
   PurchaseResponse purchase;
 
@@ -71,7 +71,7 @@ class UserPreferencesResponseDto {
         avatar: AvatarResponse.fromJson(json[r'avatar'])!,
         download: DownloadResponse.fromJson(json[r'download'])!,
         emailNotifications: EmailNotificationsResponse.fromJson(json[r'emailNotifications'])!,
-        metadata: UserMetadataReponse.fromJson(json[r'metadata'])!,
+        metadata: UserMetadataResponse.fromJson(json[r'metadata'])!,
         purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
       );
     }

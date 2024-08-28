@@ -135,15 +135,15 @@ class MemoryResponse {
   enabled!: boolean;
 }
 
-class FolderReponse {
+class FolderResponse {
   enabled!: boolean;
 }
 
-class PeopleReponse {
+class PeopleResponse {
   enabled!: boolean;
 }
 
-class TagReponse {
+class TagResponse {
   enabled!: boolean;
 }
 
@@ -165,16 +165,16 @@ class PurchaseResponse {
   hideBuyButtonUntil!: string;
 }
 
-class UserMetadataReponse {
-  folder!: FolderReponse;
+class UserMetadataResponse {
+  folder!: FolderResponse;
   memory!: MemoryResponse;
-  people!: PeopleReponse;
+  people!: PeopleResponse;
   rating!: RatingResponse;
-  tag!: TagReponse;
+  tag!: TagResponse;
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
-  metadata!: UserMetadataReponse;
+  metadata!: UserMetadataResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
