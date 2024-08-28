@@ -205,6 +205,13 @@ class CreateAlbumPage extends HookConsumerWidget {
       }
     }
 
+    canCreateNonSharedAlbum() {
+      return albumTitleController.text.isNotEmpty &&
+          (selectedAssets.value.isEmpty
+              && albumTitleController.text != "Untitled")
+          || (selectedAssets.value.isNotEmpty);
+    }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -238,15 +245,15 @@ class CreateAlbumPage extends HookConsumerWidget {
             ),
           if (!isSharedAlbum)
             TextButton(
-              onPressed: albumTitleController.text.isNotEmpty &&
-                      selectedAssets.value.isNotEmpty
-                  ? createNonSharedAlbum
-                  : null,
+              onPressed: canCreateNonSharedAlbum()
+                  ? createNonSharedAlbum : null,
               child: Text(
                 'create_shared_album_page_create'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
+                  color: canCreateNonSharedAlbum()
+                      ? context.primaryColor
+                      : context.themeData.disabledColor,
                 ),
               ),
             ),
