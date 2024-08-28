@@ -454,7 +454,7 @@ describe('/libraries', () => {
         expect.arrayContaining([
           expect.objectContaining({
             isOffline: false,
-            originalFileName: 'asseta.png',
+            originalFileName: 'assetA.png',
           }),
           expect.objectContaining({
             isOffline: false,
