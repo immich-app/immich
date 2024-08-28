@@ -301,6 +301,7 @@ describe(LibraryService.name, () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/'],
+        exclusionPatterns: [],
       };
 
       assetMock.getById.mockResolvedValue(null);
@@ -314,6 +315,7 @@ describe(LibraryService.name, () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/'],
+        exclusionPatterns: [],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.offline);
@@ -327,6 +329,7 @@ describe(LibraryService.name, () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/'],
+        exclusionPatterns: [],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.external);
@@ -340,6 +343,7 @@ describe(LibraryService.name, () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/data/user2'],
+        exclusionPatterns: [],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.external);
@@ -354,6 +358,7 @@ describe(LibraryService.name, () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
         importPaths: ['/'],
+        exclusionPatterns: [],
       };
 
       assetMock.getById.mockResolvedValue(assetStub.external);
