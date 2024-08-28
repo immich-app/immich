@@ -223,7 +223,7 @@
     "storage_template_migration": "การย้ายเทมเพลตที่เก็บข้อมูล",
     "storage_template_migration_description": "ใช้<link>{template}</link>ปัจจุบันกับสื่อที่อัพโหลดก่อนหน้านี้",
     "storage_template_migration_job": "",
-    "storage_template_settings": "",
+    "storage_template_settings": "เทมเพลตการจัดเก็บข้อมูล",
     "storage_template_settings_description": "",
     "system_settings": "การตั้งค่าระบบ",
     "theme_custom_css_settings": "CSS กําหนดเอง",
