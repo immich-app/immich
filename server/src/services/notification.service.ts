@@ -42,8 +42,8 @@ export class NotificationService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
-  @OnEmit({ event: 'onConfigValidate', priority: -100 })
-  async onConfigValidate({ oldConfig, newConfig }: ArgOf<'onConfigValidate'>) {
+  @OnEmit({ event: 'config.validate', priority: -100 })
+  async onConfigValidate({ oldConfig, newConfig }: ArgOf<'config.validate'>) {
     try {
       if (
         newConfig.notifications.smtp.enabled &&
@@ -57,20 +57,20 @@ export class NotificationService {
     }
   }
 
-  @OnEmit({ event: 'onUserSignup' })
-  async onUserSignup({ notify, id, tempPassword }: ArgOf<'onUserSignup'>) {
+  @OnEmit({ event: 'user.signup' })
+  async onUserSignup({ notify, id, tempPassword }: ArgOf<'user.signup'>) {
     if (notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id, tempPassword } });
     }
   }
 
-  @OnEmit({ event: 'onAlbumUpdate' })
-  async onAlbumUpdate({ id, updatedBy }: ArgOf<'onAlbumUpdate'>) {
+  @OnEmit({ event: 'album.update' })
+  async onAlbumUpdate({ id, updatedBy }: ArgOf<'album.update'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_UPDATE, data: { id, senderId: updatedBy } });
   }
 
-  @OnEmit({ event: 'onAlbumInvite' })
-  async onAlbumInvite({ id, userId }: ArgOf<'onAlbumInvite'>) {
+  @OnEmit({ event: 'album.invite' })
+  async onAlbumInvite({ id, userId }: ArgOf<'album.invite'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id, recipientId: userId } });
   }
 

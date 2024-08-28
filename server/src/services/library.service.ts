@@ -66,7 +66,7 @@ export class LibraryService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
+  @OnEmit({ event: 'app.bootstrap' })
   async onBootstrap() {
     const config = await this.configCore.getConfig({ withCache: false });
 
@@ -104,7 +104,8 @@ export class LibraryService {
     });
   }
 
-  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
@@ -189,7 +190,7 @@ export class LibraryService {
     }
   }
 
-  @OnEmit({ event: 'onShutdown' })
+  @OnEmit({ event: 'app.shutdown' })
   async onShutdown() {
     await this.unwatchAll();
   }

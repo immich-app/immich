@@ -6,23 +6,23 @@ export const IEventRepository = 'IEventRepository';
 
 type EmitEventMap = {
   // app events
-  onBootstrap: ['api' | 'microservices'];
-  onShutdown: [];
+  'app.bootstrap': ['api' | 'microservices'];
+  'app.shutdown': [];
 
   // config events
-  onConfigUpdate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
-  onConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+  'config.update': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+  'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  onAlbumUpdate: [{ id: string; updatedBy: string }];
-  onAlbumInvite: [{ id: string; userId: string }];
+  'album.update': [{ id: string; updatedBy: string }];
+  'album.invite': [{ id: string; userId: string }];
 
   // tag events
   'asset.tag': [{ assetId: string }];
   'asset.untag': [{ assetId: string }];
 
   // user events
-  onUserSignup: [{ notify: boolean; id: string; tempPassword?: string }];
+  'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];
 };
 
 export type EmitEvent = keyof EmitEventMap;

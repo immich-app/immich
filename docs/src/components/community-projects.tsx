@@ -75,7 +75,8 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'Immich Power Tools',
-    description: 'An unofficial immich client providing tools to speed up your workflows in Immich to organize your people and albums.',
+    description:
+      'An unofficial immich client providing tools to speed up your workflows in Immich to organize your people and albums.',
     url: 'https://github.com/varun-raj/immich-power-tools',
   },
 ];

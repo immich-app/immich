@@ -89,8 +89,8 @@ export class StorageTemplateService {
     );
   }
 
-  @OnEmit({ event: 'onConfigValidate' })
-  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {
@@ -308,7 +308,7 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
       //just throw into the root if it doesn't belong to an album
-      album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '.',
+      album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -329,6 +329,6 @@ export class StorageTemplateService {
       substitutions[token] = dt.toFormat(token);
     }
 
-    return template(substitutions);
+    return template(substitutions).replaceAll(/\/{2,}/gm, '/');
   }
 }
