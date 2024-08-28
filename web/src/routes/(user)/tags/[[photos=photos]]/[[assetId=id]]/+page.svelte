@@ -23,7 +23,6 @@
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { mdiChevronRight, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
@@ -33,7 +32,6 @@
   $: pathSegments = data.path ? data.path.split('/') : [];
   $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
 
-  let assetStore: AssetStore | null;
   const assetInteractionStore = createAssetInteractionStore();
 
   const buildMap = (tags: TagResponseDto[]) => {
@@ -44,10 +42,6 @@
   $: tagsMap = buildMap(tags);
   $: tag = currentPath ? tagsMap[currentPath] : null;
   $: tree = buildTree(tags.map((tag) => tag.value));
-
-  onDestroy(() => {
-    assetStore?.destroy();
-  });
 
   const handleNavigation = async (tag: string) => {
     await navigateToView(normalizeTreePath(`${data.path || ''}/${tag}`));
@@ -197,7 +191,7 @@
 
   <section class="mt-2 h-full">
     {#if tag}
-      {#key tag.id}
+      {#key tag.id + new Date()}
         <AssetGrid
           enableRouting={true}
           assetStore={new AssetStore({ tagId: tag.id })}
