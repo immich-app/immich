@@ -21,6 +21,7 @@
     mdiToolbox,
     mdiToolboxOutline,
     mdiFolderOutline,
+    mdiTagMultipleOutline,
   } from '@mdi/js';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
@@ -104,6 +105,8 @@
         <MoreInformationAlbums albumType="owned" />
       </svelte:fragment>
     </SideBarLink>
+
+    <SideBarLink title={$t('tags')} routeId="/(user)/tags" icon={mdiTagMultipleOutline} flippedLogo />
 
     <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
 

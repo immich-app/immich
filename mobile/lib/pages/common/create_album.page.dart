@@ -52,6 +52,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
       if (albumTitleController.text.isEmpty) {
         albumTitleController.text = 'create_album_page_untitled'.tr();
+        isAlbumTitleEmpty.value = false;
         ref
             .watch(albumTitleProvider.notifier)
             .setAlbumTitle('create_album_page_untitled'.tr());
@@ -191,6 +192,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     createNonSharedAlbum() async {
+      onBackgroundTapped();
       var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
             ref.watch(albumTitleProvider),
             selectedAssets.value,
@@ -238,15 +240,16 @@ class CreateAlbumPage extends HookConsumerWidget {
             ),
           if (!isSharedAlbum)
             TextButton(
-              onPressed: albumTitleController.text.isNotEmpty &&
-                      selectedAssets.value.isNotEmpty
+              onPressed: albumTitleController.text.isNotEmpty
                   ? createNonSharedAlbum
                   : null,
               child: Text(
                 'create_shared_album_page_create'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
+                  color: albumTitleController.text.isNotEmpty
+                      ? context.primaryColor
+                      : context.themeData.disabledColor,
                 ),
               ),
             ),

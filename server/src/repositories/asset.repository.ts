@@ -723,6 +723,15 @@ export class AssetRepository implements IAssetRepository {
       builder.andWhere('asset.type = :assetType', { assetType: options.assetType });
     }
 
+    if (options.tagId) {
+      builder.innerJoin(
+        'asset.tags',
+        'asset_tags',
+        'asset_tags.id IN (SELECT id_descendant FROM tags_closure WHERE id_ancestor = :tagId)',
+        { tagId: options.tagId },
+      );
+    }
+
     let stackJoined = false;
 
     if (options.exifInfo !== false) {

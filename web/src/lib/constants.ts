@@ -47,6 +47,7 @@ export enum AppRoute {
   DUPLICATES = '/utilities/duplicates',
 
   FOLDERS = '/folders',
+  TAGS = '/tags',
 }
 
 export enum ProjectionType {

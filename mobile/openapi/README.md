@@ -210,14 +210,15 @@ Class | Method | HTTP request | Description
 *SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | 
 *SystemMetadataApi* | [**getReverseGeocodingState**](doc//SystemMetadataApi.md#getreversegeocodingstate) | **GET** /system-metadata/reverse-geocoding-state | 
 *SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | 
+*TagsApi* | [**bulkTagAssets**](doc//TagsApi.md#bulktagassets) | **PUT** /tags/assets | 
 *TagsApi* | [**createTag**](doc//TagsApi.md#createtag) | **POST** /tags | 
 *TagsApi* | [**deleteTag**](doc//TagsApi.md#deletetag) | **DELETE** /tags/{id} | 
 *TagsApi* | [**getAllTags**](doc//TagsApi.md#getalltags) | **GET** /tags | 
-*TagsApi* | [**getTagAssets**](doc//TagsApi.md#gettagassets) | **GET** /tags/{id}/assets | 
 *TagsApi* | [**getTagById**](doc//TagsApi.md#gettagbyid) | **GET** /tags/{id} | 
 *TagsApi* | [**tagAssets**](doc//TagsApi.md#tagassets) | **PUT** /tags/{id}/assets | 
 *TagsApi* | [**untagAssets**](doc//TagsApi.md#untagassets) | **DELETE** /tags/{id}/assets | 
-*TagsApi* | [**updateTag**](doc//TagsApi.md#updatetag) | **PATCH** /tags/{id} | 
+*TagsApi* | [**updateTag**](doc//TagsApi.md#updatetag) | **PUT** /tags/{id} | 
+*TagsApi* | [**upsertTags**](doc//TagsApi.md#upserttags) | **PUT** /tags | 
 *TimelineApi* | [**getTimeBucket**](doc//TimelineApi.md#gettimebucket) | **GET** /timeline/bucket | 
 *TimelineApi* | [**getTimeBuckets**](doc//TimelineApi.md#gettimebuckets) | **GET** /timeline/buckets | 
 *TrashApi* | [**emptyTrash**](doc//TrashApi.md#emptytrash) | **POST** /trash/empty | 
@@ -305,7 +306,6 @@ Class | Method | HTTP request | Description
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
- - [CreateTagDto](doc//CreateTagDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponse](doc//DownloadResponse.md)
@@ -429,8 +429,12 @@ Class | Method | HTTP request | Description
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
+ - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
+ - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
+ - [TagCreateDto](doc//TagCreateDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
- - [TagTypeEnum](doc//TagTypeEnum.md)
+ - [TagUpdateDto](doc//TagUpdateDto.md)
+ - [TagUpsertDto](doc//TagUpsertDto.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
  - [TimeBucketSize](doc//TimeBucketSize.md)
  - [ToneMapping](doc//ToneMapping.md)
@@ -441,7 +445,6 @@ Class | Method | HTTP request | Description
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
- - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
  - [UserAdminDeleteDto](doc//UserAdminDeleteDto.md)
