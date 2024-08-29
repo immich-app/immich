@@ -22,6 +22,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
+import { isEqualObject } from 'src/utils/object';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -46,7 +47,7 @@ export class NotificationService {
     try {
       if (
         newConfig.notifications.smtp.enabled &&
-        JSON.stringify(oldConfig.notifications.smtp) !== JSON.stringify(newConfig.notifications.smtp)
+        !isEqualObject(oldConfig.notifications.smtp, newConfig.notifications.smtp)
       ) {
         await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }
