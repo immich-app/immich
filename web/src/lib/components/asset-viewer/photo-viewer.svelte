@@ -15,6 +15,7 @@
   import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { type SwipeCustomEvent, swipe } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -24,6 +25,8 @@
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+  export let onPreviousAsset: (() => void) | null = null;
+  export let onNextAsset: (() => void) | null = null;
   export let copyImage: (() => Promise<void>) | null = null;
   export let zoomToggle: (() => void) | null = null;
 
@@ -110,6 +113,18 @@
     handlePromiseError(copyImage());
   };
 
+  const onSwipe = (event: SwipeCustomEvent) => {
+    if ($photoZoomState.currentZoom > 1) {
+      return;
+    }
+    if (onNextAsset && event.detail.direction === 'left') {
+      onNextAsset();
+    }
+    if (onPreviousAsset && event.detail.direction === 'right') {
+      onPreviousAsset();
+    }
+  };
+
   onMount(() => {
     const onload = () => {
       imageLoaded = true;
@@ -166,6 +181,8 @@
       <img
         bind:this={$photoViewer}
         src={assetFileUrl}
+        use:swipe
+        on:swipe={onSwipe}
         alt={$getAltText(asset)}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'

@@ -12,7 +12,6 @@ export const ssr = false;
 export const csr = true;
 
 export const load = (async ({ fetch }) => {
-  let $t = (arg: string) => arg;
   try {
     await init(fetch);
     const authenticated = await loadUser();
@@ -26,13 +25,14 @@ export const load = (async ({ fetch }) => {
       redirect(302, AppRoute.AUTH_LOGIN);
     }
 
-    $t = await getFormatter();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (redirectError: any) {
     if (redirectError?.status === 302) {
       throw redirectError;
     }
   }
+
+  const $t = await getFormatter();
 
   return {
     meta: {
