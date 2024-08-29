@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -33,6 +35,28 @@ class NativeVideoViewerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useState<NativeVideoPlayerController?>(null);
+    final lastVideoPosition = useRef(-1);
+    final isBuffering = useRef(false);
+
+    void checkIfBuffering([Timer? timer]) {
+      if (!context.mounted) {
+        timer?.cancel();
+        return;
+      }
+
+      final videoPlayback = ref.read(videoPlaybackValueProvider);
+      if ((isBuffering.value ||
+              videoPlayback.state == VideoPlaybackState.initializing) &&
+          videoPlayback.state != VideoPlaybackState.buffering) {
+        ref.read(videoPlaybackValueProvider.notifier).value =
+            videoPlayback.copyWith(state: VideoPlaybackState.buffering);
+      }
+    }
+
+    // timer to mark videos as buffering if the position does not change
+    final bufferingTimer = useRef<Timer>(
+      Timer.periodic(const Duration(seconds: 5), checkIfBuffering),
+    );
 
     Future<VideoSource> createSource(Asset asset) async {
       if (asset.isLocal && asset.livePhotoVideoId == null) {
@@ -100,6 +124,15 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       final videoPlayback =
           VideoPlaybackValue.fromNativeController(controller.value!);
       ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+      // Check if the video is buffering
+      if (videoPlayback.state == VideoPlaybackState.playing) {
+        isBuffering.value =
+            lastVideoPosition.value == videoPlayback.position.inSeconds;
+        lastVideoPosition.value = videoPlayback.position.inSeconds;
+      } else {
+        isBuffering.value = false;
+        lastVideoPosition.value = -1;
+      }
       final state = videoPlayback.state;
 
       // Enable the WakeLock while the video is playing
@@ -142,6 +175,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       final videoSource = await createSource(asset);
       controller.value?.loadVideoSource(videoSource);
+
+      Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
 
     useEffect(
@@ -158,6 +193,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         }
 
         return () {
+          bufferingTimer.value.cancel();
           controller.value?.onPlaybackPositionChanged
               .removeListener(onPlaybackPositionChanged);
           controller.value?.onPlaybackStatusChanged
@@ -169,9 +205,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       [],
     );
 
-    void updatePlayback(VideoPlaybackValue value) =>
-        ref.read(videoPlaybackValueProvider.notifier).value = value;
-
     final size = MediaQuery.sizeOf(context);
 
     return SizedBox(
@@ -180,8 +213,9 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.deferToChild,
         child: PopScope(
-          onPopInvokedWithResult: (didPop, _) =>
-              updatePlayback(VideoPlaybackValue.uninitialized()),
+          onPopInvokedWithResult: (didPop, _) => ref
+              .read(videoPlaybackValueProvider.notifier)
+              .value = VideoPlaybackValue.uninitialized(),
           child: SizedBox(
             height: size.height,
             width: size.width,

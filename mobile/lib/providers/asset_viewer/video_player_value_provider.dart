@@ -87,6 +87,20 @@ class VideoPlaybackValue {
       volume: 0.0,
     );
   }
+
+  VideoPlaybackValue copyWith({
+    Duration? position,
+    Duration? duration,
+    VideoPlaybackState? state,
+    double? volume,
+  }) {
+    return VideoPlaybackValue(
+      position: position ?? this.position,
+      duration: duration ?? this.duration,
+      state: state ?? this.state,
+      volume: volume ?? this.volume,
+    );
+  }
 }
 
 final videoPlaybackValueProvider =
