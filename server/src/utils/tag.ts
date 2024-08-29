@@ -3,6 +3,8 @@ import { ITagRepository } from 'src/interfaces/tag.interface';
 
 type UpsertRequest = { userId: string; tags: string[] };
 export const upsertTags = async (repository: ITagRepository, { userId, tags }: UpsertRequest) => {
+  tags = [...new Set(tags)];
+
   const results: TagEntity[] = [];
 
   for (const tag of tags) {

@@ -24,6 +24,7 @@ import { MetadataService, Orientation } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
+import { tagStub } from 'test/fixtures/tag.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
@@ -359,6 +360,72 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
       expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }));
+    });
+
+    it('should extract tags from TagsList', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent'] });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+    });
+
+    it('should extract hierarchy from TagsList', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent/Child'] });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValueOnce(tagStub.parent);
+      tagMock.create.mockResolvedValueOnce(tagStub.child);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.create).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
+    });
+
+    it('should extract tags from Keywords as a string', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent' });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+    });
+
+    it('should extract tags from Keywords as a list', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: ['Parent'] });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+    });
+
+    it('should extract hierarchal tags from Keywords', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent/Child' });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.create).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
     });
 
     it('should not apply motion photos if asset is video', async () => {
