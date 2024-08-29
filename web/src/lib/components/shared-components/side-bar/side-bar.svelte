@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import {
     mdiAccount,
@@ -29,6 +28,7 @@
   import MoreInformationAlbums from '$lib/components/shared-components/side-bar/more-information-albums.svelte';
   import { t } from 'svelte-i18n';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
+  import { preferences } from '$lib/stores/user.store';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -52,6 +52,7 @@
         <MoreInformationAssets assetStats={{ isArchived: false }} />
       </svelte:fragment>
     </SideBarLink>
+
     {#if $featureFlags.search}
       <SideBarLink title={$t('explore')} routeId="/(user)/explore" icon={mdiMagnify} />
     {/if}
@@ -65,7 +66,7 @@
       />
     {/if}
 
-    {#if $sidebarSettings.people}
+    {#if $preferences.people.enabled && $preferences.people.sidebarWeb}
       <SideBarLink
         title={$t('people')}
         routeId="/(user)/people"
@@ -73,23 +74,23 @@
         icon={isPeopleSelected ? mdiAccount : mdiAccountOutline}
       />
     {/if}
-    {#if $sidebarSettings.sharing}
-      <SideBarLink
-        title={$t('sharing')}
-        routeId="/(user)/sharing"
-        icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
-        bind:isSelected={isSharingSelected}
-      >
-        <svelte:fragment slot="moreInformation">
-          <MoreInformationAlbums albumType="shared" />
-        </svelte:fragment>
-      </SideBarLink>
-    {/if}
+
+    <SideBarLink
+      title={$t('sharing')}
+      routeId="/(user)/sharing"
+      icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
+      bind:isSelected={isSharingSelected}
+    >
+      <svelte:fragment slot="moreInformation">
+        <MoreInformationAlbums albumType="shared" />
+      </svelte:fragment>
+    </SideBarLink>
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
       <p class="hidden p-6 group-hover:sm:block md:block">{$t('library').toUpperCase()}</p>
       <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
     </div>
+
     <SideBarLink
       title={$t('favorites')}
       routeId="/(user)/favorites"
@@ -100,15 +101,20 @@
         <MoreInformationAssets assetStats={{ isFavorite: true }} />
       </svelte:fragment>
     </SideBarLink>
+
     <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
       <svelte:fragment slot="moreInformation">
         <MoreInformationAlbums albumType="owned" />
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title={$t('tags')} routeId="/(user)/tags" icon={mdiTagMultipleOutline} flippedLogo />
+    {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
+      <SideBarLink title={$t('tags')} routeId="/(user)/tags" icon={mdiTagMultipleOutline} flippedLogo />
+    {/if}
 
-    <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
+    {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb}
+      <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
+    {/if}
 
     <SideBarLink
       title={$t('utilities')}

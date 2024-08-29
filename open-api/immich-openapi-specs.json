@@ -9164,6 +9164,34 @@
         ],
         "type": "object"
       },
+      "FoldersResponse": {
+        "properties": {
+          "enabled": {
+            "default": false,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "FoldersUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "ImageFormat": {
         "enum": [
           "jpeg",
@@ -9534,6 +9562,26 @@
         ],
         "type": "string"
       },
+      "MemoriesResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "MemoriesUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "MemoryCreateDto": {
         "properties": {
           "assetIds": {
@@ -9583,17 +9631,6 @@
         "required": [
           "assets",
           "yearsAgo"
-        ],
-        "type": "object"
-      },
-      "MemoryResponse": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
         ],
         "type": "object"
       },
@@ -9659,14 +9696,6 @@
           "on_this_day"
         ],
         "type": "string"
-      },
-      "MemoryUpdate": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "type": "object"
       },
       "MemoryUpdateDto": {
         "properties": {
@@ -9953,6 +9982,23 @@
         ],
         "type": "string"
       },
+      "PeopleResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
       "PeopleResponseDto": {
         "properties": {
           "hasNextPage": {
@@ -9977,6 +10023,17 @@
           "people",
           "total"
         ],
+        "type": "object"
+      },
+      "PeopleUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "PeopleUpdateDto": {
@@ -10300,7 +10357,7 @@
         ],
         "type": "object"
       },
-      "RatingResponse": {
+      "RatingsResponse": {
         "properties": {
           "enabled": {
             "default": false,
@@ -10312,7 +10369,7 @@
         ],
         "type": "object"
       },
-      "RatingUpdate": {
+      "RatingsUpdate": {
         "properties": {
           "enabled": {
             "type": "boolean"
@@ -12002,6 +12059,34 @@
         ],
         "type": "object"
       },
+      "TagsResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "TagsUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "TimeBucketResponseDto": {
         "properties": {
           "count": {
@@ -12379,23 +12464,35 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
+          "folders": {
+            "$ref": "#/components/schemas/FoldersResponse"
+          },
           "memories": {
-            "$ref": "#/components/schemas/MemoryResponse"
+            "$ref": "#/components/schemas/MemoriesResponse"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleResponse"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
           },
-          "rating": {
-            "$ref": "#/components/schemas/RatingResponse"
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsResponse"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
+          "folders",
           "memories",
+          "people",
           "purchase",
-          "rating"
+          "ratings",
+          "tags"
         ],
         "type": "object"
       },
@@ -12410,14 +12507,23 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
+          "folders": {
+            "$ref": "#/components/schemas/FoldersUpdate"
+          },
           "memories": {
-            "$ref": "#/components/schemas/MemoryUpdate"
+            "$ref": "#/components/schemas/MemoriesUpdate"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleUpdate"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"
           },
-          "rating": {
-            "$ref": "#/components/schemas/RatingUpdate"
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsUpdate"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsUpdate"
           }
         },
         "type": "object"

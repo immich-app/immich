@@ -6,7 +6,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import {
@@ -502,9 +502,11 @@
   </section>
 {/if}
 
-<section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
-  <DetailPanelTags {asset} {isOwner} />
-</section>
+{#if $preferences?.tags?.enabled}
+  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+    <DetailPanelTags {asset} {isOwner} />
+  </section>
+{/if}
 
 {#if showEditFaces}
   <PersonSidePanel
