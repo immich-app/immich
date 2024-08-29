@@ -756,6 +756,7 @@
   "invite_to_album": "Invite to album",
   "items_count": "{count, plural, one {# item} other {# items}}",
   "jobs": "Jobs",
+  "jump_to_timeline": "Jump to timeline",
   "keep": "Keep",
   "keep_all": "Keep All",
   "keyboard_shortcuts": "Keyboard shortcuts",

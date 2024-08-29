@@ -28,6 +28,7 @@
     mdiChevronRight,
     mdiChevronUp,
     mdiDotsVertical,
+    mdiOpenInNew,
     mdiPause,
     mdiPlay,
     mdiPlus,
@@ -301,6 +302,16 @@
                 draggable="false"
               />
             {/key}
+
+            <div
+              class="absolute bottom-6 right-6 transition-all"
+              class:opacity-0={galleryInView}
+              class:opacity-100={!galleryInView}
+            >
+              <a href={`${AppRoute.PHOTOS}?at=${currentAsset.id}`} title={$t('jump_to_timeline')}>
+                <CircleIconButton icon={mdiOpenInNew} title={$t('jump_to_timeline')} color="light" />
+              </a>
+            </div>
             <!-- CONTROL BUTTONS -->
             {#if canGoBack}
               <div class="absolute top-1/2 left-0 ml-4">

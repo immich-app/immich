@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -15,6 +16,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -35,6 +37,7 @@
     mdiImageRefreshOutline,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
+    mdiOpenInNew,
     mdiPresentationPlay,
     mdiUpload,
   } from '@mdi/js';
@@ -155,6 +158,11 @@
             icon={mdiUpload}
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
             text={$t('replace_with_upload')}
+          />
+          <MenuOption
+            icon={mdiOpenInNew}
+            onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+            text={$t('jump_to_timeline')}
           />
           <hr />
           <MenuOption
