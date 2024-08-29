@@ -18,6 +18,7 @@ import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from
 import { ArgOf, ClientEvent, IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService {
@@ -63,7 +64,7 @@ export class SystemConfigService {
     const oldConfig = await this.core.getConfig({ withCache: false });
 
     try {
-      await this.eventRepository.emit('config.validate', { newConfig: dto, oldConfig });
+      await this.eventRepository.emit('config.validate', { newConfig: toPlainObject(dto), oldConfig });
     } catch (error) {
       this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
       throw new BadRequestException(error instanceof Error ? error.message : error);

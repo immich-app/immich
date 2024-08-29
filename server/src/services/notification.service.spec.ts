@@ -1,4 +1,6 @@
+import { plainToInstance } from 'class-transformer';
 import { defaults, SystemConfig } from 'src/config';
+import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
@@ -107,6 +109,14 @@ describe(NotificationService.name, () => {
     it('skips smtp validation when there are no changes', async () => {
       const oldConfig = { ...configs.smtpEnabled };
       const newConfig = { ...configs.smtpEnabled };
+
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
+      expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
+    });
+
+    it('skips smtp validation with DTO when there are no changes', async () => {
+      const oldConfig = { ...configs.smtpEnabled };
+      const newConfig = plainToInstance(SystemConfigDto, configs.smtpEnabled);
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
