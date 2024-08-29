@@ -4,32 +4,29 @@ dynamic upgradeDto(dynamic value, String targetType) {
   switch (targetType) {
     case 'UserPreferencesResponseDto':
       if (value is Map) {
-        if (value['rating'] == null) {
-          value['rating'] = RatingResponse().toJson();
-        }
-
         if (value['download']['includeEmbeddedVideos'] == null) {
           value['download']['includeEmbeddedVideos'] = false;
         }
 
         // v1.113.0
-        if (value['metadata'] == null) {
-          value['metadata'] = {};
+        if (value['folders'] == null) {
+          value['folders'] = FoldersResponse().toJson();
+        }
 
-          value['metadata']['memory'] = {};
-          value['metadata']['memory']['enabled'] = true;
+        if (value['memories'] == null) {
+          value['memories'] = MemoriesResponse().toJson();
+        }
 
-          value['metadata']['rating'] = {};
-          value['metadata']['rating']['enabled'] = false;
+        if (value['ratings'] == null) {
+          value['ratings'] = RatingsResponse().toJson();
+        }
 
-          value['metadata']['folder'] = {};
-          value['metadata']['folder']['enabled'] = false;
+        if (value['people'] == null) {
+          value['people'] = PeopleResponse().toJson();
+        }
 
-          value['metadata']['tag'] = {};
-          value['metadata']['tag']['enabled'] = false;
-
-          value['metadata']['people'] = {};
-          value['metadata']['people']['enabled'] = false;
+        if (value['tags'] == null) {
+          value['tags'] = TagsResponse().toJson();
         }
       }
       break;
