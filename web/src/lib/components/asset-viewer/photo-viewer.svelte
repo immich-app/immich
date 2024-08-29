@@ -1,5 +1,7 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
@@ -9,17 +11,14 @@
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetTypeEnum, type AssetResponseDto, AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
-  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
-  import { onDestroy } from 'svelte';
-
-  import { swipe } from 'svelte-gestures';
-  import type { SwipeCustomEvent } from 'svelte-gestures';
+  import { onDestroy, onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import { type SwipeCustomEvent, swipe } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
@@ -37,6 +36,7 @@
   let imageLoaded: boolean = false;
   let imageError: boolean = false;
   let forceUseOriginal: boolean = false;
+  let loader: HTMLImageElement;
 
   $: isWebCompatible = isWebCompatibleImage(asset);
   $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
@@ -124,6 +124,25 @@
       onPreviousAsset();
     }
   };
+
+  onMount(() => {
+    const onload = () => {
+      imageLoaded = true;
+      assetFileUrl = imageLoaderUrl;
+    };
+    const onerror = () => {
+      imageError = imageLoaded = true;
+    };
+    if (loader.complete) {
+      onload();
+    }
+    loader.addEventListener('load', onload);
+    loader.addEventListener('error', onerror);
+    return () => {
+      loader?.removeEventListener('load', onload);
+      loader?.removeEventListener('error', onerror);
+    };
+  });
 </script>
 
 <svelte:window
@@ -133,8 +152,10 @@
   ]}
 />
 {#if imageError}
-  <div class="h-full flex items-center justify-center">{$t('error_loading_image')}</div>
+  <BrokenAsset square />
 {/if}
+<!-- svelte-ignore a11y-missing-attribute -->
+<img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
 <div bind:this={element} class="relative h-full select-none">
   <img
     style="display:none"
@@ -144,7 +165,7 @@
     on:error={() => (imageError = imageLoaded = true)}
   />
   {#if !imageLoaded}
-    <div class="flex h-full items-center justify-center">
+    <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
     </div>
   {:else if !imageError}
@@ -177,3 +198,15 @@
     </div>
   {/if}
 </div>
+
+<style>
+  @keyframes delayedVisibility {
+    to {
+      visibility: visible;
+    }
+  }
+  #spinner {
+    visibility: hidden;
+    animation: 0s linear 0.4s forwards delayedVisibility;
+  }
+</style>

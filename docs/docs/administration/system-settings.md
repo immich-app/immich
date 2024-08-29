@@ -104,7 +104,7 @@ You can choose to disable a certain type of machine learning, for example smart 
 
 ### Smart Search
 
-The smart search settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
+The [smart search](/docs/features/smart-search) settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
 Smart Search job on all images to fully apply the change.
 
 :::info Internet connection
@@ -113,15 +113,23 @@ After downloading, there is no need for Immich to connect to the network
 Unless version checking has been enabled in the settings.
 :::
 
+### Duplicate Detection
+
+Use CLIP embeddings to find likely duplicates. The maximum detection distance can be configured in order to improve / reduce the level of accuracy.
+
+- **Maximum detection distance -** Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives.
+
 ### Facial Recognition
 
 Under these settings, you can change the facial recognition settings
 Editable settings:
 
-- **Facial Recognition Model -** Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model.
-- **Min Detection Score -** Minimum confidence score for a face to be detected from 0-1. Lower values will detect more faces but may result in false positives.
-- **Max Recognition Distance -** Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person, while raising it can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible.
-- **Min Recognized Faces -** The minimum number of recognized faces for a person to be created (AKA: Core face). Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person.
+- **Facial Recognition Model**
+- **Min Detection Score**
+- **Max Recognition Distance**
+- **Min Recognized Faces**
+
+You can learn more about these options on the [Facial Recognition page](/docs/features/facial-recognition#how-face-detection-works)
 
 :::info
 When changing the values in Min Detection Score, Max Recognition Distance, and Min Recognized Faces.
@@ -153,7 +161,7 @@ SMTP server setup, for user creation notifications, new albums, etc. More inform
 
 ### External Domain
 
-When set, will override the domain name used when viewing and copying a shared link.
+Overrides the domain name in shared links and email notifications. The URL should not include a trailing slash.
 
 ### Welcome Message
 

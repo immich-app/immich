@@ -1,5 +1,6 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
@@ -72,11 +73,8 @@ export class AssetEntity {
   @Column()
   originalPath!: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  previewPath!: string | null;
-
-  @Column({ type: 'varchar', nullable: true, default: '' })
-  thumbnailPath!: string | null;
+  @OneToMany(() => AssetFileEntity, (assetFile) => assetFile.asset)
+  files!: AssetFileEntity[];
 
   @Column({ type: 'bytea', nullable: true })
   thumbhash!: Buffer | null;

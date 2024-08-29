@@ -121,8 +121,8 @@ export class MetadataService {
     );
   }
 
-  @OnEmit({ event: 'onBootstrap' })
-  async onBootstrap(app: ArgOf<'onBootstrap'>) {
+  @OnEmit({ event: 'app.bootstrap' })
+  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -130,8 +130,8 @@ export class MetadataService {
     await this.init(config);
   }
 
-  @OnEmit({ event: 'onConfigUpdate' })
-  async onConfigUpdate({ newConfig }: ArgOf<'onConfigUpdate'>) {
+  @OnEmit({ event: 'config.update' })
+  async onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig);
   }
 
@@ -153,7 +153,7 @@ export class MetadataService {
     }
   }
 
-  @OnEmit({ event: 'onShutdown' })
+  @OnEmit({ event: 'app.shutdown' })
   async onShutdown() {
     await this.repository.teardown();
   }
@@ -173,6 +173,7 @@ export class MetadataService {
     const match = await this.assetRepository.findLivePhotoMatch({
       livePhotoCID: asset.exifInfo.livePhotoCID,
       ownerId: asset.ownerId,
+      libraryId: asset.libraryId,
       otherAssetId: asset.id,
       type: otherType,
     });

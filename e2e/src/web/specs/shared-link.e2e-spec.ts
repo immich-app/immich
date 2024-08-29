@@ -44,7 +44,7 @@ test.describe('Shared Links', () => {
   test('download from a shared link', async ({ page }) => {
     await page.goto(`/share/${sharedLink.key}`);
     await page.getByRole('heading', { name: 'Test Album' }).waitFor();
-    await page.locator('.group > div').first().hover();
+    await page.locator('.group').first().hover();
     await page.waitForSelector('#asset-group-by-date svg');
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Download' }).click();

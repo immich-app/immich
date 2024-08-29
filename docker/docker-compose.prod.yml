@@ -79,7 +79,7 @@ services:
     container_name: immich_prometheus
     ports:
       - 9090:9090
-    image: prom/prometheus@sha256:cafe963e591c872d38f3ea41ff8eb22cee97917b7c97b5c0ccd43a419f11f613
+    image: prom/prometheus@sha256:f6639335d34a77d9d9db382b92eeb7fc00934be8eae81dbc03b31cfe90411a94
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -91,7 +91,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:11.1.3-ubuntu@sha256:e10453733015f31103cb530425f32c994816b50102886fa885dafea2c50a711c
+    image: grafana/grafana:11.1.4-ubuntu@sha256:8e74fb7eed4d59fb5595acd0576c21411167f6b6401426ae29f2e8f9f71b68f6
     volumes:
       - grafana-data:/var/lib/grafana
 

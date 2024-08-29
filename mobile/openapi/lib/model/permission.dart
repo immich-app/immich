@@ -36,7 +36,6 @@ class Permission {
   static const assetPeriodRead = Permission._(r'asset.read');
   static const assetPeriodUpdate = Permission._(r'asset.update');
   static const assetPeriodDelete = Permission._(r'asset.delete');
-  static const assetPeriodRestore = Permission._(r'asset.restore');
   static const assetPeriodShare = Permission._(r'asset.share');
   static const assetPeriodView = Permission._(r'asset.view');
   static const assetPeriodDownload = Permission._(r'asset.download');
@@ -78,10 +77,17 @@ class Permission {
   static const personPeriodStatistics = Permission._(r'person.statistics');
   static const personPeriodMerge = Permission._(r'person.merge');
   static const personPeriodReassign = Permission._(r'person.reassign');
+  static const sessionPeriodRead = Permission._(r'session.read');
+  static const sessionPeriodUpdate = Permission._(r'session.update');
+  static const sessionPeriodDelete = Permission._(r'session.delete');
   static const sharedLinkPeriodCreate = Permission._(r'sharedLink.create');
   static const sharedLinkPeriodRead = Permission._(r'sharedLink.read');
   static const sharedLinkPeriodUpdate = Permission._(r'sharedLink.update');
   static const sharedLinkPeriodDelete = Permission._(r'sharedLink.delete');
+  static const stackPeriodCreate = Permission._(r'stack.create');
+  static const stackPeriodRead = Permission._(r'stack.read');
+  static const stackPeriodUpdate = Permission._(r'stack.update');
+  static const stackPeriodDelete = Permission._(r'stack.delete');
   static const systemConfigPeriodRead = Permission._(r'systemConfig.read');
   static const systemConfigPeriodUpdate = Permission._(r'systemConfig.update');
   static const systemMetadataPeriodRead = Permission._(r'systemMetadata.read');
@@ -110,7 +116,6 @@ class Permission {
     assetPeriodRead,
     assetPeriodUpdate,
     assetPeriodDelete,
-    assetPeriodRestore,
     assetPeriodShare,
     assetPeriodView,
     assetPeriodDownload,
@@ -152,10 +157,17 @@ class Permission {
     personPeriodStatistics,
     personPeriodMerge,
     personPeriodReassign,
+    sessionPeriodRead,
+    sessionPeriodUpdate,
+    sessionPeriodDelete,
     sharedLinkPeriodCreate,
     sharedLinkPeriodRead,
     sharedLinkPeriodUpdate,
     sharedLinkPeriodDelete,
+    stackPeriodCreate,
+    stackPeriodRead,
+    stackPeriodUpdate,
+    stackPeriodDelete,
     systemConfigPeriodRead,
     systemConfigPeriodUpdate,
     systemMetadataPeriodRead,
@@ -219,7 +231,6 @@ class PermissionTypeTransformer {
         case r'asset.read': return Permission.assetPeriodRead;
         case r'asset.update': return Permission.assetPeriodUpdate;
         case r'asset.delete': return Permission.assetPeriodDelete;
-        case r'asset.restore': return Permission.assetPeriodRestore;
         case r'asset.share': return Permission.assetPeriodShare;
         case r'asset.view': return Permission.assetPeriodView;
         case r'asset.download': return Permission.assetPeriodDownload;
@@ -261,10 +272,17 @@ class PermissionTypeTransformer {
         case r'person.statistics': return Permission.personPeriodStatistics;
         case r'person.merge': return Permission.personPeriodMerge;
         case r'person.reassign': return Permission.personPeriodReassign;
+        case r'session.read': return Permission.sessionPeriodRead;
+        case r'session.update': return Permission.sessionPeriodUpdate;
+        case r'session.delete': return Permission.sessionPeriodDelete;
         case r'sharedLink.create': return Permission.sharedLinkPeriodCreate;
         case r'sharedLink.read': return Permission.sharedLinkPeriodRead;
         case r'sharedLink.update': return Permission.sharedLinkPeriodUpdate;
         case r'sharedLink.delete': return Permission.sharedLinkPeriodDelete;
+        case r'stack.create': return Permission.stackPeriodCreate;
+        case r'stack.read': return Permission.stackPeriodRead;
+        case r'stack.update': return Permission.stackPeriodUpdate;
+        case r'stack.delete': return Permission.stackPeriodDelete;
         case r'systemConfig.read': return Permission.systemConfigPeriodRead;
         case r'systemConfig.update': return Permission.systemConfigPeriodUpdate;
         case r'systemMetadata.read': return Permission.systemMetadataPeriodRead;
