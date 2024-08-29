@@ -13,7 +13,7 @@
   import { foldersStore } from '$lib/stores/folders.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiArrowUpLeft, mdiChevronRight, mdiFolder, mdiFolderHome } from '@mdi/js';
+  import { mdiArrowUpLeft, mdiChevronRight, mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -60,7 +60,12 @@
     <section>
       <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
       <div class="h-full">
-        <TreeItems items={tree} active={currentPath} {getLink} />
+        <TreeItems
+          icons={{ default: mdiFolderOutline, active: mdiFolder }}
+          items={tree}
+          active={currentPath}
+          {getLink}
+        />
       </div>
     </section>
   </SideBarSection>
@@ -73,7 +78,7 @@
     <div
       class="flex place-items-center gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 w-full py-2 px-4 rounded-2xl border border-gray-100 dark:border-gray-900"
     >
-      <a href={`${AppRoute.FOLDERS}`} title="To root">
+      <a href={`${AppRoute.FOLDERS}`} title={$t('to_root')}>
         <Icon path={mdiFolderHome} class="text-immich-primary dark:text-immich-dark-primary mr-2" size={28} />
       </a>
       {#each pathSegments as segment, index}

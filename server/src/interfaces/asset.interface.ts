@@ -36,6 +36,7 @@ export enum WithoutProperty {
 
 export enum WithProperty {
   SIDECAR = 'sidecar',
+  IS_ONLINE = 'isOnline',
   IS_OFFLINE = 'isOffline',
 }
 
@@ -50,6 +51,7 @@ export interface AssetBuilderOptions {
   isTrashed?: boolean;
   isDuplicate?: boolean;
   albumId?: string;
+  tagId?: string;
   personId?: string;
   userIds?: string[];
   withStacked?: boolean;

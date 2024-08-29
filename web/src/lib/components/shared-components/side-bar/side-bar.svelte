@@ -20,6 +20,7 @@
     mdiToolbox,
     mdiToolboxOutline,
     mdiFolderOutline,
+    mdiTagMultipleOutline,
   } from '@mdi/js';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
@@ -106,6 +107,10 @@
         <MoreInformationAlbums albumType="owned" />
       </svelte:fragment>
     </SideBarLink>
+
+    {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
+      <SideBarLink title={$t('tags')} routeId="/(user)/tags" icon={mdiTagMultipleOutline} flippedLogo />
+    {/if}
 
     {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb}
       <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />

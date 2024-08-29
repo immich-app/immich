@@ -109,7 +109,7 @@
           );
         },
         onSeparate: () => {
-          $assetStore.taskManager.seperatedDateGroup(componentId, dateGroup, () =>
+          $assetStore.taskManager.separatedDateGroup(componentId, dateGroup, () =>
             assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
           );
         },
@@ -186,9 +186,9 @@
               <div
                 use:intersectionObserver={{
                   onIntersect: () => onAssetInGrid?.(asset),
-                  top: `-${TITLE_HEIGHT}px`,
-                  bottom: `-${viewport.height - TITLE_HEIGHT - 1}px`,
-                  right: `-${viewport.width - 1}px`,
+                  top: `${-TITLE_HEIGHT}px`,
+                  bottom: `${-(viewport.height - TITLE_HEIGHT - 1)}px`,
+                  right: `${-(viewport.width - 1)}px`,
                   root: assetGridElement,
                 }}
                 data-asset-id={asset.id}

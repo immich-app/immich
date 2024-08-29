@@ -17,6 +17,10 @@ type EmitEventMap = {
   'album.update': [{ id: string; updatedBy: string }];
   'album.invite': [{ id: string; userId: string }];
 
+  // tag events
+  'asset.tag': [{ assetId: string }];
+  'asset.untag': [{ assetId: string }];
+
   // user events
   'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];
 };

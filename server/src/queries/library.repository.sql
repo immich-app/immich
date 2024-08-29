@@ -145,14 +145,3 @@ WHERE
   AND ("libraries"."deletedAt" IS NULL)
 GROUP BY
   "libraries"."id"
-
--- LibraryRepository.getAssetIds
-SELECT
-  "assets"."id" AS "assets_id"
-FROM
-  "libraries" "library"
-  INNER JOIN "assets" "assets" ON "assets"."libraryId" = "library"."id"
-  AND ("assets"."deletedAt" IS NULL)
-WHERE
-  ("library"."id" = $1)
-  AND ("library"."deletedAt" IS NULL)
