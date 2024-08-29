@@ -498,21 +498,21 @@
     }
   };
 
-  function intersectedHandler(bucket: AssetBucket) {
+  function handleIntersect(bucket: AssetBucket) {
     updateLastIntersectedBucketDate();
-    const intersectedTask = () => {
+    const task = () => {
       $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
       void $assetStore.loadBucket(bucket.bucketDate);
     };
-    $assetStore.taskManager.intersectedBucket(componentId, bucket, intersectedTask);
+    $assetStore.taskManager.intersectedBucket(componentId, bucket, task);
   }
 
-  function seperatedHandler(bucket: AssetBucket) {
-    const seperatedTask = () => {
+  function handleSeparate(bucket: AssetBucket) {
+    const task = () => {
       $assetStore.updateBucket(bucket.bucketDate, { intersecting: false });
       bucket.cancel();
     };
-    $assetStore.taskManager.seperatedBucket(componentId, bucket, seperatedTask);
+    $assetStore.taskManager.separatedBucket(componentId, bucket, task);
   }
 
   const handlePrevious = async () => {
@@ -809,8 +809,8 @@
       <div
         id="bucket"
         use:intersectionObserver={{
-          onIntersect: () => intersectedHandler(bucket),
-          onSeparate: () => seperatedHandler(bucket),
+          onIntersect: () => handleIntersect(bucket),
+          onSeparate: () => handleSeparate(bucket),
           top: BUCKET_INTERSECTION_ROOT_TOP,
           bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
           root: element,

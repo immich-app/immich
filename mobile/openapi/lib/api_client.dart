@@ -295,8 +295,6 @@ class ApiClient {
           return CreateLibraryDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
-        case 'CreateTagDto':
-          return CreateTagDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -543,10 +541,18 @@ class ApiClient {
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':
           return SystemConfigUserDto.fromJson(value);
+        case 'TagBulkAssetsDto':
+          return TagBulkAssetsDto.fromJson(value);
+        case 'TagBulkAssetsResponseDto':
+          return TagBulkAssetsResponseDto.fromJson(value);
+        case 'TagCreateDto':
+          return TagCreateDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
-        case 'TagTypeEnum':
-          return TagTypeEnumTypeTransformer().decode(value);
+        case 'TagUpdateDto':
+          return TagUpdateDto.fromJson(value);
+        case 'TagUpsertDto':
+          return TagUpsertDto.fromJson(value);
         case 'TimeBucketResponseDto':
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketSize':
@@ -567,8 +573,6 @@ class ApiClient {
           return UpdateLibraryDto.fromJson(value);
         case 'UpdatePartnerDto':
           return UpdatePartnerDto.fromJson(value);
-        case 'UpdateTagDto':
-          return UpdateTagDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserAdminCreateDto':
