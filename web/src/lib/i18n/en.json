@@ -554,7 +554,6 @@
   "error": "Error",
   "error_loading_image": "Error loading image",
   "error_title": "Error - Something went wrong",
-
   "errors": {
     "cannot_navigate_next_asset": "Cannot navigate to the next asset",
     "cannot_navigate_previous_asset": "Cannot navigate to previous asset",
@@ -707,7 +706,6 @@
   "fix_incorrect_match": "Fix incorrect match",
   "folders": "Folders",
   "folders_feature_description": "Browsing the folder view for the photos and videos on the file system",
-
   "force_re-scan_library_files": "Force Re-scan All Library Files",
   "forward": "Forward",
   "general": "General",
