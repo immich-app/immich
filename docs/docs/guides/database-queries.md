@@ -23,7 +23,7 @@ SELECT * FROM "assets" WHERE "originalFileName" LIKE '%_2023_%'; -- all files wi
 ```
 
 ```sql title="Find by path"
-SELECT * FROM "assets" WHERE "originalPath" = 'upload/library/admin/2023/2023-09-03/PXL_20230903_232542848.jpg';
+SELECT * FROM "assets" WHERE "originalPath" = 'upload/library/admin/2023/2023-09-03/PXL_2023.jpg';
 SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 ```
 
@@ -35,6 +35,12 @@ You can calculate the checksum for a particular file by using the command `sha1s
 SELECT encode("checksum", 'hex') FROM "assets";
 SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e033bf74dd1', 'hex');
 SELECT * FROM "assets" WHERE "checksum" = '\x69de19c87658c4c15d9cacb9967b8e033bf74dd1'; -- alternate notation
+```
+
+```sql title="Find duplicate assets with identical checksum (SHA-1) (excluding trashed files)"
+SELECT T1."checksum", array_agg(T2."id") ids FROM "assets" T1
+  INNER JOIN "assets" T2 ON T1."checksum" = T2."checksum" AND T1."id" != T2."id" AND T2."deletedAt" IS NULL
+  WHERE T1."deletedAt" IS NULL GROUP BY T1."checksum";
 ```
 
 ```sql title="Live photos"
@@ -79,8 +85,7 @@ SELECT "assets"."type", COUNT(*) FROM "assets" GROUP BY "assets"."type";
 ```sql title="Count by type (per user)"
 SELECT "users"."email", "assets"."type", COUNT(*) FROM "assets"
   JOIN "users" ON "assets"."ownerId" = "users"."id"
-  GROUP BY "assets"."type", "users"."email"
-  ORDER BY "users"."email";
+  GROUP BY "assets"."type", "users"."email" ORDER BY "users"."email";
 ```
 
 ```sql title="Failed file movements"

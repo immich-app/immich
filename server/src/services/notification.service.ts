@@ -87,7 +87,7 @@ export class NotificationService {
     }
 
     const { server } = await this.configCore.getConfig({ withCache: false });
-    const { html, text } = this.notificationRepository.renderEmail({
+    const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
@@ -113,7 +113,7 @@ export class NotificationService {
     }
 
     const { server } = await this.configCore.getConfig({ withCache: true });
-    const { html, text } = this.notificationRepository.renderEmail({
+    const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
         baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
@@ -156,7 +156,7 @@ export class NotificationService {
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig({ withCache: false });
-    const { html, text } = this.notificationRepository.renderEmail({
+    const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
         baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
@@ -211,7 +211,7 @@ export class NotificationService {
         continue;
       }
 
-      const { html, text } = this.notificationRepository.renderEmail({
+      const { html, text } = await this.notificationRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {
           baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
