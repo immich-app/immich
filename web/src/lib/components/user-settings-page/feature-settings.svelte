@@ -13,29 +13,37 @@
   import { t } from 'svelte-i18n';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
 
+  // Folders
+  let foldersEnabled = $preferences?.folders?.enabled ?? false;
+  let foldersSidebar = $preferences?.folders?.sidebarWeb ?? false;
+
+  // Memories
   let memoriesEnabled = $preferences?.memories?.enabled ?? true;
-  let folderEnabled = $preferences?.folders?.enabled ?? false;
+
+  // People
   let peopleEnabled = $preferences?.people?.enabled ?? false;
-  let ratingEnabled = $preferences?.ratings?.enabled ?? false;
-  let tagEnabled = $preferences?.tags?.enabled ?? false;
+  let peopleSidebar = $preferences?.people?.sidebarWeb ?? false;
+
+  // Ratings
+  let ratingsEnabled = $preferences?.ratings?.enabled ?? false;
+
+  // Tags
+  let tagsEnabled = $preferences?.tags?.enabled ?? false;
+  let tagsSidebar = $preferences?.tags?.sidebarWeb ?? false;
 
   const handleSave = async () => {
     try {
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
-          folders: { enabled: folderEnabled },
+          folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
           memories: { enabled: memoriesEnabled },
-          people: { enabled: peopleEnabled },
-          ratings: { enabled: ratingEnabled },
-          tags: { enabled: tagEnabled },
+          people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
+          ratings: { enabled: ratingsEnabled },
+          tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
         },
       });
 
-      $preferences.folders.enabled = data.folders.enabled;
-      $preferences.memories.enabled = data.memories.enabled;
-      $preferences.people.enabled = data.people.enabled;
-      $preferences.ratings.enabled = data.ratings.enabled;
-      $preferences.tags.enabled = data.tags.enabled;
+      $preferences = { ...data };
 
       notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
     } catch (error) {
@@ -50,15 +58,18 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
           <div class="ml-4 mt-6">
-            <SettingSwitch title={$t('enable')} bind:checked={folderEnabled} />
+            <SettingSwitch title={$t('enable')} bind:checked={foldersEnabled} />
           </div>
-          <div class="ml-4 mt-6">
-            <SettingSwitch
-              title={$t('sidebar')}
-              subtitle={$t('sidebar_display_description')}
-              bind:checked={folderEnabled}
-            />
-          </div>
+
+          {#if foldersEnabled}
+            <div class="ml-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={foldersSidebar}
+              />
+            </div>
+          {/if}
         </SettingAccordion>
 
         <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
@@ -71,32 +82,37 @@
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={peopleEnabled} />
           </div>
-          <div class="ml-4 mt-6">
-            <SettingSwitch
-              title={$t('sidebar')}
-              subtitle={$t('sidebar_display_description')}
-              bind:checked={tagEnabled}
-            />
-          </div>
+
+          {#if peopleEnabled}
+            <div class="ml-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={peopleSidebar}
+              />
+            </div>
+          {/if}
         </SettingAccordion>
 
         <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
           <div class="ml-4 mt-6">
-            <SettingSwitch title={$t('enable')} bind:checked={ratingEnabled} />
+            <SettingSwitch title={$t('enable')} bind:checked={ratingsEnabled} />
           </div>
         </SettingAccordion>
 
         <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
           <div class="ml-4 mt-6">
-            <SettingSwitch title={$t('enable')} bind:checked={tagEnabled} />
+            <SettingSwitch title={$t('enable')} bind:checked={tagsEnabled} />
           </div>
-          <div class="ml-4 mt-6">
-            <SettingSwitch
-              title={$t('sidebar')}
-              subtitle={$t('sidebar_display_description')}
-              bind:checked={tagEnabled}
-            />
-          </div>
+          {#if tagsEnabled}
+            <div class="ml-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={tagsSidebar}
+              />
+            </div>
+          {/if}
         </SettingAccordion>
 
         <div class="flex justify-end">

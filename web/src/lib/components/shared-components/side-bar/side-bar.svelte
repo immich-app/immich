@@ -51,6 +51,7 @@
         <MoreInformationAssets assetStats={{ isArchived: false }} />
       </svelte:fragment>
     </SideBarLink>
+
     {#if $featureFlags.search}
       <SideBarLink title={$t('explore')} routeId="/(user)/explore" icon={mdiMagnify} />
     {/if}
@@ -64,7 +65,7 @@
       />
     {/if}
 
-    {#if $preferences.people.enabled}
+    {#if $preferences.people.enabled && $preferences.people.sidebarWeb}
       <SideBarLink
         title={$t('people')}
         routeId="/(user)/people"
@@ -88,6 +89,7 @@
       <p class="hidden p-6 group-hover:sm:block md:block">{$t('library').toUpperCase()}</p>
       <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
     </div>
+
     <SideBarLink
       title={$t('favorites')}
       routeId="/(user)/favorites"
@@ -98,13 +100,14 @@
         <MoreInformationAssets assetStats={{ isFavorite: true }} />
       </svelte:fragment>
     </SideBarLink>
+
     <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
       <svelte:fragment slot="moreInformation">
         <MoreInformationAlbums albumType="owned" />
       </svelte:fragment>
     </SideBarLink>
 
-    {#if $preferences.folders.enabled}
+    {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb}
       <SideBarLink title={$t('folders')} routeId="/(user)/folders" icon={mdiFolderOutline} flippedLogo />
     {/if}
 
