@@ -4,8 +4,14 @@
   import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
+  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+
   import { t } from 'svelte-i18n';
-  export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
+  export let asset: AssetResponseDto;
+
+  $: isWebCompatible = isWebCompatibleImage(asset);
+  $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
 
   const photoSphereConfigs =
     asset.type === AssetTypeEnum.Video
@@ -22,6 +28,9 @@
   const loadAssetData = async () => {
     if (asset.type === AssetTypeEnum.Video) {
       return { source: getAssetOriginalUrl(asset.id) };
+    }
+    if (useOriginalByDefault) {
+      return getAssetOriginalUrl(asset.id);
     }
     const data = await viewAsset({ id: asset.id, size: AssetMediaSize.Preview, key: getKey() });
     const url = URL.createObjectURL(data);
