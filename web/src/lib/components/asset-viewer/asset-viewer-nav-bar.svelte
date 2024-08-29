@@ -35,9 +35,9 @@
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
     mdiImageRefreshOutline,
+    mdiImageSearch,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
-    mdiOpenInNew,
     mdiPresentationPlay,
     mdiUpload,
   } from '@mdi/js';
@@ -160,9 +160,9 @@
             text={$t('replace_with_upload')}
           />
           <MenuOption
-            icon={mdiOpenInNew}
-            onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
-            text={$t('jump_to_timeline')}
+            icon={mdiImageSearch}
+            onClick={() => window.open(`${AppRoute.PHOTOS}?at=${asset.id}`, '_blank')}
+            text={$t('view_in_timeline')}
           />
           <hr />
           <MenuOption

@@ -309,10 +309,10 @@
               class:opacity-100={!galleryInView}
             >
               <CircleIconButton
-                href="{AppRoute.PHOTOS}?at={currentAsset.id}"
                 icon={mdiOpenInNew}
-                title={$t('jump_to_timeline')}
+                title={$t('view_in_timeline')}
                 color="light"
+                on:click={() => window.open(`${AppRoute.PHOTOS}?at=${currentAsset.id}`, '_blank')}
               />
             </div>
             <!-- CONTROL BUTTONS -->
