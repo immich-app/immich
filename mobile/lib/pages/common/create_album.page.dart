@@ -241,7 +241,8 @@ class CreateAlbumPage extends HookConsumerWidget {
           if (!isSharedAlbum)
             TextButton(
               onPressed: albumTitleController.text.isNotEmpty
-                  ? createNonSharedAlbum : null,
+                  ? createNonSharedAlbum
+                  : null,
               child: Text(
                 'create_shared_album_page_create'.tr(),
                 style: TextStyle(
