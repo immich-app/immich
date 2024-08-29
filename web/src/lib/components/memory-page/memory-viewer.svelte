@@ -308,9 +308,12 @@
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
-              <a href={`${AppRoute.PHOTOS}?at=${currentAsset.id}`} title={$t('jump_to_timeline')}>
-                <CircleIconButton icon={mdiOpenInNew} title={$t('jump_to_timeline')} color="light" />
-              </a>
+              <CircleIconButton
+                href="{AppRoute.PHOTOS}?at={currentAsset.id}"
+                icon={mdiOpenInNew}
+                title={$t('jump_to_timeline')}
+                color="light"
+              />
             </div>
             <!-- CONTROL BUTTONS -->
             {#if canGoBack}
