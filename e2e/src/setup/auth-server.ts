@@ -50,9 +50,7 @@ const getClaims = (sub: string) => claims.find((user) => user.sub === sub) || wi
 const setup = async () => {
   const { privateKey, publicKey } = await generateKeyPair('RS256');
 
-  const port = 3000;
-  const host = '0.0.0.0';
-  const oidc = new Provider(`http://${host}:${port}`, {
+  const oidc = new Provider(`http://${process.env.IMMICH_SERVER_URL}`, {
     renderError: async (ctx, out, error) => {
       console.error(out);
       console.error(error);
@@ -86,14 +84,14 @@ const setup = async () => {
       {
         client_id: OAuthClient.DEFAULT,
         client_secret: OAuthClient.DEFAULT,
-        redirect_uris: ['http://127.0.0.1:2283/auth/login'],
+        redirect_uris: [`http://${process.env.IMMICH_SERVER_URL}/auth/login`],
         grant_types: ['authorization_code'],
         response_types: ['code'],
       },
       {
         client_id: OAuthClient.RS256_TOKENS,
         client_secret: OAuthClient.RS256_TOKENS,
-        redirect_uris: ['http://127.0.0.1:2283/auth/login'],
+        redirect_uris: [`http://${process.env.IMMICH_SERVER_URL}/auth/login`],
         grant_types: ['authorization_code'],
         id_token_signed_response_alg: 'RS256',
         jwks: { keys: [await exportJWK(publicKey)] },
@@ -101,7 +99,7 @@ const setup = async () => {
       {
         client_id: OAuthClient.RS256_PROFILE,
         client_secret: OAuthClient.RS256_PROFILE,
-        redirect_uris: ['http://127.0.0.1:2283/auth/login'],
+        redirect_uris: [`http://${process.env.IMMICH_SERVER_URL}/auth/login`],
         grant_types: ['authorization_code'],
         userinfo_signed_response_alg: 'RS256',
         jwks: { keys: [await exportJWK(publicKey)] },
@@ -109,8 +107,9 @@ const setup = async () => {
     ],
   });
 
-  const onStart = () => console.log(`[auth-server] http://${host}:${port}/.well-known/openid-configuration`);
-  const app = oidc.listen(port, host, onStart);
+  const onStart = () =>
+    console.log(`[auth-server] http://${process.env.IMMICH_SERVER_URL}/.well-known/openid-configuration`);
+  const app = oidc.listen(process.env.IMMICH_SERVER_URL, onStart);
   return () => app.close();
 };
 

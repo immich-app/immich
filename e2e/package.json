@@ -54,5 +54,8 @@
   },
   "volta": {
     "node": "20.17.0"
+  },
+  "dependencies": {
+    "testcontainers": "^10.12.0"
   }
 }

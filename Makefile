@@ -62,6 +62,8 @@ check-web:
 	npm --prefix web run check:svelte
 test-%:
 	npm --prefix $* run test
+test-e2e: SERVER_PORT=$$(docker compose -f ./e2e/docker-compose.yml port immich-server 3001 | awk -F ':' '{print $$2}')
+test-e2e: DB_PORT=$$(docker compose -f ./e2e/docker-compose.yml port database 5432 | awk -F ':' '{print $$2}')
 test-e2e:
 	docker compose -f ./e2e/docker-compose.yml build
 	npm --prefix e2e run test

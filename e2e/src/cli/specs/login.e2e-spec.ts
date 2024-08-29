@@ -33,7 +33,7 @@ describe(`immich login`, () => {
     const key = await utils.createApiKey(admin.accessToken, [Permission.All]);
     const { stdout, stderr, exitCode } = await immichCli(['login', app, `${key.secret}`]);
     expect(stdout.split('\n')).toEqual([
-      'Logging in to http://127.0.0.1:2283/api',
+      `Logging in to http://${process.env.IMMICH_SERVER_URL}/api`,
       'Logged in as admin@immich.cloud',
       'Wrote auth info to /tmp/immich/auth.yml',
     ]);
@@ -50,8 +50,8 @@ describe(`immich login`, () => {
     const key = await utils.createApiKey(admin.accessToken, [Permission.All]);
     const { stdout, stderr, exitCode } = await immichCli(['login', app.replaceAll('/api', ''), `${key.secret}`]);
     expect(stdout.split('\n')).toEqual([
-      'Logging in to http://127.0.0.1:2283',
-      'Discovered API at http://127.0.0.1:2283/api',
+      `Logging in to http://${process.env.IMMICH_SERVER_URL}`,
+      `Discovered API at http://${process.env.IMMICH_SERVER_URL}/api`,
       'Logged in as admin@immich.cloud',
       'Wrote auth info to /tmp/immich/auth.yml',
     ]);

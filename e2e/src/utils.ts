@@ -53,8 +53,8 @@ type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: nu
 type AdminSetupOptions = { onboarding?: boolean };
 type FileData = { bytes?: Buffer; filename: string };
 
-const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5433/immich';
-export const baseUrl = 'http://127.0.0.1:2283';
+const dbUrl = `postgres://postgres:postgres@${process.env.DB_URL}/immich`;
+export const baseUrl = `http://${process.env.IMMICH_SERVER_URL}`;
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
