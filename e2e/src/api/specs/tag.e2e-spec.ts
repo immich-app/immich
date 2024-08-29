@@ -34,6 +34,8 @@ describe('/tags', () => {
   });
 
   beforeEach(async () => {
+    //  tagging assets eventually triggers metadata extraction which can impact other tests
+    await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
     await utils.resetDatabase(['tags']);
   });
 
@@ -44,7 +46,7 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not work without permission', async () => {
+    it('should require authorization (api key)', async () => {
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
       const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA' });
       expect(status).toBe(403);
@@ -104,6 +106,13 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
+    it('should require authorization (api key)', async () => {
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
+      const { status, body } = await request(app).get('/tags').set('x-api-key', secret);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('tag.read'));
+    });
+
     it('should start off empty', async () => {
       const { status, body } = await request(app).get('/tags').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([]);
@@ -143,7 +152,7 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not work without permission', async () => {
+    it('should require authorization (api key)', async () => {
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
       const { status, body } = await request(app).put('/tags').set('x-api-key', secret).send({ name: 'TagA' });
       expect(status).toBe(403);
@@ -167,7 +176,7 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not work without permission', async () => {
+    it('should require authorization (api key)', async () => {
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
       const { status, body } = await request(app)
         .put('/tags/assets')
@@ -242,6 +251,16 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.noPermission);
     });
 
+    it('should require authorization (api key)', async () => {
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
+      const { status, body } = await request(app)
+        .get(`/tags/${uuidDto.notFound}`)
+        .set('x-api-key', secret)
+        .send({ assetIds: [], tagIds: [] });
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('tag.read'));
+    });
+
     it('should require a valid uuid', async () => {
       const { status, body } = await request(app)
         .get(`/tags/${uuidDto.invalid}`)
@@ -293,7 +312,17 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should not work without permission', async () => {
+    it('should require authorization', async () => {
+      const tag = await create(admin.accessToken, { name: 'tagA' });
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}`)
+        .send({ color: '#000000' })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should require authorization (api key)', async () => {
       const tag = await create(user.accessToken, { name: 'TagA' });
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
       const { status, body } = await request(app)
@@ -302,16 +331,6 @@ describe('/tags', () => {
         .send({ color: '#000000' });
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.missingPermission('tag.update'));
-    });
-
-    it('should require tag access', async () => {
-      const tag = await create(admin.accessToken, { name: 'tagA' });
-      const { status, body } = await request(app)
-        .put(`/tags/${tag.id}`)
-        .send({ color: '#000000' })
-        .set('Authorization', `Bearer ${user.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
     });
 
     it('should update a tag', async () => {
@@ -349,6 +368,14 @@ describe('/tags', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should require authorization (api key)', async () => {
+      const tag = await create(user.accessToken, { name: 'TagA' });
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
+      const { status, body } = await request(app).delete(`/tags/${tag.id}`).set('x-api-key', secret);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('tag.delete'));
     });
 
     it('should require a valid uuid', async () => {
@@ -394,9 +421,32 @@ describe('/tags', () => {
   describe('PUT /tags/:id/assets', () => {
     it('should require authentication', async () => {
       const tagA = await create(user.accessToken, { name: 'TagA' });
-      const { status, body } = await request(app).put(`/tags/${tagA.id}/assets`);
+      const { status, body } = await request(app)
+        .put(`/tags/${tagA.id}/assets`)
+        .send({ ids: [userAsset.id] });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should require authorization', async () => {
+      const tag = await create(user.accessToken, { name: 'TagA' });
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}/assets`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ ids: [userAsset.id] });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should require authorization (api key)', async () => {
+      const tag = await create(user.accessToken, { name: 'TagA' });
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}/assets`)
+        .set('x-api-key', secret)
+        .send({ ids: [userAsset.id] });
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('tag.asset'));
     });
 
     it('should be able to tag own asset', async () => {
@@ -460,6 +510,17 @@ describe('/tags', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should require authorization (api key)', async () => {
+      const tag = await create(user.accessToken, { name: 'TagA' });
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
+      const { status, body } = await request(app)
+        .delete(`/tags/${tag.id}/assets`)
+        .set('x-api-key', secret)
+        .send({ ids: [userAsset.id] });
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('tag.asset'));
     });
 
     it('should be able to remove own asset from own tag', async () => {

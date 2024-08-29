@@ -78,7 +78,7 @@
     <div
       class="flex place-items-center gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 w-full py-2 px-4 rounded-2xl border border-gray-100 dark:border-gray-900"
     >
-      <a href={`${AppRoute.FOLDERS}`} title="To root">
+      <a href={`${AppRoute.FOLDERS}`} title={$t('to_root')}>
         <Icon path={mdiFolderHome} class="text-immich-primary dark:text-immich-dark-primary mr-2" size={28} />
       </a>
       {#each pathSegments as segment, index}

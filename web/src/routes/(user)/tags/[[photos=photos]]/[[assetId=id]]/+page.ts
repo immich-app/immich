@@ -3,7 +3,7 @@ import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-import { getAllTags, type AssetResponseDto } from '@immich/sdk';
+import { getAllTags } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
@@ -11,12 +11,7 @@ export const load = (async ({ params, url }) => {
   const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
 
-  let pathAssets: AssetResponseDto[] = [];
   const path = url.searchParams.get(QueryParameter.PATH);
-  if (path) {
-    pathAssets = [];
-  }
-
   const tags = await getAllTags();
   const tree = buildTree(tags.map((tag) => tag.value));
   let currentTree = tree;
@@ -30,7 +25,6 @@ export const load = (async ({ params, url }) => {
     asset,
     path,
     children: Object.keys(currentTree || {}),
-    pathAssets,
     meta: {
       title: $t('tags'),
     },

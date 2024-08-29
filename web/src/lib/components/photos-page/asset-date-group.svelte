@@ -109,7 +109,7 @@
           );
         },
         onSeparate: () => {
-          $assetStore.taskManager.seperatedDateGroup(componentId, dateGroup, () =>
+          $assetStore.taskManager.separatedDateGroup(componentId, dateGroup, () =>
             assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
           );
         },

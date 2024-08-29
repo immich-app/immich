@@ -4,6 +4,7 @@ export class NestedTagTable1724790460210 implements MigrationInterface {
     name = 'NestedTagTable1724790460210'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query('TRUNCATE TABLE "tags" CASCADE');
         await queryRunner.query(`ALTER TABLE "tags" DROP CONSTRAINT "FK_92e67dc508c705dd66c94615576"`);
         await queryRunner.query(`ALTER TABLE "tags" DROP CONSTRAINT "UQ_tag_name_userId"`);
         await queryRunner.query(`CREATE TABLE "tags_closure" ("id_ancestor" uuid NOT NULL, "id_descendant" uuid NOT NULL, CONSTRAINT "PK_eab38eb12a3ec6df8376c95477c" PRIMARY KEY ("id_ancestor", "id_descendant"))`);

@@ -82,7 +82,6 @@
 
   const handleSubmit = async () => {
     if (tag && isEditOpen && newTagColor) {
-      console.log('update tag', tag.id, newTagColor);
       await updateTag({ id: tag.id, tagUpdateDto: { color: newTagColor } });
 
       notificationController.show({
@@ -170,7 +169,7 @@
   <section
     class="flex place-items-center gap-2 mt-2 text-immich-primary dark:text-immich-dark-primary rounded-2xl bg-gray-50 dark:bg-immich-dark-gray/50 w-full py-2 px-4 border border-gray-100 dark:border-gray-900"
   >
-    <a href={`${AppRoute.TAGS}`} title="To root">
+    <a href={`${AppRoute.TAGS}`} title={$t('to_root')}>
       <Icon path={mdiTagMultiple} class="text-immich-primary dark:text-immich-dark-primary mr-2" size={28} />
     </a>
     {#each pathSegments as segment, index}
@@ -190,8 +189,8 @@
   </section>
 
   <section class="mt-2 h-full">
-    {#if tag}
-      {#key tag.id + new Date()}
+    {#key $page.url.href}
+      {#if tag}
         <AssetGrid
           enableRouting={true}
           assetStore={new AssetStore({ tagId: tag.id })}
@@ -200,10 +199,10 @@
         >
           <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} slot="empty" />
         </AssetGrid>
-      {/key}
-    {:else}
-      <TreeItemThumbnails items={Object.keys(tree)} icon={mdiTag} onClick={handleNavigation} />
-    {/if}
+      {:else}
+        <TreeItemThumbnails items={Object.keys(tree)} icon={mdiTag} onClick={handleNavigation} />
+      {/if}
+    {/key}
   </section>
 </UserPageLayout>
 

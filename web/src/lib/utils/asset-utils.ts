@@ -10,6 +10,7 @@ import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
+import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
@@ -77,13 +78,17 @@ export const tagAssets = async ({
   }
 
   if (showNotification) {
-    notificationController.show({ message: `Tagged ${assetIds.length} assets`, type: NotificationType.Info });
+    const $t = await getFormatter();
+    notificationController.show({
+      message: $t('tagged_assets', { values: { count: assetIds.length } }),
+      type: NotificationType.Info,
+    });
   }
 
   return assetIds;
 };
 
-export const remoteTag = async ({
+export const removeTag = async ({
   assetIds,
   tagIds,
   showNotification = true,
@@ -97,7 +102,11 @@ export const remoteTag = async ({
   }
 
   if (showNotification) {
-    notificationController.show({ message: `Remove tag for ${assetIds.length} assets`, type: NotificationType.Info });
+    const $t = await getFormatter();
+    notificationController.show({
+      message: $t('removed_tagged_assets', { values: { count: assetIds.length } }),
+      type: NotificationType.Info,
+    });
   }
 
   return assetIds;

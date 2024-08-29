@@ -3,7 +3,7 @@
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
   import { AppRoute } from '$lib/constants';
   import { isSharedLink } from '$lib/utils';
-  import { remoteTag, tagAssets } from '$lib/utils/asset-utils';
+  import { removeTag, tagAssets } from '$lib/utils/asset-utils';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -21,7 +21,6 @@
 
   const handleTag = async (tagIds: string[]) => {
     const ids = await tagAssets({ tagIds, assetIds: [asset.id], showNotification: false });
-
     if (ids) {
       isOpen = false;
     }
@@ -30,8 +29,7 @@
   };
 
   const handleRemove = async (tagId: string) => {
-    const ids = await remoteTag({ tagIds: [tagId], assetIds: [asset.id] });
-
+    const ids = await removeTag({ tagIds: [tagId], assetIds: [asset.id], showNotification: false });
     if (ids) {
       asset = await getAssetInfo({ id: asset.id });
     }
