@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -15,6 +16,7 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -33,6 +35,7 @@
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
     mdiImageRefreshOutline,
+    mdiImageSearch,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
@@ -156,6 +159,13 @@
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
             text={$t('replace_with_upload')}
           />
+          {#if !asset.isArchived && !asset.isTrashed}
+            <MenuOption
+              icon={mdiImageSearch}
+              onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+              text={$t('view_in_timeline')}
+            />
+          {/if}
           <hr />
           <MenuOption
             icon={mdiDatabaseRefreshOutline}
