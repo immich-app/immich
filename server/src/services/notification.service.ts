@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { isEqual } from 'lodash';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
@@ -47,7 +46,7 @@ export class NotificationService {
     try {
       if (
         newConfig.notifications.smtp.enabled &&
-        !isEqual(oldConfig.notifications.smtp, newConfig.notifications.smtp)
+        JSON.stringify(oldConfig.notifications.smtp) !== JSON.stringify(newConfig.notifications.smtp)
       ) {
         await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }
