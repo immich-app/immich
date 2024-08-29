@@ -14,7 +14,7 @@ export class StorageService {
     this.logger.setContext(StorageService.name);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
+  @OnEmit({ event: 'app.bootstrap' })
   onBootstrap() {
     const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     this.storageRepository.mkdirSync(libraryBase);

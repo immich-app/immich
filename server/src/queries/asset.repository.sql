@@ -9,8 +9,6 @@ SELECT
   "entity"."deviceId" AS "entity_deviceId",
   "entity"."type" AS "entity_type",
   "entity"."originalPath" AS "entity_originalPath",
-  "entity"."previewPath" AS "entity_previewPath",
-  "entity"."thumbnailPath" AS "entity_thumbnailPath",
   "entity"."thumbhash" AS "entity_thumbhash",
   "entity"."encodedVideoPath" AS "entity_encodedVideoPath",
   "entity"."createdAt" AS "entity_createdAt",
@@ -59,16 +57,22 @@ SELECT
   "exifInfo"."colorspace" AS "exifInfo_colorspace",
   "exifInfo"."bitsPerSample" AS "exifInfo_bitsPerSample",
   "exifInfo"."rating" AS "exifInfo_rating",
-  "exifInfo"."fps" AS "exifInfo_fps"
+  "exifInfo"."fps" AS "exifInfo_fps",
+  "files"."id" AS "files_id",
+  "files"."assetId" AS "files_assetId",
+  "files"."createdAt" AS "files_createdAt",
+  "files"."updatedAt" AS "files_updatedAt",
+  "files"."type" AS "files_type",
+  "files"."path" AS "files_path"
 FROM
   "assets" "entity"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "entity"."id"
+  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "entity"."id"
 WHERE
   (
     "entity"."ownerId" IN ($1)
     AND "entity"."isVisible" = true
     AND "entity"."isArchived" = false
-    AND "entity"."previewPath" IS NOT NULL
     AND EXTRACT(
       DAY
       FROM
@@ -93,8 +97,6 @@ SELECT
   "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
   "AssetEntity"."type" AS "AssetEntity_type",
   "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-  "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-  "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
   "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
   "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
   "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -129,8 +131,6 @@ SELECT
   "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
   "AssetEntity"."type" AS "AssetEntity_type",
   "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-  "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-  "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
   "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
   "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
   "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -184,10 +184,12 @@ SELECT
   "AssetEntity__AssetEntity_smartInfo"."tags" AS "AssetEntity__AssetEntity_smartInfo_tags",
   "AssetEntity__AssetEntity_smartInfo"."objects" AS "AssetEntity__AssetEntity_smartInfo_objects",
   "AssetEntity__AssetEntity_tags"."id" AS "AssetEntity__AssetEntity_tags_id",
-  "AssetEntity__AssetEntity_tags"."type" AS "AssetEntity__AssetEntity_tags_type",
-  "AssetEntity__AssetEntity_tags"."name" AS "AssetEntity__AssetEntity_tags_name",
+  "AssetEntity__AssetEntity_tags"."value" AS "AssetEntity__AssetEntity_tags_value",
+  "AssetEntity__AssetEntity_tags"."createdAt" AS "AssetEntity__AssetEntity_tags_createdAt",
+  "AssetEntity__AssetEntity_tags"."updatedAt" AS "AssetEntity__AssetEntity_tags_updatedAt",
+  "AssetEntity__AssetEntity_tags"."color" AS "AssetEntity__AssetEntity_tags_color",
   "AssetEntity__AssetEntity_tags"."userId" AS "AssetEntity__AssetEntity_tags_userId",
-  "AssetEntity__AssetEntity_tags"."renameTagId" AS "AssetEntity__AssetEntity_tags_renameTagId",
+  "AssetEntity__AssetEntity_tags"."parentId" AS "AssetEntity__AssetEntity_tags_parentId",
   "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
   "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
   "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
@@ -216,8 +218,6 @@ SELECT
   "bd93d5747511a4dad4923546c51365bf1a803774"."deviceId" AS "bd93d5747511a4dad4923546c51365bf1a803774_deviceId",
   "bd93d5747511a4dad4923546c51365bf1a803774"."type" AS "bd93d5747511a4dad4923546c51365bf1a803774_type",
   "bd93d5747511a4dad4923546c51365bf1a803774"."originalPath" AS "bd93d5747511a4dad4923546c51365bf1a803774_originalPath",
-  "bd93d5747511a4dad4923546c51365bf1a803774"."previewPath" AS "bd93d5747511a4dad4923546c51365bf1a803774_previewPath",
-  "bd93d5747511a4dad4923546c51365bf1a803774"."thumbnailPath" AS "bd93d5747511a4dad4923546c51365bf1a803774_thumbnailPath",
   "bd93d5747511a4dad4923546c51365bf1a803774"."thumbhash" AS "bd93d5747511a4dad4923546c51365bf1a803774_thumbhash",
   "bd93d5747511a4dad4923546c51365bf1a803774"."encodedVideoPath" AS "bd93d5747511a4dad4923546c51365bf1a803774_encodedVideoPath",
   "bd93d5747511a4dad4923546c51365bf1a803774"."createdAt" AS "bd93d5747511a4dad4923546c51365bf1a803774_createdAt",
@@ -237,7 +237,13 @@ SELECT
   "bd93d5747511a4dad4923546c51365bf1a803774"."originalFileName" AS "bd93d5747511a4dad4923546c51365bf1a803774_originalFileName",
   "bd93d5747511a4dad4923546c51365bf1a803774"."sidecarPath" AS "bd93d5747511a4dad4923546c51365bf1a803774_sidecarPath",
   "bd93d5747511a4dad4923546c51365bf1a803774"."stackId" AS "bd93d5747511a4dad4923546c51365bf1a803774_stackId",
-  "bd93d5747511a4dad4923546c51365bf1a803774"."duplicateId" AS "bd93d5747511a4dad4923546c51365bf1a803774_duplicateId"
+  "bd93d5747511a4dad4923546c51365bf1a803774"."duplicateId" AS "bd93d5747511a4dad4923546c51365bf1a803774_duplicateId",
+  "AssetEntity__AssetEntity_files"."id" AS "AssetEntity__AssetEntity_files_id",
+  "AssetEntity__AssetEntity_files"."assetId" AS "AssetEntity__AssetEntity_files_assetId",
+  "AssetEntity__AssetEntity_files"."createdAt" AS "AssetEntity__AssetEntity_files_createdAt",
+  "AssetEntity__AssetEntity_files"."updatedAt" AS "AssetEntity__AssetEntity_files_updatedAt",
+  "AssetEntity__AssetEntity_files"."type" AS "AssetEntity__AssetEntity_files_type",
+  "AssetEntity__AssetEntity_files"."path" AS "AssetEntity__AssetEntity_files_path"
 FROM
   "assets" "AssetEntity"
   LEFT JOIN "exif" "AssetEntity__AssetEntity_exifInfo" ON "AssetEntity__AssetEntity_exifInfo"."assetId" = "AssetEntity"."id"
@@ -248,6 +254,7 @@ FROM
   LEFT JOIN "person" "8258e303a73a72cf6abb13d73fb592dde0d68280" ON "8258e303a73a72cf6abb13d73fb592dde0d68280"."id" = "AssetEntity__AssetEntity_faces"."personId"
   LEFT JOIN "asset_stack" "AssetEntity__AssetEntity_stack" ON "AssetEntity__AssetEntity_stack"."id" = "AssetEntity"."stackId"
   LEFT JOIN "assets" "bd93d5747511a4dad4923546c51365bf1a803774" ON "bd93d5747511a4dad4923546c51365bf1a803774"."stackId" = "AssetEntity__AssetEntity_stack"."id"
+  LEFT JOIN "asset_files" "AssetEntity__AssetEntity_files" ON "AssetEntity__AssetEntity_files"."assetId" = "AssetEntity"."id"
 WHERE
   (("AssetEntity"."id" IN ($1)))
 
@@ -298,8 +305,6 @@ FROM
       "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
       "AssetEntity"."type" AS "AssetEntity_type",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-      "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-      "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
       "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
       "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
       "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -397,8 +402,6 @@ SELECT
   "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
   "AssetEntity"."type" AS "AssetEntity_type",
   "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-  "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-  "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
   "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
   "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
   "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -452,8 +455,6 @@ SELECT
   "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
   "AssetEntity"."type" AS "AssetEntity_type",
   "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-  "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-  "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
   "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
   "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
   "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -525,8 +526,6 @@ SELECT
   "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
   "AssetEntity"."type" AS "AssetEntity_type",
   "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-  "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-  "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
   "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
   "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
   "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -581,8 +580,6 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -642,8 +639,6 @@ SELECT
   "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
   "stackedAssets"."type" AS "stackedAssets_type",
   "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
-  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
   "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
   "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
   "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -723,8 +718,6 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -784,8 +777,6 @@ SELECT
   "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
   "stackedAssets"."type" AS "stackedAssets_type",
   "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
-  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
   "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
   "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
   "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -841,8 +832,6 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -902,8 +891,6 @@ SELECT
   "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
   "stackedAssets"."type" AS "stackedAssets_type",
   "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
-  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
   "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
   "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
   "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -1009,8 +996,6 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -1086,8 +1071,6 @@ SELECT
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -1148,3 +1131,130 @@ WHERE
   "asset"."isVisible" = true
   AND "asset"."ownerId" IN ($1)
   AND "asset"."updatedAt" > $2
+
+-- AssetRepository.getAssetsByOriginalPath
+SELECT
+  "asset"."id" AS "asset_id",
+  "asset"."deviceAssetId" AS "asset_deviceAssetId",
+  "asset"."ownerId" AS "asset_ownerId",
+  "asset"."libraryId" AS "asset_libraryId",
+  "asset"."deviceId" AS "asset_deviceId",
+  "asset"."type" AS "asset_type",
+  "asset"."originalPath" AS "asset_originalPath",
+  "asset"."thumbhash" AS "asset_thumbhash",
+  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
+  "asset"."createdAt" AS "asset_createdAt",
+  "asset"."updatedAt" AS "asset_updatedAt",
+  "asset"."deletedAt" AS "asset_deletedAt",
+  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
+  "asset"."localDateTime" AS "asset_localDateTime",
+  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
+  "asset"."isFavorite" AS "asset_isFavorite",
+  "asset"."isArchived" AS "asset_isArchived",
+  "asset"."isExternal" AS "asset_isExternal",
+  "asset"."isOffline" AS "asset_isOffline",
+  "asset"."checksum" AS "asset_checksum",
+  "asset"."duration" AS "asset_duration",
+  "asset"."isVisible" AS "asset_isVisible",
+  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
+  "asset"."originalFileName" AS "asset_originalFileName",
+  "asset"."sidecarPath" AS "asset_sidecarPath",
+  "asset"."stackId" AS "asset_stackId",
+  "asset"."duplicateId" AS "asset_duplicateId",
+  "exifInfo"."assetId" AS "exifInfo_assetId",
+  "exifInfo"."description" AS "exifInfo_description",
+  "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
+  "exifInfo"."exifImageHeight" AS "exifInfo_exifImageHeight",
+  "exifInfo"."fileSizeInByte" AS "exifInfo_fileSizeInByte",
+  "exifInfo"."orientation" AS "exifInfo_orientation",
+  "exifInfo"."dateTimeOriginal" AS "exifInfo_dateTimeOriginal",
+  "exifInfo"."modifyDate" AS "exifInfo_modifyDate",
+  "exifInfo"."timeZone" AS "exifInfo_timeZone",
+  "exifInfo"."latitude" AS "exifInfo_latitude",
+  "exifInfo"."longitude" AS "exifInfo_longitude",
+  "exifInfo"."projectionType" AS "exifInfo_projectionType",
+  "exifInfo"."city" AS "exifInfo_city",
+  "exifInfo"."livePhotoCID" AS "exifInfo_livePhotoCID",
+  "exifInfo"."autoStackId" AS "exifInfo_autoStackId",
+  "exifInfo"."state" AS "exifInfo_state",
+  "exifInfo"."country" AS "exifInfo_country",
+  "exifInfo"."make" AS "exifInfo_make",
+  "exifInfo"."model" AS "exifInfo_model",
+  "exifInfo"."lensModel" AS "exifInfo_lensModel",
+  "exifInfo"."fNumber" AS "exifInfo_fNumber",
+  "exifInfo"."focalLength" AS "exifInfo_focalLength",
+  "exifInfo"."iso" AS "exifInfo_iso",
+  "exifInfo"."exposureTime" AS "exifInfo_exposureTime",
+  "exifInfo"."profileDescription" AS "exifInfo_profileDescription",
+  "exifInfo"."colorspace" AS "exifInfo_colorspace",
+  "exifInfo"."bitsPerSample" AS "exifInfo_bitsPerSample",
+  "exifInfo"."rating" AS "exifInfo_rating",
+  "exifInfo"."fps" AS "exifInfo_fps",
+  "stack"."id" AS "stack_id",
+  "stack"."ownerId" AS "stack_ownerId",
+  "stack"."primaryAssetId" AS "stack_primaryAssetId",
+  "stackedAssets"."id" AS "stackedAssets_id",
+  "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
+  "stackedAssets"."ownerId" AS "stackedAssets_ownerId",
+  "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
+  "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
+  "stackedAssets"."type" AS "stackedAssets_type",
+  "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
+  "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
+  "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
+  "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
+  "stackedAssets"."updatedAt" AS "stackedAssets_updatedAt",
+  "stackedAssets"."deletedAt" AS "stackedAssets_deletedAt",
+  "stackedAssets"."fileCreatedAt" AS "stackedAssets_fileCreatedAt",
+  "stackedAssets"."localDateTime" AS "stackedAssets_localDateTime",
+  "stackedAssets"."fileModifiedAt" AS "stackedAssets_fileModifiedAt",
+  "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
+  "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
+  "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
+  "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
+  "stackedAssets"."checksum" AS "stackedAssets_checksum",
+  "stackedAssets"."duration" AS "stackedAssets_duration",
+  "stackedAssets"."isVisible" AS "stackedAssets_isVisible",
+  "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
+  "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
+  "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
+  "stackedAssets"."stackId" AS "stackedAssets_stackId",
+  "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
+FROM
+  "assets" "asset"
+  LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
+  LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
+  LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
+  AND ("stackedAssets"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" = $1
+  AND (
+    "asset"."originalPath" LIKE $2
+    AND "asset"."originalPath" NOT LIKE $3
+  )
+ORDER BY
+  regexp_replace("asset"."originalPath", '.*/(.+)', '\1') ASC
+
+-- AssetRepository.upsertFile
+INSERT INTO
+  "asset_files" (
+    "id",
+    "assetId",
+    "createdAt",
+    "updatedAt",
+    "type",
+    "path"
+  )
+VALUES
+  (DEFAULT, $1, DEFAULT, DEFAULT, $2, $3)
+ON CONFLICT ("assetId", "type") DO
+UPDATE
+SET
+  "assetId" = EXCLUDED."assetId",
+  "type" = EXCLUDED."type",
+  "path" = EXCLUDED."path",
+  "updatedAt" = DEFAULT
+RETURNING
+  "id",
+  "createdAt",
+  "updatedAt"

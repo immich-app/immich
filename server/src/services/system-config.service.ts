@@ -18,6 +18,7 @@ import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from
 import { ArgOf, ClientEvent, IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService {
@@ -33,7 +34,7 @@ export class SystemConfigService {
     this.core.config$.subscribe((config) => this.setLogLevel(config));
   }
 
-  @OnEmit({ event: 'onBootstrap', priority: -100 })
+  @OnEmit({ event: 'app.bootstrap', priority: -100 })
   async onBootstrap() {
     const config = await this.core.getConfig({ withCache: false });
     this.core.config$.next(config);
@@ -48,8 +49,8 @@ export class SystemConfigService {
     return mapConfig(defaults);
   }
 
-  @OnEmit({ event: 'onConfigValidate' })
-  onConfigValidate({ newConfig, oldConfig }: ArgOf<'onConfigValidate'>) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig, oldConfig }: ArgOf<'config.validate'>) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
@@ -63,7 +64,7 @@ export class SystemConfigService {
     const oldConfig = await this.core.getConfig({ withCache: false });
 
     try {
-      await this.eventRepository.emit('onConfigValidate', { newConfig: dto, oldConfig });
+      await this.eventRepository.emit('config.validate', { newConfig: toPlainObject(dto), oldConfig });
     } catch (error) {
       this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
       throw new BadRequestException(error instanceof Error ? error.message : error);
@@ -74,7 +75,7 @@ export class SystemConfigService {
     // TODO probably move web socket emits to a separate service
     this.eventRepository.clientBroadcast(ClientEvent.CONFIG_UPDATE, {});
     this.eventRepository.serverSend(ServerEvent.CONFIG_UPDATE, null);
-    await this.eventRepository.emit('onConfigUpdate', { newConfig, oldConfig });
+    await this.eventRepository.emit('config.update', { newConfig, oldConfig });
 
     return mapConfig(newConfig);
   }

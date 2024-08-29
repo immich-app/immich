@@ -9,7 +9,7 @@ import {
   VideoCodec,
 } from 'src/config';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType } from 'src/enum';
+import { AssetFileType, AssetType } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -298,18 +298,20 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.SRGB,
         processInvalidImages: false,
       });
-      expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', previewPath });
+      expect(assetMock.upsertFile).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        type: AssetFileType.PREVIEW,
+        path: previewPath,
+      });
     });
 
     it('should delete previous preview if different path', async () => {
-      const previousPreviewPath = assetStub.image.previewPath;
-
       systemMock.get.mockResolvedValue({ image: { thumbnailFormat: ImageFormat.WEBP } });
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
 
       await sut.handleGeneratePreview({ id: assetStub.image.id });
 
-      expect(storageMock.unlink).toHaveBeenCalledWith(previousPreviewPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg');
     });
 
     it('should generate a P3 thumbnail for a wide gamut image', async () => {
@@ -330,9 +332,10 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
         },
       );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      expect(assetMock.upsertFile).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        type: AssetFileType.PREVIEW,
+        path: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
       });
     });
 
@@ -357,9 +360,10 @@ describe(MediaService.name, () => {
           twoPass: false,
         },
       );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      expect(assetMock.upsertFile).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        type: AssetFileType.PREVIEW,
+        path: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
       });
     });
 
@@ -384,9 +388,10 @@ describe(MediaService.name, () => {
           twoPass: false,
         },
       );
-      expect(assetMock.update).toHaveBeenCalledWith({
-        id: 'asset-id',
-        previewPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      expect(assetMock.upsertFile).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        type: AssetFileType.PREVIEW,
+        path: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
       });
     });
 
@@ -472,19 +477,21 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.SRGB,
           processInvalidImages: false,
         });
-        expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbnailPath });
+        expect(assetMock.upsertFile).toHaveBeenCalledWith({
+          assetId: 'asset-id',
+          type: AssetFileType.THUMBNAIL,
+          path: thumbnailPath,
+        });
       },
     );
 
     it('should delete previous thumbnail if different path', async () => {
-      const previousThumbnailPath = assetStub.image.thumbnailPath;
-
       systemMock.get.mockResolvedValue({ image: { thumbnailFormat: ImageFormat.WEBP } });
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
 
       await sut.handleGenerateThumbnail({ id: assetStub.image.id });
 
-      expect(storageMock.unlink).toHaveBeenCalledWith(previousThumbnailPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith('/uploads/user-id/webp/path.ext');
     });
   });
 
@@ -504,9 +511,10 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       },
     );
-    expect(assetMock.update).toHaveBeenCalledWith({
-      id: 'asset-id',
-      thumbnailPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+    expect(assetMock.upsertFile).toHaveBeenCalledWith({
+      assetId: 'asset-id',
+      type: AssetFileType.THUMBNAIL,
+      path: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
     });
   });
 

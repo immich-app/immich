@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { SystemConfigService } from 'src/services/system-config.service';
 
@@ -10,25 +11,25 @@ export class SystemConfigController {
   constructor(private service: SystemConfigService) {}
 
   @Get()
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
   getConfig(): Promise<SystemConfigDto> {
     return this.service.getConfig();
   }
 
   @Get('defaults')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
   getConfigDefaults(): SystemConfigDto {
     return this.service.getDefaults();
   }
 
   @Put()
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.SYSTEM_CONFIG_UPDATE, admin: true })
   updateConfig(@Body() dto: SystemConfigDto): Promise<SystemConfigDto> {
     return this.service.updateConfig(dto);
   }
 
   @Get('storage-template-options')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     return this.service.getStorageTemplateOptions();
   }

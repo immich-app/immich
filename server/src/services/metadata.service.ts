@@ -22,8 +22,8 @@ import {
   IEntityJob,
   IJobRepository,
   ISidecarWriteJob,
-  JOBS_ASSET_PAGINATION_SIZE,
   JobName,
+  JOBS_ASSET_PAGINATION_SIZE,
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
@@ -35,8 +35,10 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { usePagination } from 'src/utils/pagination';
+import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
@@ -105,6 +107,7 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ITagRepository) private tagRepository: ITagRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
@@ -121,8 +124,8 @@ export class MetadataService {
     );
   }
 
-  @OnEmit({ event: 'onBootstrap' })
-  async onBootstrap(app: ArgOf<'onBootstrap'>) {
+  @OnEmit({ event: 'app.bootstrap' })
+  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -130,8 +133,8 @@ export class MetadataService {
     await this.init(config);
   }
 
-  @OnEmit({ event: 'onConfigUpdate' })
-  async onConfigUpdate({ newConfig }: ArgOf<'onConfigUpdate'>) {
+  @OnEmit({ event: 'config.update' })
+  async onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig);
   }
 
@@ -153,7 +156,7 @@ export class MetadataService {
     }
   }
 
-  @OnEmit({ event: 'onShutdown' })
+  @OnEmit({ event: 'app.shutdown' })
   async onShutdown() {
     await this.repository.teardown();
   }
@@ -173,6 +176,7 @@ export class MetadataService {
     const match = await this.assetRepository.findLivePhotoMatch({
       livePhotoCID: asset.exifInfo.livePhotoCID,
       ownerId: asset.ownerId,
+      libraryId: asset.libraryId,
       otherAssetId: asset.id,
       type: otherType,
     });
@@ -216,24 +220,27 @@ export class MetadataService {
       return JobStatus.FAILED;
     }
 
-    const { exifData, tags } = await this.exifData(asset);
+    const { exifData, exifTags } = await this.exifData(asset);
 
     if (asset.type === AssetType.VIDEO) {
       await this.applyVideoMetadata(asset, exifData);
     }
 
-    await this.applyMotionPhotos(asset, tags);
+    await this.applyMotionPhotos(asset, exifTags);
     await this.applyReverseGeocoding(asset, exifData);
+    await this.applyTagList(asset, exifTags);
+
     await this.assetRepository.upsertExif(exifData);
 
     const dateTimeOriginal = exifData.dateTimeOriginal;
     let localDateTime = dateTimeOriginal ?? undefined;
 
-    const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
+    const timeZoneOffset = tzOffset(firstDateTime(exifTags as Tags)) ?? 0;
 
     if (dateTimeOriginal && timeZoneOffset) {
       localDateTime = new Date(dateTimeOriginal.getTime() + timeZoneOffset * 60_000);
     }
+
     await this.assetRepository.update({
       id: asset.id,
       duration: asset.duration,
@@ -277,22 +284,35 @@ export class MetadataService {
     return this.processSidecar(id, false);
   }
 
+  @OnEmit({ event: 'asset.tag' })
+  async handleTagAsset({ assetId }: ArgOf<'asset.tag'>) {
+    await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
+  }
+
+  @OnEmit({ event: 'asset.untag' })
+  async handleUntagAsset({ assetId }: ArgOf<'asset.untag'>) {
+    await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
+  }
+
   async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
-    const { id, description, dateTimeOriginal, latitude, longitude, rating } = job;
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
+    const [asset] = await this.assetRepository.getByIds([id], { tags: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
 
+    const tagsList = (asset.tags || []).map((tag) => tag.value);
+
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
-    const exif = _.omitBy<Tags>(
-      {
+    const exif = _.omitBy(
+      <Tags>{
         Description: description,
         ImageDescription: description,
         DateTimeOriginal: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
+        TagsList: tags ? tagsList : undefined,
       },
       _.isUndefined,
     );
@@ -328,6 +348,28 @@ export class MetadataService {
         `Unable to run reverse geocoding due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
         error?.stack,
       );
+    }
+  }
+
+  private async applyTagList(asset: AssetEntity, exifTags: ImmichTags) {
+    const tags: string[] = [];
+
+    if (exifTags.TagsList) {
+      tags.push(...exifTags.TagsList);
+    }
+
+    if (exifTags.Keywords) {
+      let keywords = exifTags.Keywords;
+      if (typeof keywords === 'string') {
+        keywords = [keywords];
+      }
+      tags.push(...keywords);
+    }
+
+    if (tags.length > 0) {
+      const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
+      const tagIds = results.map((tag) => tag.id);
+      await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds });
     }
   }
 
@@ -465,7 +507,7 @@ export class MetadataService {
 
   private async exifData(
     asset: AssetEntity,
-  ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; tags: ImmichTags }> {
+  ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; exifTags: ImmichTags }> {
     const stats = await this.storageRepository.stat(asset.originalPath);
     const mediaTags = await this.repository.readTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.readTags(asset.sidecarPath) : null;
@@ -478,38 +520,38 @@ export class MetadataService {
       }
     }
 
-    const tags = { ...mediaTags, ...sidecarTags };
+    const exifTags = { ...mediaTags, ...sidecarTags };
 
-    this.logger.verbose('Exif Tags', tags);
+    this.logger.verbose('Exif Tags', exifTags);
 
     const exifData = {
       // altitude: tags.GPSAltitude ?? null,
       assetId: asset.id,
-      bitsPerSample: this.getBitsPerSample(tags),
-      colorspace: tags.ColorSpace ?? null,
-      dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-      description: String(tags.ImageDescription || tags.Description || '').trim(),
-      exifImageHeight: validate(tags.ImageHeight),
-      exifImageWidth: validate(tags.ImageWidth),
-      exposureTime: tags.ExposureTime ?? null,
+      bitsPerSample: this.getBitsPerSample(exifTags),
+      colorspace: exifTags.ColorSpace ?? null,
+      dateTimeOriginal: this.getDateTimeOriginal(exifTags) ?? asset.fileCreatedAt,
+      description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
+      exifImageHeight: validate(exifTags.ImageHeight),
+      exifImageWidth: validate(exifTags.ImageWidth),
+      exposureTime: exifTags.ExposureTime ?? null,
       fileSizeInByte: stats.size,
-      fNumber: validate(tags.FNumber),
-      focalLength: validate(tags.FocalLength),
-      fps: validate(Number.parseFloat(tags.VideoFrameRate!)),
-      iso: validate(tags.ISO),
-      latitude: validate(tags.GPSLatitude),
-      lensModel: tags.LensModel ?? null,
-      livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
-      autoStackId: this.getAutoStackId(tags),
-      longitude: validate(tags.GPSLongitude),
-      make: tags.Make ?? null,
-      model: tags.Model ?? null,
-      modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
-      orientation: validate(tags.Orientation)?.toString() ?? null,
-      profileDescription: tags.ProfileDescription || null,
-      projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
-      timeZone: tags.tz ?? null,
-      rating: tags.Rating ?? null,
+      fNumber: validate(exifTags.FNumber),
+      focalLength: validate(exifTags.FocalLength),
+      fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
+      iso: validate(exifTags.ISO),
+      latitude: validate(exifTags.GPSLatitude),
+      lensModel: exifTags.LensModel ?? null,
+      livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
+      autoStackId: this.getAutoStackId(exifTags),
+      longitude: validate(exifTags.GPSLongitude),
+      make: exifTags.Make ?? null,
+      model: exifTags.Model ?? null,
+      modifyDate: exifDate(exifTags.ModifyDate) ?? asset.fileModifiedAt,
+      orientation: validate(exifTags.Orientation)?.toString() ?? null,
+      profileDescription: exifTags.ProfileDescription || null,
+      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
+      timeZone: exifTags.tz ?? null,
+      rating: exifTags.Rating ?? null,
     };
 
     if (exifData.latitude === 0 && exifData.longitude === 0) {
@@ -518,7 +560,7 @@ export class MetadataService {
       exifData.longitude = null;
     }
 
-    return { exifData, tags };
+    return { exifData, exifTags };
   }
 
   private getAutoStackId(tags: ImmichTags | null): string | null {

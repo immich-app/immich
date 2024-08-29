@@ -112,6 +112,9 @@ String parameterToString(dynamic value) {
   if (value is PathType) {
     return PathTypeTypeTransformer().encode(value).toString();
   }
+  if (value is Permission) {
+    return PermissionTypeTransformer().encode(value).toString();
+  }
   if (value is ReactionLevel) {
     return ReactionLevelTypeTransformer().encode(value).toString();
   }
@@ -123,9 +126,6 @@ String parameterToString(dynamic value) {
   }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
-  }
-  if (value is TagTypeEnum) {
-    return TagTypeEnumTypeTransformer().encode(value).toString();
   }
   if (value is TimeBucketSize) {
     return TimeBucketSizeTypeTransformer().encode(value).toString();

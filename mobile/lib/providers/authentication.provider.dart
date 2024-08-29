@@ -170,8 +170,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     UserPreferencesResponseDto? userPreferences;
     try {
       final responses = await Future.wait([
-        _apiService.usersApi.getMyUser(),
-        _apiService.usersApi.getMyPreferences(),
+        _apiService.usersApi.getMyUser().timeout(const Duration(seconds: 7)),
+        _apiService.usersApi
+            .getMyPreferences()
+            .timeout(const Duration(seconds: 7)),
       ]);
       userResponse = responses[0] as UserAdminResponseDto;
       userPreferences = responses[1] as UserPreferencesResponseDto;
@@ -189,6 +191,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         "Error getting user information from the server [CATCH ALL]",
         error,
         stackTrace,
+      );
+      debugPrint(
+        "Error getting user information from the server [CATCH ALL] $error $stackTrace",
       );
     }
 

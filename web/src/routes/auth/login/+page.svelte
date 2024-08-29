@@ -17,9 +17,9 @@
     </p>
 
     <LoginForm
-      onSuccess={() => goto(AppRoute.PHOTOS, { invalidateAll: true })}
-      onFirstLogin={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
-      onOnboarding={() => goto(AppRoute.AUTH_ONBOARDING)}
+      onSuccess={async () => await goto(AppRoute.PHOTOS, { invalidateAll: true })}
+      onFirstLogin={async () => await goto(AppRoute.AUTH_CHANGE_PASSWORD)}
+      onOnboarding={async () => await goto(AppRoute.AUTH_ONBOARDING)}
     />
   </FullscreenContainer>
 {/if}

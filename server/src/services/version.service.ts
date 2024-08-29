@@ -37,7 +37,7 @@ export class VersionService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
+  @OnEmit({ event: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
   }

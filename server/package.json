@@ -50,7 +50,7 @@
     "@opentelemetry/context-async-hooks": "^1.24.0",
     "@opentelemetry/exporter-prometheus": "^0.52.0",
     "@opentelemetry/sdk-node": "^0.52.0",
-    "@react-email/components": "^0.0.22",
+    "@react-email/components": "^0.0.23",
     "@socket.io/redis-adapter": "^8.3.0",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
@@ -71,15 +71,15 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
-    "mnemonist": "^0.39.8",
     "nest-commander": "^3.11.1",
     "nestjs-cls": "^4.3.0",
     "nestjs-otel": "^6.0.0",
     "nodemailer": "^6.9.13",
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
-    "picomatch": "^4.0.0",
-    "react-email": "^2.1.2",
+    "picomatch": "^4.0.2",
+    "react": "^18.3.1",
+    "react-email": "^3.0.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
@@ -109,9 +109,10 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.14.14",
+    "@types/node": "^20.16.1",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^3.0.0",
+    "@types/react": "^18.3.4",
     "@types/semver": "^7.5.8",
     "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
@@ -137,6 +138,6 @@
     "vitest": "^2.0.5"
   },
   "volta": {
-    "node": "20.16.0"
+    "node": "20.17.0"
   }
 }

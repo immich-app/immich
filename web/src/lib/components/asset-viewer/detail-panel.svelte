@@ -6,7 +6,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import {
@@ -43,6 +43,7 @@
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
+  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -157,7 +158,7 @@
   <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
-    <section class="px-4 py-4 text-sm">
+    <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
@@ -212,7 +213,6 @@
                   title={person.name}
                   widthStyle="90px"
                   heightStyle="90px"
-                  thumbhash={null}
                   hidden={person.isHidden}
                 />
               </div>
@@ -473,11 +473,11 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="p-6 dark:text-immich-dark-fg">
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <div class="flex gap-4 py-2 hover:cursor-pointer items-center">
+        <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
@@ -499,6 +499,12 @@
         </div>
       </a>
     {/each}
+  </section>
+{/if}
+
+{#if $preferences?.tags?.enabled}
+  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+    <DetailPanelTags {asset} {isOwner} />
   </section>
 {/if}
 

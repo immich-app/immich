@@ -7,6 +7,7 @@ import {
   CreateAlbumDto,
   CreateLibraryDto,
   MetadataSearchDto,
+  Permission,
   PersonCreateDto,
   SharedLinkCreateDto,
   UserAdminCreateDto,
@@ -147,6 +148,7 @@ export const utils = {
         'sessions',
         'users',
         'system_metadata',
+        'tags',
       ];
 
       const sql: string[] = [];
@@ -279,8 +281,8 @@ export const utils = {
     });
   },
 
-  createApiKey: (accessToken: string) => {
-    return createApiKey({ apiKeyCreateDto: { name: 'e2e' } }, { headers: asBearerAuth(accessToken) });
+  createApiKey: (accessToken: string, permissions: Permission[]) => {
+    return createApiKey({ apiKeyCreateDto: { name: 'e2e', permissions } }, { headers: asBearerAuth(accessToken) });
   },
 
   createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
@@ -492,7 +494,7 @@ export const utils = {
   },
 
   cliLogin: async (accessToken: string) => {
-    const key = await utils.createApiKey(accessToken);
+    const key = await utils.createApiKey(accessToken, [Permission.All]);
     await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
   },

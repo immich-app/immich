@@ -35,12 +35,16 @@
   </slot>
 
   <section class="relative">
-    {#if title}
+    {#if title || $$slots.title || $$slots.buttons}
       <div
         class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="flex gap-2 items-center">
-          <div class="font-medium">{title}</div>
+          <slot name="title">
+            {#if title}
+              <div class="font-medium">{title}</div>
+            {/if}
+          </slot>
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
           {/if}

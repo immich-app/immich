@@ -16,7 +16,7 @@ When sharing shared albums, whats shared is:
 
 - Download all assets as zip file (Web only).
   :::info Archive size limited.
-  If the size of the album exceeds 4GB, the archive files will be divided into 4GB each.
+  If the size of the album exceeds 4GB, the archive files will by default be divided into 4GB each. This can be changed on the user settings page.
   :::
 - Add a description to the album (Web only).
 - Slideshow view (Web only).
@@ -73,14 +73,14 @@ You can edit the link properties, options include;
 - **Allow public user to download -** whether to allow whoever has the link to download all the images or a certain image (optional).
 - **Allow public user to upload -** whether to allow whoever has the link to upload assets to the album (optional).
   :::info
-  whoever has the link and have uploaded files cannot delete them.
+  Whoever has the link and have uploaded files cannot delete them.
   :::
 - **Expire after -** adding an expiration date to the link (optional).
 
 ## Share Specific Assets
 
 A user can share specific assets without linking them to a specific album.
-in order to do so;
+In order to do this:
 
 1. Go to the timeline
 2. Select the assets (Shift can be used for multiple selection)
@@ -152,7 +152,7 @@ Some of the features are not available on mobile, to understand what the full fe
 
 ## Sharing Between Users
 
-#### Add or remove users from the album.
+#### Add or remove users from the album
 
 :::info remove user(s)
 When a user is removed from the album, the photos he uploaded will still appear in the album.

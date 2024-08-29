@@ -18,6 +18,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
@@ -38,8 +39,8 @@ export class SmartInfoService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
-  async onBootstrap(app: ArgOf<'onBootstrap'>) {
+  @OnEmit({ event: 'app.bootstrap' })
+  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -48,8 +49,8 @@ export class SmartInfoService {
     await this.init(config);
   }
 
-  @OnEmit({ event: 'onConfigValidate' })
-  onConfigValidate({ newConfig }: ArgOf<'onConfigValidate'>) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
     } catch {
@@ -59,8 +60,8 @@ export class SmartInfoService {
     }
   }
 
-  @OnEmit({ event: 'onConfigUpdate' })
-  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'onConfigUpdate'>) {
+  @OnEmit({ event: 'config.update' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig, oldConfig);
   }
 
@@ -135,7 +136,7 @@ export class SmartInfoService {
       return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -144,13 +145,14 @@ export class SmartInfoService {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       return JobStatus.FAILED;
     }
 
     const embedding = await this.machineLearning.encodeImage(
       machineLearning.url,
-      asset.previewPath,
+      previewFile.path,
       machineLearning.clip,
     );
 

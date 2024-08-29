@@ -50,7 +50,7 @@
     bind:this={menuElement}
     class:max-h-[100vh]={isVisible}
     class:max-h-0={!isVisible}
-    class="flex flex-col transition-all duration-[250ms] ease-in-out"
+    class="flex flex-col transition-all duration-[250ms] ease-in-out outline-none"
     role="menu"
     tabindex="-1"
   >
