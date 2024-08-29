@@ -256,10 +256,9 @@ export class MediaService {
       }
     }
 
-    const assetInfo = asset.isExternal ? asset.originalPath : asset.id;
-
+    const assetLabel = asset.isExternal ? asset.originalPath : asset.id;
     this.logger.log(
-      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} in $for asset ${assetInfo}`,
+      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${assetLabel}`,
     );
 
     return path;
