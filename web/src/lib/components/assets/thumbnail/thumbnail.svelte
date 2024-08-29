@@ -2,9 +2,10 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, getUserInfo, isSharedLink } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
+  import { user } from '$lib/stores/user.store';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl } from '$lib/utils';
@@ -30,6 +31,7 @@
   import { onDestroy } from 'svelte';
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let dateGroup: DateGroup | undefined = undefined;
@@ -64,7 +66,6 @@
 
   let className = '';
   export { className as class };
-
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
@@ -266,6 +267,12 @@
         {#if !isSharedLink() && asset.isFavorite}
           <div class="absolute bottom-2 left-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
+          </div>
+        {/if}
+
+        {#if isSharedLink() || asset.ownerId != user.userId}
+          <div class="absolute bottom-2 left-2 z-10">
+            <UserAvatar user={$user} size="sm" />
           </div>
         {/if}
 
