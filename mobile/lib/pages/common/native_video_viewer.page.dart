@@ -147,6 +147,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     void onPlaybackReady() {
       controller.value?.play();
+      controller.value?.setVolume(0.9);
     }
 
     void onPlaybackPositionChanged() {
