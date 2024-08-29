@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
+  import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
   import { onDestroy } from 'svelte';
 
@@ -75,7 +75,7 @@
   </button>
 
   {#if isOpen}
-    <ul in:fade={{ duration: 150 }} class="mb-2 ml-4">
+    <ul transition:slide={{ duration: 150 }} class="mb-2 ml-4">
       <slot />
     </ul>
   {/if}

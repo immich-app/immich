@@ -54,8 +54,8 @@
           </div>
           <div class="ml-4 mt-6">
             <SettingSwitch
-              title={$t('folders')}
-              subtitle={$t('folders_sidebar_description')}
+              title={$t('sidebar')}
+              subtitle={$t('sidebar_display_description')}
               bind:checked={folderEnabled}
             />
           </div>
@@ -71,17 +71,31 @@
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={peopleEnabled} />
           </div>
+          <div class="ml-4 mt-6">
+            <SettingSwitch
+              title={$t('sidebar')}
+              subtitle={$t('sidebar_display_description')}
+              bind:checked={tagEnabled}
+            />
+          </div>
         </SettingAccordion>
 
-        <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('people_feature_description')}>
+        <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={ratingEnabled} />
           </div>
         </SettingAccordion>
 
-        <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('people_feature_description')}>
+        <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={tagEnabled} />
+          </div>
+          <div class="ml-4 mt-6">
+            <SettingSwitch
+              title={$t('sidebar')}
+              subtitle={$t('sidebar_display_description')}
+              bind:checked={tagEnabled}
+            />
           </div>
         </SettingAccordion>
 
