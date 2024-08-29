@@ -13,8 +13,8 @@ part of openapi.api;
 class TagsResponse {
   /// Returns a new [TagsResponse] instance.
   TagsResponse({
-    required this.enabled,
-    required this.sidebarWeb,
+    this.enabled = true,
+    this.sidebarWeb = true,
   });
 
   bool enabled;

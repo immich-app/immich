@@ -9122,9 +9122,11 @@
       "FoldersResponse": {
         "properties": {
           "enabled": {
+            "default": false,
             "type": "boolean"
           },
           "sidebarWeb": {
+            "default": false,
             "type": "boolean"
           }
         },
@@ -9518,6 +9520,7 @@
       "MemoriesResponse": {
         "properties": {
           "enabled": {
+            "default": true,
             "type": "boolean"
           }
         },
@@ -9937,9 +9940,11 @@
       "PeopleResponse": {
         "properties": {
           "enabled": {
+            "default": true,
             "type": "boolean"
           },
           "sidebarWeb": {
+            "default": false,
             "type": "boolean"
           }
         },
@@ -11934,9 +11939,11 @@
       "TagsResponse": {
         "properties": {
           "enabled": {
+            "default": true,
             "type": "boolean"
           },
           "sidebarWeb": {
+            "default": true,
             "type": "boolean"
           }
         },

@@ -13,8 +13,8 @@ part of openapi.api;
 class PeopleResponse {
   /// Returns a new [PeopleResponse] instance.
   PeopleResponse({
-    required this.enabled,
-    required this.sidebarWeb,
+    this.enabled = true,
+    this.sidebarWeb = false,
   });
 
   bool enabled;

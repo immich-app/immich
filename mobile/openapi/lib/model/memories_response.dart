@@ -13,7 +13,7 @@ part of openapi.api;
 class MemoriesResponse {
   /// Returns a new [MemoriesResponse] instance.
   MemoriesResponse({
-    required this.enabled,
+    this.enabled = true,
   });
 
   bool enabled;

@@ -134,22 +134,22 @@ class RatingsResponse {
 }
 
 class MemoriesResponse {
-  enabled!: boolean;
+  enabled: boolean = true;
 }
 
 class FoldersResponse {
-  enabled!: boolean;
-  sidebarWeb!: boolean;
+  enabled: boolean = false;
+  sidebarWeb: boolean = false;
 }
 
 class PeopleResponse {
-  enabled!: boolean;
-  sidebarWeb!: boolean;
+  enabled: boolean = true;
+  sidebarWeb: boolean = false;
 }
 
 class TagsResponse {
-  enabled!: boolean;
-  sidebarWeb!: boolean;
+  enabled: boolean = true;
+  sidebarWeb: boolean = true;
 }
 
 class EmailNotificationsResponse {

@@ -13,8 +13,8 @@ part of openapi.api;
 class FoldersResponse {
   /// Returns a new [FoldersResponse] instance.
   FoldersResponse({
-    required this.enabled,
-    required this.sidebarWeb,
+    this.enabled = false,
+    this.sidebarWeb = false,
   });
 
   bool enabled;
