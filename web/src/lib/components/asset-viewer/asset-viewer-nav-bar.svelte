@@ -159,11 +159,13 @@
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
             text={$t('replace_with_upload')}
           />
-          <MenuOption
-            icon={mdiImageSearch}
-            onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
-            text={$t('view_in_timeline')}
-          />
+          {#if !asset.isArchived && !asset.isTrashed}
+            <MenuOption
+              icon={mdiImageSearch}
+              onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+              text={$t('view_in_timeline')}
+            />
+          {/if}
           <hr />
           <MenuOption
             icon={mdiDatabaseRefreshOutline}
