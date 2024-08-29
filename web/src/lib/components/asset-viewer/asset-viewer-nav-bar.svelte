@@ -161,7 +161,7 @@
           />
           <MenuOption
             icon={mdiImageSearch}
-            onClick={() => window.open(`${AppRoute.PHOTOS}?at=${asset.id}`, '_blank')}
+            onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
             text={$t('view_in_timeline')}
           />
           <hr />

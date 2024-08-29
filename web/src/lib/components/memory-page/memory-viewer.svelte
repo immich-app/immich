@@ -28,6 +28,7 @@
     mdiChevronRight,
     mdiChevronUp,
     mdiDotsVertical,
+    mdiImageSearch,
     mdiOpenInNew,
     mdiPause,
     mdiPlay,
@@ -309,10 +310,10 @@
               class:opacity-100={!galleryInView}
             >
               <CircleIconButton
-                icon={mdiOpenInNew}
+                href={`${AppRoute.PHOTOS}?at=${currentAsset.id}`}
+                icon={mdiImageSearch}
                 title={$t('view_in_timeline')}
                 color="light"
-                on:click={() => window.open(`${AppRoute.PHOTOS}?at=${currentAsset.id}`, '_blank')}
               />
             </div>
             <!-- CONTROL BUTTONS -->
