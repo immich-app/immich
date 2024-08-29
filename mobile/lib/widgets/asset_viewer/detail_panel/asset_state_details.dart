@@ -44,14 +44,14 @@ class AssetStateInfo extends ConsumerWidget {
         (user == null)
             ? storageText(asset)
             : isInAlbum
-                ? user.name
-                : "storage_asset_partner".tr(),
+                ? "album_thumbnail_shared_by".tr(args: [user.name])
+                : user.name,
         style: context.textTheme.labelLarge,
       ),
       subtitle: (user == null || isInAlbum)
           ? null
           : Text(
-              user.name,
+              "storage_asset_partner".tr(),
               style: context.textTheme.bodySmall,
             ),
     );

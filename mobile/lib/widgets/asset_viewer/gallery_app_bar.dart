@@ -109,7 +109,7 @@ class GalleryAppBar extends ConsumerWidget {
               heightFactor: 0.8,
               child: Text(
                 isInAlbum
-                    ? "album_thumbnail_shared_by".tr(args: [":"])
+                    ? "album_thumbnail_shared_by".tr(args: [""])
                     : "partner_sharing_dialog_title".tr(),
                 style: const TextStyle(
                   fontSize: 16,
