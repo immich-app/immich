@@ -29,23 +29,23 @@ jobs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.ORG_RELEASE_TOKEN }}
-
-      - name: Install Poetry
-        run: pipx install poetry
-
-      - name: Bump version
-        run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
-
       - name: Generate a token
         id: generate-token
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Bump version
+        run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
 
       - name: Commit and tag
         id: push-tag
@@ -55,7 +55,6 @@ jobs:
           message: 'chore: version ${{ env.IMMICH_VERSION }}'
           tag: ${{ env.IMMICH_VERSION }}
           push: true
-          github-token: ${{ steps.generate-token.outputs.token }}
 
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
