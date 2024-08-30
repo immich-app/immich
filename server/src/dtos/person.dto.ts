@@ -114,8 +114,8 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
-  @ApiProperty({ enum: SourceType, enumName: 'SourceType', default: SourceType.MACHINE_LEARNING })
-  sourceType?: string;
+  @ApiProperty({ enum: SourceType, enumName: 'SourceType' })
+  sourceType?: SourceType;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {

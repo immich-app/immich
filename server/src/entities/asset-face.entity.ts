@@ -39,7 +39,7 @@ export class AssetFaceEntity {
   boundingBoxY2!: number;
 
   @Column({ default: SourceType.MACHINE_LEARNING, type: 'enum', enum: SourceType })
-  sourceType!: string;
+  sourceType!: SourceType;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;

@@ -14,31 +14,25 @@ class SystemConfigMetadataDto {
   /// Returns a new [SystemConfigMetadataDto] instance.
   SystemConfigMetadataDto({
     required this.faces,
-    required this.tags,
   });
 
   SystemConfigFacesDto faces;
 
-  SystemConfigTagsDto tags;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMetadataDto &&
-    other.faces == faces &&
-    other.tags == tags;
+    other.faces == faces;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (faces.hashCode) +
-    (tags.hashCode);
+    (faces.hashCode);
 
   @override
-  String toString() => 'SystemConfigMetadataDto[faces=$faces, tags=$tags]';
+  String toString() => 'SystemConfigMetadataDto[faces=$faces]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'faces'] = this.faces;
-      json[r'tags'] = this.tags;
     return json;
   }
 
@@ -51,7 +45,6 @@ class SystemConfigMetadataDto {
 
       return SystemConfigMetadataDto(
         faces: SystemConfigFacesDto.fromJson(json[r'faces'])!,
-        tags: SystemConfigTagsDto.fromJson(json[r'tags'])!,
       );
     }
     return null;
@@ -100,7 +93,6 @@ class SystemConfigMetadataDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'faces',
-    'tags',
   };
 }
 

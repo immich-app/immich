@@ -11132,7 +11132,6 @@
         "type": "object"
       },
       "SourceType": {
-        "default": "machine-learning",
         "enum": [
           "machine-learning",
           "exif"

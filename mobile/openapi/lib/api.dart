@@ -243,7 +243,6 @@ part 'model/system_config_server_dto.dart';
 part 'model/system_config_smtp_dto.dart';
 part 'model/system_config_smtp_transport_dto.dart';
 part 'model/system_config_storage_template_dto.dart';
-part 'model/system_config_tags_dto.dart';
 part 'model/system_config_template_storage_option_dto.dart';
 part 'model/system_config_theme_dto.dart';
 part 'model/system_config_trash_dto.dart';

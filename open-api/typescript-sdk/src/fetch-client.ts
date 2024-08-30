@@ -1093,12 +1093,8 @@ export type SystemConfigMapDto = {
 export type SystemConfigFacesDto = {
     "import": boolean;
 };
-export type SystemConfigTagsDto = {
-    "import": boolean;
-};
 export type SystemConfigMetadataDto = {
     faces: SystemConfigFacesDto;
-    tags: SystemConfigTagsDto;
 };
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;

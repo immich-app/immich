@@ -428,7 +428,6 @@ Class | Method | HTTP request | Description
  - [SystemConfigSmtpDto](doc//SystemConfigSmtpDto.md)
  - [SystemConfigSmtpTransportDto](doc//SystemConfigSmtpTransportDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
- - [SystemConfigTagsDto](doc//SystemConfigTagsDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)

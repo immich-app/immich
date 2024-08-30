@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -19,12 +19,13 @@ import {
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class PersonRepository implements IPersonRepository {
   constructor(
+    @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
@@ -283,18 +284,11 @@ export class PersonRepository implements IPersonRepository {
     return res.map((row) => row.id);
   }
 
-  async replaceFaces(assetId: string, entities: AssetFaceEntity[], sourceType?: string): Promise<string[]> {
-    return await this.assetFaceRepository.manager.transaction(async (manager) => {
-      const builder = manager.createQueryBuilder(AssetFaceEntity, 'asset_faces');
-      let query = builder.delete().where('assetId = :assetId', { assetId });
-
-      if (sourceType) {
-        query = query.andWhere('sourceType = :sourceType', { sourceType });
-      }
-      await query.execute();
-
-      const res = await manager.save(AssetFaceEntity, entities);
-      return res.map((row) => row.id);
+  async replaceFaces(assetId: string, entities: AssetFaceEntity[], sourceType: string): Promise<string[]> {
+    return this.dataSource.transaction(async (manager) => {
+      await manager.delete(AssetFaceEntity, { assetId, sourceType });
+      const assetFaces = await manager.save(AssetFaceEntity, entities);
+      return assetFaces.map(({ id }) => id);
     });
   }
 
