@@ -8395,6 +8395,9 @@
             },
             "type": "array"
           },
+          "resized": {
+            "type": "boolean"
+          },
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
