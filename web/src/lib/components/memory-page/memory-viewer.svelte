@@ -309,7 +309,7 @@
               class:opacity-100={!galleryInView}
             >
               <CircleIconButton
-                href="${AppRoute.PHOTOS}?at=${currentAsset.id}"
+                href="{AppRoute.PHOTOS}?at={currentAsset.id}"
                 icon={mdiImageSearch}
                 title={$t('view_in_timeline')}
                 color="light"
