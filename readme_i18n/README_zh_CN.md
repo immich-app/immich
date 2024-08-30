@@ -47,7 +47,7 @@
 - ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
 
 > [!NOTE]
-> 完整的项目文档以及安装教程请参见：https://immich.app/。
+> 完整的项目文档以及安装教程请参见：<https://immich.app/>。
 
 ## 目录
 
