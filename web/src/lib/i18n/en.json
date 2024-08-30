@@ -1176,7 +1176,7 @@
   "tag_assets": "Tag assets",
   "tag_created": "Created tag: {tag}",
   "tag_feature_description": "Browsing photos and videos grouped by logical tag topics",
-  "tag_not_found_question": "Cannot find the tag? Create <link>here</link>",
+  "tag_not_found_question": "Cannot find a tag? Create one <link>here</link>",
   "tag_updated": "Updated tag: {tag}",
   "tagged_assets": "Tagged {count, plural, one {# asset} other {# assets}}",
   "tags": "Tags",
