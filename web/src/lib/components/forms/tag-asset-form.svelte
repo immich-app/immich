@@ -7,6 +7,7 @@
   import { onMount } from 'svelte';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let onTag: (tagIds: string[]) => void;
   export let onCancel: () => void;
@@ -38,6 +39,13 @@
 </script>
 
 <FullScreenModal title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
+  <div class="text-sm">
+    <p>
+      {$t('tag_not_found_question')}
+      {$t('create')}
+      <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-primary underline">{$t('here')}</a>
+    </p>
+  </div>
   <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="create-tag-form">
     <div class="my-4 flex flex-col gap-2">
       <Combobox
