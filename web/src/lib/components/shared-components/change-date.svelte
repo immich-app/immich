@@ -13,7 +13,7 @@
     /**
      * Timezone offset, as a string
      *
-     * e.g. UTC+03:00
+     * e.g. +03:00
      */
     offset: string;
 
