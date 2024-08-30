@@ -77,7 +77,7 @@
     "nodemailer": "^6.9.13",
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
-    "picomatch": "^4.0.0",
+    "picomatch": "^4.0.2",
     "react": "^18.3.1",
     "react-email": "^3.0.0",
     "reflect-metadata": "^0.2.0",

@@ -25,6 +25,7 @@
   import { preferences, user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
@@ -80,6 +81,9 @@
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      {#if $preferences.tags.enabled}
+        <TagAction menuItem />
+      {/if}
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
       <hr />
       <AssetJobActions />

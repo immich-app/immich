@@ -153,7 +153,7 @@
       return;
     }
     if (dateGroup && assetStore) {
-      assetStore.taskManager.seperatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
+      assetStore.taskManager.separatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
     } else {
       intersecting = false;
     }

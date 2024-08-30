@@ -18,6 +18,7 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { MetadataService, Orientation } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -25,6 +26,7 @@ import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
 import { metadataStub } from 'test/fixtures/metadata.stub';
 import { personStub } from 'test/fixtures/person.stub';
+import { tagStub } from 'test/fixtures/tag.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
@@ -39,6 +41,7 @@ import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked } from 'vitest';
 
@@ -58,6 +61,7 @@ describe(MetadataService.name, () => {
   let databaseMock: Mocked<IDatabaseRepository>;
   let userMock: Mocked<IUserRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
+  let tagMock: Mocked<ITagRepository>;
   let sut: MetadataService;
 
   beforeEach(() => {
@@ -76,6 +80,7 @@ describe(MetadataService.name, () => {
     databaseMock = newDatabaseRepositoryMock();
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
+    tagMock = newTagRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
@@ -91,6 +96,7 @@ describe(MetadataService.name, () => {
       personMock,
       storageMock,
       systemMock,
+      tagMock,
       userMock,
       loggerMock,
     );
@@ -356,6 +362,72 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
       expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }));
+    });
+
+    it('should extract tags from TagsList', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent'] });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+    });
+
+    it('should extract hierarchy from TagsList', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent/Child'] });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValueOnce(tagStub.parent);
+      tagMock.create.mockResolvedValueOnce(tagStub.child);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.create).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
+    });
+
+    it('should extract tags from Keywords as a string', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent' });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+    });
+
+    it('should extract tags from Keywords as a list', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: ['Parent'] });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+    });
+
+    it('should extract hierarchal tags from Keywords', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent/Child' });
+      tagMock.getByValue.mockResolvedValue(null);
+      tagMock.create.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.create).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.create).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
     });
 
     it('should not apply motion photos if asset is video', async () => {

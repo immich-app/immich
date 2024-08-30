@@ -6169,7 +6169,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
+                "$ref": "#/components/schemas/TagCreateDto"
               }
             }
           },
@@ -6181,6 +6181,91 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Tags"
+        ]
+      },
+      "put": {
+        "operationId": "upsertTags",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagUpsertDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/tags/assets": {
+      "put": {
+        "operationId": "bulkTagAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagBulkAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagBulkAssetsResponseDto"
                 }
               }
             },
@@ -6218,7 +6303,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -6277,7 +6362,7 @@
           "Tags"
         ]
       },
-      "patch": {
+      "put": {
         "operationId": "updateTag",
         "parameters": [
           {
@@ -6294,7 +6379,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
+                "$ref": "#/components/schemas/TagUpdateDto"
               }
             }
           },
@@ -6346,7 +6431,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -6358,50 +6443,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Tags"
-        ]
-      },
-      "get": {
-        "operationId": "getTagAssets",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   },
                   "type": "array"
                 }
@@ -6442,7 +6484,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -6454,7 +6496,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   },
                   "type": "array"
                 }
@@ -6547,6 +6589,15 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/TimeBucketSize"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -6682,6 +6733,15 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/TimeBucketSize"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -8691,21 +8751,6 @@
         ],
         "type": "object"
       },
-      "CreateTagDto": {
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          }
-        },
-        "required": [
-          "name",
-          "type"
-        ],
-        "type": "object"
-      },
       "DownloadArchiveInfo": {
         "properties": {
           "assetIds": {
@@ -9125,6 +9170,34 @@
         ],
         "type": "object"
       },
+      "FoldersResponse": {
+        "properties": {
+          "enabled": {
+            "default": false,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "FoldersUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "ImageFormat": {
         "enum": [
           "jpeg",
@@ -9495,6 +9568,26 @@
         ],
         "type": "string"
       },
+      "MemoriesResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "MemoriesUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "MemoryCreateDto": {
         "properties": {
           "assetIds": {
@@ -9544,17 +9637,6 @@
         "required": [
           "assets",
           "yearsAgo"
-        ],
-        "type": "object"
-      },
-      "MemoryResponse": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
         ],
         "type": "object"
       },
@@ -9620,14 +9702,6 @@
           "on_this_day"
         ],
         "type": "string"
-      },
-      "MemoryUpdate": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "type": "object"
       },
       "MemoryUpdateDto": {
         "properties": {
@@ -9914,6 +9988,23 @@
         ],
         "type": "string"
       },
+      "PeopleResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
       "PeopleResponseDto": {
         "properties": {
           "hasNextPage": {
@@ -9938,6 +10029,17 @@
           "people",
           "total"
         ],
+        "type": "object"
+      },
+      "PeopleUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "PeopleUpdateDto": {
@@ -10059,6 +10161,7 @@
           "tag.read",
           "tag.update",
           "tag.delete",
+          "tag.asset",
           "admin.user.create",
           "admin.user.read",
           "admin.user.update",
@@ -10260,7 +10363,7 @@
         ],
         "type": "object"
       },
-      "RatingResponse": {
+      "RatingsResponse": {
         "properties": {
           "enabled": {
             "default": false,
@@ -10272,7 +10375,7 @@
         ],
         "type": "object"
       },
-      "RatingUpdate": {
+      "RatingsUpdate": {
         "properties": {
           "enabled": {
             "type": "boolean"
@@ -11891,36 +11994,141 @@
         ],
         "type": "object"
       },
+      "TagBulkAssetsDto": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tagIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds",
+          "tagIds"
+        ],
+        "type": "object"
+      },
+      "TagBulkAssetsResponseDto": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "type": "object"
+      },
+      "TagCreateDto": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
+          "color": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
           },
-          "userId": {
+          "value": {
             "type": "string"
           }
         },
         "required": [
+          "createdAt",
           "id",
           "name",
-          "type",
-          "userId"
+          "updatedAt",
+          "value"
         ],
         "type": "object"
       },
-      "TagTypeEnum": {
-        "enum": [
-          "OBJECT",
-          "FACE",
-          "CUSTOM"
+      "TagUpdateDto": {
+        "properties": {
+          "color": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TagUpsertDto": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
         ],
-        "type": "string"
+        "type": "object"
+      },
+      "TagsResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "TagsUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "TimeBucketResponseDto": {
         "properties": {
@@ -12062,14 +12270,6 @@
         "required": [
           "inTimeline"
         ],
-        "type": "object"
-      },
-      "UpdateTagDto": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
         "type": "object"
       },
       "UsageByUserDto": {
@@ -12307,23 +12507,35 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
+          "folders": {
+            "$ref": "#/components/schemas/FoldersResponse"
+          },
           "memories": {
-            "$ref": "#/components/schemas/MemoryResponse"
+            "$ref": "#/components/schemas/MemoriesResponse"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleResponse"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
           },
-          "rating": {
-            "$ref": "#/components/schemas/RatingResponse"
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsResponse"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
+          "folders",
           "memories",
+          "people",
           "purchase",
-          "rating"
+          "ratings",
+          "tags"
         ],
         "type": "object"
       },
@@ -12338,14 +12550,23 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
+          "folders": {
+            "$ref": "#/components/schemas/FoldersUpdate"
+          },
           "memories": {
-            "$ref": "#/components/schemas/MemoryUpdate"
+            "$ref": "#/components/schemas/MemoriesUpdate"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleUpdate"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"
           },
-          "rating": {
-            "$ref": "#/components/schemas/RatingUpdate"
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsUpdate"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsUpdate"
           }
         },
         "type": "object"

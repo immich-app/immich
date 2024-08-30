@@ -133,6 +133,7 @@ export interface ILibraryFileJob extends IEntityJob {
 
 export interface ILibraryOfflineJob extends IEntityJob {
   importPaths: string[];
+  exclusionPatterns: string[];
 }
 
 export interface ILibraryRefreshJob extends IEntityJob {
@@ -154,6 +155,7 @@ export interface ISidecarWriteJob extends IEntityJob {
   latitude?: number;
   longitude?: number;
   rating?: number;
+  tags?: true;
 }
 
 export interface IDeferrableJob extends IEntityJob {

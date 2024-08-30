@@ -255,9 +255,12 @@ export class MediaService {
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
       }
     }
+
+    const assetLabel = asset.isExternal ? asset.originalPath : asset.id;
     this.logger.log(
-      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${asset.id}`,
+      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${assetLabel}`,
     );
+
     return path;
   }
 

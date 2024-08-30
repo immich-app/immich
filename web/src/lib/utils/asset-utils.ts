@@ -10,6 +10,7 @@ import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
+import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
@@ -18,6 +19,8 @@ import {
   getBaseUrl,
   getDownloadInfo,
   getStack,
+  tagAssets as tagAllAssets,
+  untagAssets,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
@@ -59,6 +62,54 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       },
     });
   }
+};
+
+export const tagAssets = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  for (const tagId of tagIds) {
+    await tagAllAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
+  }
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    notificationController.show({
+      message: $t('tagged_assets', { values: { count: assetIds.length } }),
+      type: NotificationType.Info,
+    });
+  }
+
+  return assetIds;
+};
+
+export const removeTag = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  for (const tagId of tagIds) {
+    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
+  }
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    notificationController.show({
+      message: $t('removed_tagged_assets', { values: { count: assetIds.length } }),
+      type: NotificationType.Info,
+    });
+  }
+
+  return assetIds;
 };
 
 export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {

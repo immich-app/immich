@@ -130,6 +130,7 @@ export enum Permission {
   TAG_READ = 'tag.read',
   TAG_UPDATE = 'tag.update',
   TAG_DELETE = 'tag.delete',
+  TAG_ASSET = 'tag.asset',
 
   ADMIN_USER_CREATE = 'admin.user.create',
   ADMIN_USER_READ = 'admin.user.read',
