@@ -13,12 +13,7 @@ export const upsertTags = async (repository: ITagRepository, { userId, tags }: U
 
     for (const part of parts) {
       const value = parent ? `${parent.value}/${part}` : part;
-      let tag = await repository.getByValue(userId, value);
-      if (!tag) {
-        tag = await repository.create({ userId, value, parent });
-      }
-
-      parent = tag;
+      parent = await repository.upsertValue({ userId, value, parent });
     }
 
     if (parent) {
