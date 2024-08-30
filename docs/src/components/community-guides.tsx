@@ -46,7 +46,7 @@ const guides: CommunityGuidesProps[] = [
   {
     title: 'Nginx caching map server',
     description: 'Increase privacy by using nginx as a caching proxy in front of a map tile server',
-    url: 'https://pierre-couy.dev/server-admin/2024/08/proxying-a-map-tile-server-for-increased-privacy.html',
+    url: 'https://github.com/pcouy/pcouy.github.io/blob/main/_posts/2024-08-30-proxying-a-map-tile-server-for-increased-privacy.md',
   },
 ];
 
