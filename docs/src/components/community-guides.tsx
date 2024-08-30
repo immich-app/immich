@@ -43,6 +43,11 @@ const guides: CommunityGuidesProps[] = [
     description: 'Access your local Immich installation over the internet using your own domain',
     url: 'https://github.com/ppr88/immich-guides/blob/main/open-immich-custom-domain.md',
   },
+  {
+    title: 'Nginx caching map server',
+    description: 'Increase privacy by using nginx as caching proxy in front of a map tile proxy server',
+    url: 'https://pierre-couy.dev/server-admin/2024/08/proxying-a-map-tile-server-for-increased-privacy.html',
+  },
 ];
 
 function CommunityGuide({ title, description, url }: CommunityGuidesProps): JSX.Element {
