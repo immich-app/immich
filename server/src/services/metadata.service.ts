@@ -524,12 +524,16 @@ export class MetadataService {
 
     this.logger.verbose('Exif Tags', exifTags);
 
+    let dateTimeOriginalAndRawValue = this.getDateTimeOriginalAndRawValue(exifTags);
+    const dateTimeOriginal = dateTimeOriginalAndRawValue[0] ?? asset.fileCreatedAt;
+    let timeZone = this.getTimeZone(exifTags, dateTimeOriginalAndRawValue[1]);
+
     const exifData = {
       // altitude: tags.GPSAltitude ?? null,
       assetId: asset.id,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace ?? null,
-      dateTimeOriginal: this.getDateTimeOriginal(exifTags) ?? asset.fileCreatedAt,
+      dateTimeOriginal: dateTimeOriginal,
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       exifImageHeight: validate(exifTags.ImageHeight),
       exifImageWidth: validate(exifTags.ImageWidth),
@@ -550,7 +554,7 @@ export class MetadataService {
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       profileDescription: exifTags.ProfileDescription || null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
-      timeZone: exifTags.tz ?? null,
+      timeZone: timeZone,
       rating: exifTags.Rating ?? null,
     };
 
@@ -571,10 +575,25 @@ export class MetadataService {
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
+    return this.getDateTimeOriginalAndRawValue(tags)[0];
+  }
+
+  private getDateTimeOriginalAndRawValue(tags: ImmichTags | Tags | null): [Date | null, string] {
     if (!tags) {
-      return null;
+      return [null, ''];
     }
-    return exifDate(firstDateTime(tags as Tags, EXIF_DATE_TAGS));
+    let first = firstDateTime(tags as Tags, EXIF_DATE_TAGS);
+    return [exifDate(first), first?.rawValue ?? ''];
+  }
+
+  private getTimeZone(exifTags: ImmichTags, rawValue: string) {
+    const timeZone = exifTags.tz ?? null;
+    if (timeZone == null && rawValue.endsWith("+00:00")) {
+      // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
+      // https://github.com/photostructure/exiftool-vendored.js/issues/203
+      return "UTC+00:00";
+    }
+    return timeZone;
   }
 
   private getBitsPerSample(tags: ImmichTags): number | null {
