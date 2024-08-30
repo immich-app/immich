@@ -531,12 +531,16 @@ export class MetadataService {
 
     this.logger.verbose('Exif Tags', exifTags);
 
+    const dateTimeOriginalWithRawValue = this.getDateTimeOriginalWithRawValue(exifTags);
+    const dateTimeOriginal = dateTimeOriginalWithRawValue.exifDate ?? asset.fileCreatedAt;
+    const timeZone = this.getTimeZone(exifTags, dateTimeOriginalWithRawValue.rawValue);
+
     const exifData = {
       // altitude: tags.GPSAltitude ?? null,
       assetId: asset.id,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace ?? null,
-      dateTimeOriginal: this.getDateTimeOriginal(exifTags) ?? asset.fileCreatedAt,
+      dateTimeOriginal,
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       exifImageHeight: validate(exifTags.ImageHeight),
       exifImageWidth: validate(exifTags.ImageWidth),
@@ -557,7 +561,7 @@ export class MetadataService {
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       profileDescription: exifTags.ProfileDescription || null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
-      timeZone: exifTags.tz ?? null,
+      timeZone,
       rating: exifTags.Rating ?? null,
     };
 
@@ -578,10 +582,25 @@ export class MetadataService {
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
+    return this.getDateTimeOriginalWithRawValue(tags).exifDate;
+  }
+
+  private getDateTimeOriginalWithRawValue(tags: ImmichTags | Tags | null): { exifDate: Date | null; rawValue: string } {
     if (!tags) {
-      return null;
+      return { exifDate: null, rawValue: '' };
     }
-    return exifDate(firstDateTime(tags as Tags, EXIF_DATE_TAGS));
+    const first = firstDateTime(tags as Tags, EXIF_DATE_TAGS);
+    return { exifDate: exifDate(first), rawValue: first?.rawValue ?? '' };
+  }
+
+  private getTimeZone(exifTags: ImmichTags, rawValue: string) {
+    const timeZone = exifTags.tz ?? null;
+    if (timeZone == null && rawValue.endsWith('+00:00')) {
+      // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
+      // https://github.com/photostructure/exiftool-vendored.js/issues/203
+      return 'UTC+0';
+    }
+    return timeZone;
   }
 
   private getBitsPerSample(tags: ImmichTags): number | null {

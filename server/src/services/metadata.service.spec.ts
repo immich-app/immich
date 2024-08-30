@@ -812,6 +812,32 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should extract +00:00 timezone from raw value', async () => {
+      // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
+      // https://github.com/photostructure/exiftool-vendored.js/issues/203
+
+      // this only tests our assumptions of exiftool-vendored, demonstrating the issue
+      const someDate = '2024-09-01T00:00:00.000';
+      expect(ExifDateTime.fromISO(someDate + 'Z')?.zone).toBe('UTC');
+      expect(ExifDateTime.fromISO(someDate + '+00:00')?.zone).toBe('UTC'); // this is the issue, should be UTC+0
+      expect(ExifDateTime.fromISO(someDate + '+04:00')?.zone).toBe('UTC+4');
+
+      const tags: ImmichTags = {
+        DateTimeOriginal: ExifDateTime.fromISO(someDate + '+00:00'),
+        tz: undefined,
+      };
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue(tags);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeZone: 'UTC+0',
+        }),
+      );
+    });
+
     it('should extract duration', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.video }]);
       mediaMock.probe.mockResolvedValue({
