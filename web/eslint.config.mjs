@@ -87,6 +87,7 @@ export default [
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
+      'object-shorthand': ['error', 'always'],
     },
   },
   {

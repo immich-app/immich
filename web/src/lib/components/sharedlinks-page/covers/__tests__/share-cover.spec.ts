@@ -50,7 +50,7 @@ describe('ShareCover component', () => {
   it.skip('renders fallback image when asset is not resized', () => {
     const link = sharedLinkFactory.build({ assets: [assetFactory.build()] });
     render(ShareCover, {
-      link: link,
+      link,
       preload: false,
     });
 

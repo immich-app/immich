@@ -59,6 +59,7 @@ export default [
       'unicorn/prefer-top-level-await': 'off',
       'unicorn/prefer-event-target': 'off',
       'unicorn/no-thenable': 'off',
+      'object-shorthand': ['error', 'always'],
     },
   },
 ];

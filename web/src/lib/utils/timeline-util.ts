@@ -107,7 +107,7 @@ export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | 
       heightActual: false,
       intersecting: false,
       geometry: emptyGeometry(),
-      bucket: bucket,
+      bucket,
     };
   });
 }

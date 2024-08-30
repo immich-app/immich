@@ -13,7 +13,7 @@ export class CreateProfileImageResponseDto {
 
 export function mapCreateProfileImageResponse(userId: string, profileImagePath: string): CreateProfileImageResponseDto {
   return {
-    userId: userId,
-    profileImagePath: profileImagePath,
+    userId,
+    profileImagePath,
   };
 }
