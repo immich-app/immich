@@ -53,6 +53,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   checksum!: string;
   stack?: AssetStackResponseDto | null;
   duplicateId?: string | null;
+
+  @PropertyLifecycle({ deprecatedAt: 'v1.113.0' })
   resized?: boolean;
 }
 

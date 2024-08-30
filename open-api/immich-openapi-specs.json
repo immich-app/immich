@@ -8396,6 +8396,8 @@
             "type": "array"
           },
           "resized": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.113.0",
             "type": "boolean"
           },
           "smartInfo": {
