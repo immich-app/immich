@@ -232,6 +232,7 @@ export type TagResponseDto = {
     createdAt: string;
     id: string;
     name: string;
+    parentId?: string;
     updatedAt: string;
     value: string;
 };

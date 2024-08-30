@@ -8,6 +8,7 @@ export type AssetTagItem = { assetId: string; tagId: string };
 export interface ITagRepository extends IBulkAsset {
   getAll(userId: string): Promise<TagEntity[]>;
   getByValue(userId: string, value: string): Promise<TagEntity | null>;
+  upsertValue(request: { userId: string; value: string; parent?: TagEntity }): Promise<TagEntity>;
 
   create(tag: Partial<TagEntity>): Promise<TagEntity>;
   get(id: string): Promise<TagEntity | null>;

@@ -5,6 +5,7 @@ export const newTagRepositoryMock = (): Mocked<ITagRepository> => {
   return {
     getAll: vitest.fn(),
     getByValue: vitest.fn(),
+    upsertValue: vitest.fn(),
     upsertAssetTags: vitest.fn(),
 
     get: vitest.fn(),
