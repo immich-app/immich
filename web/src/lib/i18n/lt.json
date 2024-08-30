@@ -7,7 +7,7 @@
   "actions": "Veiksmai",
   "active": "Vykdoma",
   "activity": "Veikla",
-  "activity_changed": "Veikla yra {enabled, select, true {enabled} other {disabled}}",
+  "activity_changed": "Veikla yra {enabled, select, true {įjungta} other {išjungta}}",
   "add": "Pridėti",
   "add_a_description": "Pridėti aprašymą",
   "add_a_location": "Pridėti vietovę",
