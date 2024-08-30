@@ -38,7 +38,7 @@ const projects: CommunityProjectProps[] = [
     description: 'Lightroom plugin to publish photos from Lightroom collections to Immich albums.',
     url: 'https://github.com/midzelis/mi.Immich.Publisher',
   },
-    {
+  {
     title: 'Lightroom Immich Plugin: lrc-immich-plugin',
     description: 'Another Lightroom plugin to publish or export photos from Lightroom to Immich.',
     url: 'https://github.com/bmachek/lrc-immich-plugin',
