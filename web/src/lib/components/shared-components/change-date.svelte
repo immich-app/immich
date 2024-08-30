@@ -8,50 +8,112 @@
 
   export let initialDate: DateTime = DateTime.now();
 
+  // time zone details for a given date
   type ZoneOption = {
     /**
-     * Timezone name
+     * Timezone offset, as a string
+     *
+     * e.g. UTC+03:00
+     */
+    offset: string;
+
+    /**
+     * Timezone offset, in minutes
+     *
+     * e.g. 180
+     */
+    offsetMinutes: number;
+
+    /**
+     * The name of the time zone
+     *
+     * e.g. Asia/Jerusalem
+     */
+    value: string;
+
+    /**
+     * Timezone label including name and offset
      *
      * e.g. Asia/Jerusalem (+03:00)
      */
     label: string;
 
     /**
-     * Timezone offset
+     * True iff the date is valid
      *
-     * e.g. UTC+01:00
+     * Dates may be invalid for various reasons, for example due to daylight saving time.
+     * As an example, due to daylight saving time, 2:30am might be invalid for a specific date and time zone.
+     *
+     * The two following local times, one second apart, demonstrate the issue for Europe/Berlin.
+     * - Mar 31 2024 01:59:59 (GMT+0100, unix timestamp 1725058799)
+     * - Mar 31 2024 03:00:00 (GMT+0200, unix timestamp 1711846800)
+     *
+     * Mar 31 2024 02:30:00 does not exist in Europe/Berlin, this is an invalid date/time/time zone combination.
      */
-    value: string;
+    valid: boolean;
   };
 
-  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone')
-    .map((zone) => DateTime.local({ zone }))
+  const knownTimezones = Intl.supportedValuesOf('timeZone');
+
+  /*
+   * Find a matching time zone name for a given time, date, and offset (e.g. +02:00).
+   *
+   * This is done so that the list shown to the user includes more helpful names like "Europe/Berlin (UTC+02:00)"
+   * instead of just the raw offset or something like "UTC+02:00".
+   *
+   * The provided information includes the offset (e.g. +02:00), but no information about the actual time zone.
+   * As several countries/regions may share the same offset, for example Berlin (Germany) and Blantyre (Malawi) sharing
+   * +02:00 in summer, we have to guess and somehow pick a suitable time zone.
+   *
+   * If the time zone configured by the user (in the browser) provides the same offset for the given date (accounting
+   * for daylight saving time and other weirdness), we prefer to show it. This way, for German users, we might be able
+   * to show "Europe/Berlin" instead of the lexicographically first entry "Africa/Blantyre".
+   */
+  let userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  let timezones: ZoneOption[];
+  $: timezones = knownTimezones.map((zone) => {
+    const dateAtZone: DateTime = DateTime.fromISO(selectedDate, {zone});
+    const zoneOffsetAtDate = dateAtZone.toFormat("ZZ");
+    const valid = dateAtZone.isValid && selectedDate.toString() === dateAtZone.toFormat("yyyy-MM-dd'T'HH:mm");
+    return {
+      value: zone,
+      offset: zoneOffsetAtDate,
+      offsetMinutes: dateAtZone.offset,
+      label: zone + " (" + zoneOffsetAtDate + ")" + (valid ? "" : " [invalid date!]"),
+      valid
+    }
+  })
+    .filter(z => z.valid)
     .sort((zoneA, zoneB) => {
-      let numericallyCorrect = zoneA.offset - zoneB.offset;
-      if (numericallyCorrect != 0) {
-        return numericallyCorrect;
-      }
-      return zoneA.zoneName.localeCompare(zoneB.zoneName, undefined, { sensitivity: 'base' });
-    })
-    .map((zone) => {
-      const offset = zone.toFormat('ZZ');
-      return {
-        label: `${zone.zoneName} (${offset})`,
-        value: 'UTC' + offset,
-      };
-    });
+    let offsetDifference = zoneA.offsetMinutes - zoneB.offsetMinutes;
+    if (offsetDifference != 0) {
+      return offsetDifference;
+    }
+    return zoneA.value.localeCompare(zoneB.value, undefined, { sensitivity: 'base' });
+  });
 
-  const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
-
-  let selectedOption = initialOption && {
-    label: initialOption?.label || '',
-    value: initialOption?.value || '',
-  };
+  let selectedOption: ZoneOption | undefined;
+  $: {
+    // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
+    let offset = initialDate.toFormat('ZZ');
+    const previousSelection = timezones.find((item) => item.value === selectedOption?.value);
+    const sameAsUserTimeZone = timezones.find((item) => item.offset === offset && item.value === userTimeZone);
+    const firstWithSameOffset = timezones.find((item) => item.offset === offset);
+    const utcFallback = {
+      label: 'UTC (+00:00)',
+      offset: "+00:00",
+      offsetMinutes: 0,
+      value: 'UTC',
+      valid: true,
+    }
+    selectedOption = previousSelection ?? sameAsUserTimeZone ?? firstWithSameOffset ?? utcFallback;
+  }
 
   let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
 
-  // Keep local time if not it's really confusing
-  $: date = DateTime.fromISO(selectedDate).setZone(selectedOption?.value, { keepLocalTime: true });
+  // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
+  $: date = DateTime.fromISO(selectedDate, {zone: selectedOption?.value, setZone: true});
 
   const dispatch = createEventDispatcher<{
     cancel: void;
