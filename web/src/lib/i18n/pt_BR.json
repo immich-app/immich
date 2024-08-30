@@ -338,7 +338,7 @@
   "album_added": "Álbum adicionado",
   "album_added_notification_setting_description": "Receba uma notificação por e-mail quando você for adicionado a um álbum compartilhado",
   "album_cover_updated": "Capa do álbum atualizada",
-  "album_delete_confirmation": "Tem certeza de que deseja excluir o álbum {album}?\nSe este álbum for compartilhado, outros usuários não poderão mais acessá-lo.",
+  "album_delete_confirmation": "Tem certeza de que deseja excluir o álbum {album}?",
   "album_info_updated": "Informações do álbum atualizadas",
   "album_leave": "Sair do álbum?",
   "album_leave_confirmation": "Tem certeza de que deseja sair de {album}?",
