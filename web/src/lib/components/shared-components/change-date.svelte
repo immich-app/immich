@@ -58,7 +58,7 @@
   /*
    * Find a matching time zone name for a given time, date, and offset (e.g. +02:00).
    *
-   * This is done so that the list shown to the user includes more helpful names like "Europe/Berlin (UTC+02:00)"
+   * This is done so that the list shown to the user includes more helpful names like "Europe/Berlin (+02:00)"
    * instead of just the raw offset or something like "UTC+02:00".
    *
    * The provided information includes the offset (e.g. +02:00), but no information about the actual time zone.
