@@ -43,7 +43,7 @@
   <div class="text-sm">
     <p>
       <FormatMessage key="tag_not_found_question" let:message>
-        <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-primary underline">
+        <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-dark-primary underline">
           {message}
         </a>
       </FormatMessage>
