@@ -12,7 +12,7 @@ describe(`immich server-info`, () => {
     const { stderr, stdout, exitCode } = await immichCli(['server-info']);
     expect(stdout.split('\n')).toEqual([
       expect.stringContaining('Server Info (via admin@immich.cloud'),
-      '  Url: http://127.0.0.1:2283/api',
+      '  Url: http://127.0.0.1:2285/api',
       expect.stringContaining('Version:'),
       '  Formats:',
       expect.stringContaining('Images:'),
