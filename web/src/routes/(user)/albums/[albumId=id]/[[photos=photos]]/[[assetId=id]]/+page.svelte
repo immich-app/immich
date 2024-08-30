@@ -291,7 +291,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count: count } }),
+        message: $t('assets_added_count', { values: { count } }),
       });
 
       await refreshAlbum();
