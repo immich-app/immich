@@ -12024,6 +12024,9 @@
           "name": {
             "type": "string"
           },
+          "parentId": {
+            "type": "string"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"

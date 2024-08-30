@@ -365,25 +365,23 @@ describe(MetadataService.name, () => {
     it('should extract tags from TagsList', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent'] });
-      tagMock.getByValue.mockResolvedValue(null);
-      tagMock.create.mockResolvedValue(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
     });
 
     it('should extract hierarchy from TagsList', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent/Child'] });
-      tagMock.getByValue.mockResolvedValue(null);
-      tagMock.create.mockResolvedValueOnce(tagStub.parent);
-      tagMock.create.mockResolvedValueOnce(tagStub.child);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(tagMock.create).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
-      expect(tagMock.create).toHaveBeenNthCalledWith(2, {
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
         parent: tagStub.parent,
@@ -393,35 +391,32 @@ describe(MetadataService.name, () => {
     it('should extract tags from Keywords as a string', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent' });
-      tagMock.getByValue.mockResolvedValue(null);
-      tagMock.create.mockResolvedValue(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
     });
 
     it('should extract tags from Keywords as a list', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue({ Keywords: ['Parent'] });
-      tagMock.getByValue.mockResolvedValue(null);
-      tagMock.create.mockResolvedValue(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(tagMock.create).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenCalledWith({ userId: 'user-id', value: 'Parent', parent: undefined });
     });
 
     it('should extract hierarchal tags from Keywords', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent/Child' });
-      tagMock.getByValue.mockResolvedValue(null);
-      tagMock.create.mockResolvedValue(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(tagMock.create).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
-      expect(tagMock.create).toHaveBeenNthCalledWith(2, {
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
         parent: tagStub.parent,

@@ -17,6 +17,7 @@ class TagResponseDto {
     required this.createdAt,
     required this.id,
     required this.name,
+    this.parentId,
     required this.updatedAt,
     required this.value,
   });
@@ -35,6 +36,14 @@ class TagResponseDto {
 
   String name;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? parentId;
+
   DateTime updatedAt;
 
   String value;
@@ -45,6 +54,7 @@ class TagResponseDto {
     other.createdAt == createdAt &&
     other.id == id &&
     other.name == name &&
+    other.parentId == parentId &&
     other.updatedAt == updatedAt &&
     other.value == value;
 
@@ -55,11 +65,12 @@ class TagResponseDto {
     (createdAt.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
+    (parentId == null ? 0 : parentId!.hashCode) +
     (updatedAt.hashCode) +
     (value.hashCode);
 
   @override
-  String toString() => 'TagResponseDto[color=$color, createdAt=$createdAt, id=$id, name=$name, updatedAt=$updatedAt, value=$value]';
+  String toString() => 'TagResponseDto[color=$color, createdAt=$createdAt, id=$id, name=$name, parentId=$parentId, updatedAt=$updatedAt, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -71,6 +82,11 @@ class TagResponseDto {
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
+    if (this.parentId != null) {
+      json[r'parentId'] = this.parentId;
+    } else {
+    //  json[r'parentId'] = null;
+    }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'value'] = this.value;
     return json;
@@ -88,6 +104,7 @@ class TagResponseDto {
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
+        parentId: mapValueOfType<String>(json, r'parentId'),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         value: mapValueOfType<String>(json, r'value')!,
       );

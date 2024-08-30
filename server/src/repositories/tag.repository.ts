@@ -22,6 +22,48 @@ export class TagRepository implements ITagRepository {
     return this.repository.findOne({ where: { userId, value } });
   }
 
+  async upsertValue({
+    userId,
+    value,
+    parent,
+  }: {
+    userId: string;
+    value: string;
+    parent?: TagEntity;
+  }): Promise<TagEntity> {
+    return this.dataSource.transaction(async (manager) => {
+      // upsert tag
+      const { identifiers } = await manager.upsert(
+        TagEntity,
+        { userId, value, parentId: parent?.id },
+        { conflictPaths: { userId: true, value: true } },
+      );
+      const id = identifiers[0]?.id;
+      if (!id) {
+        throw new Error('Failed to upsert tag');
+      }
+
+      // update closure table
+      await manager.query(
+        `INSERT INTO tags_closure (id_ancestor, id_descendant)
+         VALUES ($1, $1)
+         ON CONFLICT DO NOTHING;`,
+        [id],
+      );
+
+      if (parent) {
+        await manager.query(
+          `INSERT INTO tags_closure (id_ancestor, id_descendant)
+          SELECT id_ancestor, '${id}' as id_descendant FROM tags_closure WHERE id_descendant = $1
+          ON CONFLICT DO NOTHING`,
+          [parent.id],
+        );
+      }
+
+      return manager.findOneOrFail(TagEntity, { where: { id } });
+    });
+  }
+
   async getAll(userId: string): Promise<TagEntity[]> {
     const tags = await this.repository.find({
       where: { userId },

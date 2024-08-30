@@ -3,6 +3,7 @@ import {
   LoginResponseDto,
   Permission,
   TagCreateDto,
+  TagResponseDto,
   createTag,
   getAllTags,
   tagAssets,
@@ -81,15 +82,31 @@ describe('/tags', () => {
       expect(status).toBe(201);
     });
 
+    it('should allow multiple users to create tags with the same value', async () => {
+      await create(admin.accessToken, { name: 'TagA' });
+      const { status, body } = await request(app)
+        .post('/tags')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .send({ name: 'TagA' });
+      expect(body).toEqual({
+        id: expect.any(String),
+        name: 'TagA',
+        value: 'TagA',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
+      expect(status).toBe(201);
+    });
+
     it('should create a nested tag', async () => {
       const parent = await create(admin.accessToken, { name: 'TagA' });
-
       const { status, body } = await request(app)
         .post('/tags')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ name: 'TagB', parentId: parent.id });
       expect(body).toEqual({
         id: expect.any(String),
+        parentId: parent.id,
         name: 'TagB',
         value: 'TagA/TagB',
         createdAt: expect.any(String),
@@ -134,14 +151,20 @@ describe('/tags', () => {
     it('should return a nested tags', async () => {
       await upsert(admin.accessToken, ['TagA/TagB/TagC', 'TagD']);
       const { status, body } = await request(app).get('/tags').set('Authorization', `Bearer ${admin.accessToken}`);
+
       expect(body).toHaveLength(4);
-      expect(body).toEqual([
-        expect.objectContaining({ name: 'TagA', value: 'TagA' }),
-        expect.objectContaining({ name: 'TagB', value: 'TagA/TagB' }),
-        expect.objectContaining({ name: 'TagC', value: 'TagA/TagB/TagC' }),
-        expect.objectContaining({ name: 'TagD', value: 'TagD' }),
-      ]);
       expect(status).toEqual(200);
+
+      const tags = body as TagResponseDto[];
+      const tagA = tags.find((tag) => tag.value === 'TagA') as TagResponseDto;
+      const tagB = tags.find((tag) => tag.value === 'TagA/TagB') as TagResponseDto;
+      const tagC = tags.find((tag) => tag.value === 'TagA/TagB/TagC') as TagResponseDto;
+      const tagD = tags.find((tag) => tag.value === 'TagD') as TagResponseDto;
+
+      expect(tagA).toEqual(expect.objectContaining({ name: 'TagA', value: 'TagA' }));
+      expect(tagB).toEqual(expect.objectContaining({ name: 'TagB', value: 'TagA/TagB', parentId: tagA.id }));
+      expect(tagC).toEqual(expect.objectContaining({ name: 'TagC', value: 'TagA/TagB/TagC', parentId: tagB.id }));
+      expect(tagD).toEqual(expect.objectContaining({ name: 'TagD', value: 'TagD' }));
     });
   });
 
@@ -166,6 +189,26 @@ describe('/tags', () => {
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual([expect.objectContaining({ name: 'TagD', value: 'TagA/TagB/TagC/TagD' })]);
+    });
+
+    it('should upsert tags in parallel without conflicts', async () => {
+      const [[tag1], [tag2], [tag3], [tag4]] = await Promise.all([
+        upsert(admin.accessToken, ['TagA/TagB/TagC/TagD']),
+        upsert(admin.accessToken, ['TagA/TagB/TagC/TagD']),
+        upsert(admin.accessToken, ['TagA/TagB/TagC/TagD']),
+        upsert(admin.accessToken, ['TagA/TagB/TagC/TagD']),
+      ]);
+
+      const { id, parentId, createdAt } = tag1;
+      for (const tag of [tag1, tag2, tag3, tag4]) {
+        expect(tag).toMatchObject({
+          id,
+          parentId,
+          createdAt,
+          name: 'TagD',
+          value: 'TagA/TagB/TagC/TagD',
+        });
+      }
     });
   });
 
@@ -296,6 +339,7 @@ describe('/tags', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         id: expect.any(String),
+        parentId: tagC.id,
         name: 'TagD',
         value: 'TagA/TagB/TagC/TagD',
         createdAt: expect.any(String),
