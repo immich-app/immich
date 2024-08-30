@@ -533,7 +533,7 @@ export class MetadataService {
       assetId: asset.id,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace ?? null,
-      dateTimeOriginal: dateTimeOriginal,
+      dateTimeOriginal,
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       exifImageHeight: validate(exifTags.ImageHeight),
       exifImageWidth: validate(exifTags.ImageWidth),
@@ -554,7 +554,7 @@ export class MetadataService {
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       profileDescription: exifTags.ProfileDescription || null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
-      timeZone: timeZone,
+      timeZone,
       rating: exifTags.Rating ?? null,
     };
 
