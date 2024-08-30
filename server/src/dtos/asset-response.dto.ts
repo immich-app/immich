@@ -151,7 +151,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
-    resized: false,
+    resized: true,
   };
 }
 
