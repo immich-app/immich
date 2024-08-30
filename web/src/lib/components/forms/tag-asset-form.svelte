@@ -8,6 +8,7 @@
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let onTag: (tagIds: string[]) => void;
   export let onCancel: () => void;
@@ -41,9 +42,11 @@
 <FullScreenModal title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
   <div class="text-sm">
     <p>
-      {$t('tag_not_found_question')}
-      {$t('create')}
-      <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-primary underline">{$t('here')}</a>
+      <FormatMessage key="tag_not_found_question" values={{ here: $t('here') }} let:message>
+        <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-primary underline">
+          {message}
+        </a>
+      </FormatMessage>
     </p>
   </div>
   <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="create-tag-form">
