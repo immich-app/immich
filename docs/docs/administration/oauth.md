@@ -156,7 +156,7 @@ Configuration of OAuth in Immich System Settings
 
 | Setting                      | Value                                                                                                |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Issuer URL                   | `https://accounts.google.com/.well-known/openid-configuration`                                       |
+| Issuer URL                   | `https://accounts.google.com`                                       |
 | Client ID                    | 7\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***vuls.apps.googleusercontent.com                         |
 | Client Secret                | G\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***OO                                                      |
 | Scope                        | openid email profile                                                                                 |
