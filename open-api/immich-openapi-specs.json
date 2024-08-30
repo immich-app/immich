@@ -11585,14 +11585,10 @@
         "properties": {
           "faces": {
             "$ref": "#/components/schemas/SystemConfigFacesDto"
-          },
-          "tags": {
-            "$ref": "#/components/schemas/SystemConfigTagsDto"
           }
         },
         "required": [
-          "faces",
-          "tags"
+          "faces"
         ],
         "type": "object"
       },
@@ -11791,17 +11787,6 @@
           "enabled",
           "hashVerificationEnabled",
           "template"
-        ],
-        "type": "object"
-      },
-      "SystemConfigTagsDto": {
-        "properties": {
-          "import": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "import"
         ],
         "type": "object"
       },

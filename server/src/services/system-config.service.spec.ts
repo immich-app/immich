@@ -78,9 +78,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     faces: {
       import: false,
     },
-    tags: {
-      import: true,
-    },
   },
   machineLearning: {
     enabled: true,

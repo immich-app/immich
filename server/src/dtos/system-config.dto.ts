@@ -380,21 +380,11 @@ class SystemConfigFacesDto {
   import!: boolean;
 }
 
-class SystemConfigTagsDto {
-  @IsBoolean()
-  import!: boolean;
-}
-
 class SystemConfigMetadataDto {
   @Type(() => SystemConfigFacesDto)
   @ValidateNested()
   @IsObject()
   faces!: SystemConfigFacesDto;
-
-  @Type(() => SystemConfigTagsDto)
-  @ValidateNested()
-  @IsObject()
-  tags!: SystemConfigTagsDto;
 }
 
 class SystemConfigServerDto {

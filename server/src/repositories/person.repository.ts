@@ -52,16 +52,16 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async deleteAllFaces({ sourceType }: DeleteAllFacesOptions): Promise<void> {
-    // eslint-disable-next-line unicorn/prefer-ternary
-    if (sourceType === undefined) {
-      await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
-    } else {
+    if (sourceType) {
       await this.assetFaceRepository
         .createQueryBuilder('asset_faces')
         .delete()
         .andWhere('sourceType = :sourceType', { sourceType })
         .execute();
+      return;
     }
+
+    await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
   }
 
   getAllFaces(
@@ -204,6 +204,7 @@ export class PersonRepository implements IPersonRepository {
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
+
     return queryBuilder.getMany();
   }
 
@@ -273,7 +274,7 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
-  create(...entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
+  create(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
     return this.personRepository.save(entities);
   }
 
@@ -297,7 +298,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
-  async update(...entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
+  async update(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
     return await this.personRepository.save(entities);
   }
 

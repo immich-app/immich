@@ -247,7 +247,7 @@ describe(PersonService.name, () => {
 
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).resolves.toEqual(responseDto);
 
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', name: 'Person 1' });
+      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', name: 'Person 1' }]);
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
@@ -264,7 +264,7 @@ describe(PersonService.name, () => {
         isHidden: false,
         updatedAt: expect.any(Date),
       });
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: '1976-06-30' });
+      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', birthDate: '1976-06-30' }]);
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
@@ -277,7 +277,7 @@ describe(PersonService.name, () => {
 
       await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
 
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: false });
+      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', isHidden: false }]);
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
@@ -291,7 +291,7 @@ describe(PersonService.name, () => {
         sut.update(authStub.admin, 'person-1', { featureFaceAssetId: faceStub.face1.assetId }),
       ).resolves.toEqual(responseDto);
 
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', faceAssetId: faceStub.face1.id });
+      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', faceAssetId: faceStub.face1.id }]);
       expect(personMock.getFacesByIds).toHaveBeenCalledWith([
         {
           assetId: faceStub.face1.assetId,
@@ -445,7 +445,7 @@ describe(PersonService.name, () => {
 
       await expect(sut.create(authStub.admin, {})).resolves.toBe(personStub.primaryPerson);
 
-      expect(personMock.create).toHaveBeenCalledWith({ ownerId: authStub.admin.user.id });
+      expect(personMock.create).toHaveBeenCalledWith([{ ownerId: authStub.admin.user.id }]);
     });
   });
 
@@ -848,10 +848,12 @@ describe(PersonService.name, () => {
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
-      expect(personMock.create).toHaveBeenCalledWith({
-        ownerId: faceStub.noPerson1.asset.ownerId,
-        faceAssetId: faceStub.noPerson1.id,
-      });
+      expect(personMock.create).toHaveBeenCalledWith([
+        {
+          ownerId: faceStub.noPerson1.asset.ownerId,
+          faceAssetId: faceStub.noPerson1.id,
+        },
+      ]);
       expect(personMock.reassignFaces).toHaveBeenCalledWith({
         faceIds: [faceStub.noPerson1.id],
         newPersonId: personStub.withName.id,
@@ -977,10 +979,12 @@ describe(PersonService.name, () => {
           processInvalidImages: false,
         },
       );
-      expect(personMock.update).toHaveBeenCalledWith({
-        id: 'person-1',
-        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      });
+      expect(personMock.update).toHaveBeenCalledWith([
+        {
+          id: 'person-1',
+          thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        },
+      ]);
     });
 
     it('should generate a thumbnail without going negative', async () => {
@@ -1112,10 +1116,12 @@ describe(PersonService.name, () => {
         oldPersonId: personStub.primaryPerson.id,
       });
 
-      expect(personMock.update).toHaveBeenCalledWith({
-        id: personStub.randomPerson.id,
-        name: personStub.primaryPerson.name,
-      });
+      expect(personMock.update).toHaveBeenCalledWith([
+        {
+          id: personStub.randomPerson.id,
+          name: personStub.primaryPerson.name,
+        },
+      ]);
 
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });

@@ -7,8 +7,8 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-export interface ImmichTags
-  extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription' | 'RegionInfo'> {
+type TagsWithWrongTypes = 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription' | 'RegionInfo';
+export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
