@@ -42,7 +42,7 @@
 <FullScreenModal title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
   <div class="text-sm">
     <p>
-      <FormatMessage key="tag_not_found_question" values={{ here: $t('here') }} let:message>
+      <FormatMessage key="tag_not_found_question" let:message>
         <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-primary underline">
           {message}
         </a>
