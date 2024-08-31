@@ -419,8 +419,8 @@
     }
   };
 
-  onNavigate(async () => {
-    if (album.assetCount === 0 && !album.albumName) {
+  onNavigate(async ({ to }) => {
+    if (!isAlbumsRoute(to?.route.id) && album.assetCount === 0 && !album.albumName) {
       await deleteAlbum(album);
     }
   });
