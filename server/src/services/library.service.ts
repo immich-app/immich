@@ -339,7 +339,7 @@ export class LibraryService {
     const libraryId = job.id;
 
     const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId: libraryId, withDeleted: true }),
+      this.assetRepository.getAll(pagination, { libraryId, withDeleted: true }),
     );
 
     let assetsFound = false;
@@ -465,7 +465,7 @@ export class LibraryService {
         libraryId: job.id,
         checksum: pathHash,
         originalPath: assetPath,
-        deviceAssetId: deviceAssetId,
+        deviceAssetId,
         deviceId: 'Library Import',
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,

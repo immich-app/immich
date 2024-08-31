@@ -46,7 +46,7 @@ const fixtures = {
 };
 
 const oauthUserWithDefaultQuota = {
-  email: email,
+  email,
   name: ' ',
   oauthId: sub,
   quotaSizeInBytes: 1_073_741_824,
@@ -561,7 +561,7 @@ describe('AuthService', () => {
       );
 
       expect(userMock.create).toHaveBeenCalledWith({
-        email: email,
+        email,
         name: ' ',
         oauthId: sub,
         quotaSizeInBytes: null,
@@ -581,7 +581,7 @@ describe('AuthService', () => {
       );
 
       expect(userMock.create).toHaveBeenCalledWith({
-        email: email,
+        email,
         name: ' ',
         oauthId: sub,
         quotaSizeInBytes: 5_368_709_120,

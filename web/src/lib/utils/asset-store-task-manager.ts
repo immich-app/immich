@@ -350,7 +350,7 @@ class IntersectionTask {
     this.internalTaskManager.queueScrollSensitiveTask({
       task,
       cleanup,
-      componentId: componentId,
+      componentId,
       priority: this.priority,
       taskId: this.intersectedKey,
     });
@@ -367,7 +367,7 @@ class IntersectionTask {
     this.internalTaskManager.queueSeparateTask({
       task,
       cleanup,
-      componentId: componentId,
+      componentId,
       taskId: this.separatedKey,
     });
   }

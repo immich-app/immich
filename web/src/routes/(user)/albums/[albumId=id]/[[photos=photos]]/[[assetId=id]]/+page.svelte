@@ -291,7 +291,7 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count: count } }),
+        message: $t('assets_added_count', { values: { count } }),
       });
 
       await refreshAlbum();
@@ -419,8 +419,8 @@
     }
   };
 
-  onNavigate(async () => {
-    if (album.assetCount === 0 && !album.albumName) {
+  onNavigate(async ({ to }) => {
+    if (!isAlbumsRoute(to?.route.id) && album.assetCount === 0 && !album.albumName) {
       await deleteAlbum(album);
     }
   });
@@ -731,7 +731,10 @@
     {album}
     order={albumOrder}
     user={$user}
-    onChangeOrder={(order) => (albumOrder = order)}
+    onChangeOrder={async (order) => {
+      albumOrder = order;
+      await setModeToView();
+    }}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

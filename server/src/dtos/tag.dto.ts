@@ -45,6 +45,7 @@ export class TagBulkAssetsResponseDto {
 
 export class TagResponseDto {
   id!: string;
+  parentId?: string;
   name!: string;
   value!: string;
   createdAt!: Date;
@@ -55,6 +56,7 @@ export class TagResponseDto {
 export function mapTag(entity: TagEntity): TagResponseDto {
   return {
     id: entity.id,
+    parentId: entity.parentId ?? undefined,
     name: entity.value.split('/').at(-1) as string,
     value: entity.value,
     createdAt: entity.createdAt,

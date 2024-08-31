@@ -115,9 +115,9 @@ describe(TagService.name, () => {
 
   describe('upsert', () => {
     it('should upsert a new tag', async () => {
-      tagMock.create.mockResolvedValue(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
       await expect(sut.upsert(authStub.admin, { tags: ['Parent'] })).resolves.toBeDefined();
-      expect(tagMock.create).toHaveBeenCalledWith({
+      expect(tagMock.upsertValue).toHaveBeenCalledWith({
         value: 'Parent',
         userId: 'admin_id',
         parentId: undefined,
@@ -126,15 +126,15 @@ describe(TagService.name, () => {
 
     it('should upsert a nested tag', async () => {
       tagMock.getByValue.mockResolvedValueOnce(null);
-      tagMock.create.mockResolvedValueOnce(tagStub.parent);
-      tagMock.create.mockResolvedValueOnce(tagStub.child);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
       await expect(sut.upsert(authStub.admin, { tags: ['Parent/Child'] })).resolves.toBeDefined();
-      expect(tagMock.create).toHaveBeenNthCalledWith(1, {
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, {
         value: 'Parent',
         userId: 'admin_id',
-        parentId: undefined,
+        parent: undefined,
       });
-      expect(tagMock.create).toHaveBeenNthCalledWith(2, {
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
         value: 'Parent/Child',
         userId: 'admin_id',
         parent: expect.objectContaining({ id: 'tag-parent' }),

@@ -352,22 +352,21 @@ export class MetadataService {
   }
 
   private async applyTagList(asset: AssetEntity, exifTags: ImmichTags) {
-    const tags: string[] = [];
-
+    const tags: unknown[] = [];
     if (exifTags.TagsList) {
       tags.push(...exifTags.TagsList);
     }
 
     if (exifTags.Keywords) {
       let keywords = exifTags.Keywords;
-      if (typeof keywords === 'string') {
+      if (!Array.isArray(keywords)) {
         keywords = [keywords];
       }
       tags.push(...keywords);
     }
 
     if (tags.length > 0) {
-      const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
+      const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags: tags.map(String) });
       const tagIds = results.map((tag) => tag.id);
       await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds });
     }

@@ -63,6 +63,7 @@ export default [
       '@typescript-eslint/require-await': 'error',
       curly: 2,
       'prettier/prettier': 0,
+      'object-shorthand': ['error', 'always'],
 
       'no-restricted-imports': [
         'error',
