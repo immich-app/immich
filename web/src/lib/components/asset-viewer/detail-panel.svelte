@@ -476,7 +476,7 @@
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
-      <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
+      <a href="{AppRoute.ALBUMS}/{album.id}">
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
