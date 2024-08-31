@@ -20,7 +20,7 @@
   import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+  import { buildTree, getPathParts, joinPaths } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -30,7 +30,7 @@
 
   export let data: PageData;
 
-  $: pathSegments = data.path ? data.path.split('/') : [];
+  $: pathSegments = data.path ? getPathParts(data.path) : [];
   $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
 
   const assetInteractionStore = createAssetInteractionStore();
@@ -45,7 +45,7 @@
   $: tree = buildTree(tags.map((tag) => tag.value));
 
   const handleNavigation = async (tag: string) => {
-    await navigateToView(normalizeTreePath(`${data.path || ''}/${tag}`));
+    await navigateToView(joinPaths(data.path || '', tag));
   };
 
   const getLink = (path: string) => {

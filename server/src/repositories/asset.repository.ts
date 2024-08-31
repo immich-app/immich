@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFolderEntity } from 'src/entities/asset-folder.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -44,6 +45,7 @@ import {
   Not,
   Repository,
 } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
@@ -55,12 +57,20 @@ const dateTrunc = (options: TimeBucketOptions) =>
     truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
+const coalesceFolderId = () => `coalesce((select id from folder limit 1), (
+  select asset_folders.id
+  from asset_folders
+  where file_parent(:path) = asset_folders.path
+  limit 1
+))`;
+
 @Instrumentation()
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
     @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
+    @InjectRepository(AssetFolderEntity) private folderRepository: Repository<AssetFolderEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
@@ -74,8 +84,28 @@ export class AssetRepository implements IAssetRepository {
     await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
   }
 
-  create(asset: AssetCreate): Promise<AssetEntity> {
-    return this.repository.save(asset);
+  async create(asset: AssetCreate): Promise<AssetEntity> {
+    const cte = this.repository.manager
+      .createQueryBuilder()
+      .insert()
+      .into(AssetFolderEntity)
+      .values({ path: () => 'file_parent(:path)' })
+      .orIgnore()
+      .returning('id');
+
+    const values: QueryDeepPartialEntity<AssetEntity> = asset;
+    values.folderId = coalesceFolderId; // use newly inserted folder id or query for existing folder id
+
+    const { raw } = await this.repository
+      .createQueryBuilder('asset')
+      .insert()
+      .values(values)
+      .addCommonTableExpression(cte, 'folder')
+      .setParameter('path', values.originalPath)
+      .returning('*')
+      .execute();
+
+    return raw[0];
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })
@@ -841,44 +871,32 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getUniqueOriginalPaths(userId: string): Promise<string[]> {
-    const builder = this.getBuilder({
-      userIds: [userId],
-      exifInfo: false,
-      withStacked: false,
-      isArchived: false,
-      isTrashed: false,
-    });
-
-    const results = await builder
-      .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
+    const folders: { path: string }[] = await this.repository
+      .createQueryBuilder('asset')
+      .select('path')
+      .whereExists(
+        this.repository
+          .createQueryBuilder()
+          .select('1')
+          .where('ownerId = :userId', { userId })
+          .andWhere('isVisible = true')
+          .andWhere('deletedAt is null')
+          .andWhere('folderId = asset_folders.id'),
+      )
       .getRawMany();
 
-    return results.map((row: { directoryPath: string }) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
+    return folders.map((row) => row.path);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
-    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
-
-    const builder = this.getBuilder({
-      userIds: [userId],
-      exifInfo: true,
-      withStacked: false,
-      isArchived: false,
-      isTrashed: false,
-    });
-
-    const assets = await builder
-      .where('asset.ownerId = :userId', { userId })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('asset.originalPath LIKE :likePath', { likePath: `%${normalizedPath}/%` }).andWhere(
-            'asset.originalPath NOT LIKE :notLikePath',
-            { notLikePath: `%${normalizedPath}/%/%` },
-          );
-        }),
-      )
-      .orderBy(String.raw`regexp_replace(asset.originalPath, '.*/(.+)', '\1')`, 'ASC')
+  async getAssetsByOriginalPath(userId: string, path: string): Promise<AssetEntity[]> {
+    const assets = await this.repository
+      .createQueryBuilder('asset')
+      .innerJoin('asset.folder', 'folder', 'asset."folderId" = folder.id and folder.path = :path', { path })
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .andWhere('asset.isVisible = true')
+      .andWhere('asset.deletedAt is null')
+      .andWhere('asset.ownerId = :userId', { userId })
       .getMany();
 
     return assets;

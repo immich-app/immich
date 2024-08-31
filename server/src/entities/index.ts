@@ -25,6 +25,7 @@ import { SystemMetadataEntity } from 'src/entities/system-metadata.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AssetFolderEntity } from 'src/entities/asset-folder.entity';
 
 export const entities = [
   ActivityEntity,
@@ -34,6 +35,7 @@ export const entities = [
   AssetEntity,
   AssetFaceEntity,
   AssetFileEntity,
+  AssetFolderEntity,
   AssetJobStatusEntity,
   AuditEntity,
   ExifEntity,

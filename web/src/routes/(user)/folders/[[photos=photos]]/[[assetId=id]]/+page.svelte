@@ -9,7 +9,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
   import { foldersStore } from '$lib/stores/folders.store';
-  import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+  import { getPathParts, joinPaths } from '$lib/utils/tree-utils';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -22,8 +22,8 @@
   let selectedAssets: Set<AssetResponseDto> = new Set();
   const viewport: Viewport = { width: 0, height: 0 };
 
-  $: pathSegments = data.path ? data.path.split('/') : [];
-  $: tree = buildTree($foldersStore?.uniquePaths || []);
+  $: pathSegments = data.path ? getPathParts(data.path) : [];
+  $: tree = $foldersStore?.folders || {};
   $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
 
   onMount(async () => {
@@ -31,7 +31,7 @@
   });
 
   const handleNavigation = async (folderName: string) => {
-    await navigateToView(normalizeTreePath(`${data.path || ''}/${folderName}`));
+    await navigateToView(joinPaths(data.path, folderName));
   };
 
   const getLink = (path: string) => {

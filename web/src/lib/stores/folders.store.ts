@@ -1,3 +1,4 @@
+import { buildTree, type RecursiveObject } from '$lib/utils/tree-utils';
 import {
   getAssetsByOriginalPath,
   getUniqueOriginalPaths,
@@ -14,48 +15,43 @@ type AssetCache = {
 
 type FoldersStore = {
   uniquePaths: string[] | null;
+  folders: RecursiveObject | null;
   assets: AssetCache;
 };
 
 function createFoldersStore() {
-  const initialState: FoldersStore = {
-    uniquePaths: null,
-    assets: {},
-  };
-
-  const { subscribe, set, update } = writable(initialState);
+  const { subscribe, set, update } = writable({ uniquePaths: null, folders: null, assets: {} } as FoldersStore);
 
   async function fetchUniquePaths() {
-    const state = get(foldersStore);
+    let state = get(foldersStore);
 
-    if (state.uniquePaths !== null) {
-      return;
+    if (state.folders === null) {
+      const uniquePaths = await getUniqueOriginalPaths();
+      if (uniquePaths) {
+        state = { ...state, folders: buildTree(uniquePaths) };
+        update(() => state);
+      }
     }
 
-    const uniquePaths = await getUniqueOriginalPaths();
-    if (uniquePaths) {
-      update((state) => ({ ...state, uniquePaths }));
-    }
+    return state;
   }
 
   async function fetchAssetsByPath(path: string) {
     const state = get(foldersStore);
 
-    if (state.assets[path]) {
-      return;
+    if (!state.assets[path]) {
+      const assets = await getAssetsByOriginalPath({ path });
+      if (assets) {
+        state.assets[path] = assets;
+        update(() => state);
+      }
     }
 
-    const assets = await getAssetsByOriginalPath({ path });
-    if (assets) {
-      update((state) => ({
-        ...state,
-        assets: { ...state.assets, [path]: assets },
-      }));
-    }
+    return state;
   }
 
   function clearCache() {
-    set(initialState);
+    set({ uniquePaths: null, folders: null, assets: {} });
   }
 
   return {

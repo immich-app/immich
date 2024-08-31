@@ -26,6 +26,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { AssetFolderEntity } from 'src/entities/asset-folder.entity';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
@@ -75,6 +76,13 @@ export class AssetEntity {
 
   @OneToMany(() => AssetFileEntity, (assetFile) => assetFile.asset)
   files!: AssetFileEntity[];
+
+  @Index('idx_assets_folder_id')
+  @Column({ select: false })
+  folderId?: string;
+
+  @ManyToOne(() => AssetFolderEntity, (assetFolder) => assetFolder.asset, { onUpdate: 'CASCADE' })
+  folder?: AssetFolderEntity;
 
   @Column({ type: 'bytea', nullable: true })
   thumbhash!: Buffer | null;

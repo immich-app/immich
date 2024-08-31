@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
-  import { normalizeTreePath, type RecursiveObject } from '$lib/utils/tree-utils';
+  import { isLeaf, joinPaths, type RecursiveObject } from '$lib/utils/tree-utils';
   import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 
   export let tree: RecursiveObject;
@@ -12,7 +12,7 @@
   export let getLink: (path: string) => string;
   export let getColor: (path: string) => string | undefined;
 
-  $: path = normalizeTreePath(`${parent}/${value}`);
+  $: path = joinPaths(parent, value);
   $: isActive = active.startsWith(path);
   $: isOpen = isActive;
   $: isTarget = active === path;
@@ -27,7 +27,7 @@
   <button
     type="button"
     on:click|preventDefault={() => (isOpen = !isOpen)}
-    class={Object.values(tree).length === 0 ? 'invisible' : ''}
+    class={isLeaf(tree) ? 'invisible' : ''}
   >
     <Icon path={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size={20} />
   </button>
