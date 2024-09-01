@@ -27,14 +27,23 @@
     const url = URL.createObjectURL(data);
     return url;
   };
+
+  const originalImageUrl = asset.type === AssetTypeEnum.Image ? getAssetOriginalUrl(asset.id) : null;
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <!-- the photo sphere viewer is quite large, so lazy load it in parallel with loading the data -->
-  {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs])}
+  {#await Promise.all( [loadAssetData(), originalImageUrl, import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs], )}
     <LoadingSpinner />
-  {:then [data, module, adapter, plugins, navbar]}
-    <svelte:component this={module.default} panorama={data} plugins={plugins ?? undefined} {navbar} {adapter} />
+  {:then [data, originalImageUrl, module, adapter, plugins, navbar]}
+    <svelte:component
+      this={module.default}
+      panorama={data}
+      plugins={plugins ?? undefined}
+      {navbar}
+      {adapter}
+      {originalImageUrl}
+    />
   {:catch}
     {$t('errors.failed_to_load_asset')}
   {/await}
