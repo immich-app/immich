@@ -36,7 +36,6 @@
 
     /** Group by year */
     [PlacesGroupBy.Country]: (places): PlacesGroup[] => {
-      // item.exifInfo?.city
       const unknownCountry = $t('unknown_country');
 
       const groupedByCountry = groupBy(places, (place) => {

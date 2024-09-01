@@ -31,7 +31,7 @@
         class="inline-block -mt-2.5 transition-all duration-[250ms] {iconRotation}"
       />
       <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
-      <span class="ml-1.5">({$t('places', { values: { count: places.length } })})</span>
+      <span class="ml-1.5">({$t('places_count', { values: { count: places.length } })})</span>
     </button>
     <hr class="dark:border-immich-dark-gray" />
   </div>
