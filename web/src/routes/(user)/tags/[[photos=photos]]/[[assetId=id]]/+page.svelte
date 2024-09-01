@@ -22,10 +22,11 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { mdiChevronRight, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
 
   export let data: PageData;
 
@@ -47,13 +48,11 @@
     await navigateToView(normalizeTreePath(`${data.path || ''}/${tag}`));
   };
 
-  const handleBreadcrumbNavigation = async (targetPath: string) => {
-    await navigateToView(targetPath);
-  };
-
   const getLink = (path: string) => {
     const url = new URL(AppRoute.TAGS, window.location.href);
-    url.searchParams.set(QueryParameter.PATH, path);
+    if (path) {
+      url.searchParams.set(QueryParameter.PATH, path);
+    }
     return url.href;
   };
 
@@ -149,14 +148,13 @@
       </div>
     </LinkButton>
 
-    <LinkButton on:click={handleEdit}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiPencil} size="18" />
-        <p class="hidden md:block">{$t('edit_tag')}</p>
-      </div>
-    </LinkButton>
-
     {#if pathSegments.length > 0 && tag}
+      <LinkButton on:click={handleEdit}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiPencil} size="18" />
+          <p class="hidden md:block">{$t('edit_tag')}</p>
+        </div>
+      </LinkButton>
       <LinkButton on:click={handleDelete}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiTrashCanOutline} size="18" />
@@ -166,27 +164,7 @@
     {/if}
   </section>
 
-  <section
-    class="flex place-items-center gap-2 mt-2 text-immich-primary dark:text-immich-dark-primary rounded-2xl bg-gray-50 dark:bg-immich-dark-gray/50 w-full py-2 px-4 border border-gray-100 dark:border-gray-900"
-  >
-    <a href={`${AppRoute.TAGS}`} title={$t('to_root')}>
-      <Icon path={mdiTagMultiple} class="text-immich-primary dark:text-immich-dark-primary mr-2" size={28} />
-    </a>
-    {#each pathSegments as segment, index}
-      <button
-        class="text-sm font-mono underline hover:font-semibold"
-        on:click={() => handleBreadcrumbNavigation(pathSegments.slice(0, index + 1).join('/'))}
-        type="button"
-      >
-        {segment}
-      </button>
-      <p class="text-gray-500">
-        {#if index < pathSegments.length - 1}
-          <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} />
-        {/if}
-      </p>
-    {/each}
-  </section>
+  <Breadcrumbs {pathSegments} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
   <section class="mt-2 h-full">
     {#key $page.url.href}
