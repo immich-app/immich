@@ -51,6 +51,7 @@ export class MicroservicesService {
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.CLEAN_OLD_SESSION_TOKENS]: () => this.sessionService.handleCleanup(),
+      [JobName.CLEAN_FOLDER_TABLE]: () => this.assetService.handleCleanupFolders(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
       [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),

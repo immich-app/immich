@@ -870,19 +870,22 @@ export class AssetRepository implements IAssetRepository {
     return builder.getMany();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getUniqueOriginalPaths(userId: string): Promise<string[]> {
-    const folders: { path: string }[] = await this.repository
-      .createQueryBuilder('asset')
+    const folders: { path: string }[] = await this.folderRepository
+      .createQueryBuilder('folder')
       .select('path')
       .whereExists(
         this.repository
           .createQueryBuilder()
           .select('1')
-          .where('ownerId = :userId', { userId })
-          .andWhere('isVisible = true')
-          .andWhere('deletedAt is null')
-          .andWhere('folderId = asset_folders.id'),
+          .where('"ownerId" = :userId', { userId })
+          .andWhere('"isVisible" = true')
+          .andWhere('"isArchived" = false')
+          .andWhere('"deletedAt" is null')
+          .andWhere('"folderId" = folder.id'),
       )
+      .orderBy('path')
       .getRawMany();
 
     return folders.map((row) => row.path);
@@ -895,11 +898,24 @@ export class AssetRepository implements IAssetRepository {
       .innerJoin('asset.folder', 'folder', 'asset."folderId" = folder.id and folder.path = :path', { path })
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
       .andWhere('asset.isVisible = true')
+      .andWhere('asset.isArchived = false')
       .andWhere('asset.deletedAt is null')
       .andWhere('asset.ownerId = :userId', { userId })
+      .orderBy('asset.originalFileName')
       .getMany();
 
     return assets;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async removeEmptyFolders(): Promise<void> {
+    await this.repository.manager.query(`
+      delete from asset_folders
+      where not exists(
+        select 1
+        from assets
+        where "folderId" = asset_folders.id
+      )`);
   }
 
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })

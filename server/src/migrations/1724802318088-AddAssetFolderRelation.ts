@@ -21,7 +21,11 @@ export class AddAssetFolderRelation1724802318088 implements MigrationInterface {
             path text not null collate numeric
         )`);
 
-    // so postgres chooses the right plan
+    await queryRunner.query(`drop index "IDX_4d66e76dada1ca180f67a205dc"`); // unused index on "originalFileName"
+
+    await queryRunner.query(`alter table assets alter column "originalFileName" set data type varchar collate numeric`);
+
+    // to make sure postgres chooses the right plan
     await queryRunner.query(`alter table asset_folders alter column path set statistics 500`);
 
     await queryRunner.query(`
@@ -42,9 +46,11 @@ export class AddAssetFolderRelation1724802318088 implements MigrationInterface {
         from inserted
         where file_parent("originalPath") = inserted.path`);
 
+    await queryRunner.query(`alter table assets alter column "folderId" set not null`);
+
     await queryRunner.query(`create unique index idx_asset_folders_path on asset_folders (path collate numeric)`);
 
-    await queryRunner.query(`create index idx_assets_folder_id on assets ("folderId")`);
+    await queryRunner.query(`create index idx_assets_folder_id_originalfilename on assets ("folderId", "originalFileName" collate numeric)`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

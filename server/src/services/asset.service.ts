@@ -318,6 +318,11 @@ export class AssetService {
     await this.jobRepository.queueAll(jobs);
   }
 
+  async handleCleanupFolders() {
+    await this.assetRepository.removeEmptyFolders();
+    return JobStatus.SUCCESS;
+  }
+
   private async updateMetadata(dto: ISidecarWriteJob) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
     const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);

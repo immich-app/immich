@@ -1132,6 +1132,30 @@ WHERE
   AND "asset"."ownerId" IN ($1)
   AND "asset"."updatedAt" > $2
 
+-- AssetRepository.getUniqueOriginalPaths
+SELECT
+  path
+FROM
+  "asset_folders" "folder"
+WHERE
+  EXISTS (
+    SELECT
+      1
+    FROM
+      "assets" "AssetEntity"
+    WHERE
+      (
+        "ownerId" = $1
+        AND "isVisible" = true
+        AND "isArchived" = false
+        AND "deletedAt" is null
+        AND "folderId" = "folder"."id"
+      )
+      AND ("AssetEntity"."deletedAt" IS NULL)
+  )
+ORDER BY
+  path ASC
+
 -- AssetRepository.getAssetsByOriginalPath
 SELECT
   "asset"."id" AS "asset_id",
@@ -1189,51 +1213,37 @@ SELECT
   "exifInfo"."colorspace" AS "exifInfo_colorspace",
   "exifInfo"."bitsPerSample" AS "exifInfo_bitsPerSample",
   "exifInfo"."rating" AS "exifInfo_rating",
-  "exifInfo"."fps" AS "exifInfo_fps",
-  "stack"."id" AS "stack_id",
-  "stack"."ownerId" AS "stack_ownerId",
-  "stack"."primaryAssetId" AS "stack_primaryAssetId",
-  "stackedAssets"."id" AS "stackedAssets_id",
-  "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
-  "stackedAssets"."ownerId" AS "stackedAssets_ownerId",
-  "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
-  "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
-  "stackedAssets"."type" AS "stackedAssets_type",
-  "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-  "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
-  "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
-  "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
-  "stackedAssets"."updatedAt" AS "stackedAssets_updatedAt",
-  "stackedAssets"."deletedAt" AS "stackedAssets_deletedAt",
-  "stackedAssets"."fileCreatedAt" AS "stackedAssets_fileCreatedAt",
-  "stackedAssets"."localDateTime" AS "stackedAssets_localDateTime",
-  "stackedAssets"."fileModifiedAt" AS "stackedAssets_fileModifiedAt",
-  "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
-  "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
-  "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
-  "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
-  "stackedAssets"."checksum" AS "stackedAssets_checksum",
-  "stackedAssets"."duration" AS "stackedAssets_duration",
-  "stackedAssets"."isVisible" AS "stackedAssets_isVisible",
-  "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
-  "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
-  "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
-  "stackedAssets"."stackId" AS "stackedAssets_stackId",
-  "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
+  "exifInfo"."fps" AS "exifInfo_fps"
 FROM
   "assets" "asset"
-  LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
-  LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
-  LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
-  AND ("stackedAssets"."deletedAt" IS NULL)
-WHERE
-  "asset"."ownerId" = $1
+  INNER JOIN "asset_folders" "folder" ON "folder"."id" = "asset"."folderId"
   AND (
-    "asset"."originalPath" LIKE $2
-    AND "asset"."originalPath" NOT LIKE $3
+    asset."folderId" = "folder"."id"
+    and "folder"."path" = $1
   )
+  LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
+WHERE
+  (
+    "asset"."isVisible" = true
+    AND "asset"."isArchived" = false
+    AND "asset"."deletedAt" is null
+    AND "asset"."ownerId" = $2
+  )
+  AND ("asset"."deletedAt" IS NULL)
 ORDER BY
-  regexp_replace("asset"."originalPath", '.*/(.+)', '\1') ASC
+  "asset"."originalFileName" ASC
+
+-- AssetRepository.removeEmptyFolders
+delete from asset_folders
+where
+  not exists (
+    select
+      1
+    from
+      assets
+    where
+      "folderId" = asset_folders.id
+  )
 
 -- AssetRepository.upsertFile
 INSERT INTO
