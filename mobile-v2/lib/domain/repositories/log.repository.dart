@@ -13,8 +13,8 @@ class LogDriftRepository implements ILogRepository {
   const LogDriftRepository(this.db);
 
   @override
-  Future<List<LogMessage>> fetchLogs() async {
-    return await db.managers.logs.map((l) => l.toModel()).get();
+  Future<List<LogMessage>> fetchAll() async {
+    return await db.managers.logs.map(_toModel).get();
   }
 
   @override
@@ -82,15 +82,13 @@ class LogDriftRepository implements ILogRepository {
   }
 }
 
-extension _LogToLogMessage on Log {
-  LogMessage toModel() {
-    return LogMessage(
-      content: content,
-      createdAt: createdAt,
-      level: level,
-      error: error,
-      logger: logger,
-      stack: stack,
-    );
-  }
+LogMessage _toModel(Log log) {
+  return LogMessage(
+    content: log.content,
+    createdAt: log.createdAt,
+    level: log.level,
+    error: log.error,
+    logger: log.logger,
+    stack: log.stack,
+  );
 }

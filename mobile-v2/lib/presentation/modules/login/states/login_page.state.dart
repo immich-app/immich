@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
+import 'package:immich_mobile/domain/services/sync.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/modules/common/states/server_info/server_feature_config.state.dart';
@@ -65,6 +66,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
 
       di<IStoreRepository>().set(StoreKey.serverEndpoint, url);
       ServiceLocator.registerPostValidationServices(url);
+      ServiceLocator.registerPostGlobalStates();
 
       // Fetch server features
       await di<ServerFeatureConfigCubit>().getFeatures();
@@ -132,7 +134,9 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
 
     // Register user
     ServiceLocator.registerCurrentUser(user);
-    await di<IUserRepository>().insertUser(user);
+    await di<IUserRepository>().add(user);
+    // Sync assets in background
+    unawaited(di<SyncService>().doFullSyncForUserDrift(user));
 
     emit(state.copyWith(
       isValidationInProgress: false,

@@ -27,6 +27,7 @@ class LogManager {
       debugPrint('[${record.level.name}] [${record.time}] ${record.message}');
       if (record.error != null && record.stackTrace != null) {
         debugPrint('${record.error}');
+        debugPrintStack(stackTrace: record.stackTrace);
       }
       return true;
     }());

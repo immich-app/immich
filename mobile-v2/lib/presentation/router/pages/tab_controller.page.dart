@@ -23,7 +23,7 @@ class TabControllerPage extends StatelessWidget {
         // Pop-back to photos tab or if already in photos tab, close the app
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
-          onPopInvoked: (didPop) =>
+          onPopInvokedWithResult: (didPop, _) =>
               !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: _TabControllerAdaptiveScaffold(
             body: (ctxx) => child,

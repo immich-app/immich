@@ -4,5 +4,8 @@ import 'package:immich_mobile/domain/entities/asset.entity.dart';
 class LocalAsset extends Asset {
   const LocalAsset();
 
-  TextColumn get localId => text().unique()();
+  TextColumn get localId => text()();
+
+  @override
+  Set<Column> get primaryKey => {localId};
 }

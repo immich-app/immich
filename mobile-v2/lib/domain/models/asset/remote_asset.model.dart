@@ -1,13 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/domain/models/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/asset.model.dart';
+import 'package:immich_mobile/utils/extensions/string.extension.dart';
+import 'package:openapi/api.dart';
 
 @immutable
 class RemoteAsset extends Asset {
   final String remoteId;
+  final String? livePhotoVideoId;
 
   const RemoteAsset({
     required this.remoteId,
-    required super.id,
     required super.name,
     required super.checksum,
     required super.height,
@@ -16,23 +18,22 @@ class RemoteAsset extends Asset {
     required super.createdTime,
     required super.modifiedTime,
     required super.duration,
-    required super.isLivePhoto,
+    this.livePhotoVideoId,
   });
 
   @override
   String toString() => """
 {
-  "id": $id,
   "remoteId": "$remoteId",
   "name": "$name",
   "checksum": "$checksum",
-  "height": $height,
-  "width": $width,
+  "height": ${height ?? "-"},
+  "width": ${width ?? "-"},
   "type": "$type",
   "createdTime": "$createdTime",
   "modifiedTime": "$modifiedTime",
   "duration": "$duration",
-  "isLivePhoto": "$isLivePhoto",
+  "livePhotoVideoId": "${livePhotoVideoId ?? "-"}",
 }""";
 
   @override
@@ -47,7 +48,6 @@ class RemoteAsset extends Asset {
 
   @override
   RemoteAsset copyWith({
-    int? id,
     String? remoteId,
     String? name,
     String? checksum,
@@ -57,10 +57,9 @@ class RemoteAsset extends Asset {
     DateTime? createdTime,
     DateTime? modifiedTime,
     int? duration,
-    bool? isLivePhoto,
+    String? livePhotoVideoId,
   }) {
     return RemoteAsset(
-      id: id ?? this.id,
       remoteId: remoteId ?? this.remoteId,
       name: name ?? this.name,
       checksum: checksum ?? this.checksum,
@@ -70,7 +69,27 @@ class RemoteAsset extends Asset {
       createdTime: createdTime ?? this.createdTime,
       modifiedTime: modifiedTime ?? this.modifiedTime,
       duration: duration ?? this.duration,
-      isLivePhoto: isLivePhoto ?? this.isLivePhoto,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
     );
   }
+
+  factory RemoteAsset.fromDto(AssetResponseDto dto) => RemoteAsset(
+        remoteId: dto.id,
+        createdTime: dto.fileCreatedAt,
+        duration: dto.duration.tryParseInt() ?? 0,
+        height: dto.exifInfo?.exifImageHeight?.toInt(),
+        width: dto.exifInfo?.exifImageWidth?.toInt(),
+        checksum: dto.checksum,
+        name: dto.originalFileName,
+        livePhotoVideoId: dto.livePhotoVideoId,
+        modifiedTime: dto.fileModifiedAt,
+        type: _toAssetType(dto.type),
+      );
 }
+
+AssetType _toAssetType(AssetTypeEnum type) => switch (type) {
+      AssetTypeEnum.AUDIO => AssetType.audio,
+      AssetTypeEnum.IMAGE => AssetType.image,
+      AssetTypeEnum.VIDEO => AssetType.video,
+      _ => AssetType.other,
+    };

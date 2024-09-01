@@ -20,6 +20,7 @@ dependencies:
   flutter_bloc: ^8.1.6
   # Database
   drift: ^2.20.0
+  drift_flutter: ^0.2.0
   sqlite3: ^2.4.6
   sqlite3_flutter_libs: ^0.5.24
   # Network

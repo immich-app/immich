@@ -1,15 +1,18 @@
 import 'package:get_it/get_it.dart';
 import 'package:immich_mobile/domain/interfaces/log.interface.dart';
+import 'package:immich_mobile/domain/interfaces/remote_asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/domain/repositories/log.repository.dart';
+import 'package:immich_mobile/domain/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/domain/repositories/store.repository.dart';
 import 'package:immich_mobile/domain/repositories/user.repository.dart';
 import 'package:immich_mobile/domain/services/app_setting.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/domain/services/server_info.service.dart';
+import 'package:immich_mobile/domain/services/sync.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/presentation/modules/common/states/current_user.state.dart';
 import 'package:immich_mobile/presentation/modules/common/states/server_info/server_feature_config.state.dart';
@@ -23,41 +26,49 @@ class ServiceLocator {
   const ServiceLocator._internal();
 
   static void configureServices() {
-    // Register DB
     di.registerSingleton<DriftDatabaseRepository>(DriftDatabaseRepository());
-    _registerPreValidationServices();
+    _registerRepositories();
+    _registerPreGlobalStates();
   }
 
-  static void _registerPreValidationServices() {
-    // ====== DOMAIN
+  static void configureServicesForIsolate({
+    required DriftDatabaseRepository database,
+  }) {
+    di.registerSingleton<DriftDatabaseRepository>(database);
+    _registerRepositories();
+  }
 
-    // Init store
+  static void _registerRepositories() {
+    /// Repositories
     di.registerFactory<IStoreRepository>(() => StoreDriftRepository(di()));
-    // Logs
     di.registerFactory<ILogRepository>(() => LogDriftRepository(di()));
-    // App Settings
     di.registerFactory<AppSettingService>(() => AppSettingService(di()));
-    // User Repo
     di.registerFactory<IUserRepository>(() => UserDriftRepository(di()));
-    // Login Service
+    di.registerFactory<IRemoteAssetRepository>(
+      () => RemoteAssetDriftRepository(di()),
+    );
+
+    /// Services
     di.registerFactory<LoginService>(() => const LoginService());
+  }
 
-    // ====== PRESENTATION
-
-    // App router
+  static void _registerPreGlobalStates() {
     di.registerSingleton<AppRouter>(AppRouter());
-    // Global states
     di.registerLazySingleton<AppThemeCubit>(() => AppThemeCubit(di()));
   }
 
   static void registerPostValidationServices(String endpoint) {
     di.registerSingleton<ImmichApiClient>(ImmichApiClient(endpoint: endpoint));
+    di.registerFactory<UserService>(() => UserService(
+          di<ImmichApiClient>().getUsersApi(),
+        ));
+    di.registerFactory<ServerInfoService>(() => ServerInfoService(
+          di<ImmichApiClient>().getServerApi(),
+        ));
+    di.registerFactory<SyncService>(() => SyncService(di(), di()));
+  }
 
-    // ====== DOMAIN
-    di.registerFactory<UserService>(() => UserService(di()));
-    di.registerFactory<ServerInfoService>(() => ServerInfoService(di()));
-
-    // ====== PRESENTATION
+  static void registerPostGlobalStates() {
     di.registerLazySingleton<ServerFeatureConfigCubit>(
       () => ServerFeatureConfigCubit(di()),
     );

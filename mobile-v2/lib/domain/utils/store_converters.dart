@@ -50,7 +50,7 @@ class StoreUserConverter extends IStoreConverter<User, String> {
 
   @override
   Future<User?> fromPrimitive(String value) async {
-    return await di<IUserRepository>().getUser(value);
+    return await di<IUserRepository>().fetch(value);
   }
 
   @override

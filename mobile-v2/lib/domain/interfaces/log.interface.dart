@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 
 abstract class ILogRepository {
   /// Fetches all logs
-  FutureOr<List<LogMessage>> fetchLogs();
+  FutureOr<List<LogMessage>> fetchAll();
 
   /// Inserts a new log into the DB
   FutureOr<bool> add(LogMessage log);

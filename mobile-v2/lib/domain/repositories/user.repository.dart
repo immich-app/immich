@@ -13,15 +13,15 @@ class UserDriftRepository with LogContext implements IUserRepository {
   const UserDriftRepository(this.db);
 
   @override
-  FutureOr<User?> getUser(String userId) async {
+  FutureOr<User?> fetch(String userId) async {
     return await db.managers.user
         .filter((f) => f.id.equals(userId))
-        .map((u) => u.toModel())
+        .map(_toModel)
         .getSingleOrNull();
   }
 
   @override
-  FutureOr<bool> insertUser(User user) async {
+  FutureOr<bool> add(User user) async {
     try {
       await db.into(db.user).insertOnConflictUpdate(
             UserCompanion.insert(
@@ -46,20 +46,18 @@ class UserDriftRepository with LogContext implements IUserRepository {
   }
 }
 
-extension _UserDataToUser on UserData {
-  User toModel() {
-    return User(
-      id: id,
-      email: email,
-      avatarColor: avatarColor,
-      inTimeline: inTimeline,
-      isAdmin: isAdmin,
-      memoryEnabled: memoryEnabled,
-      name: name,
-      profileImagePath: profileImagePath,
-      quotaSizeInBytes: quotaSizeInBytes,
-      quotaUsageInBytes: quotaUsageInBytes,
-      updatedAt: updatedAt,
-    );
-  }
+User _toModel(UserData user) {
+  return User(
+    id: user.id,
+    email: user.email,
+    avatarColor: user.avatarColor,
+    inTimeline: user.inTimeline,
+    isAdmin: user.isAdmin,
+    memoryEnabled: user.memoryEnabled,
+    name: user.name,
+    profileImagePath: user.profileImagePath,
+    quotaSizeInBytes: user.quotaSizeInBytes,
+    quotaUsageInBytes: user.quotaUsageInBytes,
+    updatedAt: user.updatedAt,
+  );
 }

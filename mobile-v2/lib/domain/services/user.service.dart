@@ -1,14 +1,11 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 import 'package:openapi/api.dart';
 
 class UserService with LogContext {
-  final ImmichApiClient _api;
+  final UsersApi _userApi;
 
-  UsersApi get _userApi => _api.getUsersApi();
-
-  UserService(this._api);
+  const UserService(this._userApi);
 
   Future<User?> getMyUser() async {
     try {
@@ -21,7 +18,7 @@ class UserService with LogContext {
       final preferencesDto = await _userApi.getMyPreferences();
       return User.fromAdminDto(userDto, preferencesDto);
     } catch (e, s) {
-      log.severe("Error while fetching server features", e, s);
+      log.severe("Error while fetching my user", e, s);
     }
     return null;
   }

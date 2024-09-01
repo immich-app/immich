@@ -1,15 +1,12 @@
 import 'package:immich_mobile/domain/models/server-info/server_config.model.dart';
 import 'package:immich_mobile/domain/models/server-info/server_features.model.dart';
-import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 import 'package:openapi/api.dart';
 
 class ServerInfoService with LogContext {
-  final ImmichApiClient _api;
+  final ServerApi _serverInfo;
 
-  ServerApi get _serverInfo => _api.getServerApi();
-
-  ServerInfoService(this._api);
+  const ServerInfoService(this._serverInfo);
 
   Future<ServerFeatures?> getServerFeatures() async {
     try {

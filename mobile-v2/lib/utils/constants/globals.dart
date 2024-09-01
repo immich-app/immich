@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 /// Log messages stored in the DB
 const int kLogMessageLimit = 500;
 
+/// Chunked asset sync size
+const int kFullSyncChunkSize = 10000;
+
 /// Headers
 // Auth header
 const String kImmichHeaderAuthKey = "x-immich-user-token";

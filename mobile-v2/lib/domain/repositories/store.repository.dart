@@ -63,7 +63,7 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
   @override
   FutureOr<void> clearStore() async {
     await db.managers.store.delete();
-    ;
+
   }
 
   FutureOr<T?> _getValueFromStoreData<T, U>(

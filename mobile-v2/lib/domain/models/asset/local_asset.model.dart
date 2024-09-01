@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/domain/models/asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/asset.model.dart';
 
 @immutable
 class LocalAsset extends Asset {
@@ -7,7 +7,6 @@ class LocalAsset extends Asset {
 
   const LocalAsset({
     required this.localId,
-    required super.id,
     required super.name,
     required super.checksum,
     required super.height,
@@ -16,23 +15,20 @@ class LocalAsset extends Asset {
     required super.createdTime,
     required super.modifiedTime,
     required super.duration,
-    required super.isLivePhoto,
   });
 
   @override
   String toString() => """
 {
-  "id": $id,
   "localId": "$localId",
   "name": "$name",
   "checksum": "$checksum",
-  "height": $height,
-  "width": $width,
+  "height": ${height ?? "-"},
+  "width": ${width ?? "-"},
   "type": "$type",
   "createdTime": "$createdTime",
   "modifiedTime": "$modifiedTime",
   "duration": "$duration",
-  "isLivePhoto": "$isLivePhoto",
 }""";
 
   @override
@@ -47,7 +43,6 @@ class LocalAsset extends Asset {
 
   @override
   LocalAsset copyWith({
-    int? id,
     String? localId,
     String? name,
     String? checksum,
@@ -57,10 +52,8 @@ class LocalAsset extends Asset {
     DateTime? createdTime,
     DateTime? modifiedTime,
     int? duration,
-    bool? isLivePhoto,
   }) {
     return LocalAsset(
-      id: id ?? this.id,
       localId: localId ?? this.localId,
       name: name ?? this.name,
       checksum: checksum ?? this.checksum,
@@ -70,7 +63,6 @@ class LocalAsset extends Asset {
       createdTime: createdTime ?? this.createdTime,
       modifiedTime: modifiedTime ?? this.modifiedTime,
       duration: duration ?? this.duration,
-      isLivePhoto: isLivePhoto ?? this.isLivePhoto,
     );
   }
 }
