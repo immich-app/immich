@@ -372,7 +372,21 @@ export const utils = {
     writeFileSync(path, makeRandomImage());
   },
 
+  createDirectory: (path: string) => {
+    if (!existsSync(dirname(path))) {
+      mkdirSync(dirname(path), { recursive: true });
+    }
+  },
+
   removeImageFile: (path: string) => {
+    if (!existsSync(path)) {
+      return;
+    }
+
+    rmSync(path);
+  },
+
+  removeDirectory: (path: string) => {
     if (!existsSync(path)) {
       return;
     }

@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { SystemConfig } from 'src/config';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { AssetTrashReason } from 'src/dtos/asset.dto';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetType } from 'src/enum';
@@ -12,7 +13,6 @@ import {
   IJobRepository,
   ILibraryFileJob,
   ILibraryOfflineJob,
-  ILibraryRefreshJob,
   JobName,
   JOBS_LIBRARY_PAGINATION_SIZE,
   JobStatus,
@@ -91,7 +91,7 @@ describe(LibraryService.name, () => {
             enabled: true,
             cronExpression: '0 1 * * *',
           },
-          watch: { enabled: false },
+          watch: { enabled: true },
         },
       } as SystemConfig);
 
@@ -163,12 +163,6 @@ describe(LibraryService.name, () => {
 
   describe('handleQueueAssetRefresh', () => {
     it('should queue refresh of a new asset', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
       assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
@@ -178,87 +172,26 @@ describe(LibraryService.name, () => {
       });
       assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
+      await sut.handleQueueAssetRefresh({ id: libraryStub.externalLibrary1.id });
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.LIBRARY_SCAN_ASSET,
+          name: JobName.LIBRARY_REFRESH_ASSET,
           data: {
             id: libraryStub.externalLibrary1.id,
             ownerId: libraryStub.externalLibrary1.owner.id,
             assetPath: '/data/user1/photo.jpg',
-            force: false,
-          },
-        },
-      ]);
-    });
-
-    it('should queue offline check of existing online assets', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
-      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      storageMock.walk.mockImplementation(async function* generator() {});
-      assetMock.getWith.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.LIBRARY_CHECK_OFFLINE,
-          data: {
-            id: assetStub.external.id,
-            importPaths: libraryStub.externalLibrary1.importPaths,
-            exclusionPatterns: [],
           },
         },
       ]);
     });
 
     it("should fail when library can't be found", async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
       libraryMock.get.mockResolvedValue(null);
 
-      await expect(sut.handleQueueAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SKIPPED);
-    });
-
-    it('should force queue new assets', async () => {
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibrary1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: true,
-      };
-
-      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-      // eslint-disable-next-line @typescript-eslint/require-await
-      storageMock.walk.mockImplementation(async function* generator() {
-        yield ['/data/user1/photo.jpg'];
-      });
-      assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
-
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
-
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: libraryStub.externalLibrary1.id,
-            ownerId: libraryStub.externalLibrary1.owner.id,
-            assetPath: '/data/user1/photo.jpg',
-            force: true,
-          },
-        },
-      ]);
+      await expect(sut.handleQueueAssetRefresh({ id: libraryStub.externalLibrary1.id })).resolves.toBe(
+        JobStatus.SKIPPED,
+      );
     });
 
     it('should ignore import paths that do not exist', async () => {
@@ -276,16 +209,10 @@ describe(LibraryService.name, () => {
 
       assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
 
-      const mockLibraryJob: ILibraryRefreshJob = {
-        id: libraryStub.externalLibraryWithImportPaths1.id,
-        refreshModifiedFiles: false,
-        refreshAllFiles: false,
-      };
-
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       assetMock.getExternalLibraryAssetPaths.mockResolvedValue({ items: [], hasNextPage: false });
 
-      await sut.handleQueueAssetRefresh(mockLibraryJob);
+      await sut.handleQueueAssetRefresh({ id: libraryStub.externalLibraryWithImportPaths1.id });
 
       expect(storageMock.walk).toHaveBeenCalledWith({
         pathsToCrawl: [libraryStub.externalLibraryWithImportPaths1.importPaths[1]],
@@ -296,7 +223,36 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('handleOfflineCheck', () => {
+  describe('handleQueueRemoveDeleted', () => {
+    it('should queue online check of existing assets', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.walk.mockImplementation(async function* generator() {});
+      assetMock.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
+
+      await sut.handleQueueAssetOfflineCheck({ id: libraryStub.externalLibrary1.id });
+
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.LIBRARY_OFFLINE_CHECK,
+          data: {
+            id: assetStub.external.id,
+            importPaths: libraryStub.externalLibrary1.importPaths,
+            exclusionPatterns: [],
+          },
+        },
+      ]);
+    });
+
+    it("should fail when library can't be found", async () => {
+      libraryMock.get.mockResolvedValue(null);
+
+      await expect(sut.handleQueueAssetOfflineCheck({ id: libraryStub.externalLibrary1.id })).resolves.toBe(
+        JobStatus.SKIPPED,
+      );
+    });
+  });
+
+  describe('handleAssetOfflineCheck', () => {
     it('should skip missing assets', async () => {
       const mockAssetJob: ILibraryOfflineJob = {
         id: assetStub.external.id,
@@ -306,23 +262,9 @@ describe(LibraryService.name, () => {
 
       assetMock.getById.mockResolvedValue(null);
 
-      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SKIPPED);
+      await expect(sut.handleAssetOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SKIPPED);
 
-      expect(assetMock.update).not.toHaveBeenCalled();
-    });
-
-    it('should do nothing with already-offline assets', async () => {
-      const mockAssetJob: ILibraryOfflineJob = {
-        id: assetStub.external.id,
-        importPaths: ['/'],
-        exclusionPatterns: [],
-      };
-
-      assetMock.getById.mockResolvedValue(assetStub.offline);
-
-      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
-
-      expect(assetMock.update).not.toHaveBeenCalled();
+      expect(assetMock.remove).not.toHaveBeenCalled();
     });
 
     it('should offline assets no longer on disk', async () => {
@@ -334,9 +276,12 @@ describe(LibraryService.name, () => {
 
       assetMock.getById.mockResolvedValue(assetStub.external);
 
-      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleAssetOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
+        trashReason: AssetTrashReason.OFFLINE,
+      });
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([assetStub.external.id]);
     });
 
     it('should offline assets matching an exclusion pattern', async () => {
@@ -348,9 +293,11 @@ describe(LibraryService.name, () => {
 
       assetMock.getById.mockResolvedValue(assetStub.external);
 
-      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
-
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+      await expect(sut.handleAssetOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
+        trashReason: AssetTrashReason.OFFLINE,
+      });
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([assetStub.external.id]);
     });
 
     it('should set assets outside of import paths as offline', async () => {
@@ -363,9 +310,12 @@ describe(LibraryService.name, () => {
       assetMock.getById.mockResolvedValue(assetStub.external);
       storageMock.checkFileExists.mockResolvedValue(true);
 
-      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleAssetOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
+        trashReason: AssetTrashReason.OFFLINE,
+      });
+      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([assetStub.external.id]);
     });
 
     it('should do nothing with online assets', async () => {
@@ -378,9 +328,9 @@ describe(LibraryService.name, () => {
       assetMock.getById.mockResolvedValue(assetStub.external);
       storageMock.checkFileExists.mockResolvedValue(true);
 
-      await expect(sut.handleOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleAssetOfflineCheck(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.update).not.toHaveBeenCalled();
+      expect(assetMock.remove).not.toHaveBeenCalled();
     });
   });
 
@@ -402,7 +352,6 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
-        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -415,18 +364,16 @@ describe(LibraryService.name, () => {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/file.xyz',
-        force: false,
       };
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should add a new image', async () => {
+    it('should import a new asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -467,12 +414,11 @@ describe(LibraryService.name, () => {
       ]);
     });
 
-    it('should add a new image with sidecar', async () => {
+    it('should import a new asset with sidecar', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -514,12 +460,11 @@ describe(LibraryService.name, () => {
       ]);
     });
 
-    it('should add a new video', async () => {
+    it('should import a new video', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
-        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -568,12 +513,11 @@ describe(LibraryService.name, () => {
       ]);
     });
 
-    it('should not add an image to a soft deleted library', async () => {
+    it('should not import an asset to a soft deleted library', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -585,12 +529,11 @@ describe(LibraryService.name, () => {
       expect(assetMock.create.mock.calls).toEqual([]);
     });
 
-    it('should not import an asset when mtime matches db asset', async () => {
+    it('should not refresh a file whose mtime matches existing asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: assetStub.hasFileExtension.originalPath,
-        force: false,
       };
 
       storageMock.stat.mockResolvedValue({
@@ -607,12 +550,11 @@ describe(LibraryService.name, () => {
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
-    it('should import an asset when mtime differs from db asset', async () => {
+    it('should refresh a file whose mtime differs from existing asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
-        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
@@ -636,149 +578,42 @@ describe(LibraryService.name, () => {
       });
     });
 
-    it('should import an asset that is missing a file extension', async () => {
-      // This tests for the case where the file extension is missing from the asset path.
-      // This happened in previous versions of Immich
+    it('should not refresh an asset trashed by user', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: mockUser.id,
-        assetPath: assetStub.missingFileExtension.originalPath,
-        force: false,
+        assetPath: assetStub.hasFileExtension.originalPath,
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.missingFileExtension);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.trashed);
 
-      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SKIPPED);
 
-      expect(assetMock.updateAll).toHaveBeenCalledWith(
-        [assetStub.missingFileExtension.id],
-        expect.objectContaining({ originalFileName: 'photo.jpg' }),
-      );
-    });
-
-    it('should set a missing asset to offline', async () => {
-      storageMock.stat.mockRejectedValue(new Error('Path not found'));
-
-      const mockLibraryJob: ILibraryFileJob = {
-        id: assetStub.image.id,
-        ownerId: mockUser.id,
-        assetPath: '/data/user1/photo.jpg',
-        force: false,
-      };
-
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      assetMock.create.mockResolvedValue(assetStub.image);
-
-      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
-
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
-    it('should online a previously-offline asset', async () => {
-      const mockLibraryJob: ILibraryFileJob = {
-        id: assetStub.offline.id,
-        ownerId: mockUser.id,
-        assetPath: '/data/user1/photo.jpg',
-        force: false,
-      };
-
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.offline);
-      assetMock.create.mockResolvedValue(assetStub.offline);
-
-      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
-
-      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.offline.id, isOffline: false });
-
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.METADATA_EXTRACTION,
-        data: {
-          id: assetStub.offline.id,
-          source: 'upload',
-        },
-      });
-
-      expect(jobMock.queue).not.toHaveBeenCalledWith({
-        name: JobName.VIDEO_CONVERSION,
-        data: {
-          id: assetStub.offline.id,
-        },
-      });
-    });
-
-    it('should do nothing when mtime matches existing asset', async () => {
-      const mockLibraryJob: ILibraryFileJob = {
-        id: assetStub.image.id,
-        ownerId: assetStub.image.ownerId,
-        assetPath: '/data/user1/photo.jpg',
-        force: false,
-      };
-
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
-      assetMock.create.mockResolvedValue(assetStub.image);
-
-      expect(assetMock.update).not.toHaveBeenCalled();
-
-      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
-    });
-
-    it('should refresh an existing asset if forced', async () => {
-      const mockLibraryJob: ILibraryFileJob = {
-        id: assetStub.image.id,
-        ownerId: assetStub.hasFileExtension.ownerId,
-        assetPath: assetStub.hasFileExtension.originalPath,
-        force: true,
-      };
-
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.hasFileExtension);
-      assetMock.create.mockResolvedValue(assetStub.hasFileExtension);
-
-      await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
-
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasFileExtension.id], {
-        fileCreatedAt: new Date('2023-01-01'),
-        fileModifiedAt: new Date('2023-01-01'),
-        originalFileName: assetStub.hasFileExtension.originalFileName,
-      });
-    });
-
-    it('should refresh an existing asset with modified mtime', async () => {
-      const filemtime = new Date();
-      filemtime.setSeconds(assetStub.image.fileModifiedAt.getSeconds() + 10);
-
+    it('should un-trash an asset previously marked as offline', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: userStub.admin.id,
-        assetPath: '/data/user1/photo.jpg',
-        force: false,
+        ownerId: mockUser.id,
+        assetPath: assetStub.hasFileExtension.originalPath,
       };
 
-      storageMock.stat.mockResolvedValue({
-        size: 100,
-        mtime: filemtime,
-        ctime: new Date('2023-01-01'),
-      } as Stats);
-
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
-      assetMock.create.mockResolvedValue(assetStub.image);
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.trashedOffline);
 
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(assetMock.create).toHaveBeenCalled();
-      const createdAsset = assetMock.create.mock.calls[0][0];
-
-      expect(createdAsset.fileModifiedAt).toEqual(filemtime);
+      expect(assetMock.restoreAll).toHaveBeenCalledWith([assetStub.trashedOffline.id]);
     });
 
-    it('should throw error when asset does not exist', async () => {
+    it('should throw BadRequestException when asset does not exist', async () => {
       storageMock.stat.mockRejectedValue(new Error("ENOENT, no such file or directory '/data/user1/photo.jpg'"));
 
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
         ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
-        force: false,
       };
 
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
@@ -857,7 +692,6 @@ describe(LibraryService.name, () => {
 
   describe('getStatistics', () => {
     it('should return library statistics', async () => {
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       libraryMock.getStatistics.mockResolvedValue({ photos: 10, videos: 0, total: 10, usage: 1337 });
       await expect(sut.getStatistics(libraryStub.externalLibrary1.id)).resolves.toEqual({
         photos: 10,
@@ -1092,12 +926,11 @@ describe(LibraryService.name, () => {
 
         expect(jobMock.queueAll).toHaveBeenCalledWith([
           {
-            name: JobName.LIBRARY_SCAN_ASSET,
+            name: JobName.LIBRARY_REFRESH_ASSET,
             data: {
               id: libraryStub.externalLibraryWithImportPaths1.id,
               assetPath: '/foo/photo.jpg',
               ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
-              force: false,
             },
           },
         ]);
@@ -1114,28 +947,14 @@ describe(LibraryService.name, () => {
 
         expect(jobMock.queueAll).toHaveBeenCalledWith([
           {
-            name: JobName.LIBRARY_SCAN_ASSET,
+            name: JobName.LIBRARY_REFRESH_ASSET,
             data: {
               id: libraryStub.externalLibraryWithImportPaths1.id,
               assetPath: '/foo/photo.jpg',
               ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
-              force: false,
             },
           },
         ]);
-      });
-
-      it('should handle a file unlink event', async () => {
-        libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
-        libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
-        assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.external);
-        storageMock.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: 'unlink', value: '/foo/photo.jpg' }] }),
-        );
-
-        await sut.watchAll();
-
-        expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
       });
 
       it('should handle an error event', async () => {
@@ -1232,57 +1051,25 @@ describe(LibraryService.name, () => {
   });
 
   describe('queueScan', () => {
-    it('should queue a library scan of external library', async () => {
+    it('should queue a library scan', async () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
-      await sut.queueScan(libraryStub.externalLibrary1.id, {});
+      await sut.queueScan(libraryStub.externalLibrary1.id);
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.LIBRARY_SCAN,
+            name: JobName.LIBRARY_QUEUE_SCAN,
             data: {
               id: libraryStub.externalLibrary1.id,
-              refreshModifiedFiles: false,
-              refreshAllFiles: false,
             },
           },
         ],
-      ]);
-    });
-
-    it('should queue a library scan of all modified assets', async () => {
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      await sut.queueScan(libraryStub.externalLibrary1.id, { refreshModifiedFiles: true });
-
-      expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.LIBRARY_SCAN,
+            name: JobName.LIBRARY_QUEUE_OFFLINE_CHECK,
             data: {
               id: libraryStub.externalLibrary1.id,
-              refreshModifiedFiles: true,
-              refreshAllFiles: false,
-            },
-          },
-        ],
-      ]);
-    });
-
-    it('should queue a forced library scan', async () => {
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      await sut.queueScan(libraryStub.externalLibrary1.id, { refreshAllFiles: true });
-
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.LIBRARY_SCAN,
-            data: {
-              id: libraryStub.externalLibrary1.id,
-              refreshModifiedFiles: false,
-              refreshAllFiles: true,
             },
           },
         ],
@@ -1290,14 +1077,14 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('queueEmptyTrash', () => {
+  describe('queueOfflineCheck', () => {
     it('should queue the trash job', async () => {
-      await sut.queueRemoveOffline(libraryStub.externalLibrary1.id);
+      await sut.queueOfflineCheck(libraryStub.externalLibrary1.id);
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.LIBRARY_REMOVE_OFFLINE,
+            name: JobName.LIBRARY_OFFLINE_CHECK,
             data: {
               id: libraryStub.externalLibrary1.id,
             },
@@ -1311,7 +1098,7 @@ describe(LibraryService.name, () => {
     it('should queue the refresh job', async () => {
       libraryMock.getAll.mockResolvedValue([libraryStub.externalLibrary1]);
 
-      await expect(sut.handleQueueAllScan({})).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleQueueAllScan()).resolves.toBe(JobStatus.SUCCESS);
 
       expect(jobMock.queue.mock.calls).toEqual([
         [
@@ -1323,48 +1110,34 @@ describe(LibraryService.name, () => {
       ]);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.LIBRARY_SCAN,
+          name: JobName.LIBRARY_QUEUE_SCAN,
           data: {
             id: libraryStub.externalLibrary1.id,
-            refreshModifiedFiles: true,
-            refreshAllFiles: false,
-          },
-        },
-      ]);
-    });
-
-    it('should queue the force refresh job', async () => {
-      libraryMock.getAll.mockResolvedValue([libraryStub.externalLibrary1]);
-
-      await expect(sut.handleQueueAllScan({ force: true })).resolves.toBe(JobStatus.SUCCESS);
-
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_QUEUE_CLEANUP,
-        data: {},
-      });
-
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.LIBRARY_SCAN,
-          data: {
-            id: libraryStub.externalLibrary1.id,
-            refreshModifiedFiles: false,
-            refreshAllFiles: true,
           },
         },
       ]);
     });
   });
 
-  describe('handleRemoveOfflineFiles', () => {
-    it('should queue trash deletion jobs', async () => {
-      assetMock.getWith.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
+  describe('handleQueueAssetOfflineCheck', () => {
+    it('should queue removal jobs', async () => {
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      assetMock.getAll.mockResolvedValue({ items: [assetStub.image1], hasNextPage: false });
       assetMock.getById.mockResolvedValue(assetStub.image1);
 
-      await expect(sut.handleRemoveOffline({ id: libraryStub.externalLibrary1.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleQueueAssetOfflineCheck({ id: libraryStub.externalLibrary1.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: assetStub.image1.id, deleteOnDisk: false } },
+        {
+          name: JobName.LIBRARY_OFFLINE_CHECK,
+          data: {
+            id: assetStub.image1.id,
+            importPaths: libraryStub.externalLibrary1.importPaths,
+            exclusionPatterns: libraryStub.externalLibrary1.exclusionPatterns,
+          },
+        },
       ]);
     });
   });

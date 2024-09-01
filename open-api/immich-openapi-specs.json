@@ -2853,41 +2853,6 @@
         ]
       }
     },
-    "/libraries/{id}/removeOffline": {
-      "post": {
-        "operationId": "removeOfflineFiles",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Libraries"
-        ]
-      }
-    },
     "/libraries/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",
@@ -2902,16 +2867,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScanLibraryDto"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "204": {
             "description": ""
@@ -7883,6 +7838,13 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "trashReason": {
+            "enum": [
+              "deleted",
+              "offline"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -8287,9 +8249,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isOffline": {
-            "type": "boolean"
-          },
           "isVisible": {
             "type": "boolean"
           },
@@ -8423,9 +8382,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isOffline": {
-            "type": "boolean"
-          },
           "isTrashed": {
             "type": "boolean"
           },
@@ -8490,6 +8446,10 @@
             "nullable": true,
             "type": "string"
           },
+          "trashReason": {
+            "nullable": true,
+            "type": "string"
+          },
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
@@ -8515,7 +8475,6 @@
           "id",
           "isArchived",
           "isFavorite",
-          "isOffline",
           "isTrashed",
           "localDateTime",
           "originalFileName",
@@ -9868,9 +9827,6 @@
           "isNotInAlbum": {
             "type": "boolean"
           },
-          "isOffline": {
-            "type": "boolean"
-          },
           "isVisible": {
             "type": "boolean"
           },
@@ -10628,17 +10584,6 @@
         ],
         "type": "object"
       },
-      "ScanLibraryDto": {
-        "properties": {
-          "refreshAllFiles": {
-            "type": "boolean"
-          },
-          "refreshModifiedFiles": {
-            "type": "boolean"
-          }
-        },
-        "type": "object"
-      },
       "SearchAlbumResponseDto": {
         "properties": {
           "count": {
@@ -11366,9 +11311,6 @@
             "type": "boolean"
           },
           "isNotInAlbum": {
-            "type": "boolean"
-          },
-          "isOffline": {
             "type": "boolean"
           },
           "isVisible": {

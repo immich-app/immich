@@ -39,9 +39,6 @@ class BaseSearchDto {
   isMotion?: boolean;
 
   @ValidateBoolean({ optional: true })
-  isOffline?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
   @ValidateBoolean({ optional: true })

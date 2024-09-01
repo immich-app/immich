@@ -43,7 +43,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isFavorite!: boolean;
   isArchived!: boolean;
   isTrashed!: boolean;
-  isOffline!: boolean;
+  trashReason?: string | null;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
@@ -139,6 +139,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
     isArchived: entity.isArchived,
     isTrashed: !!entity.deletedAt,
+    trashReason: entity.trashReason,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
@@ -148,7 +149,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
     stack: withStack ? mapStack(entity) : undefined,
-    isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
     resized: true,

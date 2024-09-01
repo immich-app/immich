@@ -37,7 +37,7 @@ describe(TrashService.name, () => {
   describe('restoreAssets', () => {
     it('should require asset restore access for all ids', async () => {
       await expect(
-        sut.restoreAssets(authStub.user1, {
+        sut.restore(authStub.user1, {
           ids: ['asset-1'],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -67,7 +67,7 @@ describe(TrashService.name, () => {
     });
 
     it('should restore', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-id'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
       trashMock.restore.mockResolvedValue(1);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.restore).toHaveBeenCalledWith('user-id');
@@ -83,7 +83,7 @@ describe(TrashService.name, () => {
     });
 
     it('should empty the trash', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-id'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
       trashMock.empty.mockResolvedValue(1);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.empty).toHaveBeenCalledWith('user-id');
@@ -107,6 +107,14 @@ describe(TrashService.name, () => {
           name: JobName.ASSET_DELETION,
           data: { id: 'asset-1', deleteOnDisk: true },
         },
+      ]);
+    });
+
+    it('should not delete offline assets from disk', async () => {
+      assetMock.getByUserId.mockResolvedValue({ items: [assetStub.trashedOffline], hasNextPage: false });
+      await expect(sut.empty(authStub.user1)).resolves.toBeUndefined();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION, data: { id: assetStub.trashedOffline.id, deleteOnDisk: false } },
       ]);
     });
   });

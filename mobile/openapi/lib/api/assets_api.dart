@@ -449,10 +449,7 @@ class AssetsApi {
     return null;
   }
 
-  /// This property was deprecated in v1.116.0
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /assets/random' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [num] count:
@@ -485,8 +482,6 @@ class AssetsApi {
     );
   }
 
-  /// This property was deprecated in v1.116.0
-  ///
   /// Parameters:
   ///
   /// * [num] count:
@@ -833,14 +828,12 @@ class AssetsApi {
   ///
   /// * [bool] isFavorite:
   ///
-  /// * [bool] isOffline:
-  ///
   /// * [bool] isVisible:
   ///
   /// * [String] livePhotoVideoId:
   ///
   /// * [MultipartFile] sidecarData:
-  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? livePhotoVideoId, MultipartFile? sidecarData, }) async {
+  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isVisible, String? livePhotoVideoId, MultipartFile? sidecarData, }) async {
     // ignore: prefer_const_declarations
     final path = r'/assets';
 
@@ -896,10 +889,6 @@ class AssetsApi {
       hasFields = true;
       mp.fields[r'isFavorite'] = parameterToString(isFavorite);
     }
-    if (isOffline != null) {
-      hasFields = true;
-      mp.fields[r'isOffline'] = parameterToString(isOffline);
-    }
     if (isVisible != null) {
       hasFields = true;
       mp.fields[r'isVisible'] = parameterToString(isVisible);
@@ -951,15 +940,13 @@ class AssetsApi {
   ///
   /// * [bool] isFavorite:
   ///
-  /// * [bool] isOffline:
-  ///
   /// * [bool] isVisible:
   ///
   /// * [String] livePhotoVideoId:
   ///
   /// * [MultipartFile] sidecarData:
-  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isOffline, bool? isVisible, String? livePhotoVideoId, MultipartFile? sidecarData, }) async {
-    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, xImmichChecksum: xImmichChecksum, duration: duration, isArchived: isArchived, isFavorite: isFavorite, isOffline: isOffline, isVisible: isVisible, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, );
+  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, bool? isArchived, bool? isFavorite, bool? isVisible, String? livePhotoVideoId, MultipartFile? sidecarData, }) async {
+    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, xImmichChecksum: xImmichChecksum, duration: duration, isArchived: isArchived, isFavorite: isFavorite, isVisible: isVisible, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

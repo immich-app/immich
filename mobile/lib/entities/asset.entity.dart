@@ -31,7 +31,6 @@ class Asset {
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
-        isOffline = remote.isOffline,
         // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
         stackPrimaryAssetId = remote.stack?.primaryAssetId == remote.id
@@ -63,7 +62,6 @@ class Asset {
     this.stackId,
     this.stackPrimaryAssetId,
     this.stackCount = 0,
-    this.isOffline = false,
     this.thumbhash,
   });
 
@@ -134,8 +132,6 @@ class Asset {
   bool isArchived;
 
   bool isTrashed;
-
-  bool isOffline;
 
   @ignore
   ExifInfo? exifInfo;
@@ -254,7 +250,6 @@ class Asset {
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
-        isOffline != a.isOffline ||
         a.exifInfo?.latitude != exifInfo?.latitude ||
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
@@ -300,7 +295,6 @@ class Asset {
           isFavorite: isFavorite,
           isArchived: isArchived,
           isTrashed: isTrashed,
-          isOffline: isOffline,
         );
       }
     } else {
@@ -323,7 +317,6 @@ class Asset {
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
           isTrashed: a.isTrashed,
-          isOffline: a.isOffline,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
           thumbhash: a.thumbhash,
         );
@@ -357,7 +350,6 @@ class Asset {
     bool? isFavorite,
     bool? isArchived,
     bool? isTrashed,
-    bool? isOffline,
     ExifInfo? exifInfo,
     String? stackId,
     String? stackPrimaryAssetId,
@@ -382,7 +374,6 @@ class Asset {
         isFavorite: isFavorite ?? this.isFavorite,
         isArchived: isArchived ?? this.isArchived,
         isTrashed: isTrashed ?? this.isTrashed,
-        isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
         stackId: stackId ?? this.stackId,
         stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
@@ -448,7 +439,6 @@ class Asset {
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived,
   "isTrashed": $isTrashed,
-  "isOffline": $isOffline,
 }""";
   }
 }

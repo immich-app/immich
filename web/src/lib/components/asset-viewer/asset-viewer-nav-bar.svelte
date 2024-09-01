@@ -24,6 +24,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
+    TrashReason,
     type AlbumResponseDto,
     type AssetResponseDto,
     type StackResponseDto,
@@ -59,9 +60,9 @@
   export let onClose: () => void;
 
   const sharedLink = getSharedLink();
-
+  $: isOffline = asset.trashReason === TrashReason.Offline;
   $: isOwner = $user && asset.ownerId === $user?.id;
-  $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !isOffline;
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -86,8 +87,8 @@
     {#if !asset.isTrashed && $user}
       <ShareAction {asset} />
     {/if}
-    {#if asset.isOffline}
-      <CircleIconButton color="opaque" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
+    {#if isOffline}
+      <CircleIconButton color="alert" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
     {/if}
     {#if asset.livePhotoVideoId}
       <slot name="motion-photo" />
@@ -136,7 +137,7 @@
         {#if showDownloadButton}
           <DownloadAction {asset} menuItem />
         {/if}
-        {#if asset.isTrashed}
+        {#if asset.trashReason === TrashReason.Deleted}
           <RestoreAction {asset} {onAction} />
         {:else}
           <AddToAlbumAction {asset} {onAction} />

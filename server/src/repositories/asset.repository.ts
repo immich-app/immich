@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { AssetTrashReason } from 'src/dtos/asset.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -180,7 +181,7 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity> {
     return paginate(this.repository, pagination, {
-      select: { id: true, originalPath: true, isOffline: true },
+      select: { id: true, originalPath: true },
       where: { library: { id: libraryId }, isExternal: true },
     });
   }
@@ -205,15 +206,6 @@ export class AssetRepository implements IAssetRepository {
       [libraryId, originalPaths],
     );
     return result.map((row: { path: string }) => row.path);
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
-  @ChunkedArray({ paramIndex: 1 })
-  async updateOfflineLibraryAssets(libraryId: string, originalPaths: string[]): Promise<void> {
-    await this.repository.update(
-      { library: { id: libraryId }, originalPath: Not(In(originalPaths)), isOffline: false },
-      { isOffline: true },
-    );
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
@@ -295,6 +287,16 @@ export class AssetRepository implements IAssetRepository {
       .execute();
   }
 
+  @Chunked()
+  async softDeleteAll(ids: string[]): Promise<void> {
+    await this.repository.softDelete({ id: In(ids) });
+  }
+
+  @Chunked()
+  async restoreAll(ids: string[]): Promise<void> {
+    await this.updateAll(ids, { trashReason: null, deletedAt: null });
+  }
+
   async update(asset: AssetUpdateOptions): Promise<void> {
     await this.repository.update(asset.id, asset);
   }
@@ -373,12 +375,10 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql(
-    ...Object.values(WithProperty)
-      .filter((property) => property !== WithProperty.IS_OFFLINE && property !== WithProperty.IS_ONLINE)
-      .map((property) => ({
-        name: property,
-        params: [DummyValue.PAGINATION, property],
-      })),
+    ...Object.values(WithProperty).map((property) => ({
+      name: property,
+      params: [DummyValue.PAGINATION, property],
+    })),
   )
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity> {
     let relations: FindOptionsRelations<AssetEntity> = {};
@@ -531,24 +531,14 @@ export class AssetRepository implements IAssetRepository {
         where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
         break;
       }
-      case WithProperty.IS_OFFLINE: {
-        if (!libraryId) {
-          throw new Error('Library id is required when finding offline assets');
-        }
-        where = [{ isOffline: true, libraryId }];
-        break;
-      }
-      case WithProperty.IS_ONLINE: {
-        if (!libraryId) {
-          throw new Error('Library id is required when finding online assets');
-        }
-        where = [{ isOffline: false, libraryId }];
-        break;
-      }
 
       default: {
         throw new Error(`Invalid getWith property: ${property}`);
       }
+    }
+
+    if (libraryId) {
+      where = [{ ...where, libraryId }];
     }
 
     return paginate(this.repository, pagination, {
@@ -829,5 +819,33 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFile({ assetId, type, path }: { assetId: string; type: AssetFileType; path: string }): Promise<void> {
     await this.fileRepository.upsert({ assetId, type, path }, { conflictPaths: ['assetId', 'type'] });
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+      },
+    ],
+  })
+  async restoreAllDeleted(ownerId?: string): Promise<void> {
+    await this.repository.update(
+      { ownerId, trashReason: AssetTrashReason.DELETED },
+      { deletedAt: null, trashReason: null },
+    );
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+      },
+    ],
+  })
+  async restoreAllDeletedById(ids: string[]): Promise<void> {
+    await this.repository.update(
+      { id: In(ids), trashReason: AssetTrashReason.DELETED },
+      { deletedAt: null, trashReason: null },
+    );
   }
 }

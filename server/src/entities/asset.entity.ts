@@ -1,3 +1,4 @@
+import { AssetTrashReason } from 'src/dtos/asset.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
@@ -113,9 +114,6 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: false })
   isExternal!: boolean;
 
-  @Column({ type: 'boolean', default: false })
-  isOffline!: boolean;
-
   @Column({ type: 'bytea' })
   @Index()
   checksum!: Buffer; // sha1 checksum
@@ -172,6 +170,13 @@ export class AssetEntity {
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;
+
+  @Column({
+    type: 'enum',
+    enum: AssetTrashReason,
+    nullable: true,
+  })
+  trashReason!: AssetTrashReason | null;
 
   @Index('IDX_assets_duplicateId')
   @Column({ type: 'uuid', nullable: true })

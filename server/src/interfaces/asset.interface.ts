@@ -36,8 +36,6 @@ export enum WithoutProperty {
 
 export enum WithProperty {
   SIDECAR = 'sidecar',
-  IS_ONLINE = 'isOnline',
-  IS_OFFLINE = 'isOffline',
 }
 
 export enum TimeBucketSize {
@@ -143,12 +141,21 @@ export interface AssetUpdateDuplicateOptions {
   duplicateIds: string[];
 }
 
-export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
+export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath'>;
 
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
+  getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]>;
+  getUniqueOriginalPaths(userId: string): Promise<string[]>;
   create(asset: AssetCreate): Promise<AssetEntity>;
+  getByIds(
+    ids: string[],
+    relations?: FindOptionsRelations<AssetEntity>,
+    select?: FindOptionsSelect<AssetEntity>,
+  ): Promise<AssetEntity[]>;
+  getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
+  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
   getByIds(
     ids: string[],
     relations?: FindOptionsRelations<AssetEntity>,
@@ -174,6 +181,15 @@ export interface IAssetRepository {
     libraryId?: string,
     withDeleted?: boolean,
   ): Paginated<AssetEntity>;
+  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
+  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
+  getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
+  getWith(
+    pagination: PaginationOptions,
+    property: WithProperty,
+    libraryId?: string,
+    withDeleted?: boolean,
+  ): Paginated<AssetEntity>;
   getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;
@@ -182,10 +198,29 @@ export interface IAssetRepository {
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getLivePhotoCount(motionId: string): Promise<number>;
+  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
   updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
+  findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
+  getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
+  getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
+  getUniqueOriginalPaths(userId: string): Promise<string[]>;
+  getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;
+  getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
+  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
+  remove(asset: AssetEntity): Promise<void>;
+  restoreAll(ids: string[]): Promise<void>;
+  softDeleteAll(ids: string[]): Promise<void>;
+  update(asset: AssetUpdateOptions): Promise<void>;
+  updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
+  updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
+  update(asset: AssetUpdateOptions): Promise<void>;
+  remove(asset: AssetEntity): Promise<void>;
+  softDeleteAll(ids: string[]): Promise<void>;
+  restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
@@ -198,4 +233,6 @@ export interface IAssetRepository {
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(options: { assetId: string; type: AssetFileType; path: string }): Promise<void>;
+  restoreAllDeleted(userId: string): Promise<void>;
+  restoreAllDeletedById(ids: string[]): Promise<void>;
 }

@@ -1173,3 +1173,15 @@ RETURNING
   "id",
   "createdAt",
   "updatedAt"
+
+-- AssetRepository.restoreAllDeleted
+UPDATE "assets"
+SET
+  "deletedAt" = $1,
+  "trashReason" = $2,
+  "updatedAt" = CURRENT_TIMESTAMP
+WHERE
+  (
+    "ownerId" = $3
+    AND "trashReason" = $4
+  )
