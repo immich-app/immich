@@ -21,17 +21,10 @@
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
   const viewport: Viewport = { width: 0, height: 0 };
-  let currentTreeItems: string[] = [];
 
   $: pathSegments = data.path ? data.path.split('/') : [];
   $: tree = buildTree($foldersStore?.uniquePaths || []);
   $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
-  $: {
-    currentTreeItems = data.currentFolders;
-    if (data.currentFolders.length === 0 && !currentPath) {
-      currentTreeItems = Object.keys(tree);
-    }
-  }
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -70,7 +63,7 @@
   <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
 
   <section class="mt-2">
-    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigation} />
+    <TreeItemThumbnails items={data.currentFolders} icon={mdiFolder} onClick={handleNavigation} />
 
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
