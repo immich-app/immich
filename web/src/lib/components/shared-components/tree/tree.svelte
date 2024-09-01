@@ -24,11 +24,7 @@
   title={value}
   class={`flex flex-grow place-items-center pl-2 py-1 text-sm rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:font-semibold ${isTarget ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'}`}
 >
-  <button
-    type="button"
-    on:click|preventDefault={() => (isOpen = !isOpen)}
-    class={isLeaf(tree) ? 'invisible' : ''}
-  >
+  <button type="button" on:click|preventDefault={() => (isOpen = !isOpen)} class={isLeaf(tree) ? 'invisible' : ''}>
     <Icon path={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size={20} />
   </button>
   <div>

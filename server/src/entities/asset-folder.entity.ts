@@ -1,11 +1,5 @@
 import { AssetEntity } from 'src/entities/asset.entity';
-import {
-  Column,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('asset_folders')
 export class AssetFolderEntity {
@@ -16,6 +10,6 @@ export class AssetFolderEntity {
   asset?: AssetEntity;
 
   @Index('idx_asset_folders_path', { unique: true })
-  @Column()
+  @Column({ type: 'text', collation: 'numeric' })
   path!: string;
 }

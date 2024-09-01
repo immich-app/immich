@@ -31,6 +31,7 @@ export class AddAssetFolderRelation1724802318088 implements MigrationInterface {
     await queryRunner.query(`
         alter table assets
             add column "folderId" uuid
+                constraint "FK_8ca281adee62839a757ef23ca15"
                 references asset_folders (id)
                 on update cascade`);
 

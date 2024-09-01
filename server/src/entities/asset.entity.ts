@@ -1,6 +1,7 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFolderEntity } from 'src/entities/asset-folder.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
@@ -26,11 +27,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetFolderEntity } from 'src/entities/asset-folder.entity';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
 @Entity('assets')
+@Index('idx_assets_folder_id_originalfilename', ['folderId', 'originalFileName'])
 // Checksums must be unique per user and library
 @Index(ASSET_CHECKSUM_CONSTRAINT, ['owner', 'checksum'], {
   unique: true,
@@ -77,7 +78,6 @@ export class AssetEntity {
   @OneToMany(() => AssetFileEntity, (assetFile) => assetFile.asset)
   files!: AssetFileEntity[];
 
-  @Index('idx_assets_folder_id')
   @Column({ select: false })
   folderId?: string;
 
@@ -138,8 +138,7 @@ export class AssetEntity {
   @Column({ nullable: true })
   livePhotoVideoId!: string | null;
 
-  @Column({ type: 'varchar' })
-  @Index()
+  @Column({ type: 'varchar', collation: 'numeric' })
   originalFileName!: string;
 
   @Column({ type: 'varchar', nullable: true })

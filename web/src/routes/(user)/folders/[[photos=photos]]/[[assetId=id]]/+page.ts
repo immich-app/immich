@@ -15,7 +15,7 @@ export const load = (async ({ params, url }) => {
 
   let pathAssets = null;
 
-  const currentFolders = Object.keys(tree || {})
+  const currentFolders = Object.keys(tree || {});
   const path = url.searchParams.get(QueryParameter.PATH) || currentFolders[0] || '';
   if (tree) {
     const parts = getPathParts(normalizeTreePath(path));
