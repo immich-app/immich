@@ -49,6 +49,8 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | `CPU_CORES`                         | Amount of cores available to the immich server                                            | auto-detected cpu core count | server                   |                    |
 | `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                                                                 |            `8081`            | server                   | api                |
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |            `8082`            | server                   | microservices      |
+| `IMMICH_OAUTH_CLIENT_ID`            | The `clientId` to be used when OAuth is enabled                                           |                              | server                   | api                |
+| `IMMICH_OAUTH_CLIENT_SECRET`        | The `clientSecret` to be used when OAuth is enabled                                       |                              | server                   | api                |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies                                        |                              | server                   | api                |
 
