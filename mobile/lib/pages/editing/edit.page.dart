@@ -157,24 +157,53 @@ class EditImagePage extends ConsumerWidget {
           color: context.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(30),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          // Changed from Column to Row
+          mainAxisAlignment:
+              MainAxisAlignment.spaceEvenly, // Evenly space the buttons
           children: <Widget>[
-            IconButton(
-              icon: Icon(
-                Platform.isAndroid
-                    ? Icons.crop_rotate_rounded
-                    : Icons.crop_rotate_rounded,
-                color: Theme.of(context).iconTheme.color,
-                size: 25,
-              ),
-              onPressed: () {
-                context.pushRoute(
-                  CropImageRoute(asset: asset, image: imageWidget),
-                );
-              },
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Platform.isAndroid
+                        ? Icons.crop_rotate_rounded
+                        : Icons.crop_rotate_rounded,
+                    color: Theme.of(context).iconTheme.color,
+                    size: 25,
+                  ),
+                  onPressed: () {
+                    context.pushRoute(
+                      CropImageRoute(asset: asset, image: imageWidget),
+                    );
+                  },
+                ),
+                Text("crop".tr(), style: context.textTheme.displayMedium),
+              ],
             ),
-            Text("crop".tr(), style: context.textTheme.displayMedium),
+            Column(
+              // New column for the filter button
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.filter, // You can change the icon
+                    color: Theme.of(context).iconTheme.color,
+                    size: 25,
+                  ),
+                  onPressed: () {
+                    context.pushRoute(
+                      FilterImageRoute(
+                          asset: asset,
+                          image:
+                              imageWidget), // Assuming you have a FilterImageRoute
+                    );
+                  },
+                ),
+                Text("filters".tr(), style: context.textTheme.displayMedium),
+              ],
+            ),
           ],
         ),
       ),
