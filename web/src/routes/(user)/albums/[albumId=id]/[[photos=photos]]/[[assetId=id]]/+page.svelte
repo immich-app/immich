@@ -38,7 +38,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -85,6 +85,7 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   export let data: PageData;
 
@@ -458,6 +459,11 @@
             {/if}
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
+
+          {#if $preferences.tags.enabled && isAllUserOwned}
+            <TagAction menuItem />
+          {/if}
+
           {#if isOwned || isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
