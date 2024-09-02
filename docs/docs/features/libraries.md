@@ -105,7 +105,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
-+     - /home/user/old-pics:/home/user/old-pics:ro
++     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
 +     - /mnt/media/videos2:/mnt/media/videos2 # the files in this folder can be deleted, as it does not end with :ro
 +     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
