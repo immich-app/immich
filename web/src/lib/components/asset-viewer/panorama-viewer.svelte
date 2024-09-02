@@ -6,7 +6,7 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { t } from 'svelte-i18n';
-  export let asset: AssetResponseDto;
+  export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
 
   const photoSphereConfigs =
     asset.type === AssetTypeEnum.Video
@@ -30,7 +30,9 @@
   };
 
   const originalImageUrl =
-    asset.type === AssetTypeEnum.Image && isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : null;
+    asset.type === AssetTypeEnum.Image && isWebCompatibleImage(asset as AssetResponseDto)
+      ? getAssetOriginalUrl(asset.id)
+      : null;
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
