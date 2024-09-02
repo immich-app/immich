@@ -1,11 +1,12 @@
 <script lang="ts">
   import { getAssetOriginalUrl, getKey } from '$lib/utils';
+  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { AssetMediaSize, AssetTypeEnum, viewAsset, type AssetResponseDto } from '@immich/sdk';
   import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { t } from 'svelte-i18n';
-  export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
+  export let asset: AssetResponseDto;
 
   const photoSphereConfigs =
     asset.type === AssetTypeEnum.Video
@@ -28,14 +29,15 @@
     return url;
   };
 
-  const originalImageUrl = asset.type === AssetTypeEnum.Image ? getAssetOriginalUrl(asset.id) : null;
+  const originalImageUrl =
+    asset.type === AssetTypeEnum.Image && isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : null;
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <!-- the photo sphere viewer is quite large, so lazy load it in parallel with loading the data -->
-  {#await Promise.all( [loadAssetData(), originalImageUrl, import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs], )}
+  {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs])}
     <LoadingSpinner />
-  {:then [data, originalImageUrl, module, adapter, plugins, navbar]}
+  {:then [data, module, adapter, plugins, navbar]}
     <svelte:component
       this={module.default}
       panorama={data}

@@ -36,7 +36,9 @@
         // zoomLevel range: [0, 100]
         if (Math.round(zoomLevel) >= 75) {
           // Replace the preview with the original
-          viewer.setPanorama(originalImageUrl, { showLoader: false, speed: 150 }).catch(() => {});
+          viewer.setPanorama(originalImageUrl, { showLoader: false, speed: 150 }).catch(() => {
+            viewer.setPanorama(panorama, { showLoader: false, speed: 0 }).catch(() => {});
+          });
           viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
         }
       };
