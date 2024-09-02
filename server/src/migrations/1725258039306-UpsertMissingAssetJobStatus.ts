@@ -15,7 +15,7 @@ export class UpsertMissingAssetJobStatus1725258039306 implements MigrationInterf
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // do nothing
   }
 }
