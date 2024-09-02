@@ -29,6 +29,7 @@ import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_controller.page.dart';
 import 'package:immich_mobile/pages/editing/edit.page.dart';
 import 'package:immich_mobile/pages/editing/crop.page.dart';
+import 'package:immich_mobile/pages/editing/filter.page.dart';
 import 'package:immich_mobile/pages/library/archive.page.dart';
 import 'package:immich_mobile/pages/library/favorite.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
@@ -136,6 +137,7 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(page: EditImageRoute.page),
     AutoRoute(page: CropImageRoute.page),
+    AutoRoute(page: FilterImageRoute.page),
     AutoRoute(page: FavoritesRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AllVideosRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(

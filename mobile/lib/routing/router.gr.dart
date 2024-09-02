@@ -756,6 +756,58 @@ class FavoritesRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [FilterImagePage]
+class FilterImageRoute extends PageRouteInfo<FilterImageRouteArgs> {
+  FilterImageRoute({
+    Key? key,
+    required Image image,
+    required Asset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FilterImageRoute.name,
+          args: FilterImageRouteArgs(
+            key: key,
+            image: image,
+            asset: asset,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'FilterImageRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<FilterImageRouteArgs>();
+      return FilterImagePage(
+        key: args.key,
+        image: args.image,
+        asset: args.asset,
+      );
+    },
+  );
+}
+
+class FilterImageRouteArgs {
+  const FilterImageRouteArgs({
+    this.key,
+    required this.image,
+    required this.asset,
+  });
+
+  final Key? key;
+
+  final Image image;
+
+  final Asset asset;
+
+  @override
+  String toString() {
+    return 'FilterImageRouteArgs{key: $key, image: $image, asset: $asset}';
+  }
+}
+
+/// generated route for
 /// [GalleryViewerPage]
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute({
