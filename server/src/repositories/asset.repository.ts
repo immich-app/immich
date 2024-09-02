@@ -336,7 +336,23 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async update(asset: AssetUpdateOptions): Promise<void> {
-    await this.repository.update(asset.id, asset);
+    const values: QueryDeepPartialEntity<AssetEntity> = asset;
+    const query = this.repository.createQueryBuilder('asset').update().where('id = :id', { id: asset.id });
+
+    if (asset.originalPath) {
+      const cte = this.repository.manager
+        .createQueryBuilder()
+        .insert()
+        .into(AssetFolderEntity)
+        .values({ path: () => 'file_parent(:path)' })
+        .orIgnore()
+        .returning('id');
+
+      values.folderId = coalesceFolderId; // use newly inserted folder id or query for existing folder id
+      query.addCommonTableExpression(cte, 'folder').setParameter('path', values.originalPath);
+    }
+
+    await query.set(values).execute();
   }
 
   async remove(asset: AssetEntity): Promise<void> {
