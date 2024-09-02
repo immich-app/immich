@@ -1,5 +1,5 @@
 export type RecursiveObject = {
-  [key: string]: RecursiveObject;
+  [key: string | symbol]: RecursiveObject;
 };
 
 export const normalizeTreePath = (path: string) => (path.at(-1) === '/' && path.length > 1 ? path.slice(0, -1) : path);
@@ -32,13 +32,13 @@ export const getParentPath = (path: string) => {
 };
 
 export const isLeaf = (tree: RecursiveObject) => {
-  for (const entry in tree) {
-    if (entry !== '\0') {
-      return false;
-    }
+  for (const _ in tree) {
+    return false;
   }
   return true;
 };
+
+export const FOLDER_WITH_ASSETS_SYMBOL = Symbol('folder-with-assets');
 
 export function buildTree(paths: string[]): RecursiveObject {
   const root: RecursiveObject = {};
@@ -52,7 +52,7 @@ export function buildTree(paths: string[]): RecursiveObject {
       }
       current = current[part];
     }
-    current['\0'] = {}; // mark as leaf
+    current[FOLDER_WITH_ASSETS_SYMBOL] = {};
   }
   return root;
 }

@@ -3,7 +3,7 @@ import { foldersStore } from '$lib/stores/folders.store';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
-import { getPathParts, normalizeTreePath } from '$lib/utils/tree-utils';
+import { FOLDER_WITH_ASSETS_SYMBOL, getPathParts, normalizeTreePath } from '$lib/utils/tree-utils';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
@@ -27,7 +27,7 @@ export const load = (async ({ params, url }) => {
     }
 
     // only fetch assets if the folder has assets
-    if (tree['\0']) {
+    if (tree[FOLDER_WITH_ASSETS_SYMBOL]) {
       const { assets } = await foldersStore.fetchAssetsByPath(path);
       pathAssets = assets[path] || null;
     }
@@ -36,7 +36,7 @@ export const load = (async ({ params, url }) => {
   return {
     asset,
     path,
-    currentFolders: Object.keys(tree || {}).filter((name) => name !== '\0'),
+    currentFolders: Object.keys(tree || {}),
     pathAssets,
     meta: {
       title: $t('folders'),

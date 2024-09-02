@@ -12,14 +12,12 @@
 
 <ul class="list-none ml-2">
   {#each Object.entries(items) as [path, tree]}
-    {#if path !== '\0'}
-      {@const value = joinPaths(parent, path)}
-      {@const key = value + getColor(value)}
-      {#key key}
-        <li>
-          <Tree {parent} value={path} {tree} {icons} {active} {getLink} {getColor} />
-        </li>
-      {/key}
-    {/if}
+    {@const value = joinPaths(parent, path)}
+    {@const key = value + getColor(value)}
+    {#key key}
+      <li>
+        <Tree {parent} value={path} {tree} {icons} {active} {getLink} {getColor} />
+      </li>
+    {/key}
   {/each}
 </ul>
