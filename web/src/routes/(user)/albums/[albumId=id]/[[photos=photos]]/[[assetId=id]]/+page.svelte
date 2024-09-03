@@ -124,11 +124,11 @@
   let assetGridWidth: number;
   let albumOrder: AssetOrder | undefined = data.album.order;
 
-  $: assetStore = new AssetStore({ albumId, order: albumOrder });
+  $: assetStore = new AssetStore({ albumId, order: albumOrder, withStacked: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: timelineStore = new AssetStore({ isArchived: false }, albumId);
+  $: timelineStore = new AssetStore({ isArchived: false, withStacked: true }, albumId);
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
@@ -298,11 +298,7 @@
       await refreshAlbum();
 
       timelineInteractionStore.clearMultiselect();
-      viewMode = ViewMode.VIEW;
-      await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
-        { replaceState: true, forceNavigate: true },
-      );
+      await setModeToView();
     } catch (error) {
       handleError(error, $t('errors.error_adding_assets_to_album'));
     }
@@ -311,9 +307,9 @@
   const setModeToView = async () => {
     viewMode = ViewMode.VIEW;
     assetStore.destroy();
-    assetStore = new AssetStore({ albumId, order: albumOrder });
+    assetStore = new AssetStore({ albumId, order: albumOrder, withStacked: true });
     timelineStore.destroy();
-    timelineStore = new AssetStore({ isArchived: false }, albumId);
+    timelineStore = new AssetStore({ isArchived: false, withStacked: true }, albumId);
     await navigate(
       { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
       { replaceState: true, forceNavigate: true },
@@ -576,6 +572,7 @@
             assetStore={timelineStore}
             assetInteractionStore={timelineInteractionStore}
             isSelectionMode={true}
+            withStacked
           />
         {:else}
           <AssetGrid
@@ -589,6 +586,7 @@
             showArchiveIcon
             on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
             on:escape={handleEscape}
+            withStacked
           >
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
