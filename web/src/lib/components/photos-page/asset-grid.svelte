@@ -762,20 +762,21 @@
 {#if showShortcuts}
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
-
-<Scrubber
-  invisible={showSkeleton}
-  {assetStore}
-  height={safeViewport.height}
-  timelineTopOffset={topSectionHeight}
-  timelineBottomOffset={bottomSectionHeight}
-  {leadout}
-  {scrubOverallPercent}
-  {scrubBucketPercent}
-  {scrubBucket}
-  {onScrub}
-  {stopScrub}
-/>
+{#if assetStore.buckets.length > 0}
+  <Scrubber
+    invisible={showSkeleton}
+    {assetStore}
+    height={safeViewport.height}
+    timelineTopOffset={topSectionHeight}
+    timelineBottomOffset={bottomSectionHeight}
+    {leadout}
+    {scrubOverallPercent}
+    {scrubBucketPercent}
+    {scrubBucket}
+    {onScrub}
+    {stopScrub}
+  />
+{/if}
 
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section

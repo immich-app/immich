@@ -10,8 +10,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pre-job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run_web: ${{ steps.found_paths.outputs.web == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run_cli: ${{ steps.found_paths.outputs.cli == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run_e2e: ${{ steps.found_paths.outputs.e2e == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run_mobile: ${{ steps.found_paths.outputs.mobile == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run_ml: ${{ steps.found_paths.outputs.machine-learning == 'true' || steps.should_force.outputs.should_force == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: found_paths
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            web:
+              - 'web/**'
+              - 'open-api/typescript-sdk/**'
+            server:
+              - 'server/**'
+            cli:
+              - 'cli/**'
+              - 'open-api/typescript-sdk/**'
+            e2e:
+              - 'e2e/**'
+              - 'cli/**'
+              - 'server/**'
+              - 'open-api/typescript-sdk/**'
+            mobile:
+              - 'mobile/**'
+            machine-learning:
+              - 'machine-learning/**'
+
+      - name: Check if we should force jobs to run
+        id: should_force
+        run: echo "should_force=${{ github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
+
   server-unit-tests:
     name: Server
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -47,6 +87,8 @@ jobs:
 
   cli-unit-tests:
     name: CLI
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -86,6 +128,8 @@ jobs:
 
   cli-unit-tests-win:
     name: CLI (Windows)
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
     runs-on: windows-latest
     defaults:
       run:
@@ -118,6 +162,8 @@ jobs:
 
   web-unit-tests:
     name: Web
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_web == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -161,6 +207,8 @@ jobs:
 
   e2e-tests:
     name: End-to-End Tests
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_e2e == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -221,6 +269,8 @@ jobs:
 
   mobile-unit-tests:
     name: Mobile
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_mobile == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -235,6 +285,8 @@ jobs:
 
   ml-unit-tests:
     name: Machine Learning
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
