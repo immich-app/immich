@@ -12,14 +12,22 @@
   import { getAllSharedLinks, removeSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiArrowLeft } from '@mdi/js';
   import { onMount } from 'svelte';
+  import type { PageData } from './$types';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+
+  export let data: PageData;
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
 
   const refresh = async () => {
     sharedLinks = await getAllSharedLinks();
+    if (data.sharedItem.type === 'album') {
+      sharedLinks = sharedLinks.filter((link) => link.album?.id === data.sharedItem.id);
+    } else if (data.sharedItem.type === 'individual') {
+      sharedLinks = sharedLinks.filter((link) => link.assets.some((asset) => asset.id === data.sharedItem.id));
+    }
   };
 
   onMount(async () => {

@@ -174,7 +174,7 @@
 
     {#if sharedLinks.length}
       <a
-        href={AppRoute.SHARED_LINKS}
+        href={`${AppRoute.SHARED_LINKS}/album/${album.id}`}
         class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
       >
         <Icon path={mdiShareCircle} size={24} />
