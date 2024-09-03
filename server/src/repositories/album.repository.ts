@@ -46,6 +46,7 @@ export class AlbumRepository implements IAlbumRepository {
     if (options.withAssets) {
       relations.assets = {
         exifInfo: true,
+        stack: { assets: true },
       };
 
       order.assets = {
