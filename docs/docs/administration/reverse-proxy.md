@@ -64,3 +64,66 @@ Below is an example config for Apache2 site configuration.
    ProxyPreserveHost On
 </VirtualHost>
 ```
+
+### HA Proxy example config
+
+[HA Proxy](https://www.haproxy.org/) is a specialised reverse proxy and load balancer with many advanced features.
+
+Below is an example configuration for HA Proxy 2.6
+
+The (optional) use of Basic Auth is shown as an extra security feature.
+
+A more advanced configuration might combine the following with a `mode tcp` SNI switch configuration, using the "Proxy Protocol" to route requests from a single listening IP address and port to a variety of different SSL end-points (local or otherwise), each with their own SSL certificate, whilst preserving the original client address data.
+
+```
+# This assumes that suitable `global` and `defaults` sections are present.
+# Typically you would source these from examples distributed with HA Proxy
+# or your OS.
+#
+# Additional security configuration for different SSL client types and usage
+# scenarios can be generated using the tool at:
+# https://ssl-config.mozilla.org/#server=haproxy&version=2.6&config=modern&openssl=3.0.14&guideline=5.7
+#
+# When you've finished customising the configration below, carry out a test of
+# the resulting file e.g. `haproxy -c -f /etc/haproxy/haproxy.cfg`
+
+# Optional basic-auth configuration:
+userlist immich_extra_basicauth
+	# These can (and should) be different from your normal Immich username
+	# and password. You can specify one for each user, or just one per
+	# installation as you prefer. If you use this, then you MUST embed the
+	# basic auth username and password (only) in the server URL which you
+	# give to your mobile app.  e.g.
+	# https://whatever:SeCrEtPaSsWoRd@immich.example.com/
+	user whatever insecure-password SeCrEtPaSsWoRd
+
+frontend immich_ssl_term
+	# High-level http(s) style frontend (not low level tcp type).
+	mode http
+	# The certificate file must be readable by the haproxy process, and
+	# should contain BOTH the private key and certificate chain.
+	# The bind directive below will listen on TCP port 443 only:
+	# Adapt to your certificate file name and location:
+	bind *:443,:::443 v6only ssl crt /etc/haproxy/ssl/immich.example.com.pem
+	# Require basic auth for this installation - see above.  If you
+	# don't want to use basic auth, then comment-out the following line:
+	http-request auth unless { http_auth(immich_extra_basicauth) }
+	use_backend immich_b_e
+
+backend immich_b_e
+	# TCP connection timeout for backend server
+	timeout connect 5s
+	# Long 10 minute timeout for the repair end-point
+	timeout server 10m
+	# The Immich web server requires the following http headers:
+	http-request set-header X-Forwarded-Port %[dst_port]
+	http-request set-header X-Forwarded-Proto https if { ssl_fc }
+	http-request set-header X-Real-IP %[src]
+	# Enable insertion of the X-Forwarded-For header:
+	option forwardfor
+	# Filter our requests with incorrect or missing host headers.
+	# Adapt to your URL:
+	use-server immich1 if { hdr(host) -i immich.example.com }
+	# Adapt to your Immich install IP and port:
+	server immich1 192.168.4.4:8080
+```
