@@ -395,7 +395,7 @@ export class AssetRepository implements IAssetRepository {
 
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
-        relations = { jobStatus: true };
+        relations = { jobStatus: true, files: true };
         where = [
           { jobStatus: { previewAt: IsNull() }, isVisible: true },
           { jobStatus: { thumbnailAt: IsNull() }, isVisible: true },

@@ -1,8 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
@@ -13,10 +11,11 @@
   import { foldersStore } from '$lib/stores/folders.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiArrowUpLeft, mdiChevronRight, mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
+  import { mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
 
   export let data: PageData;
 
@@ -35,20 +34,11 @@
     await navigateToView(normalizeTreePath(`${data.path || ''}/${folderName}`));
   };
 
-  const handleBackNavigation = async () => {
-    if (data.path) {
-      const parentPath = data.path.split('/').slice(0, -1).join('/');
-      await navigateToView(parentPath);
-    }
-  };
-
-  const handleBreadcrumbNavigation = async (targetPath: string) => {
-    await navigateToView(targetPath);
-  };
-
   const getLink = (path: string) => {
     const url = new URL(AppRoute.FOLDERS, window.location.href);
-    url.searchParams.set(QueryParameter.PATH, path);
+    if (path) {
+      url.searchParams.set(QueryParameter.PATH, path);
+    }
     return url.href;
   };
 
@@ -70,33 +60,7 @@
     </section>
   </SideBarSection>
 
-  <section id="path-summary" class="text-immich-primary dark:text-immich-dark-primary rounded-xl flex">
-    {#if data.path}
-      <CircleIconButton icon={mdiArrowUpLeft} title="Back" on:click={handleBackNavigation} class="mr-2" padding="2" />
-    {/if}
-
-    <div
-      class="flex place-items-center gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 w-full py-2 px-4 rounded-2xl border border-gray-100 dark:border-gray-900"
-    >
-      <a href={`${AppRoute.FOLDERS}`} title={$t('to_root')}>
-        <Icon path={mdiFolderHome} class="text-immich-primary dark:text-immich-dark-primary mr-2" size={28} />
-      </a>
-      {#each pathSegments as segment, index}
-        <button
-          class="text-sm font-mono underline hover:font-semibold"
-          on:click={() => handleBreadcrumbNavigation(pathSegments.slice(0, index + 1).join('/'))}
-          type="button"
-        >
-          {segment}
-        </button>
-        <p class="text-gray-500">
-          {#if index < pathSegments.length - 1}
-            <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} />
-          {/if}
-        </p>
-      {/each}
-    </div>
-  </section>
+  <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
 
   <section class="mt-2">
     <TreeItemThumbnails items={data.currentFolders} icon={mdiFolder} onClick={handleNavigation} />
