@@ -79,6 +79,32 @@ export function handleMouseMove(e: MouseEvent) {
   }
 }
 
+export function handleWheel(e: WheelEvent) {
+  e.preventDefault;
+  const canvas = get(cropAreaEl);
+  if (!canvas) {
+    return;
+  }
+
+  const wheelOffset = getWheelOffset(e);
+  let scale = 1;
+
+  if (wheelOffset > 0) {
+    scale += wheelOffset * 0.1;
+    scale = Math.min(Math.max(0.125, scale), 10);
+  } else {
+    scale = -1;
+    scale += wheelOffset * 0.1;
+    scale = Math.max(Math.min(-0.125, scale), -10);
+  }
+
+  scaleCrop(scale);
+}
+
+function getWheelOffset(e: WheelEvent) {
+  return e.deltaY;
+}
+
 export function handleMouseUp() {
   window.removeEventListener('mouseup', handleMouseUp);
   document.body.style.userSelect = '';
@@ -251,6 +277,24 @@ function moveCrop(mouseX: number, mouseY: number) {
   });
 
   draw(crop);
+}
+
+function scaleCrop(scale: number) {
+  const canvas = get(cropAreaEl);
+  const crop = get(cropSettings);
+  if (!canvas) {
+    return;
+  }
+
+  const { x, y, width, height } = crop;
+  const minSize = 50;
+  fadeOverlay(false);
+
+  cropSettings.update((crop) => {
+    crop.width += scale;
+    crop.height += scale;
+    return crop;
+  });
 }
 
 function resizeCrop(mouseX: number, mouseY: number) {
