@@ -9,7 +9,7 @@ resource "cloudflare_record" "immich_app_branch_subdomain" {
   proxied = true
   ttl     = 1
   type    = "CNAME"
-  value   = "${replace(var.prefix_name, "/\\/|\\./", "-")}.${local.is_release ? data.terraform_remote_state.cloudflare_account.outputs.immich_app_archive_pages_project_subdomain : data.terraform_remote_state.cloudflare_account.outputs.immich_app_preview_pages_project_subdomain}"
+  content   = "${replace(var.prefix_name, "/\\/|\\./", "-")}.${local.is_release ? data.terraform_remote_state.cloudflare_account.outputs.immich_app_archive_pages_project_subdomain : data.terraform_remote_state.cloudflare_account.outputs.immich_app_preview_pages_project_subdomain}"
   zone_id = data.terraform_remote_state.cloudflare_account.outputs.immich_app_zone_id
 }
 
