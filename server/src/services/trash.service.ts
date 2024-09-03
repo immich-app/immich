@@ -38,29 +38,10 @@ export class TrashService {
   }
 
   async empty(auth: AuthDto): Promise<void> {
-    let assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getByUserId(pagination, auth.user.id, {
         trashedBefore: DateTime.now().toJSDate(),
-        isArchived: true,
-      }),
-    );
-
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: JobName.ASSET_DELETION,
-          data: {
-            id: asset.id,
-            deleteOnDisk: true,
-          },
-        })),
-      );
-    }
-
-    assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getByUserId(pagination, auth.user.id, {
-        trashedBefore: DateTime.now().toJSDate(),
-        isArchived: false,
+        withArchived: true,
       }),
     );
 
