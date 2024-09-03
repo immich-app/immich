@@ -18,4 +18,10 @@ export class AssetJobStatusEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   duplicatesDetectedAt!: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  previewAt!: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  thumbnailAt!: Date | null;
 }

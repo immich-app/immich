@@ -344,16 +344,16 @@ describe('/albums', () => {
     });
   });
 
-  describe('GET /albums/count', () => {
+  describe('GET /albums/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/albums/count');
+      const { status, body } = await request(app).get('/albums/statistics');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should return total count of albums the user has access to', async () => {
       const { status, body } = await request(app)
-        .get('/albums/count')
+        .get('/albums/statistics')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);

@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { shortcuts } from '$lib/actions/shortcut';
-  import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
+
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -28,6 +28,7 @@
     mdiChevronRight,
     mdiChevronUp,
     mdiDotsVertical,
+    mdiImageSearch,
     mdiPause,
     mdiPlay,
     mdiPlus,
@@ -38,6 +39,8 @@
   import { tweened } from 'svelte/motion';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { intersectionObserver } from '$lib/actions/intersection-observer';
+  import { resizeObserver } from '$lib/actions/resize-observer';
   import { locale } from '$lib/stores/preferences.store';
 
   const parseIndex = (s: string | null, max: number | null) =>
@@ -151,7 +154,9 @@
 <svelte:window
   use:shortcuts={[
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => canGoForward && toNext() },
+    { shortcut: { key: 'd' }, onShortcut: () => canGoForward && toNext() },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => canGoBack && toPrevious() },
+    { shortcut: { key: 'a' }, onShortcut: () => canGoBack && toPrevious() },
     { shortcut: { key: 'Escape' }, onShortcut: () => goto(AppRoute.PHOTOS) },
   ]}
 />
@@ -297,6 +302,19 @@
                 draggable="false"
               />
             {/key}
+
+            <div
+              class="absolute bottom-6 right-6 transition-all"
+              class:opacity-0={galleryInView}
+              class:opacity-100={!galleryInView}
+            >
+              <CircleIconButton
+                href="{AppRoute.PHOTOS}?at={currentAsset.id}"
+                icon={mdiImageSearch}
+                title={$t('view_in_timeline')}
+                color="light"
+              />
+            </div>
             <!-- CONTROL BUTTONS -->
             {#if canGoBack}
               <div class="absolute top-1/2 left-0 ml-4">
@@ -383,21 +401,18 @@
         />
       </div>
 
-      <IntersectionObserver
-        once={false}
-        on:intersected={() => (galleryInView = true)}
-        on:hidden={() => (galleryInView = false)}
-        bottom={-200}
+      <div
+        id="gallery-memory"
+        use:intersectionObserver={{
+          onIntersect: () => (galleryInView = true),
+          onSeparate: () => (galleryInView = false),
+          bottom: '-200px',
+        }}
+        use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
+        bind:this={memoryGallery}
       >
-        <div
-          id="gallery-memory"
-          bind:this={memoryGallery}
-          bind:clientHeight={viewport.height}
-          bind:clientWidth={viewport.width}
-        >
-          <GalleryViewer assets={currentMemory.assets} {viewport} bind:selectedAssets />
-        </div>
-      </IntersectionObserver>
+        <GalleryViewer assets={currentMemory.assets} {viewport} bind:selectedAssets />
+      </div>
     </section>
   {/if}
 </section>

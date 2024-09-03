@@ -5,6 +5,11 @@ export enum AssetType {
   OTHER = 'OTHER',
 }
 
+export enum AssetFileType {
+  PREVIEW = 'preview',
+  THUMBNAIL = 'thumbnail',
+}
+
 export enum AlbumUserRole {
   EDITOR = 'editor',
   VIEWER = 'viewer',
@@ -49,7 +54,6 @@ export enum Permission {
   ASSET_READ = 'asset.read',
   ASSET_UPDATE = 'asset.update',
   ASSET_DELETE = 'asset.delete',
-  ASSET_RESTORE = 'asset.restore',
   ASSET_SHARE = 'asset.share',
   ASSET_VIEW = 'asset.view',
   ASSET_DOWNLOAD = 'asset.download',
@@ -102,10 +106,19 @@ export enum Permission {
   PERSON_MERGE = 'person.merge',
   PERSON_REASSIGN = 'person.reassign',
 
+  SESSION_READ = 'session.read',
+  SESSION_UPDATE = 'session.update',
+  SESSION_DELETE = 'session.delete',
+
   SHARED_LINK_CREATE = 'sharedLink.create',
   SHARED_LINK_READ = 'sharedLink.read',
   SHARED_LINK_UPDATE = 'sharedLink.update',
   SHARED_LINK_DELETE = 'sharedLink.delete',
+
+  STACK_CREATE = 'stack.create',
+  STACK_READ = 'stack.read',
+  STACK_UPDATE = 'stack.update',
+  STACK_DELETE = 'stack.delete',
 
   SYSTEM_CONFIG_READ = 'systemConfig.read',
   SYSTEM_CONFIG_UPDATE = 'systemConfig.update',
@@ -117,6 +130,7 @@ export enum Permission {
   TAG_READ = 'tag.read',
   TAG_UPDATE = 'tag.update',
   TAG_DELETE = 'tag.delete',
+  TAG_ASSET = 'tag.asset',
 
   ADMIN_USER_CREATE = 'admin.user.create',
   ADMIN_USER_READ = 'admin.user.read',

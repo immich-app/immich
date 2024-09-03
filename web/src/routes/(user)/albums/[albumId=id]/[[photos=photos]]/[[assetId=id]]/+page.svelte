@@ -38,12 +38,18 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { isAlbumsRoute, isPeopleRoute, isSearchRoute } from '$lib/utils/navigation';
+  import {
+    isAlbumsRoute,
+    isPeopleRoute,
+    isSearchRoute,
+    navigate,
+    type AssetGridRouteSearchParams,
+  } from '$lib/utils/navigation';
   import {
     AlbumUserRole,
     AssetOrder,
@@ -76,13 +82,17 @@
   } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
+  import { confirmAlbumDelete } from '$lib/utils/album-utils';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer, setAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
+
+  let oldAt: AssetGridRouteSearchParams | null | undefined;
 
   $: album = data.album;
   $: albumId = album.id;
@@ -244,7 +254,7 @@
     }
 
     if (viewMode === ViewMode.SELECT_ASSETS) {
-      handleCloseSelectAssets();
+      await handleCloseSelectAssets();
       return;
     }
     if (viewMode === ViewMode.LINK_SHARING) {
@@ -282,27 +292,44 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count: count } }),
+        message: $t('assets_added_count', { values: { count } }),
       });
 
       await refreshAlbum();
 
       timelineInteractionStore.clearMultiselect();
       viewMode = ViewMode.VIEW;
+      await navigate(
+        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+        { replaceState: true, forceNavigate: true },
+      );
     } catch (error) {
       handleError(error, $t('errors.error_adding_assets_to_album'));
     }
   };
 
-  const handleCloseSelectAssets = () => {
+  const setModeToView = async () => {
     viewMode = ViewMode.VIEW;
+    assetStore.destroy();
+    assetStore = new AssetStore({ albumId, order: albumOrder });
+    timelineStore.destroy();
+    timelineStore = new AssetStore({ isArchived: false }, albumId);
+    await navigate(
+      { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
+      { replaceState: true, forceNavigate: true },
+    );
+    oldAt = null;
+  };
+
+  const handleCloseSelectAssets = async () => {
     timelineInteractionStore.clearMultiselect();
+    await setModeToView();
   };
 
   const handleSelectFromComputer = async () => {
     await openFileUploadDialog({ albumId: album.id });
     timelineInteractionStore.clearMultiselect();
-    viewMode = ViewMode.VIEW;
+    await setModeToView();
   };
 
   const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
@@ -339,9 +366,7 @@
   };
 
   const handleRemoveAlbum = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('album_delete_confirmation', { values: { album: album.albumName } }),
-    });
+    const isConfirmed = await confirmAlbumDelete(album);
 
     if (!isConfirmed) {
       viewMode = ViewMode.VIEW;
@@ -395,10 +420,15 @@
     }
   };
 
-  onNavigate(async () => {
-    if (album.assetCount === 0 && !album.albumName) {
+  onNavigate(async ({ to }) => {
+    if (!isAlbumsRoute(to?.route.id) && album.assetCount === 0 && !album.albumName) {
       await deleteAlbum(album);
     }
+  });
+
+  onDestroy(() => {
+    assetStore.destroy();
+    timelineStore.destroy();
   });
 </script>
 
@@ -429,6 +459,11 @@
             {/if}
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
+
+          {#if $preferences.tags.enabled && isAllUserOwned}
+            <TagAction menuItem />
+          {/if}
+
           {#if isOwned || isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
@@ -444,7 +479,14 @@
             {#if isEditor}
               <CircleIconButton
                 title={$t('add_photos')}
-                on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                on:click={async () => {
+                  viewMode = ViewMode.SELECT_ASSETS;
+                  oldAt = { at: $gridScrollTarget?.at };
+                  await navigate(
+                    { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
+                    { replaceState: true },
+                  );
+                }}
                 icon={mdiImagePlusOutline}
               />
             {/if}
@@ -530,12 +572,14 @@
       {#key albumKey}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
+            enableRouting={false}
             assetStore={timelineStore}
             assetInteractionStore={timelineInteractionStore}
             isSelectionMode={true}
           />
         {:else}
           <AssetGrid
+            enableRouting={true}
             {album}
             {assetStore}
             {assetInteractionStore}
@@ -693,7 +737,10 @@
     {album}
     order={albumOrder}
     user={$user}
-    onChangeOrder={(order) => (albumOrder = order)}
+    onChangeOrder={async (order) => {
+      albumOrder = order;
+      await setModeToView();
+    }}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

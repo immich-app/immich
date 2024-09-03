@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -15,11 +16,18 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import {
+    AssetJobName,
+    AssetTypeEnum,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type StackResponseDto,
+  } from '@immich/sdk';
   import {
     mdiAlertOutline,
     mdiCogRefreshOutline,
@@ -27,6 +35,7 @@
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
     mdiImageRefreshOutline,
+    mdiImageSearch,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
@@ -37,10 +46,9 @@
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
-  export let stackedAssets: AssetResponseDto[];
+  export let stack: StackResponseDto | null = null;
   export let showDetailButton: boolean;
   export let showSlideshow = false;
-  export let hasStackChildren = false;
   export let onZoomImage: () => void;
   export let onCopyImage: () => void;
   export let onAction: OnAction;
@@ -136,8 +144,8 @@
         {/if}
 
         {#if isOwner}
-          {#if hasStackChildren}
-            <UnstackAction {stackedAssets} {onAction} />
+          {#if stack}
+            <UnstackAction {stack} {onAction} />
           {/if}
           {#if album}
             <SetAlbumCoverAction {asset} {album} />
@@ -151,6 +159,13 @@
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
             text={$t('replace_with_upload')}
           />
+          {#if !asset.isArchived && !asset.isTrashed}
+            <MenuOption
+              icon={mdiImageSearch}
+              onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+              text={$t('view_in_timeline')}
+            />
+          {/if}
           <hr />
           <MenuOption
             icon={mdiDatabaseRefreshOutline}

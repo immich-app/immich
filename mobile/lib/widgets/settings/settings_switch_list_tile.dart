@@ -9,6 +9,9 @@ class SettingsSwitchListTile extends StatelessWidget {
   final String? subtitle;
   final IconData? icon;
   final Function(bool)? onChanged;
+  final EdgeInsets? contentPadding;
+  final TextStyle? titleStyle;
+  final TextStyle? subtitleStyle;
 
   const SettingsSwitchListTile({
     required this.valueNotifier,
@@ -17,6 +20,9 @@ class SettingsSwitchListTile extends StatelessWidget {
     this.icon,
     this.enabled = true,
     this.onChanged,
+    this.contentPadding = const EdgeInsets.symmetric(horizontal: 20),
+    this.titleStyle,
+    this.subtitleStyle,
     super.key,
   });
 
@@ -30,7 +36,7 @@ class SettingsSwitchListTile extends StatelessWidget {
     }
 
     return SwitchListTile.adaptive(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      contentPadding: contentPadding,
       selectedTileColor: enabled ? null : context.themeData.disabledColor,
       value: valueNotifier.value,
       onChanged: onSwitchChanged,
@@ -45,20 +51,22 @@ class SettingsSwitchListTile extends StatelessWidget {
           : null,
       title: Text(
         title,
-        style: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: enabled ? null : context.themeData.disabledColor,
-          height: 1.5,
-        ),
+        style: titleStyle ??
+            context.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: enabled ? null : context.themeData.disabledColor,
+              height: 1.5,
+            ),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle!,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: enabled
-                    ? context.colorScheme.onSurfaceSecondary
-                    : context.themeData.disabledColor,
-              ),
+              style: subtitleStyle ??
+                  context.textTheme.bodyMedium?.copyWith(
+                    color: enabled
+                        ? context.colorScheme.onSurfaceSecondary
+                        : context.themeData.disabledColor,
+                  ),
             )
           : null,
     );

@@ -29,7 +29,7 @@ class LoginPage extends HookConsumerWidget {
     );
 
     return Scaffold(
-      body: const LoginForm(),
+      body: LoginForm(),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 16.0),

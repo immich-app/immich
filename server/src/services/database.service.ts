@@ -68,7 +68,7 @@ export class DatabaseService {
     this.logger.setContext(DatabaseService.name);
   }
 
-  @OnEmit({ event: 'onBootstrap', priority: -200 })
+  @OnEmit({ event: 'app.bootstrap', priority: -200 })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);

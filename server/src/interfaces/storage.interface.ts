@@ -2,7 +2,7 @@ import { WatchOptions } from 'chokidar';
 import { Stats } from 'node:fs';
 import { FileReadOptions } from 'node:fs/promises';
 import { Readable } from 'node:stream';
-import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 
 export interface ImmichReadStream {
   stream: Readable;
@@ -45,8 +45,8 @@ export interface IStorageRepository {
   checkDiskUsage(folder: string): Promise<DiskUsage>;
   readdir(folder: string): Promise<string[]>;
   stat(filepath: string): Promise<Stats>;
-  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
-  walk(crawlOptions: CrawlOptionsDto): AsyncGenerator<string>;
+  crawl(options: CrawlOptionsDto): Promise<string[]>;
+  walk(options: WalkOptionsDto): AsyncGenerator<string[]>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
   watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>): () => Promise<void>;

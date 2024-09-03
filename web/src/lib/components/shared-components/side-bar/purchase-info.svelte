@@ -76,48 +76,46 @@
   <LicenseModal onClose={() => (isOpen = false)} />
 {/if}
 
-{#if getAccountAge() > 14}
-  <div class="hidden md:block license-status pl-4 text-sm">
-    {#if $isPurchased && $preferences.purchase.showSupportBadge}
-      <button
-        on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
-        class="w-full"
-        type="button"
-      >
-        <SupporterBadge />
-      </button>
-    {:else if !$isPurchased && showBuyButton}
-      <button
-        type="button"
-        on:click={openPurchaseModal}
-        on:mouseover={onButtonHover}
-        on:mouseleave={() => (hoverButton = false)}
-        on:focus={onButtonHover}
-        on:blur={() => (hoverButton = false)}
-        class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/10 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 w-full"
-      >
-        <div class="flex justify-between w-full place-items-center place-content-center">
-          <div class="flex place-items-center place-content-center gap-1">
-            <div class="h-6 w-6">
-              <ImmichLogo noText />
-            </div>
-            <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
-              {$t('purchase_button_buy_immich')}
-            </p>
+<div class="hidden md:block license-status pl-4 text-sm">
+  {#if $isPurchased && $preferences.purchase.showSupportBadge}
+    <button
+      on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
+      class="w-full"
+      type="button"
+    >
+      <SupporterBadge />
+    </button>
+  {:else if !$isPurchased && showBuyButton && getAccountAge() > 14}
+    <button
+      type="button"
+      on:click={openPurchaseModal}
+      on:mouseover={onButtonHover}
+      on:mouseleave={() => (hoverButton = false)}
+      on:focus={onButtonHover}
+      on:blur={() => (hoverButton = false)}
+      class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/10 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 w-full"
+    >
+      <div class="flex justify-between w-full place-items-center place-content-center">
+        <div class="flex place-items-center place-content-center gap-1">
+          <div class="h-6 w-6">
+            <ImmichLogo noText />
           </div>
-
-          <div>
-            <Icon
-              path={mdiInformationOutline}
-              class="flex text-immich-primary dark:text-immich-dark-primary font-medium"
-              size="18"
-            />
-          </div>
+          <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
+            {$t('purchase_button_buy_immich')}
+          </p>
         </div>
-      </button>
-    {/if}
-  </div>
-{/if}
+
+        <div>
+          <Icon
+            path={mdiInformationOutline}
+            class="flex text-immich-primary dark:text-immich-dark-primary font-medium"
+            size="18"
+          />
+        </div>
+      </div>
+    </button>
+  {/if}
+</div>
 
 <Portal target="body">
   {#if showMessage}

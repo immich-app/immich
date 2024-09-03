@@ -93,8 +93,8 @@ export class AssetMediaController {
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
-  @Authenticated({ sharedLink: true })
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
+  @Authenticated({ sharedLink: true })
   async replaceAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

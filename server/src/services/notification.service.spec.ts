@@ -1,6 +1,9 @@
+import { plainToInstance } from 'class-transformer';
 import { defaults, SystemConfig } from 'src/config';
+import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
-import { UserMetadataKey } from 'src/enum';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -106,6 +109,14 @@ describe(NotificationService.name, () => {
     it('skips smtp validation when there are no changes', async () => {
       const oldConfig = { ...configs.smtpEnabled };
       const newConfig = { ...configs.smtpEnabled };
+
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
+      expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
+    });
+
+    it('skips smtp validation with DTO when there are no changes', async () => {
+      const oldConfig = { ...configs.smtpEnabled };
+      const newConfig = plainToInstance(SystemConfigDto, configs.smtpEnabled);
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
@@ -333,7 +344,9 @@ describe(NotificationService.name, () => {
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId);
+      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
+        files: true,
+      });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -358,10 +371,15 @@ describe(NotificationService.name, () => {
       });
       systemMock.get.mockResolvedValue({ server: {} });
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
-      assetMock.getById.mockResolvedValue({ ...assetStub.image, thumbnailPath: 'path-to-thumb.jpg' });
+      assetMock.getById.mockResolvedValue({
+        ...assetStub.image,
+        files: [{ assetId: 'asset-id', type: AssetFileType.THUMBNAIL, path: 'path-to-thumb.jpg' } as AssetFileEntity],
+      });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId);
+      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
+        files: true,
+      });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({
@@ -389,7 +407,9 @@ describe(NotificationService.name, () => {
       assetMock.getById.mockResolvedValue(assetStub.image);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SUCCESS);
-      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId);
+      expect(assetMock.getById).toHaveBeenCalledWith(albumStub.emptyWithValidThumbnail.albumThumbnailAssetId, {
+        files: true,
+      });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEND_EMAIL,
         data: expect.objectContaining({

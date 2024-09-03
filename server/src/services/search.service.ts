@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
@@ -92,7 +92,7 @@ export class SearchService {
       },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
@@ -111,7 +111,7 @@ export class SearchService {
       { ...dto, userIds, embedding },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
@@ -157,13 +157,13 @@ export class SearchService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: AssetEntity[], nextPage: string | null): SearchResponseDto {
+  private mapResponse(assets: AssetEntity[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
         total: assets.length,
         count: assets.length,
-        items: assets.map((asset) => mapAsset(asset)),
+        items: assets.map((asset) => mapAsset(asset, options)),
         facets: [],
         nextPage,
       },

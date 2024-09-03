@@ -25,12 +25,6 @@ export class ActivityController {
     return this.service.getAll(auth, dto);
   }
 
-  @Get('statistics')
-  @Authenticated({ permission: Permission.ACTIVITY_STATISTICS })
-  getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
-    return this.service.getStatistics(auth, dto);
-  }
-
   @Post()
   @Authenticated({ permission: Permission.ACTIVITY_CREATE })
   async createActivity(
@@ -43,6 +37,12 @@ export class ActivityController {
       res.status(HttpStatus.OK);
     }
     return value;
+  }
+
+  @Get('statistics')
+  @Authenticated({ permission: Permission.ACTIVITY_STATISTICS })
+  getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
+    return this.service.getStatistics(auth, dto);
   }
 
   @Delete(':id')

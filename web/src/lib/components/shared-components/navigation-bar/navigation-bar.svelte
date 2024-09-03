@@ -19,6 +19,7 @@
   import AccountInfoPanel from './account-info-panel.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
+  import { foldersStore } from '$lib/stores/folders.store';
 
   export let showUploadButton = true;
 
@@ -38,6 +39,7 @@
       window.location.href = redirectUri;
     }
     resetSavedUser();
+    foldersStore.clearCache();
   };
 </script>
 

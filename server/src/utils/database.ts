@@ -71,7 +71,7 @@ export function searchAssetBuilder(
     builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
   }
 
-  const path = _.pick(options, ['encodedVideoPath', 'originalPath', 'previewPath', 'thumbnailPath']);
+  const path = _.pick(options, ['encodedVideoPath', 'originalPath']);
   builder.andWhere(_.omitBy(path, _.isUndefined));
 
   if (options.originalFileName) {

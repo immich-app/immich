@@ -7,7 +7,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
-  import { loadConfig } from '$lib/stores/server-config.store';
+  import { retrieveServerConfig } from '$lib/stores/server-config.store';
   import { cloneDeep, isEqual } from 'lodash-es';
   import { onMount } from 'svelte';
   import type { SettingsResetOptions } from './admin-settings';
@@ -39,7 +39,7 @@
       savedConfig = cloneDeep(newConfig);
       notificationController.show({ message: $t('settings_saved'), type: NotificationType.Info });
 
-      await loadConfig();
+      await retrieveServerConfig();
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_settings'));
     }

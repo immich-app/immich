@@ -31,16 +31,16 @@ export class LibraryController {
     return this.service.create(dto);
   }
 
-  @Put(':id')
-  @Authenticated({ permission: Permission.LIBRARY_UPDATE, admin: true })
-  updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    return this.service.update(id, dto);
-  }
-
   @Get(':id')
   @Authenticated({ permission: Permission.LIBRARY_READ, admin: true })
   getLibrary(@Param() { id }: UUIDParamDto): Promise<LibraryResponseDto> {
     return this.service.get(id);
+  }
+
+  @Put(':id')
+  @Authenticated({ permission: Permission.LIBRARY_UPDATE, admin: true })
+  updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    return this.service.update(id, dto);
   }
 
   @Post(':id/validate')

@@ -1,8 +1,9 @@
 <script lang="ts">
+  import type { Translations } from 'svelte-i18n';
   import FormatMessage from '../format-message.svelte';
   import type { ComponentProps } from 'svelte';
 
-  export let key: string;
+  export let key: Translations;
   export let values: ComponentProps<FormatMessage>['values'];
 </script>
 

@@ -27,12 +27,15 @@ import 'package:immich_mobile/widgets/forms/login/login_button.dart';
 import 'package:immich_mobile/widgets/forms/login/o_auth_login_button.dart';
 import 'package:immich_mobile/widgets/forms/login/password_input.dart';
 import 'package:immich_mobile/widgets/forms/login/server_endpoint_input.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
-  const LoginForm({super.key});
+  LoginForm({super.key});
+
+  final log = Logger('LoginForm');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -229,7 +232,9 @@ class LoginForm extends HookConsumerWidget {
             .getOAuthServerUrl(sanitizeUrl(serverEndpointController.text));
 
         isLoading.value = true;
-      } catch (e) {
+      } catch (error, stack) {
+        log.severe('Error getting OAuth server Url: $error', stack);
+
         ImmichToast.show(
           context: context,
           msg: "login_form_failed_get_oauth_server_config".tr(),
@@ -241,10 +246,19 @@ class LoginForm extends HookConsumerWidget {
       }
 
       if (oAuthServerUrl != null) {
-        var loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl);
+        try {
+          final loginResponseDto =
+              await oAuthService.oAuthLogin(oAuthServerUrl);
 
-        if (loginResponseDto != null) {
-          var isSuccess = await ref
+          if (loginResponseDto == null) {
+            return;
+          }
+
+          log.info(
+            "Finished OAuth login with response: ${loginResponseDto.userEmail}",
+          );
+
+          final isSuccess = await ref
               .watch(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
@@ -258,17 +272,19 @@ class LoginForm extends HookConsumerWidget {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
             context.replaceRoute(const TabControllerRoute());
-          } else {
-            ImmichToast.show(
-              context: context,
-              msg: "login_form_failed_login".tr(),
-              toastType: ToastType.error,
-              gravity: ToastGravity.TOP,
-            );
           }
-        }
+        } catch (error, stack) {
+          log.severe('Error logging in with OAuth: $error', stack);
 
-        isLoading.value = false;
+          ImmichToast.show(
+            context: context,
+            msg: error.toString(),
+            toastType: ToastType.error,
+            gravity: ToastGravity.TOP,
+          );
+        } finally {
+          isLoading.value = false;
+        }
       } else {
         ImmichToast.show(
           context: context,

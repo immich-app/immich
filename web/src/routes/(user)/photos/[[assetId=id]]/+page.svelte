@@ -24,6 +24,8 @@
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { preferences, user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
@@ -48,6 +50,10 @@
       return;
     }
   };
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if $isMultiSelectState}
@@ -75,6 +81,9 @@
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      {#if $preferences.tags.enabled}
+        <TagAction menuItem />
+      {/if}
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
       <hr />
       <AssetJobActions />
@@ -84,6 +93,7 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
   <AssetGrid
+    enableRouting={true}
     {assetStore}
     {assetInteractionStore}
     removeAction={AssetAction.ARCHIVE}

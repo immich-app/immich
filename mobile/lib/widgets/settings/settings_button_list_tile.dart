@@ -9,6 +9,7 @@ class SettingsButtonListTile extends StatelessWidget {
   final Widget? subtitle;
   final String? subtileText;
   final String buttonText;
+  final Widget? child;
   final void Function()? onButtonTap;
 
   const SettingsButtonListTile({
@@ -18,6 +19,7 @@ class SettingsButtonListTile extends StatelessWidget {
     this.subtileText,
     this.subtitle,
     required this.buttonText,
+    this.child,
     this.onButtonTap,
     super.key,
   });
@@ -48,7 +50,8 @@ class SettingsButtonListTile extends StatelessWidget {
             ),
           if (subtitle != null) subtitle!,
           const SizedBox(height: 6),
-          ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
+          child ??
+              ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
         ],
       ),
     );

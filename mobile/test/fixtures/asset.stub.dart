@@ -17,7 +17,6 @@ final class AssetStub {
     isFavorite: true,
     isArchived: false,
     isTrashed: false,
-    stackCount: 0,
   );
 
   static final image2 = Asset(
@@ -34,6 +33,5 @@ final class AssetStub {
     isFavorite: false,
     isArchived: false,
     isTrashed: false,
-    stackCount: 0,
   );
 }

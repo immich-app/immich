@@ -14,7 +14,6 @@
 
   $: isFromExternalLibrary = !!asset.libraryId;
   $: assetData = JSON.stringify(asset, null, 2);
-  $: stackCount = asset.stackCount;
 </script>
 
 <div
@@ -55,17 +54,17 @@
         {isSelected ? $t('keep') : $t('to_trash')}
       </div>
 
-      <!-- EXTERNAL LIBRARY / STACK COUNT CHIP-->
+      <!-- EXTERNAL LIBRARY / STACK COUNT CHIP -->
       <div class="absolute top-2 right-3">
         {#if isFromExternalLibrary}
           <div class="bg-immich-primary/90 px-2 py-1 rounded-xl text-xs text-white">
             {$t('external')}
           </div>
         {/if}
-        {#if stackCount != null && stackCount != 0}
+        {#if asset.stack?.assetCount}
           <div class="bg-immich-primary/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
             <div class="flex items-center justify-center">
-              <div class="mr-1">{stackCount}</div>
+              <div class="mr-1">{asset.stack.assetCount}</div>
               <Icon path={mdiImageMultipleOutline} size="18" />
             </div>
           </div>

@@ -2,9 +2,9 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@
 import { ApiTags } from '@nestjs/swagger';
 import {
   AddUsersDto,
-  AlbumCountResponseDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
@@ -22,12 +22,6 @@ import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 export class AlbumController {
   constructor(private service: AlbumService) {}
 
-  @Get('count')
-  @Authenticated({ permission: Permission.ALBUM_STATISTICS })
-  getAlbumCount(@Auth() auth: AuthDto): Promise<AlbumCountResponseDto> {
-    return this.service.getCount(auth);
-  }
-
   @Get()
   @Authenticated({ permission: Permission.ALBUM_READ })
   getAllAlbums(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
@@ -38,6 +32,12 @@ export class AlbumController {
   @Authenticated({ permission: Permission.ALBUM_CREATE })
   createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     return this.service.create(auth, dto);
+  }
+
+  @Get('statistics')
+  @Authenticated({ permission: Permission.ALBUM_STATISTICS })
+  getAlbumStatistics(@Auth() auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
+    return this.service.getStatistics(auth);
   }
 
   @Authenticated({ permission: Permission.ALBUM_READ, sharedLink: true })

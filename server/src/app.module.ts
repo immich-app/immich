@@ -62,7 +62,7 @@ export class ApiModule implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     const items = setupEventHandlers(this.moduleRef);
 
-    await this.eventRepository.emit('onBootstrap', 'api');
+    await this.eventRepository.emit('app.bootstrap', 'api');
 
     this.logger.setContext('EventLoader');
     const eventMap = _.groupBy(items, 'event');
@@ -74,7 +74,7 @@ export class ApiModule implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    await this.eventRepository.emit('onShutdown');
+    await this.eventRepository.emit('app.shutdown');
   }
 }
 
@@ -90,11 +90,11 @@ export class MicroservicesModule implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     setupEventHandlers(this.moduleRef);
-    await this.eventRepository.emit('onBootstrap', 'microservices');
+    await this.eventRepository.emit('app.bootstrap', 'microservices');
   }
 
   async onModuleDestroy() {
-    await this.eventRepository.emit('onShutdown');
+    await this.eventRepository.emit('app.shutdown');
   }
 }
 

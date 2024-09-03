@@ -10,7 +10,6 @@
   import AppSettings from './app-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
-  import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
@@ -19,6 +18,7 @@
   import { t } from 'svelte-i18n';
   import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
   import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
+  import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
 
   export let keys: ApiKeyResponseDto[] = [];
   export let sessions: SessionResponseDto[] = [];
@@ -53,8 +53,8 @@
     <DownloadSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
-    <MemoriesSettings />
+  <SettingAccordion key="feature" title={$t('features')} subtitle={$t('features_setting_description')}>
+    <FeatureSettings />
   </SettingAccordion>
 
   <SettingAccordion key="notifications" title={$t('notifications')} subtitle={$t('notifications_setting_description')}>
@@ -84,6 +84,7 @@
     key="user-purchase-settings"
     title={$t('user_purchase_settings')}
     subtitle={$t('user_purchase_settings_description')}
+    autoScrollTo={true}
   >
     <UserPurchaseSettings />
   </SettingAccordion>

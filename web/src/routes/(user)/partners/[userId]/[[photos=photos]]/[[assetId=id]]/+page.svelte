@@ -23,6 +23,7 @@
 
   onDestroy(() => {
     assetInteractionStore.clearMultiselect();
+    assetStore.destroy();
   });
 </script>
 
@@ -45,5 +46,5 @@
       </svelte:fragment>
     </ControlAppBar>
   {/if}
-  <AssetGrid {assetStore} {assetInteractionStore} />
+  <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} />
 </main>

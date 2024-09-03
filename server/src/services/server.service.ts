@@ -42,7 +42,7 @@ export class ServerService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
+  @OnEmit({ event: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {

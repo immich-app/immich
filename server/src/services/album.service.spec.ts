@@ -43,12 +43,12 @@ describe(AlbumService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('getCount', () => {
+  describe('getStatistics', () => {
     it('should get the album count', async () => {
       albumMock.getOwned.mockResolvedValue([]);
       albumMock.getShared.mockResolvedValue([]);
       albumMock.getNotShared.mockResolvedValue([]);
-      await expect(sut.getCount(authStub.admin)).resolves.toEqual({
+      await expect(sut.getStatistics(authStub.admin)).resolves.toEqual({
         owned: 0,
         shared: 0,
         notShared: 0,
@@ -205,6 +205,10 @@ describe(AlbumService.name, () => {
 
       expect(userMock.get).toHaveBeenCalledWith('user-id', {});
       expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']));
+      expect(eventMock.emit).toHaveBeenCalledWith('album.invite', {
+        id: albumStub.empty.id,
+        userId: 'user-id',
+      });
     });
 
     it('should require valid userIds', async () => {
@@ -380,7 +384,7 @@ describe(AlbumService.name, () => {
         userId: authStub.user2.user.id,
         albumId: albumStub.sharedWithAdmin.id,
       });
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumInvite', {
+      expect(eventMock.emit).toHaveBeenCalledWith('album.invite', {
         id: albumStub.sharedWithAdmin.id,
         userId: userStub.user2.id,
       });
@@ -568,7 +572,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdate', {
+      expect(eventMock.emit).toHaveBeenCalledWith('album.update', {
         id: 'album-123',
         updatedBy: authStub.admin.user.id,
       });
@@ -612,7 +616,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(eventMock.emit).toHaveBeenCalledWith('onAlbumUpdate', {
+      expect(eventMock.emit).toHaveBeenCalledWith('album.update', {
         id: 'album-123',
         updatedBy: authStub.user1.user.id,
       });

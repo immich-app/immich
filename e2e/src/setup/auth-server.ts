@@ -86,14 +86,14 @@ const setup = async () => {
       {
         client_id: OAuthClient.DEFAULT,
         client_secret: OAuthClient.DEFAULT,
-        redirect_uris: ['http://127.0.0.1:2283/auth/login'],
+        redirect_uris: ['http://127.0.0.1:2285/auth/login'],
         grant_types: ['authorization_code'],
         response_types: ['code'],
       },
       {
         client_id: OAuthClient.RS256_TOKENS,
         client_secret: OAuthClient.RS256_TOKENS,
-        redirect_uris: ['http://127.0.0.1:2283/auth/login'],
+        redirect_uris: ['http://127.0.0.1:2285/auth/login'],
         grant_types: ['authorization_code'],
         id_token_signed_response_alg: 'RS256',
         jwks: { keys: [await exportJWK(publicKey)] },
@@ -101,7 +101,7 @@ const setup = async () => {
       {
         client_id: OAuthClient.RS256_PROFILE,
         client_secret: OAuthClient.RS256_PROFILE,
-        redirect_uris: ['http://127.0.0.1:2283/auth/login'],
+        redirect_uris: ['http://127.0.0.1:2285/auth/login'],
         grant_types: ['authorization_code'],
         userinfo_signed_response_alg: 'RS256',
         jwks: { keys: [await exportJWK(publicKey)] },

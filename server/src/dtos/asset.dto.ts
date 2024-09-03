@@ -60,12 +60,6 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
   @ValidateUUID({ each: true })
   ids!: string[];
 
-  @ValidateUUID({ optional: true })
-  stackParentId?: string;
-
-  @ValidateBoolean({ optional: true })
-  removeParent?: boolean;
-
   @Optional()
   duplicateId?: string | null;
 }

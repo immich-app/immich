@@ -19,6 +19,9 @@ export class TimeBucketDto {
   @ValidateUUID({ optional: true })
   personId?: string;
 
+  @ValidateUUID({ optional: true })
+  tagId?: string;
+
   @ValidateBoolean({ optional: true })
   isArchived?: boolean;
 
