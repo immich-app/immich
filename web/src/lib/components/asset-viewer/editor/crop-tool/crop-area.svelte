@@ -8,7 +8,7 @@
   import { imgElement, cropAreaEl, resetCropStore, overlayEl, isResizingOrDragging, cropFrame } from './crop-store';
   import { draw } from './drawing';
   import { onImageLoad, resizeCanvas } from './image-loading';
-  import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
+  import { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel } from './mouse-handlers';
   import { recalculateCrop, animateCropChange } from './crop-settings';
   import {
     changedOriention,
@@ -66,6 +66,7 @@
     bind:this={$cropAreaEl}
     on:mousedown={handleMouseDown}
     on:mouseup={handleMouseUp}
+    on:wheel={handleWheel}
     aria-label="Crop area"
     type="button"
   >

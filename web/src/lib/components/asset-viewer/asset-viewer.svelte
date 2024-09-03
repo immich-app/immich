@@ -319,12 +319,12 @@
     dispatch(order);
   };
 
-  // const showEditorHandler = () => {
-  //   if (isShowActivity) {
-  //     isShowActivity = false;
-  //   }
-  //   isShowEditor = !isShowEditor;
-  // };
+  const showEditorHandler = () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
+    isShowEditor = !isShowEditor;
+  };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -415,6 +415,7 @@
         {asset}
         {album}
         {stack}
+        {showEditorHandler}
         showDetailButton={enableDetailPanel}
         showSlideshow={!!assetStore}
         onZoomImage={zoomToggle}
