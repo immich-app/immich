@@ -2,6 +2,21 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 
+class ImAdaptiveRoutePrimaryAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
+  const ImAdaptiveRoutePrimaryAppBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      leading: BackButton(onPressed: () => context.router.root.maybePop()),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
 class ImAdaptiveRouteSecondaryAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   const ImAdaptiveRouteSecondaryAppBar({super.key});

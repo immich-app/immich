@@ -5,6 +5,8 @@ import 'package:immich_mobile/domain/interfaces/log.interface.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:logging/logging.dart';
+// ignore: depend_on_referenced_packages
+import 'package:stack_trace/stack_trace.dart' as stack_trace;
 
 /// [LogManager] is a custom logger that is built on top of the [logging] package.
 /// The logs are written to the database and onto console, using `debugPrint` method.
@@ -71,5 +73,28 @@ class LogManager {
     _timer = null;
     _msgBuffer.clear();
     di<ILogRepository>().clear();
+  }
+
+  static void setGlobalErrorCallbacks() {
+    FlutterError.demangleStackTrace = (StackTrace stack) {
+      if (stack is stack_trace.Trace) return stack.vmTrace;
+      if (stack is stack_trace.Chain) return stack.toTrace().vmTrace;
+      return stack;
+    };
+
+    FlutterError.onError = (details) {
+      Logger("FlutterError").severe(
+        'Unknown framework error occured in library ${details.library ?? "<unknown>"} at node ${details.context ?? "<unkown>"}',
+        details.exception,
+        details.stack,
+      );
+      FlutterError.presentError(details);
+    };
+
+    PlatformDispatcher.instance.onError = (error, stack) {
+      Logger("PlatformDispatcher")
+          .severe('Unknown error occured in root isolate', error, stack);
+      return true;
+    };
   }
 }

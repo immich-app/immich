@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_secondary_appbar.widget.dart';
+import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_appbar.widget.dart';
 
 @RoutePage()
 class GeneralSettingsPage extends StatelessWidget {

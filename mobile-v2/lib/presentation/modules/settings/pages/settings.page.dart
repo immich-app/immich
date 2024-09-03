@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
-import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_primary_appbar.widget.dart';
+import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_appbar.widget.dart';
 import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_wrapper.widget.dart';
 import 'package:immich_mobile/presentation/modules/settings/models/settings_section.model.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
