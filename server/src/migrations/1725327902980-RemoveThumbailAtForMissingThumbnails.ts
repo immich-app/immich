@@ -6,7 +6,8 @@ export class RemoveThumbailAtForMissingThumbnails1725327902980 implements Migrat
         await queryRunner.query(`UPDATE "asset_job_status" j SET "thumbnailAt" = NULL WHERE j."thumbnailAt" IS NOT NULL AND NOT EXISTS ( SELECT 1 FROM public.asset_files f WHERE j."assetId" = f."assetId" AND f."type" = 'thumbnail' AND f."path" IS NOT NULL )`);
     }
 
-   public async down(): Promise<void> {
-   }
+    public async down(): Promise<void> {
+        // do nothing
+    }
 
 }
