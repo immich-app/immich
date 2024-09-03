@@ -159,4 +159,75 @@ describe('/map', () => {
       expect(body).toEqual(expect.objectContaining({ id: 'immich-map-dark' }));
     });
   });
+
+  describe('GET /map/reverse-geocode', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get('/map/reverse-geocode');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should throw an error if a lat is not provided', async () => {
+      const { status, body } = await request(app)
+        .get('/map/reverse-geocode?lon=123')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
+    });
+
+    it('should throw an error if a lat is not a number', async () => {
+      const { status, body } = await request(app)
+        .get('/map/reverse-geocode?lat=abc&lon=123.456')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
+    });
+
+    it('should throw an error if a lat is out of range', async () => {
+      const { status, body } = await request(app)
+        .get('/map/reverse-geocode?lat=91&lon=123.456')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
+    });
+
+    it('should throw an error if a lon is not provided', async () => {
+      const { status, body } = await request(app)
+        .get('/map/reverse-geocode?lat=75')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['lon must be a number between -180 and 180']));
+    });
+
+    const reverseGeocodeTestCases = [
+      {
+        name: 'Vaucluse',
+        lat: -33.858_977_058_663_13,
+        lon: 151.278_490_730_270_48,
+        results: [{ city: 'Vaucluse', state: 'New South Wales', country: 'Australia' }],
+      },
+      {
+        name: 'Ravenhall',
+        lat: -37.765_732_399_174_75,
+        lon: 144.752_453_164_883_3,
+        results: [{ city: 'Ravenhall', state: 'Victoria', country: 'Australia' }],
+      },
+      {
+        name: 'Scarborough',
+        lat: -31.894_346_156_789_997,
+        lon: 115.757_617_103_904_64,
+        results: [{ city: 'Scarborough', state: 'Western Australia', country: 'Australia' }],
+      },
+    ];
+
+    it.each(reverseGeocodeTestCases)(`should resolve to $name`, async ({ lat, lon, results }) => {
+      const { status, body } = await request(app)
+        .get(`/map/reverse-geocode?lat=${lat}&lon=${lon}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBe(results.length);
+      expect(body).toEqual(results);
+    });
+  });
 });

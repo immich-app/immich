@@ -1,3 +1,4 @@
+import os
 import tempfile
 import warnings
 from dataclasses import dataclass, field
@@ -7,7 +8,6 @@ import open_clip
 import torch
 from transformers import AutoTokenizer
 
-from .optimize import optimize
 from .util import get_model_path, save_config
 
 
@@ -23,25 +23,28 @@ class OpenCLIPModelConfig:
         if open_clip_cfg is None:
             raise ValueError(f"Unknown model {self.name}")
         self.image_size = open_clip_cfg["vision_cfg"]["image_size"]
-        self.sequence_length = open_clip_cfg["text_cfg"]["context_length"]
+        self.sequence_length = open_clip_cfg["text_cfg"].get("context_length", 77)
 
 
 def to_onnx(
     model_cfg: OpenCLIPModelConfig,
     output_dir_visual: Path | str | None = None,
     output_dir_textual: Path | str | None = None,
-) -> None:
+) -> tuple[Path | None, Path | None]:
+    visual_path = None
+    textual_path = None
     with tempfile.TemporaryDirectory() as tmpdir:
         model = open_clip.create_model(
             model_cfg.name,
             pretrained=model_cfg.pretrained,
             jit=False,
-            cache_dir=tmpdir,
+            cache_dir=os.environ.get("CACHE_DIR", tmpdir),
             require_pretrained=True,
         )
 
         text_vision_cfg = open_clip.get_model_config(model_cfg.name)
 
+        model.eval()
         for param in model.parameters():
             param.requires_grad_(False)
 
@@ -53,8 +56,6 @@ def to_onnx(
             save_config(text_vision_cfg, output_dir_visual.parent / "config.json")
             export_image_encoder(model, model_cfg, visual_path)
 
-            optimize(visual_path)
-
         if output_dir_textual is not None:
             output_dir_textual = Path(output_dir_textual)
             textual_path = get_model_path(output_dir_textual)
@@ -62,7 +63,7 @@ def to_onnx(
             tokenizer_name = text_vision_cfg["text_cfg"].get("hf_tokenizer_name", "openai/clip-vit-base-patch32")
             AutoTokenizer.from_pretrained(tokenizer_name).save_pretrained(output_dir_textual)
             export_text_encoder(model, model_cfg, textual_path)
-            optimize(textual_path)
+    return visual_path, textual_path
 
 
 def export_image_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, output_path: Path | str) -> None:
@@ -83,9 +84,9 @@ def export_image_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, 
             args,
             output_path.as_posix(),
             input_names=["image"],
-            output_names=["image_embedding"],
+            output_names=["embedding"],
             opset_version=17,
-            dynamic_axes={"image": {0: "batch_size"}},
+            # dynamic_axes={"image": {0: "batch_size"}},
         )
 
 
@@ -107,7 +108,7 @@ def export_text_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, o
             args,
             output_path.as_posix(),
             input_names=["text"],
-            output_names=["text_embedding"],
+            output_names=["embedding"],
             opset_version=17,
-            dynamic_axes={"text": {0: "batch_size"}},
+            # dynamic_axes={"text": {0: "batch_size"}},
         )

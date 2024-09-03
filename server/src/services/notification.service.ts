@@ -1,18 +1,12 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { isEqual } from 'lodash';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEmit } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import {
-  AlbumInviteEvent,
-  AlbumUpdateEvent,
-  OnEvents,
-  SystemConfigUpdateEvent,
-  UserSignupEvent,
-} from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
   IJobRepository,
@@ -26,11 +20,13 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
+import { isEqualObject } from 'src/utils/object';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class NotificationService implements OnEvents {
+export class NotificationService {
   private configCore: SystemConfigCore;
 
   constructor(
@@ -46,11 +42,12 @@ export class NotificationService implements OnEvents {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
-  async onConfigValidateEvent({ oldConfig, newConfig }: SystemConfigUpdateEvent) {
+  @OnEmit({ event: 'config.validate', priority: -100 })
+  async onConfigValidate({ oldConfig, newConfig }: ArgOf<'config.validate'>) {
     try {
       if (
         newConfig.notifications.smtp.enabled &&
-        !isEqual(oldConfig.notifications.smtp, newConfig.notifications.smtp)
+        !isEqualObject(oldConfig.notifications.smtp, newConfig.notifications.smtp)
       ) {
         await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }
@@ -60,17 +57,20 @@ export class NotificationService implements OnEvents {
     }
   }
 
-  async onUserSignupEvent({ notify, id, tempPassword }: UserSignupEvent) {
+  @OnEmit({ event: 'user.signup' })
+  async onUserSignup({ notify, id, tempPassword }: ArgOf<'user.signup'>) {
     if (notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id, tempPassword } });
     }
   }
 
-  async onAlbumUpdateEvent({ id, updatedBy }: AlbumUpdateEvent) {
+  @OnEmit({ event: 'album.update' })
+  async onAlbumUpdate({ id, updatedBy }: ArgOf<'album.update'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_UPDATE, data: { id, senderId: updatedBy } });
   }
 
-  async onAlbumInviteEvent({ id, userId }: AlbumInviteEvent) {
+  @OnEmit({ event: 'album.invite' })
+  async onAlbumInvite({ id, userId }: ArgOf<'album.invite'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id, recipientId: userId } });
   }
 
@@ -87,7 +87,7 @@ export class NotificationService implements OnEvents {
     }
 
     const { server } = await this.configCore.getConfig({ withCache: false });
-    const { html, text } = this.notificationRepository.renderEmail({
+    const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
@@ -113,7 +113,7 @@ export class NotificationService implements OnEvents {
     }
 
     const { server } = await this.configCore.getConfig({ withCache: true });
-    const { html, text } = this.notificationRepository.renderEmail({
+    const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
         baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
@@ -156,7 +156,7 @@ export class NotificationService implements OnEvents {
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig({ withCache: false });
-    const { html, text } = this.notificationRepository.renderEmail({
+    const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
         baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
@@ -211,7 +211,7 @@ export class NotificationService implements OnEvents {
         continue;
       }
 
-      const { html, text } = this.notificationRepository.renderEmail({
+      const { html, text } = await this.notificationRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {
           baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
@@ -269,14 +269,15 @@ export class NotificationService implements OnEvents {
       return;
     }
 
-    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId);
-    if (!albumThumbnail?.thumbnailPath) {
+    const albumThumbnail = await this.assetRepository.getById(album.albumThumbnailAssetId, { files: true });
+    const { thumbnailFile } = getAssetFiles(albumThumbnail?.files);
+    if (!thumbnailFile) {
       return;
     }
 
     return {
-      filename: `album-thumbnail${getFilenameExtension(albumThumbnail.thumbnailPath)}`,
-      path: albumThumbnail.thumbnailPath,
+      filename: `album-thumbnail${getFilenameExtension(thumbnailFile.path)}`,
+      path: thumbnailFile.path,
       cid: 'album-thumbnail',
     };
   }

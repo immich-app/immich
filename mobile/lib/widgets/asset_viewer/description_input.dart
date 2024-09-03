@@ -5,6 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/asset_description.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -23,23 +25,21 @@ class DescriptionInput extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textColor = context.isDarkTheme ? Colors.white : Colors.black;
     final controller = useTextEditingController();
     final focusNode = useFocusNode();
     final isFocus = useState(false);
     final isTextEmpty = useState(controller.text.isEmpty);
     final descriptionProvider = ref.watch(assetDescriptionServiceProvider);
-
     final owner = ref.watch(currentUserProvider);
     final hasError = useState(false);
+    final assetWithExif = ref.watch(assetDetailProvider(asset));
 
     useEffect(
       () {
-        controller.text = exifInfo?.description ?? '';
-        isTextEmpty.value = exifInfo?.description?.isEmpty ?? true;
+        controller.text = descriptionProvider.getAssetDescription(asset);
         return null;
       },
-      [exifInfo?.description],
+      [assetWithExif.value],
     );
 
     submitDescription(String description) async {
@@ -49,6 +49,7 @@ class DescriptionInput extends HookConsumerWidget {
           asset,
           description,
         );
+        controller.text = description;
       } catch (error, stack) {
         hasError.value = true;
         _log.severe("Error updating description", error, stack);
@@ -71,7 +72,7 @@ class DescriptionInput extends HookConsumerWidget {
         },
         icon: Icon(
           Icons.cancel_rounded,
-          color: Colors.grey[500],
+          color: context.colorScheme.onSurfaceSecondary,
         ),
         splashRadius: 10,
       );
@@ -100,10 +101,12 @@ class DescriptionInput extends HookConsumerWidget {
       decoration: InputDecoration(
         hintText: 'description_input_hint_text'.tr(),
         border: InputBorder.none,
-        hintStyle: context.textTheme.labelLarge?.copyWith(
-          color: textColor.withOpacity(0.5),
-        ),
         suffixIcon: suffixIcon,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
       ),
     );
   }

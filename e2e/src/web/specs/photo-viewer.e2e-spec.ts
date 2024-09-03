@@ -25,7 +25,7 @@ test.describe('Photo Viewer', () => {
 
   test('initially shows a loading spinner', async ({ page }) => {
     await page.route(`/api/assets/${asset.id}/thumbnail**`, async (route) => {
-      // slow down the request for thumbnail, so spiner has chance to show up
+      // slow down the request for thumbnail, so spinner has chance to show up
       await new Promise((f) => setTimeout(f, 2000));
       await route.continue();
     });
@@ -33,14 +33,14 @@ test.describe('Photo Viewer', () => {
     await page.waitForLoadState('load');
     // this is the spinner
     await page.waitForSelector('svg[role=status]');
-    await expect(page.getByRole('status')).toBeVisible();
+    await expect(page.getByTestId('loading-spinner')).toBeVisible();
   });
 
   test('loads high resolution photo when zoomed', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
     await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('thumbnail');
     const box = await imageLocator(page).boundingBox();
-    expect(box).toBeTruthy;
+    expect(box).toBeTruthy();
     const { x, y, width, height } = box!;
     await page.mouse.move(x + width / 2, y + height / 2);
     await page.mouse.wheel(0, -1);

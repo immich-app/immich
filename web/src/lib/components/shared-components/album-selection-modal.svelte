@@ -86,7 +86,8 @@
             <Icon path={mdiPlus} size="30" />
           </div>
           <p class="">
-            New Album {#if search.length > 0}<b>{search}</b>{/if}
+            {$t('new_album')}
+            {#if search.length > 0}<b>{search}</b>{/if}
           </p>
         </button>
         {#if filteredAlbums.length > 0}

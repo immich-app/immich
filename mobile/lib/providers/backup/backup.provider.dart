@@ -2,13 +2,16 @@ import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
@@ -290,8 +293,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ///
   Future<void> _updateBackupAssetCount() async {
     final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
-    final Set<AssetEntity> assetsFromSelectedAlbums = {};
-    final Set<AssetEntity> assetsFromExcludedAlbums = {};
+    final Set<BackupCandidate> assetsFromSelectedAlbums = {};
+    final Set<BackupCandidate> assetsFromExcludedAlbums = {};
 
     for (final album in state.selectedBackupAlbums) {
       final assetCount = await album.albumEntity.assetCountAsync;
@@ -304,7 +307,27 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         start: 0,
         end: assetCount,
       );
-      assetsFromSelectedAlbums.addAll(assets);
+
+      // Add album's name to the asset info
+      for (final asset in assets) {
+        List<String> albumNames = [album.name];
+
+        final existingAsset = assetsFromSelectedAlbums.firstWhereOrNull(
+          (a) => a.asset.id == asset.id,
+        );
+
+        if (existingAsset != null) {
+          albumNames.addAll(existingAsset.albumNames);
+          assetsFromSelectedAlbums.remove(existingAsset);
+        }
+
+        assetsFromSelectedAlbums.add(
+          BackupCandidate(
+            asset: asset,
+            albumNames: albumNames,
+          ),
+        );
+      }
     }
 
     for (final album in state.excludedBackupAlbums) {
@@ -318,11 +341,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         start: 0,
         end: assetCount,
       );
-      assetsFromExcludedAlbums.addAll(assets);
+
+      for (final asset in assets) {
+        assetsFromExcludedAlbums.add(
+          BackupCandidate(asset: asset, albumNames: [album.name]),
+        );
+      }
     }
 
-    final Set<AssetEntity> allUniqueAssets =
+    final Set<BackupCandidate> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
+
     final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
     if (allAssetsInDatabase == null) {
@@ -331,14 +360,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Find asset that were backup from selected albums
     final Set<String> selectedAlbumsBackupAssets =
-        Set.from(allUniqueAssets.map((e) => e.id));
+        Set.from(allUniqueAssets.map((e) => e.asset.id));
 
     selectedAlbumsBackupAssets
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     // Remove duplicated asset from all unique assets
     allUniqueAssets.removeWhere(
-      (asset) => duplicatedAssetIds.contains(asset.id),
+      (candidate) => duplicatedAssetIds.contains(candidate.asset.id),
     );
 
     if (allUniqueAssets.isEmpty) {
@@ -433,10 +462,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         return;
       }
 
-      Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
+      Set<BackupCandidate> assetsWillBeBackup = Set.from(state.allUniqueAssets);
       // Remove item that has already been backed up
       for (final assetId in state.allAssetsInDatabase) {
-        assetsWillBeBackup.removeWhere((e) => e.id == assetId);
+        assetsWillBeBackup.removeWhere((e) => e.asset.id == assetId);
       }
 
       if (assetsWillBeBackup.isEmpty) {
@@ -456,11 +485,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await _backupService.backupAsset(
         assetsWillBeBackup,
         state.cancelToken,
-        pmProgressHandler,
-        _onAssetUploaded,
-        _onUploadProgress,
-        _onSetCurrentBackupAsset,
-        _onBackupError,
+        pmProgressHandler: pmProgressHandler,
+        onSuccess: _onAssetUploaded,
+        onProgress: _onUploadProgress,
+        onCurrentAsset: _onSetCurrentBackupAsset,
+        onError: _onBackupError,
       );
       await notifyBackgroundServiceCanRun();
     } else {
@@ -497,34 +526,36 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _onAssetUploaded(
-    String deviceAssetId,
-    String deviceId,
-    bool isDuplicated,
-  ) {
-    if (isDuplicated) {
+  void _onAssetUploaded(SuccessUploadAsset result) async {
+    if (result.isDuplicate) {
       state = state.copyWith(
         allUniqueAssets: state.allUniqueAssets
-            .where((asset) => asset.id != deviceAssetId)
+            .where(
+              (candidate) => candidate.asset.id != result.candidate.asset.id,
+            )
             .toSet(),
       );
     } else {
       state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {
           ...state.selectedAlbumsBackupAssetsIds,
-          deviceAssetId,
+          result.candidate.asset.id,
         },
-        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+        allAssetsInDatabase: [
+          ...state.allAssetsInDatabase,
+          result.candidate.asset.id,
+        ],
       );
     }
 
     if (state.allUniqueAssets.length -
             state.selectedAlbumsBackupAssetsIds.length ==
         0) {
-      final latestAssetBackup =
-          state.allUniqueAssets.map((e) => e.modifiedDateTime).reduce(
-                (v, e) => e.isAfter(v) ? e : v,
-              );
+      final latestAssetBackup = state.allUniqueAssets
+          .map((candidate) => candidate.asset.modifiedDateTime)
+          .reduce(
+            (v, e) => e.isAfter(v) ? e : v,
+          );
       state = state.copyWith(
         selectedBackupAlbums: state.selectedBackupAlbums
             .map((e) => e.copyWith(lastBackup: latestAssetBackup))

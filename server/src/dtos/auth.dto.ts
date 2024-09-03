@@ -25,6 +25,8 @@ export enum ImmichHeader {
 
 export enum ImmichQuery {
   SHARED_LINK_KEY = 'key',
+  API_KEY = 'apiKey',
+  SESSION_KEY = 'sessionKey',
 }
 
 export type CookieResponse = {

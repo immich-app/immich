@@ -5,7 +5,7 @@
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { getServerConfig, login } from '@immich/sdk';
+  import { login } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -58,11 +58,9 @@
     try {
       errorMessage = '';
       loading = true;
-
       const user = await login({ loginCredentialDto: { email, password } });
-      const serverConfig = await getServerConfig();
 
-      if (user.isAdmin && !serverConfig.isOnboarded) {
+      if (user.isAdmin && !$serverConfig.isOnboarded) {
         await onOnboarding();
         return;
       }

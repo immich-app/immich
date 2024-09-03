@@ -20,7 +20,6 @@ class LibraryPage extends HookConsumerWidget {
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
-    final isDarkTheme = context.isDarkTheme;
     final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
 
@@ -116,12 +115,7 @@ class LibraryPage extends HookConsumerWidget {
                     width: cardSize,
                     height: cardSize,
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: isDarkTheme
-                            ? const Color.fromARGB(255, 53, 53, 53)
-                            : const Color.fromARGB(255, 203, 203, 203),
-                      ),
-                      color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
+                      color: context.colorScheme.surfaceContainer,
                       borderRadius: const BorderRadius.all(Radius.circular(20)),
                     ),
                     child: Center(
@@ -139,7 +133,9 @@ class LibraryPage extends HookConsumerWidget {
                     ),
                     child: Text(
                       'library_page_new_album',
-                      style: context.textTheme.labelLarge,
+                      style: context.textTheme.labelLarge?.copyWith(
+                        color: context.colorScheme.onSurface,
+                      ),
                     ).tr(),
                   ),
                 ],
@@ -156,26 +152,25 @@ class LibraryPage extends HookConsumerWidget {
       Function() onClick,
     ) {
       return Expanded(
-        child: OutlinedButton.icon(
+        child: FilledButton.icon(
           onPressed: onClick,
           label: Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Text(
               label,
               style: TextStyle(
-                color: context.isDarkTheme
-                    ? Colors.white
-                    : Colors.black.withAlpha(200),
+                color: context.colorScheme.onSurface,
               ),
             ),
           ),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            backgroundColor: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
-            side: BorderSide(
-              color: isDarkTheme ? Colors.grey[800]! : Colors.grey[300]!,
-            ),
+          style: FilledButton.styleFrom(
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            backgroundColor: context.colorScheme.surfaceContainer,
             alignment: Alignment.centerLeft,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+            ),
           ),
           icon: Icon(
             icon,
@@ -247,6 +242,7 @@ class LibraryPage extends HookConsumerWidget {
                   Text(
                     'library_page_albums',
                     style: context.textTheme.bodyLarge?.copyWith(
+                      color: context.colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   ).tr(),

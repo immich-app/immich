@@ -1,11 +1,7 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AlbumUserRole } from 'src/enum';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-
-export enum AlbumUserRole {
-  EDITOR = 'editor',
-  VIEWER = 'viewer',
-}
 
 @Entity('albums_shared_users_users')
 // Pre-existing indices from original album <--> user ManyToMany mapping

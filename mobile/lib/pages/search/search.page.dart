@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
@@ -38,7 +39,7 @@ class SearchPage extends HookConsumerWidget {
       fontSize: 15.0,
     );
 
-    Color categoryIconColor = context.isDarkTheme ? Colors.white : Colors.black;
+    Color categoryIconColor = context.colorScheme.onSurface;
 
     showNameEditModel(
       String personId,
@@ -128,13 +129,9 @@ class SearchPage extends HookConsumerWidget {
         },
         child: Card(
           elevation: 0,
+          color: context.colorScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: context.isDarkTheme
-                  ? Colors.grey[800]!
-                  : const Color.fromARGB(255, 225, 225, 225),
-            ),
+            borderRadius: BorderRadius.circular(50),
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Padding(
@@ -144,13 +141,15 @@ class SearchPage extends HookConsumerWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.search, color: context.primaryColor),
+                Icon(
+                  Icons.search,
+                  color: context.colorScheme.onSurfaceSecondary,
+                ),
                 const SizedBox(width: 16.0),
                 Text(
                   "search_bar_hint",
                   style: context.textTheme.bodyLarge?.copyWith(
-                    color:
-                        context.isDarkTheme ? Colors.white70 : Colors.black54,
+                    color: context.colorScheme.onSurfaceSecondary,
                     fontWeight: FontWeight.w400,
                   ),
                 ).tr(),

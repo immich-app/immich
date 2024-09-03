@@ -10,6 +10,7 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { onMount } from 'svelte';
   import { websocketEvents } from '$lib/stores/websocket';
+  import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
 
   export let data: PageData;
 
@@ -19,25 +20,14 @@
     OBJECTS = 'smartInfo.objects',
   }
 
-  let MAX_PEOPLE_ITEMS: number;
-  let MAX_PLACE_ITEMS: number;
-  let innerWidth: number;
-  let screenSize: number;
   const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
     const targetField = items.find((item) => item.fieldName === field);
     return targetField?.items || [];
   };
 
-  $: places = getFieldItems(data.items, Field.CITY).slice(0, MAX_PLACE_ITEMS);
-  $: people = data.response.people.slice(0, MAX_PEOPLE_ITEMS);
+  $: places = getFieldItems(data.items, Field.CITY);
+  $: people = data.response.people;
   $: hasPeople = data.response.total > 0;
-  $: {
-    if (innerWidth && screenSize) {
-      // Set the number of faces according to the screen size and the div size
-      MAX_PEOPLE_ITEMS = screenSize < 768 ? Math.floor(innerWidth / 96) : Math.floor(innerWidth / 120);
-      MAX_PLACE_ITEMS = screenSize < 768 ? Math.floor(innerWidth / 150) : Math.floor(innerWidth / 172);
-    }
-  }
 
   onMount(() => {
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
@@ -52,8 +42,6 @@
   });
 </script>
 
-<svelte:window bind:innerWidth={screenSize} />
-
 <UserPageLayout title={data.meta.title}>
   {#if hasPeople}
     <div class="mb-6 mt-2">
@@ -65,25 +53,14 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <div
-        class="flex flex-row {MAX_PEOPLE_ITEMS < 5 ? 'justify-center' : ''} flex-wrap gap-4"
-        bind:offsetWidth={innerWidth}
-      >
-        {#if MAX_PEOPLE_ITEMS}
-          {#each people as person (person.id)}
-            <a href="{AppRoute.PEOPLE}/{person.id}" class="w-20 md:w-24 text-center">
-              <ImageThumbnail
-                circle
-                shadow
-                url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                widthStyle="100%"
-              />
-              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
-            </a>
-          {/each}
-        {/if}
-      </div>
+      <SingleGridRow class="grid md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4" let:itemCount>
+        {#each people.slice(0, itemCount) as person (person.id)}
+          <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center">
+            <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
+            <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+          </a>
+        {/each}
+      </SingleGridRow>
     </div>
   {/if}
 
@@ -97,16 +74,14 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <div class="flex flex-row flex-wrap gap-4">
-        {#each places as item (item.data.id)}
+      <SingleGridRow class="grid md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4" let:itemCount>
+        {#each places.slice(0, itemCount) as item (item.data.id)}
           <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
-            <div
-              class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
-            >
+            <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
               <img
                 src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
                 alt={item.value}
-                class="object-cover w-[156px] h-[156px]"
+                class="object-cover aspect-square w-full"
               />
             </div>
             <span
@@ -116,7 +91,7 @@
             </span>
           </a>
         {/each}
-      </div>
+      </SingleGridRow>
     </div>
   {/if}
 

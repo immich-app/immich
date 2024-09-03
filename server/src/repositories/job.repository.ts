@@ -79,6 +79,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
   [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
   [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_CHECK_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
@@ -141,7 +142,11 @@ export class JobRepository implements IJobRepository {
       job.setTime(new CronTime(expression));
     }
     if (start !== undefined) {
-      start ? job.start() : job.stop();
+      if (start) {
+        job.start();
+      } else {
+        job.stop();
+      }
     }
   }
 

@@ -36,7 +36,9 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  $: $featureFlags.map || handlePromiseError(goto(AppRoute.PHOTOS));
+  $: if (!$featureFlags.map) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
   const omit = (obj: MapSettings, key: string) => {
     return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
   };
@@ -111,9 +113,9 @@
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout title={data.meta.title}>
     <div class="isolate h-full w-full">
-      <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
-    </div></UserPageLayout
-  >
+      <Map hash bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
+    </div>
+  </UserPageLayout>
   <Portal target="body">
     {#if $showAssetViewer}
       {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
@@ -122,7 +124,10 @@
           showNavigation={viewingAssets.length > 1}
           on:next={navigateNext}
           on:previous={navigatePrevious}
-          on:close={() => assetViewingStore.showAssetViewer(false)}
+          on:close={() => {
+            assetViewingStore.showAssetViewer(false);
+            handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+          }}
           isShared={false}
         />
       {/await}

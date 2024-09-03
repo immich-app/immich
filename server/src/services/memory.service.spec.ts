@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { MemoryType } from 'src/entities/memory.entity';
+import { MemoryType } from 'src/enum';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { MemoryService } from 'src/services/memory.service';
 import { authStub } from 'test/fixtures/auth.stub';

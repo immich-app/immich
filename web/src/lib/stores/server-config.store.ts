@@ -33,7 +33,7 @@ export const serverConfig = writable<ServerConfig>({
   externalDomain: '',
 });
 
-export const loadConfig = async () => {
+export const retrieveServerConfig = async () => {
   const [flags, config] = await Promise.all([getServerFeatures(), getServerConfig()]);
 
   featureFlags.update(() => ({ ...flags, loaded: true }));

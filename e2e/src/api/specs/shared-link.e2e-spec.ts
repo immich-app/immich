@@ -112,6 +112,13 @@ describe('/shared-links', () => {
       expect(resp.header['content-type']).toContain('text/html');
       expect(resp.text).toContain(`<meta name="description" content="1 shared photos & videos" />`);
     });
+
+    it('should have fqdn og:image meta tag for shared asset', async () => {
+      const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
+      expect(resp.status).toBe(200);
+      expect(resp.header['content-type']).toContain('text/html');
+      expect(resp.text).toContain(`<meta property="og:image" content="http://`);
+    });
   });
 
   describe('GET /shared-links', () => {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LicenseInfo from './license-info.svelte';
+  import PurchaseInfo from './purchase-info.svelte';
   import ServerStatus from './server-status.svelte';
   import StorageSpace from './storage-space.svelte';
 </script>
@@ -8,10 +8,8 @@
   <StorageSpace />
 </div>
 
-<div class="mb-2">
-  <LicenseInfo />
-</div>
+<PurchaseInfo />
 
-<div class="mb-6">
+<div class="mb-6 mt-2">
   <ServerStatus />
 </div>

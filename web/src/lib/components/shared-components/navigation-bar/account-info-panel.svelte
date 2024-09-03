@@ -73,14 +73,19 @@
       <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
     </div>
 
-    <a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
-      <Button color="dark-gray" size="sm" shadow={false} border>
-        <div class="flex place-content-center place-items-center gap-2 px-2">
-          <Icon path={mdiCog} size="18" />
-          {$t('account_settings')}
-        </div>
-      </Button>
-    </a>
+    <Button
+      href={AppRoute.USER_SETTINGS}
+      on:click={() => dispatch('close')}
+      color="dark-gray"
+      size="sm"
+      shadow={false}
+      border
+    >
+      <div class="flex place-content-center place-items-center gap-2 px-2">
+        <Icon path={mdiCog} size="18" />
+        {$t('account_settings')}
+      </div>
+    </Button>
   </div>
 
   <div class="mb-4 flex flex-col">

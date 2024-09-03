@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MapMarkerDto, MapMarkerResponseDto } from 'src/dtos/search.dto';
+import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
@@ -52,5 +52,12 @@ export class MapService {
     }
 
     return JSON.parse(await this.systemMetadataRepository.readFile(`./resources/style-${theme}.json`));
+  }
+
+  async reverseGeocode(dto: MapReverseGeocodeDto) {
+    const { lat: latitude, lon: longitude } = dto;
+    // eventually this should probably return an array of results
+    const result = await this.mapRepository.reverseGeocode({ latitude, longitude });
+    return result ? [result] : [];
   }
 }

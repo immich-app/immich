@@ -8,7 +8,6 @@
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import {
     ReactionType,
-    Type,
     createActivity,
     deleteActivity,
     getActivities,
@@ -111,15 +110,15 @@
       await deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
       reactions = reactions;
-      if (isLiked && reaction.type === 'like' && reaction.id == isLiked.id) {
+      if (isLiked && reaction.type === ReactionType.Like && reaction.id == isLiked.id) {
         dispatch('deleteLike');
       } else {
         dispatch('deleteComment');
       }
 
-      const deleteMessages: Record<Type, string> = {
-        [Type.Comment]: $t('comment_deleted'),
-        [Type.Like]: $t('like_deleted'),
+      const deleteMessages: Record<ReactionType, string> = {
+        [ReactionType.Comment]: $t('comment_deleted'),
+        [ReactionType.Like]: $t('like_deleted'),
       };
       notificationController.show({
         message: deleteMessages[reaction.type],
@@ -172,7 +171,7 @@
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
         {#each reactions as reaction, index (reaction.id)}
-          {#if reaction.type === 'comment'}
+          {#if reaction.type === ReactionType.Comment}
             <div class="flex dark:bg-gray-800 bg-gray-200 py-3 pl-3 mt-3 rounded-lg gap-4 justify-start">
               <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
@@ -216,7 +215,7 @@
                 {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
               </div>
             {/if}
-          {:else if reaction.type === 'like'}
+          {:else if reaction.type === ReactionType.Like}
             <div class="relative">
               <div class="flex py-3 pl-3 mt-3 gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>

@@ -10,16 +10,19 @@
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
-  import { loadConfig } from '$lib/stores/server-config.store';
+
+  import { serverConfig } from '$lib/stores/server-config.store';
+
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-  import { setKey } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import { copyToClipboard, setKey } from '$lib/utils';
   import { onDestroy, onMount } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
+  import Error from '$lib/components/error.svelte';
+  import { shortcut } from '$lib/actions/shortcut';
 
   let showNavigationLoadingBar = false;
   $: changeTheme($colorTheme);
@@ -32,8 +35,7 @@
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
-      theme.value =
-        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+      theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
 
     if (theme.value === Theme.LIGHT) {
@@ -49,7 +51,13 @@
     }
   };
 
+  const getMyImmichLink = () => {
+    return new URL($page.url.pathname + $page.url.search, 'https://my.immich.app');
+  };
+
   onMount(() => {
+    const element = document.querySelector('#stencil');
+    element?.remove();
     // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
@@ -72,14 +80,6 @@
   afterNavigate(() => {
     showNavigationLoadingBar = false;
   });
-
-  onMount(async () => {
-    try {
-      await loadConfig();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_connect_to_server'));
-    }
-  });
 </script>
 
 <svelte:head>
@@ -95,13 +95,23 @@
     <meta property="og:type" content="website" />
     <meta property="og:title" content={$page.data.meta.title} />
     <meta property="og:description" content={$page.data.meta.description} />
-    <meta property="og:image" content={$page.data.meta.imageUrl} />
+    {#if $page.data.meta.imageUrl}
+      <meta
+        property="og:image"
+        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.origin).href}
+      />
+    {/if}
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={$page.data.meta.title} />
     <meta name="twitter:description" content={$page.data.meta.description} />
-    <meta name="twitter:image" content={$page.data.meta.imageUrl} />
+    {#if $page.data.meta.imageUrl}
+      <meta
+        name="twitter:image"
+        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.origin).href}
+      />
+    {/if}
   {/if}
 </svelte:head>
 
@@ -113,7 +123,18 @@
   </FullscreenContainer>
 </noscript>
 
-<slot />
+<svelte:window
+  use:shortcut={{
+    shortcut: { ctrl: true, shift: true, key: 'm' },
+    onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
+  }}
+/>
+
+{#if $page.data.error}
+  <Error error={$page.data.error}></Error>
+{:else}
+  <slot />
+{/if}
 
 {#if showNavigationLoadingBar}
   <NavigationLoadingBar />

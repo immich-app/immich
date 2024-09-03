@@ -13,20 +13,15 @@ import {
   supportedYearTokens,
 } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { EventHandlerOptions, OnServerEvent } from 'src/decorators';
+import { OnEmit, OnServerEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
-import {
-  ClientEvent,
-  IEventRepository,
-  OnEvents,
-  ServerEvent,
-  SystemConfigUpdateEvent,
-} from 'src/interfaces/event.interface';
+import { ArgOf, ClientEvent, IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
-export class SystemConfigService implements OnEvents {
+export class SystemConfigService {
   private core: SystemConfigCore;
 
   constructor(
@@ -39,8 +34,8 @@ export class SystemConfigService implements OnEvents {
     this.core.config$.subscribe((config) => this.setLogLevel(config));
   }
 
-  @EventHandlerOptions({ priority: -100 })
-  async onBootstrapEvent() {
+  @OnEmit({ event: 'app.bootstrap', priority: -100 })
+  async onBootstrap() {
     const config = await this.core.getConfig({ withCache: false });
     this.core.config$.next(config);
   }
@@ -54,7 +49,8 @@ export class SystemConfigService implements OnEvents {
     return mapConfig(defaults);
   }
 
-  onConfigValidateEvent({ newConfig, oldConfig }: SystemConfigUpdateEvent) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig, oldConfig }: ArgOf<'config.validate'>) {
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
@@ -68,7 +64,7 @@ export class SystemConfigService implements OnEvents {
     const oldConfig = await this.core.getConfig({ withCache: false });
 
     try {
-      await this.eventRepository.emit('onConfigValidateEvent', { newConfig: dto, oldConfig });
+      await this.eventRepository.emit('config.validate', { newConfig: toPlainObject(dto), oldConfig });
     } catch (error) {
       this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
       throw new BadRequestException(error instanceof Error ? error.message : error);
@@ -79,7 +75,7 @@ export class SystemConfigService implements OnEvents {
     // TODO probably move web socket emits to a separate service
     this.eventRepository.clientBroadcast(ClientEvent.CONFIG_UPDATE, {});
     this.eventRepository.serverSend(ServerEvent.CONFIG_UPDATE, null);
-    await this.eventRepository.emit('onConfigUpdateEvent', { newConfig, oldConfig });
+    await this.eventRepository.emit('config.update', { newConfig, oldConfig });
 
     return mapConfig(newConfig);
   }

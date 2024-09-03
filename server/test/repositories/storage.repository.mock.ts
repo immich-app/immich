@@ -56,6 +56,7 @@ export const newStorageRepositoryMock = (reset = true): Mocked<IStorageRepositor
     mkdirSync: vitest.fn(),
     checkDiskUsage: vitest.fn(),
     readdir: vitest.fn(),
+    realpath: vitest.fn().mockImplementation((filepath: string) => Promise.resolve(filepath)),
     stat: vitest.fn(),
     crawl: vitest.fn(),
     walk: vitest.fn().mockImplementation(async function* () {}),

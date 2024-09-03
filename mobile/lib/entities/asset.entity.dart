@@ -33,11 +33,13 @@ class Asset {
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
         isOffline = remote.isOffline,
-        // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+        // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
-        stackParentId =
-            remote.stackParentId == remote.id ? null : remote.stackParentId,
-        stackCount = remote.stackCount,
+        stackPrimaryAssetId = remote.stack?.primaryAssetId == remote.id
+            ? null
+            : remote.stack?.primaryAssetId,
+        stackCount = remote.stack?.assetCount ?? 0,
+        stackId = remote.stack?.id,
         thumbhash = remote.thumbhash;
 
   Asset.local(AssetEntity local, List<int> hash)
@@ -86,7 +88,8 @@ class Asset {
     this.isFavorite = false,
     this.isArchived = false,
     this.isTrashed = false,
-    this.stackParentId,
+    this.stackId,
+    this.stackPrimaryAssetId,
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
@@ -163,12 +166,11 @@ class Asset {
   @ignore
   ExifInfo? exifInfo;
 
-  String? stackParentId;
+  String? stackId;
 
-  @ignore
-  int get stackChildrenCount => stackCount ?? 0;
+  String? stackPrimaryAssetId;
 
-  int? stackCount;
+  int stackCount;
 
   /// Aspect ratio of the asset
   @ignore
@@ -231,7 +233,8 @@ class Asset {
         isArchived == other.isArchived &&
         isTrashed == other.isTrashed &&
         stackCount == other.stackCount &&
-        stackParentId == other.stackParentId;
+        stackPrimaryAssetId == other.stackPrimaryAssetId &&
+        stackId == other.stackId;
   }
 
   @override
@@ -256,7 +259,8 @@ class Asset {
       isArchived.hashCode ^
       isTrashed.hashCode ^
       stackCount.hashCode ^
-      stackParentId.hashCode;
+      stackPrimaryAssetId.hashCode ^
+      stackId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -269,7 +273,6 @@ class Asset {
         width == null && a.width != null ||
         height == null && a.height != null ||
         livePhotoVideoId == null && a.livePhotoVideoId != null ||
-        stackParentId == null && a.stackParentId != null ||
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
@@ -278,10 +281,9 @@ class Asset {
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
         a.thumbhash != thumbhash ||
-        ((stackCount == null && a.stackCount != null) ||
-            (stackCount != null &&
-                a.stackCount != null &&
-                stackCount != a.stackCount));
+        stackId != a.stackId ||
+        stackCount != a.stackCount ||
+        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -311,9 +313,11 @@ class Asset {
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
-          stackParentId: stackParentId == remoteId ? null : stackParentId,
+          stackId: stackId,
+          stackPrimaryAssetId:
+              stackPrimaryAssetId == remoteId ? null : stackPrimaryAssetId,
           stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
@@ -330,9 +334,12 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
-          stackParentId: a.stackParentId == a.remoteId ? null : a.stackParentId,
+          stackId: a.stackId,
+          stackPrimaryAssetId: a.stackPrimaryAssetId == a.remoteId
+              ? null
+              : a.stackPrimaryAssetId,
           stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
@@ -374,7 +381,8 @@ class Asset {
     bool? isTrashed,
     bool? isOffline,
     ExifInfo? exifInfo,
-    String? stackParentId,
+    String? stackId,
+    String? stackPrimaryAssetId,
     int? stackCount,
     String? thumbhash,
   }) =>
@@ -398,7 +406,8 @@ class Asset {
         isTrashed: isTrashed ?? this.isTrashed,
         isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
-        stackParentId: stackParentId ?? this.stackParentId,
+        stackId: stackId ?? this.stackId,
+        stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
         stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
       );
@@ -445,8 +454,9 @@ class Asset {
   "checksum": "$checksum",
   "ownerId": $ownerId,
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
+  "stackId": "${stackId ?? "N/A"}",
+  "stackPrimaryAssetId": "${stackPrimaryAssetId ?? "N/A"}",
   "stackCount": "$stackCount",
-  "stackParentId": "${stackParentId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt",
   "updatedAt": "$updatedAt",

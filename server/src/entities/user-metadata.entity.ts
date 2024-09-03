@@ -1,4 +1,5 @@
 import { UserEntity } from 'src/entities/user.entity';
+import { UserAvatarColor, UserMetadataKey } from 'src/enum';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { Column, DeepPartial, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
@@ -17,22 +18,24 @@ export class UserMetadataEntity<T extends keyof UserMetadata = UserMetadataKey> 
   value!: UserMetadata[T];
 }
 
-export enum UserAvatarColor {
-  PRIMARY = 'primary',
-  PINK = 'pink',
-  RED = 'red',
-  YELLOW = 'yellow',
-  BLUE = 'blue',
-  GREEN = 'green',
-  PURPLE = 'purple',
-  ORANGE = 'orange',
-  GRAY = 'gray',
-  AMBER = 'amber',
-}
-
 export interface UserPreferences {
+  folders: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
   memories: {
     enabled: boolean;
+  };
+  people: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
+  ratings: {
+    enabled: boolean;
+  };
+  tags: {
+    enabled: boolean;
+    sidebarWeb: boolean;
   };
   avatar: {
     color: UserAvatarColor;
@@ -44,6 +47,11 @@ export interface UserPreferences {
   };
   download: {
     archiveSize: number;
+    includeEmbeddedVideos: boolean;
+  };
+  purchase: {
+    showSupportBadge: boolean;
+    hideBuyButtonUntil: string;
   };
 }
 
@@ -54,8 +62,23 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
   );
 
   return {
+    folders: {
+      enabled: false,
+      sidebarWeb: false,
+    },
     memories: {
       enabled: true,
+    },
+    people: {
+      enabled: true,
+      sidebarWeb: false,
+    },
+    ratings: {
+      enabled: false,
+    },
+    tags: {
+      enabled: false,
+      sidebarWeb: false,
     },
     avatar: {
       color: values[randomIndex],
@@ -67,14 +90,14 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     download: {
       archiveSize: HumanReadableSize.GiB * 4,
+      includeEmbeddedVideos: false,
+    },
+    purchase: {
+      showSupportBadge: true,
+      hideBuyButtonUntil: new Date(2022, 1, 12).toISOString(),
     },
   };
 };
-
-export enum UserMetadataKey {
-  PREFERENCES = 'preferences',
-  LICENSE = 'license',
-}
 
 export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {
   [UserMetadataKey.PREFERENCES]: DeepPartial<UserPreferences>;

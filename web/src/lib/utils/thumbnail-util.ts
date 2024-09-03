@@ -43,33 +43,52 @@ export const getAltText = derived(t, ($t) => {
       return asset.exifInfo.description;
     }
 
-    let altText = $t('image_taken', { values: { isVideo: asset.type === AssetTypeEnum.Video } });
-
-    if (asset.exifInfo?.city && asset.exifInfo?.country) {
-      const placeText = $t('image_alt_text_place', {
-        values: { city: asset.exifInfo.city, country: asset.exifInfo.country },
-      });
-      altText += ` ${placeText}`;
-    }
-
-    const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
-    if (names.length > 0) {
-      const namesText = $t('image_alt_text_people', {
-        values: {
-          count: names.length,
-          person1: names[0],
-          person2: names[1],
-          person3: names[2],
-          others: names.length > 3 ? names.length - 2 : 0,
-        },
-      });
-      altText += ` ${namesText}`;
-    }
-
     const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
-    const dateText = $t('image_alt_text_date', { values: { date } });
-    altText += ` ${dateText}`;
+    const hasPlace = !!asset.exifInfo?.city && !!asset.exifInfo?.country;
+    const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
+    const peopleCount = names.length;
+    const isVideo = asset.type === AssetTypeEnum.Video;
 
-    return altText;
+    const values = {
+      date,
+      city: asset.exifInfo?.city,
+      country: asset.exifInfo?.country,
+      person1: names[0],
+      person2: names[1],
+      person3: names[2],
+      isVideo,
+      additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
+    };
+
+    if (peopleCount > 0) {
+      switch (peopleCount) {
+        case 1: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_1_person', { values })
+            : $t('image_alt_text_date_1_person', { values });
+        }
+        case 2: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_2_people', { values })
+            : $t('image_alt_text_date_2_people', { values });
+        }
+        case 3: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_3_people', { values })
+            : $t('image_alt_text_date_3_people', { values });
+        }
+        default: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_4_or_more_people', { values })
+            : $t('image_alt_text_date_4_or_more_people', { values });
+        }
+      }
+    }
+
+    if (hasPlace) {
+      return $t('image_alt_text_date_place', { values });
+    }
+
+    return $t('image_alt_text_date', { values });
   };
 });

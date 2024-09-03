@@ -660,16 +660,16 @@
         ]
       }
     },
-    "/albums/count": {
+    "/albums/statistics": {
       "get": {
-        "operationId": "getAlbumCount",
+        "operationId": "getAlbumStatistics",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlbumCountResponseDto"
+                  "$ref": "#/components/schemas/AlbumStatisticsResponseDto"
                 }
               }
             },
@@ -1185,7 +1185,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1670,41 +1670,6 @@
                 }
               }
             },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
-    "/assets/stack/parent": {
-      "put": {
-        "operationId": "updateStackParent",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStackParentDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
             "description": ""
           }
         },
@@ -3109,6 +3074,60 @@
         ]
       }
     },
+    "/map/reverse-geocode": {
+      "get": {
+        "operationId": "reverseGeocode",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "lon",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "double",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapReverseGeocodeResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Map"
+        ]
+      }
+    },
     "/map/style.json": {
       "get": {
         "operationId": "getMapStyle",
@@ -3624,7 +3643,7 @@
         "operationId": "unlinkOAuthAccount",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4061,6 +4080,8 @@
     },
     "/people/{id}/assets": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.113.0",
         "operationId": "getPersonAssets",
         "parameters": [
           {
@@ -4100,8 +4121,12 @@
           }
         ],
         "tags": [
-          "People"
-        ]
+          "People",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.113.0"
+        }
       }
     },
     "/people/{id}/merge": {
@@ -4674,6 +4699,15 @@
             }
           },
           {
+            "name": "includeNull",
+            "required": false,
+            "in": "query",
+            "description": "This property was added in v111.0.0",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "make",
             "required": false,
             "in": "query",
@@ -4737,10 +4771,8 @@
         ]
       }
     },
-    "/server-info/about": {
+    "/server/about": {
       "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
         "operationId": "getAboutInfo",
         "parameters": [],
         "responses": {
@@ -4767,18 +4799,12 @@
           }
         ],
         "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
+          "Server"
+        ]
       }
     },
-    "/server-info/config": {
+    "/server/config": {
       "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerConfig",
         "parameters": [],
         "responses": {
@@ -4794,18 +4820,12 @@
           }
         },
         "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
+          "Server"
+        ]
       }
     },
-    "/server-info/features": {
+    "/server/features": {
       "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
         "operationId": "getServerFeatures",
         "parameters": [],
         "responses": {
@@ -4821,196 +4841,8 @@
           }
         },
         "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/media-types": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getSupportedMediaTypes",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerMediaTypesResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/ping": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "pingServer",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerPingResponse"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/statistics": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getServerStatistics",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStatsResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/storage": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getStorage",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStorageResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/theme": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getTheme",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerThemeDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
-      }
-    },
-    "/server-info/version": {
-      "get": {
-        "deprecated": true,
-        "description": "This property was deprecated in v1.107.0",
-        "operationId": "getServerVersion",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerVersionResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Server Info",
-          "Deprecated"
-        ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.107.0"
-        }
+          "Server"
+        ]
       }
     },
     "/server/license": {
@@ -5106,6 +4938,154 @@
             "api_key": []
           }
         ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/media-types": {
+      "get": {
+        "operationId": "getSupportedMediaTypes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerMediaTypesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/ping": {
+      "get": {
+        "operationId": "pingServer",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerPingResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/statistics": {
+      "get": {
+        "operationId": "getServerStatistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/storage": {
+      "get": {
+        "operationId": "getStorage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStorageResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/theme": {
+      "get": {
+        "operationId": "getTheme",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerThemeDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/version": {
+      "get": {
+        "operationId": "getServerVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
         "tags": [
           "Server"
         ]
@@ -5586,6 +5566,248 @@
         ]
       }
     },
+    "/stacks": {
+      "delete": {
+        "operationId": "deleteStacks",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "get": {
+        "operationId": "searchStacks",
+        "parameters": [
+          {
+            "name": "primaryAssetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StackResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "post": {
+        "operationId": "createStack",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StackCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
+    "/stacks/{id}": {
+      "delete": {
+        "operationId": "deleteStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "get": {
+        "operationId": "getStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      },
+      "put": {
+        "operationId": "updateStack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StackUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
     "/sync/delta-sync": {
       "post": {
         "operationId": "getDeltaSync",
@@ -5947,7 +6169,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
+                "$ref": "#/components/schemas/TagCreateDto"
               }
             }
           },
@@ -5959,6 +6181,91 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Tags"
+        ]
+      },
+      "put": {
+        "operationId": "upsertTags",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagUpsertDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/tags/assets": {
+      "put": {
+        "operationId": "bulkTagAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagBulkAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagBulkAssetsResponseDto"
                 }
               }
             },
@@ -5996,7 +6303,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -6055,7 +6362,7 @@
           "Tags"
         ]
       },
-      "patch": {
+      "put": {
         "operationId": "updateTag",
         "parameters": [
           {
@@ -6072,7 +6379,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
+                "$ref": "#/components/schemas/TagUpdateDto"
               }
             }
           },
@@ -6124,7 +6431,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -6136,50 +6443,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Tags"
-        ]
-      },
-      "get": {
-        "operationId": "getTagAssets",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   },
                   "type": "array"
                 }
@@ -6220,7 +6484,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/BulkIdsDto"
               }
             }
           },
@@ -6232,7 +6496,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
                   },
                   "type": "array"
                 }
@@ -6325,6 +6589,15 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/TimeBucketSize"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -6460,6 +6733,15 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/TimeBucketSize"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -7028,12 +7310,91 @@
           "Users"
         ]
       }
+    },
+    "/view/folder": {
+      "get": {
+        "operationId": "getAssetsByOriginalPath",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "View"
+        ]
+      }
+    },
+    "/view/folder/unique-paths": {
+      "get": {
+        "operationId": "getUniqueOriginalPaths",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "View"
+        ]
+      }
     }
   },
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.109.2",
+    "version": "1.113.1",
     "contact": {}
   },
   "tags": [],
@@ -7066,8 +7427,17 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
           }
         },
+        "required": [
+          "permissions"
+        ],
         "type": "object"
       },
       "APIKeyCreateResponseDto": {
@@ -7097,6 +7467,12 @@
           "name": {
             "type": "string"
           },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -7106,6 +7482,7 @@
           "createdAt",
           "id",
           "name",
+          "permissions",
           "updatedAt"
         ],
         "type": "object"
@@ -7162,11 +7539,7 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "comment",
-              "like"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/ReactionType"
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -7214,25 +7587,6 @@
         },
         "required": [
           "isOnboarded"
-        ],
-        "type": "object"
-      },
-      "AlbumCountResponseDto": {
-        "properties": {
-          "notShared": {
-            "type": "integer"
-          },
-          "owned": {
-            "type": "integer"
-          },
-          "shared": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "notShared",
-          "owned",
-          "shared"
         ],
         "type": "object"
       },
@@ -7320,6 +7674,25 @@
           "ownerId",
           "shared",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AlbumStatisticsResponseDto": {
+        "properties": {
+          "notShared": {
+            "type": "integer"
+          },
+          "owned": {
+            "type": "integer"
+          },
+          "shared": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "notShared",
+          "owned",
+          "shared"
         ],
         "type": "object"
       },
@@ -7485,12 +7858,10 @@
           "longitude": {
             "type": "number"
           },
-          "removeParent": {
-            "type": "boolean"
-          },
-          "stackParentId": {
-            "format": "uuid",
-            "type": "string"
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number"
           }
         },
         "required": [
@@ -8025,24 +8396,20 @@
             "type": "array"
           },
           "resized": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.113.0",
             "type": "boolean"
           },
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
           "stack": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          },
-          "stackCount": {
-            "nullable": true,
-            "type": "integer"
-          },
-          "stackParentId": {
-            "nullable": true,
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetStackResponseDto"
+              }
+            ],
+            "nullable": true
           },
           "tags": {
             "items": {
@@ -8085,11 +8452,28 @@
           "originalFileName",
           "originalPath",
           "ownerId",
-          "resized",
-          "stackCount",
           "thumbhash",
           "type",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AssetStackResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "id",
+          "primaryAssetId"
         ],
         "type": "object"
       },
@@ -8366,21 +8750,6 @@
         ],
         "type": "object"
       },
-      "CreateTagDto": {
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          }
-        },
-        "required": [
-          "name",
-          "type"
-        ],
-        "type": "object"
-      },
       "DownloadArchiveInfo": {
         "properties": {
           "assetIds": {
@@ -8427,10 +8796,15 @@
         "properties": {
           "archiveSize": {
             "type": "integer"
+          },
+          "includeEmbeddedVideos": {
+            "default": false,
+            "type": "boolean"
           }
         },
         "required": [
-          "archiveSize"
+          "archiveSize",
+          "includeEmbeddedVideos"
         ],
         "type": "object"
       },
@@ -8457,6 +8831,9 @@
           "archiveSize": {
             "minimum": 1,
             "type": "integer"
+          },
+          "includeEmbeddedVideos": {
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -8637,6 +9014,11 @@
             "nullable": true,
             "type": "string"
           },
+          "rating": {
+            "default": null,
+            "nullable": true,
+            "type": "number"
+          },
           "state": {
             "default": null,
             "nullable": true,
@@ -8785,6 +9167,34 @@
           "pathType",
           "pathValue"
         ],
+        "type": "object"
+      },
+      "FoldersResponse": {
+        "properties": {
+          "enabled": {
+            "default": false,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "FoldersUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "ImageFormat": {
@@ -9128,12 +9538,54 @@
         ],
         "type": "object"
       },
+      "MapReverseGeocodeResponseDto": {
+        "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "state"
+        ],
+        "type": "object"
+      },
       "MapTheme": {
         "enum": [
           "light",
           "dark"
         ],
         "type": "string"
+      },
+      "MemoriesResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "MemoriesUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "MemoryCreateDto": {
         "properties": {
@@ -9187,17 +9639,6 @@
         ],
         "type": "object"
       },
-      "MemoryResponse": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
       "MemoryResponseDto": {
         "properties": {
           "assets": {
@@ -9235,10 +9676,7 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "on_this_day"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/MemoryType"
           },
           "updatedAt": {
             "format": "date-time",
@@ -9263,14 +9701,6 @@
           "on_this_day"
         ],
         "type": "string"
-      },
-      "MemoryUpdate": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "type": "object"
       },
       "MemoryUpdateDto": {
         "properties": {
@@ -9309,9 +9739,11 @@
             "type": "string"
           },
           "city": {
+            "nullable": true,
             "type": "string"
           },
           "country": {
+            "nullable": true,
             "type": "string"
           },
           "createdAfter": {
@@ -9357,6 +9789,7 @@
             "type": "boolean"
           },
           "lensModel": {
+            "nullable": true,
             "type": "string"
           },
           "libraryId": {
@@ -9368,6 +9801,7 @@
             "type": "string"
           },
           "model": {
+            "nullable": true,
             "type": "string"
           },
           "order": {
@@ -9399,6 +9833,7 @@
             "type": "number"
           },
           "state": {
+            "nullable": true,
             "type": "string"
           },
           "takenAfter": {
@@ -9552,6 +9987,23 @@
         ],
         "type": "string"
       },
+      "PeopleResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
       "PeopleResponseDto": {
         "properties": {
           "hasNextPage": {
@@ -9576,6 +10028,17 @@
           "people",
           "total"
         ],
+        "type": "object"
+      },
+      "PeopleUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "PeopleUpdateDto": {
@@ -9621,6 +10084,89 @@
           "id"
         ],
         "type": "object"
+      },
+      "Permission": {
+        "enum": [
+          "all",
+          "activity.create",
+          "activity.read",
+          "activity.update",
+          "activity.delete",
+          "activity.statistics",
+          "apiKey.create",
+          "apiKey.read",
+          "apiKey.update",
+          "apiKey.delete",
+          "asset.read",
+          "asset.update",
+          "asset.delete",
+          "asset.share",
+          "asset.view",
+          "asset.download",
+          "asset.upload",
+          "album.create",
+          "album.read",
+          "album.update",
+          "album.delete",
+          "album.statistics",
+          "album.addAsset",
+          "album.removeAsset",
+          "album.share",
+          "album.download",
+          "authDevice.delete",
+          "archive.read",
+          "face.create",
+          "face.read",
+          "face.update",
+          "face.delete",
+          "library.create",
+          "library.read",
+          "library.update",
+          "library.delete",
+          "library.statistics",
+          "timeline.read",
+          "timeline.download",
+          "memory.create",
+          "memory.read",
+          "memory.update",
+          "memory.delete",
+          "partner.create",
+          "partner.read",
+          "partner.update",
+          "partner.delete",
+          "person.create",
+          "person.read",
+          "person.update",
+          "person.delete",
+          "person.statistics",
+          "person.merge",
+          "person.reassign",
+          "session.read",
+          "session.update",
+          "session.delete",
+          "sharedLink.create",
+          "sharedLink.read",
+          "sharedLink.update",
+          "sharedLink.delete",
+          "stack.create",
+          "stack.read",
+          "stack.update",
+          "stack.delete",
+          "systemConfig.read",
+          "systemConfig.update",
+          "systemMetadata.read",
+          "systemMetadata.update",
+          "tag.create",
+          "tag.read",
+          "tag.update",
+          "tag.delete",
+          "tag.asset",
+          "admin.user.create",
+          "admin.user.read",
+          "admin.user.update",
+          "admin.user.delete"
+        ],
+        "type": "string"
       },
       "PersonCreateDto": {
         "properties": {
@@ -9775,6 +10321,32 @@
         ],
         "type": "object"
       },
+      "PurchaseResponse": {
+        "properties": {
+          "hideBuyButtonUntil": {
+            "type": "string"
+          },
+          "showSupportBadge": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hideBuyButtonUntil",
+          "showSupportBadge"
+        ],
+        "type": "object"
+      },
+      "PurchaseUpdate": {
+        "properties": {
+          "hideBuyButtonUntil": {
+            "type": "string"
+          },
+          "showSupportBadge": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "QueueStatusDto": {
         "properties": {
           "isActive": {
@@ -9788,6 +10360,26 @@
           "isActive",
           "isPaused"
         ],
+        "type": "object"
+      },
+      "RatingsResponse": {
+        "properties": {
+          "enabled": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "RatingsUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "ReactionLevel": {
@@ -10516,9 +11108,11 @@
       "SmartSearchDto": {
         "properties": {
           "city": {
+            "nullable": true,
             "type": "string"
           },
           "country": {
+            "nullable": true,
             "type": "string"
           },
           "createdAfter": {
@@ -10554,6 +11148,7 @@
             "type": "boolean"
           },
           "lensModel": {
+            "nullable": true,
             "type": "string"
           },
           "libraryId": {
@@ -10565,6 +11160,7 @@
             "type": "string"
           },
           "model": {
+            "nullable": true,
             "type": "string"
           },
           "page": {
@@ -10587,6 +11183,7 @@
             "type": "number"
           },
           "state": {
+            "nullable": true,
             "type": "string"
           },
           "takenAfter": {
@@ -10630,6 +11227,53 @@
         "required": [
           "query"
         ],
+        "type": "object"
+      },
+      "StackCreateDto": {
+        "properties": {
+          "assetIds": {
+            "description": "first asset becomes the primary",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "StackResponseDto": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assets",
+          "id",
+          "primaryAssetId"
+        ],
+        "type": "object"
+      },
+      "StackUpdateDto": {
+        "properties": {
+          "primaryAssetId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "SystemConfigDto": {
@@ -11312,36 +11956,144 @@
         ],
         "type": "object"
       },
+      "TagBulkAssetsDto": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tagIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds",
+          "tagIds"
+        ],
+        "type": "object"
+      },
+      "TagBulkAssetsResponseDto": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "type": "object"
+      },
+      "TagCreateDto": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
+          "color": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
+          "parentId": {
+            "type": "string"
           },
-          "userId": {
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "value": {
             "type": "string"
           }
         },
         "required": [
+          "createdAt",
           "id",
           "name",
-          "type",
-          "userId"
+          "updatedAt",
+          "value"
         ],
         "type": "object"
       },
-      "TagTypeEnum": {
-        "enum": [
-          "OBJECT",
-          "FACE",
-          "CUSTOM"
+      "TagUpdateDto": {
+        "properties": {
+          "color": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TagUpsertDto": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
         ],
-        "type": "string"
+        "type": "object"
+      },
+      "TagsResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "TagsUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "TimeBucketResponseDto": {
         "properties": {
@@ -11445,6 +12197,11 @@
           },
           "longitude": {
             "type": "number"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number"
           }
         },
         "type": "object"
@@ -11478,31 +12235,6 @@
         "required": [
           "inTimeline"
         ],
-        "type": "object"
-      },
-      "UpdateStackParentDto": {
-        "properties": {
-          "newParentId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "oldParentId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "newParentId",
-          "oldParentId"
-        ],
-        "type": "object"
-      },
-      "UpdateTagDto": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
         "type": "object"
       },
       "UsageByUserDto": {
@@ -11740,15 +12472,35 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
+          "folders": {
+            "$ref": "#/components/schemas/FoldersResponse"
+          },
           "memories": {
-            "$ref": "#/components/schemas/MemoryResponse"
+            "$ref": "#/components/schemas/MemoriesResponse"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleResponse"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseResponse"
+          },
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsResponse"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsResponse"
           }
         },
         "required": [
           "avatar",
           "download",
           "emailNotifications",
-          "memories"
+          "folders",
+          "memories",
+          "people",
+          "purchase",
+          "ratings",
+          "tags"
         ],
         "type": "object"
       },
@@ -11763,8 +12515,23 @@
           "emailNotifications": {
             "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
+          "folders": {
+            "$ref": "#/components/schemas/FoldersUpdate"
+          },
           "memories": {
-            "$ref": "#/components/schemas/MemoryUpdate"
+            "$ref": "#/components/schemas/MemoriesUpdate"
+          },
+          "people": {
+            "$ref": "#/components/schemas/PeopleUpdate"
+          },
+          "purchase": {
+            "$ref": "#/components/schemas/PurchaseUpdate"
+          },
+          "ratings": {
+            "$ref": "#/components/schemas/RatingsUpdate"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/TagsUpdate"
           }
         },
         "type": "object"

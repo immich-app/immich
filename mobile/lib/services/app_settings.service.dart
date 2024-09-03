@@ -1,3 +1,4 @@
+import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
@@ -8,6 +9,21 @@ enum AppSettingsEnum<T> {
     "themeMode",
     "system",
   ), // "light","dark","system"
+  primaryColor<String>(
+    StoreKey.primaryColor,
+    "primaryColor",
+    defaultColorPresetName,
+  ),
+  dynamicTheme<bool>(
+    StoreKey.dynamicTheme,
+    "dynamicTheme",
+    false,
+  ),
+  colorfulInterface<bool>(
+    StoreKey.colorfulInterface,
+    "colorfulInterface",
+    true,
+  ),
   tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
   dynamicLayout<bool>(StoreKey.dynamicLayout, "dynamicLayout", false),
   groupAssetsBy<int>(StoreKey.groupAssetsBy, "groupBy", 0),
@@ -60,6 +76,7 @@ enum AppSettingsEnum<T> {
     false,
   ),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
+  syncAlbums<bool>(StoreKey.syncAlbums, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

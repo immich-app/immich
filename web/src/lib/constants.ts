@@ -7,6 +7,8 @@ export enum AssetAction {
   DELETE = 'delete',
   RESTORE = 'restore',
   ADD = 'add',
+  ADD_TO_ALBUM = 'add-to-album',
+  UNSTACK = 'unstack',
 }
 
 export enum AppRoute {
@@ -43,6 +45,9 @@ export enum AppRoute {
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
+
+  FOLDERS = '/folders',
+  TAGS = '/tags',
 }
 
 export enum ProjectionType {
@@ -76,6 +81,7 @@ export enum QueryParameter {
   SEARCHED_PEOPLE = 'searchedPeople',
   SMART_SEARCH = 'smartSearch',
   PAGE = 'page',
+  PATH = 'path',
 }
 
 export enum SessionStorageKey {
@@ -253,8 +259,10 @@ export const locales = [
 export const defaultLang = { name: 'English', code: 'en', loader: () => import('$lib/i18n/en.json') };
 
 export const langs = [
+  { name: 'Afrikaans', code: 'af', loader: () => import('$lib/i18n/af.json') },
   { name: 'Arabic', code: 'ar', loader: () => import('$lib/i18n/ar.json') },
   { name: 'Azerbaijani', code: 'az', loader: () => import('$lib/i18n/az.json') },
+  { name: 'Belarusian', code: 'be', loader: () => import('$lib/i18n/be.json') },
   { name: 'Bulgarian', code: 'bg', loader: () => import('$lib/i18n/bg.json') },
   { name: 'Bislama', code: 'bi', loader: () => import('$lib/i18n/bi.json') },
   { name: 'Catalan', code: 'ca', loader: () => import('$lib/i18n/ca.json') },
@@ -262,7 +270,9 @@ export const langs = [
   { name: 'Danish', code: 'da', loader: () => import('$lib/i18n/da.json') },
   { name: 'German', code: 'de', loader: () => import('$lib/i18n/de.json') },
   defaultLang,
+  { name: 'Greek', code: 'el', loader: () => import('$lib/i18n/el.json') },
   { name: 'Spanish', code: 'es', loader: () => import('$lib/i18n/es.json') },
+  { name: 'Estonian', code: 'et', loader: () => import('$lib/i18n/et.json') },
   { name: 'Persian', code: 'fa', loader: () => import('$lib/i18n/fa.json') },
   { name: 'Finnish', code: 'fi', loader: () => import('$lib/i18n/fi.json') },
   { name: 'French', code: 'fr', loader: () => import('$lib/i18n/fr.json') },
@@ -297,6 +307,7 @@ export const langs = [
   { name: 'Serbian (Latin)', code: 'sr-Latn', weblateCode: 'sr_Latn', loader: () => import('$lib/i18n/sr_Latn.json') },
   { name: 'Swedish', code: 'sv', loader: () => import('$lib/i18n/sv.json') },
   { name: 'Tamil', code: 'ta', loader: () => import('$lib/i18n/ta.json') },
+  { name: 'Telugu', code: 'te', loader: () => import('$lib/i18n/te.json') },
   { name: 'Thai', code: 'th', loader: () => import('$lib/i18n/th.json') },
   { name: 'Turkish', code: 'tr', loader: () => import('$lib/i18n/tr.json') },
   { name: 'Ukrainian', code: 'uk', loader: () => import('$lib/i18n/uk.json') },
@@ -316,7 +327,7 @@ export const langs = [
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];
 
-export enum ImmichLicense {
+export enum ImmichProduct {
   Client = 'immich-client',
   Server = 'immich-server',
 }

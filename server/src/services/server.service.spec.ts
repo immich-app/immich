@@ -1,4 +1,4 @@
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';

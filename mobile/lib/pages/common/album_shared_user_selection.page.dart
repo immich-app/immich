@@ -13,7 +13,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
-@RoutePage<List<String>>()
+@RoutePage()
 class AlbumSharedUserSelectionPage extends HookConsumerWidget {
   const AlbumSharedUserSelectionPage({super.key, required this.assets});
 

@@ -35,6 +35,7 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -328,17 +329,21 @@
                     <LoadingSpinner size="40" />
                   {:else}{owner[index].name}{/if}
                 </td>
-
-                {#if totalCount[index] == undefined}
-                  <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
+                <td class=" text-ellipsis px-4 text-sm">
+                  {#if totalCount[index] == undefined}
                     <LoadingSpinner size="40" />
-                  </td>
-                {:else}
-                  <td class=" text-ellipsis px-4 text-sm">
-                    {totalCount[index]}
-                  </td>
-                  <td class=" text-ellipsis px-4 text-sm">{diskUsage[index]} {diskUsageUnit[index]}</td>
-                {/if}
+                  {:else}
+                    {totalCount[index].toLocaleString($locale)}
+                  {/if}
+                </td>
+                <td class=" text-ellipsis px-4 text-sm">
+                  {#if diskUsage[index] == undefined}
+                    <LoadingSpinner size="40" />
+                  {:else}
+                    {diskUsage[index]}
+                    {diskUsageUnit[index]}
+                  {/if}
+                </td>
 
                 <td class=" text-ellipsis px-4 text-sm">
                   <ButtonContextMenu

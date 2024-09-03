@@ -11,7 +11,6 @@
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
-    sidebarSettings,
   } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
   import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
@@ -168,21 +167,6 @@
           title={$t('permanent_deletion_warning')}
           subtitle={$t('permanent_deletion_warning_setting_description')}
           bind:checked={$showDeleteModal}
-        />
-      </div>
-
-      <div class="ml-4">
-        <SettingSwitch
-          title={$t('people')}
-          subtitle={$t('people_sidebar_description')}
-          bind:checked={$sidebarSettings.people}
-        />
-      </div>
-      <div class="ml-4">
-        <SettingSwitch
-          title={$t('sharing')}
-          subtitle={$t('sharing_sidebar_description')}
-          bind:checked={$sidebarSettings.sharing}
         />
       </div>
     </div>

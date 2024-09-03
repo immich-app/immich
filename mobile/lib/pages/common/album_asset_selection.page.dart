@@ -12,7 +12,7 @@ import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:isar/isar.dart';
 
-@RoutePage<AssetSelectionPageResult?>()
+@RoutePage()
 class AlbumAssetSelectionPage extends HookConsumerWidget {
   const AlbumAssetSelectionPage({
     super.key,

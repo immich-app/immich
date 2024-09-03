@@ -1,4 +1,4 @@
-import { DatabaseAction, EntityType } from 'src/entities/audit.entity';
+import { DatabaseAction, EntityType } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';

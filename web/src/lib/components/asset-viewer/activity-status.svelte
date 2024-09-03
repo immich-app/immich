@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { locale } from '$lib/stores/preferences.store';
   import type { ActivityResponseDto } from '@immich/sdk';
   import { mdiCommentOutline, mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
@@ -24,7 +25,7 @@
     <div class="flex gap-2 items-center justify-center">
       <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={24} />
       {#if numberOfComments}
-        <div class="text-xl">{numberOfComments}</div>
+        <div class="text-xl">{numberOfComments.toLocaleString($locale)}</div>
       {/if}
     </div>
   </button>

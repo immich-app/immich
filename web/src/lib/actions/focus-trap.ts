@@ -1,4 +1,5 @@
 import { shortcuts } from '$lib/actions/shortcut';
+import { tick } from 'svelte';
 
 const selectors =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -7,7 +8,9 @@ export function focusTrap(container: HTMLElement) {
   const triggerElement = document.activeElement;
 
   const focusableElement = container.querySelector<HTMLElement>(selectors);
-  focusableElement?.focus();
+
+  // Use tick() to ensure focus trap works correctly inside <Portal />
+  void tick().then(() => focusableElement?.focus());
 
   const getFocusableElements = (): [HTMLElement | null, HTMLElement | null] => {
     const focusableElements = container.querySelectorAll<HTMLElement>(selectors);

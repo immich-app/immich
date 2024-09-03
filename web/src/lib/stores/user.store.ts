@@ -1,4 +1,4 @@
-import { licenseStore } from '$lib/stores/license.store';
+import { purchaseStore } from '$lib/stores/purchase.store';
 import { type UserAdminResponseDto, type UserPreferencesResponseDto } from '@immich/sdk';
 import { writable } from 'svelte/store';
 
@@ -12,5 +12,5 @@ export const preferences = writable<UserPreferencesResponseDto>();
 export const resetSavedUser = () => {
   user.set(undefined as unknown as UserAdminResponseDto);
   preferences.set(undefined as unknown as UserPreferencesResponseDto);
-  licenseStore.setLicenseStatus(false);
+  purchaseStore.setPurchaseStatus(false);
 };

@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';

@@ -15,6 +15,9 @@ class PreferenceSetting extends StatelessWidget {
       HapticSetting(),
     ];
 
-    return const SettingsSubPageScaffold(settings: preferenceSettings);
+    return const SettingsSubPageScaffold(
+      settings: preferenceSettings,
+      showDivider: true,
+    );
   }
 }

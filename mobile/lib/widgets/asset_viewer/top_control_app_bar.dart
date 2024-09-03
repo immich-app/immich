@@ -178,6 +178,7 @@ class TopControlAppBar extends HookConsumerWidget {
       actionsIconTheme: const IconThemeData(
         size: iconSize,
       ),
+      shape: const Border(),
       actions: [
         if (asset.isRemote && isOwner) buildFavoriteButton(a),
         if (asset.livePhotoVideoId != null) buildLivePhotoButton(),

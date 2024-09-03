@@ -17,6 +17,7 @@
   import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
 
@@ -221,7 +222,10 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm place-items-center font-medium flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>{$t('matches').toUpperCase()} {matches.length > 0 ? `(${matches.length})` : ''}</p>
+                    <p>
+                      {$t('matches').toUpperCase()}
+                      {matches.length > 0 ? `(${matches.length.toLocaleString($locale)})` : ''}
+                    </p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">{$t('admin.these_files_matched_by_checksum')}</p>
                   </div>
                 </th>
@@ -255,7 +259,10 @@
               <tr class="flex w-full place-items-center p-1 md:p-5">
                 <th class="w-full text-sm font-medium justify-between place-items-center flex" colspan="2">
                   <div class="px-3">
-                    <p>{$t('admin.offline_paths').toUpperCase()} {orphans.length > 0 ? `(${orphans.length})` : ''}</p>
+                    <p>
+                      {$t('admin.offline_paths').toUpperCase()}
+                      {orphans.length > 0 ? `(${orphans.length.toLocaleString($locale)})` : ''}
+                    </p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       {$t('admin.offline_paths_description')}
                     </p>
@@ -293,7 +300,10 @@
               <tr class="flex w-full place-items-center p-2 md:p-5">
                 <th class="w-full text-sm font-medium place-items-center flex justify-between" colspan="2">
                   <div class="px-3">
-                    <p>{$t('admin.untracked_files').toUpperCase()} {extras.length > 0 ? `(${extras.length})` : ''}</p>
+                    <p>
+                      {$t('admin.untracked_files').toUpperCase()}
+                      {extras.length > 0 ? `(${extras.length.toLocaleString($locale)})` : ''}
+                    </p>
                     <p class="text-gray-600 dark:text-gray-300 mt-1">
                       {$t('admin.untracked_files_description')}
                     </p>

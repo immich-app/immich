@@ -12,6 +12,7 @@
     mdiLinux,
     mdiMicrosoftWindows,
     mdiTrashCanOutline,
+    mdiUbuntu,
   } from '@mdi/js';
   import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
@@ -41,6 +42,8 @@
       <Icon path={mdiMicrosoftWindows} size="40" />
     {:else if device.deviceOS === 'Linux'}
       <Icon path={mdiLinux} size="40" />
+    {:else if device.deviceOS === 'Ubuntu'}
+      <Icon path={mdiUbuntu} size="40" />
     {:else if device.deviceOS === 'Chromium OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium'}
       <Icon path={mdiGoogleChrome} size="40" />
     {:else}

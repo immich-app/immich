@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { OnEvents } from 'src/interfaces/event.interface';
+import { OnEmit } from 'src/decorators';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
@@ -19,7 +20,7 @@ import { VersionService } from 'src/services/version.service';
 import { otelShutdown } from 'src/utils/instrumentation';
 
 @Injectable()
-export class MicroservicesService implements OnEvents {
+export class MicroservicesService {
   constructor(
     private auditService: AuditService,
     private assetService: AssetService,
@@ -38,7 +39,8 @@ export class MicroservicesService implements OnEvents {
     private versionService: VersionService,
   ) {}
 
-  async onBootstrapEvent(app: 'api' | 'microservices') {
+  @OnEmit({ event: 'app.bootstrap' })
+  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
@@ -83,7 +85,8 @@ export class MicroservicesService implements OnEvents {
       [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
       [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
       [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
-      [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
+      [JobName.LIBRARY_CHECK_OFFLINE]: (data) => this.libraryService.handleOfflineCheck(data),
+      [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleRemoveOffline(data),
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
       [JobName.SEND_EMAIL]: (data) => this.notificationService.handleSendEmail(data),

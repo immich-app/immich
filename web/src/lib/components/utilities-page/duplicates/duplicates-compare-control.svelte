@@ -4,16 +4,17 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { suggestDuplicateByFileSize } from '$lib/utils';
+  import { handlePromiseError, suggestDuplicateByFileSize } from '$lib/utils';
+  import { navigate } from '$lib/utils/navigation';
   import { shortcuts } from '$lib/actions/shortcut';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiCheck, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiCheck, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   export let assets: AssetResponseDto[];
   export let onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
-
+  export let onStack: (assets: AssetResponseDto[]) => void;
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
@@ -60,13 +61,24 @@
     const duplicateAssetIds = assets.map((asset) => asset.id);
     onResolve(duplicateAssetIds, trashIds);
   };
+
+  const handleStack = () => {
+    onStack(assets);
+  };
 </script>
 
 <svelte:window
   use:shortcuts={[
-    { shortcut: { key: 'k', shift: true }, onShortcut: onSelectAll },
-    { shortcut: { key: 't', shift: true }, onShortcut: onSelectNone },
+    { shortcut: { key: 'a' }, onShortcut: onSelectAll },
+    {
+      shortcut: { key: 's' },
+      onShortcut: () => {
+        setAsset(assets[0]);
+      },
+    },
+    { shortcut: { key: 'd' }, onShortcut: onSelectNone },
     { shortcut: { key: 'c', shift: true }, onShortcut: handleResolve },
+    { shortcut: { key: 's', shift: true }, onShortcut: handleStack },
   ]}
 />
 
@@ -98,17 +110,38 @@
     </div>
 
     <!-- CONFIRM BUTTONS -->
-    {#if trashCount === 0}
-      <Button size="sm" color="primary" class="flex place-items-center gap-2" on:click={handleResolve}>
-        <Icon path={mdiCheck} size="20" />{$t('keep_all')}
+    <div class="flex text-xs text-black">
+      {#if trashCount === 0}
+        <Button
+          size="sm"
+          color="primary"
+          class="flex place-items-center rounded-tl-full rounded-bl-full gap-2"
+          on:click={handleResolve}
+        >
+          <Icon path={mdiCheck} size="20" />{$t('keep_all')}
+        </Button>
+      {:else}
+        <Button
+          size="sm"
+          color="red"
+          class="flex place-items-center rounded-tl-full rounded-bl-full gap-2 py-3"
+          on:click={handleResolve}
+        >
+          <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
+            ? $t('trash_all')
+            : $t('trash_count', { values: { count: trashCount } })}
+        </Button>
+      {/if}
+      <Button
+        size="sm"
+        color="primary"
+        class="flex place-items-center rounded-tr-full rounded-br-full  gap-2"
+        on:click={handleStack}
+        disabled={selectedAssetIds.size !== 1}
+      >
+        <Icon path={mdiImageMultipleOutline} size="20" />{$t('stack')}
       </Button>
-    {:else}
-      <Button size="sm" color="red" class="flex place-items-center gap-2 py-3" on:click={handleResolve}>
-        <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
-          ? $t('trash_all')
-          : $t('trash_count', { values: { count: trashCount } })}
-      </Button>
-    {/if}
+    </div>
   </div>
 </div>
 
@@ -126,7 +159,10 @@
           const index = getAssetIndex($viewingAsset.id) - 1 + assets.length;
           setAsset(assets[index % assets.length]);
         }}
-        on:close={() => assetViewingStore.showAssetViewer(false)}
+        on:close={() => {
+          assetViewingStore.showAssetViewer(false);
+          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+        }}
       />
     </Portal>
   {/await}

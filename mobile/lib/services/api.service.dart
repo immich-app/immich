@@ -18,7 +18,7 @@ class ApiService implements Authentication {
   late AlbumsApi albumsApi;
   late AssetsApi assetsApi;
   late SearchApi searchApi;
-  late ServerInfoApi serverInfoApi;
+  late ServerApi serverInfoApi;
   late MapApi mapApi;
   late PartnersApi partnersApi;
   late PeopleApi peopleApi;
@@ -29,6 +29,7 @@ class ApiService implements Authentication {
   late ActivitiesApi activitiesApi;
   late DownloadApi downloadApi;
   late TrashApi trashApi;
+  late StacksApi stacksApi;
 
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -49,7 +50,7 @@ class ApiService implements Authentication {
     oAuthApi = OAuthApi(_apiClient);
     albumsApi = AlbumsApi(_apiClient);
     assetsApi = AssetsApi(_apiClient);
-    serverInfoApi = ServerInfoApi(_apiClient);
+    serverInfoApi = ServerApi(_apiClient);
     searchApi = SearchApi(_apiClient);
     mapApi = MapApi(_apiClient);
     partnersApi = PartnersApi(_apiClient);
@@ -61,6 +62,7 @@ class ApiService implements Authentication {
     activitiesApi = ActivitiesApi(_apiClient);
     downloadApi = DownloadApi(_apiClient);
     trashApi = TrashApi(_apiClient);
+    stacksApi = StacksApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {

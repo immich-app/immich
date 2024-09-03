@@ -19,6 +19,7 @@ export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
 export class ActivityResponseDto {
   id!: string;
   createdAt!: Date;
+  @ApiProperty({ enumName: 'ReactionType', enum: ReactionType })
   type!: ReactionType;
   user!: UserResponseDto;
   assetId!: string | null;
@@ -53,7 +54,7 @@ export class ActivitySearchDto extends ActivityDto {
   userId?: string;
 }
 
-const isComment = (dto: ActivityCreateDto) => dto.type === 'comment';
+const isComment = (dto: ActivityCreateDto) => dto.type === ReactionType.COMMENT;
 
 export class ActivityCreateDto extends ActivityDto {
   @IsEnum(ReactionType)

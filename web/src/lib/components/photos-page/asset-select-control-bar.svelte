@@ -31,8 +31,9 @@
 </script>
 
 <ControlAppBar on:close={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
-  <p class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
-    {$t('selected_count', { values: { count: assets.size } })}
-  </p>
+  <div class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
+    <p class="block sm:hidden">{assets.size}</p>
+    <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.size } })}</p>
+  </div>
   <slot slot="trailing" />
 </ControlAppBar>

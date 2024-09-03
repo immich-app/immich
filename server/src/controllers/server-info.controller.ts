@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 import { EndpointLifecycle } from 'src/decorators';
 import {
   ServerAboutResponseDto,
@@ -16,6 +16,7 @@ import { Authenticated } from 'src/middleware/auth.guard';
 import { ServerService } from 'src/services/server.service';
 import { VersionService } from 'src/services/version.service';
 
+@ApiExcludeController()
 @ApiTags('Server Info')
 @Controller('server-info')
 export class ServerInfoController {
@@ -68,9 +69,9 @@ export class ServerInfoController {
     return this.service.getConfig();
   }
 
-  @Authenticated({ admin: true })
-  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   @Get('statistics')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
+  @Authenticated({ admin: true })
   getServerStatistics(): Promise<ServerStatsResponseDto> {
     return this.service.getStatistics();
   }

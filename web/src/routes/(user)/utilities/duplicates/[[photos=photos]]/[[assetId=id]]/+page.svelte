@@ -6,6 +6,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteAssets, updateAssets } from '@immich/sdk';
@@ -14,9 +15,36 @@
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { stackAssets } from '$lib/utils/asset-utils';
+  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { mdiKeyboard } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { locale } from '$lib/stores/preferences.store';
 
   export let data: PageData;
+  export let isShowKeyboardShortcut = false;
+
+  interface Shortcuts {
+    general: ExplainedShortcut[];
+    actions: ExplainedShortcut[];
+  }
+  interface ExplainedShortcut {
+    key: string[];
+    action: string;
+    info?: string;
+  }
+
+  const duplicateShortcuts: Shortcuts = {
+    general: [],
+    actions: [
+      { key: ['a'], action: $t('select_all_duplicates') },
+      { key: ['s'], action: $t('view') },
+      { key: ['d'], action: $t('unselect_all_duplicates') },
+      { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
+      { key: ['⇧', 'c'], action: $t('stack_duplicates') },
+    ],
+  };
 
   $: hasDuplicates = data.duplicates.length > 0;
 
@@ -61,6 +89,13 @@
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
     );
+  };
+
+  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
+    await stackAssets(assets, false);
+    const duplicateAssetIds = assets.map((asset) => asset.id);
+    await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+    data.duplicates = data.duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
   };
 
   const handleDeduplicateAll = async () => {
@@ -118,7 +153,7 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title + ` (${data.duplicates.length})`} scrollbar={true}>
+<UserPageLayout title={data.meta.title + ` (${data.duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   <div class="flex place-items-center gap-2" slot="buttons">
     <LinkButton on:click={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
       <div class="flex place-items-center gap-2 text-sm">
@@ -132,6 +167,11 @@
         {$t('keep_all')}
       </div>
     </LinkButton>
+    <CircleIconButton
+      icon={mdiKeyboard}
+      title={$t('show_keyboard_shortcuts')}
+      on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+    />
   </div>
 
   <div class="mt-4">
@@ -144,6 +184,7 @@
           assets={data.duplicates[0].assets}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(data.duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(data.duplicates[0].duplicateId, assets)}
         />
       {/key}
     {:else}
@@ -153,3 +194,7 @@
     {/if}
   </div>
 </UserPageLayout>
+
+{#if isShowKeyboardShortcut}
+  <ShowShortcuts shortcuts={duplicateShortcuts} on:close={() => (isShowKeyboardShortcut = false)} />
+{/if}

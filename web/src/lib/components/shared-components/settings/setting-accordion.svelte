@@ -9,12 +9,24 @@
   export let subtitle = '';
   export let key: string;
   export let isOpen = $accordionState.has(key);
+  export let autoScrollTo = false;
+
+  let accordionElement: HTMLDivElement;
 
   $: setIsOpen(isOpen);
 
   const setIsOpen = (isOpen: boolean) => {
     if (isOpen) {
       $accordionState = $accordionState.add(key);
+
+      if (autoScrollTo) {
+        setTimeout(() => {
+          accordionElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 200);
+      }
     } else {
       $accordionState.delete(key);
       $accordionState = $accordionState;
@@ -26,7 +38,7 @@
   });
 </script>
 
-<div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
+<div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700" bind:this={accordionElement}>
   <button
     type="button"
     aria-expanded={isOpen}
@@ -63,7 +75,7 @@
   </button>
 
   {#if isOpen}
-    <ul transition:slide={{ duration: 250 }} class="mb-2 ml-4">
+    <ul transition:slide={{ duration: 150 }} class="mb-2 ml-4">
       <slot />
     </ul>
   {/if}

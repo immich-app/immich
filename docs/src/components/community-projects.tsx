@@ -29,11 +29,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Thoroslives/immich_remove_offline_files',
   },
   {
-    title: 'Create albums from folders',
-    description: 'A Python script to create albums based on the folder structure of an external library.',
-    url: 'https://github.com/Salvoxia/immich-folder-album-creator',
-  },
-  {
     title: 'Immich-Tools',
     description: 'Provides scripts for handling problems on the repair page.',
     url: 'https://github.com/clumsyCoder00/Immich-Tools',
@@ -42,6 +37,11 @@ const projects: CommunityProjectProps[] = [
     title: 'Lightroom Publisher: mi.Immich.Publisher',
     description: 'Lightroom plugin to publish photos from Lightroom collections to Immich albums.',
     url: 'https://github.com/midzelis/mi.Immich.Publisher',
+  },
+  {
+    title: 'Lightroom Immich Plugin: lrc-immich-plugin',
+    description: 'Another Lightroom plugin to publish or export photos from Lightroom to Immich.',
+    url: 'https://github.com/bmachek/lrc-immich-plugin',
   },
   {
     title: 'Immich Duplicate Finder',
@@ -59,9 +59,29 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/giejay/Immich-Android-TV',
   },
   {
+    title: 'Create albums from folders',
+    description: 'A Python script to create albums based on the folder structure of an external library.',
+    url: 'https://github.com/Salvoxia/immich-folder-album-creator',
+  },
+  {
     title: 'Powershell Module PSImmich',
     description: 'Powershell Module for the Immich API',
     url: 'https://github.com/hanpq/PSImmich',
+  },
+  {
+    title: 'Immich Distribution',
+    description: 'Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.',
+    url: 'https://immich-distribution.nsg.cc',
+  },
+  {
+    title: 'Immich Kiosk',
+    description: 'Lightweight slideshow to run on kiosk devices and browsers.',
+    url: 'https://github.com/damongolding/immich-kiosk',
+  },
+  {
+    title: 'Immich Power Tools',
+    description: 'Power tools for organizing your immich library.',
+    url: 'https://github.com/varun-raj/immich-power-tools',
   },
 ];
 

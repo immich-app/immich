@@ -95,7 +95,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   'action_common_confirm',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: !context.isDarkTheme ? Colors.red : Colors.red[300],
+                    color: context.colorScheme.error,
                   ),
                 ).tr(),
               ),

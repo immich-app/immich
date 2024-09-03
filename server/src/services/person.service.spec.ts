@@ -3,7 +3,7 @@ import { Colorspace } from 'src/config';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -256,15 +256,15 @@ describe(PersonService.name, () => {
       personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
-      await expect(sut.update(authStub.admin, 'person-1', { birthDate: new Date('1976-06-30') })).resolves.toEqual({
+      await expect(sut.update(authStub.admin, 'person-1', { birthDate: '1976-06-30' })).resolves.toEqual({
         id: 'person-1',
         name: 'Person 1',
-        birthDate: new Date('1976-06-30'),
+        birthDate: '1976-06-30',
         thumbnailPath: '/path/to/thumbnail.jpg',
         isHidden: false,
         updatedAt: expect.any(Date),
       });
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: '1976-06-30' });
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
@@ -716,7 +716,7 @@ describe(PersonService.name, () => {
       await sut.handleDetectFaces({ id: assetStub.image.id });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
-        assetStub.image.previewPath,
+        '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ minScore: 0.7, modelName: 'buffalo_l' }),
       );
       expect(personMock.createFaces).not.toHaveBeenCalled();
@@ -946,7 +946,7 @@ describe(PersonService.name, () => {
 
       await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
-      expect(assetMock.getById).toHaveBeenCalledWith(faceStub.middle.assetId, { exifInfo: true });
+      expect(assetMock.getById).toHaveBeenCalledWith(faceStub.middle.assetId, { exifInfo: true, files: true });
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
       expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
         assetStub.primaryImage.originalPath,
@@ -1032,7 +1032,7 @@ describe(PersonService.name, () => {
       await sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id });
 
       expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-        assetStub.video.previewPath,
+        '/uploads/user-id/thumbs/path.jpg',
         'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
         {
           format: 'jpeg',

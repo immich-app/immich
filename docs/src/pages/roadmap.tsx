@@ -15,6 +15,7 @@ import {
   mdiCloudUploadOutline,
   mdiCollage,
   mdiContentDuplicate,
+  mdiCrop,
   mdiDevices,
   mdiEmailOutline,
   mdiExpansionCard,
@@ -26,6 +27,7 @@ import {
   mdiFileSearch,
   mdiFlash,
   mdiFolder,
+  mdiFolderMultiple,
   mdiForum,
   mdiHandshakeOutline,
   mdiHeart,
@@ -36,6 +38,7 @@ import {
   mdiImageMultipleOutline,
   mdiImageSearch,
   mdiKeyboardSettingsOutline,
+  mdiLicense,
   mdiLockOutline,
   mdiMagnify,
   mdiMagnifyScan,
@@ -55,25 +58,29 @@ import {
   mdiScaleBalance,
   mdiSecurity,
   mdiServer,
+  mdiShare,
   mdiShareAll,
   mdiShareCircle,
   mdiStar,
+  mdiStarOutline,
   mdiTableKey,
   mdiTag,
+  mdiTagMultiple,
   mdiText,
   mdiThemeLightDark,
   mdiTrashCanOutline,
   mdiVectorCombine,
   mdiVideo,
   mdiWeb,
-  mdiLicense,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
-  // TODO
+  'v1.113.0': new Date(2024, 7, 30),
+  'v1.112.0': new Date(2024, 7, 14),
+  'v1.111.0': new Date(2024, 6, 26),
   'v1.110.0': new Date(2024, 5, 11),
   'v1.109.0': new Date(2024, 6, 18),
   'v1.106.1': new Date(2024, 5, 11),
@@ -224,6 +231,47 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  withRelease({
+    icon: mdiTagMultiple,
+    iconColor: 'orange',
+    title: 'Tags',
+    description: 'Tag your photos and videos',
+    release: 'v1.113.0',
+  }),
+  withRelease({
+    icon: mdiFolderMultiple,
+    iconColor: 'brown',
+    title: 'Folders',
+    description: 'View your photos and videos in folders',
+    release: 'v1.113.0',
+  }),
+  withRelease({
+    icon: mdiPalette,
+    title: 'Theming (mobile)',
+    description: 'Pick a primary color for the mobile app',
+    release: 'v1.112.0',
+  }),
+  withRelease({
+    icon: mdiStarOutline,
+    iconColor: 'gold',
+    title: 'Star rating',
+    description: 'Rate your photos and videos',
+    release: 'v1.112.0',
+  }),
+  withRelease({
+    icon: mdiCrop,
+    iconColor: 'royalblue',
+    title: 'Editor (mobile)',
+    description: 'Crop and rotate on mobile',
+    release: 'v1.111.0',
+  }),
+  withRelease({
+    icon: mdiMap,
+    iconColor: 'green',
+    title: 'Deploy tiles.immich.cloud',
+    description: 'Dedicated tile server for Immich',
+    release: 'v1.111.0',
+  }),
   {
     icon: mdiStar,
     iconColor: 'gold',
@@ -231,6 +279,12 @@ const milestones: Item[] = [
     description: 'Reached 40K Stars on GitHub!',
     getDateLabel: withLanguage(new Date(2024, 6, 21)),
   },
+  withRelease({
+    icon: mdiShare,
+    title: 'Deploy my.immich.app',
+    description: 'Url router for immich links',
+    release: 'v1.109.0',
+  }),
   withRelease({
     icon: mdiLicense,
     iconColor: 'gold',

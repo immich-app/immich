@@ -9,6 +9,7 @@ FROM
       "APIKeyEntity"."id" AS "APIKeyEntity_id",
       "APIKeyEntity"."key" AS "APIKeyEntity_key",
       "APIKeyEntity"."userId" AS "APIKeyEntity_userId",
+      "APIKeyEntity"."permissions" AS "APIKeyEntity_permissions",
       "APIKeyEntity__APIKeyEntity_user"."id" AS "APIKeyEntity__APIKeyEntity_user_id",
       "APIKeyEntity__APIKeyEntity_user"."name" AS "APIKeyEntity__APIKeyEntity_user_name",
       "APIKeyEntity__APIKeyEntity_user"."isAdmin" AS "APIKeyEntity__APIKeyEntity_user_isAdmin",
@@ -46,6 +47,7 @@ SELECT
   "APIKeyEntity"."id" AS "APIKeyEntity_id",
   "APIKeyEntity"."name" AS "APIKeyEntity_name",
   "APIKeyEntity"."userId" AS "APIKeyEntity_userId",
+  "APIKeyEntity"."permissions" AS "APIKeyEntity_permissions",
   "APIKeyEntity"."createdAt" AS "APIKeyEntity_createdAt",
   "APIKeyEntity"."updatedAt" AS "APIKeyEntity_updatedAt"
 FROM
@@ -63,6 +65,7 @@ SELECT
   "APIKeyEntity"."id" AS "APIKeyEntity_id",
   "APIKeyEntity"."name" AS "APIKeyEntity_name",
   "APIKeyEntity"."userId" AS "APIKeyEntity_userId",
+  "APIKeyEntity"."permissions" AS "APIKeyEntity_permissions",
   "APIKeyEntity"."createdAt" AS "APIKeyEntity_createdAt",
   "APIKeyEntity"."updatedAt" AS "APIKeyEntity_updatedAt"
 FROM

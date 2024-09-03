@@ -1,7 +1,5 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { IncomingHttpHeaders } from 'node:http';
+import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Issuer, generators } from 'openid-client';
-import { Socket } from 'socket.io';
 import { AuthType } from 'src/constants';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
@@ -48,7 +46,7 @@ const fixtures = {
 };
 
 const oauthUserWithDefaultQuota = {
-  email: email,
+  email,
   name: ' ',
   oauthId: sub,
   quotaSizeInBytes: 1_073_741_824,
@@ -252,15 +250,26 @@ describe('AuthService', () => {
   });
 
   describe('validate - socket connections', () => {
-    it('should throw token is not provided', async () => {
-      await expect(sut.validate({}, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    it('should throw when token is not provided', async () => {
+      await expect(
+        sut.authenticate({
+          headers: {},
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should validate using authorization header', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
       sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
-      const client = { request: { headers: { authorization: 'Bearer auth_token' } } };
-      await expect(sut.validate((client as Socket).request.headers, {})).resolves.toEqual({
+      await expect(
+        sut.authenticate({
+          headers: { authorization: 'Bearer auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toEqual({
         user: userStub.user1,
         session: sessionStub.valid,
       });
@@ -270,28 +279,48 @@ describe('AuthService', () => {
   describe('validate - shared key', () => {
     it('should not accept a non-existent key', async () => {
       shareMock.getByKey.mockResolvedValue(null);
-      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
-      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-key': 'key' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should not accept an expired key', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
-      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-key': 'key' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should not accept a key without a user', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
       userMock.get.mockResolvedValue(null);
-      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
-      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-key': 'key' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should accept a base64url key', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
       userMock.get.mockResolvedValue(userStub.admin);
-      const headers: IncomingHttpHeaders = { 'x-immich-share-key': sharedLinkStub.valid.key.toString('base64url') };
-      await expect(sut.validate(headers, {})).resolves.toEqual({
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-key': sharedLinkStub.valid.key.toString('base64url') },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).resolves.toEqual({
         user: userStub.admin,
         sharedLink: sharedLinkStub.valid,
       });
@@ -301,8 +330,13 @@ describe('AuthService', () => {
     it('should accept a hex key', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
       userMock.get.mockResolvedValue(userStub.admin);
-      const headers: IncomingHttpHeaders = { 'x-immich-share-key': sharedLinkStub.valid.key.toString('hex') };
-      await expect(sut.validate(headers, {})).resolves.toEqual({
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-key': sharedLinkStub.valid.key.toString('hex') },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).resolves.toEqual({
         user: userStub.admin,
         sharedLink: sharedLinkStub.valid,
       });
@@ -313,24 +347,50 @@ describe('AuthService', () => {
   describe('validate - user token', () => {
     it('should throw if no token is found', async () => {
       sessionMock.getByToken.mockResolvedValue(null);
-      const headers: IncomingHttpHeaders = { 'x-immich-user-token': 'auth_token' };
-      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-user-token': 'auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should return an auth dto', async () => {
       sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
-      const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
-      await expect(sut.validate(headers, {})).resolves.toEqual({
+      await expect(
+        sut.authenticate({
+          headers: { cookie: 'immich_access_token=auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toEqual({
         user: userStub.user1,
         session: sessionStub.valid,
       });
     });
 
+    it('should throw if admin route and not an admin', async () => {
+      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
+      await expect(
+        sut.authenticate({
+          headers: { cookie: 'immich_access_token=auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: true, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
     it('should update when access time exceeds an hour', async () => {
       sessionMock.getByToken.mockResolvedValue(sessionStub.inactive);
       sessionMock.update.mockResolvedValue(sessionStub.valid);
-      const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
-      await expect(sut.validate(headers, {})).resolves.toBeDefined();
+      await expect(
+        sut.authenticate({
+          headers: { cookie: 'immich_access_token=auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toBeDefined();
       expect(sessionMock.update.mock.calls[0][0]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
     });
   });
@@ -338,26 +398,38 @@ describe('AuthService', () => {
   describe('validate - api key', () => {
     it('should throw an error if no api key is found', async () => {
       keyMock.getKey.mockResolvedValue(null);
-      const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
-      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        sut.authenticate({
+          headers: { 'x-api-key': 'auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
 
     it('should return an auth dto', async () => {
       keyMock.getKey.mockResolvedValue(keyStub.admin);
-      const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
-      await expect(sut.validate(headers, {})).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.admin });
+      await expect(
+        sut.authenticate({
+          headers: { 'x-api-key': 'auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.admin });
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
   });
 
   describe('getMobileRedirect', () => {
     it('should pass along the query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual('app.immich:/?code=123&state=456');
+      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual(
+        'app.immich:///oauth-callback?code=123&state=456',
+      );
     });
 
     it('should work if called without query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:/?');
+      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:///oauth-callback?');
     });
   });
 
@@ -418,25 +490,23 @@ describe('AuthService', () => {
       expect(userMock.create).toHaveBeenCalledTimes(1);
     });
 
-    it('should use the mobile redirect override', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
-      userMock.getByOAuthId.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
+    for (const url of [
+      'app.immich:/',
+      'app.immich://',
+      'app.immich:///',
+      'app.immich:/oauth-callback?code=abc123',
+      'app.immich://oauth-callback?code=abc123',
+      'app.immich:///oauth-callback?code=abc123',
+    ]) {
+      it(`should use the mobile redirect override for a url of ${url}`, async () => {
+        systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
+        userMock.getByOAuthId.mockResolvedValue(userStub.user1);
+        sessionMock.create.mockResolvedValue(sessionStub.valid);
 
-      await sut.callback({ url: `app.immich:/?code=abc123` }, loginDetails);
-
-      expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
-    });
-
-    it('should use the mobile redirect override for ios urls with multiple slashes', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
-      userMock.getByOAuthId.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
-
-      await sut.callback({ url: `app.immich:///?code=abc123` }, loginDetails);
-
-      expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
-    });
+        await sut.callback({ url }, loginDetails);
+        expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
+      });
+    }
 
     it('should use the default quota', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
@@ -491,7 +561,7 @@ describe('AuthService', () => {
       );
 
       expect(userMock.create).toHaveBeenCalledWith({
-        email: email,
+        email,
         name: ' ',
         oauthId: sub,
         quotaSizeInBytes: null,
@@ -511,7 +581,7 @@ describe('AuthService', () => {
       );
 
       expect(userMock.create).toHaveBeenCalledWith({
-        email: email,
+        email,
         name: ' ',
         oauthId: sub,
         quotaSizeInBytes: 5_368_709_120,

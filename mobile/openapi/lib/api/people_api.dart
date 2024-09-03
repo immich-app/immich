@@ -180,7 +180,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people/{id}/assets' operation and returns the [Response].
+  /// This property was deprecated in v1.113.0
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -210,6 +213,8 @@ class PeopleApi {
     );
   }
 
+  /// This property was deprecated in v1.113.0
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

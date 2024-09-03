@@ -73,24 +73,18 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
                   splashRadius: 10,
                 )
               : null,
-          enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.transparent),
-            borderRadius: BorderRadius.circular(10),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.transparent),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.transparent),
-            borderRadius: BorderRadius.circular(10),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.transparent),
           ),
           focusColor: Colors.grey[300],
-          fillColor: context.isDarkTheme
-              ? const Color.fromARGB(255, 32, 33, 35)
-              : Colors.grey[200],
+          fillColor: context.scaffoldBackgroundColor,
           filled: titleFocusNode.hasFocus,
           hintText: 'share_add_title'.tr(),
-          hintStyle: TextStyle(
+          hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
             fontSize: 28,
-            color: context.isDarkTheme ? Colors.grey[300] : Colors.grey[700],
-            fontWeight: FontWeight.bold,
           ),
         ),
       ),

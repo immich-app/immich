@@ -14,7 +14,7 @@ import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/widgets/album/album_action_outlined_button.dart';
+import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_viewer_editable_title.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
@@ -114,13 +114,13 @@ class AlbumViewerPage extends HookConsumerWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              AlbumActionOutlinedButton(
+              AlbumActionFilledButton(
                 iconData: Icons.add_photo_alternate_outlined,
                 onPressed: () => onAddPhotosPressed(album),
                 labelText: "share_add_photos".tr(),
               ),
               if (userId == album.ownerId)
-                AlbumActionOutlinedButton(
+                AlbumActionFilledButton(
                   iconData: Icons.person_add_alt_rounded,
                   onPressed: () => onAddUsersPressed(album),
                   labelText: "album_viewer_page_share_add_users".tr(),

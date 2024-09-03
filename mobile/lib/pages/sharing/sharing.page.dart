@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
@@ -83,20 +84,24 @@ class SharingPage extends HookConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.primaryColor,
+                  color: context.colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: isOwner
                   ? Text(
                       'album_thumbnail_owned'.tr(),
-                      style: context.textTheme.bodyMedium,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.colorScheme.onSurfaceSecondary,
+                      ),
                     )
                   : album.ownerName != null
                       ? Text(
                           'album_thumbnail_shared_by'
                               .tr(args: [album.ownerName!]),
-                          style: context.textTheme.bodyMedium,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: context.colorScheme.onSurfaceSecondary,
+                          ),
                         )
                       : null,
               onTap: () => context
@@ -166,11 +171,13 @@ class SharingPage extends HookConsumerWidget {
           padding: const EdgeInsets.all(8.0),
           child: Card(
             elevation: 0,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
               side: BorderSide(
-                color: Colors.grey,
-                width: 0.5,
+                color: context.isDarkTheme
+                    ? const Color(0xFF383838)
+                    : Colors.black12,
+                width: 1,
               ),
             ),
             child: Padding(

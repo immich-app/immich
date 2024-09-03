@@ -3,14 +3,11 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { mdiArrowRight } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import ImmichLogo from '../shared-components/immich-logo.svelte';
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import { user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
 
-  const dispatch = createEventDispatcher<{
-    done: void;
-  }>();
+  export let onDone: () => void;
 </script>
 
 <OnboardingCard>
@@ -21,7 +18,7 @@
   <p class="text-3xl pb-6 font-light">{$t('onboarding_welcome_description')}</p>
 
   <div class="w-full flex place-content-end">
-    <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
+    <Button class="flex gap-2 place-content-center" on:click={() => onDone()}>
       <p>{$t('theme')}</p>
       <Icon path={mdiArrowRight} size="18" />
     </Button>

@@ -8,28 +8,28 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params }) => {
   const { key } = params;
   await authenticate({ public: true });
-  const asset = await getAssetInfoFromParam(params);
+
+  const $t = await getFormatter();
 
   try {
-    const sharedLink = await getMySharedLink({ key });
+    const [sharedLink, asset] = await Promise.all([getMySharedLink({ key }), getAssetInfoFromParam(params)]);
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const $t = await getFormatter();
+    const assetPath = assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png';
 
     return {
       sharedLink,
+      sharedLinkKey: key,
       asset,
-      key,
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : $t('public_share'),
         description: sharedLink.description || $t('shared_photos_and_videos_count', { values: { assetCount } }),
-        imageUrl: assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png',
+        imageUrl: assetPath,
       },
     };
   } catch (error) {
     if (isHttpError(error) && error.data.message === 'Invalid password') {
-      const $t = await getFormatter();
       return {
         passwordRequired: true,
         sharedLinkKey: key,

@@ -22,12 +22,15 @@ class DisableMultiSelectButton extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: ElevatedButton.icon(
             onPressed: () => onPressed(),
-            icon: const Icon(Icons.close_rounded),
+            icon: Icon(
+              Icons.close_rounded,
+              color: context.colorScheme.onPrimary,
+            ),
             label: Text(
               '$selectedItemCount',
               style: context.textTheme.titleMedium?.copyWith(
                 height: 2.5,
-                color: context.isDarkTheme ? Colors.black : Colors.white,
+                color: context.colorScheme.onPrimary,
               ),
             ),
           ),

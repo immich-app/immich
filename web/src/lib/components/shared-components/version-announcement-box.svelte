@@ -14,7 +14,9 @@
 
   $: releaseVersion = $release && semverToName($release.releaseVersion);
   $: serverVersion = $release && semverToName($release.serverVersion);
-  $: $release?.isAvailable && handleRelease();
+  $: if ($release?.isAvailable) {
+    handleRelease();
+  }
 
   const onAcknowledge = () => {
     localStorage.setItem('appVersion', releaseVersion);

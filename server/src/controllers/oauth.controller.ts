@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthType } from 'src/constants';
@@ -58,6 +58,7 @@ export class OAuthController {
   }
 
   @Post('unlink')
+  @HttpCode(HttpStatus.OK)
   @Authenticated()
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.unlink(auth);

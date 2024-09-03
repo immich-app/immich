@@ -88,7 +88,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
     buildSettingButton() {
       return buildActionButton(
-        Icons.settings_rounded,
+        Icons.settings_outlined,
         "profile_drawer_settings",
         () => context.pushRoute(const SettingsRoute()),
       );
@@ -146,9 +146,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: context.isDarkTheme
-                ? context.scaffoldBackgroundColor
-                : const Color.fromARGB(255, 225, 229, 240),
+            color: context.colorScheme.surface,
           ),
           child: ListTile(
             minLeadingWidth: 50,
@@ -171,10 +169,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: LinearProgressIndicator(
-                      minHeight: 5.0,
+                      minHeight: 10.0,
                       value: percentage,
-                      backgroundColor: Colors.grey,
-                      color: theme.primaryColor,
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10.0)),
                     ),
                   ),
                   Padding(
@@ -248,7 +246,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         right: horizontalPadding,
         bottom: isHorizontal ? 20 : 100,
       ),
-      backgroundColor: theme.cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),

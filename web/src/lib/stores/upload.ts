@@ -1,4 +1,4 @@
-import { derived, get, writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 import { UploadState, type UploadAsset } from '../models/upload-asset';
 
 function createUploadStore() {
@@ -22,23 +22,22 @@ function createUploadStore() {
   );
 
   const addNewUploadAsset = (newAsset: UploadAsset) => {
-    const assets = get(uploadAssets);
-    const duplicate = assets.find((asset) => asset.id === newAsset.id);
-    if (duplicate) {
-      uploadAssets.update((assets) => assets.map((asset) => (asset.id === newAsset.id ? newAsset : asset)));
-    } else {
+    uploadAssets.update(($assets) => {
+      const duplicate = $assets.find((asset) => asset.id === newAsset.id);
+      if (duplicate) {
+        return $assets.map((asset) => (asset.id === newAsset.id ? newAsset : asset));
+      }
+
       totalUploadCounter.update((c) => c + 1);
-      uploadAssets.update((assets) => [
-        ...assets,
-        {
-          ...newAsset,
-          speed: 0,
-          state: UploadState.PENDING,
-          progress: 0,
-          eta: 0,
-        },
-      ]);
-    }
+      $assets.push({
+        ...newAsset,
+        speed: 0,
+        state: UploadState.PENDING,
+        progress: 0,
+        eta: 0,
+      });
+      return $assets;
+    });
   };
 
   const updateProgress = (id: string, loaded: number, total: number) => {

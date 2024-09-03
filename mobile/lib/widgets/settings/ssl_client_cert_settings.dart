@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 
 class SslClientCertSettings extends StatefulWidget {
@@ -40,7 +41,9 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         children: [
           Text(
             "client_cert_subtitle".tr(),
-            style: context.textTheme.bodyMedium,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.colorScheme.onSurfaceSecondary,
+            ),
           ),
           const SizedBox(
             height: 6,

@@ -76,6 +76,7 @@ export class MediaRepository implements IMediaRepository {
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
+        .filter((stream) => !stream.disposition?.attached_pic)
         .map((stream) => ({
           index: stream.index,
           height: stream.height || 0,
@@ -101,7 +102,10 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
+        this.configureFfmpegCall(input, output, options)
+          .on('error', reject)
+          .on('end', () => resolve())
+          .run();
       });
     }
 
@@ -126,7 +130,7 @@ export class MediaRepository implements IMediaRepository {
             .on('error', reject)
             .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`), this.logger))
             .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true }), this.logger))
-            .on('end', resolve)
+            .on('end', () => resolve())
             .run();
         })
         .run();

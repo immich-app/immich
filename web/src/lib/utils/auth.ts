@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { licenseStore } from '$lib/stores/license.store';
+import { purchaseStore } from '$lib/stores/purchase.store';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
 import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
@@ -26,7 +26,7 @@ export const loadUser = async () => {
 
       // Check for license status
       if (serverInfo.licensed || user.license?.activatedAt) {
-        licenseStore.setLicenseStatus(true);
+        purchaseStore.setPurchaseStatus(true);
       }
     }
     return user;

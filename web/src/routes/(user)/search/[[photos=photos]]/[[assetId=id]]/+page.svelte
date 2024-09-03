@@ -40,6 +40,7 @@
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
+  import { afterUpdate, tick } from 'svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -54,6 +55,8 @@
   let searchResultAlbums: AlbumResponseDto[] = [];
   let searchResultAssets: AssetResponseDto[] = [];
   let isLoading = true;
+  let scrollY = 0;
+  let scrollYHistory = 0;
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -70,6 +73,13 @@
     $preventRaceConditionSearchBar = false;
   };
 
+  // save and restore scroll position
+  afterUpdate(() => {
+    if (scrollY) {
+      scrollYHistory = scrollY;
+    }
+  });
+
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
     if (from?.url && from.route.id !== $page.route.id) {
@@ -84,6 +94,14 @@
     if (isAlbumsRoute(route)) {
       previousRoute = AppRoute.EXPLORE;
     }
+
+    tick()
+      .then(() => {
+        window.scrollTo(0, scrollYHistory);
+      })
+      .catch(() => {
+        // do nothing
+      });
   });
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
@@ -203,7 +221,7 @@
   }
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
+<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />
 
 <section>
   {#if isMultiSelectionMode}
@@ -230,7 +248,7 @@
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="w-full flex-1 pl-4">
-          <SearchBar grayTheme={false} searchQuery={terms} />
+          <SearchBar grayTheme={false} value={terms.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>
@@ -259,6 +277,8 @@
             {#await getPersonName(value) then personName}
               {personName}
             {/await}
+          {:else if value === null || value === ''}
+            {$t('unknown')}
           {:else}
             {value}
           {/if}
@@ -289,7 +309,7 @@
         <GalleryViewer
           assets={searchResultAssets}
           bind:selectedAssets
-          on:intersected={loadNextPage}
+          onIntersected={loadNextPage}
           showArchiveIcon={true}
           {viewport}
         />

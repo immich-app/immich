@@ -51,9 +51,9 @@ class ImmichToast {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5.0),
-          color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[50],
+          color: context.colorScheme.surfaceContainer,
           border: Border.all(
-            color: Colors.black12,
+            color: context.colorScheme.outline.withOpacity(.5),
             width: 1,
           ),
         ),

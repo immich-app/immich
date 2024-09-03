@@ -6,8 +6,7 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { user } from '$lib/stores/user.store';
-  import { websocketEvents } from '$lib/stores/websocket';
+  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import {
@@ -30,7 +29,7 @@
     mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { slide } from 'svelte/transition';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -41,7 +40,10 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import { t } from 'svelte-i18n';
+  import { goto } from '$app/navigation';
+  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -96,14 +98,6 @@
   $: showingHiddenPeople = false;
 
   $: unassignedFaces = asset.unassignedFaces || [];
-
-  onMount(() => {
-    return websocketEvents.on('on_asset_update', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
-  });
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -161,9 +155,10 @@
   {/if}
 
   <DetailPanelDescription {asset} {isOwner} />
+  <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
-    <section class="px-4 py-4 text-sm">
+    <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
@@ -218,7 +213,6 @@
                   title={person.name}
                   widthStyle="90px"
                   heightStyle="90px"
-                  thumbhash={null}
                   hidden={person.isHidden}
                 />
               </div>
@@ -390,7 +384,7 @@
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
-              <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+              <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
             {/if}
 
             {#if asset.exifInfo.exposureTime}
@@ -438,16 +432,17 @@
           },
         ]}
         center={latlng}
-        zoom={15}
+        zoom={12.5}
         simplified
         useLocationPin
+        onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
         <svelte:fragment slot="popup" let:marker>
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
             <a
-              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
               class="font-medium text-immich-primary"
             >
@@ -478,11 +473,11 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="p-6 dark:text-immich-dark-fg">
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
-      <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <div class="flex gap-4 py-2 hover:cursor-pointer items-center">
+      <a href="{AppRoute.ALBUMS}/{album.id}">
+        <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
@@ -504,6 +499,12 @@
         </div>
       </a>
     {/each}
+  </section>
+{/if}
+
+{#if $preferences?.tags?.enabled}
+  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+    <DetailPanelTags {asset} {isOwner} />
   </section>
 {/if}
 

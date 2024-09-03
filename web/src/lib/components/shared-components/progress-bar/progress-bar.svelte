@@ -33,6 +33,8 @@
 
   let progress = setDuration(duration);
 
+  // svelte 5, again....
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   $: duration, handlePromiseError(onChange());
 
   $: {

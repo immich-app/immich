@@ -21,7 +21,7 @@ final getAllPeopleProvider =
 );
 
 typedef GetAllPeopleRef = AutoDisposeFutureProviderRef<List<PersonResponseDto>>;
-String _$personAssetsHash() => r'1d6eff5ca3aa630b58c4dad9516193b21896984d';
+String _$personAssetsHash() => r'3dfecb67a54d07e4208bcb9581b2625acd2e1832';
 
 /// Copied from Dart SDK
 class _SystemHash {

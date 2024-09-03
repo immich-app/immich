@@ -29,6 +29,7 @@
   export let minified = false;
   export let onReset: SettingsResetEvent;
   export let onSave: SettingsSaveEvent;
+  export let duration: number = 500;
 
   let templateOptions: SystemConfigTemplateStorageOptionDto;
   let selectedPreset = '';
@@ -87,7 +88,7 @@
 </script>
 
 <section class="dark:text-immich-dark-fg mt-2">
-  <div in:fade={{ duration: 500 }} class="mx-4 flex flex-col gap-4 py-4">
+  <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
     <p class="text-sm dark:text-immich-dark-fg">
       <FormatMessage key="admin.storage_template_more_details" let:tag let:message>
         {#if tag === 'template-link'}

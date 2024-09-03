@@ -1,5 +1,8 @@
 <script lang="ts">
-  import CircleIconButton, { type Color } from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import CircleIconButton, {
+    type Color,
+    type Padding,
+  } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import {
     getContextMenuPositionFromBoundingRect,
@@ -24,11 +27,12 @@
   export let direction: 'left' | 'right' = 'right';
   export let color: Color = 'transparent';
   export let size: string | undefined = undefined;
-  export let padding: string | undefined = undefined;
+  export let padding: Padding | undefined = undefined;
   /**
    * Additional classes to apply to the button.
    */
   export let buttonClass: string | undefined = undefined;
+  export let hideContent = false;
 
   let isOpen = false;
   let contextMenuPosition = { x: 0, y: 0 };
@@ -114,38 +118,40 @@
       {padding}
       {size}
       {title}
-      ariaControls={menuId}
-      ariaExpanded={isOpen}
-      ariaHasPopup={true}
+      aria-controls={menuId}
+      aria-expanded={isOpen}
+      aria-haspopup={true}
       class={buttonClass}
       id={buttonId}
       on:click={handleClick}
     />
   </div>
-  <div
-    use:shortcuts={[
-      {
-        shortcut: { key: 'Tab' },
-        onShortcut: closeDropdown,
-        preventDefault: false,
-      },
-      {
-        shortcut: { key: 'Tab', shift: true },
-        onShortcut: closeDropdown,
-        preventDefault: false,
-      },
-    ]}
-  >
-    <ContextMenu
-      {...contextMenuPosition}
-      {direction}
-      ariaActiveDescendant={$selectedIdStore}
-      ariaLabelledBy={buttonId}
-      bind:menuElement={menuContainer}
-      id={menuId}
-      isVisible={isOpen}
+  {#if isOpen || !hideContent}
+    <div
+      use:shortcuts={[
+        {
+          shortcut: { key: 'Tab' },
+          onShortcut: closeDropdown,
+          preventDefault: false,
+        },
+        {
+          shortcut: { key: 'Tab', shift: true },
+          onShortcut: closeDropdown,
+          preventDefault: false,
+        },
+      ]}
     >
-      <slot />
-    </ContextMenu>
-  </div>
+      <ContextMenu
+        {...contextMenuPosition}
+        {direction}
+        ariaActiveDescendant={$selectedIdStore}
+        ariaLabelledBy={buttonId}
+        bind:menuElement={menuContainer}
+        id={menuId}
+        isVisible={isOpen}
+      >
+        <slot />
+      </ContextMenu>
+    </div>
+  {/if}
 </div>

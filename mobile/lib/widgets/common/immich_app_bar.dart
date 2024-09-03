@@ -58,15 +58,15 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           isLabelVisible: serverInfoState.isVersionMismatch ||
               ((user?.isAdmin ?? false) &&
                   serverInfoState.isNewReleaseAvailable),
-          offset: const Offset(2, 2),
+          offset: const Offset(-2, -12),
           child: user == null
               ? const Icon(
                   Icons.face_outlined,
                   size: widgetSize,
                 )
               : UserCircleAvatar(
-                  radius: 15,
-                  size: 27,
+                  radius: 17,
+                  size: 31,
                   user: user,
                 ),
         ),
@@ -111,7 +111,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     buildBackupIndicator() {
       final indicatorIcon = getBackupBadgeIcon();
-      final badgeBackground = isDarkTheme ? Colors.blueGrey[800] : Colors.white;
+      final badgeBackground = context.colorScheme.surfaceContainer;
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
@@ -123,7 +123,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               color: badgeBackground,
               border: Border.all(
-                color: isDarkTheme ? Colors.black : Colors.grey,
+                color: context.colorScheme.outline.withOpacity(.3),
               ),
               borderRadius: BorderRadius.circular(widgetSize / 2),
             ),
@@ -132,7 +132,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           backgroundColor: Colors.transparent,
           alignment: Alignment.bottomRight,
           isLabelVisible: indicatorIcon != null,
-          offset: const Offset(2, 2),
+          offset: const Offset(-2, -12),
           child: Icon(
             Icons.backup_rounded,
             size: widgetSize,

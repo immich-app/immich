@@ -27,6 +27,8 @@
   let img: HTMLImageElement;
   let showFallback = true;
 
+  // sveeeeeeelteeeeee fiveeeeee
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   $: img, user, void tryLoadImage();
 
   const tryLoadImage = async () => {

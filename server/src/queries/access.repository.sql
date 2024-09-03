@@ -248,6 +248,28 @@ WHERE
   "partner"."sharedById" IN ($1)
   AND "partner"."sharedWithId" = $2
 
+-- AccessRepository.stack.checkOwnerAccess
+SELECT
+  "StackEntity"."id" AS "StackEntity_id"
+FROM
+  "asset_stack" "StackEntity"
+WHERE
+  (
+    ("StackEntity"."id" IN ($1))
+    AND ("StackEntity"."ownerId" = $2)
+  )
+
+-- AccessRepository.tag.checkOwnerAccess
+SELECT
+  "TagEntity"."id" AS "TagEntity_id"
+FROM
+  "tags" "TagEntity"
+WHERE
+  (
+    ("TagEntity"."id" IN ($1))
+    AND ("TagEntity"."userId" = $2)
+  )
+
 -- AccessRepository.timeline.checkPartnerAccess
 SELECT
   "partner"."sharedById" AS "partner_sharedById",

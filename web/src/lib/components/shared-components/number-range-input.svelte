@@ -1,5 +1,6 @@
 <script lang="ts">
   import { clamp } from 'lodash-es';
+  import type { ClipboardEventHandler } from 'svelte/elements';
 
   export let id: string;
   export let min: number;
@@ -8,6 +9,7 @@
   export let required = true;
   export let value: number | null = null;
   export let onInput: (value: number | null) => void;
+  export let onPaste: ClipboardEventHandler<HTMLInputElement> | undefined = undefined;
 </script>
 
 <input
@@ -25,4 +27,5 @@
     }
     onInput(value);
   }}
+  on:paste={onPaste}
 />

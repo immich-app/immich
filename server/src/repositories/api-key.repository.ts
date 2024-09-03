@@ -31,6 +31,7 @@ export class ApiKeyRepository implements IKeyRepository {
         id: true,
         key: true,
         userId: true,
+        permissions: true,
       },
       where: { key: hashedToken },
       relations: {

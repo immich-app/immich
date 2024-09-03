@@ -1,4 +1,4 @@
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
+import { SystemMetadataKey } from 'src/enum';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';

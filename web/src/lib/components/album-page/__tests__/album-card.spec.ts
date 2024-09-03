@@ -1,5 +1,5 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { albumFactory } from '@test-data';
+import { albumFactory } from '@test-data/factories/album-factory';
 import '@testing-library/jest-dom';
 import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { init, register, waitLocale } from 'svelte-i18n';

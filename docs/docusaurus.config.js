@@ -145,28 +145,36 @@ const config = {
                 label: 'Installation',
                 to: '/docs/install/requirements',
               },
+              {
+                label: 'Contributing',
+                to: '/docs/overview/support-the-project',
+              },
+              {
+                label: 'Privacy Policy',
+                to: '/privacy-policy',
+              },
             ],
           },
           {
-            title: 'Community',
+            title: 'Documentation',
             items: [
               {
-                label: 'Discord',
-                href: 'https://discord.immich.app',
+                label: 'Roadmap',
+                to: '/roadmap',
               },
               {
-                label: 'Reddit',
-                href: 'https://www.reddit.com/r/immich/',
+                label: 'API',
+                to: '/docs/api',
+              },
+              {
+                label: 'Cursed Knowledge',
+                to: '/cursed-knowledge',
               },
             ],
           },
           {
             title: 'Links',
             items: [
-              // {
-              //   label: "Blog",
-              //   to: "/blog",
-              // },
               {
                 label: 'GitHub',
                 href: 'https://github.com/immich-app/immich',
@@ -174,6 +182,14 @@ const config = {
               {
                 label: 'YouTube',
                 href: 'https://www.youtube.com/@immich-app',
+              },
+              {
+                label: 'Discord',
+                href: 'https://discord.immich.app',
+              },
+              {
+                label: 'Reddit',
+                href: 'https://www.reddit.com/r/immich/',
               },
             ],
           },
