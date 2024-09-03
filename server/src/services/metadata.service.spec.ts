@@ -434,6 +434,21 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should ignore Keywords when TagsList is present', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: 'Child', TagsList: ['Parent/Child'] });
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
+    });
+
     it('should not apply motion photos if asset is video', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true }]);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
