@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.16",
+  "version": "2.2.17",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
