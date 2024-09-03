@@ -30,6 +30,7 @@ import {
   signUpAdmin,
   updateAdminOnboarding,
   updateAlbumUser,
+  updateAssets,
   updateConfig,
   validate,
 } from '@immich/sdk';
@@ -388,6 +389,9 @@ export const utils = {
   metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
+
+  archiveAssets: (accessToken: string, ids: string[]) =>
+    updateAssets({ assetBulkUpdateDto: { ids, isArchived: true } }, { headers: asBearerAuth(accessToken) }),
 
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
