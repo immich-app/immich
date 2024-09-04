@@ -39,10 +39,16 @@
     return Object.fromEntries(tags.map((tag) => [tag.value, tag]));
   };
 
+  const assetStore = new AssetStore({});
+
   $: tags = data.tags;
   $: tagsMap = buildMap(tags);
   $: tag = currentPath ? tagsMap[currentPath] : null;
+  $: tagId = tag?.id;
   $: tree = buildTree(tags.map((tag) => tag.value));
+  $: {
+    void assetStore.updateOptions({ tagId });
+  }
 
   const handleNavigation = async (tag: string) => {
     await navigateToView(normalizeTreePath(`${data.path || ''}/${tag}`));
@@ -167,20 +173,13 @@
   <Breadcrumbs {pathSegments} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
   <section class="mt-2 h-full">
-    {#key $page.url.href}
-      {#if tag}
-        <AssetGrid
-          enableRouting={true}
-          assetStore={new AssetStore({ tagId: tag.id })}
-          {assetInteractionStore}
-          removeAction={AssetAction.UNARCHIVE}
-        >
-          <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} slot="empty" />
-        </AssetGrid>
-      {:else}
-        <TreeItemThumbnails items={Object.keys(tree)} icon={mdiTag} onClick={handleNavigation} />
-      {/if}
-    {/key}
+    {#if tag}
+      <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
+        <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} slot="empty" />
+      </AssetGrid>
+    {:else}
+      <TreeItemThumbnails items={Object.keys(tree)} icon={mdiTag} onClick={handleNavigation} />
+    {/if}
   </section>
 </UserPageLayout>
 
