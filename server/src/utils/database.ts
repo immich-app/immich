@@ -108,6 +108,12 @@ export function searchAssetBuilder(
     ),
   );
 
+  if ((isArchived || withArchived) && options.userIds && options.userIds.length > 0) {
+    builder.andWhere(`NOT (${builder.alias}.isArchived = true AND ${builder.alias}.ownerId != :userId)`, {
+      userId: options.userIds[0],
+    });
+  }
+
   if (isNotInAlbum) {
     builder
       .leftJoin(`${builder.alias}.albums`, 'albums')
