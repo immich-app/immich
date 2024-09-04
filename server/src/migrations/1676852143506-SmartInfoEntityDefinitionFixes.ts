@@ -4,7 +4,7 @@ export class SmartInfoEntityDefinitionFixes1676852143506 implements MigrationInt
     name = 'SmartInfoEntityDefinitionFixes1676852143506'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_5e3753aadd956110bf3ec0244a"`);
+        await queryRunner.query(`DROP INDEX "IDX_5e3753aadd956110bf3ec0244a"`);
         await queryRunner.query(`ALTER TABLE "smart_info" DROP CONSTRAINT "PK_0beace66440e9713f5c40470e46"`);
         await queryRunner.query(`ALTER TABLE "smart_info" DROP COLUMN "id"`);
         await queryRunner.query(`ALTER TABLE "smart_info" DROP CONSTRAINT "FK_5e3753aadd956110bf3ec0244ac"`);
