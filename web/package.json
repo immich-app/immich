@@ -83,7 +83,7 @@
     "svelte-gestures": "^5.0.4",
     "svelte-i18n": "^4.0.0",
     "svelte-local-storage-store": "^0.6.4",
-    "svelte-maplibre": "^0.9.0",
+    "svelte-maplibre": "^0.9.13",
     "thumbhash": "^0.1.1"
   },
   "volta": {
