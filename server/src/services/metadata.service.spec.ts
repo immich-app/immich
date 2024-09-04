@@ -1,4 +1,4 @@
-import { BinaryField } from 'exiftool-vendored';
+import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
@@ -746,6 +746,8 @@ describe(MetadataService.name, () => {
     });
 
     it('should save all metadata', async () => {
+      const dateForTest = new Date('1970-01-01T00:00:00.000-11:30');
+
       const tags: ImmichTags = {
         BitsPerSample: 1,
         ComponentBitDepth: 1,
@@ -753,7 +755,7 @@ describe(MetadataService.name, () => {
         BitDepth: 1,
         ColorBitDepth: 1,
         ColorSpace: '1',
-        DateTimeOriginal: new Date('1970-01-01').toISOString(),
+        DateTimeOriginal: ExifDateTime.fromISO(dateForTest.toISOString()),
         ExposureTime: '100ms',
         FocalLength: 20,
         ImageDescription: 'test description',
@@ -762,11 +764,11 @@ describe(MetadataService.name, () => {
         MediaGroupUUID: 'livePhoto',
         Make: 'test-factory',
         Model: "'mockel'",
-        ModifyDate: new Date('1970-01-01').toISOString(),
+        ModifyDate: ExifDateTime.fromISO(dateForTest.toISOString()),
         Orientation: 0,
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
-        tz: '+02:00',
+        tz: 'UTC-11:30',
         Rating: 3,
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
@@ -779,7 +781,7 @@ describe(MetadataService.name, () => {
         bitsPerSample: expect.any(Number),
         autoStackId: null,
         colorspace: tags.ColorSpace,
-        dateTimeOriginal: new Date('1970-01-01'),
+        dateTimeOriginal: dateForTest,
         description: tags.ImageDescription,
         exifImageHeight: null,
         exifImageWidth: null,
@@ -805,8 +807,8 @@ describe(MetadataService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         duration: null,
-        fileCreatedAt: new Date('1970-01-01'),
-        localDateTime: new Date('1970-01-01'),
+        fileCreatedAt: dateForTest,
+        localDateTime: dateForTest,
       });
     });
 
