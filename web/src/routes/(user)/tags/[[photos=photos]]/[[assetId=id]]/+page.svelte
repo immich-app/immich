@@ -4,7 +4,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
@@ -27,6 +27,7 @@
   import type { PageData } from './$types';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
+  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
 
   export let data: PageData;
 
@@ -132,6 +133,7 @@
 
 <UserPageLayout title={data.meta.title} scrollbar={false}>
   <SideBarSection slot="sidebar">
+    <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} />
     <section>
       <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
       <div class="h-full">
