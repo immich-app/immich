@@ -484,7 +484,7 @@ class BackupService {
             ),
           );
 
-          if (shouldSyncAlbums && !isDuplicate) {
+          if (shouldSyncAlbums) {
             await _albumService.syncUploadAlbums(
               candidate.albumNames,
               [responseBody['id'] as String],
