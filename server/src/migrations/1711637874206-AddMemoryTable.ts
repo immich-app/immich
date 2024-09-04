@@ -17,8 +17,8 @@ export class AddMemoryTable1711637874206 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "memories_assets_assets" DROP CONSTRAINT "FK_6942ecf52d75d4273de19d2c16f"`);
         await queryRunner.query(`ALTER TABLE "memories_assets_assets" DROP CONSTRAINT "FK_984e5c9ab1f04d34538cd32334e"`);
         await queryRunner.query(`ALTER TABLE "memories" DROP CONSTRAINT "FK_575842846f0c28fa5da46c99b19"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_6942ecf52d75d4273de19d2c16"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_984e5c9ab1f04d34538cd32334"`);
+        await queryRunner.query(`DROP INDEX "IDX_6942ecf52d75d4273de19d2c16"`);
+        await queryRunner.query(`DROP INDEX "IDX_984e5c9ab1f04d34538cd32334"`);
         await queryRunner.query(`DROP TABLE "memories_assets_assets"`);
         await queryRunner.query(`DROP TABLE "memories"`);
     }
