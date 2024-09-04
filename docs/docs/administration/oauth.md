@@ -154,21 +154,21 @@ Configuration of Authorised redirect URIs (Google Console)
 
 Configuration of OAuth in Immich System Settings
 
-| Setting                      | Value                                                                                                |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Issuer URL                   | `https://accounts.google.com`                                       |
-| Client ID                    | 7\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***vuls.apps.googleusercontent.com                         |
-| Client Secret                | G\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***OO                                                      |
-| Scope                        | openid email profile                                                                                 |
-| Signing Algorithm            | RS256                                                                                                |
-| Storage Label Claim          | preferred_username                                                                                   |
-| Storage Quota Claim          | immich_quota                                                                                         |
-| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                                            |
-| Button Text                  | Sign in with Google (optional)                                                                       |
-| Auto Register                | Enabled (optional)                                                                                   |
-| Auto Launch                  | Enabled                                                                                              |
-| Mobile Redirect URI Override | Enabled (required)                                                                                   |
-| Mobile Redirect URI          | `https://example.immich.app/api/oauth/mobile-redirect`                                               |
+| Setting                      | Value                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| Issuer URL                   | `https://accounts.google.com`                                                |
+| Client ID                    | 7\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***vuls.apps.googleusercontent.com |
+| Client Secret                | G\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***OO                              |
+| Scope                        | openid email profile                                                         |
+| Signing Algorithm            | RS256                                                                        |
+| Storage Label Claim          | preferred_username                                                           |
+| Storage Quota Claim          | immich_quota                                                                 |
+| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                    |
+| Button Text                  | Sign in with Google (optional)                                               |
+| Auto Register                | Enabled (optional)                                                           |
+| Auto Launch                  | Enabled                                                                      |
+| Mobile Redirect URI Override | Enabled (required)                                                           |
+| Mobile Redirect URI          | `https://example.immich.app/api/oauth/mobile-redirect`                       |
 
 </details>
 

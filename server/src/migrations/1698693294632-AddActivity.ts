@@ -15,7 +15,7 @@ export class AddActivity1698693294632 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "activity" DROP CONSTRAINT "FK_1af8519996fbfb3684b58df280b"`);
         await queryRunner.query(`ALTER TABLE "activity" DROP CONSTRAINT "FK_3571467bcbe021f66e2bdce96ea"`);
         await queryRunner.query(`ALTER TABLE "activity" DROP CONSTRAINT "FK_8091ea76b12338cb4428d33d782"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_activity_like"`);
+        await queryRunner.query(`DROP INDEX "IDX_activity_like"`);
         await queryRunner.query(`DROP TABLE "activity"`);
     }
 

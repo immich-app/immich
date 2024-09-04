@@ -25,6 +25,7 @@
   $: pathSegments = data.path ? data.path.split('/') : [];
   $: tree = buildTree($foldersStore?.uniquePaths || []);
   $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
+  $: currentTreeItems = currentPath ? data.currentFolders : Object.keys(tree);
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -63,7 +64,7 @@
   <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
 
   <section class="mt-2">
-    <TreeItemThumbnails items={data.currentFolders} icon={mdiFolder} onClick={handleNavigation} />
+    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigation} />
 
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
