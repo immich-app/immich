@@ -13,7 +13,7 @@
   export let getColor: (path: string) => string | undefined;
 
   $: path = normalizeTreePath(`${parent}/${value}`);
-  $: isActive = active.startsWith(path);
+  $: isActive = active === path || active.startsWith(`${path}/`);
   $: isOpen = isActive;
   $: isTarget = active === path;
   $: color = getColor(path);
