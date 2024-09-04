@@ -10,18 +10,25 @@
 
   type ZoneOption = {
     /**
-     * Timezone name
+     * Timezone name with offset
      *
      * e.g. Asia/Jerusalem (+03:00)
      */
     label: string;
 
     /**
-     * Timezone offset
+     * Timezone name
      *
-     * e.g. UTC+01:00
+     * e.g. Asia/Jerusalem
      */
     value: string;
+
+    /**
+     * Timezone offset in minutes
+     *
+     * e.g. 300
+     */
+    offsetMinutes: number;
   };
 
   const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone')
@@ -37,21 +44,23 @@
       const offset = zone.toFormat('ZZ');
       return {
         label: `${zone.zoneName} (${offset})`,
-        value: 'UTC' + offset,
+        value: zone.zoneName,
+        offsetMinutes: zone.offset,
       };
     });
 
-  const initialOption = timezones.find((item) => item.value === 'UTC' + initialDate.toFormat('ZZ'));
+  const initialOption = timezones.find((item) => item.offsetMinutes === initialDate.offset);
 
   let selectedOption = initialOption && {
     label: initialOption?.label || '',
+    offsetMinutes: initialOption?.offsetMinutes || 0,
     value: initialOption?.value || '',
   };
 
   let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
 
-  // Keep local time if not it's really confusing
-  $: date = DateTime.fromISO(selectedDate).setZone(selectedOption?.value, { keepLocalTime: true });
+  // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
+  $: date = DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true });
 
   const dispatch = createEventDispatcher<{
     cancel: void;
