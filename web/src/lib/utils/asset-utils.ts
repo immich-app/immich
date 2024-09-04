@@ -52,7 +52,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       timeout: 5000,
       message:
         count > 0
-          ? $t('assets_added_to_album_count', { values: { count: count } })
+          ? $t('assets_added_to_album_count', { values: { count } })
           : $t('assets_were_part_of_album_count', { values: { count: assetIds.length } }),
       button: {
         text: $t('view_album'),
@@ -264,7 +264,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       downloadBlob(data, filename);
     } catch (error) {
-      handleError(error, $t('errors.error_downloading', { values: { filename: filename } }));
+      handleError(error, $t('errors.error_downloading', { values: { filename } }));
       downloadManager.clear(downloadKey);
     } finally {
       setTimeout(() => downloadManager.clear(downloadKey), 5000);

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.112.1
+ * 1.113.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -233,6 +233,7 @@ export type TagResponseDto = {
     createdAt: string;
     id: string;
     name: string;
+    parentId?: string;
     updatedAt: string;
     value: string;
 };
@@ -262,6 +263,8 @@ export type AssetResponseDto = {
     owner?: UserResponseDto;
     ownerId: string;
     people?: PersonWithFacesResponseDto[];
+    /** This property was deprecated in v1.113.0 */
+    resized?: boolean;
     smartInfo?: SmartInfoResponseDto;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];

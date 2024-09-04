@@ -7,6 +7,7 @@
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import maplibregl from 'maplibre-gl';
   import { createEventDispatcher } from 'svelte';
   import {
@@ -50,6 +51,8 @@
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
+
+  void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
 
   $: style = (() =>
     getMapStyle({

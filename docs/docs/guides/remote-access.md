@@ -48,7 +48,7 @@ A reverse proxy is a service that sits between web servers and clients. A revers
 
 If you're hosting your own reverse proxy, [Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) is a great option. An example configuration for Nginx is provided [here](/docs/administration/reverse-proxy.md).
 
-You'll also need your own certificate to authenticate https connections. If you're making Immich publicly accesible, [Let's Encrypt](https://letsencrypt.org/) can provide a free certificate for your domain and is the recommended option. Alternatively, a [self-signed certificate](https://en.wikipedia.org/wiki/Self-signed_certificate) allows you to encrypt your connection to Immich, but it raises a security warning on the client's browser.
+You'll also need your own certificate to authenticate https connections. If you're making Immich publicly accessible, [Let's Encrypt](https://letsencrypt.org/) can provide a free certificate for your domain and is the recommended option. Alternatively, a [self-signed certificate](https://en.wikipedia.org/wiki/Self-signed_certificate) allows you to encrypt your connection to Immich, but it raises a security warning on the client's browser.
 
 A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) increases security by hiding the server IP address, which makes targeted attacks like [DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/) harder.
 

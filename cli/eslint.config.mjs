@@ -55,6 +55,7 @@ export default [
       'unicorn/import-style': 'off',
       curly: 2,
       'prettier/prettier': 0,
+      'object-shorthand': ['error', 'always'],
     },
   },
 ];

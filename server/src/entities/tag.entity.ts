@@ -10,16 +10,18 @@ import {
   Tree,
   TreeChildren,
   TreeParent,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('tags')
+@Unique(['userId', 'value'])
 @Tree('closure-table')
 export class TagEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ unique: true })
+  @Column()
   value!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
@@ -30,6 +32,9 @@ export class TagEntity {
 
   @Column({ type: 'varchar', nullable: true, default: null })
   color!: string | null;
+
+  @Column({ nullable: true })
+  parentId?: string;
 
   @TreeParent({ onDelete: 'CASCADE' })
   parent?: TagEntity;

@@ -635,10 +635,11 @@ describe('/libraries', () => {
     it('should remove offline files', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp/offline2`],
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      utils.createImageFile(`${testAssetDir}/temp/offline2/assetA.png`);
+      utils.createImageFile(`${testAssetDir}/temp/offline/online.png`);
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
@@ -646,9 +647,9 @@ describe('/libraries', () => {
       const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
         libraryId: library.id,
       });
-      expect(initialAssets.count).toBe(1);
+      expect(initialAssets.count).toBe(2);
 
-      utils.removeImageFile(`${testAssetDir}/temp/offline2/assetA.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
@@ -669,7 +670,54 @@ describe('/libraries', () => {
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
-      expect(assets.count).toBe(0);
+      expect(assets.count).toBe(1);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/online.png`);
+    });
+
+    it('should remove offline files from trash', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/offline/online.png`);
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+      });
+
+      expect(initialAssets.count).toBe(2);
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+        isOffline: true,
+      });
+      expect(offlineAssets.count).toBe(1);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/removeOffline`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(1);
+      expect(assets.items[0].isOffline).toBe(false);
+      expect(assets.items[0].originalPath).toEqual(`${testAssetDirInternal}/temp/offline/online.png`);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/online.png`);
     });
 
     it('should not remove online files', async () => {

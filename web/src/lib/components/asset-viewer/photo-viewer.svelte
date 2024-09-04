@@ -169,7 +169,13 @@
       <LoadingSpinner />
     </div>
   {:else if !imageError}
-    <div use:zoomImageAction class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+    <div
+      use:zoomImageAction
+      use:swipe
+      on:swipe={onSwipe}
+      class="h-full w-full"
+      transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
+    >
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
           src={assetFileUrl}
@@ -181,8 +187,6 @@
       <img
         bind:this={$photoViewer}
         src={assetFileUrl}
-        use:swipe
-        on:swipe={onSwipe}
         alt={$getAltText(asset)}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
