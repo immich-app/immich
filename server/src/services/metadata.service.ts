@@ -355,9 +355,17 @@ export class MetadataService {
     const tags: unknown[] = [];
     if (exifTags.TagsList) {
       tags.push(...exifTags.TagsList);
-    }
-
-    if (exifTags.Keywords) {
+    } else if (exifTags.HierarchicalSubject) {
+      tags.push(
+        exifTags.HierarchicalSubject.map((tag) =>
+          tag
+            // convert | to /
+            .replaceAll('/', '<PLACEHOLDER>')
+            .replaceAll('|', '/')
+            .replaceAll('<PLACEHOLDER>', '|'),
+        ),
+      );
+    } else if (exifTags.Keywords) {
       let keywords = exifTags.Keywords;
       if (!Array.isArray(keywords)) {
         keywords = [keywords];

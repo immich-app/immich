@@ -1245,6 +1245,7 @@
   "tag_assets": "Assets taggen",
   "tag_created": "Tag aangemaakt: {tag}",
   "tag_feature_description": "Bladeren door foto's en video's gegroepeerd op tags",
+  "tag_not_found_question": "Kun je een tag niet vinden? Maak er <link>hier</link> een aan",
   "tag_updated": "Tag bijgewerkt: {tag}",
   "tagged_assets": "{count, plural, one {# asset} other {# assets}} getagd",
   "tags": "Tags",

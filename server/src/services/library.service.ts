@@ -581,7 +581,7 @@ export class LibraryService {
     this.logger.debug(`Removing offline assets for library ${job.id}`);
 
     const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
+      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id, true),
     );
 
     let offlineAssets = 0;

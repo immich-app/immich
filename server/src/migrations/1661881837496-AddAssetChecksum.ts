@@ -11,7 +11,7 @@ export class AddAssetChecksum1661881837496 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "public"."IDX_64c507300988dd1764f9a6530c"`);
+    await queryRunner.query(`DROP INDEX "IDX_64c507300988dd1764f9a6530c"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN "checksum"`);
   }
 }

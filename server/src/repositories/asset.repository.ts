@@ -395,7 +395,7 @@ export class AssetRepository implements IAssetRepository {
 
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
-        relations = { jobStatus: true };
+        relations = { jobStatus: true, files: true };
         where = [
           { jobStatus: { previewAt: IsNull() }, isVisible: true },
           { jobStatus: { thumbnailAt: IsNull() }, isVisible: true },
@@ -527,7 +527,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
+  getWith(
+    pagination: PaginationOptions,
+    property: WithProperty,
+    libraryId?: string,
+    withDeleted = false,
+  ): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
@@ -557,6 +562,7 @@ export class AssetRepository implements IAssetRepository {
 
     return paginate(this.repository, pagination, {
       where,
+      withDeleted,
       order: {
         // Ensures correct order when paginating
         createdAt: 'ASC',
