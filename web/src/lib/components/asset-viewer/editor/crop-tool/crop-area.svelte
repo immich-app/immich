@@ -22,6 +22,7 @@
 
   export let asset: AssetResponseDto;
   let img: HTMLImageElement;
+  let resizeObserver: ResizeObserver;
 
   $: imgElement.set(img);
 
@@ -53,9 +54,16 @@
     });
 
     window.addEventListener('mousemove', handleMouseMove);
+
+    resizeObserver = new ResizeObserver(() => {
+      resizeCanvas();
+    });
+
+    resizeObserver.observe(document.body);
   });
 
   onDestroy(() => {
+    resizeObserver.unobserve(document.body);
     window.removeEventListener('mousemove', handleMouseMove);
     resetCropStore();
     resetGlobalCropStore();

@@ -93,6 +93,8 @@ export function resizeCanvas() {
   const containerHeight = cropArea?.clientHeight ?? 0;
   const imageAspectRatio = img.width / img.height;
 
+  console.log('resizeCanvas', containerWidth, containerHeight, imageAspectRatio, img.width, img.height);
+
   let scale;
   if (imageAspectRatio > 1) {
     scale = containerWidth / img.width;
@@ -114,6 +116,20 @@ export function resizeCanvas() {
     cropFrame.style.width = `${img.width * scale}px`;
     cropFrame.style.height = `${img.height * scale}px`;
   }
+
+  const oldScale = get(cropImageScale);
+
+  const factor = scale / oldScale;
+
+  cropSettings.update((crop) => {
+    crop.x *= factor;
+    crop.y *= factor;
+    crop.width *= factor;
+    crop.height *= factor;
+    return crop;
+  });
+
+  cropImageScale.set(scale);
 
   draw(get(cropSettings));
 }
