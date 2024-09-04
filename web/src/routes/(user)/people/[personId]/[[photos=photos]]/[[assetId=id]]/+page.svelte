@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
@@ -124,14 +125,6 @@
         thumbnailData = getPeopleThumbnailUrl(data.person, Date.now().toString());
       }
     });
-  });
-
-  beforeNavigate(({ to }) => {
-    // Forget scroll position from people page if going somewhere else.
-    if (to && !to.url.pathname.startsWith(AppRoute.PEOPLE)) {
-      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-      sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
-    }
   });
 
   const handleEscape = async () => {
@@ -452,7 +445,15 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  use:scrollMemoryClearer={{
+    routeStartsWith: AppRoute.PEOPLE,
+    beforeClear: () => {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    },
+  }}
+>
   {#key refreshAssetGrid}
     <AssetGrid
       enableRouting={true}

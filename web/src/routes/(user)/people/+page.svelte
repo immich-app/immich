@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { scrollMemory } from '$lib/actions/scroll-memory';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -51,6 +52,7 @@
   let showSetBirthDateModal = false;
   let showMergeModal = false;
   let personName = '';
+  let currentPage = 1;
   let nextPage = data.people.hasNextPage ? 2 : null;
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
@@ -61,62 +63,11 @@
   let changeNameInputEl: HTMLInputElement | null;
   let innerHeight: number;
 
-  let scrollSlot: HTMLDivElement;
-  beforeNavigate(({ to }) => {
-    // Save current scroll information when going into a person page.
-    if (to && to.url.pathname.startsWith(AppRoute.PEOPLE)) {
-      if (nextPage) {
-        sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, nextPage.toString());
-      }
-      sessionStorage.setItem(SessionStorageKey.SCROLL_POSITION, scrollSlot.scrollTop.toString());
-    } else {
-      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-      sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
-    }
-  });
-
-  const restoreScrollPosition = () => {
-    let newScroll = sessionStorage.getItem(SessionStorageKey.SCROLL_POSITION);
-    if (newScroll) {
-      scrollSlot.scroll({
-        top: Number.parseFloat(newScroll),
-        behavior: 'instant',
-      });
-    }
-    sessionStorage.removeItem(SessionStorageKey.SCROLL_POSITION);
-  };
-
   onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
       handlePromiseError(handleSearchPeople(true, searchName));
-    }
-
-    // Load up to previously loaded page when returning.
-    let newNextPage = sessionStorage.getItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
-    if (newNextPage && nextPage) {
-      let startingPage = nextPage,
-        pagesToLoad = Number.parseInt(newNextPage) - nextPage;
-
-      if (pagesToLoad) {
-        handlePromiseError(
-          Promise.all(
-            Array.from({ length: pagesToLoad }).map((_, i) => {
-              return getAllPeople({ withHidden: true, page: startingPage + i });
-            }),
-          ).then((pages) => {
-            for (const page of pages) {
-              people = people.concat(page.people);
-            }
-            nextPage = pages.at(-1)?.hasNextPage ? startingPage + pagesToLoad : null;
-            restoreScrollPosition(); // wait until extra pages are loaded
-          }),
-        );
-      } else {
-        restoreScrollPosition();
-      }
-      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
     }
 
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
@@ -131,6 +82,36 @@
     });
   });
 
+  const loadInitialScroll = () =>
+    new Promise<void>((resolve) => {
+      // Load up to previously loaded page when returning.
+      let newNextPage = sessionStorage.getItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+      if (newNextPage && nextPage) {
+        let startingPage = nextPage,
+          pagesToLoad = Number.parseInt(newNextPage) - nextPage;
+
+        if (pagesToLoad) {
+          handlePromiseError(
+            Promise.all(
+              Array.from({ length: pagesToLoad }).map((_, i) => {
+                return getAllPeople({ withHidden: true, page: startingPage + i });
+              }),
+            ).then((pages) => {
+              for (const page of pages) {
+                people = people.concat(page.people);
+              }
+              currentPage = startingPage + pagesToLoad - 1;
+              nextPage = pages.at(-1)?.hasNextPage ? startingPage + pagesToLoad : null;
+              resolve(); // wait until extra pages are loaded
+            }),
+          );
+        } else {
+          resolve();
+        }
+        sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+      }
+    });
+
   const loadNextPage = async () => {
     if (!nextPage) {
       return;
@@ -139,6 +120,9 @@
     try {
       const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
       people = people.concat(newPeople);
+      if (nextPage !== null) {
+        currentPage = nextPage;
+      }
       nextPage = hasNextPage ? nextPage + 1 : null;
     } catch (error) {
       handleError(error, $t('errors.failed_to_load_people'));
@@ -363,7 +347,23 @@
 <UserPageLayout
   title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
-  bind:scrollSlot
+  use={[
+    [
+      scrollMemory,
+      {
+        routeStartsWith: AppRoute.PEOPLE,
+        beforeSave: () => {
+          if (currentPage) {
+            sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
+          }
+        },
+        beforeClear: () => {
+          sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+        },
+        beforeLoad: loadInitialScroll,
+      },
+    ],
+  ]}
 >
   <svelte:fragment slot="buttons">
     {#if people.length > 0}

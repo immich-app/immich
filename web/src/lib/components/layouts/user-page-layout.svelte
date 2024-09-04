@@ -3,6 +3,7 @@
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
   import SideBar from '../shared-components/side-bar/side-bar.svelte';
   import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
+  import { useActions, type ActionArray } from '$lib/actions/use-actions';
 
   export let hideNavbar = false;
   export let showUploadButton = false;
@@ -10,8 +11,7 @@
   export let description: string | undefined = undefined;
   export let scrollbar = true;
   export let admin = false;
-
-  export let scrollSlot: HTMLDivElement | undefined = undefined;
+  export let use: ActionArray = [];
 
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden';
   $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
@@ -55,10 +55,7 @@
       </div>
     {/if}
 
-    <div
-      class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto"
-      bind:this={scrollSlot}
-    >
+    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
       <slot />
     </div>
   </section>
