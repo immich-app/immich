@@ -9,9 +9,11 @@ import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType } from 'src/enum';
+import { PersonEntity } from 'src/entities/person.entity';
+import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -37,6 +39,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
 
@@ -104,7 +107,7 @@ export class MetadataService {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) private tagRepository: ITagRepository,
@@ -215,6 +218,7 @@ export class MetadataService {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
+    const { metadata } = await this.configCore.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -252,6 +256,10 @@ export class MetadataService {
       assetId: asset.id,
       metadataExtractedAt: new Date(),
     });
+
+    if (isFaceImportEnabled(metadata)) {
+      await this.applyTaggedFaces(asset, exifTags);
+    }
 
     return JobStatus.SUCCESS;
   }
@@ -510,6 +518,65 @@ export class MetadataService {
     } catch (error: Error | any) {
       this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${error}`, error?.stack);
     }
+  }
+
+  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
+    if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
+      return;
+    }
+
+    const discoveredFaces: Partial<AssetFaceEntity>[] = [];
+    const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
+    const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
+    const missing: Partial<PersonEntity>[] = [];
+    const missingWithFaceAsset: Partial<PersonEntity>[] = [];
+    for (const region of tags.RegionInfo.RegionList) {
+      if (!region.Name) {
+        continue;
+      }
+
+      const imageWidth = tags.RegionInfo.AppliedToDimensions.W;
+      const imageHeight = tags.RegionInfo.AppliedToDimensions.H;
+      const loweredName = region.Name.toLowerCase();
+      const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+
+      const face = {
+        id: this.cryptoRepository.randomUUID(),
+        personId,
+        assetId: asset.id,
+        imageWidth,
+        imageHeight,
+        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        sourceType: SourceType.EXIF,
+      };
+
+      discoveredFaces.push(face);
+      if (!existingNameMap.has(loweredName)) {
+        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
+        missingWithFaceAsset.push({ id: personId, faceAssetId: face.id });
+      }
+    }
+
+    if (missing.length > 0) {
+      this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
+    }
+
+    const newPersons = await this.personRepository.create(missing);
+
+    const faceIds = await this.personRepository.replaceFaces(asset.id, discoveredFaces, SourceType.EXIF);
+    this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
+
+    await this.personRepository.update(missingWithFaceAsset);
+
+    await this.jobRepository.queueAll(
+      newPersons.map((person) => ({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: { id: person.id },
+      })),
+    );
   }
 
   private async exifData(
