@@ -309,18 +309,6 @@ class AssetService {
         useTimeFilter: false,
       );
 
-      final duplicates = await _apiService.assetsApi.checkExistingAssets(
-        CheckExistingAssetsDto(
-          deviceAssetIds: candidates.map((c) => c.asset.id).toList(),
-          deviceId: Store.get(StoreKey.deviceId),
-        ),
-      );
-
-      if (duplicates != null) {
-        candidates
-            .removeWhere((c) => !duplicates.existingIds.contains(c.asset.id));
-      }
-
       await refreshRemoteAssets();
       final remoteAssets = await _db.assets
           .where()
