@@ -7,7 +7,8 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription'> {
+type TagsWithWrongTypes = 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription' | 'RegionInfo';
+export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
@@ -23,6 +24,28 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Des
   // Type is wrong, can also be number.
   Description?: string | number;
   ImageDescription?: string | number;
+
+  // Extended properties for image regions, such as faces
+  RegionInfo?: {
+    AppliedToDimensions: {
+      W: number;
+      H: number;
+      Unit: string;
+    };
+    RegionList: {
+      Area: {
+        // (X,Y) // center of the rectangle
+        X: number;
+        Y: number;
+        W: number;
+        H: number;
+        Unit: string;
+      };
+      Rotation?: number;
+      Type?: string;
+      Name?: string;
+    }[];
+  };
 }
 
 export interface IMetadataRepository {

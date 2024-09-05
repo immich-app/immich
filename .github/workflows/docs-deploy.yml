@@ -7,6 +7,7 @@ on:
 
 jobs:
   checks:
+    name: Docs Deploy Checks
     runs-on: ubuntu-latest
     outputs:
       parameters: ${{ steps.parameters.outputs.result }}
@@ -91,6 +92,7 @@ jobs:
             return parameters;
 
   deploy:
+    name: Docs Deploy
     runs-on: ubuntu-latest
     needs: checks
     if: ${{ fromJson(needs.checks.outputs.artifact).found && fromJson(needs.checks.outputs.parameters).shouldDeploy }}
