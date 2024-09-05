@@ -561,15 +561,7 @@ const urlToBlob = async (imageSource: string) => {
   return await response.blob();
 };
 
-export const copyImageToClipboard = async (imageElement: HTMLImageElement | string) => {
-  const blob =
-    imageElement instanceof HTMLImageElement
-      ? await HtmlImageElementToBlob(imageElement)
-      : await ImageSourceToBlob(imageElement);
-
-  await navigator.clipboard.write([
-    new ClipboardItem({
-      [blob.type]: blob,
-    }),
-  ]);
+export const copyImageToClipboard = async (source: HTMLImageElement | string) => {
+  const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
+  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 };
