@@ -36,7 +36,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
       gravity: ToastGravity.BOTTOM,
     );
 
-    bool isSuccess = await _imageViewerService.downloadAssetToDevice(asset);
+    bool isSuccess = await _imageViewerService.downloadAsset(asset);
 
     if (isSuccess) {
       state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.success);

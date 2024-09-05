@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -19,7 +20,7 @@ class ImageViewerService {
 
   ImageViewerService(this._apiService);
 
-  Future<bool> downloadAssetToDevice(Asset asset) async {
+  Future<bool> downloadAsset(Asset asset) async {
     File? imageFile;
     File? videoFile;
     try {
@@ -82,18 +83,23 @@ class ImageViewerService {
         }
 
         final AssetEntity? entity;
+        final relativePath = Platform.isAndroid ? 'DCIM/Camera' : null;
 
         if (asset.isImage) {
           entity = await PhotoManager.editor.saveImage(
             res.bodyBytes,
             title: asset.fileName,
+            relativePath: relativePath,
           );
         } else {
           final tempDir = await getTemporaryDirectory();
           videoFile = await File('${tempDir.path}/${asset.fileName}').create();
           videoFile.writeAsBytesSync(res.bodyBytes);
-          entity = await PhotoManager.editor
-              .saveVideo(videoFile, title: asset.fileName);
+          entity = await PhotoManager.editor.saveVideo(
+            videoFile,
+            title: asset.fileName,
+            relativePath: relativePath,
+          );
         }
         return entity != null;
       }
