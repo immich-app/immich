@@ -216,7 +216,7 @@ export class AssetStore {
   private initializedSignal!: () => void;
   private store$ = writable(this);
   /** The svelte key for this view model object */
-  private viewId = generateId();
+  viewId = generateId();
 
   lastScrollTime: number = 0;
   subscribe = this.store$.subscribe;
