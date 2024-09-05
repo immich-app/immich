@@ -1,8 +1,8 @@
 # Include code from immich_mobile
 @@ -13,5 +13,5 @@
-   http: '>=0.13.0 <0.14.0'
+   http: '>=0.13.0 <2.0.0'
    intl: any
-   meta: '^1.1.8'
+   meta: '>=1.1.8 <2.0.0'
 -dev_dependencies:
 -  test: '>=1.21.6 <1.22.0'
 +  immich_mobile:
