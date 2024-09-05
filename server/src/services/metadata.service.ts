@@ -604,7 +604,7 @@ export class MetadataService {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
     this.logger.debug(`Asset ${asset.id} date time is ${dateTime}`);
 
-    // created
+    // date
     let dateTimeOriginal = dateTime?.toDate();
     if (!dateTimeOriginal) {
       this.logger.warn(`Asset ${asset.id} has no valid date (${dateTime}), falling back to asset.fileCreatedAt`);
@@ -613,17 +613,21 @@ export class MetadataService {
 
     // timezone
     let timeZone = exifTags.tz ?? null;
+    let timeZoneSource = exifTags.tzSource;
+
     if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
     }
 
-    if (timeZone) {
-      this.logger.debug(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
-    } else {
-      this.logger.warn(`Asset ${asset.id} has no time zone information`);
+    if (!timeZone) {
+      this.logger.warn(`Asset ${asset.id} has no time zone information, falling back to system time`);
+      timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      timeZoneSource = 'system';
     }
+
+    this.logger.debug(`Asset ${asset.id} timezone is ${timeZone} (via ${timeZoneSource})`);
 
     // offset minutes
     const offsetMinutes = dateTime?.tzoffsetMinutes || 0;
