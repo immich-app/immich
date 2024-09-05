@@ -6,6 +6,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
@@ -82,7 +83,7 @@ class ImageViewerService {
         }
 
         final AssetEntity? entity;
-        final relativePath = Platform.isAndroid ? 'DCIM/Camera' : null;
+        final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
 
         if (asset.isImage) {
           entity = await PhotoManager.editor.saveImage(

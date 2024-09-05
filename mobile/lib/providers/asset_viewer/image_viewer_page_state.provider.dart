@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -31,7 +33,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
 
     ImmichToast.show(
       context: context,
-      msg: 'image_viewer_page_state_provider_download_started'.tr(),
+      msg: 'download_started'.tr(),
       toastType: ToastType.info,
       gravity: ToastGravity.BOTTOM,
     );
@@ -43,7 +45,9 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
 
       ImmichToast.show(
         context: context,
-        msg: 'image_viewer_page_state_provider_download_success'.tr(),
+        msg: Platform.isAndroid
+            ? 'download_sucess_android'.tr()
+            : 'download_sucess'.tr(),
         toastType: ToastType.success,
         gravity: ToastGravity.BOTTOM,
       );
@@ -52,7 +56,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
       state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.error);
       ImmichToast.show(
         context: context,
-        msg: 'image_viewer_page_state_provider_download_error'.tr(),
+        msg: 'download_error'.tr(),
         toastType: ToastType.error,
         gravity: ToastGravity.BOTTOM,
       );
