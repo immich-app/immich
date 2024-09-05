@@ -527,3 +527,49 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
 export const delay = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export const canCopyImageToClipboard = (): boolean => {
+  return !!(navigator.clipboard && window.ClipboardItem);
+};
+
+const HtmlImageElementToBlob = async (imageElement: HTMLImageElement) => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  canvas.width = imageElement.width;
+  canvas.height = imageElement.height;
+
+  if (context) {
+    context.drawImage(imageElement, 0, 0);
+
+    return await new Promise<Blob>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          throw new Error('Canvas conversion to Blob failed');
+        }
+      });
+    });
+  }
+
+  throw new Error('Canvas context is null');
+};
+
+const ImageSourceToBlob = async (imageSource: string) => {
+  const response = await fetch(imageSource);
+  return await response.blob();
+};
+
+export const copyImageToClipboard = async (imageElement: HTMLImageElement | string) => {
+  const blob =
+    imageElement instanceof HTMLImageElement
+      ? await HtmlImageElementToBlob(imageElement)
+      : await ImageSourceToBlob(imageElement);
+
+  await navigator.clipboard.write([
+    new ClipboardItem({
+      [blob.type]: blob,
+    }),
+  ]);
+};

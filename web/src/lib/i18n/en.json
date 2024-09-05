@@ -685,7 +685,8 @@
     "unable_to_update_settings": "Unable to update settings",
     "unable_to_update_timeline_display_status": "Unable to update timeline display status",
     "unable_to_update_user": "Unable to update user",
-    "unable_to_upload_file": "Unable to upload file"
+    "unable_to_upload_file": "Unable to upload file",
+    "unable_to_write_to_clipboard": "Unable to write to clipboard"
   },
   "exif": "Exif",
   "exit_slideshow": "Exit Slideshow",
