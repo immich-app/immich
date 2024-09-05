@@ -532,7 +532,7 @@ export const canCopyImageToClipboard = (): boolean => {
   return !!(navigator.clipboard && window.ClipboardItem);
 };
 
-const HtmlImageElementToBlob = async (imageElement: HTMLImageElement) => {
+const imgToBlob = async (imageElement: HTMLImageElement) => {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
 
