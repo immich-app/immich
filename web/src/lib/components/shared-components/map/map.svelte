@@ -1,15 +1,20 @@
+<script lang="ts" context="module">
+  void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
+</script>
+
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl, getKey, handlePromiseError } from '$lib/utils';
   import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
+  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
-  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import maplibregl from 'maplibre-gl';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import {
     AttributionControl,
     Control,
@@ -25,7 +30,6 @@
     ScaleControl,
     type Map,
   } from 'svelte-maplibre';
-  import { t } from 'svelte-i18n';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -51,8 +55,6 @@
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
-
-  void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
 
   $: style = (() =>
     getMapStyle({
