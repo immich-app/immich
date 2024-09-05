@@ -6,6 +6,7 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SourceType } from 'src/enum';
 import {
   AssetFaceId,
   DeleteAllFacesOptions,
@@ -53,16 +54,20 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async deleteAllFaces({ sourceType }: DeleteAllFacesOptions): Promise<void> {
-    if (sourceType) {
-      await this.assetFaceRepository
-        .createQueryBuilder('asset_faces')
-        .delete()
-        .andWhere('sourceType = :sourceType', { sourceType })
-        .execute();
-      return;
+    if (!sourceType) {
+      return this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
     }
 
-    await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
+    await this.assetFaceRepository
+      .createQueryBuilder('asset_faces')
+      .delete()
+      .andWhere('sourceType = :sourceType', { sourceType })
+      .execute();
+
+    await this.assetFaceRepository.query('VACUUM ANALYZE asset_faces, face_search');
+    if (sourceType === SourceType.MACHINE_LEARNING) {
+      await this.assetFaceRepository.query('REINDEX INDEX face_index');
+    }
   }
 
   getAllFaces(
