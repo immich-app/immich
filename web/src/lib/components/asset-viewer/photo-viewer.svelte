@@ -93,7 +93,7 @@
         timeout: 3000,
       });
     } catch (error) {
-      handleError(error, $t('errors.unable_to_write_to_clipboard'));
+      handleError(error, $t('copy_error'));
     }
   };
 
