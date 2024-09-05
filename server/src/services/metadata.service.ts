@@ -381,11 +381,8 @@ export class MetadataService {
       tags.push(...keywords);
     }
 
-    if (tags.length > 0) {
-      const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags: tags.map(String) });
-      const tagIds = results.map((tag) => tag.id);
-      await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds });
-    }
+    const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags: tags.map(String) });
+    await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds: results.map((tag) => tag.id) });
   }
 
   private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {

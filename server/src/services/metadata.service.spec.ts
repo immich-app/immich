@@ -496,6 +496,15 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should remove existing tags', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({});
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.upsertAssetTags).toHaveBeenCalledWith({ assetId: 'asset-id', tagIds: [] });
+    });
+
     it('should not apply motion photos if asset is video', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true }]);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
