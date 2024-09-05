@@ -8,9 +8,9 @@
   import { resetSavedUser, user } from '$lib/stores/user.store';
   import { clickOutside } from '$lib/actions/click-outside';
   import { logout } from '@immich/sdk';
-  import { mdiCog, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
+  import { mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import { fade, fly } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
   import { AppRoute } from '../../../constants';
   import ImmichLogo from '../immich-logo.svelte';
   import SearchBar from '../search-bar/search-bar.svelte';
@@ -53,72 +53,41 @@
     <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
       <ImmichLogo width="55%" noText={innerWidth < 768} />
     </a>
-    <div class="flex justify-between gap-16 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 pl-4 tall:pl-0 sm:block">
+    <div class="flex justify-between gap-4 lg:gap-8 pr-6">
+      <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">
         {#if $featureFlags.search}
           <SearchBar grayTheme={true} />
         {/if}
       </div>
 
-      <section class="flex place-items-center justify-end gap-4 max-sm:w-full">
+      <section class="flex place-items-center justify-end gap-2 md:gap-4 w-full sm:w-auto">
         {#if $featureFlags.search}
           <CircleIconButton
             href={AppRoute.SEARCH}
             id="search-button"
-            class="ml-4 sm:hidden"
+            class="sm:hidden"
             title={$t('go_to_search')}
             icon={mdiMagnify}
+            padding="2"
           />
         {/if}
 
-        <ThemeButton />
+        <ThemeButton padding="2" />
 
         {#if !$page.url.pathname.includes('/admin') && showUploadButton}
-          <div in:fly={{ x: 50, duration: 250 }}>
-            <LinkButton on:click={() => dispatch('uploadClicked')}>
-              <div class="flex gap-2">
-                <Icon path={mdiTrayArrowUp} size="1.5em" />
-                <span class="hidden md:block">{$t('upload')}</span>
-              </div>
-            </LinkButton>
-          </div>
-        {/if}
-
-        {#if $user.isAdmin}
-          <a
-            data-sveltekit-preload-data="hover"
-            href={AppRoute.ADMIN_USER_MANAGEMENT}
-            aria-label={$t('administration')}
-            aria-current={$page.url.pathname.includes('/admin') ? 'page' : null}
-          >
-            <div
-              class="inline-flex items-center justify-center transition-colors dark:text-immich-dark-fg p-2 font-medium rounded-lg"
-            >
-              <div class="hidden sm:block">
-                <span
-                  class={$page.url.pathname.includes('/admin')
-                    ? 'item text-immich-primary underline dark:text-immich-dark-primary'
-                    : ''}
-                >
-                  {$t('administration')}
-                </span>
-              </div>
-              <div class="block sm:hidden" aria-hidden="true">
-                <Icon
-                  path={mdiCog}
-                  size="1.5em"
-                  class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
-                    ? 'text-immich-primary dark:text-immich-dark-primary'
-                    : ''}"
-                />
-                <div
-                  class={$page.url.pathname.includes('/admin')
-                    ? 'border-t-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
-                    : 'hidden'}
-                />
-              </div>
+          <LinkButton on:click={() => dispatch('uploadClicked')} class="hidden lg:block">
+            <div class="flex gap-2">
+              <Icon path={mdiTrayArrowUp} size="1.5em" />
+              <span>{$t('upload')}</span>
             </div>
-          </a>
+          </LinkButton>
+          <CircleIconButton
+            on:click={() => dispatch('uploadClicked')}
+            title={$t('upload')}
+            icon={mdiTrayArrowUp}
+            class="lg:hidden"
+            padding="2"
+          />
         {/if}
 
         <div
@@ -137,7 +106,7 @@
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
             {#key $user}
-              <UserAvatar user={$user} size="lg" showTitle={false} interactive />
+              <UserAvatar user={$user} size="md" showTitle={false} interactive />
             {/key}
           </button>
 

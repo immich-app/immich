@@ -16,7 +16,7 @@
   $: hasQuota = $user?.quotaSizeInBytes !== null;
   $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0;
   $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0;
-  $: usedPercentage = Math.round((usedBytes / availableBytes) * 100);
+  $: usedPercentage = Math.min(Math.round((usedBytes / availableBytes) * 100), 100);
 
   let aboutInfo: ServerAboutResponseDto;
 
