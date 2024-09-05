@@ -15,8 +15,7 @@
   let showOptions = false;
   let concurrency = uploadExecutionQueue.concurrency;
 
-  let { isUploading, hasError, remainingUploads, errorCounter, duplicateCounter, successCounter, totalUploadCounter } =
-    uploadAssetsStore;
+  let { stats, isDismissible, isUploading, remainingUploads } = uploadAssetsStore;
 
   const autoHide = () => {
     if (!$isUploading && showDetail) {
@@ -33,29 +32,29 @@
   }
 </script>
 
-{#if $hasError || $isUploading}
+{#if $isUploading}
   <div
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
     on:outroend={() => {
-      if ($errorCounter > 0) {
+      if ($stats.errors > 0) {
         notificationController.show({
-          message: $t('upload_errors', { values: { count: $errorCounter } }),
+          message: $t('upload_errors', { values: { count: $stats.errors } }),
           type: NotificationType.Warning,
         });
-      } else if ($successCounter > 0) {
+      } else if ($stats.success > 0) {
         notificationController.show({
           message: $t('upload_success'),
           type: NotificationType.Info,
         });
       }
-      if ($duplicateCounter > 0) {
+      if ($stats.duplicates > 0) {
         notificationController.show({
-          message: $t('upload_skipped_duplicates', { values: { count: $duplicateCounter } }),
+          message: $t('upload_skipped_duplicates', { values: { count: $stats.duplicates } }),
           type: NotificationType.Warning,
         });
       }
-      uploadAssetsStore.resetStore();
+      uploadAssetsStore.reset();
     }}
     class="fixed bottom-6 right-6 z-[10000]"
   >
@@ -70,20 +69,20 @@
               {$t('upload_progress', {
                 values: {
                   remaining: $remainingUploads,
-                  processed: $successCounter + $errorCounter,
-                  total: $totalUploadCounter,
+                  processed: $stats.total - $remainingUploads,
+                  total: $stats.total,
                 },
               })}
             </p>
             <p class="immich-form-label text-xs">
               {$t('upload_status_uploaded')}
-              <span class="text-immich-success">{$successCounter.toLocaleString($locale)}</span>
+              <span class="text-immich-success">{$stats.success.toLocaleString($locale)}</span>
               -
               {$t('upload_status_errors')}
-              <span class="text-immich-error">{$errorCounter.toLocaleString($locale)}</span>
+              <span class="text-immich-error">{$stats.errors.toLocaleString($locale)}</span>
               -
               {$t('upload_status_duplicates')}
-              <span class="text-immich-warning">{$duplicateCounter.toLocaleString($locale)}</span>
+              <span class="text-immich-warning">{$stats.duplicates.toLocaleString($locale)}</span>
             </p>
           </div>
           <div class="flex flex-col items-end">
@@ -103,7 +102,7 @@
                 on:click={() => (showDetail = false)}
               />
             </div>
-            {#if $hasError}
+            {#if $isDismissible}
               <CircleIconButton
                 title={$t('dismiss_all_errors')}
                 icon={mdiCancel}
@@ -115,7 +114,7 @@
           </div>
         </div>
         {#if showOptions}
-          <div class="immich-scrollbar mb-4 max-h-[400px] overflow-y-auto rounded-lg pr-2">
+          <div class="immich-scrollbar mb-4 max-h-[400px] overflow-y-auto rounded-lg">
             <div class="flex h-[26px] place-items-center gap-1">
               <label class="immich-form-label" for="upload-concurrency">{$t('upload_concurrency')}</label>
             </div>
@@ -133,7 +132,7 @@
             />
           </div>
         {/if}
-        <div class="immich-scrollbar flex max-h-[400px] flex-col gap-2 overflow-y-auto rounded-lg pr-2">
+        <div class="immich-scrollbar flex max-h-[400px] flex-col gap-2 overflow-y-auto rounded-lg">
           {#each $uploadAssetsStore as uploadAsset (uploadAsset.id)}
             <UploadAssetPreview {uploadAsset} />
           {/each}
@@ -149,14 +148,14 @@
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
-        {#if $hasError}
+        {#if $stats.errors > 0}
           <button
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             on:click={() => (showDetail = true)}
             class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
           >
-            {$errorCounter.toLocaleString($locale)}
+            {$stats.errors.toLocaleString($locale)}
           </button>
         {/if}
         <button

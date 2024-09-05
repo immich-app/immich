@@ -7,11 +7,13 @@ import {
   AlbumSortBy,
   SortOrder,
   albumViewSettings,
+  locale,
   type AlbumViewSettings,
 } from '$lib/stores/preferences.store';
 import { handleError } from '$lib/utils/handle-error';
 import type { AlbumResponseDto } from '@immich/sdk';
 import * as sdk from '@immich/sdk';
+import { orderBy } from 'lodash-es';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
@@ -212,4 +214,64 @@ export const confirmAlbumDelete = async (album: AlbumResponseDto) => {
   const prompt = `${confirmation} ${description}`;
 
   return dialogController.show({ prompt });
+};
+
+interface AlbumSortOption {
+  [option: string]: (order: SortOrder, albums: AlbumResponseDto[]) => AlbumResponseDto[];
+}
+
+const sortUnknownYearAlbums = (a: AlbumResponseDto, b: AlbumResponseDto) => {
+  if (!a.endDate) {
+    return 1;
+  }
+  if (!b.endDate) {
+    return -1;
+  }
+  return 0;
+};
+
+export const stringToSortOrder = (order: string) => {
+  return order === 'desc' ? SortOrder.Desc : SortOrder.Asc;
+};
+
+const sortOptions: AlbumSortOption = {
+  /** Sort by album title */
+  [AlbumSortBy.Title]: (order, albums) => {
+    const sortSign = order === SortOrder.Desc ? -1 : 1;
+    return albums.slice().sort((a, b) => a.albumName.localeCompare(b.albumName, get(locale)) * sortSign);
+  },
+
+  /** Sort by asset count */
+  [AlbumSortBy.ItemCount]: (order, albums) => {
+    return orderBy(albums, 'assetCount', [order]);
+  },
+
+  /** Sort by last modified */
+  [AlbumSortBy.DateModified]: (order, albums) => {
+    return orderBy(albums, [({ updatedAt }) => new Date(updatedAt)], [order]);
+  },
+
+  /** Sort by creation date */
+  [AlbumSortBy.DateCreated]: (order, albums) => {
+    return orderBy(albums, [({ createdAt }) => new Date(createdAt)], [order]);
+  },
+
+  /** Sort by the most recent photo date */
+  [AlbumSortBy.MostRecentPhoto]: (order, albums) => {
+    albums = orderBy(albums, [({ endDate }) => (endDate ? new Date(endDate) : '')], [order]);
+    return albums.sort(sortUnknownYearAlbums);
+  },
+
+  /** Sort by the oldest photo date */
+  [AlbumSortBy.OldestPhoto]: (order, albums) => {
+    albums = orderBy(albums, [({ startDate }) => (startDate ? new Date(startDate) : '')], [order]);
+    return albums.sort(sortUnknownYearAlbums);
+  },
+};
+
+export const sortAlbums = (albums: AlbumResponseDto[], { sortBy, orderBy }: { sortBy: string; orderBy: string }) => {
+  const sort = sortOptions[sortBy] ?? sortOptions[AlbumSortBy.DateModified];
+  const order = stringToSortOrder(orderBy);
+
+  return sort(order, albums);
 };
