@@ -315,7 +315,7 @@ class IntersectionTask {
     return { task: execTask, cleanup };
   }
 
-  trackSeperatedTask(componentId: string, task: Task) {
+  trackSeparatedTask(componentId: string, task: Task) {
     const execTask = () => {
       if (this.intersected) {
         return;
@@ -363,7 +363,7 @@ class IntersectionTask {
       return;
     }
 
-    const { task, cleanup } = this.trackSeperatedTask(componentId, separated);
+    const { task, cleanup } = this.trackSeparatedTask(componentId, separated);
     this.internalTaskManager.queueSeparateTask({
       task,
       cleanup,

@@ -207,6 +207,7 @@ export type AssetFaceWithoutPersonResponseDto = {
     id: string;
     imageHeight: number;
     imageWidth: number;
+    sourceType?: SourceType;
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
@@ -508,6 +509,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     imageWidth: number;
     person: (PersonResponseDto) | null;
+    sourceType?: SourceType;
 };
 export type FaceDto = {
     id: string;
@@ -893,6 +895,7 @@ export type ServerFeaturesDto = {
     duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
+    importFaces: boolean;
     map: boolean;
     oauth: boolean;
     oauthAutoLaunch: boolean;
@@ -1122,6 +1125,12 @@ export type SystemConfigMapDto = {
     enabled: boolean;
     lightStyle: string;
 };
+export type SystemConfigFacesDto = {
+    "import": boolean;
+};
+export type SystemConfigMetadataDto = {
+    faces: SystemConfigFacesDto;
+};
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
 };
@@ -1178,6 +1187,7 @@ export type SystemConfigDto = {
     logging: SystemConfigLoggingDto;
     machineLearning: SystemConfigMachineLearningDto;
     map: SystemConfigMapDto;
+    metadata: SystemConfigMetadataDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
     notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
@@ -3225,6 +3235,10 @@ export enum UserStatus {
 export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
+}
+export enum SourceType {
+    MachineLearning = "machine-learning",
+    Exif = "exif"
 }
 export enum AssetTypeEnum {
     Image = "IMAGE",

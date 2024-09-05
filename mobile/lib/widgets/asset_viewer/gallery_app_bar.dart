@@ -93,6 +93,10 @@ class GalleryAppBar extends ConsumerWidget {
       );
     }
 
+    handleDownloadAsset() {
+      ref.read(imageViewerStateProvider.notifier).downloadAsset(asset, context);
+    }
+
     return IgnorePointer(
       ignoring: !ref.watch(showControlsProvider),
       child: AnimatedOpacity(
@@ -109,13 +113,7 @@ class GalleryAppBar extends ConsumerWidget {
             onFavorite: toggleFavorite,
             onRestorePressed: () => handleRestore(asset),
             onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,
-            onDownloadPressed: asset.isLocal
-                ? null
-                : () =>
-                    ref.read(imageViewerStateProvider.notifier).downloadAsset(
-                          asset,
-                          context,
-                        ),
+            onDownloadPressed: asset.isLocal ? null : handleDownloadAsset,
             onToggleMotionVideo: onToggleMotionVideo,
             onAddToAlbumPressed: () => addToAlbum(asset),
             onActivitiesPressed: handleActivities,

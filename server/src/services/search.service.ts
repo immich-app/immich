@@ -121,26 +121,27 @@ export class SearchService {
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
-    const results = await this.getSuggestions(auth.user.id, dto);
+    const userIds = await this.getUserIdsToSearch(auth);
+    const results = await this.getSuggestions(userIds, dto);
     return results.filter((result) => (dto.includeNull ? true : result !== null));
   }
 
-  private getSuggestions(userId: string, dto: SearchSuggestionRequestDto) {
+  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.metadataRepository.getCountries(userId);
+        return this.metadataRepository.getCountries(userIds);
       }
       case SearchSuggestionType.STATE: {
-        return this.metadataRepository.getStates(userId, dto.country);
+        return this.metadataRepository.getStates(userIds, dto.country);
       }
       case SearchSuggestionType.CITY: {
-        return this.metadataRepository.getCities(userId, dto.country, dto.state);
+        return this.metadataRepository.getCities(userIds, dto.country, dto.state);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.metadataRepository.getCameraMakes(userId, dto.model);
+        return this.metadataRepository.getCameraMakes(userIds, dto.model);
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.metadataRepository.getCameraModels(userId, dto.make);
+        return this.metadataRepository.getCameraModels(userIds, dto.make);
       }
       default: {
         return [];

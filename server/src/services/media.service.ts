@@ -117,7 +117,7 @@ export class MediaService {
             continue;
           }
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+          await this.personRepository.update([{ id: person.id, faceAssetId: face.id }]);
         }
 
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
@@ -176,7 +176,7 @@ export class MediaService {
   async handleGeneratePreview({ id }: IEntityJob): Promise<JobStatus> {
     const [{ image }, [asset]] = await Promise.all([
       this.configCore.getConfig({ withCache: true }),
-      this.assetRepository.getByIds([id], { exifInfo: true }),
+      this.assetRepository.getByIds([id], { exifInfo: true, files: true }),
     ]);
     if (!asset) {
       return JobStatus.FAILED;

@@ -47,8 +47,8 @@ export class NestedTagTable1724790460210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "tags" ADD "name" character varying NOT NULL`);
         await queryRunner.query(`ALTER TABLE "tags" ADD "type" character varying NOT NULL`);
         await queryRunner.query(`ALTER TABLE "tags" ADD "renameTagId" uuid`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_b1a2a7ed45c29179b5ad51548a"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_15fbcbc67663c6bfc07b354c22"`);
+        await queryRunner.query(`DROP INDEX "IDX_b1a2a7ed45c29179b5ad51548a"`);
+        await queryRunner.query(`DROP INDEX "IDX_15fbcbc67663c6bfc07b354c22"`);
         await queryRunner.query(`DROP TABLE "tags_closure"`);
         await queryRunner.query(`ALTER TABLE "tags" ADD CONSTRAINT "UQ_tag_name_userId" UNIQUE ("name", "userId")`);
         await queryRunner.query(`ALTER TABLE "tags" ADD CONSTRAINT "FK_92e67dc508c705dd66c94615576" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);

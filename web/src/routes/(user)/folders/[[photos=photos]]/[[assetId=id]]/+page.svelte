@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
@@ -16,6 +16,7 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
+  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
 
   export let data: PageData;
 
@@ -25,6 +26,7 @@
   $: pathSegments = data.path ? data.path.split('/') : [];
   $: tree = buildTree($foldersStore?.uniquePaths || []);
   $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
+  $: currentTreeItems = currentPath ? data.currentFolders : Object.keys(tree);
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -47,6 +49,7 @@
 
 <UserPageLayout title={data.meta.title}>
   <SideBarSection slot="sidebar">
+    <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} />
     <section>
       <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
       <div class="h-full">
@@ -63,7 +66,7 @@
   <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
 
   <section class="mt-2">
-    <TreeItemThumbnails items={data.currentFolders} icon={mdiFolder} onClick={handleNavigation} />
+    <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigation} />
 
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}

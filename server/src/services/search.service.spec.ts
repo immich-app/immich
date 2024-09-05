@@ -103,7 +103,7 @@ describe(SearchService.name, () => {
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA', null]);
-      expect(metadataMock.getCountries).toHaveBeenCalledWith(authStub.user1.user.id);
+      expect(metadataMock.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
     });
 
     it('should return search suggestions (without null)', async () => {
@@ -111,7 +111,7 @@ describe(SearchService.name, () => {
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: false, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA']);
-      expect(metadataMock.getCountries).toHaveBeenCalledWith(authStub.user1.user.id);
+      expect(metadataMock.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
     });
   });
 });

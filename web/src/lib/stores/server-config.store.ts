@@ -8,6 +8,7 @@ export const featureFlags = writable<FeatureFlags>({
   smartSearch: true,
   duplicateDetection: false,
   facialRecognition: true,
+  importFaces: false,
   sidecar: true,
   map: true,
   reverseGeocoding: true,

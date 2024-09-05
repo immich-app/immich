@@ -2,6 +2,7 @@ import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { getAssetRatio } from '$lib/utils/asset-utils';
+import { generateId } from '$lib/utils/generate-id';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
@@ -12,7 +13,6 @@ import { t } from 'svelte-i18n';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
-
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
@@ -70,7 +70,10 @@ export class AssetBucket {
     Object.assign(this, props);
     this.init();
   }
-
+  /** The svelte key for this view model object */
+  get viewId() {
+    return this.store.viewId + '-' + this.bucketDate;
+  }
   private init() {
     // create a promise, and store its resolve/reject callbacks. The loadedSignal callback
     // will be incoked when a bucket is loaded, fulfilling the promise. The canceledSignal
@@ -205,21 +208,23 @@ export class AssetStore {
   private assetToBucket: Record<string, AssetLookup> = {};
   private pendingChanges: PendingChange[] = [];
   private unsubscribers: Unsubscriber[] = [];
-  private options: AssetApiGetTimeBucketsRequest;
+  private options!: AssetApiGetTimeBucketsRequest;
   private viewport: Viewport = {
     height: 0,
     width: 0,
   };
   private initializedSignal!: () => void;
   private store$ = writable(this);
+  /** The svelte key for this view model object */
+  viewId = generateId();
 
   lastScrollTime: number = 0;
   subscribe = this.store$.subscribe;
   /**
    * A promise that resolves once the store is initialized.
    */
-  taskManager = new AssetGridTaskManager(this);
   complete!: Promise<void>;
+  taskManager = new AssetGridTaskManager(this);
   initialized = false;
   timelineHeight = 0;
   buckets: AssetBucket[] = [];
@@ -234,13 +239,23 @@ export class AssetStore {
     options: AssetStoreOptions,
     private albumId?: string,
   ) {
+    this.setOptions(options);
+    this.createInitializationSignal();
+    this.store$.set(this);
+  }
+
+  private setOptions(options: AssetStoreOptions) {
     this.options = { ...options, size: TimeBucketSize.Month };
+  }
+
+  private createInitializationSignal() {
     // create a promise, and store its resolve callbacks. The initializedSignal callback
     // will be invoked when a the assetstore is initialized.
     this.complete = new Promise((resolve) => {
       this.initializedSignal = resolve;
     });
-    this.store$.set(this);
+    //  uncaught rejection go away
+    this.complete.catch(() => void 0);
   }
 
   private addPendingChanges(...changes: PendingChange[]) {
@@ -273,6 +288,7 @@ export class AssetStore {
     for (const unsubscribe of this.unsubscribers) {
       unsubscribe();
     }
+    this.unsubscribers = [];
   }
 
   private getPendingChangeBatches() {
@@ -360,8 +376,10 @@ export class AssetStore {
     if (bucketListener) {
       this.addListener(bucketListener);
     }
-    //  uncaught rejection go away
-    this.complete.catch(() => void 0);
+    await this.initialiazeTimeBuckets();
+  }
+
+  async initialiazeTimeBuckets() {
     this.timelineHeight = 0;
     this.buckets = [];
     this.assets = [];
@@ -379,6 +397,27 @@ export class AssetStore {
     this.initialized = true;
   }
 
+  async updateOptions(options: AssetStoreOptions) {
+    if (!this.initialized) {
+      this.setOptions(options);
+      return;
+    }
+    // TODO: don't call updateObjects frequently after
+    // init - cancelation of the initialize tasks isn't
+    // performed right now, and will cause issues if
+    // multiple updateOptions() calls are interleved.
+    await this.complete;
+    this.taskManager.destroy();
+    this.taskManager = new AssetGridTaskManager(this);
+    this.initialized = false;
+    this.viewId = generateId();
+    this.createInitializationSignal();
+    this.setOptions(options);
+    await this.initialiazeTimeBuckets();
+    this.emit(true);
+    await this.initialLayout(true);
+  }
+
   public destroy() {
     this.taskManager.destroy();
     this.listeners = [];
@@ -386,22 +425,21 @@ export class AssetStore {
   }
 
   async updateViewport(viewport: Viewport, force?: boolean) {
-    if (!this.initialized) {
-      return;
-    }
     if (viewport.height === 0 && viewport.width === 0) {
       return;
     }
-
     if (!force && this.viewport.height === viewport.height && this.viewport.width === viewport.width) {
       return;
     }
-
+    await this.complete;
     // changing width invalidates the actual height, and needs to be remeasured, since width changes causes
     // layout reflows.
     const changedWidth = this.viewport.width != viewport.width;
     this.viewport = { ...viewport };
+    await this.initialLayout(changedWidth);
+  }
 
+  private async initialLayout(changedWidth: boolean) {
     for (const bucket of this.buckets) {
       this.updateGeometry(bucket, changedWidth);
     }
@@ -410,7 +448,7 @@ export class AssetStore {
     const loaders = [];
     let height = 0;
     for (const bucket of this.buckets) {
-      if (height >= viewport.height) {
+      if (height >= this.viewport.height) {
         break;
       }
       height += bucket.bucketHeight;
