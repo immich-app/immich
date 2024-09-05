@@ -556,7 +556,7 @@ const HtmlImageElementToBlob = async (imageElement: HTMLImageElement) => {
   throw new Error('Canvas context is null');
 };
 
-const ImageSourceToBlob = async (imageSource: string) => {
+const urlToBlob = async (imageSource: string) => {
   const response = await fetch(imageSource);
   return await response.blob();
 };
