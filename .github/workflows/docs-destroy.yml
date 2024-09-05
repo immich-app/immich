@@ -5,6 +5,7 @@ on:
 
 jobs:
   deploy:
+    name: Docs Destroy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
