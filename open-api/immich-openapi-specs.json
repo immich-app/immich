@@ -8018,6 +8018,9 @@
               }
             ],
             "nullable": true
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -8086,6 +8089,9 @@
           },
           "imageWidth": {
             "type": "integer"
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -10688,6 +10694,9 @@
           "facialRecognition": {
             "type": "boolean"
           },
+          "importFaces": {
+            "type": "boolean"
+          },
           "map": {
             "type": "boolean"
           },
@@ -10721,6 +10730,7 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "importFaces",
           "map",
           "oauth",
           "oauthAutoLaunch",
@@ -11229,6 +11239,13 @@
         ],
         "type": "object"
       },
+      "SourceType": {
+        "enum": [
+          "machine-learning",
+          "exif"
+        ],
+        "type": "string"
+      },
       "StackCreateDto": {
         "properties": {
           "assetIds": {
@@ -11299,6 +11316,9 @@
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
+          "metadata": {
+            "$ref": "#/components/schemas/SystemConfigMetadataDto"
+          },
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
@@ -11338,6 +11358,7 @@
           "logging",
           "machineLearning",
           "map",
+          "metadata",
           "newVersionCheck",
           "notifications",
           "oauth",
@@ -11461,6 +11482,17 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigFacesDto": {
+        "properties": {
+          "import": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "import"
         ],
         "type": "object"
       },
@@ -11653,6 +11685,17 @@
           "darkStyle",
           "enabled",
           "lightStyle"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMetadataDto": {
+        "properties": {
+          "faces": {
+            "$ref": "#/components/schemas/SystemConfigFacesDto"
+          }
+        },
+        "required": [
+          "faces"
         ],
         "type": "object"
       },
