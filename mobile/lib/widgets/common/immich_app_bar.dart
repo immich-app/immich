@@ -185,7 +185,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ),
       actions: [
         if (action != null)
-          Padding(padding: const EdgeInsets.only(right: 20), child: action!),
+          Padding(padding: const EdgeInsets.only(right: 16), child: action!),
         Padding(
           padding: const EdgeInsets.only(right: 20),
           child: buildBackupIndicator(),

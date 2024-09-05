@@ -13,6 +13,7 @@ import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
+import 'package:immich_mobile/pages/collections/collections.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
 import 'package:immich_mobile/pages/common/album_asset_selection.page.dart';
@@ -112,6 +113,10 @@ class AppRouter extends RootStackRouter {
         ),
         AutoRoute(
           page: LibraryRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
+        AutoRoute(
+          page: CollectionsRoute.page,
           guards: [_authGuard, _duplicateGuard],
         ),
       ],

@@ -63,6 +63,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           _ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         case TabEnum.library:
           _ref.read(albumProvider.notifier).getAllAlbums();
+        case TabEnum.collections:
+        // nothing to do
       }
     }
 

@@ -1,11 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-enum TabEnum {
-  home,
-  search,
-  sharing,
-  library,
-}
+enum TabEnum { home, search, sharing, library, collections }
 
 /// Provides the currently active tab
 final tabProvider = StateProvider<TabEnum>(
