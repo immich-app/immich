@@ -298,11 +298,7 @@
       await refreshAlbum();
 
       timelineInteractionStore.clearMultiselect();
-      viewMode = ViewMode.VIEW;
-      await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
-        { replaceState: true, forceNavigate: true },
-      );
+      await setModeToView();
     } catch (error) {
       handleError(error, $t('errors.error_adding_assets_to_album'));
     }
