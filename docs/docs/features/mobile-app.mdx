@@ -27,3 +27,21 @@ The beta release channel allows users to test upcoming changes before they are o
 :::info
 You can enable automatic backup on supported devices. For more information see [Automatic Backup](/docs/features/automatic-backup.md).
 :::
+
+## Album Sync
+
+You can sync or mirror an album from your phone to the Immich server on your account. For example, if you select Recents, Camera and Videos album for backup, the corresponding album with the same name will be created on the server. Once the assets from those albums are uploaded, they will be put into the target albums automatically.
+
+### Album Synchronization Highlights
+
+**One-Way Sync:** Synchronization is one-way, from the device to the server.
+
+**Name Matching:** If an album on the server has the same name as the album on the device, images from the device will be merged with the existing images in the server album.
+
+**Shared Albums:** If the matching album on the server is shared, the new photos merged into the album will also be shared.
+
+**Album Structure:** When an album is created for the first time, its structure is based on the initial state. Future updates made on the phone (such as deleting or repositioning photos) will not be reflected in Immich.
+
+**User-Specific Sync:** Album synchronization is unique to each server user and does not sync between different users or partners.
+
+**Mobile-Only Feature:** Album synchronization is currently only available on mobile. For similar options on a computer, refer to #Libraries for further details.
