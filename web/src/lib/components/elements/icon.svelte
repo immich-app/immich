@@ -16,13 +16,14 @@
   export let ariaLabelledby: string | undefined = undefined;
   export let strokeWidth: number = 0;
   export let strokeColor: string = 'currentColor';
+  export let spin = false;
 </script>
 
 <svg
   width={size}
   height={size}
   {viewBox}
-  class="{className} {flipped ? '-scale-x-100' : ''}"
+  class="{className} {flipped ? '-scale-x-100' : ''} {spin ? 'animate-spin' : ''}"
   {role}
   stroke={strokeColor}
   stroke-width={strokeWidth}

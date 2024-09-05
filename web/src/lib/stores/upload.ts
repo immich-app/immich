@@ -3,32 +3,36 @@ import { UploadState, type UploadAsset } from '../models/upload-asset';
 
 function createUploadStore() {
   const uploadAssets = writable<Array<UploadAsset>>([]);
-
-  const duplicateCounter = writable(0);
-  const successCounter = writable(0);
-  const totalUploadCounter = writable(0);
+  const stats = writable<{ errors: number; duplicates: number; success: number; total: number }>({
+    errors: 0,
+    duplicates: 0,
+    success: 0,
+    total: 0,
+  });
 
   const { subscribe } = uploadAssets;
 
-  const isUploading = derived(uploadAssets, ($uploadAssets) => {
-    return $uploadAssets.length > 0;
-  });
-  const errorsAssets = derived(uploadAssets, (a) => a.filter((e) => e.state === UploadState.ERROR));
-  const errorCounter = derived(errorsAssets, (values) => values.length);
-  const hasError = derived(errorCounter, (values) => values > 0);
+  const isUploading = derived(uploadAssets, (items) => items.length > 0);
+  const isDismissible = derived(uploadAssets, (items) =>
+    items.some((item) => item.state === UploadState.ERROR || item.state === UploadState.DUPLICATED),
+  );
   const remainingUploads = derived(
     uploadAssets,
     (values) => values.filter((a) => a.state === UploadState.PENDING || a.state === UploadState.STARTED).length,
   );
 
-  const addNewUploadAsset = (newAsset: UploadAsset) => {
+  const addItem = (newAsset: UploadAsset) => {
     uploadAssets.update(($assets) => {
       const duplicate = $assets.find((asset) => asset.id === newAsset.id);
       if (duplicate) {
         return $assets.map((asset) => (asset.id === newAsset.id ? newAsset : asset));
       }
 
-      totalUploadCounter.update((c) => c + 1);
+      stats.update((stats) => {
+        stats.total++;
+        return stats;
+      });
+
       $assets.push({
         ...newAsset,
         speed: 0,
@@ -36,6 +40,7 @@ function createUploadStore() {
         progress: 0,
         eta: 0,
       });
+
       return $assets;
     });
   };
@@ -53,7 +58,7 @@ function createUploadStore() {
   };
 
   const markStarted = (id: string) => {
-    updateAsset(id, {
+    updateItem(id, {
       state: UploadState.STARTED,
       startDate: Date.now(),
     });
@@ -70,39 +75,61 @@ function createUploadStore() {
     });
   };
 
-  const updateAsset = (id: string, partialObject: Partial<UploadAsset>) => {
+  const updateItem = (id: string, partialObject: Partial<UploadAsset>) => {
     updateAssetMap(id, (v) => ({ ...v, ...partialObject }));
   };
 
-  const removeUploadAsset = (id: string) => {
+  const removeItem = (id: string) => {
     uploadAssets.update((uploadingAsset) => uploadingAsset.filter((a) => a.id != id));
   };
 
-  const dismissErrors = () => uploadAssets.update((value) => value.filter((e) => e.state !== UploadState.ERROR));
+  const dismissErrors = () =>
+    uploadAssets.update((value) =>
+      value.filter((e) => e.state !== UploadState.ERROR && e.state !== UploadState.DUPLICATED),
+    );
 
-  const resetStore = () => {
+  const reset = () => {
     uploadAssets.set([]);
-    duplicateCounter.set(0);
-    successCounter.set(0);
-    totalUploadCounter.set(0);
+    stats.set({ errors: 0, duplicates: 0, success: 0, total: 0 });
+  };
+
+  const track = (value: 'success' | 'duplicate' | 'error') => {
+    stats.update((stats) => {
+      switch (value) {
+        case 'success': {
+          stats.success++;
+          break;
+        }
+
+        case 'duplicate': {
+          stats.duplicates++;
+          break;
+        }
+
+        case 'error': {
+          stats.errors++;
+          break;
+        }
+      }
+
+      return stats;
+    });
   };
 
   return {
-    subscribe,
-    errorCounter,
-    duplicateCounter,
-    successCounter,
-    totalUploadCounter,
+    stats,
     remainingUploads,
-    hasError,
-    dismissErrors,
+    isDismissible,
     isUploading,
-    resetStore,
-    addNewUploadAsset,
+    track,
+    dismissErrors,
+    reset,
     markStarted,
+    addItem,
+    updateItem,
+    removeItem,
     updateProgress,
-    updateAsset,
-    removeUploadAsset,
+    subscribe,
   };
 }
 
