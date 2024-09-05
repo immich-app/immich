@@ -110,6 +110,7 @@ describe('/server', () => {
         facialRecognition: false,
         map: true,
         reverseGeocoding: true,
+        importFaces: false,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,
