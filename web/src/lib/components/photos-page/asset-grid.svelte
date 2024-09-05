@@ -804,12 +804,13 @@
     class:invisible={showSkeleton}
     style:height={$assetStore.timelineHeight + 'px'}
   >
-    {#each $assetStore.buckets as bucket (bucket.bucketDate)}
+    {#each $assetStore.buckets as bucket (bucket.viewId)}
       {@const isPremeasure = preMeasure.includes(bucket)}
       {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
       <div
         id="bucket"
         use:intersectionObserver={{
+          key: bucket.viewId,
           onIntersect: () => handleIntersect(bucket),
           onSeparate: () => handleSeparate(bucket),
           top: BUCKET_INTERSECTION_ROOT_TOP,
