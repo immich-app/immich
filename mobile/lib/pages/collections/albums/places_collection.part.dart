@@ -7,6 +7,13 @@ class PlacesCollectionPage extends HookConsumerWidget {
   const PlacesCollectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('places'),
+      ),
+      body: const Center(
+        child: Text('places'),
+      ),
+    );
   }
 }

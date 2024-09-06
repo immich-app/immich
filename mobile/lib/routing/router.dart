@@ -240,21 +240,25 @@ class AppRouter extends RootStackRouter {
       page: HeaderSettingsRoute.page,
       guards: [_duplicateGuard],
     ),
-    AutoRoute(
+    CustomRoute(
       page: PeopleCollectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
-    AutoRoute(
+    CustomRoute(
       page: AlbumsCollectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
-    AutoRoute(
+    CustomRoute(
       page: LocalAlbumsCollectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
-    AutoRoute(
+    CustomRoute(
       page: PlacesCollectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
   ];
 }

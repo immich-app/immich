@@ -7,6 +7,13 @@ class AlbumsCollectionPage extends HookConsumerWidget {
   const AlbumsCollectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('albums_collection_page_title'),
+      ),
+      body: const Center(
+        child: Text('albums_collection_page_content'),
+      ),
+    );
   }
 }

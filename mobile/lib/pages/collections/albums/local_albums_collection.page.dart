@@ -7,6 +7,13 @@ class LocalAlbumsCollectionPage extends HookConsumerWidget {
   const LocalAlbumsCollectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('on_this_device'),
+      ),
+      body: const Center(
+        child: Text('on_this_device_content'),
+      ),
+    );
   }
 }
