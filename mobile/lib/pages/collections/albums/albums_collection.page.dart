@@ -39,31 +39,19 @@ class AlbumsCollectionPage extends HookConsumerWidget {
         title: const Text("Albums"),
       ),
       body: ListView(
-        shrinkWrap: true,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const SortButton(),
+              const SizedBox(width: 10),
               IconButton(
+                icon: Icon(
+                  isGrid.value ? Icons.list_rounded : Icons.grid_view_outlined,
+                ),
                 onPressed: toggleViewMode,
-                icon: Icon(isGrid.value ? Icons.list : Icons.grid_view),
               ),
             ],
-          ),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const ScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 32,
-            crossAxisSpacing: 32,
-            children: sorted.map((album) {
-              return AlbumThumbnailCard(
-                album: album,
-                onTap: () =>
-                    context.pushRoute(AlbumViewerRoute(albumId: album.id)),
-              );
-            }).toList(),
           ),
         ],
       ),
