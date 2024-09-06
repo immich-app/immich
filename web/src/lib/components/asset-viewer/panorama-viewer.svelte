@@ -30,7 +30,7 @@
     if (asset.type === AssetTypeEnum.Video) {
       return { source: getAssetOriginalUrl(asset.id) };
     }
-    if (originalImageUrl && alwaysLoadOriginalFile) {
+    if (originalImageUrl && $alwaysLoadOriginalFile) {
       return getAssetOriginalUrl(asset.id);
     }
     const data = await viewAsset({ id: asset.id, size: AssetMediaSize.Preview, key: getKey() });
@@ -51,7 +51,6 @@
       {navbar}
       {adapter}
       {originalImageUrl}
-      {alwaysLoadOriginalFile}
     />
   {:catch}
     {$t('errors.failed_to_load_asset')}

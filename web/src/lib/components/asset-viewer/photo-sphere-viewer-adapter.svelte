@@ -8,6 +8,7 @@
   } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
   import { onDestroy, onMount } from 'svelte';
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
 
   export let panorama: string | { source: string };
   export let originalImageUrl: string | null;
@@ -31,7 +32,7 @@
       fisheye: true,
     });
 
-    if (originalImageUrl) {
+    if (originalImageUrl && !$alwaysLoadOriginalFile) {
       const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
         // zoomLevel range: [0, 100]
         if (Math.round(zoomLevel) >= 75) {
