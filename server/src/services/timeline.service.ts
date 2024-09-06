@@ -68,6 +68,10 @@ export class TimelineService {
       }
     }
 
+    if (dto.tagId) {
+      await requireAccess(this.access, { auth, permission: Permission.TAG_READ, ids: [dto.tagId] });
+    }
+
     if (dto.withPartners) {
       const requestedArchived = dto.isArchived === true || dto.isArchived === undefined;
       const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;

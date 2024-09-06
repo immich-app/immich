@@ -1,38 +1,66 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { TagEntity, TagType } from 'src/entities/tag.entity';
-import { Optional } from 'src/validation';
+import { Transform } from 'class-transformer';
+import { IsHexColor, IsNotEmpty, IsString } from 'class-validator';
+import { TagEntity } from 'src/entities/tag.entity';
+import { Optional, ValidateUUID } from 'src/validation';
 
-export class CreateTagDto {
+export class TagCreateDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
 
-  @IsEnum(TagType)
-  @IsNotEmpty()
-  @ApiProperty({ enumName: 'TagTypeEnum', enum: TagType })
-  type!: TagType;
+  @ValidateUUID({ optional: true, nullable: true })
+  parentId?: string | null;
+
+  @IsHexColor()
+  @Optional({ nullable: true, emptyToNull: true })
+  color?: string;
 }
 
-export class UpdateTagDto {
-  @IsString()
-  @Optional()
-  name?: string;
+export class TagUpdateDto {
+  @Optional({ nullable: true, emptyToNull: true })
+  @IsHexColor()
+  @Transform(({ value }) => (typeof value === 'string' && value[0] !== '#' ? `#${value}` : value))
+  color?: string | null;
+}
+
+export class TagUpsertDto {
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  tags!: string[];
+}
+
+export class TagBulkAssetsDto {
+  @ValidateUUID({ each: true })
+  tagIds!: string[];
+
+  @ValidateUUID({ each: true })
+  assetIds!: string[];
+}
+
+export class TagBulkAssetsResponseDto {
+  @ApiProperty({ type: 'integer' })
+  count!: number;
 }
 
 export class TagResponseDto {
   id!: string;
-  @ApiProperty({ enumName: 'TagTypeEnum', enum: TagType })
-  type!: string;
+  parentId?: string;
   name!: string;
-  userId!: string;
+  value!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+  color?: string;
 }
 
 export function mapTag(entity: TagEntity): TagResponseDto {
   return {
     id: entity.id,
-    type: entity.type,
-    name: entity.name,
-    userId: entity.userId,
+    parentId: entity.parentId ?? undefined,
+    name: entity.value.split('/').at(-1) as string,
+    value: entity.value,
+    createdAt: entity.createdAt,
+    updatedAt: entity.updatedAt,
+    color: entity.color ?? undefined,
   };
 }

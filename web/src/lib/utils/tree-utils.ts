@@ -2,8 +2,13 @@ export interface RecursiveObject {
   [key: string]: RecursiveObject;
 }
 
-export function buildFolderTree(paths: string[]) {
+export const normalizeTreePath = (path: string) => path.replace(/^\//, '').replace(/\/$/, '');
+
+export function buildTree(paths: string[]) {
   const root: RecursiveObject = {};
+
+  paths.sort();
+
   for (const path of paths) {
     const parts = path.split('/');
     let current = root;

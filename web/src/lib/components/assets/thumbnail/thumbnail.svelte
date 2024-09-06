@@ -13,7 +13,6 @@
     mdiCameraBurst,
     mdiCheckCircle,
     mdiHeart,
-    mdiImageBrokenVariant,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
@@ -154,7 +153,7 @@
       return;
     }
     if (dateGroup && assetStore) {
-      assetStore.taskManager.seperatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
+      assetStore.taskManager.separatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
     } else {
       intersecting = false;
     }
@@ -176,7 +175,7 @@
   data-int={intersecting}
   style:width="{width}px"
   style:height="{height}px"
-  class="group focus-visible:outline-none flex overflow-hidden {disabled
+  class="focus-visible:outline-none flex overflow-hidden {disabled
     ? 'bg-gray-300'
     : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 >
@@ -194,6 +193,7 @@
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
     <div
+      class="group"
       class:cursor-not-allowed={disabled}
       class:cursor-pointer={!disabled}
       on:mouseenter={onMouseEnter}
@@ -297,20 +297,14 @@
           </div>
         {/if}
 
-        {#if asset.resized}
-          <ImageThumbnail
-            url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
-            altText={$getAltText(asset)}
-            widthStyle="{width}px"
-            heightStyle="{height}px"
-            curve={selected}
-            onComplete={() => (loaded = true)}
-          />
-        {:else}
-          <div class="absolute flex h-full w-full items-center justify-center p-4 z-10">
-            <Icon path={mdiImageBrokenVariant} size="48" />
-          </div>
-        {/if}
+        <ImageThumbnail
+          url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
+          altText={$getAltText(asset)}
+          widthStyle="{width}px"
+          heightStyle="{height}px"
+          curve={selected}
+          onComplete={() => (loaded = true)}
+        />
 
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">

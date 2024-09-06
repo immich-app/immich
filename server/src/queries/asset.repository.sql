@@ -184,10 +184,12 @@ SELECT
   "AssetEntity__AssetEntity_smartInfo"."tags" AS "AssetEntity__AssetEntity_smartInfo_tags",
   "AssetEntity__AssetEntity_smartInfo"."objects" AS "AssetEntity__AssetEntity_smartInfo_objects",
   "AssetEntity__AssetEntity_tags"."id" AS "AssetEntity__AssetEntity_tags_id",
-  "AssetEntity__AssetEntity_tags"."type" AS "AssetEntity__AssetEntity_tags_type",
-  "AssetEntity__AssetEntity_tags"."name" AS "AssetEntity__AssetEntity_tags_name",
+  "AssetEntity__AssetEntity_tags"."value" AS "AssetEntity__AssetEntity_tags_value",
+  "AssetEntity__AssetEntity_tags"."createdAt" AS "AssetEntity__AssetEntity_tags_createdAt",
+  "AssetEntity__AssetEntity_tags"."updatedAt" AS "AssetEntity__AssetEntity_tags_updatedAt",
+  "AssetEntity__AssetEntity_tags"."color" AS "AssetEntity__AssetEntity_tags_color",
+  "AssetEntity__AssetEntity_tags"."parentId" AS "AssetEntity__AssetEntity_tags_parentId",
   "AssetEntity__AssetEntity_tags"."userId" AS "AssetEntity__AssetEntity_tags_userId",
-  "AssetEntity__AssetEntity_tags"."renameTagId" AS "AssetEntity__AssetEntity_tags_renameTagId",
   "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
   "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
   "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
@@ -197,6 +199,7 @@ SELECT
   "AssetEntity__AssetEntity_faces"."boundingBoxY1" AS "AssetEntity__AssetEntity_faces_boundingBoxY1",
   "AssetEntity__AssetEntity_faces"."boundingBoxX2" AS "AssetEntity__AssetEntity_faces_boundingBoxX2",
   "AssetEntity__AssetEntity_faces"."boundingBoxY2" AS "AssetEntity__AssetEntity_faces_boundingBoxY2",
+  "AssetEntity__AssetEntity_faces"."sourceType" AS "AssetEntity__AssetEntity_faces_sourceType",
   "8258e303a73a72cf6abb13d73fb592dde0d68280"."id" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_id",
   "8258e303a73a72cf6abb13d73fb592dde0d68280"."createdAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_createdAt",
   "8258e303a73a72cf6abb13d73fb592dde0d68280"."updatedAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_updatedAt",
@@ -598,12 +601,6 @@ SELECT
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
-  "files"."id" AS "files_id",
-  "files"."assetId" AS "files_assetId",
-  "files"."createdAt" AS "files_createdAt",
-  "files"."updatedAt" AS "files_updatedAt",
-  "files"."type" AS "files_type",
-  "files"."path" AS "files_path",
   "exifInfo"."assetId" AS "exifInfo_assetId",
   "exifInfo"."description" AS "exifInfo_description",
   "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
@@ -665,7 +662,6 @@ SELECT
   "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
   LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
@@ -692,7 +688,6 @@ SELECT
   )::timestamptz AS "timeBucket"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
   LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
@@ -744,12 +739,6 @@ SELECT
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
-  "files"."id" AS "files_id",
-  "files"."assetId" AS "files_assetId",
-  "files"."createdAt" AS "files_createdAt",
-  "files"."updatedAt" AS "files_updatedAt",
-  "files"."type" AS "files_type",
-  "files"."path" AS "files_path",
   "exifInfo"."assetId" AS "exifInfo_assetId",
   "exifInfo"."description" AS "exifInfo_description",
   "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
@@ -811,7 +800,6 @@ SELECT
   "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
   LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
@@ -865,12 +853,6 @@ SELECT
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
-  "files"."id" AS "files_id",
-  "files"."assetId" AS "files_assetId",
-  "files"."createdAt" AS "files_createdAt",
-  "files"."updatedAt" AS "files_updatedAt",
-  "files"."type" AS "files_type",
-  "files"."path" AS "files_path",
   "exifInfo"."assetId" AS "exifInfo_assetId",
   "exifInfo"."description" AS "exifInfo_description",
   "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
@@ -932,7 +914,6 @@ SELECT
   "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
   LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
@@ -964,7 +945,6 @@ SELECT DISTINCT
   c.city AS "value"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   INNER JOIN "exif" "e" ON "asset"."id" = e."assetId"
   INNER JOIN "cities" "c" ON c.city = "e"."city"
 WHERE
@@ -995,7 +975,6 @@ SELECT DISTINCT
   unnest("si"."tags") AS "value"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   INNER JOIN "smart_info" "si" ON "asset"."id" = si."assetId"
   INNER JOIN "random_tags" "t" ON "si"."tags" @> ARRAY[t.tag]
 WHERE
@@ -1038,12 +1017,6 @@ SELECT
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
-  "files"."id" AS "files_id",
-  "files"."assetId" AS "files_assetId",
-  "files"."createdAt" AS "files_createdAt",
-  "files"."updatedAt" AS "files_updatedAt",
-  "files"."type" AS "files_type",
-  "files"."path" AS "files_path",
   "exifInfo"."assetId" AS "exifInfo_assetId",
   "exifInfo"."description" AS "exifInfo_description",
   "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
@@ -1078,7 +1051,6 @@ SELECT
   "stack"."primaryAssetId" AS "stack_primaryAssetId"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
 WHERE
@@ -1120,12 +1092,6 @@ SELECT
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
-  "files"."id" AS "files_id",
-  "files"."assetId" AS "files_assetId",
-  "files"."createdAt" AS "files_createdAt",
-  "files"."updatedAt" AS "files_updatedAt",
-  "files"."type" AS "files_type",
-  "files"."path" AS "files_path",
   "exifInfo"."assetId" AS "exifInfo_assetId",
   "exifInfo"."description" AS "exifInfo_description",
   "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
@@ -1160,7 +1126,6 @@ SELECT
   "stack"."primaryAssetId" AS "stack_primaryAssetId"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
 WHERE
@@ -1197,12 +1162,6 @@ SELECT
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
-  "files"."id" AS "files_id",
-  "files"."assetId" AS "files_assetId",
-  "files"."createdAt" AS "files_createdAt",
-  "files"."updatedAt" AS "files_updatedAt",
-  "files"."type" AS "files_type",
-  "files"."path" AS "files_path",
   "exifInfo"."assetId" AS "exifInfo_assetId",
   "exifInfo"."description" AS "exifInfo_description",
   "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
@@ -1264,7 +1223,6 @@ SELECT
   "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
 FROM
   "assets" "asset"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
   LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"

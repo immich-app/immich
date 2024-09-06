@@ -36,7 +36,7 @@ class AssetResponseDto {
     this.owner,
     required this.ownerId,
     this.people = const [],
-    required this.resized,
+    this.resized,
     this.smartInfo,
     this.stack,
     this.tags = const [],
@@ -112,7 +112,14 @@ class AssetResponseDto {
 
   List<PersonWithFacesResponseDto> people;
 
-  bool resized;
+  /// This property was deprecated in v1.113.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? resized;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -194,7 +201,7 @@ class AssetResponseDto {
     (owner == null ? 0 : owner!.hashCode) +
     (ownerId.hashCode) +
     (people.hashCode) +
-    (resized.hashCode) +
+    (resized == null ? 0 : resized!.hashCode) +
     (smartInfo == null ? 0 : smartInfo!.hashCode) +
     (stack == null ? 0 : stack!.hashCode) +
     (tags.hashCode) +
@@ -255,7 +262,11 @@ class AssetResponseDto {
     }
       json[r'ownerId'] = this.ownerId;
       json[r'people'] = this.people;
+    if (this.resized != null) {
       json[r'resized'] = this.resized;
+    } else {
+    //  json[r'resized'] = null;
+    }
     if (this.smartInfo != null) {
       json[r'smartInfo'] = this.smartInfo;
     } else {
@@ -309,7 +320,7 @@ class AssetResponseDto {
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
-        resized: mapValueOfType<bool>(json, r'resized')!,
+        resized: mapValueOfType<bool>(json, r'resized'),
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         stack: AssetStackResponseDto.fromJson(json[r'stack']),
         tags: TagResponseDto.listFromJson(json[r'tags']),
@@ -380,7 +391,6 @@ class AssetResponseDto {
     'originalFileName',
     'originalPath',
     'ownerId',
-    'resized',
     'thumbhash',
     'type',
     'updatedAt',

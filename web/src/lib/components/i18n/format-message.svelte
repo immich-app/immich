@@ -11,14 +11,14 @@
     type PluralElement,
     type SelectElement,
   } from '@formatjs/icu-messageformat-parser';
-  import { locale as i18nLocale, json } from 'svelte-i18n';
+  import { locale as i18nLocale, json, type Translations } from 'svelte-i18n';
 
   type MessagePart = {
     message: string;
     tag?: string;
   };
 
-  export let key: string;
+  export let key: Translations;
   export let values: InterpolationValues = {};
 
   const getLocale = (locale?: string | null) => {

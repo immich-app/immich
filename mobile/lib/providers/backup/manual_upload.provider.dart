@@ -6,6 +6,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
+import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -22,6 +24,7 @@ import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
+import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -31,6 +34,7 @@ final manualUploadProvider =
   return ManualUploadNotifier(
     ref.watch(localNotificationService),
     ref.watch(backupProvider.notifier),
+    ref.watch(backupServiceProvider),
     ref,
   );
 });
@@ -39,11 +43,13 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   final Logger _log = Logger("ManualUploadNotifier");
   final LocalNotificationService _localNotificationService;
   final BackupNotifier _backupProvider;
+  final BackupService _backupService;
   final Ref ref;
 
   ManualUploadNotifier(
     this._localNotificationService,
     this._backupProvider,
+    this._backupService,
     this.ref,
   ) : super(
           ManualUploadState(
@@ -115,11 +121,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     }
   }
 
-  void _onAssetUploaded(
-    String deviceAssetId,
-    String deviceId,
-    bool isDuplicated,
-  ) {
+  void _onAssetUploaded(SuccessUploadAsset result) {
     state = state.copyWith(successfulUploads: state.successfulUploads + 1);
     _backupProvider.updateDiskInfo();
   }
@@ -209,9 +211,23 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           );
         }
 
-        Set<AssetEntity> allUploadAssets = allAssetsFromDevice.nonNulls.toSet();
+        final selectedBackupAlbums =
+            _backupService.selectedAlbumsQuery().findAllSync();
+        final excludedBackupAlbums =
+            _backupService.excludedAlbumsQuery().findAllSync();
 
-        if (allUploadAssets.isEmpty) {
+        // Get candidates from selected albums and excluded albums
+        Set<BackupCandidate> candidates =
+            await _backupService.buildUploadCandidates(
+          selectedBackupAlbums,
+          excludedBackupAlbums,
+        );
+
+        // Extrack candidate from allAssetsFromDevice.nonNulls
+        final uploadAssets = candidates
+            .where((e) => allAssetsFromDevice.nonNulls.contains(e.asset));
+
+        if (uploadAssets.isEmpty) {
           debugPrint("[_startUpload] No Assets to upload - Abort Process");
           _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
           return false;
@@ -221,7 +237,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           progressInPercentage: 0,
           progressInFileSize: "0 B / 0 B",
           progressInFileSpeed: 0,
-          totalAssetsToUpload: allUploadAssets.length,
+          totalAssetsToUpload: uploadAssets.length,
           successfulUploads: 0,
           currentAssetIndex: 0,
           currentUploadAsset: CurrentUploadAsset(
@@ -250,13 +266,13 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
         final bool ok = await ref.read(backupServiceProvider).backupAsset(
-              allUploadAssets,
+              uploadAssets,
               state.cancelToken,
-              pmProgressHandler,
-              _onAssetUploaded,
-              _onProgress,
-              _onSetCurrentBackupAsset,
-              _onAssetUploadError,
+              pmProgressHandler: pmProgressHandler,
+              onSuccess: _onAssetUploaded,
+              onProgress: _onProgress,
+              onCurrentAsset: _onSetCurrentBackupAsset,
+              onError: _onAssetUploadError,
             );
 
         // Close detailed notification

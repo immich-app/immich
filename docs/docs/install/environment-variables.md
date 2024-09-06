@@ -125,7 +125,7 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.
 
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
-More info can be found in the upstream [ioredis][redis-api] documentation.
+More info can be found in the upstream [ioredis] documentation.
 
 When `REDIS_URL` or `REDIS_SOCKET` are defined, the `REDIS_HOSTNAME`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, and `REDIS_DBINDEX` variables are ignored.
 :::
@@ -159,25 +159,28 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                                                         |                Default                | Containers       |
-| :----------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-----------------------------------: | :--------------- |
-| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0)                                  |                 `300`                 | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)                                   |                 `10`                  | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                                                               |               `/cache`                | machine learning |
-| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)                                         |          number of CPU cores          | machine learning |
-| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                                                 |                  `1`                  | machine learning |
-| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                                                          |                  `2`                  | machine learning |
-| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                                                 |                  `1`                  | machine learning |
-| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed                                      | `120` (`300` if using OpenVINO image) | machine learning |
-| `MACHINE_LEARNING_PRELOAD__CLIP`                 | Name of a CLIP model to be preloaded and kept in cache                                              |                                       | machine learning |
-| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`   | Name of a facial recognition model to be preloaded and kept in cache                                |                                       | machine learning |
-| `MACHINE_LEARNING_ANN`                           | Enable ARM-NN hardware acceleration if supported                                                    |                `True`                 | machine learning |
-| `MACHINE_LEARNING_ANN_FP16_TURBO`                | Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN) |                `False`                | machine learning |
-| `MACHINE_LEARNING_ANN_TUNING_LEVEL`              | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                        |                  `2`                  | machine learning |
+| Variable                                                  | Description                                                                                         |                Default                | Containers       |
+| :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-----------------------------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`                              | Inactivity time (s) before a model is unloaded (disabled if \<= 0)                                  |                 `300`                 | machine learning |
+| `MACHINE_LEARNING_MODEL_TTL_POLL_S`                       | Interval (s) between checks for the model TTL (disabled if \<= 0)                                   |                 `10`                  | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                           | Directory where models are downloaded                                                               |               `/cache`                | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup>          | Thread count of the request thread pool (disabled if \<= 0)                                         |          number of CPU cores          | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`                 | Number of parallel model operations                                                                 |                  `1`                  | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`                 | Number of threads for each model operation                                                          |                  `2`                  | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>                  | Number of worker processes to spawn                                                                 |                  `1`                  | machine learning |
+| `MACHINE_LEARNING_HTTP_KEEPALIVE_TIMEOUT_S`<sup>\*3</sup> | HTTP Keep-alive time in seconds                                                                     |                  `2`                  | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                         | Maximum time (s) of unresponsiveness before a worker is killed                                      | `120` (`300` if using OpenVINO image) | machine learning |
+| `MACHINE_LEARNING_PRELOAD__CLIP`                          | Name of a CLIP model to be preloaded and kept in cache                                              |                                       | machine learning |
+| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`            | Name of a facial recognition model to be preloaded and kept in cache                                |                                       | machine learning |
+| `MACHINE_LEARNING_ANN`                                    | Enable ARM-NN hardware acceleration if supported                                                    |                `True`                 | machine learning |
+| `MACHINE_LEARNING_ANN_FP16_TURBO`                         | Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN) |                `False`                | machine learning |
+| `MACHINE_LEARNING_ANN_TUNING_LEVEL`                       | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                        |                  `2`                  | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 
 \*2: Since each process duplicates models in memory, changing this is not recommended unless you have abundant memory to go around.
+
+\*3: For scenarios like HPA in K8S. https://github.com/immich-app/immich/discussions/12064
 
 :::info
 
@@ -223,4 +226,4 @@ to use use a Docker secret for the password in the Redis container.
 [docker-secrets-example]: https://github.com/docker-library/redis/issues/46#issuecomment-335326234
 [docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
 [docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
-[redis-api]: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+[ioredis]: https://ioredis.readthedocs.io/en/latest/README/#connect-to-redis

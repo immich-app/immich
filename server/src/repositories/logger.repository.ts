@@ -3,7 +3,7 @@ import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-en
 import { ClsService } from 'nestjs-cls';
 import { LogLevel } from 'src/config';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { LogColor } from 'src/utils/logger-colors';
+import { LogColor } from 'src/utils/logger';
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 

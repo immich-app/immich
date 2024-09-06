@@ -42,7 +42,7 @@ export class ServerService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'onBootstrap' })
+  @OnEmit({ event: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {
@@ -90,7 +90,7 @@ export class ServerService {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications } =
+    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications } =
       await this.configCore.getConfig({ withCache: false });
 
     return {
@@ -99,6 +99,7 @@ export class ServerService {
       duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
       reverseGeocoding: reverseGeocoding.enabled,
+      importFaces: metadata.faces.import,
       sidecar: true,
       search: true,
       trash: trash.enabled,

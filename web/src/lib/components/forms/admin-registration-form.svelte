@@ -6,6 +6,7 @@
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
   import { t } from 'svelte-i18n';
+  import { retrieveServerConfig } from '$lib/stores/server-config.store';
 
   let email = '';
   let password = '';
@@ -31,6 +32,7 @@
 
       try {
         await signUpAdmin({ signUpDto: { email, password, name } });
+        await retrieveServerConfig();
         await goto(AppRoute.AUTH_LOGIN);
       } catch (error) {
         handleError(error, $t('errors.unable_to_create_admin_account'));

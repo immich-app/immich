@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-
-  import { fade } from 'svelte/transition';
-
   import { thumbhash } from '$lib/actions/thumbhash';
+  import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
-  import { mdiEyeOffOutline, mdiImageBrokenVariant } from '@mdi/js';
+  import { mdiEyeOffOutline } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
 
   export let url: string;
   export let altText: string | undefined;
@@ -45,12 +44,20 @@
       setLoaded();
     }
   });
+
+  $: optionalClasses = [
+    curve && 'rounded-xl',
+    circle && 'rounded-full',
+    shadow && 'shadow-lg',
+    (circle || !heightStyle) && 'aspect-square',
+    border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+  ]
+    .filter(Boolean)
+    .join(' ');
 </script>
 
 {#if errored}
-  <div class="absolute flex h-full w-full items-center justify-center p-4 z-10">
-    <Icon path={mdiImageBrokenVariant} size="48" />
-  </div>
+  <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
 {:else}
   <img
     bind:this={img}
@@ -64,11 +71,7 @@
     src={url}
     alt={loaded || errored ? altText : ''}
     {title}
-    class="object-cover {border ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary' : ''}"
-    class:rounded-xl={curve}
-    class:shadow-lg={shadow}
-    class:rounded-full={circle}
-    class:aspect-square={circle || !heightStyle}
+    class="object-cover {optionalClasses}"
     class:opacity-0={!thumbhash && !loaded}
     draggable="false"
   />

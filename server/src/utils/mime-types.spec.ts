@@ -30,6 +30,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/kdc', extension: '.kdc' },
     { mimetype: 'image/mrw', extension: '.mrw' },
     { mimetype: 'image/nef', extension: '.nef' },
+    { mimetype: 'image/nrw', extension: '.nrw' },
     { mimetype: 'image/orf', extension: '.orf' },
     { mimetype: 'image/ori', extension: '.ori' },
     { mimetype: 'image/pef', extension: '.pef' },

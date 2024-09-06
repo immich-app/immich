@@ -14,7 +14,6 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { AssetType } from 'src/enum';
-import { getAssetFiles } from 'src/utils/asset.util';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export class SanitizedAssetResponseDto {
@@ -23,7 +22,6 @@ export class SanitizedAssetResponseDto {
   type!: AssetType;
   thumbhash!: string | null;
   originalMimeType?: string;
-  resized!: boolean;
   localDateTime!: Date;
   duration!: string;
   livePhotoVideoId?: string | null;
@@ -55,6 +53,9 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   checksum!: string;
   stack?: AssetStackResponseDto | null;
   duplicateId?: string | null;
+
+  @PropertyLifecycle({ deprecatedAt: 'v1.113.0' })
+  resized?: boolean;
 }
 
 export class AssetStackResponseDto {
@@ -112,7 +113,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash?.toString('base64') ?? null,
       localDateTime: entity.localDateTime,
-      resized: !!getAssetFiles(entity.files).previewFile,
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
@@ -131,7 +131,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
-    resized: !!getAssetFiles(entity.files).previewFile,
     thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
@@ -144,7 +143,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
-    tags: entity.tags?.map(mapTag),
+    tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
@@ -152,6 +151,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
+    resized: true,
   };
 }
 

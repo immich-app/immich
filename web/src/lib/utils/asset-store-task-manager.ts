@@ -256,9 +256,9 @@ export class AssetGridTaskManager {
     bucketTask.scheduleIntersected(componentId, task);
   }
 
-  seperatedBucket(componentId: string, bucket: AssetBucket, seperated: Task) {
+  separatedBucket(componentId: string, bucket: AssetBucket, separated: Task) {
     const bucketTask = this.getOrCreateBucketTask(bucket);
-    bucketTask.scheduleSeparated(componentId, seperated);
+    bucketTask.scheduleSeparated(componentId, separated);
   }
 
   intersectedDateGroup(componentId: string, dateGroup: DateGroup, intersected: Task) {
@@ -266,9 +266,9 @@ export class AssetGridTaskManager {
     bucketTask.intersectedDateGroup(componentId, dateGroup, intersected);
   }
 
-  seperatedDateGroup(componentId: string, dateGroup: DateGroup, seperated: Task) {
+  separatedDateGroup(componentId: string, dateGroup: DateGroup, separated: Task) {
     const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
-    bucketTask.separatedDateGroup(componentId, dateGroup, seperated);
+    bucketTask.separatedDateGroup(componentId, dateGroup, separated);
   }
 
   intersectedThumbnail(componentId: string, dateGroup: DateGroup, asset: AssetResponseDto, intersected: Task) {
@@ -277,16 +277,16 @@ export class AssetGridTaskManager {
     dateGroupTask.intersectedThumbnail(componentId, asset, intersected);
   }
 
-  seperatedThumbnail(componentId: string, dateGroup: DateGroup, asset: AssetResponseDto, seperated: Task) {
+  separatedThumbnail(componentId: string, dateGroup: DateGroup, asset: AssetResponseDto, separated: Task) {
     const bucketTask = this.getOrCreateBucketTask(dateGroup.bucket);
     const dateGroupTask = bucketTask.getOrCreateDateGroupTask(dateGroup);
-    dateGroupTask.separatedThumbnail(componentId, asset, seperated);
+    dateGroupTask.separatedThumbnail(componentId, asset, separated);
   }
 }
 
 class IntersectionTask {
   internalTaskManager: InternalTaskManager;
-  seperatedKey;
+  separatedKey;
   intersectedKey;
   priority;
 
@@ -295,7 +295,7 @@ class IntersectionTask {
 
   constructor(internalTaskManager: InternalTaskManager, keyPrefix: string, key: string, priority: number) {
     this.internalTaskManager = internalTaskManager;
-    this.seperatedKey = keyPrefix + ':s:' + key;
+    this.separatedKey = keyPrefix + ':s:' + key;
     this.intersectedKey = keyPrefix + ':i:' + key;
     this.priority = priority;
   }
@@ -315,7 +315,7 @@ class IntersectionTask {
     return { task: execTask, cleanup };
   }
 
-  trackSeperatedTask(componentId: string, task: Task) {
+  trackSeparatedTask(componentId: string, task: Task) {
     const execTask = () => {
       if (this.intersected) {
         return;
@@ -325,14 +325,14 @@ class IntersectionTask {
     this.separated = execTask;
     const cleanup = () => {
       this.separated = undefined;
-      this.internalTaskManager.deleteFromComponentTasks(componentId, this.seperatedKey);
+      this.internalTaskManager.deleteFromComponentTasks(componentId, this.separatedKey);
     };
     return { task: execTask, cleanup };
   }
 
   removePendingSeparated() {
     if (this.separated) {
-      this.internalTaskManager.removeSeparateTask(this.seperatedKey);
+      this.internalTaskManager.removeSeparateTask(this.separatedKey);
     }
   }
   removePendingIntersected() {
@@ -350,7 +350,7 @@ class IntersectionTask {
     this.internalTaskManager.queueScrollSensitiveTask({
       task,
       cleanup,
-      componentId: componentId,
+      componentId,
       priority: this.priority,
       taskId: this.intersectedKey,
     });
@@ -363,12 +363,12 @@ class IntersectionTask {
       return;
     }
 
-    const { task, cleanup } = this.trackSeperatedTask(componentId, separated);
+    const { task, cleanup } = this.trackSeparatedTask(componentId, separated);
     this.internalTaskManager.queueSeparateTask({
       task,
       cleanup,
-      componentId: componentId,
-      taskId: this.seperatedKey,
+      componentId,
+      taskId: this.separatedKey,
     });
   }
 }
@@ -448,9 +448,9 @@ class DateGroupTask extends IntersectionTask {
     thumbnailTask.scheduleIntersected(componentId, intersected);
   }
 
-  separatedThumbnail(componentId: string, asset: AssetResponseDto, seperated: Task) {
+  separatedThumbnail(componentId: string, asset: AssetResponseDto, separated: Task) {
     const thumbnailTask = this.getOrCreateThumbnailTask(asset);
-    thumbnailTask.scheduleSeparated(componentId, seperated);
+    thumbnailTask.scheduleSeparated(componentId, separated);
   }
 }
 class ThumbnailTask extends IntersectionTask {

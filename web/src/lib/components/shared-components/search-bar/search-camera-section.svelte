@@ -18,13 +18,12 @@
 
   $: makeFilter = filters.make;
   $: modelFilter = filters.model;
-  $: handlePromiseError(updateMakes(modelFilter));
+  $: handlePromiseError(updateMakes());
   $: handlePromiseError(updateModels(makeFilter));
 
-  async function updateMakes(model?: string) {
+  async function updateMakes() {
     const results: Array<string | null> = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraMake,
-      model,
       includeNull: true,
     });
 

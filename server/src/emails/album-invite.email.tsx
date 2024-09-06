@@ -1,8 +1,8 @@
 import { Img, Link, Section, Text } from '@react-email/components';
 import * as React from 'react';
+import { ImmichButton } from 'src/emails/components/button.component';
+import ImmichLayout from 'src/emails/components/immich.layout';
 import { AlbumInviteEmailProps } from 'src/interfaces/notification.interface';
-import { ImmichButton } from './components/button.component';
-import ImmichLayout from './components/immich.layout';
 
 export const AlbumInviteEmail = ({
   baseUrl,

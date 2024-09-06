@@ -11,6 +11,7 @@ export interface IAccessRepositoryMock {
   partner: Mocked<IAccessRepository['partner']>;
   stack: Mocked<IAccessRepository['stack']>;
   timeline: Mocked<IAccessRepository['timeline']>;
+  tag: Mocked<IAccessRepository['tag']>;
 }
 
 export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
@@ -57,6 +58,10 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
 
     timeline: {
       checkPartnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    tag: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
     },
   };
 };

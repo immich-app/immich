@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
@@ -92,7 +92,7 @@ export class SearchService {
       },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
@@ -111,7 +111,7 @@ export class SearchService {
       { ...dto, userIds, embedding },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
@@ -121,26 +121,27 @@ export class SearchService {
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
-    const results = await this.getSuggestions(auth.user.id, dto);
+    const userIds = await this.getUserIdsToSearch(auth);
+    const results = await this.getSuggestions(userIds, dto);
     return results.filter((result) => (dto.includeNull ? true : result !== null));
   }
 
-  private getSuggestions(userId: string, dto: SearchSuggestionRequestDto) {
+  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.metadataRepository.getCountries(userId);
+        return this.metadataRepository.getCountries(userIds);
       }
       case SearchSuggestionType.STATE: {
-        return this.metadataRepository.getStates(userId, dto.country);
+        return this.metadataRepository.getStates(userIds, dto.country);
       }
       case SearchSuggestionType.CITY: {
-        return this.metadataRepository.getCities(userId, dto.country, dto.state);
+        return this.metadataRepository.getCities(userIds, dto.country, dto.state);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.metadataRepository.getCameraMakes(userId, dto.model);
+        return this.metadataRepository.getCameraMakes(userIds, dto.model);
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.metadataRepository.getCameraModels(userId, dto.make);
+        return this.metadataRepository.getCameraModels(userIds, dto.make);
       }
       default: {
         return [];
@@ -157,13 +158,13 @@ export class SearchService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: AssetEntity[], nextPage: string | null): SearchResponseDto {
+  private mapResponse(assets: AssetEntity[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
         total: assets.length,
         count: assets.length,
-        items: assets.map((asset) => mapAsset(asset)),
+        items: assets.map((asset) => mapAsset(asset, options)),
         facets: [],
         nextPage,
       },

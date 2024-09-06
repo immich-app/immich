@@ -4,9 +4,9 @@
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
+  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -25,14 +25,13 @@
     getActivities,
     getActivityStatistics,
     getAllAlbums,
+    getStack,
     runAssetJobs,
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
-    getStack,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { mdiImageBrokenVariant } from '@mdi/js';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -42,13 +41,13 @@
   import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
+  import CropArea from './editor/crop-tool/crop-area.svelte';
+  import EditorPanel from './editor/editor-panel.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-  import EditorPanel from './editor/editor-panel.svelte';
-  import CropArea from './editor/crop-tool/crop-area.svelte';
-  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
+
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] = [];
@@ -463,6 +462,8 @@
             bind:copyImage
             asset={previewStackedAsset}
             {preloadAssets}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
             on:close={closeViewer}
             haveFadeTransition={false}
             {sharedLink}
@@ -473,6 +474,8 @@
             checksum={previewStackedAsset.checksum}
             projectionType={previewStackedAsset.exifInfo?.projectionType}
             loopVideo={true}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
             on:close={closeViewer}
             on:onVideoEnded={() => navigateAsset()}
             on:onVideoStarted={handleVideoStarted}
@@ -481,21 +484,15 @@
       {/key}
     {:else}
       {#key asset.id}
-        {#if !asset.resized}
-          <div class="flex h-full w-full justify-center">
-            <div
-              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-            >
-              <Icon path={mdiImageBrokenVariant} size="25%" />
-            </div>
-          </div>
-        {:else if asset.type === AssetTypeEnum.Image}
+        {#if asset.type === AssetTypeEnum.Image}
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
               checksum={asset.checksum}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
               on:close={closeViewer}
               on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
             />
@@ -506,7 +503,16 @@
           {:else if isShowEditor && selectedEditType === 'crop'}
             <CropArea {asset} />
           {:else}
-            <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
+            <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
+              {asset}
+              {preloadAssets}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              on:close={closeViewer}
+              {sharedLink}
+            />
           {/if}
         {:else}
           <VideoViewer
@@ -514,6 +520,8 @@
             checksum={asset.checksum}
             projectionType={asset.exifInfo?.projectionType}
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
             on:close={closeViewer}
             on:onVideoEnded={() => navigateAsset()}
             on:onVideoStarted={handleVideoStarted}

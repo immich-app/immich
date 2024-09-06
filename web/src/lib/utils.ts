@@ -33,7 +33,7 @@ interface DownloadRequestOptions<T = unknown> {
   onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
-export const initApp = async () => {
+export const initLanguage = async () => {
   const preferenceLang = get(lang);
   for (const { code, loader } of langs) {
     register(code, loader);
@@ -156,7 +156,7 @@ export const getJobName = derived(t, ($t) => {
 let _key: string | undefined;
 let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setKey = (key: string) => (_key = key);
+export const setKey = (key?: string) => (_key = key);
 export const getKey = (): string | undefined => _key;
 export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
 export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;

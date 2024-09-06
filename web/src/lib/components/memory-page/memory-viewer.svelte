@@ -28,6 +28,7 @@
     mdiChevronRight,
     mdiChevronUp,
     mdiDotsVertical,
+    mdiImageSearch,
     mdiPause,
     mdiPlay,
     mdiPlus,
@@ -153,7 +154,9 @@
 <svelte:window
   use:shortcuts={[
     { shortcut: { key: 'ArrowRight' }, onShortcut: () => canGoForward && toNext() },
+    { shortcut: { key: 'd' }, onShortcut: () => canGoForward && toNext() },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: () => canGoBack && toPrevious() },
+    { shortcut: { key: 'a' }, onShortcut: () => canGoBack && toPrevious() },
     { shortcut: { key: 'Escape' }, onShortcut: () => goto(AppRoute.PHOTOS) },
   ]}
 />
@@ -299,6 +302,19 @@
                 draggable="false"
               />
             {/key}
+
+            <div
+              class="absolute bottom-6 right-6 transition-all"
+              class:opacity-0={galleryInView}
+              class:opacity-100={!galleryInView}
+            >
+              <CircleIconButton
+                href="{AppRoute.PHOTOS}?at={currentAsset.id}"
+                icon={mdiImageSearch}
+                title={$t('view_in_timeline')}
+                color="light"
+              />
+            </div>
             <!-- CONTROL BUTTONS -->
             {#if canGoBack}
               <div class="absolute top-1/2 left-0 ml-4">

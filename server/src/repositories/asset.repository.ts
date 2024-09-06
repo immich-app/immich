@@ -383,7 +383,7 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql(
     ...Object.values(WithProperty)
-      .filter((property) => property !== WithProperty.IS_OFFLINE)
+      .filter((property) => property !== WithProperty.IS_OFFLINE && property !== WithProperty.IS_ONLINE)
       .map((property) => ({
         name: property,
         params: [DummyValue.PAGINATION, property],
@@ -395,7 +395,7 @@ export class AssetRepository implements IAssetRepository {
 
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
-        relations = { jobStatus: true };
+        relations = { jobStatus: true, files: true };
         where = [
           { jobStatus: { previewAt: IsNull() }, isVisible: true },
           { jobStatus: { thumbnailAt: IsNull() }, isVisible: true },
@@ -527,7 +527,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
+  getWith(
+    pagination: PaginationOptions,
+    property: WithProperty,
+    libraryId?: string,
+    withDeleted = false,
+  ): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
@@ -539,7 +544,14 @@ export class AssetRepository implements IAssetRepository {
         if (!libraryId) {
           throw new Error('Library id is required when finding offline assets');
         }
-        where = [{ isOffline: true, libraryId: libraryId }];
+        where = [{ isOffline: true, libraryId }];
+        break;
+      }
+      case WithProperty.IS_ONLINE: {
+        if (!libraryId) {
+          throw new Error('Library id is required when finding online assets');
+        }
+        where = [{ isOffline: false, libraryId }];
         break;
       }
 
@@ -550,6 +562,7 @@ export class AssetRepository implements IAssetRepository {
 
     return paginate(this.repository, pagination, {
       where,
+      withDeleted,
       order: {
         // Ensures correct order when paginating
         createdAt: 'ASC',
@@ -710,13 +723,19 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: AssetBuilderOptions) {
-    const builder = this.repository
-      .createQueryBuilder('asset')
-      .where('asset.isVisible = true')
-      .leftJoinAndSelect('asset.files', 'files');
+    const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
 
     if (options.assetType !== undefined) {
       builder.andWhere('asset.type = :assetType', { assetType: options.assetType });
+    }
+
+    if (options.tagId) {
+      builder.innerJoin(
+        'asset.tags',
+        'asset_tags',
+        'asset_tags.id IN (SELECT id_descendant FROM tags_closure WHERE id_ancestor = :tagId)',
+        { tagId: options.tagId },
+      );
     }
 
     let stackJoined = false;
