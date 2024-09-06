@@ -152,7 +152,7 @@
   ]}
 />
 {#if imageError}
-  <BrokenAsset square />
+  <BrokenAsset class="text-xl" />
 {/if}
 <!-- svelte-ignore a11y-missing-attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />

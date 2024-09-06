@@ -5,7 +5,6 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   export let url: string;
@@ -48,9 +47,7 @@
 </script>
 
 {#if errored}
-  <BrokenAsset>
-    <div slot="message" class="absolute top-2/3">{$t('error_loading_image')}</div>
-  </BrokenAsset>
+  <BrokenAsset />
 {:else}
   <img
     bind:this={img}
