@@ -8,17 +8,17 @@
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { isWebCompatibleImage, canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { canCopyImagesToClipboard, copyImageToClipboard } from 'copy-image-clipboard';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { type SwipeCustomEvent, swipe } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
@@ -81,23 +81,19 @@
   };
 
   copyImage = async () => {
-    if (!canCopyImagesToClipboard()) {
+    if (!canCopyImageToClipboard()) {
       return;
     }
 
     try {
-      await copyImageToClipboard(assetFileUrl);
+      await copyImageToClipboard($photoViewer ?? assetFileUrl);
       notificationController.show({
         type: NotificationType.Info,
         message: $t('copied_image_to_clipboard'),
         timeout: 3000,
       });
     } catch (error) {
-      console.error('Error [photo-viewer]:', error);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: 'Copying image to clipboard failed.',
-      });
+      handleError(error, $t('copy_error'));
     }
   };
 
@@ -152,7 +148,7 @@
   ]}
 />
 {#if imageError}
-  <BrokenAsset square />
+  <BrokenAsset class="text-xl" />
 {/if}
 <!-- svelte-ignore a11y-missing-attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
@@ -169,7 +165,13 @@
       <LoadingSpinner />
     </div>
   {:else if !imageError}
-    <div use:zoomImageAction class="h-full w-full" transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}>
+    <div
+      use:zoomImageAction
+      use:swipe
+      on:swipe={onSwipe}
+      class="h-full w-full"
+      transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
+    >
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
           src={assetFileUrl}
@@ -181,8 +183,6 @@
       <img
         bind:this={$photoViewer}
         src={assetFileUrl}
-        use:swipe
-        on:swipe={onSwipe}
         alt={$getAltText(asset)}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'

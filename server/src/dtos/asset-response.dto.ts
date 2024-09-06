@@ -53,6 +53,9 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   checksum!: string;
   stack?: AssetStackResponseDto | null;
   duplicateId?: string | null;
+
+  @PropertyLifecycle({ deprecatedAt: 'v1.113.0' })
+  resized?: boolean;
 }
 
 export class AssetStackResponseDto {
@@ -148,6 +151,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
+    resized: true,
   };
 }
 

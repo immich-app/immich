@@ -52,7 +52,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       timeout: 5000,
       message:
         count > 0
-          ? $t('assets_added_to_album_count', { values: { count: count } })
+          ? $t('assets_added_to_album_count', { values: { count } })
           : $t('assets_were_part_of_album_count', { values: { count: assetIds.length } }),
       button: {
         text: $t('view_album'),
@@ -264,7 +264,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       downloadBlob(data, filename);
     } catch (error) {
-      handleError(error, $t('errors.error_downloading', { values: { filename: filename } }));
+      handleError(error, $t('errors.error_downloading', { values: { filename } }));
       downloadManager.clear(downloadKey);
     } finally {
       setTimeout(() => downloadManager.clear(downloadKey), 5000);
@@ -526,4 +526,42 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
 
 export const delay = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const canCopyImageToClipboard = (): boolean => {
+  return !!(navigator.clipboard && window.ClipboardItem);
+};
+
+const imgToBlob = async (imageElement: HTMLImageElement) => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  canvas.width = imageElement.naturalWidth;
+  canvas.height = imageElement.naturalHeight;
+
+  if (context) {
+    context.drawImage(imageElement, 0, 0);
+
+    return await new Promise<Blob>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          throw new Error('Canvas conversion to Blob failed');
+        }
+      });
+    });
+  }
+
+  throw new Error('Canvas context is null');
+};
+
+const urlToBlob = async (imageSource: string) => {
+  const response = await fetch(imageSource);
+  return await response.blob();
+};
+
+export const copyImageToClipboard = async (source: HTMLImageElement | string) => {
+  const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
+  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 };

@@ -117,7 +117,7 @@ export class MediaService {
             continue;
           }
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+          await this.personRepository.update([{ id: person.id, faceAssetId: face.id }]);
         }
 
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
@@ -176,7 +176,7 @@ export class MediaService {
   async handleGeneratePreview({ id }: IEntityJob): Promise<JobStatus> {
     const [{ image }, [asset]] = await Promise.all([
       this.configCore.getConfig({ withCache: true }),
-      this.assetRepository.getByIds([id], { exifInfo: true }),
+      this.assetRepository.getByIds([id], { exifInfo: true, files: true }),
     ]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -255,9 +255,12 @@ export class MediaService {
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
       }
     }
+
+    const assetLabel = asset.isExternal ? asset.originalPath : asset.id;
     this.logger.log(
-      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${asset.id}`,
+      `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} ${type} for asset ${assetLabel}`,
     );
+
     return path;
   }
 

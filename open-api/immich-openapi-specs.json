@@ -7394,7 +7394,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.112.1",
+    "version": "1.114.0",
     "contact": {}
   },
   "tags": [],
@@ -8018,6 +8018,9 @@
               }
             ],
             "nullable": true
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -8086,6 +8089,9 @@
           },
           "imageWidth": {
             "type": "integer"
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -8394,6 +8400,11 @@
               "$ref": "#/components/schemas/PersonWithFacesResponseDto"
             },
             "type": "array"
+          },
+          "resized": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.113.0",
+            "type": "boolean"
           },
           "smartInfo": {
             "$ref": "#/components/schemas/SmartInfoResponseDto"
@@ -10683,6 +10694,9 @@
           "facialRecognition": {
             "type": "boolean"
           },
+          "importFaces": {
+            "type": "boolean"
+          },
           "map": {
             "type": "boolean"
           },
@@ -10716,6 +10730,7 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "importFaces",
           "map",
           "oauth",
           "oauthAutoLaunch",
@@ -11224,6 +11239,13 @@
         ],
         "type": "object"
       },
+      "SourceType": {
+        "enum": [
+          "machine-learning",
+          "exif"
+        ],
+        "type": "string"
+      },
       "StackCreateDto": {
         "properties": {
           "assetIds": {
@@ -11294,6 +11316,9 @@
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
+          "metadata": {
+            "$ref": "#/components/schemas/SystemConfigMetadataDto"
+          },
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
@@ -11333,6 +11358,7 @@
           "logging",
           "machineLearning",
           "map",
+          "metadata",
           "newVersionCheck",
           "notifications",
           "oauth",
@@ -11456,6 +11482,17 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigFacesDto": {
+        "properties": {
+          "import": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "import"
         ],
         "type": "object"
       },
@@ -11648,6 +11685,17 @@
           "darkStyle",
           "enabled",
           "lightStyle"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMetadataDto": {
+        "properties": {
+          "faces": {
+            "$ref": "#/components/schemas/SystemConfigFacesDto"
+          }
+        },
+        "required": [
+          "faces"
         ],
         "type": "object"
       },
@@ -12017,6 +12065,9 @@
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "parentId": {
             "type": "string"
           },
           "updatedAt": {

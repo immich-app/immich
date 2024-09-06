@@ -9,9 +9,11 @@ import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType } from 'src/enum';
+import { PersonEntity } from 'src/entities/person.entity';
+import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -37,6 +39,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
 
@@ -104,7 +107,7 @@ export class MetadataService {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) private tagRepository: ITagRepository,
@@ -215,6 +218,7 @@ export class MetadataService {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
+    const { metadata } = await this.configCore.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -252,6 +256,10 @@ export class MetadataService {
       assetId: asset.id,
       metadataExtractedAt: new Date(),
     });
+
+    if (isFaceImportEnabled(metadata)) {
+      await this.applyTaggedFaces(asset, exifTags);
+    }
 
     return JobStatus.SUCCESS;
   }
@@ -352,25 +360,29 @@ export class MetadataService {
   }
 
   private async applyTagList(asset: AssetEntity, exifTags: ImmichTags) {
-    const tags: string[] = [];
-
+    const tags: unknown[] = [];
     if (exifTags.TagsList) {
       tags.push(...exifTags.TagsList);
-    }
-
-    if (exifTags.Keywords) {
+    } else if (exifTags.HierarchicalSubject) {
+      tags.push(
+        exifTags.HierarchicalSubject.map((tag) =>
+          tag
+            // convert | to /
+            .replaceAll('/', '<PLACEHOLDER>')
+            .replaceAll('|', '/')
+            .replaceAll('<PLACEHOLDER>', '|'),
+        ),
+      );
+    } else if (exifTags.Keywords) {
       let keywords = exifTags.Keywords;
-      if (typeof keywords === 'string') {
+      if (!Array.isArray(keywords)) {
         keywords = [keywords];
       }
       tags.push(...keywords);
     }
 
-    if (tags.length > 0) {
-      const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
-      const tagIds = results.map((tag) => tag.id);
-      await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds });
-    }
+    const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags: tags.map(String) });
+    await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds: results.map((tag) => tag.id) });
   }
 
   private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {
@@ -505,6 +517,65 @@ export class MetadataService {
     }
   }
 
+  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
+    if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
+      return;
+    }
+
+    const discoveredFaces: Partial<AssetFaceEntity>[] = [];
+    const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
+    const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
+    const missing: Partial<PersonEntity>[] = [];
+    const missingWithFaceAsset: Partial<PersonEntity>[] = [];
+    for (const region of tags.RegionInfo.RegionList) {
+      if (!region.Name) {
+        continue;
+      }
+
+      const imageWidth = tags.RegionInfo.AppliedToDimensions.W;
+      const imageHeight = tags.RegionInfo.AppliedToDimensions.H;
+      const loweredName = region.Name.toLowerCase();
+      const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+
+      const face = {
+        id: this.cryptoRepository.randomUUID(),
+        personId,
+        assetId: asset.id,
+        imageWidth,
+        imageHeight,
+        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        sourceType: SourceType.EXIF,
+      };
+
+      discoveredFaces.push(face);
+      if (!existingNameMap.has(loweredName)) {
+        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
+        missingWithFaceAsset.push({ id: personId, faceAssetId: face.id });
+      }
+    }
+
+    if (missing.length > 0) {
+      this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
+    }
+
+    const newPersons = await this.personRepository.create(missing);
+
+    const faceIds = await this.personRepository.replaceFaces(asset.id, discoveredFaces, SourceType.EXIF);
+    this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
+
+    await this.personRepository.update(missingWithFaceAsset);
+
+    await this.jobRepository.queueAll(
+      newPersons.map((person) => ({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: { id: person.id },
+      })),
+    );
+  }
+
   private async exifData(
     asset: AssetEntity,
   ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; exifTags: ImmichTags }> {
@@ -524,12 +595,16 @@ export class MetadataService {
 
     this.logger.verbose('Exif Tags', exifTags);
 
+    const dateTimeOriginalWithRawValue = this.getDateTimeOriginalWithRawValue(exifTags);
+    const dateTimeOriginal = dateTimeOriginalWithRawValue.exifDate ?? asset.fileCreatedAt;
+    const timeZone = this.getTimeZone(exifTags, dateTimeOriginalWithRawValue.rawValue);
+
     const exifData = {
       // altitude: tags.GPSAltitude ?? null,
       assetId: asset.id,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace ?? null,
-      dateTimeOriginal: this.getDateTimeOriginal(exifTags) ?? asset.fileCreatedAt,
+      dateTimeOriginal,
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       exifImageHeight: validate(exifTags.ImageHeight),
       exifImageWidth: validate(exifTags.ImageWidth),
@@ -550,7 +625,7 @@ export class MetadataService {
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       profileDescription: exifTags.ProfileDescription || null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
-      timeZone: exifTags.tz ?? null,
+      timeZone,
       rating: exifTags.Rating ?? null,
     };
 
@@ -571,10 +646,25 @@ export class MetadataService {
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
+    return this.getDateTimeOriginalWithRawValue(tags).exifDate;
+  }
+
+  private getDateTimeOriginalWithRawValue(tags: ImmichTags | Tags | null): { exifDate: Date | null; rawValue: string } {
     if (!tags) {
-      return null;
+      return { exifDate: null, rawValue: '' };
     }
-    return exifDate(firstDateTime(tags as Tags, EXIF_DATE_TAGS));
+    const first = firstDateTime(tags as Tags, EXIF_DATE_TAGS);
+    return { exifDate: exifDate(first), rawValue: first?.rawValue ?? '' };
+  }
+
+  private getTimeZone(exifTags: ImmichTags, rawValue: string) {
+    const timeZone = exifTags.tz ?? null;
+    if (timeZone == null && rawValue.endsWith('+00:00')) {
+      // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
+      // https://github.com/photostructure/exiftool-vendored.js/issues/203
+      return 'UTC+0';
+    }
+    return timeZone;
   }
 
   private getBitsPerSample(tags: ImmichTags): number | null {

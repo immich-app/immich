@@ -13,7 +13,7 @@
   export let getColor: (path: string) => string | undefined;
 
   $: path = normalizeTreePath(`${parent}/${value}`);
-  $: isActive = active.startsWith(path);
+  $: isActive = active === path || active.startsWith(`${path}/`);
   $: isOpen = isActive;
   $: isTarget = active === path;
   $: color = getColor(path);
@@ -39,7 +39,7 @@
       size={20}
     />
   </div>
-  <span class="text-nowrap overflow-clip font-mono pl-1 pt-1">{value}</span>
+  <span class="text-nowrap overflow-hidden text-ellipsis font-mono pl-1 pt-1">{value}</span>
 </a>
 
 {#if isOpen}

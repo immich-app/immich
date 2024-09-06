@@ -35,7 +35,7 @@
   $: dateGroups = bucket.dateGroups;
 
   const {
-    DATEGROUP: { INTERSECTION_DISABLED, INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
+    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
   } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
@@ -116,7 +116,6 @@
         top: INTERSECTION_ROOT_TOP,
         bottom: INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
-        disabled: INTERSECTION_DISABLED,
       }}
       data-display={display}
       data-date-group={dateGroup.date}
