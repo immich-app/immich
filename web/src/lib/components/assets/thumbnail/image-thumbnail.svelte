@@ -44,10 +44,20 @@
       setLoaded();
     }
   });
+
+  $: optionalClasses = [
+    curve && 'rounded-xl',
+    circle && 'rounded-full',
+    shadow && 'shadow-lg',
+    (circle || !heightStyle) && 'aspect-square',
+    border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+  ]
+    .filter(Boolean)
+    .join(' ');
 </script>
 
 {#if errored}
-  <BrokenAsset />
+  <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
 {:else}
   <img
     bind:this={img}
@@ -61,11 +71,7 @@
     src={url}
     alt={loaded || errored ? altText : ''}
     {title}
-    class="object-cover {border ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary' : ''}"
-    class:rounded-xl={curve}
-    class:shadow-lg={shadow}
-    class:rounded-full={circle}
-    class:aspect-square={circle || !heightStyle}
+    class="object-cover {optionalClasses}"
     class:opacity-0={!thumbhash && !loaded}
     draggable="false"
   />
