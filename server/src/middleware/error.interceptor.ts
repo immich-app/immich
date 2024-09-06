@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { logGlobalError } from 'src/utils/logger';
 import { routeToErrorMessage } from 'src/utils/misc';
 
 @Injectable()
@@ -25,9 +26,10 @@ export class ErrorInterceptor implements NestInterceptor {
             return error;
           }
 
-          const errorMessage = routeToErrorMessage(context.getHandler().name);
-          this.logger.error(errorMessage, error, error?.errors, error?.stack);
-          return new InternalServerErrorException(errorMessage);
+          logGlobalError(this.logger, error);
+
+          const message = routeToErrorMessage(context.getHandler().name);
+          return new InternalServerErrorException(message);
         }),
       ),
     );

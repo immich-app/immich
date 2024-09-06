@@ -18,10 +18,11 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
-import { HttpExceptionFilter } from 'src/middleware/http-exception.filter';
+import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
 import { services } from 'src/services';
+import { DatabaseService } from 'src/services/database.service';
 import { setupEventHandlers } from 'src/utils/events';
 import { otelConfig } from 'src/utils/instrumentation';
 
@@ -29,7 +30,7 @@ const common = [...services, ...repositories];
 
 const middleware = [
   FileUploadInterceptor,
-  { provide: APP_FILTER, useClass: HttpExceptionFilter },
+  { provide: APP_FILTER, useClass: GlobalExceptionFilter },
   { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
   { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
@@ -43,7 +44,17 @@ const imports = [
   ConfigModule.forRoot(immichAppConfig),
   EventEmitterModule.forRoot(),
   OpenTelemetryModule.forRoot(otelConfig),
-  TypeOrmModule.forRoot(databaseConfig),
+  TypeOrmModule.forRootAsync({
+    inject: [ModuleRef],
+    useFactory: (moduleRef: ModuleRef) => {
+      return {
+        ...databaseConfig,
+        poolErrorHandler: (error) => {
+          moduleRef.get(DatabaseService, { strict: false }).handleConnectionError(error);
+        },
+      };
+    },
+  }),
   TypeOrmModule.forFeature(entities),
 ];
 

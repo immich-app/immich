@@ -1,6 +1,7 @@
 import { AssetEntity } from 'src/entities/asset.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SourceType } from 'src/enum';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('asset_faces', { synchronize: false })
@@ -36,6 +37,9 @@ export class AssetFaceEntity {
 
   @Column({ default: 0, type: 'int' })
   boundingBoxY2!: number;
+
+  @Column({ default: SourceType.MACHINE_LEARNING, type: 'enum', enum: SourceType })
+  sourceType!: SourceType;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;

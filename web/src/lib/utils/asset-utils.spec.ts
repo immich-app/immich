@@ -1,5 +1,5 @@
 import type { AssetResponseDto } from '@immich/sdk';
-import { getAssetFilename, getFilenameExtension } from './asset-utils';
+import { canCopyImageToClipboard, getAssetFilename, getFilenameExtension } from './asset-utils';
 
 describe('get file extension from filename', () => {
   it('returns the extension without including the dot', () => {
@@ -54,5 +54,11 @@ describe('get asset filename', () => {
     ]) {
       expect(getAssetFilename(asset as AssetResponseDto)).toEqual(result);
     }
+  });
+});
+
+describe('copy image to clipboard', () => {
+  it('should not allow copy image to clipboard', () => {
+    expect(canCopyImageToClipboard()).toEqual(false);
   });
 });

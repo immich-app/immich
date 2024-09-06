@@ -115,6 +115,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       '-fps_mode passthrough',
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
+      '-strict unofficial',
     ];
 
     if (audioStream) {

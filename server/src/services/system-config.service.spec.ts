@@ -74,6 +74,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: true,
     level: LogLevel.LOG,
   },
+  metadata: {
+    faces: {
+      import: false,
+    },
+  },
   machineLearning: {
     enabled: true,
     url: 'http://immich-machine-learning:3003',
@@ -331,6 +336,7 @@ describe(SystemConfigService.name, () => {
           '{{y}}/{{MM}}-{{dd}}/{{filename}}',
           '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{MM}}/{{filename}}',
+          '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
           '{{y}}/{{MMM}}/{{filename}}',
           '{{y}}/{{MMMM}}/{{filename}}',
           '{{y}}/{{MM}}/{{dd}}/{{filename}}',

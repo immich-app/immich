@@ -9,7 +9,6 @@ export const newLibraryRepositoryMock = (): Mocked<ILibraryRepository> => {
     softDelete: vitest.fn(),
     update: vitest.fn(),
     getStatistics: vitest.fn(),
-    getAssetIds: vitest.fn(),
     getAllDeleted: vitest.fn(),
     getAll: vitest.fn(),
   };

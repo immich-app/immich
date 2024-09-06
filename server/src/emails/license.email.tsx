@@ -1,22 +1,7 @@
-import {
-  Body,
-  Button,
-  Column,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Row,
-  Section,
-  Text,
-} from '@react-email/components';
-import * as CSS from 'csstype';
+import { Link, Section, Text } from '@react-email/components';
 import * as React from 'react';
-import { ImmichButton } from './components/button.component';
-import FutoLayout from './components/futo.layout';
+import { ImmichButton } from 'src/emails/components/button.component';
+import FutoLayout from 'src/emails/components/futo.layout';
 
 /**
  * Template to be used for FUTOPay project

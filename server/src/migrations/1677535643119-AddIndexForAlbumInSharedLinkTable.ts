@@ -8,7 +8,7 @@ export class AddIndexForAlbumInSharedLinkTable1677535643119 implements Migration
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_sharedlink_albumId"`);
+        await queryRunner.query(`DROP INDEX "IDX_sharedlink_albumId"`);
     }
 
 }

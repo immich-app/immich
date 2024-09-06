@@ -17,6 +17,25 @@ import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { getServerErrorMessage, handleError } from './handle-error';
 
+export const addDummyItems = () => {
+  uploadAssetsStore.addItem({ id: 'asset-0', file: { name: 'asset0.jpg', size: 123_456 } as File });
+  uploadAssetsStore.updateItem('asset-0', { state: UploadState.PENDING });
+  uploadAssetsStore.addItem({ id: 'asset-1', file: { name: 'asset1.jpg', size: 123_456 } as File });
+  uploadAssetsStore.updateItem('asset-1', { state: UploadState.STARTED });
+  uploadAssetsStore.updateProgress('asset-1', 75, 100);
+  uploadAssetsStore.addItem({ id: 'asset-2', file: { name: 'asset2.jpg', size: 123_456 } as File });
+  uploadAssetsStore.updateItem('asset-2', { state: UploadState.ERROR, error: new Error('Internal server error') });
+  uploadAssetsStore.addItem({ id: 'asset-3', file: { name: 'asset3.jpg', size: 123_456 } as File });
+  uploadAssetsStore.updateItem('asset-3', { state: UploadState.DUPLICATED, assetId: 'asset-2' });
+  uploadAssetsStore.addItem({ id: 'asset-4', file: { name: 'asset3.jpg', size: 123_456 } as File });
+  uploadAssetsStore.updateItem('asset-4', { state: UploadState.DONE });
+  uploadAssetsStore.track('error');
+  uploadAssetsStore.track('success');
+  uploadAssetsStore.track('duplicate');
+};
+
+// addDummyItems();
+
 let _extensions: string[];
 
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
@@ -68,7 +87,7 @@ export const fileUploadHandler = async (files: File[], albumId?: string, assetId
   for (const file of files) {
     const name = file.name.toLowerCase();
     if (extensions.some((extension) => name.endsWith(extension))) {
-      uploadAssetsStore.addNewUploadAsset({ id: getDeviceAssetId(file), file, albumId, assetId });
+      uploadAssetsStore.addItem({ id: getDeviceAssetId(file), file, albumId });
       promises.push(uploadExecutionQueue.addTask(() => fileUploader(file, albumId, assetId)));
     }
   }
@@ -106,7 +125,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
     let responseData: AssetMediaResponseDto | undefined;
     const key = getKey();
     if (crypto?.subtle?.digest && !key) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_hashing') });
+      uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       try {
         const bytes = await assetFile.arrayBuffer();
@@ -127,7 +146,7 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
     }
 
     if (!responseData) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_uploading') });
+      uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_uploading') });
       if (replaceAssetId) {
         const response = await uploadRequest<AssetMediaResponseDto>({
           url: getBaseUrl() + getAssetOriginalPath(replaceAssetId) + (key ? `?key=${key}` : ''),
@@ -152,30 +171,34 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
     }
 
     if (responseData.status === AssetMediaStatus.Duplicate) {
-      uploadAssetsStore.duplicateCounter.update((count) => count + 1);
+      uploadAssetsStore.track('duplicate');
     } else {
-      uploadAssetsStore.successCounter.update((c) => c + 1);
+      uploadAssetsStore.track('success');
     }
 
     if (albumId) {
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_adding_to_album') });
+      uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_adding_to_album') });
       await addAssetsToAlbum(albumId, [responseData.id], false);
-      uploadAssetsStore.updateAsset(deviceAssetId, { message: $t('asset_added_to_album') });
+      uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_added_to_album') });
     }
 
-    uploadAssetsStore.updateAsset(deviceAssetId, {
+    uploadAssetsStore.updateItem(deviceAssetId, {
       state: responseData.status === AssetMediaStatus.Duplicate ? UploadState.DUPLICATED : UploadState.DONE,
+      assetId: responseData.id,
     });
 
-    setTimeout(() => {
-      uploadAssetsStore.removeUploadAsset(deviceAssetId);
-    }, 1000);
+    if (responseData.status !== AssetMediaStatus.Duplicate) {
+      setTimeout(() => {
+        uploadAssetsStore.removeItem(deviceAssetId);
+      }, 1000);
+    }
 
     return responseData.id;
   } catch (error) {
     handleError(error, $t('errors.unable_to_upload_file'));
     const reason = getServerErrorMessage(error) || error;
-    uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
+    uploadAssetsStore.track('error');
+    uploadAssetsStore.updateItem(deviceAssetId, { state: UploadState.ERROR, error: reason });
     return;
   }
 }

@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { t } from 'svelte-i18n';
   import Button from './button.svelte';
 
   /**
    * Target for the skip link to move focus to.
    */
   export let target: string = 'main';
+  export let text: string = $t('skip_to_content');
 
   let isFocused = false;
 
@@ -22,6 +24,6 @@
     on:focus={() => (isFocused = true)}
     on:blur={() => (isFocused = false)}
   >
-    <slot />
+    {text}
   </Button>
 </div>

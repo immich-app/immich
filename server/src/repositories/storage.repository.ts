@@ -5,7 +5,7 @@ import { escapePath, glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DiskUsage,
@@ -157,8 +157,8 @@ export class StorageRepository implements IStorageRepository {
     });
   }
 
-  async *walk(crawlOptions: CrawlOptionsDto): AsyncGenerator<string> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
+  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
+    const { pathsToCrawl, exclusionPatterns, includeHidden } = walkOptions;
     if (pathsToCrawl.length === 0) {
       async function* emptyGenerator() {}
       return emptyGenerator();
@@ -172,8 +172,17 @@ export class StorageRepository implements IStorageRepository {
       ignore: exclusionPatterns,
     });
 
+    let batch: string[] = [];
     for await (const value of stream) {
-      yield value as string;
+      batch.push(value.toString());
+      if (batch.length === walkOptions.take) {
+        yield batch;
+        batch = [];
+      }
+    }
+
+    if (batch.length > 0) {
+      yield batch;
     }
   }
 

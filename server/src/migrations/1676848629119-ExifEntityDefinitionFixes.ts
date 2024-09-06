@@ -6,7 +6,7 @@ export class ExifEntityDefinitionFixes1676848629119 implements MigrationInterfac
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "exif" ALTER COLUMN "description" SET NOT NULL`);
 
-        await queryRunner.query(`DROP INDEX "public"."IDX_c0117fdbc50b917ef9067740c4"`);
+        await queryRunner.query(`DROP INDEX "IDX_c0117fdbc50b917ef9067740c4"`);
         await queryRunner.query(`ALTER TABLE "exif" DROP CONSTRAINT "PK_28663352d85078ad0046dafafaa"`);
         await queryRunner.query(`ALTER TABLE "exif" DROP COLUMN "id"`);
         await queryRunner.query(`ALTER TABLE "exif" DROP CONSTRAINT "FK_c0117fdbc50b917ef9067740c44"`);

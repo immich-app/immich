@@ -239,7 +239,7 @@ export class AlbumService {
         throw new BadRequestException('User not found');
       }
 
-      await this.albumUserRepository.create({ userId: userId, albumId: id, role });
+      await this.albumUserRepository.create({ userId, albumId: id, role });
       await this.eventRepository.emit('album.invite', { id, userId });
     }
 

@@ -309,7 +309,7 @@ describe(StorageTemplateService.name, () => {
         entityId: assetStub.image.id,
         pathType: AssetPathType.ORIGINAL,
         oldPath: assetStub.image.originalPath,
-        newPath: newPath,
+        newPath,
       });
       expect(storageMock.rename).toHaveBeenCalledWith(assetStub.image.originalPath, newPath);
       expect(storageMock.copyFile).toHaveBeenCalledWith(assetStub.image.originalPath, newPath);

@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Duration } from 'luxon';
 import semver from 'semver';
 import { getVectorExtension } from 'src/database.config';
 import { OnEmit } from 'src/decorators';
@@ -59,8 +60,12 @@ const messages = {
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
 };
 
+const RETRY_DURATION = Duration.fromObject({ seconds: 5 });
+
 @Injectable()
 export class DatabaseService {
+  private reconnection?: NodeJS.Timeout;
+
   constructor(
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -115,6 +120,26 @@ export class DatabaseService {
         await this.databaseRepository.runMigrations();
       }
     });
+  }
+
+  handleConnectionError(error: Error) {
+    if (this.reconnection) {
+      return;
+    }
+
+    this.logger.error(`Database disconnected: ${error}`);
+    this.reconnection = setInterval(() => void this.reconnect(), RETRY_DURATION.toMillis());
+  }
+
+  private async reconnect() {
+    const isConnected = await this.databaseRepository.reconnect();
+    if (isConnected) {
+      this.logger.log('Database reconnected');
+      clearInterval(this.reconnection);
+      delete this.reconnection;
+    } else {
+      this.logger.warn(`Database connection failed, retrying in ${RETRY_DURATION.toHuman()}`);
+    }
   }
 
   private async createExtension(extension: DatabaseExtension) {

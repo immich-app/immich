@@ -8,6 +8,8 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { initInput } from '$lib/actions/focus';
   import { t } from 'svelte-i18n';
+  import { sortAlbums } from '$lib/utils/album-utils';
+  import { albumViewSettings } from '$lib/stores/preferences.store';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -29,14 +31,14 @@
     loading = false;
   });
 
-  $: {
-    filteredAlbums =
-      search.length > 0 && albums.length > 0
-        ? albums.filter((album) => {
-            return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
-          })
-        : albums;
-  }
+  $: filteredAlbums = sortAlbums(
+    search.length > 0 && albums.length > 0
+      ? albums.filter((album) => {
+          return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
+        })
+      : albums,
+    { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
+  );
 
   const handleSelect = (album: AlbumResponseDto) => {
     dispatch('album', album);

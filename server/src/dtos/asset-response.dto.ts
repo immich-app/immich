@@ -53,6 +53,9 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   checksum!: string;
   stack?: AssetStackResponseDto | null;
   duplicateId?: string | null;
+
+  @PropertyLifecycle({ deprecatedAt: 'v1.113.0' })
+  resized?: boolean;
 }
 
 export class AssetStackResponseDto {
@@ -140,7 +143,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
-    tags: entity.tags?.map(mapTag),
+    tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: entity.checksum.toString('base64'),
@@ -148,6 +151,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isOffline: entity.isOffline,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
+    resized: true,
   };
 }
 

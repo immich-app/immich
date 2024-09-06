@@ -15,7 +15,7 @@ export type ShortcutOptions<T = HTMLElement> = {
   preventDefault?: boolean;
 };
 
-export const shouldIgnoreShortcut = (event: KeyboardEvent): boolean => {
+export const shouldIgnoreEvent = (event: KeyboardEvent | ClipboardEvent): boolean => {
   if (event.target === event.currentTarget) {
     return false;
   }
@@ -52,7 +52,7 @@ export const shortcuts = <T extends HTMLElement>(
   options: ShortcutOptions<T>[],
 ): ActionReturn<ShortcutOptions<T>[]> => {
   function onKeydown(event: KeyboardEvent) {
-    const ignoreShortcut = shouldIgnoreShortcut(event);
+    const ignoreShortcut = shouldIgnoreEvent(event);
     for (const { shortcut, onShortcut, ignoreInputFields = true, preventDefault = true } of options) {
       if (ignoreInputFields && ignoreShortcut) {
         continue;

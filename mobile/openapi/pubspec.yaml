@@ -7,11 +7,11 @@ version: '1.0.0'
 description: 'OpenAPI API client'
 homepage: 'homepage'
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 dependencies:
-  collection: '^1.17.0'
-  http: '>=0.13.0 <0.14.0'
+  collection: '>=1.17.0 <2.0.0'
+  http: '>=0.13.0 <2.0.0'
   intl: any
-  meta: '^1.1.8'
+  meta: '>=1.1.8 <2.0.0'
   immich_mobile:
     path: ../

@@ -27,7 +27,7 @@ export class AddAssetFilesTable1724101822106 implements MigrationInterface {
         await queryRunner.query(`UPDATE "assets" SET "thumbnailPath" = "asset_files".path FROM "asset_files" WHERE "assets".id = "asset_files".assetId AND "asset_files".type = 'thumbnail'`);
 
         await queryRunner.query(`ALTER TABLE "asset_files" DROP CONSTRAINT "FK_e3e103a5f1d8bc8402999286040"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_asset_files_assetId"`);
+        await queryRunner.query(`DROP INDEX "IDX_asset_files_assetId"`);
         await queryRunner.query(`DROP TABLE "asset_files"`);
     }
 

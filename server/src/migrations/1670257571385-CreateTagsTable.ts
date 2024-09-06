@@ -17,8 +17,8 @@ export class CreateTagsTable1670257571385 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "tag_asset" DROP CONSTRAINT "FK_e99f31ea4cdf3a2c35c7287eb42"`);
         await queryRunner.query(`ALTER TABLE "tag_asset" DROP CONSTRAINT "FK_f8e8a9e893cb5c54907f1b798e9"`);
         await queryRunner.query(`ALTER TABLE "tags" DROP CONSTRAINT "FK_92e67dc508c705dd66c94615576"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_e99f31ea4cdf3a2c35c7287eb4"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_f8e8a9e893cb5c54907f1b798e"`);
+        await queryRunner.query(`DROP INDEX "IDX_e99f31ea4cdf3a2c35c7287eb4"`);
+        await queryRunner.query(`DROP INDEX "IDX_f8e8a9e893cb5c54907f1b798e"`);
         await queryRunner.query(`DROP TABLE "tag_asset"`);
         await queryRunner.query(`DROP TABLE "tags"`);
     }

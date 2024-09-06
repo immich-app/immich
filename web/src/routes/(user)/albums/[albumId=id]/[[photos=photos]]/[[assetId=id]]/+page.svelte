@@ -38,7 +38,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -85,6 +85,7 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   export let data: PageData;
 
@@ -291,17 +292,13 @@
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count: count } }),
+        message: $t('assets_added_count', { values: { count } }),
       });
 
       await refreshAlbum();
 
       timelineInteractionStore.clearMultiselect();
-      viewMode = ViewMode.VIEW;
-      await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
-        { replaceState: true, forceNavigate: true },
-      );
+      await setModeToView();
     } catch (error) {
       handleError(error, $t('errors.error_adding_assets_to_album'));
     }
@@ -419,8 +416,8 @@
     }
   };
 
-  onNavigate(async () => {
-    if (album.assetCount === 0 && !album.albumName) {
+  onNavigate(async ({ to }) => {
+    if (!isAlbumsRoute(to?.route.id) && album.assetCount === 0 && !album.albumName) {
       await deleteAlbum(album);
     }
   });
@@ -458,6 +455,11 @@
             {/if}
             <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
           {/if}
+
+          {#if $preferences.tags.enabled && isAllUserOwned}
+            <TagAction menuItem />
+          {/if}
+
           {#if isOwned || isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
@@ -731,7 +733,10 @@
     {album}
     order={albumOrder}
     user={$user}
-    onChangeOrder={(order) => (albumOrder = order)}
+    onChangeOrder={async (order) => {
+      albumOrder = order;
+      await setModeToView();
+    }}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

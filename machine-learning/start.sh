@@ -13,6 +13,7 @@ fi
 : "${IMMICH_HOST:=[::]}"
 : "${IMMICH_PORT:=3003}"
 : "${MACHINE_LEARNING_WORKERS:=1}"
+: "${MACHINE_LEARNING_HTTP_KEEPALIVE_TIMEOUT_S:=2}"
 
 gunicorn app.main:app \
 	-k app.config.CustomUvicornWorker \
@@ -20,4 +21,5 @@ gunicorn app.main:app \
 	-w "$MACHINE_LEARNING_WORKERS" \
 	-t "$MACHINE_LEARNING_WORKER_TIMEOUT" \
 	--log-config-json log_conf.json \
+	--keep-alive "$MACHINE_LEARNING_HTTP_KEEPALIVE_TIMEOUT_S" \
 	--graceful-timeout 0

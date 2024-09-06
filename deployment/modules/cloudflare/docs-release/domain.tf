@@ -9,6 +9,6 @@ resource "cloudflare_record" "immich_app_release_domain" {
   proxied = true
   ttl = 1
   type = "CNAME"
-  value = data.terraform_remote_state.cloudflare_immich_app_docs.outputs.immich_app_branch_pages_hostname
+  content = data.terraform_remote_state.cloudflare_immich_app_docs.outputs.immich_app_branch_pages_hostname
   zone_id = data.terraform_remote_state.cloudflare_account.outputs.immich_app_zone_id
 }

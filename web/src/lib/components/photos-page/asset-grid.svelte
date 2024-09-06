@@ -498,21 +498,21 @@
     }
   };
 
-  function intersectedHandler(bucket: AssetBucket) {
+  function handleIntersect(bucket: AssetBucket) {
     updateLastIntersectedBucketDate();
-    const intersectedTask = () => {
+    const task = () => {
       $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
       void $assetStore.loadBucket(bucket.bucketDate);
     };
-    $assetStore.taskManager.intersectedBucket(componentId, bucket, intersectedTask);
+    $assetStore.taskManager.intersectedBucket(componentId, bucket, task);
   }
 
-  function seperatedHandler(bucket: AssetBucket) {
-    const seperatedTask = () => {
+  function handleSeparate(bucket: AssetBucket) {
+    const task = () => {
       $assetStore.updateBucket(bucket.bucketDate, { intersecting: false });
       bucket.cancel();
     };
-    $assetStore.taskManager.seperatedBucket(componentId, bucket, seperatedTask);
+    $assetStore.taskManager.separatedBucket(componentId, bucket, task);
   }
 
   const handlePrevious = async () => {
@@ -762,20 +762,21 @@
 {#if showShortcuts}
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
 {/if}
-
-<Scrubber
-  invisible={showSkeleton}
-  {assetStore}
-  height={safeViewport.height}
-  timelineTopOffset={topSectionHeight}
-  timelineBottomOffset={bottomSectionHeight}
-  {leadout}
-  {scrubOverallPercent}
-  {scrubBucketPercent}
-  {scrubBucket}
-  {onScrub}
-  {stopScrub}
-/>
+{#if assetStore.buckets.length > 0}
+  <Scrubber
+    invisible={showSkeleton}
+    {assetStore}
+    height={safeViewport.height}
+    timelineTopOffset={topSectionHeight}
+    timelineBottomOffset={bottomSectionHeight}
+    {leadout}
+    {scrubOverallPercent}
+    {scrubBucketPercent}
+    {scrubBucket}
+    {onScrub}
+    {stopScrub}
+  />
+{/if}
 
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
@@ -803,14 +804,15 @@
     class:invisible={showSkeleton}
     style:height={$assetStore.timelineHeight + 'px'}
   >
-    {#each $assetStore.buckets as bucket (bucket.bucketDate)}
+    {#each $assetStore.buckets as bucket (bucket.viewId)}
       {@const isPremeasure = preMeasure.includes(bucket)}
       {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
       <div
         id="bucket"
         use:intersectionObserver={{
-          onIntersect: () => intersectedHandler(bucket),
-          onSeparate: () => seperatedHandler(bucket),
+          key: bucket.viewId,
+          onIntersect: () => handleIntersect(bucket),
+          onSeparate: () => handleSeparate(bucket),
           top: BUCKET_INTERSECTION_ROOT_TOP,
           bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
           root: element,

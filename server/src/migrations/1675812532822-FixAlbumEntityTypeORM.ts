@@ -44,10 +44,10 @@ export class FixAlbumEntityTypeORM1675812532822 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "asset_album" DROP CONSTRAINT "FK_4bd1303d199f4e72ccdf998c621"`);
         await queryRunner.query(`ALTER TABLE "user_shared_album" DROP CONSTRAINT "FK_427c350ad49bd3935a50baab737"`);
         await queryRunner.query(`ALTER TABLE "user_shared_album" DROP CONSTRAINT "FK_f48513bf9bccefd6ff3ad30bd06"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_427c350ad49bd3935a50baab73"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_f48513bf9bccefd6ff3ad30bd0"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_e590fa396c6898fcd4a50e4092"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_4bd1303d199f4e72ccdf998c62"`);
+        await queryRunner.query(`DROP INDEX "IDX_427c350ad49bd3935a50baab73"`);
+        await queryRunner.query(`DROP INDEX "IDX_f48513bf9bccefd6ff3ad30bd0"`);
+        await queryRunner.query(`DROP INDEX "IDX_e590fa396c6898fcd4a50e4092"`);
+        await queryRunner.query(`DROP INDEX "IDX_4bd1303d199f4e72ccdf998c62"`);
 
         await queryRunner.query(`ALTER TABLE "albums" DROP CONSTRAINT "FK_b22c53f35ef20c28c21637c85f4"`);
         await queryRunner.query(

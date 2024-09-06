@@ -42,6 +42,23 @@ describe('/trash', () => {
       const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
       expect(after.total).toBe(0);
     });
+
+    it('should empty the trash with archived assets', async () => {
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
+      await utils.archiveAssets(admin.accessToken, [assetId]);
+      await utils.deleteAssets(admin.accessToken, [assetId]);
+
+      const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
+      expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true, isArchived: true }));
+
+      const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(204);
+
+      await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
+
+      const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after.total).toBe(0);
+    });
   });
 
   describe('POST /trash/restore', () => {

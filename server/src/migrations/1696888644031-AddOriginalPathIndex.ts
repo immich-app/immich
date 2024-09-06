@@ -8,6 +8,6 @@ export class AddOriginalPathIndex1696888644031 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "public"."IDX_originalPath_libraryId"`);
+    await queryRunner.query(`DROP INDEX "IDX_originalPath_libraryId"`);
   }
 }

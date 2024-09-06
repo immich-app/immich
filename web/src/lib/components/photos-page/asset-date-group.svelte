@@ -35,7 +35,7 @@
   $: dateGroups = bucket.dateGroups;
 
   const {
-    DATEGROUP: { INTERSECTION_DISABLED, INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
+    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
   } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
@@ -109,14 +109,13 @@
           );
         },
         onSeparate: () => {
-          $assetStore.taskManager.seperatedDateGroup(componentId, dateGroup, () =>
+          $assetStore.taskManager.separatedDateGroup(componentId, dateGroup, () =>
             assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
           );
         },
         top: INTERSECTION_ROOT_TOP,
         bottom: INTERSECTION_ROOT_BOTTOM,
         root: assetGridElement,
-        disabled: INTERSECTION_DISABLED,
       }}
       data-display={display}
       data-date-group={dateGroup.date}
@@ -186,9 +185,9 @@
               <div
                 use:intersectionObserver={{
                   onIntersect: () => onAssetInGrid?.(asset),
-                  top: `-${TITLE_HEIGHT}px`,
-                  bottom: `-${viewport.height - TITLE_HEIGHT - 1}px`,
-                  right: `-${viewport.width - 1}px`,
+                  top: `${-TITLE_HEIGHT}px`,
+                  bottom: `${-(viewport.height - TITLE_HEIGHT - 1)}px`,
+                  right: `${-(viewport.width - 1)}px`,
                   root: assetGridElement,
                 }}
                 data-asset-id={asset.id}

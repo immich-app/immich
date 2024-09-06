@@ -5,8 +5,8 @@ export class RemoveLibraryType1715804005643 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "FK_9977c3c1de01c3d848039a6b90c"`);
-    await queryRunner.query(`DROP INDEX "public"."UQ_assets_owner_library_checksum"`);
-    await queryRunner.query(`DROP INDEX "public"."IDX_originalPath_libraryId"`);
+    await queryRunner.query(`DROP INDEX "UQ_assets_owner_library_checksum"`);
+    await queryRunner.query(`DROP INDEX "IDX_originalPath_libraryId"`);
     await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" DROP NOT NULL`);
     await queryRunner.query(`
       UPDATE "assets"

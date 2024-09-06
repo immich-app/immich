@@ -81,7 +81,7 @@
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
-        message: $t('merged_people_count', { values: { count: count } }),
+        message: $t('merged_people_count', { values: { count } }),
         type: NotificationType.Info,
       });
       dispatch('merge', mergedPerson);

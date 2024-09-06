@@ -7,7 +7,7 @@
 
 <enhanced:img
   {alt}
-  class="z-0 rounded-xl object-cover aspect-square {className}"
+  class="size-full rounded-xl object-cover aspect-square {className}"
   data-testid="album-image"
   draggable="false"
   loading={preload ? 'eager' : 'lazy'}

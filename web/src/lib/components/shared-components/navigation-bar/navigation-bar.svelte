@@ -46,7 +46,7 @@
 <svelte:window bind:innerWidth />
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
-  <SkipLink>{$t('skip_to_content')}</SkipLink>
+  <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >

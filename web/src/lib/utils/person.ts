@@ -28,5 +28,5 @@ export const searchNameLocal = (
 };
 
 export const getPersonNameWithHiddenValue = derived(t, ($t) => {
-  return (name: string, isHidden: boolean) => $t('person_hidden', { values: { name: name, hidden: isHidden } });
+  return (name: string, isHidden: boolean) => $t('person_hidden', { values: { name, hidden: isHidden } });
 });

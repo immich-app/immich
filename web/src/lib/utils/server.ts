@@ -3,17 +3,13 @@ import { initLanguage } from '$lib/utils';
 import { defaults } from '@immich/sdk';
 import { memoize } from 'lodash-es';
 
-type fetchType = typeof fetch;
+type Fetch = typeof fetch;
 
-export function initSDK(fetch: fetchType) {
+async function _init(fetch: Fetch) {
   // set event.fetch on the fetch-client used by @immich/sdk
   // https://kit.svelte.dev/docs/load#making-fetch-requests
   // https://github.com/oazapfts/oazapfts/blob/main/README.md#fetch-options
   defaults.fetch = fetch;
-}
-
-async function _init(fetch: fetchType) {
-  initSDK(fetch);
   await initLanguage();
   await retrieveServerConfig();
 }

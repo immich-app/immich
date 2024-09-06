@@ -44,7 +44,7 @@
     </div>
   {/if}
 
-  <AlbumCover {album} {preload} class="h-full w-full transition-all duration-300 hover:shadow-lg" />
+  <AlbumCover {album} {preload} class="transition-all duration-300 hover:shadow-lg" />
 
   <div class="mt-4">
     <p

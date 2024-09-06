@@ -41,7 +41,7 @@ export class CreateAssetStackTable1705197515600 implements MigrationInterface {
     );
 
     // update constraints
-    await queryRunner.query(`DROP INDEX "public"."IDX_b463c8edb01364bf2beba08ef1"`);
+    await queryRunner.query(`DROP INDEX "IDX_b463c8edb01364bf2beba08ef1"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "FK_b463c8edb01364bf2beba08ef19"`);
     await queryRunner.query(
       `ALTER TABLE "assets" ADD CONSTRAINT "FK_f15d48fa3ea5e4bda05ca8ab207" FOREIGN KEY ("stackId") REFERENCES "asset_stack"("id") ON DELETE SET NULL ON UPDATE CASCADE`,

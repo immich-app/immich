@@ -259,6 +259,17 @@ WHERE
     AND ("StackEntity"."ownerId" = $2)
   )
 
+-- AccessRepository.tag.checkOwnerAccess
+SELECT
+  "TagEntity"."id" AS "TagEntity_id"
+FROM
+  "tags" "TagEntity"
+WHERE
+  (
+    ("TagEntity"."id" IN ($1))
+    AND ("TagEntity"."userId" = $2)
+  )
+
 -- AccessRepository.timeline.checkPartnerAccess
 SELECT
   "partner"."sharedById" AS "partner_sharedById",

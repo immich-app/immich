@@ -39,7 +39,7 @@
               if (!heightPending) {
                 const height = element.getBoundingClientRect().height;
                 if (height !== 0) {
-                  $assetStore.updateBucket(bucket.bucketDate, { height: height, measured: true });
+                  $assetStore.updateBucket(bucket.bucketDate, { height, measured: true });
                 }
 
                 onMeasured();
@@ -65,9 +65,7 @@
 <section id="measure-asset-group-by-date" class="flex flex-wrap gap-x-12" use:measure>
   {#each bucket.dateGroups as dateGroup}
     <div id="date-group" data-date-group={dateGroup.date}>
-      <div
-        use:resizeObserver={({ height }) => $assetStore.updateBucketDateGroup(bucket, dateGroup, { height: height })}
-      >
+      <div use:resizeObserver={({ height }) => $assetStore.updateBucketDateGroup(bucket, dateGroup, { height })}>
         <div
           class="flex z-[100] sticky top-[-1px] pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
           style:width={dateGroup.geometry.containerWidth + 'px'}

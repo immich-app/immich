@@ -9,8 +9,8 @@ export class AddAssetFaceIndicies1700752078178 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_b463c8edb01364bf2beba08ef1"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_bf339a24070dac7e71304ec530"`);
+        await queryRunner.query(`DROP INDEX "IDX_b463c8edb01364bf2beba08ef1"`);
+        await queryRunner.query(`DROP INDEX "IDX_bf339a24070dac7e71304ec530"`);
     }
 
 }

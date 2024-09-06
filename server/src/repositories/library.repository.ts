@@ -94,30 +94,6 @@ export class LibraryRepository implements ILibraryRepository {
     };
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
-    const builder = this.repository
-      .createQueryBuilder('library')
-      .innerJoinAndSelect('library.assets', 'assets')
-      .where('library.id = :id', { id: libraryId })
-      .select('assets.id');
-
-    if (withDeleted) {
-      builder.withDeleted();
-    }
-
-    // Return all asset paths for a given library
-    const rawResults = await builder.getRawMany();
-
-    const results: string[] = [];
-
-    for (const rawPath of rawResults) {
-      results.push(rawPath.assets_id);
-    }
-
-    return results;
-  }
-
   private async save(library: Partial<LibraryEntity>) {
     const { id } = await this.repository.save(library);
     return this.repository.findOneByOrFail({ id });

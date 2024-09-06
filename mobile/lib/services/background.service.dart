@@ -349,6 +349,7 @@ class BackgroundService {
   Future<bool> _onAssetsChanged() async {
     final Isar db = await loadDb();
 
+    HttpOverrides.global = HttpSSLCertOverride();
     ApiService apiService = ApiService();
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
     AppSettingsService settingService = AppSettingsService();

@@ -8,6 +8,6 @@ export class AddOriginalFileNameIndex1705306747072 implements MigrationInterface
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "public"."IDX_4d66e76dada1ca180f67a205dc"`);
+    await queryRunner.query(`DROP INDEX "IDX_4d66e76dada1ca180f67a205dc"`);
   }
 }

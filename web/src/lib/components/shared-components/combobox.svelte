@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   export type ComboBoxOption = {
+    id?: string;
     label: string;
     value: string;
   };
@@ -32,7 +33,7 @@
   export let label: string;
   export let hideLabel = false;
   export let options: ComboBoxOption[] = [];
-  export let selectedOption: ComboBoxOption | undefined;
+  export let selectedOption: ComboBoxOption | undefined = undefined;
   export let placeholder = '';
 
   /**
@@ -237,7 +238,7 @@
           {$t('no_results')}
         </li>
       {/if}
-      {#each filteredOptions as option, index (option.label)}
+      {#each filteredOptions as option, index (option.id || option.label)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <li
           aria-selected={index === selectedIndex}

@@ -36,6 +36,7 @@ export enum WithoutProperty {
 
 export enum WithProperty {
   SIDECAR = 'sidecar',
+  IS_ONLINE = 'isOnline',
   IS_OFFLINE = 'isOffline',
 }
 
@@ -50,6 +51,7 @@ export interface AssetBuilderOptions {
   isTrashed?: boolean;
   isDuplicate?: boolean;
   albumId?: string;
+  tagId?: string;
   personId?: string;
   userIds?: string[];
   withStacked?: boolean;
@@ -167,7 +169,12 @@ export interface IAssetRepository {
     order?: FindOptionsOrder<AssetEntity>,
   ): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
-  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
+  getWith(
+    pagination: PaginationOptions,
+    property: WithProperty,
+    libraryId?: string,
+    withDeleted?: boolean,
+  ): Paginated<AssetEntity>;
   getRandom(userId: string, count: number): Promise<AssetEntity[]>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;

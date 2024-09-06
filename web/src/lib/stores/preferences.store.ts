@@ -96,11 +96,6 @@ export interface SidebarSettings {
   sharing: boolean;
 }
 
-export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings-1', {
-  people: false,
-  sharing: true,
-});
-
 export enum SortOrder {
   Asc = 'asc',
   Desc = 'desc',

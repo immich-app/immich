@@ -12,5 +12,4 @@ export interface ILibraryRepository {
   softDelete(id: string): Promise<void>;
   update(library: Partial<LibraryEntity>): Promise<LibraryEntity>;
   getStatistics(id: string): Promise<LibraryStatsResponseDto | undefined>;
-  getAssetIds(id: string, withDeleted?: boolean): Promise<string[]>;
 }

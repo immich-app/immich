@@ -41,7 +41,10 @@ export const requireAccess = async (access: IAccessRepository, request: AccessRe
   }
 };
 
-export const checkAccess = async (access: IAccessRepository, { ids, auth, permission }: AccessRequest) => {
+export const checkAccess = async (
+  access: IAccessRepository,
+  { ids, auth, permission }: AccessRequest,
+): Promise<Set<string>> => {
   const idSet = Array.isArray(ids) ? new Set(ids) : ids;
   if (idSet.size === 0) {
     return new Set<string>();
@@ -52,7 +55,10 @@ export const checkAccess = async (access: IAccessRepository, { ids, auth, permis
     : checkOtherAccess(access, { auth, permission, ids: idSet });
 };
 
-const checkSharedLinkAccess = async (access: IAccessRepository, request: SharedLinkAccessRequest) => {
+const checkSharedLinkAccess = async (
+  access: IAccessRepository,
+  request: SharedLinkAccessRequest,
+): Promise<Set<string>> => {
   const { sharedLink, permission, ids } = request;
   const sharedLinkId = sharedLink.id;
 
@@ -96,7 +102,7 @@ const checkSharedLinkAccess = async (access: IAccessRepository, request: SharedL
   }
 };
 
-const checkOtherAccess = async (access: IAccessRepository, request: OtherAccessRequest) => {
+const checkOtherAccess = async (access: IAccessRepository, request: OtherAccessRequest): Promise<Set<string>> => {
   const { auth, permission, ids } = request;
 
   switch (permission) {
@@ -209,6 +215,13 @@ const checkOtherAccess = async (access: IAccessRepository, request: OtherAccessR
 
     case Permission.AUTH_DEVICE_DELETE: {
       return await access.authDevice.checkOwnerAccess(auth.user.id, ids);
+    }
+
+    case Permission.TAG_ASSET:
+    case Permission.TAG_READ:
+    case Permission.TAG_UPDATE:
+    case Permission.TAG_DELETE: {
+      return await access.tag.checkOwnerAccess(auth.user.id, ids);
     }
 
     case Permission.TIMELINE_READ: {

@@ -131,6 +131,7 @@ export class ServerFeaturesDto {
   map!: boolean;
   trash!: boolean;
   reverseGeocoding!: boolean;
+  importFaces!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;
   passwordLogin!: boolean;

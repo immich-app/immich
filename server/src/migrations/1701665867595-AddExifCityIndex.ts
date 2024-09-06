@@ -8,7 +8,7 @@ export class AddExifCityIndex1701665867595 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."exif_city"`);
+        await queryRunner.query(`DROP INDEX "exif_city"`);
     }
 
 }

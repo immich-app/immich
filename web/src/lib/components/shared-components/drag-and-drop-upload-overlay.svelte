@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import ImmichLogo from './immich-logo.svelte';
   import { page } from '$app/stores';
+  import { shouldIgnoreEvent } from '$lib/actions/shortcut';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import ImmichLogo from './immich-logo.svelte';
 
   $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
   $: isShare = isSharedLinkRoute($page.route?.id);
@@ -29,7 +30,13 @@
     await handleDataTransfer(e.dataTransfer);
   };
 
-  const onPaste = ({ clipboardData }: ClipboardEvent) => handleDataTransfer(clipboardData);
+  const onPaste = (event: ClipboardEvent) => {
+    if (shouldIgnoreEvent(event)) {
+      return;
+    }
+
+    return handleDataTransfer(event.clipboardData);
+  };
 
   const handleDataTransfer = async (dataTransfer?: DataTransfer | null) => {
     if (!dataTransfer) {

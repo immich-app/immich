@@ -356,7 +356,7 @@ export class AuthService {
   }
 
   private normalize(config: SystemConfig, redirectUri: string) {
-    const isMobile = redirectUri.startsWith(MOBILE_REDIRECT);
+    const isMobile = redirectUri.startsWith('app.immich:/');
     const { mobileRedirectUri, mobileOverrideEnabled } = config.oauth;
     if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
       return mobileRedirectUri;
@@ -421,7 +421,7 @@ export class AuthService {
         await this.sessionRepository.update({ id: session.id, updatedAt: new Date() });
       }
 
-      return { user: session.user, session: session };
+      return { user: session.user, session };
     }
 
     throw new UnauthorizedException('Invalid user token');

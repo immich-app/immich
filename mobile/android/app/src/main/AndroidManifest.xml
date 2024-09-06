@@ -24,7 +24,7 @@
 
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
-    android:largeHeap="true" android:enableOnBackInvokedCallback="true">
+    android:largeHeap="true" android:enableOnBackInvokedCallback="false">
 
     <service
       android:name="androidx.work.impl.foreground.SystemForegroundService"
@@ -35,7 +35,7 @@
 
     <meta-data
       android:name="io.flutter.embedding.android.EnableImpeller"
-      android:value="true" />
+      android:value="false" />
 
     <meta-data
       android:name="com.google.firebase.messaging.default_notification_icon"
@@ -69,7 +69,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="app.immich" />
+        <data android:scheme="app.immich" android:pathPrefix="/oauth-callback" />
       </intent-filter>
     </activity>
     <!-- Don't delete the meta-data below.

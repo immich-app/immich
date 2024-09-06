@@ -1,4 +1,3 @@
-import '@docusaurus/theme-classic/lib/theme/Unlisted/index';
 import { useWindowSize } from '@docusaurus/theme-common';
 import DropdownNavbarItem from '@theme/NavbarItem/DropdownNavbarItem';
 import React, { useEffect, useState } from 'react';
