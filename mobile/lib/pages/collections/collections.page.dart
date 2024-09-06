@@ -1,13 +1,17 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/share_partner_button.dart';
+import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
 class CollectionsPage extends StatelessWidget {
@@ -16,10 +20,11 @@ class CollectionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const ImmichAppBar(
-        action: CreateNewButton(),
+        showUploadButton: false,
+        actions: [CreateNewButton(), SharePartnerButton()],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
         child: ListView(
           shrinkWrap: true,
           children: [
@@ -33,8 +38,8 @@ class CollectionsPage extends StatelessWidget {
                 const SizedBox(width: 8),
                 ActionButton(
                   onPressed: () {},
-                  icon: Icons.delete_outline_rounded,
-                  label: 'Trash',
+                  icon: Icons.archive_outlined,
+                  label: 'Archive',
                 ),
               ],
             ),
@@ -49,18 +54,22 @@ class CollectionsPage extends StatelessWidget {
                 const SizedBox(width: 8),
                 ActionButton(
                   onPressed: () {},
-                  icon: Icons.archive_outlined,
-                  label: 'Archive',
+                  icon: Icons.delete_outline_rounded,
+                  label: 'Trash',
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            const SizedBox(height: 24),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 16,
               children: [
                 PeopleCollectionCard(),
                 AlbumsCollectionCard(),
+                AlbumsCollectionCard(
+                  isLocal: true,
+                ),
+                PlacesCollectionCard(),
               ],
             ),
           ],
@@ -81,22 +90,17 @@ class PeopleCollectionCard extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: MediaQuery.of(context).size.width * 0.5,
-          width: MediaQuery.of(context).size.width * 0.5 - 12,
+          height: MediaQuery.of(context).size.width * 0.5 - 20,
+          width: MediaQuery.of(context).size.width * 0.5 - 20,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: context.colorScheme.surfaceContainer,
+            color: context.colorScheme.secondaryContainer.withAlpha(100),
           ),
           child: people.widgetWhen(
             onData: (people) {
               return GridView.count(
                 crossAxisCount: 2,
-                padding: const EdgeInsets.only(
-                  top: 18,
-                  left: 12,
-                  right: 12,
-                  bottom: 0,
-                ),
+                padding: const EdgeInsets.all(12),
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
                 physics: const NeverScrollableScrollPhysics(),
@@ -121,20 +125,85 @@ class PeopleCollectionCard extends ConsumerWidget {
   }
 }
 
-class AlbumsCollectionCard extends StatelessWidget {
-  const AlbumsCollectionCard({super.key});
+class AlbumsCollectionCard extends ConsumerWidget {
+  final bool isLocal;
+
+  const AlbumsCollectionCard({super.key, this.isLocal = false});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final albums = isLocal
+        ? ref.watch(albumProvider).where((album) => album.isLocal)
+        : ref.watch(albumProvider).where((album) => album.isRemote);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: MediaQuery.of(context).size.width * 0.5 - 20,
+          width: MediaQuery.of(context).size.width * 0.5 - 20,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: context.colorScheme.secondaryContainer.withAlpha(100),
+          ),
+          child: GridView.count(
+            crossAxisCount: 2,
+            padding: const EdgeInsets.all(12),
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            physics: const NeverScrollableScrollPhysics(),
+            children: albums.take(4).map((album) {
+              return AlbumThumbnailCard(
+                album: album,
+                showTitle: false,
+              );
+            }).toList(),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            isLocal ? 'On this device' : 'Albums',
+            style: context.textTheme.labelLarge,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class PlacesCollectionCard extends StatelessWidget {
+  const PlacesCollectionCard({super.key});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.width * 0.5,
-      width: MediaQuery.of(context).size.width * 0.5 - 12,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: context.colorScheme.surfaceContainer,
-      ),
-      child: const Center(
-        child: Text('Album Collection'),
-      ),
+    final size = MediaQuery.of(context).size.width * 0.5 - 20;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: size,
+          width: size,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: context.colorScheme.secondaryContainer.withAlpha(100),
+          ),
+          child: IgnorePointer(
+            child: MapThumbnail(
+              zoom: 5,
+              centre: const LatLng(
+                47,
+                5,
+              ),
+              showAttribution: false,
+              themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text('Places', style: context.textTheme.labelLarge),
+        ),
+      ],
     );
   }
 }
@@ -157,21 +226,26 @@ class ActionButton extends StatelessWidget {
       child: FilledButton.icon(
         onPressed: onPressed,
         label: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
+          padding: const EdgeInsets.only(left: 4.0),
           child: Text(
             label,
             style: TextStyle(
               color: context.colorScheme.onSurface,
+              fontSize: 14,
             ),
           ),
         ),
         style: FilledButton.styleFrom(
           elevation: 0,
-          padding: const EdgeInsets.all(16),
-          backgroundColor: context.colorScheme.primary.withAlpha(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          backgroundColor: context.colorScheme.surfaceContainerLow,
           alignment: Alignment.centerLeft,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(25)),
+            side: BorderSide(
+              color: context.colorScheme.onSurface.withAlpha(10),
+              width: 1,
+            ),
           ),
         ),
         icon: Icon(
@@ -190,10 +264,9 @@ class CreateNewButton extends StatelessWidget {
     return InkWell(
       onTap: () {},
       borderRadius: const BorderRadius.all(Radius.circular(25)),
-      child: Icon(
+      child: const Icon(
         Icons.add,
         size: 32,
-        semanticLabel: 'profile_drawer_trash'.tr(),
       ),
     );
   }

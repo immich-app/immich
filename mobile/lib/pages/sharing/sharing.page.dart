@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dar
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
+import 'package:immich_mobile/widgets/common/share_partner_button.dart';
 import 'package:immich_mobile/widgets/partner/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -215,25 +216,13 @@ class SharingPage extends HookConsumerWidget {
       );
     }
 
-    Widget sharePartnerButton() {
-      return InkWell(
-        onTap: () => context.pushRoute(const PartnerRoute()),
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: Icon(
-          Icons.swap_horizontal_circle_rounded,
-          size: 25,
-          semanticLabel: 'partner_page_title'.tr(),
-        ),
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: () async {
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
       },
       child: Scaffold(
-        appBar: ImmichAppBar(
-          action: sharePartnerButton(),
+        appBar: const ImmichAppBar(
+          actions: [SharePartnerButton()],
         ),
         body: CustomScrollView(
           slivers: [

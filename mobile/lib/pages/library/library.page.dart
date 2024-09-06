@@ -184,7 +184,7 @@ class LibraryPage extends HookConsumerWidget {
     final sorted = albumSortOption.sortFn(remote, albumSortIsReverse);
     final local = albums.where((a) => a.isLocal).toList();
 
-    Widget? shareTrashButton() {
+    Widget shareTrashButton() {
       return trashEnabled
           ? InkWell(
               onTap: () => context.pushRoute(const TrashRoute()),
@@ -195,12 +195,12 @@ class LibraryPage extends HookConsumerWidget {
                 semanticLabel: 'profile_drawer_trash'.tr(),
               ),
             )
-          : null;
+          : const SizedBox.shrink();
     }
 
     return Scaffold(
       appBar: ImmichAppBar(
-        action: shareTrashButton(),
+        actions: [shareTrashButton()],
       ),
       body: CustomScrollView(
         slivers: [

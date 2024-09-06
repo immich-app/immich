@@ -12,12 +12,14 @@ class AlbumThumbnailCard extends StatelessWidget {
   /// Whether or not to show the owner of the album (or "Owned")
   /// in the subtitle of the album
   final bool showOwner;
+  final bool showTitle;
 
   const AlbumThumbnailCard({
     super.key,
     required this.album,
     this.onTap,
     this.showOwner = false,
+    this.showTitle = true,
   });
 
   final Album album;
@@ -102,21 +104,23 @@ class AlbumThumbnailCard extends StatelessWidget {
                             : buildAlbumThumbnail(),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: SizedBox(
-                        width: cardSize,
-                        child: Text(
-                          album.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: context.colorScheme.onSurface,
-                            fontWeight: FontWeight.w500,
+                    if (showTitle) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: SizedBox(
+                          width: cardSize,
+                          child: Text(
+                            album.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              color: context.colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    buildAlbumTextRow(),
+                      buildAlbumTextRow(),
+                    ],
                   ],
                 ),
               ),
