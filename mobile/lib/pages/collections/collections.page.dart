@@ -5,6 +5,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
@@ -31,13 +32,13 @@ class CollectionsPage extends StatelessWidget {
             Row(
               children: [
                 ActionButton(
-                  onPressed: () {},
+                  onPressed: () => context.pushRoute(const FavoritesRoute()),
                   icon: Icons.favorite_outline_rounded,
                   label: 'Favorite',
                 ),
                 const SizedBox(width: 8),
                 ActionButton(
-                  onPressed: () {},
+                  onPressed: () => context.pushRoute(const ArchiveRoute()),
                   icon: Icons.archive_outlined,
                   label: 'Archive',
                 ),
@@ -47,13 +48,13 @@ class CollectionsPage extends StatelessWidget {
             Row(
               children: [
                 ActionButton(
-                  onPressed: () {},
+                  onPressed: () => context.pushRoute(const SharedLinkRoute()),
                   icon: Icons.link_outlined,
                   label: 'Shared links',
                 ),
                 const SizedBox(width: 8),
                 ActionButton(
-                  onPressed: () {},
+                  onPressed: () => context.pushRoute(const TrashRoute()),
                   icon: Icons.delete_outline_rounded,
                   label: 'Trash',
                 ),
@@ -85,13 +86,13 @@ class PeopleCollectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final people = ref.watch(getAllPeopleProvider);
-
+    final size = MediaQuery.of(context).size.width * 0.5 - 20;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: MediaQuery.of(context).size.width * 0.5 - 20,
-          width: MediaQuery.of(context).size.width * 0.5 - 20,
+          height: size,
+          width: size,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             color: context.colorScheme.secondaryContainer.withAlpha(100),
@@ -135,13 +136,13 @@ class AlbumsCollectionCard extends ConsumerWidget {
     final albums = isLocal
         ? ref.watch(albumProvider).where((album) => album.isLocal)
         : ref.watch(albumProvider).where((album) => album.isRemote);
-
+    final size = MediaQuery.of(context).size.width * 0.5 - 20;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: MediaQuery.of(context).size.width * 0.5 - 20,
-          width: MediaQuery.of(context).size.width * 0.5 - 20,
+          height: size,
+          width: size,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             color: context.colorScheme.secondaryContainer.withAlpha(100),
@@ -189,10 +190,10 @@ class PlacesCollectionCard extends StatelessWidget {
           ),
           child: IgnorePointer(
             child: MapThumbnail(
-              zoom: 5,
+              zoom: 8,
               centre: const LatLng(
-                47,
-                5,
+                21.44950,
+                -157.91959,
               ),
               showAttribution: false,
               themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,

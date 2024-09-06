@@ -320,6 +320,25 @@ class AlbumViewerRouteArgs {
 }
 
 /// generated route for
+/// [AlbumsCollectionPage]
+class AlbumsCollectionRoute extends PageRouteInfo<void> {
+  const AlbumsCollectionRoute({List<PageRouteInfo>? children})
+      : super(
+          AlbumsCollectionRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AlbumsCollectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AlbumsCollectionPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AllMotionPhotosPage]
 class AllMotionPhotosRoute extends PageRouteInfo<void> {
   const AllMotionPhotosRoute({List<PageRouteInfo>? children})
@@ -877,6 +896,25 @@ class LibraryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LocalAlbumsCollectionPage]
+class LocalAlbumsCollectionRoute extends PageRouteInfo<void> {
+  const LocalAlbumsCollectionRoute({List<PageRouteInfo>? children})
+      : super(
+          LocalAlbumsCollectionRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'LocalAlbumsCollectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LocalAlbumsCollectionPage();
+    },
+  );
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute({List<PageRouteInfo>? children})
@@ -1079,6 +1117,25 @@ class PartnerRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [PeopleCollectionPage]
+class PeopleCollectionRoute extends PageRouteInfo<void> {
+  const PeopleCollectionRoute({List<PageRouteInfo>? children})
+      : super(
+          PeopleCollectionRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'PeopleCollectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PeopleCollectionPage();
+    },
+  );
+}
+
+/// generated route for
 /// [PermissionOnboardingPage]
 class PermissionOnboardingRoute extends PageRouteInfo<void> {
   const PermissionOnboardingRoute({List<PageRouteInfo>? children})
@@ -1164,6 +1221,25 @@ class PhotosRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const PhotosPage();
+    },
+  );
+}
+
+/// generated route for
+/// [PlacesCollectionPage]
+class PlacesCollectionRoute extends PageRouteInfo<void> {
+  const PlacesCollectionRoute({List<PageRouteInfo>? children})
+      : super(
+          PlacesCollectionRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'PlacesCollectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PlacesCollectionPage();
     },
   );
 }

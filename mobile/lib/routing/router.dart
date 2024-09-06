@@ -13,6 +13,10 @@ import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
+import 'package:immich_mobile/pages/collections/albums/albums_collection.page.dart';
+import 'package:immich_mobile/pages/collections/albums/local_albums_collection.page.dart';
+import 'package:immich_mobile/pages/collections/albums/people_collection.page.dart';
+import 'package:immich_mobile/pages/collections/albums/places_collection.part.dart';
 import 'package:immich_mobile/pages/collections/collections.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
@@ -235,6 +239,22 @@ class AppRouter extends RootStackRouter {
     AutoRoute(
       page: HeaderSettingsRoute.page,
       guards: [_duplicateGuard],
+    ),
+    AutoRoute(
+      page: PeopleCollectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: AlbumsCollectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: LocalAlbumsCollectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: PlacesCollectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
     ),
   ];
 }
