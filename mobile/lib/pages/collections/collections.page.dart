@@ -1,7 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 
 @RoutePage()
@@ -49,9 +54,86 @@ class CollectionsPage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                PeopleCollectionCard(),
+                AlbumsCollectionCard(),
+              ],
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class PeopleCollectionCard extends ConsumerWidget {
+  const PeopleCollectionCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final people = ref.watch(getAllPeopleProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: MediaQuery.of(context).size.width * 0.5,
+          width: MediaQuery.of(context).size.width * 0.5 - 12,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: context.colorScheme.surfaceContainer,
+          ),
+          child: people.widgetWhen(
+            onData: (people) {
+              return GridView.count(
+                crossAxisCount: 2,
+                padding: const EdgeInsets.only(
+                  top: 18,
+                  left: 12,
+                  right: 12,
+                  bottom: 0,
+                ),
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                physics: const NeverScrollableScrollPhysics(),
+                children: people.take(4).map((person) {
+                  return CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      getFaceThumbnailUrl(person.id),
+                      headers: ApiService.getRequestHeaders(),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text('People', style: context.textTheme.labelLarge),
+        ),
+      ],
+    );
+  }
+}
+
+class AlbumsCollectionCard extends StatelessWidget {
+  const AlbumsCollectionCard({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.width * 0.5,
+      width: MediaQuery.of(context).size.width * 0.5 - 12,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: context.colorScheme.surfaceContainer,
+      ),
+      child: const Center(
+        child: Text('Album Collection'),
       ),
     );
   }
@@ -85,8 +167,8 @@ class ActionButton extends StatelessWidget {
         ),
         style: FilledButton.styleFrom(
           elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          backgroundColor: context.colorScheme.surfaceContainer,
+          padding: const EdgeInsets.all(16),
+          backgroundColor: context.colorScheme.primary.withAlpha(20),
           alignment: Alignment.centerLeft,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20)),
