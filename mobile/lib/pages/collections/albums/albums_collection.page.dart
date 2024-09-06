@@ -20,6 +20,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
     final remote = albums.where((a) => a.isRemote).toList();
     final sorted = albumSortOption.sortFn(remote, albumSortIsReverse);
     final local = albums.where((a) => a.isLocal).toList();
+    final isGrid = useState(false);
 
     useEffect(
       () {
@@ -29,98 +30,42 @@ class AlbumsCollectionPage extends HookConsumerWidget {
       [],
     );
 
+    toggleViewMode() {
+      isGrid.value = !isGrid.value;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Albums"),
       ),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  top: 12.0,
-                  left: 12.0,
-                  right: 12.0,
-                  bottom: 20.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SortButton(),
-                  ],
-                ),
+      body: ListView(
+        shrinkWrap: true,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SortButton(),
+              IconButton(
+                onPressed: toggleViewMode,
+                icon: Icon(isGrid.value ? Icons.list : Icons.grid_view),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.all(12.0),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 250,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: .7,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  childCount: sorted.length,
-                  (context, index) {
-                    return AlbumThumbnailCard(
-                      album: sorted[index],
-                      onTap: () => context.pushRoute(
-                        AlbumViewerRoute(
-                          albumId: sorted[index].id,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 12.0,
-                  left: 12.0,
-                  right: 12.0,
-                  bottom: 20.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'library_page_device_albums',
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ).tr(),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.all(12.0),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 250,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: .7,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  childCount: local.length,
-                  (context, index) => AlbumThumbnailCard(
-                    album: local[index],
-                    onTap: () => context.pushRoute(
-                      AlbumViewerRoute(
-                        albumId: local[index].id,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const ScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 32,
+            crossAxisSpacing: 32,
+            children: sorted.map((album) {
+              return AlbumThumbnailCard(
+                album: album,
+                onTap: () =>
+                    context.pushRoute(AlbumViewerRoute(albumId: album.id)),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
