@@ -1155,6 +1155,8 @@
   "show_slideshow_transition": "Show slideshow transition",
   "show_supporter_badge": "Supporter badge",
   "show_supporter_badge_description": "Show a supporter badge",
+  "show_user_thumbnails": "Show user thumbnails",
+  "show_user_thumbnails_description": "Show user avatars on timelinle for shared albums and partners",
   "shuffle": "Shuffle",
   "sidebar": "Sidebar",
   "sidebar_display_description": "Display a link to the view in the sidebar",

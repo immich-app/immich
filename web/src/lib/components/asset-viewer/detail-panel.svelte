@@ -462,9 +462,13 @@
   </div>
 {/if}
 
-{#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
+{#if (currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner && asset.ownerId != $user.id) || (asset.ownerId != $user.id && asset.owner)}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
-    <p class="text-sm">{$t('shared_by').toUpperCase()}</p>
+    {#if currentAlbum}
+      <p class="text-sm">{$t('shared_by').toUpperCase()}</p>
+    {:else}
+      <p class="text-sm">{$t('partner_sharing').toUpperCase()}</p>
+    {/if}
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />

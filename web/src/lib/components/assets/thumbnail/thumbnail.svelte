@@ -2,12 +2,14 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { getAssetThumbnailUrl, getUserInfo, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { user } from '$lib/stores/user.store';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
-  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { locale, playVideoThumbnailOnHover, showUserThumbnails } from '$lib/stores/preferences.store';
+  import { getUserAndCacheResult } from '$lib/utils/users';
   import { getAssetPlaybackUrl } from '$lib/utils';
   import {
     mdiArchiveArrowDownOutline,
@@ -20,6 +22,7 @@
   } from '@mdi/js';
 
   import { fade } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
@@ -47,6 +50,7 @@
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
   export let disableMouseOver = false;
+  export let showUserThumbnailsinViewer = true;
   export let intersectionConfig: {
     root?: HTMLElement;
     bottom?: string;
@@ -76,6 +80,7 @@
   let intersecting = false;
   let lastRetrievedElement: HTMLElement | undefined;
   let loaded = false;
+  let shareUser: UserResponseDto | undefined;
 
   $: if (!retrieveElement) {
     lastRetrievedElement = undefined;
@@ -83,6 +88,9 @@
   $: if (retrieveElement && element && lastRetrievedElement !== element) {
     lastRetrievedElement = element;
     onRetrieveElement?.(element);
+  }
+  $: if ($showUserThumbnails && showUserThumbnailsinViewer && (isSharedLink() || asset.ownerId != $user.id)) {
+    handlePromiseError(getShareUser());
   }
 
   $: width = thumbnailSize || thumbnailWidth || 235;
@@ -158,6 +166,14 @@
       assetStore.taskManager.separatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
     } else {
       intersecting = false;
+    }
+  };
+
+  const getShareUser = async () => {
+    try {
+      shareUser = await getUserAndCacheResult(asset.ownerId);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_load_liked_status'));
     }
   };
 
@@ -270,9 +286,9 @@
           </div>
         {/if}
 
-        {#if isSharedLink() || asset.ownerId != user.userId}
+        {#if shareUser && showUserThumbnailsinViewer}
           <div class="absolute bottom-2 left-2 z-10">
-            <UserAvatar user={$user} size="sm" />
+            <UserAvatar user={shareUser} size="sm" />
           </div>
         {/if}
 
