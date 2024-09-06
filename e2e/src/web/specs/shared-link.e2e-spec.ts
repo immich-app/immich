@@ -69,4 +69,15 @@ test.describe('Shared Links', () => {
     await page.goto('/share/invalid');
     await page.getByRole('heading', { name: 'Invalid share key' }).waitFor();
   });
+
+  test('auth on navigation from shared link to timeline', async ({ context, page }) => {
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto(`/share/${sharedLink.key}`);
+    await page.getByRole('heading', { name: 'Test Album' }).waitFor();
+
+    await page.locator('a[href="/"]').click();
+    await page.waitForURL('/photos');
+    await page.locator(`[data-asset-id="${asset.id}"]`).waitFor();
+  });
 });
