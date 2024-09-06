@@ -11,7 +11,7 @@
 </script>
 
 {#if isBroken}
-  <BrokenAsset noMessage />
+  <BrokenAsset hideMessage class="aspect-square rounded-xl" />
 {:else}
   <img
     {alt}
