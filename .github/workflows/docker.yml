@@ -40,6 +40,57 @@ jobs:
         id: should_force
         run: echo "should_force=${{ github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
 
+  retag_ml:
+    name: Re-Tag ML
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_ml == 'false' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        suffix: ["", "-cuda", "-openvino", "-armnn"]
+    steps:
+        - name: Login to GitHub Container Registry
+          uses: docker/login-action@v3
+          # Skip when PR from a fork
+          if: ${{ !github.event.pull_request.head.repo.fork }}
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+        - name: Re-tag image
+          run: |
+              REGISTRY_NAME="ghcr.io"
+              REPOSITORY=${{ github.repository_owner }}/immich-machine-learning
+              TAG_OLD=main${{ matrix.suffix }}
+              TAG_NEW=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
+              docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_NEW $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
+
+  retag_server:
+    name: Re-Tag Server
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_server == 'false' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        suffix: [""]
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        # Skip when PR from a fork
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Re-tag image
+        run: |
+          REGISTRY_NAME="ghcr.io"
+          REPOSITORY=${{ github.repository_owner }}/immich-server
+          TAG_OLD=main${{ matrix.suffix }}
+          TAG_NEW=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
+          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_NEW $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
+
+
   build_and_push_ml:
     name: Build and Push ML
     needs: pre-job
@@ -235,9 +286,22 @@ jobs:
             BUILD_SOURCE_REF=${{ github.ref_name }}
             BUILD_SOURCE_COMMIT=${{ github.sha }}
 
-  success-check:
-    name: Docker Build & Push Success
-    needs: [build_and_push_ml, build_and_push_server]
+  success-check-server:
+    name: Docker Build & Push Server Success
+    needs: [build_and_push_server, retag_server]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+      - name: All jobs passed or skipped
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
+
+  success-check-ml:
+    name: Docker Build & Push ML Success
+    needs: [build_and_push_ml, retag_ml]
     runs-on: ubuntu-latest
     if: always()
     steps:
