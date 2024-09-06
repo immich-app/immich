@@ -145,7 +145,11 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(page: EditImageRoute.page),
     AutoRoute(page: CropImageRoute.page),
-    AutoRoute(page: FavoritesRoute.page, guards: [_authGuard, _duplicateGuard]),
+    CustomRoute(
+      page: FavoritesRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
     AutoRoute(page: AllVideosRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(
       page: AllMotionPhotosRoute.page,
@@ -191,8 +195,16 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SettingsSubRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogDetailRoute.page, guards: [_duplicateGuard]),
-    AutoRoute(page: ArchiveRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: PartnerRoute.page, guards: [_authGuard, _duplicateGuard]),
+    CustomRoute(
+      page: ArchiveRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
+      page: PartnerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
     AutoRoute(
       page: PartnerDetailRoute.page,
       guards: [_authGuard, _duplicateGuard],
@@ -208,10 +220,15 @@ class AppRouter extends RootStackRouter {
       page: AlbumOptionsRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
-    AutoRoute(page: TrashRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(
+    CustomRoute(
+      page: TrashRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
       page: SharedLinkRoute.page,
       guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
     AutoRoute(
       page: SharedLinkEditRoute.page,

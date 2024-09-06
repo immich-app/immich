@@ -5,6 +5,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -15,10 +16,13 @@ import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
-class CollectionsPage extends StatelessWidget {
+class CollectionsPage extends ConsumerWidget {
   const CollectionsPage({super.key});
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final trashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+
     return Scaffold(
       appBar: const ImmichAppBar(
         showUploadButton: false,
@@ -53,11 +57,13 @@ class CollectionsPage extends StatelessWidget {
                   label: 'Shared links',
                 ),
                 const SizedBox(width: 8),
-                ActionButton(
-                  onPressed: () => context.pushRoute(const TrashRoute()),
-                  icon: Icons.delete_outline_rounded,
-                  label: 'Trash',
-                ),
+                trashEnabled
+                    ? ActionButton(
+                        onPressed: () => context.pushRoute(const TrashRoute()),
+                        icon: Icons.delete_outline_rounded,
+                        label: 'Trash',
+                      )
+                    : const SizedBox.shrink(),
               ],
             ),
             const SizedBox(height: 24),
@@ -141,9 +147,11 @@ class AlbumsCollectionCard extends ConsumerWidget {
         : ref.watch(albumProvider).where((album) => album.isRemote);
     final size = MediaQuery.of(context).size.width * 0.5 - 20;
     return GestureDetector(
-      onTap: () => context.pushRoute(isLocal
-          ? const LocalAlbumsCollectionRoute()
-          : const AlbumsCollectionRoute()),
+      onTap: () => context.pushRoute(
+        isLocal
+            ? const LocalAlbumsCollectionRoute()
+            : const AlbumsCollectionRoute(),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
