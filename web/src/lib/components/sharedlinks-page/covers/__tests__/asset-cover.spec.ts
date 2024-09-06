@@ -13,6 +13,6 @@ describe('AssetCover component', () => {
     expect(img.alt).toBe('123');
     expect(img.getAttribute('src')).toBe('wee');
     expect(img.getAttribute('loading')).toBe('eager');
-    expect(img.className).toBe('z-0 rounded-xl object-cover aspect-square asdf');
+    expect(img.className).toBe('size-full rounded-xl object-cover aspect-square asdf');
   });
 });
