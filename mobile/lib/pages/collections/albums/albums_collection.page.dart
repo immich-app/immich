@@ -7,10 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/album/albumv2.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
+import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 enum QuickFilterMode {
   all,
@@ -27,10 +30,11 @@ class AlbumsCollectionPage extends HookConsumerWidget {
     final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
     final sorted = albumSortOption.sortFn(albums, albumSortIsReverse);
-    final isGrid = useState(true);
+    final isGrid = useState(false);
     final searchController = useTextEditingController();
     final debounceTimer = useRef<Timer?>(null);
     final filterMode = useState(QuickFilterMode.all);
+    final userId = ref.watch(currentUserProvider)?.id;
 
     toggleViewMode() {
       isGrid.value = !isGrid.value;
@@ -46,7 +50,6 @@ class AlbumsCollectionPage extends HookConsumerWidget {
 
     changeFilter(QuickFilterMode mode) {
       filterMode.value = mode;
-      searchController.clear();
       ref.read(albumProviderV2.notifier).filterAlbums(mode);
     }
 
@@ -97,7 +100,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           Wrap(
             spacing: 4,
             runSpacing: 4,
@@ -135,7 +138,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 5),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
             child: isGrid.value
@@ -155,6 +158,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                         onTap: () => context.pushRoute(
                           AlbumViewerRoute(albumId: sorted[index].id),
                         ),
+                        showOwner: true,
                       );
                     },
                     itemCount: sorted.length,
@@ -164,10 +168,54 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                     physics: const ClampingScrollPhysics(),
                     itemCount: sorted.length,
                     itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(sorted[index].name),
-                        onTap: () => context.pushRoute(
-                          AlbumViewerRoute(albumId: sorted[index].id),
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: ListTile(
+                          title: Text(
+                            sorted[index].name,
+                            style: context.textTheme.titleSmall?.copyWith(
+                              // fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: sorted[index].ownerId == userId
+                              ? Text(
+                                  '${sorted[index].assetCount} items',
+                                  style: context.textTheme.bodyMedium?.copyWith(
+                                    color:
+                                        context.colorScheme.onSurfaceSecondary,
+                                  ),
+                                )
+                              : sorted[index].ownerName != null
+                                  ? Text(
+                                      '${sorted[index].assetCount} items • ${'album_thumbnail_shared_by'.tr(
+                                        args: [
+                                          sorted[index].ownerName!,
+                                        ],
+                                      )}',
+                                      style: context.textTheme.bodyMedium
+                                          ?.copyWith(
+                                        color: context
+                                            .colorScheme.onSurfaceSecondary,
+                                      ),
+                                    )
+                                  : null,
+                          onTap: () => context.pushRoute(
+                            AlbumViewerRoute(albumId: sorted[index].id),
+                          ),
+                          contentPadding: const EdgeInsets.all(0),
+                          dense: false,
+                          visualDensity: VisualDensity.comfortable,
+                          leading: ClipRRect(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(15)),
+                            child: ImmichThumbnail(
+                              asset: sorted[index].thumbnail.value,
+                              width: 60,
+                              height: 90,
+                            ),
+                          ),
+                          minVerticalPadding: 1,
                         ),
                       );
                     },
@@ -319,7 +367,7 @@ class SortButton extends ConsumerWidget {
                   child: Icon(
                     Icons.compare_arrows_rounded,
                     size: 18,
-                    color: context.colorScheme.onSurface.withAlpha(200),
+                    color: context.colorScheme.onSurface.withAlpha(225),
                   ),
                 ),
               ),
@@ -327,7 +375,7 @@ class SortButton extends ConsumerWidget {
                 albumSortOption.label.tr(),
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: context.colorScheme.onSurface.withAlpha(200),
+                  color: context.colorScheme.onSurface.withAlpha(225),
                 ),
               ),
             ],
