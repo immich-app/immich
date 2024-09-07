@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
-import { Between, Brackets, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
+import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -68,22 +68,22 @@ export function searchAssetBuilder(
   builder.andWhere(_.omitBy(id, _.isUndefined));
 
   if (options.userIds) {
-    if (options.withSharedAlbums && !options.isNotInAlbum) {
-      builder
-        .leftJoin(`${builder.alias}.albums`, 'albums')
-        .leftJoin(`albums.albumUsers`, 'albumUsers')
-        .andWhere(
-          new Brackets((qb) => {
-            const { userIds } = options;
-            const ownerID = (userIds as string[])[0];
-            qb.where(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds })
-              .orWhere('albums.ownerId = :ownerId', { ownerId: ownerID })
-              .orWhere('albumUsers.userId = :userId', { userId: ownerID });
-          }),
-        );
-    } else {
-      builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
-    }
+    builder.andWhere((qb) => {
+      qb.where(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
+      if (options.withSharedAlbums && !options.isNotInAlbum) {
+        const ownerID = (options.userIds as string[])[0];
+        const subQuery = builder.subQuery();
+        subQuery
+          .from(AssetEntity, 'assets2')
+          .leftJoin(`assets2.albums`, 'albums')
+          .leftJoin(`albums.albumUsers`, 'albumUsers')
+          .where(`assets2.id=${builder.alias}.id`)
+          .andWhere('(albums.ownerId = :ownerId OR albumUsers.userId = :ownerId)', {
+            ownerId: ownerID,
+          });
+        qb.orWhere(`EXISTS (${subQuery.getQuery()})`);
+      }
+    });
   }
 
   const path = _.pick(options, ['encodedVideoPath', 'originalPath']);
