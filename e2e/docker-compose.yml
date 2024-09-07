@@ -33,7 +33,7 @@ services:
       - 2285:3001
 
   redis:
-    image: redis:6.2-alpine@sha256:d72905e7e3d53aa237968c0724f7bb22165c6a2068a06e66a361e4add0df75fd
+    image: redis:6.2-alpine@sha256:fd1b5400ca24adc2ff77abdf00acb72c3aae85b94e43557ab2606d29a74bfa01
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
