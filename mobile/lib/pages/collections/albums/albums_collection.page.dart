@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
@@ -21,8 +22,9 @@ class AlbumsCollectionPage extends HookConsumerWidget {
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
     final remote = albums.where((a) => a.isRemote).toList();
     final sorted = albumSortOption.sortFn(remote, albumSortIsReverse);
-    final local = albums.where((a) => a.isLocal).toList();
-    final isGrid = useState(false);
+    final isGrid = useState(true);
+    final searchController = useTextEditingController();
+    final debounceTimer = useRef<Timer?>(null);
 
     useEffect(
       () {
@@ -36,6 +38,28 @@ class AlbumsCollectionPage extends HookConsumerWidget {
       isGrid.value = !isGrid.value;
     }
 
+    onSearch(String value) {
+      debounceTimer.value?.cancel();
+      debounceTimer.value = Timer(const Duration(milliseconds: 300), () {
+        ref.read(albumProvider.notifier).searchAlbums(value);
+      });
+    }
+
+    useEffect(
+      () {
+        searchController.addListener(() {
+          onSearch(searchController.text);
+        });
+        return () {
+          searchController.removeListener(() {
+            onSearch(searchController.text);
+          });
+          debounceTimer.value?.cancel();
+        };
+      },
+      [],
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Albums"),
@@ -44,6 +68,30 @@ class AlbumsCollectionPage extends HookConsumerWidget {
         shrinkWrap: true,
         padding: const EdgeInsets.all(18.0),
         children: [
+          SearchBar(
+            backgroundColor: WidgetStatePropertyAll(
+              context.colorScheme.surfaceContainer,
+            ),
+            autoFocus: false,
+            hintText: "Search albums",
+            onChanged: onSearch,
+            elevation: const WidgetStatePropertyAll(0.25),
+            controller: searchController,
+            leading: const Icon(Icons.search_rounded),
+            padding: WidgetStateProperty.all(
+              const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: context.colorScheme.onSurface.withAlpha(10),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -51,46 +99,53 @@ class AlbumsCollectionPage extends HookConsumerWidget {
               const SizedBox(width: 10),
               IconButton(
                 icon: Icon(
-                  isGrid.value ? Icons.list_rounded : Icons.grid_view_outlined,
+                  isGrid.value
+                      ? Icons.view_list_rounded
+                      : Icons.grid_view_outlined,
+                  size: 24,
                 ),
                 onPressed: toggleViewMode,
               ),
             ],
           ),
-          if (isGrid.value)
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 250,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: .7,
-              ),
-              itemBuilder: (context, index) {
-                return AlbumThumbnailCard(
-                  album: sorted[index],
-                  onTap: () => context.pushRoute(
-                    AlbumViewerRoute(albumId: sorted[index].id),
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: isGrid.value
+                ? GridView.builder(
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 250,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: .7,
+                    ),
+                    itemBuilder: (context, index) {
+                      return AlbumThumbnailCard(
+                        album: sorted[index],
+                        onTap: () => context.pushRoute(
+                          AlbumViewerRoute(albumId: sorted[index].id),
+                        ),
+                      );
+                    },
+                    itemCount: sorted.length,
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: sorted.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(sorted[index].name),
+                        onTap: () => context.pushRoute(
+                          AlbumViewerRoute(albumId: sorted[index].id),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-              itemCount: sorted.length,
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              itemCount: sorted.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(sorted[index].name),
-                  onTap: () => context.pushRoute(
-                    AlbumViewerRoute(albumId: sorted[index].id),
-                  ),
-                );
-              },
-            ),
+          ),
         ],
       ),
     );
@@ -106,6 +161,14 @@ class SortButton extends ConsumerWidget {
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
 
     return MenuAnchor(
+      style: MenuStyle(
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+      consumeOutsideTap: true,
       menuChildren: AlbumSortMode.values
           .map(
             (mode) => MenuItemButton(
@@ -143,6 +206,11 @@ class SortButton extends ConsumerWidget {
                   albumSortOption == mode
                       ? context.colorScheme.primary
                       : Colors.transparent,
+                ),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
               child: Text(

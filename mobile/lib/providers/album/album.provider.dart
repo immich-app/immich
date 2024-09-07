@@ -12,7 +12,7 @@ import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 
 class AlbumNotifier extends StateNotifier<List<Album>> {
-  AlbumNotifier(this._albumService, Isar db) : super([]) {
+  AlbumNotifier(this._albumService, this.db) : super([]) {
     final query = db.albums
         .filter()
         .owner((q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId));
@@ -25,6 +25,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   final AlbumService _albumService;
+  final Isar db;
   late final StreamSubscription<List<Album>> _streamSub;
 
   Future<void> getAllAlbums() => Future.wait([
@@ -63,6 +64,16 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   void dispose() {
     _streamSub.cancel();
     super.dispose();
+  }
+
+  void searchAlbums(String value) async {
+    final query = db.albums
+        .filter()
+        .owner((q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId))
+        .nameContains(value, caseSensitive: false);
+
+    final albums = await query.findAll();
+    state = albums;
   }
 }
 
