@@ -24,8 +24,6 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
-  import { fly } from 'svelte/transition';
   import SearchPeopleSection from './search-people-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
   import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
@@ -35,12 +33,17 @@
   import SearchDisplaySection from './search-display-section.svelte';
   import SearchTextSection from './search-text-section.svelte';
   import { t } from 'svelte-i18n';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { mdiTune } from '@mdi/js';
+  import { generateId } from '$lib/utils/generate-id';
 
   export let searchQuery: MetadataSearchDto | SmartSearchDto;
+  export let onClose: () => void;
+  export let onSearch: (search: SmartSearchDto | MetadataSearchDto) => void;
 
   const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
-  const dispatch = createEventDispatcher<{ search: SmartSearchDto | MetadataSearchDto }>();
+  const formId = generateId();
 
   // combobox and all the search components have terrible support for value | null so we use empty string instead.
   function withNullAsUndefined<T>(value: T | null) {
@@ -113,21 +116,13 @@
       type,
     };
 
-    dispatch('search', payload);
+    onSearch(payload);
   };
 </script>
 
-<div
-  transition:fly={{ y: 25, duration: 250 }}
-  class="absolute w-full rounded-b-3xl border-2 border-t-0 border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-immich-dark-gray dark:text-gray-300"
->
-  <form
-    id="search-filter-form"
-    autocomplete="off"
-    on:submit|preventDefault={search}
-    on:reset|preventDefault={resetForm}
-  >
-    <div class="px-4 sm:px-6 py-4 space-y-10 max-h-[calc(100dvh-12rem)] overflow-y-auto immich-scrollbar" tabindex="-1">
+<FullScreenModal icon={mdiTune} width="wide" title={$t('search_options')} {onClose}>
+  <form id={formId} autocomplete="off" on:submit|preventDefault={search} on:reset|preventDefault={resetForm}>
+    <div class="space-y-10 pb-10" tabindex="-1">
       <!-- PEOPLE -->
       <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 
@@ -143,7 +138,7 @@
       <!-- DATE RANGE -->
       <SearchDateSection bind:filters={filter.date} />
 
-      <div class="grid md:grid-cols-2 gap-x-5 gap-y-8">
+      <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
         <!-- MEDIA TYPE -->
         <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
@@ -151,13 +146,10 @@
         <SearchDisplaySection bind:filters={filter.display} />
       </div>
     </div>
-
-    <div
-      id="button-row"
-      class="flex justify-end gap-4 border-t dark:border-gray-800 dark:bg-immich-dark-gray px-4 sm:py-6 py-4 mt-2 rounded-b-3xl"
-    >
-      <Button type="reset" color="gray">{$t('clear_all')}</Button>
-      <Button type="submit">{$t('search')}</Button>
-    </div>
   </form>
-</div>
+
+  <svelte:fragment slot="sticky-bottom">
+    <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
+    <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>
+  </svelte:fragment>
+</FullScreenModal>
