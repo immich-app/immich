@@ -175,7 +175,7 @@
   data-int={intersecting}
   style:width="{width}px"
   style:height="{height}px"
-  class="group focus-visible:outline-none flex overflow-hidden {disabled
+  class="focus-visible:outline-none flex overflow-hidden {disabled
     ? 'bg-gray-300'
     : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 >
@@ -193,6 +193,7 @@
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
     <div
+      class="group"
       class:cursor-not-allowed={disabled}
       class:cursor-pointer={!disabled}
       on:mouseenter={onMouseEnter}

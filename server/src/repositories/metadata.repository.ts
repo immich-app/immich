@@ -56,11 +56,11 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getCountries(userId: string): Promise<string[]> {
+  async getCountries(userIds: string[]): Promise<string[]> {
     const results = await this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
-      .where('asset.ownerId = :userId', { userId })
+      .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.country', 'country')
       .distinctOn(['exif.country'])
       .getRawMany<{ country: string }>();
@@ -69,11 +69,11 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getStates(userId: string, country: string | undefined): Promise<string[]> {
+  async getStates(userIds: string[], country: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
-      .where('asset.ownerId = :userId', { userId })
+      .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.state', 'state')
       .distinctOn(['exif.state']);
 
@@ -87,11 +87,11 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userId: string, country: string | undefined, state: string | undefined): Promise<string[]> {
+  async getCities(userIds: string[], country: string | undefined, state: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
-      .where('asset.ownerId = :userId', { userId })
+      .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.city', 'city')
       .distinctOn(['exif.city']);
 
@@ -109,11 +109,11 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getCameraMakes(userId: string, model: string | undefined): Promise<string[]> {
+  async getCameraMakes(userIds: string[], model: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
-      .where('asset.ownerId = :userId', { userId })
+      .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.make', 'make')
       .distinctOn(['exif.make']);
 
@@ -126,11 +126,11 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getCameraModels(userId: string, make: string | undefined): Promise<string[]> {
+  async getCameraModels(userIds: string[], make: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
-      .where('asset.ownerId = :userId', { userId })
+      .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.model', 'model')
       .distinctOn(['exif.model']);
 

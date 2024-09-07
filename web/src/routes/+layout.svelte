@@ -71,6 +71,8 @@
   }
 
   beforeNavigate(({ from, to }) => {
+    setKey(isSharedLinkRoute(to?.route.id) ? to?.params?.key : undefined);
+
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
