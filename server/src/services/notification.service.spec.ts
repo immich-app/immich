@@ -6,6 +6,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
@@ -17,6 +18,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
@@ -64,6 +66,7 @@ const configs = {
 describe(NotificationService.name, () => {
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let notificationMock: Mocked<INotificationRepository>;
@@ -74,13 +77,23 @@ describe(NotificationService.name, () => {
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     notificationMock = newNotificationRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new NotificationService(systemMock, notificationMock, userMock, jobMock, loggerMock, assetMock, albumMock);
+    sut = new NotificationService(
+      eventMock,
+      systemMock,
+      notificationMock,
+      userMock,
+      jobMock,
+      loggerMock,
+      assetMock,
+      albumMock,
+    );
   });
 
   it('should work', () => {
