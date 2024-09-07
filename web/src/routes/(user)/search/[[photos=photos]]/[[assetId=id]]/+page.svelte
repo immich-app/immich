@@ -152,7 +152,7 @@
         'query' in searchDto && $featureFlags.smartSearch
           ? await searchSmart({ smartSearchDto: searchDto })
           : await searchMetadata({ metadataSearchDto: searchDto });
-
+      console.log(albums);
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
       searchResultAlbums = searchResultAlbums;
@@ -183,6 +183,7 @@
       takenAfter: $t('start_date'),
       takenBefore: $t('end_date'),
       isArchived: $t('in_archive'),
+      withSharedAlbums: $t('shared_albums'),
       isFavorite: $t('favorite'),
       isNotInAlbum: $t('not_in_any_album'),
       type: $t('media_type'),

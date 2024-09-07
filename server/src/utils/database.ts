@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
-import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
+import { Between, Brackets, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -68,7 +68,22 @@ export function searchAssetBuilder(
   builder.andWhere(_.omitBy(id, _.isUndefined));
 
   if (options.userIds) {
-    builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
+    if (options.withSharedAlbums && !options.isNotInAlbum) {
+      builder
+        .leftJoin(`${builder.alias}.albums`, 'albums')
+        .leftJoin(`albums.albumUsers`, 'albumUsers')
+        .andWhere(
+          new Brackets((qb) => {
+            const { userIds } = options;
+            const ownerID = (userIds as string[])[0];
+            qb.where(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds })
+              .orWhere('albums.ownerId = :ownerId', { ownerId: ownerID })
+              .orWhere('albumUsers.userId = :userId', { userId: ownerID });
+          }),
+        );
+    } else {
+      builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
+    }
   }
 
   const path = _.pick(options, ['encodedVideoPath', 'originalPath']);

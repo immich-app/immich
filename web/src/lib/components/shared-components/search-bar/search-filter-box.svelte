@@ -68,6 +68,7 @@
       isArchive: searchQuery.isArchived,
       isFavorite: searchQuery.isFavorite,
       isNotInAlbum: 'isNotInAlbum' in searchQuery ? searchQuery.isNotInAlbum : undefined,
+      withSharedAlbums: searchQuery.withSharedAlbums,
     },
     mediaType:
       searchQuery.type === AssetTypeEnum.Image
@@ -109,6 +110,7 @@
       isArchived: filter.display.isArchive || undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
+      withSharedAlbums: filter.display.withSharedAlbums || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       type,
     };

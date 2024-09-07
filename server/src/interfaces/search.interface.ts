@@ -62,6 +62,7 @@ export interface SearchStatusOptions {
   isNotInAlbum?: boolean;
   type?: AssetType;
   withArchived?: boolean;
+  withSharedAlbums?: boolean;
   withDeleted?: boolean;
 }
 

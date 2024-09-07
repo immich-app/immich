@@ -1,6 +1,7 @@
 <script lang="ts" context="module">
   export interface SearchDisplayFilters {
     isNotInAlbum?: boolean;
+    withSharedAlbums?: boolean;
     isArchive?: boolean;
     isFavorite?: boolean;
   }
@@ -18,6 +19,7 @@
     <legend class="immich-form-label">{$t('display_options').toUpperCase()}</legend>
     <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
       <Checkbox id="not-in-album-checkbox" label={$t('not_in_any_album')} bind:checked={filters.isNotInAlbum} />
+      <Checkbox id="with-shared-albums-checkbox" label={$t('shared_albums')} bind:checked={filters.withSharedAlbums} />
       <Checkbox id="archive-checkbox" label={$t('archive')} bind:checked={filters.isArchive} />
       <Checkbox id="favorite-checkbox" label={$t('favorites')} bind:checked={filters.isFavorite} />
     </div>

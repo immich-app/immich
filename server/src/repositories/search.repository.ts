@@ -103,10 +103,9 @@ export class SearchRepository implements ISearchRepository {
   })
   async searchSmart(
     pagination: SearchPaginationOptions,
-    { embedding, userIds, personIds, ...options }: SmartSearchOptions,
+    { embedding, personIds, ...options }: SmartSearchOptions,
   ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
-
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
 
@@ -117,13 +116,11 @@ export class SearchRepository implements ISearchRepository {
           .addCommonTableExpression(cte, 'asset_face_ids')
           .innerJoin('asset_face_ids', 'a', 'a."assetId" = asset.id');
       }
-
       builder = searchAssetBuilder(builder, options);
       builder
         .innerJoin('asset.smartSearch', 'search')
-        .andWhere('asset.ownerId IN (:...userIds )')
         .orderBy('search.embedding <=> :embedding')
-        .setParameters({ userIds, embedding: asVector(embedding) });
+        .setParameters({ embedding: asVector(embedding) });
 
       await manager.query(this.getRuntimeConfig(pagination.size));
       results = await paginatedBuilder<AssetEntity>(builder, {

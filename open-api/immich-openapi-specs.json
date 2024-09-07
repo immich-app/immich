@@ -9885,6 +9885,9 @@
           "withPeople": {
             "type": "boolean"
           },
+          "withSharedAlbums": {
+            "type": "boolean"
+          },
           "withStacked": {
             "type": "boolean"
           }
@@ -11231,6 +11234,9 @@
             "type": "boolean"
           },
           "withExif": {
+            "type": "boolean"
+          },
+          "withSharedAlbums": {
             "type": "boolean"
           }
         },
