@@ -11,7 +11,7 @@
   "advanced_settings_log_level_title": "Nivel de registro: {}",
   "advanced_settings_prefer_remote_subtitle": "Algunos dispositivos tardan mucho en cargar las miniaturas de los elementos encontrados en el dispositivo. Activa esta opción para cargar imágenes remotas en su lugar.",
   "advanced_settings_prefer_remote_title": "Preferir imágenes remotas",
-  "advanced_settings_proxy_headers_subtitle": "Define proxy headers Immich should send with each network request",
+  "advanced_settings_proxy_headers_subtitle": "Definir cabeceras del proxy que Immich debería de enviar con cada petición.",
   "advanced_settings_proxy_headers_title": "Cabeceras del proxy",
   "advanced_settings_self_signed_ssl_subtitle": "Omitir verificación del certificado SSL del servidor. Requerido para certificados autofirmados",
   "advanced_settings_self_signed_ssl_title": "Permitir certificados autofirmados",
