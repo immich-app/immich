@@ -33,3 +33,8 @@ documentation:
   - changed-files:
       - any-glob-to-any-file:
           - machine-learning/app/**
+
+changelog:translation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - web/src/lib/i18n/*.json

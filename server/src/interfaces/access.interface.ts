@@ -46,4 +46,8 @@ export interface IAccessRepository {
   stack: {
     checkOwnerAccess(userId: string, stackIds: Set<string>): Promise<Set<string>>;
   };
+
+  tag: {
+    checkOwnerAccess(userId: string, tagIds: Set<string>): Promise<Set<string>>;
+  };
 }

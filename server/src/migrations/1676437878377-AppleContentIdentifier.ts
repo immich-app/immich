@@ -9,7 +9,7 @@ export class AppleContentIdentifier1676437878377 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "public"."IDX_live_photo_cid"`);
+    await queryRunner.query(`DROP INDEX "IDX_live_photo_cid"`);
     await queryRunner.query(`ALTER TABLE "exif" DROP COLUMN "livePhotoCID"`);
   }
 }

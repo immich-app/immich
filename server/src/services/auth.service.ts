@@ -421,7 +421,7 @@ export class AuthService {
         await this.sessionRepository.update({ id: session.id, updatedAt: new Date() });
       }
 
-      return { user: session.user, session: session };
+      return { user: session.user, session };
     }
 
     throw new UnauthorizedException('Invalid user token');

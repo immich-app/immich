@@ -20,7 +20,7 @@
   };
 </script>
 
-{#if !isSharedLink() && $preferences?.rating?.enabled}
+{#if !isSharedLink() && $preferences?.ratings.enabled}
   <section class="px-4 pt-2">
     <StarRating {rating} readOnly={!isOwner} onRating={(rating) => handlePromiseError(handleChangeRating(rating))} />
   </section>

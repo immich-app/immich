@@ -227,7 +227,7 @@ export class StorageTemplateService {
       const storagePath = this.render(this.template.compiled, {
         asset,
         filename: sanitized,
-        extension: extension,
+        extension,
         albumName,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));

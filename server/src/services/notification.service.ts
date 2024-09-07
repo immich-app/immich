@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { isEqual } from 'lodash';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
@@ -23,6 +22,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
+import { isEqualObject } from 'src/utils/object';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -47,7 +47,7 @@ export class NotificationService {
     try {
       if (
         newConfig.notifications.smtp.enabled &&
-        !isEqual(oldConfig.notifications.smtp, newConfig.notifications.smtp)
+        !isEqualObject(oldConfig.notifications.smtp, newConfig.notifications.smtp)
       ) {
         await this.notificationRepository.verifySmtp(newConfig.notifications.smtp.transport);
       }

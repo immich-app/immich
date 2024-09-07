@@ -317,7 +317,7 @@ export class MapRepository implements IMapRepository {
     }
 
     const input = createReadStream(filePath);
-    const lineReader = readLine.createInterface({ input: input });
+    const lineReader = readLine.createInterface({ input });
 
     const adminMap = new Map<string, string>();
     for await (const line of lineReader) {
