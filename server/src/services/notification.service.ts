@@ -9,10 +9,12 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
+  IEntityJob,
   IJobRepository,
   INotifyAlbumInviteJob,
   INotifyAlbumUpdateJob,
   INotifySignupJob,
+  JobItem,
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
@@ -28,6 +30,7 @@ import { getPreferences } from 'src/utils/preferences';
 @Injectable()
 export class NotificationService {
   private configCore: SystemConfigCore;
+  private static albumUpdateEmailDelayMs = 60_000;
 
   constructor(
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
@@ -65,8 +68,30 @@ export class NotificationService {
   }
 
   @OnEmit({ event: 'album.update' })
-  async onAlbumUpdate({ id, updatedBy }: ArgOf<'album.update'>) {
-    await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_UPDATE, data: { id, senderId: updatedBy } });
+  async onAlbumUpdate({ id, recipientIds }: ArgOf<'album.update'>) {
+    // if deliverTo is empty, album likely only has one user part of it, don't queue notification if so
+    if (!recipientIds) {
+      return;
+    }
+
+    const job: JobItem = {
+      name: JobName.NOTIFY_ALBUM_UPDATE,
+      data: { id, recipientIds, delay: NotificationService.albumUpdateEmailDelayMs },
+    };
+
+    const previousJobData = await this.jobRepository.removeJob(id, JobName.NOTIFY_ALBUM_UPDATE);
+    if (previousJobData !== undefined && this.isAlbumUpdateJob(previousJobData)) {
+      for (const string of previousJobData.recipientIds) {
+        if (!recipientIds.includes(string)) {
+          recipientIds.push(string);
+        }
+      }
+    }
+    await this.jobRepository.queue(job);
+  }
+
+  private isAlbumUpdateJob(job: IEntityJob): job is INotifyAlbumUpdateJob {
+    return 'recipientIds' in job;
   }
 
   @OnEmit({ event: 'album.invite' })
@@ -182,7 +207,7 @@ export class NotificationService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAlbumUpdate({ id, senderId }: INotifyAlbumUpdateJob) {
+  async handleAlbumUpdate({ id, recipientIds }: INotifyAlbumUpdateJob) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
 
     if (!album) {
@@ -194,7 +219,9 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
-    const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) => user.id !== senderId);
+    const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) =>
+      recipientIds.includes(user.id),
+    );
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.configCore.getConfig({ withCache: false });

@@ -117,6 +117,11 @@ export interface IBaseJob {
   force?: boolean;
 }
 
+export interface IDelayedJob extends IBaseJob {
+  /** The minimum time to wait to execute this job, in milliseconds. */
+  delay?: number;
+}
+
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: 'upload' | 'sidecar-write' | 'copy';
@@ -182,8 +187,8 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
   recipientId: string;
 }
 
-export interface INotifyAlbumUpdateJob extends IEntityJob {
-  senderId: string;
+export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
+  recipientIds: string[];
 }
 
 export interface JobCounts {
@@ -292,6 +297,7 @@ export enum JobStatus {
 
 export type JobHandler<T = any> = (data: T) => Promise<JobStatus>;
 export type JobItemHandler = (item: JobItem) => Promise<void>;
+export type DataTransformer = (fromExistingJob: any, fromEnqueueingJob: any) => any;
 
 export const IJobRepository = 'IJobRepository';
 
@@ -310,4 +316,5 @@ export interface IJobRepository {
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
   waitForQueueCompletion(...queues: QueueName[]): Promise<void>;
+  removeJob(jobId: string, name: JobName): Promise<IEntityJob | undefined>;
 }

@@ -192,7 +192,11 @@ export class AlbumService {
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
       });
 
-      await this.eventRepository.emit('album.update', { id, updatedBy: auth.user.id });
+      const allUsersExceptUs = [...album.albumUsers.map((au) => au.user.id), album.owner.id].filter(
+        (userId) => userId !== auth.user.id,
+      );
+
+      await this.eventRepository.emit('album.update', { id, recipientIds: allUsersExceptUs });
     }
 
     return results;
