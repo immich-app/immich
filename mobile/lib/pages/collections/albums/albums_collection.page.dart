@@ -7,34 +7,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/providers/album/albumv2.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
+
+enum QuickFilterMode {
+  all,
+  sharedWithMe,
+  myAlbums,
+}
 
 @RoutePage()
 class AlbumsCollectionPage extends HookConsumerWidget {
   const AlbumsCollectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums = ref.watch(albumProvider);
+    final albums = ref.watch(albumProviderV2);
     final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
-    final remote = albums.where((a) => a.isRemote).toList();
-    final sorted = albumSortOption.sortFn(remote, albumSortIsReverse);
+    final sorted = albumSortOption.sortFn(albums, albumSortIsReverse);
     final isGrid = useState(true);
     final searchController = useTextEditingController();
     final debounceTimer = useRef<Timer?>(null);
-
-    useEffect(
-      () {
-        Future.delayed(const Duration(seconds: 1), () {
-          ref.read(albumProvider.notifier).getAllAlbums();
-        });
-        return null;
-      },
-      [],
-    );
+    final filterMode = useState(QuickFilterMode.all);
 
     toggleViewMode() {
       isGrid.value = !isGrid.value;
@@ -43,8 +39,15 @@ class AlbumsCollectionPage extends HookConsumerWidget {
     onSearch(String value) {
       debounceTimer.value?.cancel();
       debounceTimer.value = Timer(const Duration(milliseconds: 300), () {
-        ref.read(albumProvider.notifier).searchAlbums(value);
+        filterMode.value = QuickFilterMode.all;
+        ref.read(albumProviderV2.notifier).searchAlbums(value);
       });
+    }
+
+    changeFilter(QuickFilterMode mode) {
+      filterMode.value = mode;
+      searchController.clear();
+      ref.read(albumProviderV2.notifier).filterAlbums(mode);
     }
 
     useEffect(
@@ -52,6 +55,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
         searchController.addListener(() {
           onSearch(searchController.text);
         });
+
         return () {
           searchController.removeListener(() {
             onSearch(searchController.text);
@@ -64,7 +68,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Albums"),
+        title: Text("Albums ${albums.length}"),
       ),
       body: ListView(
         shrinkWrap: true,
@@ -93,7 +97,28 @@ class AlbumsCollectionPage extends HookConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              QuickFilterButton(
+                label: 'All',
+                isSelected: filterMode.value == QuickFilterMode.all,
+                onTap: () => changeFilter(QuickFilterMode.all),
+              ),
+              QuickFilterButton(
+                label: 'Shared with me',
+                isSelected: filterMode.value == QuickFilterMode.sharedWithMe,
+                onTap: () => changeFilter(QuickFilterMode.sharedWithMe),
+              ),
+              QuickFilterButton(
+                label: 'My albums',
+                isSelected: filterMode.value == QuickFilterMode.myAlbums,
+                onTap: () => changeFilter(QuickFilterMode.myAlbums),
+              ),
+            ],
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -149,6 +174,56 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class QuickFilterButton extends StatelessWidget {
+  const QuickFilterButton({
+    super.key,
+    required this.isSelected,
+    required this.onTap,
+    required this.label,
+  });
+
+  final bool isSelected;
+  final VoidCallback onTap;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: isSelected
+          ? Icon(
+              Icons.check_rounded,
+              color: context.colorScheme.onPrimary,
+              size: 18,
+            )
+          : const SizedBox.shrink(),
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          isSelected ? context.colorScheme.primary : Colors.transparent,
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: context.colorScheme.onSurface.withAlpha(25),
+              width: 1,
+            ),
+          ),
+        ),
+      ),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: isSelected
+              ? context.colorScheme.onPrimary
+              : context.colorScheme.onSurface,
+          fontSize: 14,
+        ),
       ),
     );
   }
