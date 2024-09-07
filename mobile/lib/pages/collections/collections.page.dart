@@ -73,9 +73,7 @@ class CollectionsPage extends ConsumerWidget {
               children: [
                 PeopleCollectionCard(),
                 AlbumsCollectionCard(),
-                AlbumsCollectionCard(
-                  isLocal: true,
-                ),
+                AlbumsCollectionCard(isLocal: true),
                 PlacesCollectionCard(),
               ],
             ),

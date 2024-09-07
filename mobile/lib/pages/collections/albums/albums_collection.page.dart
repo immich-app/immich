@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +41,8 @@ class AlbumsCollectionPage extends HookConsumerWidget {
         title: const Text("Albums"),
       ),
       body: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(18.0),
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -53,6 +57,40 @@ class AlbumsCollectionPage extends HookConsumerWidget {
               ),
             ],
           ),
+          if (isGrid.value)
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 250,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: .7,
+              ),
+              itemBuilder: (context, index) {
+                return AlbumThumbnailCard(
+                  album: sorted[index],
+                  onTap: () => context.pushRoute(
+                    AlbumViewerRoute(albumId: sorted[index].id),
+                  ),
+                );
+              },
+              itemCount: sorted.length,
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemCount: sorted.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(sorted[index].name),
+                  onTap: () => context.pushRoute(
+                    AlbumViewerRoute(albumId: sorted[index].id),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -67,63 +105,90 @@ class SortButton extends ConsumerWidget {
     final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
 
-    return PopupMenuButton(
-      position: PopupMenuPosition.over,
-      itemBuilder: (BuildContext context) {
-        return AlbumSortMode.values
-            .map<PopupMenuEntry<AlbumSortMode>>((option) {
-          final selected = albumSortOption == option;
-          return PopupMenuItem(
-            value: option,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
+    return MenuAnchor(
+      menuChildren: AlbumSortMode.values
+          .map(
+            (mode) => MenuItemButton(
+              leadingIcon: albumSortOption == mode
+                  ? albumSortIsReverse
+                      ? Icon(
+                          Icons.keyboard_arrow_down,
+                          color: albumSortOption == mode
+                              ? context.colorScheme.onPrimary
+                              : context.colorScheme.onSurface,
+                        )
+                      : Icon(
+                          Icons.keyboard_arrow_up_rounded,
+                          color: albumSortOption == mode
+                              ? context.colorScheme.onPrimary
+                              : context.colorScheme.onSurface,
+                        )
+                  : const Icon(Icons.abc, color: Colors.transparent),
+              onPressed: () {
+                final selected = albumSortOption == mode;
+                // Switch direction
+                if (selected) {
+                  ref
+                      .read(albumSortOrderProvider.notifier)
+                      .changeSortDirection(!albumSortIsReverse);
+                } else {
+                  ref
+                      .read(albumSortByOptionsProvider.notifier)
+                      .changeSortMode(mode);
+                }
+              },
+              style: ButtonStyle(
+                padding: WidgetStateProperty.all(const EdgeInsets.all(8)),
+                backgroundColor: WidgetStateProperty.all(
+                  albumSortOption == mode
+                      ? context.colorScheme.primary
+                      : Colors.transparent,
+                ),
+              ),
+              child: Text(
+                mode.label.tr(),
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: albumSortOption == mode
+                      ? context.colorScheme.onPrimary
+                      : context.colorScheme.onSurface,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+      builder: (context, controller, child) {
+        return GestureDetector(
+          onTap: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 5),
+                child: Transform.rotate(
+                  angle: 90 * pi / 180,
                   child: Icon(
-                    Icons.check,
-                    color: selected ? context.primaryColor : Colors.transparent,
+                    Icons.compare_arrows_rounded,
+                    size: 18,
+                    color: context.colorScheme.onSurface.withAlpha(200),
                   ),
                 ),
-                Text(
-                  option.label.tr(),
-                  style: TextStyle(
-                    color: selected ? context.primaryColor : null,
-                    fontSize: 14.0,
-                  ),
+              ),
+              Text(
+                albumSortOption.label.tr(),
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: context.colorScheme.onSurface.withAlpha(200),
                 ),
-              ],
-            ),
-          );
-        }).toList();
-      },
-      onSelected: (AlbumSortMode value) {
-        final selected = albumSortOption == value;
-        // Switch direction
-        if (selected) {
-          ref
-              .read(albumSortOrderProvider.notifier)
-              .changeSortDirection(!albumSortIsReverse);
-        } else {
-          ref.read(albumSortByOptionsProvider.notifier).changeSortMode(value);
-        }
-      },
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 5),
-            child: Icon(
-              albumSortIsReverse
-                  ? Icons.arrow_downward_rounded
-                  : Icons.arrow_upward_rounded,
-              size: 18,
-            ),
+              ),
+            ],
           ),
-          Text(
-            albumSortOption.label.tr(),
-            style: context.textTheme.labelLarge?.copyWith(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
