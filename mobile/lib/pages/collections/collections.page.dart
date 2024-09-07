@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/album/albumv2.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -141,8 +142,8 @@ class AlbumsCollectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = isLocal
-        ? ref.watch(albumProvider).where((album) => album.isLocal)
-        : ref.watch(albumProvider).where((album) => album.isRemote);
+        ? ref.watch(albumProviderV2).where((album) => album.isLocal)
+        : ref.watch(albumProviderV2).where((album) => album.isRemote);
     final size = MediaQuery.of(context).size.width * 0.5 - 20;
     return GestureDetector(
       onTap: () => context.pushRoute(

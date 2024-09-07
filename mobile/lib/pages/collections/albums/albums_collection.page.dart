@@ -26,7 +26,8 @@ class AlbumsCollectionPage extends HookConsumerWidget {
   const AlbumsCollectionPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums = ref.watch(albumProviderV2);
+    final albums =
+        ref.watch(albumProviderV2).where((album) => album.isRemote).toList();
     final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
     final sorted = albumSortOption.sortFn(albums, albumSortIsReverse);

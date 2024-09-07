@@ -12,7 +12,7 @@ import 'package:isar/isar.dart';
 
 class AlbumNotifierV2 extends StateNotifier<List<Album>> {
   AlbumNotifierV2(this._albumService, this.db) : super([]) {
-    final query = db.albums.filter().remoteIdIsNotNull();
+    final query = db.albums.where();
 
     query.findAll().then((value) {
       if (mounted) {
