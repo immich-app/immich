@@ -253,6 +253,9 @@ export class JobRepository implements IJobRepository {
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         return { jobId: item.data.id };
       }
+      case JobName.METADATA_EXTRACTION: {
+        return { priority: 1 };
+      }
       case JobName.GENERATE_PERSON_THUMBNAIL: {
         return { priority: 1 };
       }
