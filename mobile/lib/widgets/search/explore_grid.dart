@@ -71,6 +71,7 @@ class ExploreGrid extends StatelessWidget {
                           isNotInAlbum: false,
                           isArchive: false,
                           isFavorite: false,
+                          withSharedAlbums: false,
                         ),
                         mediaType: AssetType.other,
                       ),

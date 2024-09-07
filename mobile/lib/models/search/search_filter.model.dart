@@ -175,21 +175,25 @@ class SearchDisplayFilters {
   bool isNotInAlbum = false;
   bool isArchive = false;
   bool isFavorite = false;
+  bool withSharedAlbums = false;
   SearchDisplayFilters({
     required this.isNotInAlbum,
     required this.isArchive,
     required this.isFavorite,
+    required this.withSharedAlbums,
   });
 
   SearchDisplayFilters copyWith({
     bool? isNotInAlbum,
     bool? isArchive,
     bool? isFavorite,
+    bool? withSharedAlbums,
   }) {
     return SearchDisplayFilters(
       isNotInAlbum: isNotInAlbum ?? this.isNotInAlbum,
       isArchive: isArchive ?? this.isArchive,
       isFavorite: isFavorite ?? this.isFavorite,
+      withSharedAlbums: withSharedAlbums ?? this.withSharedAlbums,
     );
   }
 
@@ -206,6 +210,7 @@ class SearchDisplayFilters {
       isNotInAlbum: map['isNotInAlbum'] as bool,
       isArchive: map['isArchive'] as bool,
       isFavorite: map['isFavorite'] as bool,
+      withSharedAlbums: map['withSharedAlbums'] as bool,
     );
   }
 
@@ -216,7 +221,7 @@ class SearchDisplayFilters {
 
   @override
   String toString() =>
-      'SearchDisplayFilters(isNotInAlbum: $isNotInAlbum, isArchive: $isArchive, isFavorite: $isFavorite)';
+      'SearchDisplayFilters(isNotInAlbum: $isNotInAlbum, isArchive: $isArchive, isFavorite: $isFavorite, withSharedAlbums: $withSharedAlbums)';
 
   @override
   bool operator ==(covariant SearchDisplayFilters other) {
@@ -224,12 +229,16 @@ class SearchDisplayFilters {
 
     return other.isNotInAlbum == isNotInAlbum &&
         other.isArchive == isArchive &&
-        other.isFavorite == isFavorite;
+        other.isFavorite == isFavorite &&
+        other.withSharedAlbums == withSharedAlbums;
   }
 
   @override
   int get hashCode =>
-      isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
+      isNotInAlbum.hashCode ^
+      isArchive.hashCode ^
+      isFavorite.hashCode ^
+      withSharedAlbums.hashCode;
 }
 
 class SearchFilter {

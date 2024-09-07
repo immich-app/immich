@@ -42,6 +42,7 @@ class SearchInputPage extends HookConsumerWidget {
               isNotInAlbum: false,
               isArchive: false,
               isFavorite: false,
+              withSharedAlbums: false,
             ),
         mediaType: prefilter?.mediaType ?? AssetType.other,
       ),
@@ -403,6 +404,17 @@ class SearchInputPage extends HookConsumerWidget {
                 filterText.add('search_filter_display_option_favorite'.tr());
               }
               break;
+            case DisplayOption.withSharedAlbums:
+              filter.value = filter.value.copyWith(
+                display: filter.value.display.copyWith(
+                  withSharedAlbums: value,
+                ),
+              );
+              if (value) {
+                filterText
+                    .add('search_filter_display_options_shared_albums'.tr());
+              }
+              break;
           }
         });
 
@@ -418,6 +430,7 @@ class SearchInputPage extends HookConsumerWidget {
             isNotInAlbum: false,
             isArchive: false,
             isFavorite: false,
+            withSharedAlbums: false,
           ),
         );
 

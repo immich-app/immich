@@ -152,7 +152,6 @@
         'query' in searchDto && $featureFlags.smartSearch
           ? await searchSmart({ smartSearchDto: searchDto })
           : await searchMetadata({ metadataSearchDto: searchDto });
-      console.log(albums);
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
       searchResultAlbums = searchResultAlbums;

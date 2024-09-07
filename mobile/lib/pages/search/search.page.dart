@@ -110,6 +110,7 @@ class SearchPage extends HookConsumerWidget {
                         isNotInAlbum: false,
                         isArchive: false,
                         isFavorite: false,
+                        withSharedAlbums: false,
                       ),
                       mediaType: AssetType.other,
                     ),

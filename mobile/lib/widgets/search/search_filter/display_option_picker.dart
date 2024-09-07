@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 
-enum DisplayOption {
-  notInAlbum,
-  favorite,
-  archive,
-}
+enum DisplayOption { notInAlbum, favorite, archive, withSharedAlbums }
 
 class DisplayOptionPicker extends HookWidget {
   const DisplayOptionPicker({
@@ -25,6 +21,7 @@ class DisplayOptionPicker extends HookWidget {
       DisplayOption.notInAlbum: filter?.isNotInAlbum ?? false,
       DisplayOption.favorite: filter?.isFavorite ?? false,
       DisplayOption.archive: filter?.isArchive ?? false,
+      DisplayOption.withSharedAlbums: filter?.withSharedAlbums ?? false,
     });
 
     return ListView(
@@ -59,6 +56,17 @@ class DisplayOptionPicker extends HookWidget {
             options.value = {
               ...options.value,
               DisplayOption.archive: value!,
+            };
+            onSelect(options.value);
+          },
+        ),
+        CheckboxListTile(
+          title: const Text('search_filter_display_options_shared_albums').tr(),
+          value: options.value[DisplayOption.withSharedAlbums],
+          onChanged: (value) {
+            options.value = {
+              ...options.value,
+              DisplayOption.withSharedAlbums: value!,
             };
             onSelect(options.value);
           },
