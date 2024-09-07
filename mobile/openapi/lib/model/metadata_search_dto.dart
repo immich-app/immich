@@ -53,6 +53,7 @@ class MetadataSearchDto {
     this.withDeleted,
     this.withExif,
     this.withPeople,
+    this.withSharedAlbums,
     this.withStacked,
   });
 
@@ -337,6 +338,14 @@ class MetadataSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  bool? withSharedAlbums;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? withStacked;
 
   @override
@@ -381,6 +390,7 @@ class MetadataSearchDto {
     other.withDeleted == withDeleted &&
     other.withExif == withExif &&
     other.withPeople == withPeople &&
+    other.withSharedAlbums == withSharedAlbums &&
     other.withStacked == withStacked;
 
   @override
@@ -426,10 +436,11 @@ class MetadataSearchDto {
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
     (withExif == null ? 0 : withExif!.hashCode) +
     (withPeople == null ? 0 : withPeople!.hashCode) +
+    (withSharedAlbums == null ? 0 : withSharedAlbums!.hashCode) +
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withSharedAlbums=$withSharedAlbums, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -625,6 +636,11 @@ class MetadataSearchDto {
     } else {
     //  json[r'withPeople'] = null;
     }
+    if (this.withSharedAlbums != null) {
+      json[r'withSharedAlbums'] = this.withSharedAlbums;
+    } else {
+    //  json[r'withSharedAlbums'] = null;
+    }
     if (this.withStacked != null) {
       json[r'withStacked'] = this.withStacked;
     } else {
@@ -683,6 +699,7 @@ class MetadataSearchDto {
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),
         withPeople: mapValueOfType<bool>(json, r'withPeople'),
+        withSharedAlbums: mapValueOfType<bool>(json, r'withSharedAlbums'),
         withStacked: mapValueOfType<bool>(json, r'withStacked'),
       );
     }

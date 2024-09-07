@@ -44,6 +44,7 @@ class SmartSearchDto {
     this.withArchived = false,
     this.withDeleted,
     this.withExif,
+    this.withSharedAlbums,
   });
 
   String? city;
@@ -243,6 +244,14 @@ class SmartSearchDto {
   ///
   bool? withExif;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? withSharedAlbums;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SmartSearchDto &&
     other.city == city &&
@@ -275,7 +284,8 @@ class SmartSearchDto {
     other.updatedBefore == updatedBefore &&
     other.withArchived == withArchived &&
     other.withDeleted == withDeleted &&
-    other.withExif == withExif;
+    other.withExif == withExif &&
+    other.withSharedAlbums == withSharedAlbums;
 
   @override
   int get hashCode =>
@@ -310,10 +320,11 @@ class SmartSearchDto {
     (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
     (withArchived.hashCode) +
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
-    (withExif == null ? 0 : withExif!.hashCode);
+    (withExif == null ? 0 : withExif!.hashCode) +
+    (withSharedAlbums == null ? 0 : withSharedAlbums!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withSharedAlbums=$withSharedAlbums]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -460,6 +471,11 @@ class SmartSearchDto {
     } else {
     //  json[r'withExif'] = null;
     }
+    if (this.withSharedAlbums != null) {
+      json[r'withSharedAlbums'] = this.withSharedAlbums;
+    } else {
+    //  json[r'withSharedAlbums'] = null;
+    }
     return json;
   }
 
@@ -504,6 +520,7 @@ class SmartSearchDto {
         withArchived: mapValueOfType<bool>(json, r'withArchived') ?? false,
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),
+        withSharedAlbums: mapValueOfType<bool>(json, r'withSharedAlbums'),
       );
     }
     return null;

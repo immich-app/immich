@@ -795,6 +795,7 @@ export type MetadataSearchDto = {
     withDeleted?: boolean;
     withExif?: boolean;
     withPeople?: boolean;
+    withSharedAlbums?: boolean;
     withStacked?: boolean;
 };
 export type SearchFacetCountResponseDto = {
@@ -861,6 +862,7 @@ export type SmartSearchDto = {
     withArchived?: boolean;
     withDeleted?: boolean;
     withExif?: boolean;
+    withSharedAlbums?: boolean;
 };
 export type ServerAboutResponseDto = {
     build?: string;
