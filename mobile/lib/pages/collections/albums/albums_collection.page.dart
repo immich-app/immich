@@ -28,7 +28,9 @@ class AlbumsCollectionPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(albumProvider.notifier).getAllAlbums();
+        Future.delayed(const Duration(seconds: 1), () {
+          ref.read(albumProvider.notifier).getAllAlbums();
+        });
         return null;
       },
       [],
