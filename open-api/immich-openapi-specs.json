@@ -6632,6 +6632,50 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "x1",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "x2",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "y1",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "y2",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "format": "double",
+              "type": "number"
+            }
           }
         ],
         "responses": {
@@ -6767,6 +6811,50 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "x1",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "x2",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "y1",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "format": "double",
+              "type": "number"
+            }
+          },
+          {
+            "name": "y2",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "format": "double",
+              "type": "number"
             }
           }
         ],

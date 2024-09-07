@@ -633,7 +633,7 @@ export class AssetRepository implements IAssetRepository {
     return builder.orderBy('RANDOM()').limit(count).getMany();
   }
 
-  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
+  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH, x1: 1, x2: 2, y1: 2, y2: 1 }] })
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
     return this.getBuilder(options)
@@ -787,6 +787,34 @@ export class AssetRepository implements IAssetRepository {
       builder.andWhere(
         new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')),
       );
+    }
+
+    if (options.x1 && options.x2 && options.y1 && options.y2) {
+      /**
+       /* the API already makes sure that -180 < x1, x2 < 180
+       /* the first case is when you search an asset with the International Date Line (x1 is on the west side, x2 on the east)
+       */
+      if (options.x1 > options.x2) {
+        builder.andWhere(
+          '(exifInfo.longitude > :x1 OR exifInfo.longitude < :x2) AND exifInfo.latitude > :y2 AND exifInfo.latitude < :y1',
+          {
+            x1: options.x1,
+            x2: options.x2,
+            y1: options.y1,
+            y2: options.y2,
+          },
+        );
+      } else {
+        builder.andWhere(
+          'exifInfo.longitude > :x1 AND exifInfo.longitude < :x2 AND exifInfo.latitude > :y2 AND exifInfo.latitude < :y1',
+          {
+            x1: options.x1,
+            x2: options.x2,
+            y1: options.y1,
+            y2: options.y2,
+          },
+        );
+      }
     }
 
     return builder;

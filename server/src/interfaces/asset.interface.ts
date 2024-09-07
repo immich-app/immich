@@ -57,6 +57,10 @@ export interface AssetBuilderOptions {
   withStacked?: boolean;
   exifInfo?: boolean;
   assetType?: AssetType;
+  x1?: number;
+  x2?: number;
+  y1?: number;
+  y2?: number;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {

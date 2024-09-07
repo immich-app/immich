@@ -14,6 +14,7 @@
   export let description: string | undefined = undefined;
   export let scrollbar = true;
   export let admin = false;
+  export let showCustomSidebar: boolean = false;
 
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden';
   $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
@@ -34,7 +35,9 @@
     {#if admin}
       <AdminSideBar />
     {:else}
-      <SideBar />
+      <SideBar {showCustomSidebar}>
+        <slot name="customSidebar" slot="customSidebar" />
+      </SideBar>
     {/if}
   </slot>
 

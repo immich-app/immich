@@ -116,10 +116,10 @@
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
     const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
-    if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
-      previousRoute = getPreviousRoute;
+    if (getPreviousRoute && !isExternalUrl(decodeURIComponent(getPreviousRoute))) {
+      previousRoute = decodeURIComponent(getPreviousRoute);
     }
-    if (action == 'merge') {
+    if (action === 'merge') {
       viewMode = ViewMode.MERGE_PEOPLE;
     }
 

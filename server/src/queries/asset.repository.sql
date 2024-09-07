@@ -694,7 +694,13 @@ FROM
   LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
   AND ("stackedAssets"."deletedAt" IS NULL)
 WHERE
-  ("asset"."isVisible" = true)
+  (
+    "asset"."isVisible" = true
+    AND "exifInfo"."longitude" > $1
+    AND "exifInfo"."longitude" < $2
+    AND "exifInfo"."latitude" > $3
+    AND "exifInfo"."latitude" < $4
+  )
   AND ("asset"."deletedAt" IS NULL)
 GROUP BY
   (

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { AssetOrder } from 'src/enum';
 import { TimeBucketSize } from 'src/interfaces/asset.interface';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
@@ -41,6 +42,38 @@ export class TimeBucketDto {
   @Optional()
   @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
   order?: AssetOrder;
+
+  @Optional()
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double' })
+  x1?: number;
+
+  @Optional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double' })
+  y1?: number;
+
+  @Optional()
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double' })
+  x2?: number;
+
+  @Optional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double' })
+  y2?: number;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {

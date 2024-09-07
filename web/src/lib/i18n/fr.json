@@ -792,6 +792,7 @@
   "include_archived": "Inclure les archives",
   "include_shared_albums": "Inclure les albums partagés",
   "include_shared_partner_assets": "Inclure les médias partagés du partenaire",
+  "include_timeline": "Inclure la chronologie",
   "individual_share": "Partage individuel",
   "info": "Information",
   "interval": {
@@ -931,6 +932,7 @@
   "notification_toggle_setting_description": "Activer les notifications par courriel",
   "notifications": "Notifications",
   "notifications_setting_description": "Gérer les notifications",
+  "number_of_assets": "Nombre de médias",
   "oauth": "OAuth",
   "offline": "Hors ligne",
   "offline_paths": "Chemins hors ligne",

@@ -758,6 +758,7 @@
   "include_archived": "Include archived",
   "include_shared_albums": "Include shared albums",
   "include_shared_partner_assets": "Include shared partner assets",
+  "include_timeline": "Include timeline",
   "individual_share": "Individual share",
   "info": "Info",
   "interval": {
@@ -872,6 +873,7 @@
   "notification_toggle_setting_description": "Enable email notifications",
   "notifications": "Notifications",
   "notifications_setting_description": "Manage notifications",
+  "number_of_assets": "Number of assets",
   "oauth": "OAuth",
   "offline": "Offline",
   "offline_paths": "Offline paths",
