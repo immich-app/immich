@@ -21,6 +21,9 @@ type EmitEventMap = {
   'asset.tag': [{ assetId: string }];
   'asset.untag': [{ assetId: string }];
 
+  // session events
+  'session.delete': [{ sessionId: string }];
+
   // user events
   'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];
 };
@@ -43,6 +46,7 @@ export enum ClientEvent {
   SERVER_VERSION = 'on_server_version',
   CONFIG_UPDATE = 'on_config_update',
   NEW_RELEASE = 'on_new_release',
+  SESSION_DELETE = 'on_session_delete',
 }
 
 export interface ClientEventMap {
@@ -58,6 +62,7 @@ export interface ClientEventMap {
   [ClientEvent.SERVER_VERSION]: ServerVersionResponseDto;
   [ClientEvent.CONFIG_UPDATE]: Record<string, never>;
   [ClientEvent.NEW_RELEASE]: ReleaseNotification;
+  [ClientEvent.SESSION_DELETE]: string;
 }
 
 export enum ServerEvent {
@@ -77,7 +82,7 @@ export interface IEventRepository {
   /**
    * Send to connected clients for a specific user
    */
-  clientSend<E extends keyof ClientEventMap>(event: E, userId: string, data: ClientEventMap[E]): void;
+  clientSend<E extends keyof ClientEventMap>(event: E, room: string, data: ClientEventMap[E]): void;
   /**
    * Send to all connected clients
    */
