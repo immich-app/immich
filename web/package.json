@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.113.1",
+  "version": "1.114.0",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -73,7 +73,6 @@
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.7.2",
     "@photo-sphere-viewer/video-plugin": "^5.7.2",
     "@zoom-image/svelte": "^0.2.6",
-    "copy-image-clipboard": "^2.1.2",
     "dom-to-image": "^2.6.0",
     "handlebars": "^4.7.8",
     "intl-messageformat": "^10.5.14",

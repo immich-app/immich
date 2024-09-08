@@ -4,6 +4,7 @@ import { MicroservicesModule } from 'src/app.module';
 import { envName, serverVersion } from 'src/constants';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
+import { isStartUpError } from 'src/utils/events';
 import { otelStart } from 'src/utils/instrumentation';
 
 export async function bootstrap() {
@@ -25,7 +26,9 @@ export async function bootstrap() {
 
 if (!isMainThread) {
   bootstrap().catch((error) => {
-    console.error(error);
-    process.exit(1);
+    if (!isStartUpError(error)) {
+      console.error(error);
+    }
+    throw error;
   });
 }
