@@ -98,7 +98,7 @@ class TabControllerPage extends HookConsumerWidget {
             padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.photo_album_outlined),
             selectedIcon: const Icon(Icons.photo_album),
-            label: const Text('Collections').tr(),
+            label: const Text('collections').tr(),
           ),
         ],
       );
@@ -163,7 +163,7 @@ class TabControllerPage extends HookConsumerWidget {
           //   ),
           // ),
           NavigationDestination(
-            label: 'Collections'.tr(),
+            label: 'collections'.tr(),
             icon: const Icon(
               Icons.photo_album_outlined,
             ),

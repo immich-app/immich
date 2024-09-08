@@ -83,7 +83,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
               context.colorScheme.surfaceContainer,
             ),
             autoFocus: false,
-            hintText: "Search albums",
+            hintText: "search_albums".tr(),
             onChanged: onSearch,
             elevation: const WidgetStatePropertyAll(0.25),
             controller: searchController,
@@ -96,7 +96,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color: context.colorScheme.onSurface.withAlpha(10),
-                  width: 1,
+                  width: 0.5,
                 ),
               ),
             ),
@@ -127,7 +127,6 @@ class AlbumsCollectionPage extends HookConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const SortButton(),
-              const SizedBox(width: 10),
               IconButton(
                 icon: Icon(
                   isGrid.value
@@ -175,7 +174,6 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                           title: Text(
                             sorted[index].name,
                             style: context.textTheme.titleSmall?.copyWith(
-                              // fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

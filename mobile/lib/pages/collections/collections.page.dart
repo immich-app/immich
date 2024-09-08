@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
@@ -38,13 +39,13 @@ class CollectionsPage extends ConsumerWidget {
                 ActionButton(
                   onPressed: () => context.pushRoute(const FavoritesRoute()),
                   icon: Icons.favorite_outline_rounded,
-                  label: 'Favorite',
+                  label: 'favorites'.tr(),
                 ),
                 const SizedBox(width: 8),
                 ActionButton(
                   onPressed: () => context.pushRoute(const ArchiveRoute()),
                   icon: Icons.archive_outlined,
-                  label: 'Archive',
+                  label: 'archived'.tr(),
                 ),
               ],
             ),
@@ -54,14 +55,14 @@ class CollectionsPage extends ConsumerWidget {
                 ActionButton(
                   onPressed: () => context.pushRoute(const SharedLinkRoute()),
                   icon: Icons.link_outlined,
-                  label: 'Shared links',
+                  label: 'shared_links'.tr(),
                 ),
                 const SizedBox(width: 8),
                 trashEnabled
                     ? ActionButton(
                         onPressed: () => context.pushRoute(const TrashRoute()),
                         icon: Icons.delete_outline_rounded,
-                        label: 'Trash',
+                        label: 'trash'.tr(),
                       )
                     : const SizedBox.shrink(),
               ],
@@ -125,7 +126,13 @@ class PeopleCollectionCard extends ConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('People', style: context.textTheme.labelLarge),
+            child: Text(
+              'people'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
@@ -179,8 +186,11 @@ class AlbumsCollectionCard extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              isLocal ? 'On this device' : 'Albums',
-              style: context.textTheme.labelLarge,
+              isLocal ? 'on_this_device'.tr() : 'albums'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -221,7 +231,13 @@ class PlacesCollectionCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Places', style: context.textTheme.labelLarge),
+            child: Text(
+              'places'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
