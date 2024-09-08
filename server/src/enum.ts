@@ -153,6 +153,7 @@ export enum SystemMetadataKey {
   FACIAL_RECOGNITION_STATE = 'facial-recognition-state',
   ADMIN_ONBOARDING = 'admin-onboarding',
   SYSTEM_CONFIG = 'system-config',
+  SYSTEM_FLAGS = 'system-flags',
   VERSION_CHECK_STATE = 'version-check-state',
   LICENSE = 'license',
 }

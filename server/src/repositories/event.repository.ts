@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   OnGatewayConnection,
@@ -37,7 +38,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
   private server?: Server;
 
   constructor(
-    private authService: AuthService,
+    private moduleRef: ModuleRef,
     private eventEmitter: EventEmitter2,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
@@ -62,12 +63,15 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`Websocket Connect:    ${client.id}`);
-      const auth = await this.authService.authenticate({
+      const auth = await this.moduleRef.get(AuthService).authenticate({
         headers: client.request.headers,
         queryParams: {},
         metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io' },
       });
       await client.join(auth.user.id);
+      if (auth.session) {
+        await client.join(auth.session.id);
+      }
       this.serverSend(ServerEvent.WEBSOCKET_CONNECT, { userId: auth.user.id });
     } catch (error: Error | any) {
       this.logger.error(`Websocket connection error: ${error}`, error?.stack);
@@ -96,8 +100,8 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     }
   }
 
-  clientSend<E extends keyof ClientEventMap>(event: E, userId: string, data: ClientEventMap[E]) {
-    this.server?.to(userId).emit(event, data);
+  clientSend<E extends keyof ClientEventMap>(event: E, room: string, data: ClientEventMap[E]) {
+    this.server?.to(room).emit(event, data);
   }
 
   clientBroadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]) {

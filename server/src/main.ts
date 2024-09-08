@@ -17,7 +17,13 @@ async function bootstrapImmichAdmin() {
 
 function bootstrapWorker(name: string) {
   console.log(`Starting ${name} worker`);
+
   const worker = name === 'api' ? fork(`./dist/workers/${name}.js`) : new Worker(`./dist/workers/${name}.js`);
+
+  worker.on('error', (error) => {
+    console.error(`${name} worker error: ${error}`);
+  });
+
   worker.on('exit', (exitCode) => {
     if (exitCode !== 0) {
       console.error(`${name} worker exited with code ${exitCode}`);

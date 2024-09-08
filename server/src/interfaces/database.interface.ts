@@ -15,6 +15,7 @@ export enum VectorIndex {
 export enum DatabaseLock {
   GeodataImport = 100,
   Migrations = 200,
+  SystemFileMounts = 300,
   StorageTemplateMigration = 420,
   CLIPDimSize = 512,
   LibraryWatch = 1337,
