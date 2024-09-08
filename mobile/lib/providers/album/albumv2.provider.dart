@@ -26,7 +26,7 @@ class AlbumNotifierV2 extends StateNotifier<List<Album>> {
   final Isar db;
   late final StreamSubscription<List<Album>> _streamSub;
 
-  Future<void> getAllAlbums() {
+  Future<void> refreshAlbums() {
     return Future.wait([
       _albumService.refreshDeviceAlbums(),
       _albumService.refreshRemoteAlbums(isShared: true),
@@ -101,6 +101,14 @@ class AlbumNotifierV2 extends StateNotifier<List<Album>> {
             .findAll();
         return;
     }
+  }
+
+  Future<List<Album>> getRemoteAlbums() {
+    return db.albums.filter().remoteIdIsNotNull().findAll();
+  }
+
+  Future<List<Album>> getLocalAlbums() {
+    return db.albums.filter().not().remoteIdIsNotNull().findAll();
   }
 
   @override

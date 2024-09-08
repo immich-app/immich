@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/album/albumv2.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 
@@ -48,6 +49,10 @@ class TabNavigationObserver extends AutoRouterObserver {
 
     if (route.name == 'LibraryRoute') {
       ref.read(albumProvider.notifier).getAllAlbums();
+    }
+
+    if (route.name == 'CollectionsRoute') {
+      ref.read(albumProviderV2.notifier).refreshAlbums();
     }
 
     if (route.name == 'HomeRoute') {

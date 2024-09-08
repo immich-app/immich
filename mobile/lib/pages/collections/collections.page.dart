@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/albumv2.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -134,17 +134,29 @@ class PeopleCollectionCard extends ConsumerWidget {
   }
 }
 
-class AlbumsCollectionCard extends ConsumerWidget {
+class AlbumsCollectionCard extends HookConsumerWidget {
   final bool isLocal;
 
   const AlbumsCollectionCard({super.key, this.isLocal = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums = isLocal
-        ? ref.watch(albumProviderV2).where((album) => album.isLocal)
-        : ref.watch(albumProviderV2).where((album) => album.isRemote);
+    final albums = useState([]);
+
     final size = MediaQuery.of(context).size.width * 0.5 - 20;
+
+    useEffect(
+      () {
+        Future.microtask(() async {
+          albums.value = isLocal
+              ? await ref.read(albumProviderV2.notifier).getLocalAlbums()
+              : await ref.read(albumProviderV2.notifier).getRemoteAlbums();
+        });
+        return null;
+      },
+      [],
+    );
+
     return GestureDetector(
       onTap: () => context.pushRoute(
         isLocal
@@ -167,7 +179,7 @@ class AlbumsCollectionCard extends ConsumerWidget {
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
               physics: const NeverScrollableScrollPhysics(),
-              children: albums.take(4).map((album) {
+              children: albums.value.take(4).map((album) {
                 return AlbumThumbnailCard(
                   album: album,
                   showTitle: false,
