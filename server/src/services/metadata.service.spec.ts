@@ -522,13 +522,13 @@ describe(MetadataService.name, () => {
     it('should extract the correct video orientation', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
-      metadataMock.readTags.mockResolvedValue(null);
+      metadataMock.readTags.mockResolvedValue({});
 
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({ orientation: Orientation.Rotate270CW }),
+        expect.objectContaining({ orientation: Orientation.Rotate270CW.toString() }),
       );
     });
 
@@ -814,6 +814,9 @@ describe(MetadataService.name, () => {
         projectionType: 'EQUIRECTANGULAR',
         timeZone: tags.tz,
         rating: tags.Rating,
+        country: null,
+        state: null,
+        city: null,
       });
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,

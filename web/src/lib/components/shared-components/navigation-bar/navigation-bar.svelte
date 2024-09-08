@@ -1,15 +1,17 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { clickOutside } from '$lib/actions/click-outside';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { resetSavedUser, user } from '$lib/stores/user.store';
-  import { clickOutside } from '$lib/actions/click-outside';
+  import { user } from '$lib/stores/user.store';
+  import { handleLogout } from '$lib/utils/auth';
   import { logout } from '@immich/sdk';
   import { mdiCog, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { fade, fly } from 'svelte/transition';
   import { AppRoute } from '../../../constants';
   import ImmichLogo from '../immich-logo.svelte';
@@ -17,9 +19,6 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { t } from 'svelte-i18n';
-  import { foldersStore } from '$lib/stores/folders.store';
 
   export let showUploadButton = true;
 
@@ -30,16 +29,9 @@
     uploadClicked: void;
   }>();
 
-  const logOut = async () => {
+  const onLogout = async () => {
     const { redirectUri } = await logout();
-
-    if (redirectUri.startsWith('/')) {
-      await goto(redirectUri);
-    } else {
-      window.location.href = redirectUri;
-    }
-    resetSavedUser();
-    foldersStore.clearCache();
+    await handleLogout(redirectUri);
   };
 </script>
 
@@ -153,7 +145,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel on:logout={logOut} />
+            <AccountInfoPanel on:logout={onLogout} />
           {/if}
         </div>
       </section>
