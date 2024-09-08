@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -141,21 +140,11 @@ class AlbumsCollectionCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums = useState([]);
+    final albums = isLocal
+        ? ref.watch(localAlbumsProvider)
+        : ref.watch(remoteAlbumsProvider);
 
     final size = MediaQuery.of(context).size.width * 0.5 - 20;
-
-    useEffect(
-      () {
-        Future.microtask(() async {
-          albums.value = isLocal
-              ? await ref.read(albumProviderV2.notifier).getLocalAlbums()
-              : await ref.read(albumProviderV2.notifier).getRemoteAlbums();
-        });
-        return null;
-      },
-      [],
-    );
 
     return GestureDetector(
       onTap: () => context.pushRoute(
@@ -179,7 +168,7 @@ class AlbumsCollectionCard extends HookConsumerWidget {
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
               physics: const NeverScrollableScrollPhysics(),
-              children: albums.value.take(4).map((album) {
+              children: albums.take(4).map((album) {
                 return AlbumThumbnailCard(
                   album: album,
                   showTitle: false,

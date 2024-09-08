@@ -82,18 +82,18 @@ class TabControllerPage extends HookConsumerWidget {
             selectedIcon: const Icon(Icons.search),
             label: const Text('tab_controller_nav_search').tr(),
           ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.share_rounded),
-            selectedIcon: const Icon(Icons.share),
-            label: const Text('tab_controller_nav_sharing').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.photo_album_outlined),
-            selectedIcon: const Icon(Icons.photo_album),
-            label: const Text('tab_controller_nav_library').tr(),
-          ),
+          // NavigationRailDestination(
+          //   padding: const EdgeInsets.all(4),
+          //   icon: const Icon(Icons.share_rounded),
+          //   selectedIcon: const Icon(Icons.share),
+          //   label: const Text('tab_controller_nav_sharing').tr(),
+          // ),
+          // NavigationRailDestination(
+          //   padding: const EdgeInsets.all(4),
+          //   icon: const Icon(Icons.photo_album_outlined),
+          //   selectedIcon: const Icon(Icons.photo_album),
+          //   label: const Text('tab_controller_nav_library').tr(),
+          // ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.photo_album_outlined),
@@ -140,28 +140,28 @@ class TabControllerPage extends HookConsumerWidget {
               color: context.primaryColor,
             ),
           ),
-          NavigationDestination(
-            label: 'tab_controller_nav_sharing'.tr(),
-            icon: const Icon(
-              Icons.group_outlined,
-            ),
-            selectedIcon: Icon(
-              Icons.group,
-              color: context.primaryColor,
-            ),
-          ),
-          NavigationDestination(
-            label: 'tab_controller_nav_library'.tr(),
-            icon: const Icon(
-              Icons.photo_album_outlined,
-            ),
-            selectedIcon: buildIcon(
-              Icon(
-                Icons.photo_album_rounded,
-                color: context.primaryColor,
-              ),
-            ),
-          ),
+          // NavigationDestination(
+          //   label: 'tab_controller_nav_sharing'.tr(),
+          //   icon: const Icon(
+          //     Icons.group_outlined,
+          //   ),
+          //   selectedIcon: Icon(
+          //     Icons.group,
+          //     color: context.primaryColor,
+          //   ),
+          // ),
+          // NavigationDestination(
+          //   label: 'tab_controller_nav_library'.tr(),
+          //   icon: const Icon(
+          //     Icons.photo_album_outlined,
+          //   ),
+          //   selectedIcon: buildIcon(
+          //     Icon(
+          //       Icons.photo_album_rounded,
+          //       color: context.primaryColor,
+          //     ),
+          //   ),
+          // ),
           NavigationDestination(
             label: 'Collections'.tr(),
             icon: const Icon(
@@ -183,8 +183,8 @@ class TabControllerPage extends HookConsumerWidget {
       routes: const [
         PhotosRoute(),
         SearchRoute(),
-        SharingRoute(),
-        LibraryRoute(),
+        // SharingRoute(),
+        // LibraryRoute(),
         CollectionsRoute(),
       ],
       duration: const Duration(milliseconds: 600),

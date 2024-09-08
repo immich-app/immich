@@ -26,11 +26,10 @@ class AlbumNotifierV2 extends StateNotifier<List<Album>> {
   final Isar db;
   late final StreamSubscription<List<Album>> _streamSub;
 
-  Future<void> refreshAlbums() {
-    return Future.wait([
-      _albumService.refreshDeviceAlbums(),
-      _albumService.refreshRemoteAlbums(isShared: true),
-    ]);
+  Future<void> refreshAlbums() async {
+    await _albumService.refreshDeviceAlbums();
+    await _albumService.refreshRemoteAlbums(isShared: false);
+    await _albumService.refreshRemoteAlbums(isShared: true);
   }
 
   Future<void> getDeviceAlbums() {
@@ -103,14 +102,6 @@ class AlbumNotifierV2 extends StateNotifier<List<Album>> {
     }
   }
 
-  Future<List<Album>> getRemoteAlbums() {
-    return db.albums.filter().remoteIdIsNotNull().findAll();
-  }
-
-  Future<List<Album>> getLocalAlbums() {
-    return db.albums.filter().not().remoteIdIsNotNull().findAll();
-  }
-
   @override
   void dispose() {
     _streamSub.cancel();
@@ -124,4 +115,60 @@ final albumProviderV2 =
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
   );
+});
+
+class RemoteAlbumsNotifier extends StateNotifier<List<Album>> {
+  RemoteAlbumsNotifier(this.db) : super([]) {
+    final query = db.albums.filter().remoteIdIsNotNull();
+
+    query.findAll().then((value) {
+      if (mounted) {
+        state = value;
+      }
+    });
+
+    _streamSub = query.watch().listen((data) => state = data);
+  }
+
+  final Isar db;
+  late final StreamSubscription<List<Album>> _streamSub;
+
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
+  }
+}
+
+class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
+  LocalAlbumsNotifier(this.db) : super([]) {
+    final query = db.albums.filter().not().remoteIdIsNotNull();
+
+    query.findAll().then((value) {
+      if (mounted) {
+        state = value;
+      }
+    });
+
+    _streamSub = query.watch().listen((data) => state = data);
+  }
+
+  final Isar db;
+  late final StreamSubscription<List<Album>> _streamSub;
+
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
+  }
+}
+
+final localAlbumsProvider =
+    StateNotifierProvider.autoDispose<LocalAlbumsNotifier, List<Album>>((ref) {
+  return LocalAlbumsNotifier(ref.watch(dbProvider));
+});
+
+final remoteAlbumsProvider =
+    StateNotifierProvider.autoDispose<RemoteAlbumsNotifier, List<Album>>((ref) {
+  return RemoteAlbumsNotifier(ref.watch(dbProvider));
 });
