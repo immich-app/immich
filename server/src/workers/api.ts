@@ -9,6 +9,7 @@ import { envName, excludePaths, isDev, resourcePaths, serverVersion } from 'src/
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
+import { isStartUpError } from 'src/utils/events';
 import { otelStart } from 'src/utils/instrumentation';
 import { useSwagger } from 'src/utils/misc';
 
@@ -73,6 +74,9 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  console.error(error);
-  throw error;
+  if (!isStartUpError(error)) {
+    console.error(error);
+  }
+  // eslint-disable-next-line unicorn/no-process-exit
+  process.exit(1);
 });

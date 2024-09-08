@@ -34,6 +34,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -75,6 +76,7 @@ export class AuthService {
 
   constructor(
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -114,6 +116,7 @@ export class AuthService {
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (auth.session) {
       await this.sessionRepository.delete(auth.session.id);
+      await this.eventRepository.emit('session.delete', { sessionId: auth.session.id });
     }
 
     return {
