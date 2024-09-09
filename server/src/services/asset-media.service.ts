@@ -163,7 +163,7 @@ export class AssetMediaService {
           throw new BadRequestException('Live photo video not found');
         }
         if (motionAsset.type !== AssetType.VIDEO) {
-          throw new BadRequestException('Live photo vide must be a video');
+          throw new BadRequestException('Live photo video must be a video');
         }
         if (motionAsset.ownerId !== auth.user.id) {
           throw new BadRequestException('Live photo video does not belong to the user');
