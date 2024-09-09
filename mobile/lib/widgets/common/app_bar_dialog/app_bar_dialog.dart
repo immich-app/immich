@@ -237,35 +237,40 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    return Dialog(
-      clipBehavior: Clip.hardEdge,
-      alignment: Alignment.topCenter,
-      insetPadding: EdgeInsets.only(
-        top: isHorizontal ? 20 : 40,
-        left: horizontalPadding,
-        right: horizontalPadding,
-        bottom: isHorizontal ? 20 : 100,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: SizedBox(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: buildTopRow(),
-              ),
-              const AppBarProfileInfoBox(),
-              buildStorageInformation(),
-              const AppBarServerInfo(),
-              buildAppLogButton(),
-              buildSettingButton(),
-              buildSignOutButton(),
-              buildFooter(),
-            ],
+    return Dismissible(
+      direction: DismissDirection.down,
+      onDismissed: (_) => Navigator.of(context).pop(),
+      key: const Key('app_bar_dialog'),
+      child: Dialog(
+        clipBehavior: Clip.hardEdge,
+        alignment: Alignment.topCenter,
+        insetPadding: EdgeInsets.only(
+          top: isHorizontal ? 20 : 40,
+          left: horizontalPadding,
+          right: horizontalPadding,
+          bottom: isHorizontal ? 20 : 100,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: SizedBox(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  child: buildTopRow(),
+                ),
+                const AppBarProfileInfoBox(),
+                buildStorageInformation(),
+                const AppBarServerInfo(),
+                buildAppLogButton(),
+                buildSettingButton(),
+                buildSignOutButton(),
+                buildFooter(),
+              ],
+            ),
           ),
         ),
       ),
