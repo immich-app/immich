@@ -59,8 +59,6 @@ class DraggableScrollbar extends StatefulWidget {
 
   final Function(bool scrolling) scrollStateListener;
 
-  final double viewPortHeight;
-
   DraggableScrollbar.semicircle({
     super.key,
     Key? scrollThumbKey,
@@ -69,7 +67,6 @@ class DraggableScrollbar extends StatefulWidget {
     required this.controller,
     required this.itemPositionsListener,
     required this.scrollStateListener,
-    required this.viewPortHeight,
     this.heightScrollThumb = 48.0,
     this.backgroundColor = Colors.white,
     this.padding,
@@ -254,7 +251,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
   }
 
   double get barMaxScrollExtent =>
-      widget.viewPortHeight -
+      (context.size?.height ?? 0) -
       widget.heightScrollThumb -
       (widget.heightOffset ?? 0);
 
