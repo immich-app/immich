@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -135,7 +136,8 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
     // Register user
     ServiceLocator.registerCurrentUser(user);
     await di<IUserRepository>().add(user);
-    // Sync assets in background
+    // Remove and Sync assets in background
+    await di<IAssetRepository>().clearAll();
     unawaited(di<SyncService>().doFullSyncForUserDrift(user));
 
     emit(state.copyWith(

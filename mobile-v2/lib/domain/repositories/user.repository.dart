@@ -8,13 +8,13 @@ import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 
 class UserDriftRepository with LogContext implements IUserRepository {
-  final DriftDatabaseRepository db;
+  final DriftDatabaseRepository _db;
 
-  const UserDriftRepository(this.db);
+  const UserDriftRepository(this._db);
 
   @override
   FutureOr<User?> fetch(String userId) async {
-    return await db.managers.user
+    return await _db.managers.user
         .filter((f) => f.id.equals(userId))
         .map(_toModel)
         .getSingleOrNull();
@@ -23,7 +23,7 @@ class UserDriftRepository with LogContext implements IUserRepository {
   @override
   FutureOr<bool> add(User user) async {
     try {
-      await db.into(db.user).insertOnConflictUpdate(
+      await _db.into(_db.user).insertOnConflictUpdate(
             UserCompanion.insert(
               id: user.id,
               name: user.name,

@@ -13,19 +13,21 @@ import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 import 'package:openapi/api.dart';
 
 @immutable
-class ImmichApiClientData {
+class ImApiClientData {
   final String endpoint;
   final Map<String, String> headersMap;
 
-  const ImmichApiClientData({required this.endpoint, required this.headersMap});
+  const ImApiClientData({required this.endpoint, required this.headersMap});
 }
 
 class ImmichApiClient extends ApiClient with LogContext {
   ImmichApiClient({required String endpoint}) : super(basePath: endpoint);
 
   /// Used to recreate the client in Isolates
-  ImmichApiClientData get clientData =>
-      ImmichApiClientData(endpoint: basePath, headersMap: defaultHeaderMap);
+  ImApiClientData get clientData =>
+      ImApiClientData(endpoint: basePath, headersMap: defaultHeaderMap);
+
+  Map<String, String> get headers => defaultHeaderMap;
 
   Future<void> init({String? accessToken}) async {
     final token =
@@ -47,7 +49,7 @@ class ImmichApiClient extends ApiClient with LogContext {
     addDefaultHeader(kImmichHeaderDeviceType, Platform.operatingSystem);
   }
 
-  factory ImmichApiClient.clientData(ImmichApiClientData data) {
+  factory ImmichApiClient.clientData(ImApiClientData data) {
     final client = ImmichApiClient(endpoint: data.endpoint);
 
     for (final entry in data.headersMap.entries) {

@@ -1,12 +1,12 @@
 import 'package:get_it/get_it.dart';
+import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/log.interface.dart';
-import 'package:immich_mobile/domain/interfaces/remote_asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/repositories/asset.repository.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/domain/repositories/log.repository.dart';
-import 'package:immich_mobile/domain/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/domain/repositories/store.repository.dart';
 import 'package:immich_mobile/domain/repositories/user.repository.dart';
 import 'package:immich_mobile/domain/services/app_setting.service.dart';
@@ -44,7 +44,7 @@ class ServiceLocator {
     di.registerFactory<ILogRepository>(() => LogDriftRepository(di()));
     di.registerFactory<AppSettingService>(() => AppSettingService(di()));
     di.registerFactory<IUserRepository>(() => UserDriftRepository(di()));
-    di.registerFactory<IRemoteAssetRepository>(
+    di.registerFactory<IAssetRepository>(
       () => RemoteAssetDriftRepository(di()),
     );
 

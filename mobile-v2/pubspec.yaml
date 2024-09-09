@@ -13,13 +13,17 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # OS specific path
+  # Platform related
   path_provider: ^2.1.4
   path: ^1.9.0
+  dynamic_color: ^1.7.0
+  url_launcher: ^6.3.0
+  package_info_plus: ^8.0.2
+  device_info_plus: ^10.1.2
   # State handling
   flutter_bloc: ^8.1.6
   # Database
-  drift: ^2.20.0
+  drift: ^2.20.2
   drift_flutter: ^0.2.0
   sqlite3: ^2.4.6
   sqlite3_flutter_libs: ^0.5.24
@@ -34,24 +38,20 @@ dependencies:
   # service_locator
   get_it: ^7.7.0
   # Photo Manager
-  photo_manager: ^3.2.3
+  photo_manager: ^3.3.0
   photo_manager_image_provider: ^2.1.1
-  # Dynamic colors - Android
-  dynamic_color: ^1.7.0
-  # Material symbols
-  material_symbols_icons: ^4.2780.0
   # Localization
-  slang: ^3.31.1
+  intl: ^0.19.0
+  slang: ^3.31.2
   slang_flutter: ^3.31.0
-  # Adaptive scaffold
-  flutter_adaptive_scaffold: ^0.2.2
-  # URL launching
-  url_launcher: ^6.3.0
-  # plus_extensions
-  package_info_plus: ^8.0.2
-  device_info_plus: ^10.1.2
   # oauth login
   flutter_web_auth_2: ^3.1.2
+  # components
+  material_symbols_icons: ^4.2785.1
+  flutter_adaptive_scaffold: ^0.2.6
+  scrollable_positioned_list: ^0.3.8
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
 
   openapi:
     path: openapi
@@ -70,13 +70,13 @@ dev_dependencies:
   # Code generator
   build_runner: ^2.4.12
   # Database helper
-  drift_dev: ^2.20.1
+  drift_dev: ^2.20.3
   # Route helper
   auto_route_generator: ^9.0.0
   # Localization generator
   slang_build_runner: ^3.31.0
   # Assets constant generator
-  flutter_gen_runner: ^5.6.0
+  flutter_gen_runner: ^5.7.0
 
 flutter:
   uses-material-design: true

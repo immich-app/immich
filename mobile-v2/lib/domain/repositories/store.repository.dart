@@ -8,13 +8,13 @@ import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 
 class StoreDriftRepository with LogContext implements IStoreRepository {
-  final DriftDatabaseRepository db;
+  final DriftDatabaseRepository _db;
 
-  const StoreDriftRepository(this.db);
+  const StoreDriftRepository(this._db);
 
   @override
   FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key) async {
-    final storeData = await db.managers.store
+    final storeData = await _db.managers.store
         .filter((s) => s.id.equals(key.id))
         .getSingleOrNull();
     return _getValueFromStoreData(key, storeData);
@@ -35,7 +35,7 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
       final storeValue = key.converter.toPrimitive(value);
       final intValue = (key.type == int) ? storeValue as int : null;
       final stringValue = (key.type == String) ? storeValue as String : null;
-      await db.into(db.store).insertOnConflictUpdate(StoreCompanion.insert(
+      await _db.into(_db.store).insertOnConflictUpdate(StoreCompanion.insert(
             id: Value(key.id),
             intValue: Value(intValue),
             stringValue: Value(stringValue),
@@ -49,12 +49,12 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
 
   @override
   FutureOr<void> delete(StoreKey key) async {
-    await db.managers.store.filter((s) => s.id.equals(key.id)).delete();
+    await _db.managers.store.filter((s) => s.id.equals(key.id)).delete();
   }
 
   @override
   Stream<T?> watch<T, U>(StoreKey<T, U> key) {
-    return db.managers.store
+    return _db.managers.store
         .filter((s) => s.id.equals(key.id))
         .watchSingleOrNull()
         .asyncMap((e) async => await _getValueFromStoreData(key, e));
@@ -62,8 +62,7 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
 
   @override
   FutureOr<void> clearStore() async {
-    await db.managers.store.delete();
-
+    await _db.managers.store.delete();
   }
 
   FutureOr<T?> _getValueFromStoreData<T, U>(

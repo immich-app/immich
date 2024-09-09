@@ -14,5 +14,5 @@ void main() {
   // Init localization
   LocaleSettings.useDeviceLocale();
 
-  runApp(const ImmichApp());
+  runApp(const ImApp());
 }

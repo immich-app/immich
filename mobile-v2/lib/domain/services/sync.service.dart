@@ -1,6 +1,6 @@
 import 'package:drift/isolate.dart';
-import 'package:immich_mobile/domain/interfaces/remote_asset.interface.dart';
-import 'package:immich_mobile/domain/models/asset/remote_asset.model.dart';
+import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
+import 'package:immich_mobile/domain/models/asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/service_locator.dart';
@@ -53,8 +53,7 @@ class SyncService with LogContext {
               break;
             }
 
-            await di<IRemoteAssetRepository>()
-                .addAll(assets.map(RemoteAsset.fromDto));
+            await di<IAssetRepository>().addAll(assets.map(Asset.remote));
 
             lastAssetId = assets.lastOrNull?.id;
             if (assets.length != chunkSize) break;

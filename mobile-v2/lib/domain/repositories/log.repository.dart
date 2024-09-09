@@ -8,21 +8,21 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 
 class LogDriftRepository implements ILogRepository {
-  final DriftDatabaseRepository db;
+  final DriftDatabaseRepository _db;
 
-  const LogDriftRepository(this.db);
+  const LogDriftRepository(this._db);
 
   @override
   Future<List<LogMessage>> fetchAll() async {
-    return await db.managers.logs.map(_toModel).get();
+    return await _db.managers.logs.map(_toModel).get();
   }
 
   @override
   Future<void> truncateLogs({int limit = 250}) async {
-    final totalCount = await db.managers.logs.count();
+    final totalCount = await _db.managers.logs.count();
     if (totalCount > limit) {
       final rowsToDelete = totalCount - limit;
-      await db.managers.logs
+      await _db.managers.logs
           .orderBy((o) => o.createdAt.desc())
           .limit(rowsToDelete)
           .delete();
@@ -32,7 +32,7 @@ class LogDriftRepository implements ILogRepository {
   @override
   FutureOr<bool> add(LogMessage log) async {
     try {
-      await db.into(db.logs).insert(LogsCompanion.insert(
+      await _db.into(_db.logs).insert(LogsCompanion.insert(
             content: log.content,
             level: log.level,
             createdAt: Value(log.createdAt),
@@ -50,9 +50,9 @@ class LogDriftRepository implements ILogRepository {
   @override
   FutureOr<bool> addAll(List<LogMessage> logs) async {
     try {
-      await db.batch((b) {
+      await _db.batch((b) {
         b.insertAll(
-          db.logs,
+          _db.logs,
           logs.map((log) => LogsCompanion.insert(
                 content: log.content,
                 level: log.level,
@@ -73,7 +73,7 @@ class LogDriftRepository implements ILogRepository {
   @override
   FutureOr<bool> clear() async {
     try {
-      await db.managers.logs.delete();
+      await _db.managers.logs.delete();
       return true;
     } catch (e) {
       debugPrint("Error while clearning the logs in DB - $e");

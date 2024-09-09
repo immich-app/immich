@@ -9,14 +9,14 @@ import 'package:immich_mobile/presentation/router/router.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
 
-class ImmichApp extends StatefulWidget {
-  const ImmichApp({super.key});
+class ImApp extends StatefulWidget {
+  const ImApp({super.key});
 
   @override
-  State createState() => _ImmichAppState();
+  State createState() => _ImAppState();
 }
 
-class _ImmichAppState extends State<ImmichApp> with WidgetsBindingObserver {
+class _ImAppState extends State<ImApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return TranslationProvider(
