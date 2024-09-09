@@ -296,10 +296,13 @@
                     weekday: 'short',
                     hour: 'numeric',
                     minute: '2-digit',
-                    timeZoneName: 'longOffset',
                   },
                   { locale: $locale },
                 )}
+                {assetDateTimeOriginal.toFormat('ZZZZZ', { locale: $locale })}
+                {assetDateTimeOriginal.toFormat('ZZZZZ', { locale: $locale }).includes('UTC')
+                  ? ''
+                  : '(' + assetDateTimeOriginal.toFormat('ZZ') + ')'}
               </p>
             </div>
           </div>
