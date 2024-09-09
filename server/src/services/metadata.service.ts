@@ -585,18 +585,15 @@ export class MetadataService {
       this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
     }
 
-    const newPersons = await this.personRepository.create(missing);
+    const newPersonIds = await this.personRepository.createAll(missing);
 
     const faceIds = await this.personRepository.replaceFaces(asset.id, discoveredFaces, SourceType.EXIF);
     this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
 
-    await this.personRepository.update(missingWithFaceAsset);
+    await this.personRepository.updateAll(missingWithFaceAsset);
 
     await this.jobRepository.queueAll(
-      newPersons.map((person) => ({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: { id: person.id },
-      })),
+      newPersonIds.map((id) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } })),
     );
   }
 
