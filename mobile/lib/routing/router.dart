@@ -169,10 +169,9 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
-    CustomRoute(
+    AutoRoute(
       page: AlbumViewerRoute.page,
       guards: [_authGuard, _duplicateGuard],
-      transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
     CustomRoute(
       page: AlbumAdditionalSharedUserSelectionRoute.page,
