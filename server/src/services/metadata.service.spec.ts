@@ -8,7 +8,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
@@ -220,11 +220,10 @@ describe(MetadataService.name, () => {
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
         JobStatus.SUCCESS,
       );
-      expect(eventMock.clientSend).toHaveBeenCalledWith(
-        ClientEvent.ASSET_HIDDEN,
-        assetStub.livePhotoMotionAsset.ownerId,
-        assetStub.livePhotoMotionAsset.id,
-      );
+      expect(eventMock.emit).toHaveBeenCalledWith('asset.hide', {
+        userId: assetStub.livePhotoMotionAsset.ownerId,
+        assetId: assetStub.livePhotoMotionAsset.id,
+      });
     });
 
     it('should search by libraryId', async () => {

@@ -58,6 +58,12 @@ export class NotificationService {
     }
   }
 
+  @OnEmit({ event: 'asset.hide' })
+  onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
+    // Notify clients to hide the linked live photo asset
+    this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, userId, assetId);
+  }
+
   @OnEmit({ event: 'user.signup' })
   async onUserSignup({ notify, id, tempPassword }: ArgOf<'user.signup'>) {
     if (notify) {
