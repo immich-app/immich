@@ -589,8 +589,20 @@ describe(AssetMediaService.name, () => {
         }),
       ).resolves.toEqual({
         results: [
-          { id: '1', assetId: 'asset-1', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
-          { id: '2', assetId: 'asset-2', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
+          {
+            id: '1',
+            assetId: 'asset-1',
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+            isTrashed: false,
+          },
+          {
+            id: '2',
+            assetId: 'asset-2',
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+            isTrashed: false,
+          },
         ],
       });
 
