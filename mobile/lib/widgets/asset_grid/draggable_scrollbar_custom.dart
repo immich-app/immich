@@ -374,6 +374,16 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
 
     _currentItem = itemPosition;
 
+    /// If the bar is at the bottom but the item position is still smaller than the max item count (due to rounding error)
+    /// jump to the end of the list
+    if (barMaxScrollExtent - _barOffset < 10 && itemPosition < maxItemCount) {
+      widget.controller.jumpTo(
+        index: maxItemCount,
+      );
+
+      return;
+    }
+
     widget.controller.jumpTo(
       index: itemPosition,
     );
