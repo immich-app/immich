@@ -7,6 +7,7 @@
   import { t } from 'svelte-i18n';
 
   export let initialDate: DateTime = DateTime.now();
+  export let initialTimeZone: string = '';
 
   type ZoneOption = {
     /**
@@ -76,7 +77,7 @@
   }
 
   /*
-   * Find the time zone to select for a given time, date, and offset (e.g. +02:00).
+   * If the time zone is not given, find the timezone to select for a given time, date, and offset (e.g. +02:00).
    *
    * This is done so that the list shown to the user includes more helpful names like "Europe/Berlin (+02:00)"
    * instead of just the raw offset or something like "UTC+02:00".
@@ -97,6 +98,7 @@
   ) {
     const offset = date.offset;
     const previousSelection = timezones.find((item) => item.value === selectedOption?.value);
+    const fromInitialTimeZone = timezones.find((item) => item.value === initialTimeZone);
     const sameAsUserTimeZone = timezones.find((item) => item.offsetMinutes === offset && item.value === userTimeZone);
     const firstWithSameOffset = timezones.find((item) => item.offsetMinutes === offset);
     const utcFallback = {
@@ -105,7 +107,7 @@
       value: 'UTC',
       valid: true,
     };
-    return previousSelection ?? sameAsUserTimeZone ?? firstWithSameOffset ?? utcFallback;
+    return previousSelection ?? fromInitialTimeZone ?? sameAsUserTimeZone ?? firstWithSameOffset ?? utcFallback;
   }
 
   function sortTwoZones(zoneA: ZoneOption, zoneB: ZoneOption) {
