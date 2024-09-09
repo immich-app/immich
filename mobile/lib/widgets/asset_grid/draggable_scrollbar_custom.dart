@@ -337,8 +337,8 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
             _thumbAnimationController.forward();
           }
 
-          if (itemPos < maxItemCount) {
-            _currentItem = itemPos;
+          if (itemPosition < maxItemCount) {
+            _currentItem = itemPosition;
           }
 
           _fadeoutTimer?.cancel();
@@ -362,25 +362,25 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     widget.scrollStateListener(true);
   }
 
-  int get itemPos {
+  int get itemPosition {
     int numberOfItems = widget.child.itemCount;
     return ((_barOffset / barMaxScrollExtent) * numberOfItems).toInt();
   }
 
-  void _jumpToBarPos() {
-    if (itemPos > maxItemCount - 1) {
+  void _jumpToBarPosition() {
+    if (itemPosition > maxItemCount - 1) {
       return;
     }
 
-    _currentItem = itemPos;
+    _currentItem = itemPosition;
 
     widget.controller.jumpTo(
-      index: itemPos,
+      index: itemPosition,
     );
   }
 
   Timer? dragHaltTimer;
-  int lastTimerPos = 0;
+  int lastTimerPosition = 0;
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     setState(() {
@@ -397,8 +397,8 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           _barOffset = barMaxScrollExtent;
         }
 
-        if (itemPos != lastTimerPos) {
-          lastTimerPos = itemPos;
+        if (itemPosition != lastTimerPosition) {
+          lastTimerPosition = itemPosition;
           dragHaltTimer?.cancel();
           widget.scrollStateListener(true);
 
@@ -410,7 +410,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           );
         }
 
-        _jumpToBarPos();
+        _jumpToBarPosition();
       }
     });
   }
@@ -423,7 +423,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     });
 
     setState(() {
-      _jumpToBarPos();
+      _jumpToBarPosition();
       _isDragInProcess = false;
     });
 
