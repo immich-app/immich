@@ -395,6 +395,7 @@ export type AssetBulkUploadCheckResult = {
     action: Action;
     assetId?: string;
     id: string;
+    isTrashed?: boolean;
     reason?: Reason;
 };
 export type AssetBulkUploadCheckResponseDto = {

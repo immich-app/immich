@@ -338,6 +338,7 @@ export class AssetRepository implements IAssetRepository {
       select: {
         id: true,
         checksum: true,
+        deletedAt: true,
       },
       where: {
         ownerId,

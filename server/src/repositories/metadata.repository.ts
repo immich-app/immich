@@ -55,7 +55,7 @@ export class MetadataRepository implements IMetadataRepository {
     }
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   async getCountries(userIds: string[]): Promise<string[]> {
     const results = await this.exifRepository
       .createQueryBuilder('exif')
@@ -68,7 +68,7 @@ export class MetadataRepository implements IMetadataRepository {
     return results.map(({ country }) => country).filter((item) => item !== '');
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
   async getStates(userIds: string[], country: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
@@ -86,7 +86,7 @@ export class MetadataRepository implements IMetadataRepository {
     return result.map(({ state }) => state).filter((item) => item !== '');
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
   async getCities(userIds: string[], country: string | undefined, state: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
@@ -108,7 +108,7 @@ export class MetadataRepository implements IMetadataRepository {
     return results.map(({ city }) => city).filter((item) => item !== '');
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
   async getCameraMakes(userIds: string[], model: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
@@ -125,7 +125,7 @@ export class MetadataRepository implements IMetadataRepository {
     return results.map(({ make }) => make).filter((item) => item !== '');
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
   async getCameraModels(userIds: string[], make: string | undefined): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
