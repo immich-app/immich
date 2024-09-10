@@ -58,6 +58,7 @@ Optionally, you can enable hardware acceleration for machine learning and transc
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
 - Consider changing `DB_PASSWORD` to a custom value. Postgres is not publically exposed, so this password is only used for local authentication.
   To avoid issues with Docker parsing this value, it is best to use only the characters `A-Za-z0-9`.
+- Set your timezone by uncommenting the `TZ=` line.
 
 ### Step 3 - Start the containers
 
