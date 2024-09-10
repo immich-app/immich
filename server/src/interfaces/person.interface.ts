@@ -54,7 +54,8 @@ export interface IPersonRepository {
 
   getAssets(personId: string): Promise<AssetEntity[]>;
 
-  create(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]>;
+  create(person: Partial<PersonEntity>): Promise<PersonEntity>;
+  createAll(people: Partial<PersonEntity>[]): Promise<string[]>;
   createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
@@ -74,6 +75,7 @@ export interface IPersonRepository {
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
-  update(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]>;
+  update(person: Partial<PersonEntity>): Promise<PersonEntity>;
+  updateAll(people: Partial<PersonEntity>[]): Promise<void>;
   getLatestFaceDate(): Promise<string | undefined>;
 }

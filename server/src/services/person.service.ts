@@ -173,7 +173,7 @@ export class PersonService {
       const assetFace = await this.repository.getRandomFace(personId);
 
       if (assetFace !== null) {
-        await this.repository.update([{ id: personId, faceAssetId: assetFace.id }]);
+        await this.repository.update({ id: personId, faceAssetId: assetFace.id });
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
     }
@@ -211,16 +211,13 @@ export class PersonService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
-    const [created] = await this.repository.create([
-      {
-        ownerId: auth.user.id,
-        name: dto.name,
-        birthDate: dto.birthDate,
-        isHidden: dto.isHidden,
-      },
-    ]);
-    return created;
+  create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
+    return this.repository.create({
+      ownerId: auth.user.id,
+      name: dto.name,
+      birthDate: dto.birthDate,
+      isHidden: dto.isHidden,
+    });
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
@@ -239,7 +236,7 @@ export class PersonService {
       faceId = face.id;
     }
 
-    const [person] = await this.repository.update([{ id, faceAssetId: faceId, name, birthDate, isHidden }]);
+    const person = await this.repository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
 
     if (assetId) {
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
@@ -501,7 +498,7 @@ export class PersonService {
 
     if (isCore && !personId) {
       this.logger.log(`Creating new person for face ${id}`);
-      const [newPerson] = await this.repository.create([{ ownerId: face.asset.ownerId, faceAssetId: face.id }]);
+      const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
       personId = newPerson.id;
     }
@@ -577,7 +574,7 @@ export class PersonService {
     } as const;
 
     await this.mediaRepository.generateThumbnail(inputPath, thumbnailPath, thumbnailOptions);
-    await this.repository.update([{ id: person.id, thumbnailPath }]);
+    await this.repository.update({ id: person.id, thumbnailPath });
 
     return JobStatus.SUCCESS;
   }
@@ -624,7 +621,7 @@ export class PersonService {
         }
 
         if (Object.keys(update).length > 0) {
-          [primaryPerson] = await this.repository.update([{ id: primaryPerson.id, ...update }]);
+          primaryPerson = await this.repository.update({ id: primaryPerson.id, ...update });
         }
 
         const mergeName = mergePerson.name || mergePerson.id;
