@@ -21,6 +21,8 @@ The recommended way to backup and restore the Immich database is to use the `pg_
 It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
 :::
 
+### Manual Backup and Restore
+
 <Tabs>
   <TabItem value="Linux system" label="Linux system" default>
 
@@ -67,6 +69,8 @@ Note that for the database restore to proceed properly, it requires a completely
 :::tip
 Some deployment methods make it difficult to start the database without also starting the server or microservices. In these cases, you may set the environmental variable `DB_SKIP_MIGRATIONS=true` before starting the services. This will prevent the server from running migrations that interfere with the restore process. Note that both the server and microservices must have this variable set to prevent the migrations from running. Be sure to remove this variable and restart the services after the database is restored.
 :::
+
+### Automatic Database Backups
 
 The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
 
