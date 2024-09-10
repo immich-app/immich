@@ -32,7 +32,7 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 
 ```bash title='Restore'
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
-## Uncomment the next line to permanently reset the Postgres database
+## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
 # rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
 docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them
@@ -53,7 +53,7 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 
 ```powershell title='Restore'
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
-## Uncomment the next line to permanently reset the Postgres database
+## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
 # Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
 docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them
