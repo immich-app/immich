@@ -161,7 +161,7 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
 
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
-  - Stored in `UPLOAD_LOCATION/postgres`.
+  - Stored in `DB_DATA_LOCATION`.
 
   :::danger
   A backup of this folder does not constitute a backup of your database!
