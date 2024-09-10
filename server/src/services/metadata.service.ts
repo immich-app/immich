@@ -428,7 +428,7 @@ export class MetadataService {
 
     if (isMotionPhoto && directory) {
       for (const entry of directory) {
-        if (entry.Item.Semantic == 'MotionPhoto') {
+        if (entry?.Item?.Semantic == 'MotionPhoto') {
           length = entry.Item.Length ?? 0;
           padding = entry.Item.Padding ?? 0;
           break;

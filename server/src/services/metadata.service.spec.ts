@@ -520,6 +520,16 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should handle an invalid Directory Item', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({
+        MotionPhoto: 1,
+        ContainerDirectory: [{ Foo: 100 }],
+      });
+
+      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
+    });
+
     it('should extract the correct video orientation', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
