@@ -37,6 +37,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
+    final width = useRef<double>(asset.width?.toDouble() ?? 1.0);
+    final height = useRef<double>(asset.height?.toDouble() ?? 1.0);
 
     void checkIfBuffering([Timer? timer]) {
       if (!context.mounted) {
@@ -60,10 +62,15 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     Future<VideoSource> createSource(Asset asset) async {
       if (asset.isLocal && asset.livePhotoVideoId == null) {
-        final file = await asset.local!.file;
-        if (file == null) {
+        final entity = await asset.local!.obtainForNewProperties();
+        final file = await entity?.file;
+        if (entity == null || file == null) {
           throw Exception('No file found for the video');
         }
+
+        width.value = entity.orientatedWidth.toDouble();
+        height.value = entity.orientatedHeight.toDouble();
+
         return await VideoSource.init(
           path: file.path,
           type: VideoSourceType.file,
@@ -165,18 +172,15 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      controller.value = nc;
-
-      controller.value?.onPlaybackPositionChanged
-          .addListener(onPlaybackPositionChanged);
-      controller.value?.onPlaybackStatusChanged
-          .addListener(onPlaybackPositionChanged);
-      controller.value?.onPlaybackReady.addListener(onPlaybackReady);
-      controller.value?.onPlaybackEnded.addListener(onPlaybackEnded);
+      nc.onPlaybackPositionChanged.addListener(onPlaybackPositionChanged);
+      nc.onPlaybackStatusChanged.addListener(onPlaybackPositionChanged);
+      nc.onPlaybackReady.addListener(onPlaybackReady);
+      nc.onPlaybackEnded.addListener(onPlaybackEnded);
 
       final videoSource = await createSource(asset);
-      controller.value?.loadVideoSource(videoSource);
+      nc.loadVideoSource(videoSource);
 
+      controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
 
@@ -206,6 +210,13 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       [],
     );
 
+    double calculateAspectRatio() {
+      if (width.value == 0 || height.value == 0) {
+        return 1;
+      }
+      return width.value / height.value;
+    }
+
     final size = MediaQuery.sizeOf(context);
 
     return SizedBox(
@@ -224,7 +235,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
               children: [
                 Center(
                   child: AspectRatio(
-                    aspectRatio: (asset.width ?? 1) / (asset.height ?? 1),
+                    aspectRatio: calculateAspectRatio(),
                     child: NativeVideoPlayerView(
                       onViewReady: initController,
                     ),
