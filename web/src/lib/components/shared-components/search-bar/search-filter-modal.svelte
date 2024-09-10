@@ -124,7 +124,7 @@
   };
 </script>
 
-<FullScreenModal icon={mdiTune} width="wide" title={$t('search_options')} {onClose}>
+<FullScreenModal icon={mdiTune} width="extra-wide" title={$t('search_options')} {onClose}>
   <form id={formId} autocomplete="off" on:submit|preventDefault={search} on:reset|preventDefault={resetForm}>
     <div class="space-y-10 pb-10" tabindex="-1">
       <!-- PEOPLE -->
