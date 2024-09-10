@@ -17,9 +17,10 @@ type EmitEventMap = {
   'album.update': [{ id: string; updatedBy: string }];
   'album.invite': [{ id: string; userId: string }];
 
-  // tag events
+  // asset events
   'asset.tag': [{ assetId: string }];
   'asset.untag': [{ assetId: string }];
+  'asset.hide': [{ assetId: string; userId: string }];
 
   // session events
   'session.delete': [{ sessionId: string }];

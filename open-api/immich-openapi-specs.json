@@ -12241,6 +12241,10 @@
           "latitude": {
             "type": "number"
           },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "longitude": {
             "type": "number"
           },

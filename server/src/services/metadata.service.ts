@@ -17,7 +17,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -186,8 +186,7 @@ export class MetadataService {
     await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
     await this.albumRepository.removeAsset(motionAsset.id);
 
-    // Notify clients to hide the linked live photo asset
-    this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+    await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
 
     return JobStatus.SUCCESS;
   }

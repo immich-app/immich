@@ -36,7 +36,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { requireAccess, requireUploadAccess } from 'src/utils/access';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -158,20 +158,10 @@ export class AssetMediaService {
       this.requireQuota(auth, file.size);
 
       if (dto.livePhotoVideoId) {
-        const motionAsset = await this.assetRepository.getById(dto.livePhotoVideoId);
-        if (!motionAsset) {
-          throw new BadRequestException('Live photo video not found');
-        }
-        if (motionAsset.type !== AssetType.VIDEO) {
-          throw new BadRequestException('Live photo video must be a video');
-        }
-        if (motionAsset.ownerId !== auth.user.id) {
-          throw new BadRequestException('Live photo video does not belong to the user');
-        }
-        if (motionAsset.isVisible) {
-          await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
-          this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, auth.user.id, motionAsset.id);
-        }
+        await onBeforeLink(
+          { asset: this.assetRepository, event: this.eventRepository },
+          { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },
+        );
       }
 
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);

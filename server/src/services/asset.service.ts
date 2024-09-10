@@ -39,7 +39,7 @@ import { IStackRepository } from 'src/interfaces/stack.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { requireAccess } from 'src/utils/access';
-import { getAssetFiles, getMyPartnerIds } from 'src/utils/asset.util';
+import { getAssetFiles, getMyPartnerIds, onBeforeLink } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 export class AssetService {
@@ -159,6 +159,14 @@ export class AssetService {
     await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
+
+    if (rest.livePhotoVideoId) {
+      await onBeforeLink(
+        { asset: this.assetRepository, event: this.eventRepository },
+        { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId },
+      );
+    }
+
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     await this.assetRepository.update({ id, ...rest });
