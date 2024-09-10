@@ -7928,6 +7928,9 @@
           "id": {
             "type": "string"
           },
+          "isTrashed": {
+            "type": "boolean"
+          },
           "reason": {
             "enum": [
               "duplicate",
@@ -12237,6 +12240,10 @@
           },
           "latitude": {
             "type": "number"
+          },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "type": "string"
           },
           "longitude": {
             "type": "number"

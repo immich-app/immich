@@ -17,7 +17,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
@@ -186,8 +186,7 @@ export class MetadataService {
     await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
     await this.albumRepository.removeAsset(motionAsset.id);
 
-    // Notify clients to hide the linked live photo asset
-    this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+    await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
 
     return JobStatus.SUCCESS;
   }
@@ -428,7 +427,7 @@ export class MetadataService {
 
     if (isMotionPhoto && directory) {
       for (const entry of directory) {
-        if (entry.Item.Semantic == 'MotionPhoto') {
+        if (entry?.Item?.Semantic == 'MotionPhoto') {
           length = entry.Item.Length ?? 0;
           padding = entry.Item.Padding ?? 0;
           break;
@@ -585,18 +584,15 @@ export class MetadataService {
       this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
     }
 
-    const newPersons = await this.personRepository.create(missing);
+    const newPersonIds = await this.personRepository.createAll(missing);
 
     const faceIds = await this.personRepository.replaceFaces(asset.id, discoveredFaces, SourceType.EXIF);
     this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
 
-    await this.personRepository.update(missingWithFaceAsset);
+    await this.personRepository.updateAll(missingWithFaceAsset);
 
     await this.jobRepository.queueAll(
-      newPersons.map((person) => ({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: { id: person.id },
-      })),
+      newPersonIds.map((id) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } })),
     );
   }
 

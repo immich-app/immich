@@ -331,8 +331,10 @@
             locale: $locale,
           })
         : DateTime.now()}
+      {@const assetTimeZoneOriginal = asset.exifInfo?.timeZone ?? ''}
       <ChangeDate
         initialDate={assetDateTimeOriginal}
+        initialTimeZone={assetTimeZoneOriginal}
         on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
         on:cancel={() => (isShowChangeDate = false)}
       />

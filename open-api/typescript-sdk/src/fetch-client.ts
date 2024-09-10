@@ -395,6 +395,7 @@ export type AssetBulkUploadCheckResult = {
     action: Action;
     assetId?: string;
     id: string;
+    isTrashed?: boolean;
     reason?: Reason;
 };
 export type AssetBulkUploadCheckResponseDto = {
@@ -426,6 +427,7 @@ export type UpdateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
+    livePhotoVideoId?: string;
     longitude?: number;
     rating?: number;
 };

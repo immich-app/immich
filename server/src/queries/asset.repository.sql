@@ -493,6 +493,7 @@ LIMIT
 -- AssetRepository.getByChecksums
 SELECT
   "AssetEntity"."id" AS "AssetEntity_id",
+  "AssetEntity"."deletedAt" AS "AssetEntity_deletedAt",
   "AssetEntity"."checksum" AS "AssetEntity_checksum"
 FROM
   "assets" "AssetEntity"
