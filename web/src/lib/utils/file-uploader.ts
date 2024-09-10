@@ -15,7 +15,7 @@ import {
 import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { getServerErrorMessage, handleError } from './handle-error';
+import { handleError } from './handle-error';
 
 export const addDummyItems = () => {
   uploadAssetsStore.addItem({ id: 'asset-0', file: { name: 'asset0.jpg', size: 123_456 } as File });
@@ -202,10 +202,9 @@ async function fileUploader(assetFile: File, albumId?: string, replaceAssetId?: 
 
     return responseData.id;
   } catch (error) {
-    handleError(error, $t('errors.unable_to_upload_file'));
-    const reason = getServerErrorMessage(error) || error;
+    const errorMessage = handleError(error, $t('errors.unable_to_upload_file'));
     uploadAssetsStore.track('error');
-    uploadAssetsStore.updateItem(deviceAssetId, { state: UploadState.ERROR, error: reason });
+    uploadAssetsStore.updateItem(deviceAssetId, { state: UploadState.ERROR, error: errorMessage });
     return;
   }
 }
