@@ -22,7 +22,7 @@
    * - `narrow`: 28rem
    * - `auto`: fits the width of the modal content, up to a maximum of 32rem
    */
-  export let width: 'wide' | 'narrow' | 'auto' = 'narrow';
+  export let width: 'extra-wide' | 'wide' | 'narrow' | 'auto' = 'narrow';
 
   /**
    * Unique identifier for the modal.
@@ -34,12 +34,25 @@
 
   let modalWidth: string;
   $: {
-    if (width === 'wide') {
-      modalWidth = 'w-[48rem]';
-    } else if (width === 'narrow') {
-      modalWidth = 'w-[28rem]';
-    } else {
-      modalWidth = 'sm:max-w-4xl';
+    switch (width) {
+      case 'extra-wide': {
+        modalWidth = 'w-[56rem]';
+        break;
+      }
+
+      case 'wide': {
+        modalWidth = 'w-[48rem]';
+        break;
+      }
+
+      case 'narrow': {
+        modalWidth = 'w-[28rem]';
+        break;
+      }
+
+      default: {
+        modalWidth = 'sm:max-w-4xl';
+      }
     }
   }
 </script>
@@ -62,7 +75,7 @@
     aria-labelledby={titleId}
   >
     <div
-      class="immich-scrollbar overflow-y-auto max-h-[min(92dvh,56rem)]"
+      class="immich-scrollbar overflow-y-auto max-h-[min(92dvh,64rem)]"
       class:scroll-pb-40={isStickyBottom}
       class:sm:scroll-p-24={isStickyBottom}
     >
@@ -72,7 +85,7 @@
       </div>
       {#if isStickyBottom}
         <div
-          class="flex flex-col sm:flex-row justify-end w-full gap-2 sm:gap-4 sticky bottom-0 pt-4 px-5 bg-immich-bg dark:bg-immich-dark-gray border-t border-gray-200 dark:border-gray-500 shadow"
+          class="flex flex-col sm:flex-row justify-end w-full gap-2 sm:gap-4 sticky bottom-0 pt-4 px-5 bg-immich-bg dark:bg-immich-dark-gray border-t border-gray-200 dark:border-gray-500 shadow z-[9999]"
         >
           <slot name="sticky-bottom" />
         </div>
