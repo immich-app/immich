@@ -31,10 +31,11 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 ```
 
 ```bash title='Restore'
-docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
-# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
+docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
+## Uncomment the next line to permanently reset the Postgres database
+# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
 docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them.
+docker compose create   # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
 gunzip < "/path/to/backup/dump.sql.gz" \
@@ -51,10 +52,11 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 ```
 
 ```powershell title='Restore'
-docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
-# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
+docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
+## Uncomment the next line to permanently reset the Postgres database
+# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
 docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them.
+docker compose create   # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
 gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres   # Restore Backup
