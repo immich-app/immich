@@ -453,7 +453,7 @@ describe(MetadataService.name, () => {
 
     it('should extract hierarchy from HierarchicalSubject', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Parent|Child'] });
+      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Parent|Child', 'TagA'] });
       tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
       tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
 
@@ -465,6 +465,7 @@ describe(MetadataService.name, () => {
         value: 'Parent/Child',
         parent: tagStub.parent,
       });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(3, { userId: 'user-id', value: 'TagA', parent: undefined });
     });
 
     it('should extract ignore / characters in a HierarchicalSubject tag', async () => {

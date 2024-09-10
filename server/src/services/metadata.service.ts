@@ -384,12 +384,12 @@ export class MetadataService {
   }
 
   private async applyTagList(asset: AssetEntity, exifTags: ImmichTags) {
-    const tags: unknown[] = [];
+    const tags: Array<string | number> = [];
     if (exifTags.TagsList) {
       tags.push(...exifTags.TagsList);
     } else if (exifTags.HierarchicalSubject) {
       tags.push(
-        exifTags.HierarchicalSubject.map((tag) =>
+        ...exifTags.HierarchicalSubject.map((tag) =>
           tag
             // convert | to /
             .replaceAll('/', '<PLACEHOLDER>')

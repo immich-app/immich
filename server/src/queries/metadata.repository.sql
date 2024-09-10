@@ -8,7 +8,7 @@ FROM
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
-  "asset"."ownerId" = $1
+  "asset"."ownerId" IN ($1)
 
 -- MetadataRepository.getStates
 SELECT DISTINCT
@@ -18,7 +18,7 @@ FROM
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
-  "asset"."ownerId" = $1
+  "asset"."ownerId" IN ($1)
   AND "exif"."country" = $2
 
 -- MetadataRepository.getCities
@@ -29,7 +29,7 @@ FROM
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
-  "asset"."ownerId" = $1
+  "asset"."ownerId" IN ($1)
   AND "exif"."country" = $2
   AND "exif"."state" = $3
 
@@ -41,7 +41,7 @@ FROM
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
-  "asset"."ownerId" = $1
+  "asset"."ownerId" IN ($1)
   AND "exif"."model" = $2
 
 -- MetadataRepository.getCameraModels
@@ -52,5 +52,5 @@ FROM
   LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
-  "asset"."ownerId" = $1
+  "asset"."ownerId" IN ($1)
   AND "exif"."make" = $2

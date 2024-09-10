@@ -21,7 +21,7 @@
   export let icon: string | undefined = undefined;
 </script>
 
-<div class="flex place-items-center justify-between px-5 py-3">
+<div class="flex place-items-center justify-between px-5 pb-3">
   <div class="flex gap-2 place-items-center">
     {#if showLogo}
       <ImmichLogo noText={true} width={32} />

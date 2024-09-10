@@ -387,6 +387,7 @@
   "asset_offline": "Asset offline",
   "asset_offline_description": "This asset is offline. Immich can not access its file location. Please ensure the asset is available and then rescan the library.",
   "asset_skipped": "Skipped",
+  "asset_skipped_in_trash": "In trash",
   "asset_uploaded": "Uploaded",
   "asset_uploading": "Uploading...",
   "assets": "Assets",

@@ -43,7 +43,7 @@ jobs:
   retag_ml:
     name: Re-Tag ML
     needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_ml == 'false' }}
+    if: ${{ needs.pre-job.outputs.should_run_ml == 'false' && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -51,8 +51,6 @@ jobs:
     steps:
         - name: Login to GitHub Container Registry
           uses: docker/login-action@v3
-          # Skip when PR from a fork
-          if: ${{ !github.event.pull_request.head.repo.fork }}
           with:
             registry: ghcr.io
             username: ${{ github.repository_owner }}
@@ -68,7 +66,7 @@ jobs:
   retag_server:
     name: Re-Tag Server
     needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_server == 'false' }}
+    if: ${{ needs.pre-job.outputs.should_run_server == 'false' && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -76,8 +74,6 @@ jobs:
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        # Skip when PR from a fork
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}

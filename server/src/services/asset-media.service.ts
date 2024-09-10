@@ -163,7 +163,7 @@ export class AssetMediaService {
           throw new BadRequestException('Live photo video not found');
         }
         if (motionAsset.type !== AssetType.VIDEO) {
-          throw new BadRequestException('Live photo vide must be a video');
+          throw new BadRequestException('Live photo video must be a video');
         }
         if (motionAsset.ownerId !== auth.user.id) {
           throw new BadRequestException('Live photo video does not belong to the user');
@@ -289,10 +289,10 @@ export class AssetMediaService {
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
     const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
-    const checksumMap: Record<string, string> = {};
+    const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};
 
-    for (const { id, checksum } of results) {
-      checksumMap[checksum.toString('hex')] = id;
+    for (const { id, deletedAt, checksum } of results) {
+      checksumMap[checksum.toString('hex')] = { id, isTrashed: !!deletedAt };
     }
 
     return {
@@ -301,13 +301,12 @@ export class AssetMediaService {
         if (duplicate) {
           return {
             id,
-            assetId: duplicate,
             action: AssetUploadAction.REJECT,
             reason: AssetRejectReason.DUPLICATE,
+            assetId: duplicate.id,
+            isTrashed: duplicate.isTrashed,
           };
         }
-
-        // TODO mime-check
 
         return {
           id,
