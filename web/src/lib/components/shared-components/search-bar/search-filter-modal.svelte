@@ -10,8 +10,8 @@
   }
 
   export type SearchFilter = {
-    context?: string;
-    filename?: string;
+    query: string;
+    queryType: 'smart' | 'metadata';
     personIds: Set<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -51,8 +51,8 @@
   }
 
   let filter: SearchFilter = {
-    context: 'query' in searchQuery ? searchQuery.query : '',
-    filename: 'originalFileName' in searchQuery ? searchQuery.originalFileName : undefined,
+    query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
+    queryType: 'query' in searchQuery ? 'smart' : 'metadata',
     personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: withNullAsUndefined(searchQuery.country),
@@ -82,6 +82,8 @@
 
   const resetForm = () => {
     filter = {
+      query: '',
+      queryType: 'smart',
       personIds: new Set(),
       location: {},
       camera: {},
@@ -99,9 +101,11 @@
       type = AssetTypeEnum.Video;
     }
 
+    const query = filter.query || undefined;
+
     let payload: SmartSearchDto | MetadataSearchDto = {
-      query: filter.context || undefined,
-      originalFileName: filter.filename,
+      query: filter.queryType === 'smart' ? query : undefined,
+      originalFileName: filter.queryType === 'metadata' ? query : undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -127,7 +131,7 @@
       <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 
       <!-- TEXT -->
-      <SearchTextSection bind:filename={filter.filename} bind:context={filter.context} />
+      <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
 
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />
