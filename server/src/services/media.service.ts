@@ -117,7 +117,7 @@ export class MediaService {
             continue;
           }
 
-          await this.personRepository.update([{ id: person.id, faceAssetId: face.id }]);
+          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
         }
 
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });

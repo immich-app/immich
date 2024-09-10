@@ -241,18 +241,18 @@ describe(PersonService.name, () => {
     });
 
     it("should update a person's name", async () => {
-      personMock.update.mockResolvedValue([personStub.withName]);
+      personMock.update.mockResolvedValue(personStub.withName);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).resolves.toEqual(responseDto);
 
-      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', name: 'Person 1' }]);
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', name: 'Person 1' });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
     it("should update a person's date of birth", async () => {
-      personMock.update.mockResolvedValue([personStub.withBirthDate]);
+      personMock.update.mockResolvedValue(personStub.withBirthDate);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -264,25 +264,25 @@ describe(PersonService.name, () => {
         isHidden: false,
         updatedAt: expect.any(Date),
       });
-      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', birthDate: '1976-06-30' }]);
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: '1976-06-30' });
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
     it('should update a person visibility', async () => {
-      personMock.update.mockResolvedValue([personStub.withName]);
+      personMock.update.mockResolvedValue(personStub.withName);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
 
-      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', isHidden: false }]);
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: false });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
     it("should update a person's thumbnailPath", async () => {
-      personMock.update.mockResolvedValue([personStub.withName]);
+      personMock.update.mockResolvedValue(personStub.withName);
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
@@ -291,7 +291,7 @@ describe(PersonService.name, () => {
         sut.update(authStub.admin, 'person-1', { featureFaceAssetId: faceStub.face1.assetId }),
       ).resolves.toEqual(responseDto);
 
-      expect(personMock.update).toHaveBeenCalledWith([{ id: 'person-1', faceAssetId: faceStub.face1.id }]);
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', faceAssetId: faceStub.face1.id });
       expect(personMock.getFacesByIds).toHaveBeenCalledWith([
         {
           assetId: faceStub.face1.assetId,
@@ -441,11 +441,11 @@ describe(PersonService.name, () => {
 
   describe('createPerson', () => {
     it('should create a new person', async () => {
-      personMock.create.mockResolvedValue([personStub.primaryPerson]);
+      personMock.create.mockResolvedValue(personStub.primaryPerson);
 
       await expect(sut.create(authStub.admin, {})).resolves.toBe(personStub.primaryPerson);
 
-      expect(personMock.create).toHaveBeenCalledWith([{ ownerId: authStub.admin.user.id }]);
+      expect(personMock.create).toHaveBeenCalledWith({ ownerId: authStub.admin.user.id });
     });
   });
 
@@ -819,7 +819,7 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue([faceStub.primaryFace1.person]);
+      personMock.create.mockResolvedValue(faceStub.primaryFace1.person);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
@@ -844,16 +844,14 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue([personStub.withName]);
+      personMock.create.mockResolvedValue(personStub.withName);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
-      expect(personMock.create).toHaveBeenCalledWith([
-        {
-          ownerId: faceStub.noPerson1.asset.ownerId,
-          faceAssetId: faceStub.noPerson1.id,
-        },
-      ]);
+      expect(personMock.create).toHaveBeenCalledWith({
+        ownerId: faceStub.noPerson1.asset.ownerId,
+        faceAssetId: faceStub.noPerson1.id,
+      });
       expect(personMock.reassignFaces).toHaveBeenCalledWith({
         faceIds: [faceStub.noPerson1.id],
         newPersonId: personStub.withName.id,
@@ -865,7 +863,7 @@ describe(PersonService.name, () => {
 
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue([personStub.withName]);
+      personMock.create.mockResolvedValue(personStub.withName);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
@@ -884,7 +882,7 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue([personStub.withName]);
+      personMock.create.mockResolvedValue(personStub.withName);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
 
@@ -906,7 +904,7 @@ describe(PersonService.name, () => {
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
       searchMock.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
-      personMock.create.mockResolvedValue([personStub.withName]);
+      personMock.create.mockResolvedValue(personStub.withName);
 
       await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id, deferred: true });
 
@@ -979,12 +977,10 @@ describe(PersonService.name, () => {
           processInvalidImages: false,
         },
       );
-      expect(personMock.update).toHaveBeenCalledWith([
-        {
-          id: 'person-1',
-          thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-        },
-      ]);
+      expect(personMock.update).toHaveBeenCalledWith({
+        id: 'person-1',
+        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+      });
     });
 
     it('should generate a thumbnail without going negative', async () => {
@@ -1103,7 +1099,7 @@ describe(PersonService.name, () => {
     it('should merge two people with smart merge', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.randomPerson);
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      personMock.update.mockResolvedValue([{ ...personStub.randomPerson, name: personStub.primaryPerson.name }]);
+      personMock.update.mockResolvedValue({ ...personStub.randomPerson, name: personStub.primaryPerson.name });
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-3']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
 
@@ -1116,12 +1112,10 @@ describe(PersonService.name, () => {
         oldPersonId: personStub.primaryPerson.id,
       });
 
-      expect(personMock.update).toHaveBeenCalledWith([
-        {
-          id: personStub.randomPerson.id,
-          name: personStub.primaryPerson.name,
-        },
-      ]);
+      expect(personMock.update).toHaveBeenCalledWith({
+        id: personStub.randomPerson.id,
+        name: personStub.primaryPerson.name,
+      });
 
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
