@@ -20,11 +20,13 @@ export function handleError(error: unknown, message: string) {
       serverMessage = `${String(serverMessage).slice(0, 75)}\n(Immich Server Error)`;
     }
 
-    notificationController.show({
-      message: serverMessage || message,
-      type: NotificationType.Error,
-    });
+    const errorMessage = serverMessage || message;
+
+    notificationController.show({ message: errorMessage, type: NotificationType.Error });
+
+    return errorMessage;
   } catch (error) {
     console.error(error);
+    return message;
   }
 }
