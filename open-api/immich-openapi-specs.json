@@ -12243,6 +12243,7 @@
           },
           "livePhotoVideoId": {
             "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
           "longitude": {

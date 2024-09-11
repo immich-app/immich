@@ -23,8 +23,9 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { preferences, user } from '$lib/stores/user.store';
+  import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+  import { AssetTypeEnum } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -35,12 +36,21 @@
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   let isAllFavorite: boolean;
+  let isAllOwned: boolean;
   let isAssetStackSelected: boolean;
+  let isLinkActionAvailable: boolean;
 
   $: {
     const selection = [...$selectedAssets];
+    isAllOwned = selection.every((asset) => asset.ownerId === $user.id);
     isAllFavorite = selection.every((asset) => asset.isFavorite);
     isAssetStackSelected = selection.length === 1 && !!selection[0].stack;
+    const isLivePhoto = selection.length === 1 && !!selection[0].livePhotoVideoId;
+    const isLivePhotoCandidate =
+      selection.length === 2 &&
+      selection.some((asset) => asset.type === AssetTypeEnum.Image) &&
+      selection.some((asset) => asset.type === AssetTypeEnum.Image);
+    isLinkActionAvailable = isAllOwned && (isLivePhoto || isLivePhotoCandidate);
   }
 
   const handleEscape = () => {
@@ -53,11 +63,14 @@
     }
   };
 
-  const handleLink = (asset: AssetResponseDto) => {
-    if (asset.livePhotoVideoId) {
-      assetStore.removeAssets([asset.livePhotoVideoId]);
-    }
-    assetStore.updateAssets([asset]);
+  const handleLink: OnLink = ({ still, motion }) => {
+    assetStore.removeAssets([motion.id]);
+    assetStore.updateAssets([still]);
+  };
+
+  const handleUnlink: OnUnlink = ({ still, motion }) => {
+    assetStore.addAssets([motion]);
+    assetStore.updateAssets([still]);
   };
 
   onDestroy(() => {
@@ -87,8 +100,13 @@
           onUnstack={(assets) => assetStore.addAssets(assets)}
         />
       {/if}
-      {#if $selectedAssets.size === 2 && [...$selectedAssets].some((asset) => asset.type === AssetTypeEnum.Image && [...$selectedAssets].some((asset) => asset.type === AssetTypeEnum.Video))}
-        <LinkLivePhotoAction menuItem onLink={handleLink} />
+      {#if isLinkActionAvailable}
+        <LinkLivePhotoAction
+          menuItem
+          unlink={[...$selectedAssets].length === 1}
+          onLink={handleLink}
+          onUnlink={handleUnlink}
+        />
       {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />

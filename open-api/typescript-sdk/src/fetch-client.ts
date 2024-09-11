@@ -427,7 +427,7 @@ export type UpdateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
-    livePhotoVideoId?: string;
+    livePhotoVideoId?: string | null;
     longitude?: number;
     rating?: number;
 };
