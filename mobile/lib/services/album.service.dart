@@ -173,6 +173,30 @@ class AlbumService {
     return changes;
   }
 
+  /// V2
+  Future<bool> refreshAllRemoteAlbums() async {
+    final Stopwatch sw = Stopwatch()..start();
+    try {
+      final [sharedAlbums, ownedAlbums] = await Future.wait([
+        _apiService.albumsApi.getAllAlbums(shared: true),
+        _apiService.albumsApi.getAllAlbums(shared: false),
+      ]);
+
+      final List<AlbumResponseDto> allAlbums = [
+        ...sharedAlbums ?? [],
+        ...ownedAlbums ?? [],
+      ];
+
+      print("All albums: ${allAlbums.length}");
+
+      debugPrint("refreshAllAlbums took ${sw.elapsedMilliseconds}ms");
+      return true;
+    } catch (e) {
+      debugPrint("Error refreshing all albums: $e");
+      return false;
+    }
+  }
+
   Future<Album?> createAlbum(
     String albumName,
     Iterable<Asset> assets, [
