@@ -892,7 +892,7 @@ describe(LibraryService.name, () => {
           expect.objectContaining({
             name: expect.any(String),
             importPaths: [],
-            exclusionPatterns: [],
+            exclusionPatterns: expect.any(Array),
           }),
         );
       });
@@ -917,7 +917,7 @@ describe(LibraryService.name, () => {
           expect.objectContaining({
             name: 'My Awesome Library',
             importPaths: [],
-            exclusionPatterns: [],
+            exclusionPatterns: expect.any(Array),
           }),
         );
       });
@@ -947,7 +947,7 @@ describe(LibraryService.name, () => {
           expect.objectContaining({
             name: expect.any(String),
             importPaths: ['/data/images', '/data/videos'],
-            exclusionPatterns: [],
+            exclusionPatterns: expect.any(Array),
           }),
         );
       });

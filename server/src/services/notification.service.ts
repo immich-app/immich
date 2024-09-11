@@ -64,6 +64,11 @@ export class NotificationService {
     this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, userId, assetId);
   }
 
+  @OnEmit({ event: 'asset.show' })
+  async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
+    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAIL, data: { id: assetId, notify: true } });
+  }
+
   @OnEmit({ event: 'user.signup' })
   async onUserSignup({ notify, id, tempPassword }: ArgOf<'user.signup'>) {
     if (notify) {
