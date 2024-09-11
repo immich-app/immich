@@ -69,8 +69,8 @@ export class UpdateAssetDto extends UpdateAssetBase {
   @IsString()
   description?: string;
 
-  @ValidateUUID({ optional: true })
-  livePhotoVideoId?: string;
+  @ValidateUUID({ optional: true, nullable: true })
+  livePhotoVideoId?: string | null;
 }
 
 export class RandomAssetsDto {

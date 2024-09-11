@@ -21,6 +21,7 @@ type EmitEventMap = {
   'asset.tag': [{ assetId: string }];
   'asset.untag': [{ assetId: string }];
   'asset.hide': [{ assetId: string; userId: string }];
+  'asset.show': [{ assetId: string; userId: string }];
 
   // session events
   'session.delete': [{ sessionId: string }];
