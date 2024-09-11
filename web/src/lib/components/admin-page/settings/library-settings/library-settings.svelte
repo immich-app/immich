@@ -29,40 +29,27 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <SettingAccordion
-      key="library-watching"
-      title={$t('admin.library_watching_settings')}
-      subtitle={$t('admin.library_watching_settings_description')}
-      isOpen
-    >
-      <form autocomplete="off" on:submit|preventDefault>
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+    <form autocomplete="off" on:submit|preventDefault>
+      <div class="ml-4 mt-4 flex flex-col gap-4">
+        <SettingAccordion
+          key="library-watching"
+          title={$t('admin.library_watching_settings')}
+          subtitle={$t('admin.library_watching_settings_description')}
+          isOpen
+        >
           <SettingSwitch
             title={$t('admin.library_watching_enable_description')}
             {disabled}
             bind:checked={config.library.watch.enabled}
           />
-        </div>
+        </SettingAccordion>
 
-        <div class="ml-4">
-          <SettingButtonsRow
-            onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
-            onSave={() => onSave({ library: config.library })}
-            showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
-            {disabled}
-          />
-        </div>
-      </form>
-    </SettingAccordion>
-
-    <SettingAccordion
-      key="library-scanning"
-      title={$t('admin.library_scanning')}
-      subtitle={$t('admin.library_scanning_description')}
-      isOpen
-    >
-      <form autocomplete="off" on:submit|preventDefault>
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <SettingAccordion
+          key="library-scanning"
+          title={$t('admin.library_scanning')}
+          subtitle={$t('admin.library_scanning_description')}
+          isOpen
+        >
           <SettingSwitch
             title={$t('admin.library_scanning_enable_description')}
             {disabled}
@@ -107,17 +94,15 @@
               </p>
             </svelte:fragment>
           </SettingInputField>
-        </div>
+        </SettingAccordion>
 
-        <div class="ml-4">
-          <SettingButtonsRow
-            onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
-            onSave={() => onSave({ library: config.library })}
-            showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
-            {disabled}
-          />
-        </div>
-      </form>
-    </SettingAccordion>
+        <SettingButtonsRow
+          onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
+          onSave={() => onSave({ library: config.library })}
+          showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
+          {disabled}
+        />
+      </div>
+    </form>
   </div>
 </div>
