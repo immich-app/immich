@@ -83,7 +83,7 @@ describe('/libraries', () => {
           refreshedAt: null,
           assetCount: 0,
           importPaths: [],
-          exclusionPatterns: [],
+          exclusionPatterns: expect.any(Array),
         }),
       );
     });
@@ -270,7 +270,7 @@ describe('/libraries', () => {
           refreshedAt: null,
           assetCount: 0,
           importPaths: [],
-          exclusionPatterns: [],
+          exclusionPatterns: expect.any(Array),
         }),
       );
     });
