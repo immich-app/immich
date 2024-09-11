@@ -241,11 +241,18 @@ export class LibraryService {
   }
 
   async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    let exclusionPatterns = dto.exclusionPatterns;
+
+    if (!exclusionPatterns) {
+      // Add some useful default exclusion patterns
+      exclusionPatterns = ['**/@eaDir/**', '**/._*'];
+    }
+
     const library = await this.repository.create({
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.exclusionPatterns ?? [],
+      exclusionPatterns: exclusionPatterns,
     });
     return mapLibrary(library);
   }
