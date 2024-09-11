@@ -98,6 +98,12 @@ class TabControllerPage extends HookConsumerWidget {
             padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.photo_album_outlined),
             selectedIcon: const Icon(Icons.photo_album),
+            label: const Text('albums').tr(),
+          ),
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.space_dashboard_outlined),
+            selectedIcon: const Icon(Icons.space_dashboard_rounded),
             label: const Text('collections').tr(),
           ),
         ],
@@ -163,13 +169,25 @@ class TabControllerPage extends HookConsumerWidget {
           //   ),
           // ),
           NavigationDestination(
-            label: 'collections'.tr(),
+            label: 'albums'.tr(),
             icon: const Icon(
               Icons.photo_album_outlined,
             ),
             selectedIcon: buildIcon(
               Icon(
                 Icons.photo_album_rounded,
+                color: context.primaryColor,
+              ),
+            ),
+          ),
+          NavigationDestination(
+            label: 'collections'.tr(),
+            icon: const Icon(
+              Icons.space_dashboard_outlined,
+            ),
+            selectedIcon: buildIcon(
+              Icon(
+                Icons.space_dashboard_rounded,
                 color: context.primaryColor,
               ),
             ),
@@ -185,6 +203,7 @@ class TabControllerPage extends HookConsumerWidget {
         SearchRoute(),
         // SharingRoute(),
         // LibraryRoute(),
+        AlbumsCollectionRoute(),
         CollectionsRoute(),
       ],
       duration: const Duration(milliseconds: 600),

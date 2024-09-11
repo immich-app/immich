@@ -123,6 +123,10 @@ class AppRouter extends RootStackRouter {
           page: CollectionsRoute.page,
           guards: [_authGuard, _duplicateGuard],
         ),
+        AutoRoute(
+          page: AlbumsCollectionRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
