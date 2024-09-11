@@ -8,7 +8,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/album/albumv2.provider.dart';
@@ -78,7 +77,11 @@ class AlbumsCollectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: showImmichAppbar ? null : Text('albums'.tr()),
+        title: showImmichAppbar
+            ? null
+            : Text(
+                "${'albums'.tr()} ${albums.length}",
+              ),
         bottom: showImmichAppbar
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(0),

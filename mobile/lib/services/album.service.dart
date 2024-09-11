@@ -175,26 +175,45 @@ class AlbumService {
 
   /// V2
   Future<bool> refreshAllRemoteAlbums() async {
+    if (!_remoteCompleter.isCompleted) {
+      // guard against concurrent calls
+      return _remoteCompleter.future;
+    }
+    _remoteCompleter = Completer();
     final Stopwatch sw = Stopwatch()..start();
+    bool changes = false;
     try {
-      final [sharedAlbums, ownedAlbums] = await Future.wait([
+      final albumList = await Future.wait([
         _apiService.albumsApi.getAllAlbums(shared: true),
         _apiService.albumsApi.getAllAlbums(shared: false),
       ]);
 
-      final List<AlbumResponseDto> allAlbums = [
-        ...sharedAlbums ?? [],
-        ...ownedAlbums ?? [],
-      ];
+      // for (int i = 0; i < albumList.length; i++) {
+      //   final albums = albumList[i];
+      //   final isShared = i == 1;
+      //   if (albums != null) {
+      //     final hasChange = await _syncService.syncRemoteAlbumsToDb(
+      //       albums,
+      //       isShared: isShared,
+      //       loadDetails: (dto) async => dto.assetCount == dto.assets.length
+      //           ? dto
+      //           : (await _apiService.albumsApi.getAlbumInfo(dto.id)) ?? dto,
+      //     );
 
-      print("All albums: ${allAlbums.length}");
-
-      debugPrint("refreshAllAlbums took ${sw.elapsedMilliseconds}ms");
-      return true;
+      //     if (hasChange) {
+      //       changes = true;
+      //     }
+      //   }
+      // }
     } catch (e) {
       debugPrint("Error refreshing all albums: $e");
       return false;
+    } finally {
+      _remoteCompleter.complete(changes);
     }
+
+    debugPrint("refreshAllRemoteAlbums took ${sw.elapsedMilliseconds}ms");
+    return changes;
   }
 
   Future<Album?> createAlbum(
