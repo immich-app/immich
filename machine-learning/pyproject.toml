@@ -4,7 +4,7 @@ version = "1.114.0"
 description = ""
 authors = ["Hau Tran <alex.tran1502@gmail.com>"]
 readme = "README.md"
-packages = [{include = "app"}]
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
@@ -12,7 +12,7 @@ insightface = ">=0.7.3,<1.0"
 opencv-python-headless = ">=4.7.0.72,<5.0"
 pillow = ">=9.5.0,<11.0"
 fastapi-slim = ">=0.95.2,<1.0"
-uvicorn = {extras = ["standard"], version = ">=0.22.0,<1.0"}
+uvicorn = { extras = ["standard"], version = ">=0.22.0,<1.0" }
 pydantic = "^1.10.8"
 aiocache = ">=0.12.1,<1.0"
 rich = ">=13.4.2"
@@ -45,7 +45,10 @@ onnxruntime = "^1.15.0"
 optional = true
 
 [tool.poetry.group.cuda.dependencies]
-onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
+onnxruntime-gpu = [
+    { version = "^1.17.0", source = "cuda12", markers = "platform_machine == 'x86_64'" },
+    { python = "3.11", path = "onnxruntime_gpu-1.18.0-cp311-cp311-manylinux_aarch64.whl", markers = "platform_machine == 'aarch64'" }
+]
 
 [tool.poetry.group.openvino]
 optional = true
