@@ -44,7 +44,6 @@ describe(SyncService.name, () => {
         mapAsset(assetStub.hasEncodedVideo, mapAssetOpts),
       ]);
       expect(assetMock.getAllForUserFullSync).toHaveBeenCalledWith({
-        withStacked: true,
         ownerId: authStub.user1.user.id,
         updatedUntil: untilDate,
         limit: 2,

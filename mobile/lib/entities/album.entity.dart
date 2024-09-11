@@ -145,9 +145,10 @@ class Album {
           .remoteIdEqualTo(dto.albumThumbnailAssetId)
           .findFirst();
     }
-    if (dto.sharedUsers.isNotEmpty) {
-      final users = await db.users
-          .getAllById(dto.sharedUsers.map((e) => e.id).toList(growable: false));
+    if (dto.albumUsers.isNotEmpty) {
+      final users = await db.users.getAllById(
+        dto.albumUsers.map((e) => e.user.id).toList(growable: false),
+      );
       a.sharedUsers.addAll(users.cast());
     }
     if (dto.assets.isNotEmpty) {

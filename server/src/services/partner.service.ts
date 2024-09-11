@@ -1,21 +1,19 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { PartnerResponseDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
+import { PartnerResponseDto, PartnerSearchDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { PartnerEntity } from 'src/entities/partner.entity';
+import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IPartnerRepository, PartnerDirection, PartnerIds } from 'src/interfaces/partner.interface';
+import { requireAccess } from 'src/utils/access';
 
 @Injectable()
 export class PartnerService {
-  private access: AccessCore;
   constructor(
     @Inject(IPartnerRepository) private repository: IPartnerRepository,
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
-  ) {
-    this.access = AccessCore.create(accessRepository);
-  }
+    @Inject(IAccessRepository) private access: IAccessRepository,
+  ) {}
 
   async create(auth: AuthDto, sharedWithId: string): Promise<PartnerResponseDto> {
     const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId };
@@ -25,7 +23,7 @@ export class PartnerService {
     }
 
     const partner = await this.repository.create(partnerId);
-    return this.mapToPartnerEntity(partner, PartnerDirection.SharedBy);
+    return this.mapPartner(partner, PartnerDirection.SharedBy);
   }
 
   async remove(auth: AuthDto, sharedWithId: string): Promise<void> {
@@ -38,24 +36,24 @@ export class PartnerService {
     await this.repository.remove(partner);
   }
 
-  async getAll(auth: AuthDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
+  async search(auth: AuthDto, { direction }: PartnerSearchDto): Promise<PartnerResponseDto[]> {
     const partners = await this.repository.getAll(auth.user.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners
       .filter((partner) => partner.sharedBy && partner.sharedWith) // Filter out soft deleted users
       .filter((partner) => partner[key] === auth.user.id)
-      .map((partner) => this.mapToPartnerEntity(partner, direction));
+      .map((partner) => this.mapPartner(partner, direction));
   }
 
   async update(auth: AuthDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
-    await this.access.requirePermission(auth, Permission.PARTNER_UPDATE, sharedById);
+    await requireAccess(this.access, { auth, permission: Permission.PARTNER_UPDATE, ids: [sharedById] });
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
-    return this.mapToPartnerEntity(entity, PartnerDirection.SharedWith);
+    return this.mapPartner(entity, PartnerDirection.SharedWith);
   }
 
-  private mapToPartnerEntity(partner: PartnerEntity, direction: PartnerDirection): PartnerResponseDto {
+  private mapPartner(partner: PartnerEntity, direction: PartnerDirection): PartnerResponseDto {
     // this is opposite to return the non-me user of the "partner"
     const user = mapUser(
       direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,

@@ -5,7 +5,7 @@ While not officially recommended, it is possible to run Immich using a pre-exist
 By default, Immich expects superuser permission on the Postgres database and requires certain extensions to be installed. This guide outlines the steps required to prepare a pre-existing Postgres server to be used by Immich.
 
 :::tip
-Running with a pre-existing Postgres server can unlock powerful administrative features, including logical replication, data page checksums, and streaming write-ahead log backups using programs like pgBackRest or Barman.
+Running with a pre-existing Postgres server can unlock powerful administrative features, including logical replication and streaming write-ahead log backups using programs like pgBackRest or Barman.
 :::
 
 ## Prerequisites

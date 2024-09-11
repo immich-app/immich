@@ -77,13 +77,9 @@ const config = {
       },
       announcementBar: {
         id: 'site_announcement_immich',
-        content:
-          'Immich joins Futo! Read about the announcement <a href="/blog/2024/immich-core-team-goes-fulltime">here</a>.',
-        backgroundColor: '#4250af',
-        textColor: 'white',
-        // content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
-        // backgroundColor: '#593f00',
-        // textColor: '#ffefc9',
+        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
+        backgroundColor: '#593f00',
+        textColor: '#ffefc9',
         isCloseable: false,
       },
       docs: {
@@ -96,17 +92,22 @@ const config = {
           alt: 'Immich Logo',
           src: 'img/immich-logo-inline-light.png',
           srcDark: 'img/immich-logo-inline-dark.png',
+          className: 'rounded-none',
         },
         items: [
+          {
+            type: 'custom-versionSwitcher',
+            position: 'right',
+          },
           {
             to: '/docs/overview/introduction',
             position: 'right',
             label: 'Docs',
           },
           {
-            to: '/milestones',
+            to: '/roadmap',
             position: 'right',
-            label: 'Milestones',
+            label: 'Roadmap',
           },
           {
             to: '/docs/api',
@@ -121,6 +122,11 @@ const config = {
           {
             href: 'https://github.com/immich-app/immich',
             label: 'GitHub',
+            position: 'right',
+          },
+          {
+            href: 'https://discord.immich.app',
+            label: 'Discord',
             position: 'right',
           },
         ],
@@ -139,28 +145,36 @@ const config = {
                 label: 'Installation',
                 to: '/docs/install/requirements',
               },
+              {
+                label: 'Contributing',
+                to: '/docs/overview/support-the-project',
+              },
+              {
+                label: 'Privacy Policy',
+                to: '/privacy-policy',
+              },
             ],
           },
           {
-            title: 'Community',
+            title: 'Documentation',
             items: [
               {
-                label: 'Discord',
-                href: 'https://discord.com/invite/D8JsnBEuKb',
+                label: 'Roadmap',
+                to: '/roadmap',
               },
               {
-                label: 'Reddit',
-                href: 'https://www.reddit.com/r/immich/',
+                label: 'API',
+                to: '/docs/api',
+              },
+              {
+                label: 'Cursed Knowledge',
+                to: '/cursed-knowledge',
               },
             ],
           },
           {
             title: 'Links',
             items: [
-              // {
-              //   label: "Blog",
-              //   to: "/blog",
-              // },
               {
                 label: 'GitHub',
                 href: 'https://github.com/immich-app/immich',
@@ -168,6 +182,14 @@ const config = {
               {
                 label: 'YouTube',
                 href: 'https://www.youtube.com/@immich-app',
+              },
+              {
+                label: 'Discord',
+                href: 'https://discord.immich.app',
+              },
+              {
+                label: 'Reddit',
+                href: 'https://www.reddit.com/r/immich/',
               },
             ],
           },

@@ -7,11 +7,11 @@ import { AuditService } from 'src/services/audit.service';
 
 @ApiTags('Audit')
 @Controller('audit')
-@Authenticated()
 export class AuditController {
   constructor(private service: AuditService) {}
 
   @Get('deletes')
+  @Authenticated()
   getAuditDeletes(@Auth() auth: AuthDto, @Query() dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
     return this.service.getDeletes(auth, dto);
   }

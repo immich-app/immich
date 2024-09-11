@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -18,6 +18,7 @@ class PersonResponseDto {
     required this.isHidden,
     required this.name,
     required this.thumbnailPath,
+    this.updatedAt,
   });
 
   DateTime? birthDate;
@@ -30,13 +31,23 @@ class PersonResponseDto {
 
   String thumbnailPath;
 
+  /// This property was added in v1.107.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? updatedAt;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
     other.birthDate == birthDate &&
     other.id == id &&
     other.isHidden == isHidden &&
     other.name == name &&
-    other.thumbnailPath == thumbnailPath;
+    other.thumbnailPath == thumbnailPath &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -45,10 +56,11 @@ class PersonResponseDto {
     (id.hashCode) +
     (isHidden.hashCode) +
     (name.hashCode) +
-    (thumbnailPath.hashCode);
+    (thumbnailPath.hashCode) +
+    (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[birthDate=$birthDate, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath]';
+  String toString() => 'PersonResponseDto[birthDate=$birthDate, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -61,6 +73,11 @@ class PersonResponseDto {
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
       json[r'thumbnailPath'] = this.thumbnailPath;
+    if (this.updatedAt != null) {
+      json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
+    } else {
+    //  json[r'updatedAt'] = null;
+    }
     return json;
   }
 
@@ -77,6 +94,7 @@ class PersonResponseDto {
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r''),
       );
     }
     return null;

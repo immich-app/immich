@@ -32,13 +32,14 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - Where and how you can get this file depends on device and vendor, but typically, the device vendor also supplies these
   - The `hwaccel.ml.yml` file assumes the path to it is `/usr/lib/libmali.so`, so update accordingly if it is elsewhere
   - The `hwaccel.ml.yml` file assumes an additional file `/lib/firmware/mali_csffw.bin`, so update accordingly if your device's driver does not require this file
+- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for ARM NN specific settings
 
 #### CUDA
 
 - The GPU must have compute capability 5.2 or greater.
 - The server must have the official NVIDIA driver installed.
-- The installed driver must be >= 535 (it must support CUDA 12.2).
-- On Linux (except for WSL2), you also need to have [NVIDIA Container Runtime][nvcr] installed.
+- The installed driver must be >= 545 (it must support CUDA 12.3.2).
+- On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
 #### OpenVINO
 
@@ -95,11 +96,11 @@ immich-machine-learning:
 Once this is done, you can redeploy the `immich-machine-learning` container.
 
 :::info
-You can confirm the device is being recognized and used by checking its utilization (via `nvtop` for CUDA, `intel_gpu_top` for OpenVINO, etc.). You can also enable debug logging by setting `LOG_LEVEL=debug` in the `.env` file and restarting the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, you should see a log for `Available ORT providers` containing the relevant provider. In the case of ARM NN, the absence of a `Could not load ANN shared libraries` log entry means it loaded successfully.
+You can confirm the device is being recognized and used by checking its utilization (via `nvtop` for CUDA, `intel_gpu_top` for OpenVINO, etc.). You can also enable debug logging by setting `IMMICH_LOG_LEVEL=debug` in the `.env` file and restarting the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, you should see a log for `Available ORT providers` containing the relevant provider. In the case of ARM NN, the absence of a `Could not load ANN shared libraries` log entry means it loaded successfully.
 :::
 
 [hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
-[nvcr]: https://github.com/NVIDIA/nvidia-container-runtime/
+[nvct]: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 
 ## Tips
 

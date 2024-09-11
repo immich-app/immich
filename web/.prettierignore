@@ -8,7 +8,6 @@ node_modules
 .env.*
 !.env.example
 *.md
-*.json
 
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml

@@ -8,8 +8,17 @@ export interface GitHubRelease {
   body: string;
 }
 
+export interface ServerBuildVersions {
+  nodejs: string;
+  ffmpeg: string;
+  libvips: string;
+  exiftool: string;
+  imagemagick: string;
+}
+
 export const IServerInfoRepository = 'IServerInfoRepository';
 
 export interface IServerInfoRepository {
   getGitHubRelease(): Promise<GitHubRelease>;
+  getBuildVersions(): Promise<ServerBuildVersions>;
 }

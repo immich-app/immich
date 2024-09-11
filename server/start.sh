@@ -17,4 +17,10 @@ read_file_and_export "DB_USERNAME_FILE" "DB_USERNAME"
 read_file_and_export "DB_PASSWORD_FILE" "DB_PASSWORD"
 read_file_and_export "REDIS_PASSWORD_FILE" "REDIS_PASSWORD"
 
+export CPU_CORES="${CPU_CORES:=$(./get-cpus.sh)}"
+echo "Detected CPU Cores: $CPU_CORES"
+if [ "$CPU_CORES" -gt 4 ]; then
+  export UV_THREADPOOL_SIZE=$CPU_CORES
+fi
+
 exec node /usr/src/app/dist/main "$@"

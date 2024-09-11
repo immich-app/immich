@@ -19,26 +19,26 @@ class ImageViewerService {
 
   ImageViewerService(this._apiService);
 
-  Future<bool> downloadAssetToDevice(Asset asset) async {
+  Future<bool> downloadAsset(Asset asset) async {
     File? imageFile;
     File? videoFile;
     try {
       // Download LivePhotos image and motion part
       if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
         var imageResponse =
-            await _apiService.downloadApi.downloadFileWithHttpInfo(
+            await _apiService.assetsApi.downloadAssetWithHttpInfo(
           asset.remoteId!,
         );
 
-        var motionReponse =
-            await _apiService.downloadApi.downloadFileWithHttpInfo(
+        var motionResponse =
+            await _apiService.assetsApi.downloadAssetWithHttpInfo(
           asset.livePhotoVideoId!,
         );
 
         if (imageResponse.statusCode != 200 ||
-            motionReponse.statusCode != 200) {
+            motionResponse.statusCode != 200) {
           final failedResponse =
-              imageResponse.statusCode != 200 ? imageResponse : motionReponse;
+              imageResponse.statusCode != 200 ? imageResponse : motionResponse;
           _log.severe(
             "Motion asset download failed",
             failedResponse.toLoggerString(),
@@ -51,7 +51,7 @@ class ImageViewerService {
         final tempDir = await getTemporaryDirectory();
         videoFile = await File('${tempDir.path}/livephoto.mov').create();
         imageFile = await File('${tempDir.path}/livephoto.heic').create();
-        videoFile.writeAsBytesSync(motionReponse.bodyBytes);
+        videoFile.writeAsBytesSync(motionResponse.bodyBytes);
         imageFile.writeAsBytesSync(imageResponse.bodyBytes);
 
         entity = await PhotoManager.editor.darwin.saveLivePhoto(
@@ -73,8 +73,8 @@ class ImageViewerService {
 
         return entity != null;
       } else {
-        var res = await _apiService.downloadApi
-            .downloadFileWithHttpInfo(asset.remoteId!);
+        var res = await _apiService.assetsApi
+            .downloadAssetWithHttpInfo(asset.remoteId!);
 
         if (res.statusCode != 200) {
           _log.severe("Asset download failed", res.toLoggerString());
@@ -82,18 +82,23 @@ class ImageViewerService {
         }
 
         final AssetEntity? entity;
+        final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
 
         if (asset.isImage) {
           entity = await PhotoManager.editor.saveImage(
             res.bodyBytes,
             title: asset.fileName,
+            relativePath: relativePath,
           );
         } else {
           final tempDir = await getTemporaryDirectory();
           videoFile = await File('${tempDir.path}/${asset.fileName}').create();
           videoFile.writeAsBytesSync(res.bodyBytes);
-          entity = await PhotoManager.editor
-              .saveVideo(videoFile, title: asset.fileName);
+          entity = await PhotoManager.editor.saveVideo(
+            videoFile,
+            title: asset.fileName,
+            relativePath: relativePath,
+          );
         }
         return entity != null;
       }

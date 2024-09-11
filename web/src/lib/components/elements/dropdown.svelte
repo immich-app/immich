@@ -17,7 +17,7 @@
 
   import { isEqual } from 'lodash-es';
   import LinkButton from './buttons/link-button.svelte';
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import { fly } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
 
@@ -72,7 +72,7 @@
   $: renderedSelectedOption = renderOption(selectedOption);
 </script>
 
-<div use:clickOutside on:outclick={handleClickOutside} on:escape={handleClickOutside}>
+<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
   <!-- BUTTON TITLE -->
   <LinkButton on:click={() => (showMenu = true)} fullwidth {title}>
     <div class="flex place-items-center gap-2 text-sm">
@@ -93,6 +93,7 @@
         {@const renderedOption = renderOption(option)}
         {@const buttonStyle = renderedOption.disabled ? '' : 'transition-all hover:bg-gray-300 dark:hover:bg-gray-800'}
         <button
+          type="button"
           class="grid grid-cols-[36px,1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"
           disabled={renderedOption.disabled}
           on:click={() => !renderedOption.disabled && handleSelectOption(option)}

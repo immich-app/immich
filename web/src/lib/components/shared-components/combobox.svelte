@@ -1,12 +1,20 @@
 <script lang="ts" context="module">
   export type ComboBoxOption = {
+    id?: string;
     label: string;
     value: string;
   };
 
-  export function toComboBoxOptions(items: string[]) {
-    return items.map<ComboBoxOption>((item) => ({ label: item, value: item }));
-  }
+  export const asComboboxOptions = (values: string[]) =>
+    values.map((value) => {
+      if (value === '') {
+        return { label: get(t)('unknown'), value: '' };
+      }
+
+      return { label: value, value };
+    });
+
+  export const asSelectedOption = (value?: string) => (value === undefined ? undefined : asComboboxOptions([value])[0]);
 </script>
 
 <script lang="ts">
@@ -15,21 +23,23 @@
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
   import { createEventDispatcher, tick } from 'svelte';
   import type { FormEventHandler } from 'svelte/elements';
-  import { shortcuts } from '$lib/utils/shortcut';
-  import { clickOutside } from '$lib/utils/click-outside';
-  import { focusOutside } from '$lib/utils/focus-outside';
+  import { shortcuts } from '$lib/actions/shortcut';
+  import { focusOutside } from '$lib/actions/focus-outside';
+  import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
+  import { get } from 'svelte/store';
+
+  export let label: string;
+  export let hideLabel = false;
+  export let options: ComboBoxOption[] = [];
+  export let selectedOption: ComboBoxOption | undefined = undefined;
+  export let placeholder = '';
 
   /**
    * Unique identifier for the combobox.
    */
-  export let id: string;
-  export let label: string;
-  export let hideLabel = false;
-  export let options: ComboBoxOption[] = [];
-  export let selectedOption: ComboBoxOption | undefined;
-  export let placeholder = '';
-
+  let id: string = generateId();
   /**
    * Indicates whether or not the dropdown autocomplete list should be visible.
    */
@@ -57,6 +67,7 @@
 
   const activate = () => {
     isActive = true;
+    searchQuery = '';
     openDropdown();
   };
 
@@ -110,10 +121,9 @@
   };
 </script>
 
-<label class="text-sm text-black dark:text-white" class:sr-only={hideLabel} for={inputId}>{label}</label>
+<label class="immich-form-label" class:sr-only={hideLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
-  use:clickOutside={{ onOutclick: deactivate }}
   use:focusOutside={{ onFocusOut: deactivate }}
   use:shortcuts={[
     {
@@ -199,7 +209,7 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <CircleIconButton on:click={onClear} title="Clear value" icon={mdiClose} size="16" padding="2" />
+        <CircleIconButton on:click={onClear} title={$t('clear_value')} icon={mdiClose} size="16" padding="2" />
       {:else if !isOpen}
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}
@@ -225,10 +235,10 @@
           id={`${listboxId}-${0}`}
           on:click={() => closeDropdown()}
         >
-          No results
+          {$t('no_results')}
         </li>
       {/if}
-      {#each filteredOptions as option, index (option.label)}
+      {#each filteredOptions as option, index (option.id || option.label)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <li
           aria-selected={index === selectedIndex}

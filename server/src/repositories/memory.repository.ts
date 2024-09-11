@@ -61,12 +61,12 @@ export class MemoryRepository implements IMemoryRepository {
       .from('memories_assets_assets', 'memories_assets')
       .where('"memories_assets"."memoriesId" = :memoryId', { memoryId: id })
       .andWhere('memories_assets.assetsId IN (:...assetIds)', { assetIds })
-      .getRawMany();
+      .getRawMany<{ assetId: string }>();
 
-    return new Set(results.map((row) => row['assetId']));
+    return new Set(results.map(({ assetId }) => assetId));
   }
 
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(id: string, assetIds: string[]): Promise<void> {
     await this.dataSource
       .createQueryBuilder()

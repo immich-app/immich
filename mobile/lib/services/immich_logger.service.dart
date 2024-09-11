@@ -85,7 +85,7 @@ class ImmichLogger {
     _db.writeTxn(() => _db.loggerMessages.clear());
   }
 
-  Future<void> shareLogs() async {
+  Future<void> shareLogs(BuildContext context) async {
     final tempDir = await getTemporaryDirectory();
     final dateTime = DateTime.now().toIso8601String();
     final filePath = '${tempDir.path}/Immich_log_$dateTime.log';
@@ -107,11 +107,13 @@ class ImmichLogger {
       await io.close();
     }
 
+    final box = context.findRenderObject() as RenderBox?;
+
     // Share file
     await Share.shareXFiles(
       [XFile(filePath)],
       subject: "Immich logs $dateTime",
-      sharePositionOrigin: Rect.zero,
+      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
     ).then(
       (value) => logFile.delete(),
     );

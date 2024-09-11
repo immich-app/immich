@@ -3,13 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/settings/widgets/advanced_settings.dart';
-import 'package:immich_mobile/modules/settings/widgets/asset_list_settings/asset_list_settings.dart';
-import 'package:immich_mobile/modules/settings/widgets/backup_settings/backup_settings.dart';
-import 'package:immich_mobile/modules/settings/widgets/image_viewer_quality_setting.dart';
-import 'package:immich_mobile/modules/settings/widgets/language_settings.dart';
-import 'package:immich_mobile/modules/settings/widgets/notification_setting.dart';
-import 'package:immich_mobile/modules/settings/widgets/preference_settings/preference_setting.dart';
+import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
+import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
+import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
+import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
+import 'package:immich_mobile/widgets/settings/language_settings.dart';
+import 'package:immich_mobile/widgets/settings/notification_setting.dart';
+import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 enum SettingSection {
@@ -33,7 +33,7 @@ enum SettingSection {
         SettingSection.preferences => const PreferenceSetting(),
         SettingSection.backup => const BackupSettings(),
         SettingSection.timeline => const AssetListSettings(),
-        SettingSection.viewer => const ImageViewerQualitySetting(),
+        SettingSection.viewer => const AssetViewerSettings(),
         SettingSection.advanced => const AdvancedSettings(),
       };
 
@@ -49,10 +49,6 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1),
-        ),
         title: const Text('setting_pages_app_bar_settings').tr(),
       ),
       body: context.isMobile ? _MobileLayout() : _TabletLayout(),
@@ -67,13 +63,18 @@ class _MobileLayout extends StatelessWidget {
       children: SettingSection.values
           .map(
             (s) => ListTile(
-              title: Text(
-                s.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 2.0, horizontal: 16.0),
               leading: Icon(s.icon),
+              title: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  s.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ).tr(),
+              ),
               onTap: () => context.pushRoute(SettingsSubRoute(section: s)),
             ),
           )
@@ -102,7 +103,7 @@ class _TabletLayout extends HookWidget {
                       leading: Icon(s.icon),
                       selected: s.index == selectedSection.value.index,
                       selectedColor: context.primaryColor,
-                      selectedTileColor: context.primaryColor.withAlpha(50),
+                      selectedTileColor: context.themeData.highlightColor,
                       onTap: () => selectedSection.value = s,
                     ),
                   ),

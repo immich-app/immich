@@ -19,11 +19,11 @@ class ShareService {
 
   ShareService(this._apiService);
 
-  Future<bool> shareAsset(Asset asset) async {
-    return await shareAssets([asset]);
+  Future<bool> shareAsset(Asset asset, BuildContext context) async {
+    return await shareAssets([asset], context);
   }
 
-  Future<bool> shareAssets(List<Asset> assets) async {
+  Future<bool> shareAssets(List<Asset> assets, BuildContext context) async {
     try {
       final downloadedXFiles = <XFile>[];
 
@@ -37,8 +37,8 @@ class ShareService {
           final tempDir = await getTemporaryDirectory();
           final fileName = asset.fileName;
           final tempFile = await File('${tempDir.path}/$fileName').create();
-          final res = await _apiService.downloadApi
-              .downloadFileWithHttpInfo(asset.remoteId!);
+          final res = await _apiService.assetsApi
+              .downloadAssetWithHttpInfo(asset.remoteId!);
 
           if (res.statusCode != 200) {
             _log.severe(
@@ -64,9 +64,10 @@ class ShareService {
         );
       }
 
+      final box = context.findRenderObject() as RenderBox?;
       Share.shareXFiles(
         downloadedXFiles,
-        sharePositionOrigin: Rect.zero,
+        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
       );
       return true;
     } catch (error) {

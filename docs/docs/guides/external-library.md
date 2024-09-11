@@ -6,38 +6,18 @@ in a directory on the same machine.
 
 # Mount the directory into the containers.
 
-Edit `docker-compose.yml` to add two new mount points under `volumes:`
+Edit `docker-compose.yml` to add one or more new mount points in the section `immich-server:` under `volumes:`.
+If you want Immich to be able to delete the images in the external library or add metadata ([XMP sidecars](/docs/features/xmp-sidecars)), remove `:ro` from the end of the mount point.
 
-```
-  immich-server:
+```diff
+immich-server:
     volumes:
-      - ${EXTERNAL_PATH}:/usr/src/app/external
+        - ${UPLOAD_LOCATION}:/usr/src/app/upload
++       - /home/user/photos1:/home/user/photos1:ro
++       - /mnt/photos2:/mnt/photos2:ro # you can delete this line if you only have one mount point, or you can add more lines if you have more than two
 ```
 
-Be sure to add exactly the same line to both `immich-server:` and `immich-microservices:`.
-
-Edit `.env` to define `EXTERNAL_PATH`, substituting in the correct path for your computer:
-
-```
-EXTERNAL_PATH=<your-path-here>
-```
-
-On my computer, for example, I use this path:
-
-```
-EXTERNAL_PATH=/home/tenino/photos
-```
-
-:::info EXTERNAL_PATH design
-The design choice to put the EXTERNAL_PATH into .env rather than put two copies of the absolute path in the yml file in order to make everything easier, so if you have two copies of the same path that have to be kept in sync, then someday later when you move the data, update only one of the paths, without everything will break mysteriously.
-:::
-
-Restart Immich.
-
-```
-docker compose down
-docker compose up -d
-```
+Restart Immich by running `docker compose up -d`.
 
 # Create the library
 

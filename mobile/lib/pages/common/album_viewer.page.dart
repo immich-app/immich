@@ -14,18 +14,18 @@ import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
-import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
+import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
+import 'package:immich_mobile/widgets/album/album_viewer_editable_title.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
+import 'package:immich_mobile/widgets/album/album_viewer_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage()
 class AlbumViewerPage extends HookConsumerWidget {
@@ -114,13 +114,13 @@ class AlbumViewerPage extends HookConsumerWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              AlbumActionOutlinedButton(
+              AlbumActionFilledButton(
                 iconData: Icons.add_photo_alternate_outlined,
                 onPressed: () => onAddPhotosPressed(album),
                 labelText: "share_add_photos".tr(),
               ),
               if (userId == album.ownerId)
-                AlbumActionOutlinedButton(
+                AlbumActionFilledButton(
                   iconData: Icons.person_add_alt_rounded,
                   onPressed: () => onAddUsersPressed(album),
                   labelText: "album_viewer_page_share_add_users".tr(),
@@ -133,7 +133,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildTitle(Album album) {
       return Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8, top: 24),
+        padding: const EdgeInsets.only(left: 8, right: 8),
         child: userId == album.ownerId && album.isRemote
             ? AlbumViewerEditableTitle(
                 album: album,
@@ -228,9 +228,30 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: ref.watch(multiselectProvider)
-          ? null
-          : album.when(
+      body: Stack(
+        children: [
+          album.widgetWhen(
+            onData: (data) => MultiselectGrid(
+              renderListProvider: albumRenderlistProvider(albumId),
+              topWidget: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildHeader(data),
+                  if (data.isRemote) buildControlButton(data),
+                ],
+              ),
+              onRemoveFromAlbum: onRemoveFromAlbumPressed,
+              editEnabled: data.ownerId == userId,
+            ),
+          ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            top: ref.watch(multiselectProvider)
+                ? -(kToolbarHeight + MediaQuery.of(context).padding.top)
+                : 0,
+            left: 0,
+            right: 0,
+            child: album.when(
               data: (data) => AlbumViewerAppbar(
                 titleFocusNode: titleFocusNode,
                 album: data,
@@ -242,19 +263,8 @@ class AlbumViewerPage extends HookConsumerWidget {
               error: (error, stackTrace) => AppBar(title: const Text("Error")),
               loading: () => AppBar(),
             ),
-      body: album.widgetWhen(
-        onData: (data) => MultiselectGrid(
-          renderListProvider: albumRenderlistProvider(albumId),
-          topWidget: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildHeader(data),
-              if (data.isRemote) buildControlButton(data),
-            ],
           ),
-          onRemoveFromAlbum: onRemoveFromAlbumPressed,
-          editEnabled: data.ownerId == userId,
-        ),
+        ],
       ),
     );
   }

@@ -11,7 +11,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   type: Sync.each(() => faker.helpers.enumValue(AssetTypeEnum)),
   originalPath: Sync.each(() => faker.system.filePath()),
   originalFileName: Sync.each(() => faker.system.fileName()),
-  resized: true,
+  originalMimeType: Sync.each(() => faker.system.mimeType()),
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
   fileCreatedAt: Sync.each(() => faker.date.past().toISOString()),
   fileModifiedAt: Sync.each(() => faker.date.past().toISOString()),
@@ -24,5 +24,4 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   checksum: Sync.each(() => faker.string.alphanumeric(28)),
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
-  stackCount: null,
 });

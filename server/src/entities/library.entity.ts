@@ -30,9 +30,6 @@ export class LibraryEntity {
   @Column()
   ownerId!: string;
 
-  @Column()
-  type!: LibraryType;
-
   @Column('text', { array: true })
   importPaths!: string[];
 
@@ -50,12 +47,4 @@ export class LibraryEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   refreshedAt!: Date | null;
-
-  @Column({ type: 'boolean', default: true })
-  isVisible!: boolean;
-}
-
-export enum LibraryType {
-  UPLOAD = 'UPLOAD',
-  EXTERNAL = 'EXTERNAL',
 }

@@ -171,9 +171,9 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             return
         }
         
-        // Requires 3 or more arguments in the array
-        guard args.count >= 3 else {
-            print("Requires 3 or more arguments and received \(args.count)")
+        // Requires 3 arguments in the array
+        guard args.count == 3 else {
+            print("Requires 3 arguments and received \(args.count)")
             result(FlutterMethodNotImplemented)
             return
         }

@@ -11,21 +11,6 @@ export class MatchMigrationsWithTypeORMEntities1656889061566 implements Migratio
                          COALESCE("state", '') || ' ' ||
                          COALESCE("country", ''))) STORED`);
     await queryRunner.query(`ALTER TABLE "exif" ALTER COLUMN "exifTextSearchableColumn" SET NOT NULL`);
-    await queryRunner.query(
-      `DELETE FROM "typeorm_metadata" WHERE "type" = $1 AND "name" = $2 AND "database" = $3 AND "schema" = $4 AND "table" = $5`,
-      ['GENERATED_COLUMN', 'exifTextSearchableColumn', 'postgres', 'public', 'exif'],
-    );
-    await queryRunner.query(
-      `INSERT INTO "typeorm_metadata"("database", "schema", "table", "type", "name", "value") VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        'postgres',
-        'public',
-        'exif',
-        'GENERATED_COLUMN',
-        'exifTextSearchableColumn',
-        "TO_TSVECTOR('english',\n                         COALESCE(make, '') || ' ' ||\n                         COALESCE(model, '') || ' ' ||\n                         COALESCE(orientation, '') || ' ' ||\n                         COALESCE(\"lensModel\", '') || ' ' ||\n                         COALESCE(\"city\", '') || ' ' ||\n                         COALESCE(\"state\", '') || ' ' ||\n                         COALESCE(\"country\", ''))",
-      ],
-    );
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "firstName" SET NOT NULL`);
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "lastName" SET NOT NULL`);
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "isAdmin" SET NOT NULL`);
@@ -51,10 +36,6 @@ export class MatchMigrationsWithTypeORMEntities1656889061566 implements Migratio
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "isAdmin" DROP NOT NULL`);
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "lastName" DROP NOT NULL`);
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "firstName" DROP NOT NULL`);
-    await queryRunner.query(
-      `DELETE FROM "typeorm_metadata" WHERE "type" = $1 AND "name" = $2 AND "database" = $3 AND "schema" = $4 AND "table" = $5`,
-      ['GENERATED_COLUMN', 'exifTextSearchableColumn', 'immich', 'public', 'exif'],
-    );
     await queryRunner.query(`ALTER TABLE "exif" DROP COLUMN "exifTextSearchableColumn"`);
     await queryRunner.query(`ALTER TABLE "asset_album" DROP CONSTRAINT "FK_7ae4e03729895bf87e056d7b598"`);
     await queryRunner.query(`ALTER TABLE "asset_album" DROP CONSTRAINT "FK_256a30a03a4a0aff0394051397d"`);

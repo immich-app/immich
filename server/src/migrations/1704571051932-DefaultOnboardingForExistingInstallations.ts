@@ -6,7 +6,7 @@ export class DefaultOnboardingForExistingInstallations1704571051932 implements M
     if (adminCount[0].count > 0) {
       await queryRunner.query(`INSERT INTO system_metadata (key, value) VALUES ($1, $2)`, [
         'admin-onboarding',
-        '"{\\"isOnboarded\\":true}"',
+        String.raw`"{\"isOnboarded\":true}"`,
       ]);
     }
   }

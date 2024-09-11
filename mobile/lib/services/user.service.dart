@@ -37,10 +37,10 @@ class UserService {
     this._partnerService,
   );
 
-  Future<List<User>?> _getAllUsers({required bool isAll}) async {
+  Future<List<User>?> _getAllUsers() async {
     try {
-      final dto = await _apiService.userApi.getAllUsers(isAll);
-      return dto?.map(User.fromUserDto).toList();
+      final dto = await _apiService.usersApi.searchUsers();
+      return dto?.map(User.fromSimpleUserDto).toList();
     } catch (e) {
       _log.warning("Failed get all users", e);
       return null;
@@ -57,7 +57,7 @@ class UserService {
 
   Future<CreateProfileImageResponseDto?> uploadProfileImage(XFile image) async {
     try {
-      return await _apiService.userApi.createProfileImage(
+      return await _apiService.usersApi.createProfileImage(
         MultipartFile.fromBytes(
           'file',
           await image.readAsBytes(),
@@ -70,16 +70,16 @@ class UserService {
     }
   }
 
-  Future<bool> refreshUsers() async {
-    final List<User>? users = await _getAllUsers(isAll: true);
+  Future<List<User>?> getUsersFromServer() async {
+    final List<User>? users = await _getAllUsers();
     final List<User>? sharedBy =
-        await _partnerService.getPartners(PartnerDirection.sharedBy);
+        await _partnerService.getPartners(PartnerDirection.by);
     final List<User>? sharedWith =
-        await _partnerService.getPartners(PartnerDirection.sharedWith);
+        await _partnerService.getPartners(PartnerDirection.with_);
 
     if (users == null || sharedBy == null || sharedWith == null) {
       _log.warning("Failed to refresh users");
-      return false;
+      return null;
     }
 
     users.sortBy((u) => u.id);
@@ -108,6 +108,12 @@ class UserService {
       onlySecond: (_) {},
     );
 
+    return users;
+  }
+
+  Future<bool> refreshUsers() async {
+    final users = await getUsersFromServer();
+    if (users == null) return false;
     return _syncService.syncUsersFromServer(users);
   }
 }

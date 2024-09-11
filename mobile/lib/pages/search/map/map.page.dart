@@ -15,16 +15,17 @@ import 'package:immich_mobile/models/map/map_event.model.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/providers/map/map_marker.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/modules/map/utils/map_utils.dart';
-import 'package:immich_mobile/modules/map/widgets/map_app_bar.dart';
-import 'package:immich_mobile/modules/map/widgets/map_asset_grid.dart';
-import 'package:immich_mobile/modules/map/widgets/map_bottom_sheet.dart';
-import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
-import 'package:immich_mobile/modules/map/widgets/positioned_asset_marker_icon.dart';
+import 'package:immich_mobile/utils/map_utils.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/widgets/map/map_app_bar.dart';
+import 'package:immich_mobile/widgets/map/map_asset_grid.dart';
+import 'package:immich_mobile/widgets/map/map_bottom_sheet.dart';
+import 'package:immich_mobile/widgets/map/map_theme_override.dart';
+import 'package:immich_mobile/widgets/map/positioned_asset_marker_icon.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -178,12 +179,17 @@ class MapPage extends HookConsumerWidget {
         return;
       }
 
+      // Since we only have a single asset, we can just show GroupAssetBy.none
+      final renderList = await RenderList.fromAssets(
+        [asset],
+        GroupAssetsBy.none,
+      );
+
       context.pushRoute(
         GalleryViewerRoute(
           initialIndex: 0,
-          loadAsset: (index) => asset,
-          totalAssets: 1,
           heroOffset: 0,
+          renderList: renderList,
         ),
       );
     }
@@ -298,7 +304,7 @@ class MapPage extends HookConsumerWidget {
                         ),
                         Positioned(
                           right: 0,
-                          bottom: 30,
+                          bottom: MediaQuery.of(context).padding.bottom + 16,
                           child: ElevatedButton(
                             onPressed: onZoomToLocation,
                             style: ElevatedButton.styleFrom(

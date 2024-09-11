@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { initInput } from '$lib/actions/focus';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
   import { searchPerson, type PersonResponseDto } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   export let searchName: string;
   export let searchedPeopleLocal: PersonResponseDto[];
@@ -11,7 +13,7 @@
   export let numberPeopleToSearch: number = maximumLengthSearchPeople;
   export let inputClass: string = 'w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg';
   export let showLoadingSpinner: boolean = false;
-  export let placeholder: string = 'Name or nickname';
+  export let placeholder: string = $t('name_or_nickname');
   export let onReset = () => {};
   export let onSearch = () => {};
 
@@ -60,7 +62,7 @@
       searchedPeople = data;
       searchWord = searchName;
     } catch (error) {
-      handleError(error, "Can't search people");
+      handleError(error, $t('errors.cant_search_people'));
     } finally {
       clearTimeout(timeout);
       timeout = null;
@@ -68,10 +70,6 @@
       showLoadingSpinner = false;
       search();
     }
-  };
-
-  const initInput = (element: HTMLInputElement) => {
-    element.focus();
   };
 
   const handleReset = () => {

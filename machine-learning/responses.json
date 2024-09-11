@@ -213,8 +213,6 @@
   },
   "facial-recognition": [
     {
-      "imageWidth": 600,
-      "imageHeight": 800,
       "boundingBox": {
         "x1": 690.0,
         "y1": -89.0,
@@ -325,5 +323,7 @@
         -0.077056274, 0.002099529
       ]
     }
-  ]
+  ],
+  "imageWidth": 600,
+  "imageHeight": 800
 }

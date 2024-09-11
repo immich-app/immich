@@ -6,8 +6,8 @@ import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class PartnerDetailPage extends HookConsumerWidget {
@@ -22,7 +22,7 @@ class PartnerDetailPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(assetProvider.notifier).getPartnerAssets(partner);
+        ref.read(assetProvider.notifier).getAllAsset();
         return null;
       },
       [],
@@ -78,8 +78,7 @@ class PartnerDetailPage extends HookConsumerWidget {
             ),
       body: MultiselectGrid(
         renderListProvider: assetsProvider(partner.isarId),
-        onRefresh: () =>
-            ref.read(assetProvider.notifier).getPartnerAssets(partner),
+        onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
         deleteEnabled: false,
         favoriteEnabled: false,
       ),

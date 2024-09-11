@@ -10,6 +10,7 @@
   import { mdiHistory } from '@mdi/js';
   import Button from '../../elements/buttons/button.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { t } from 'svelte-i18n';
 
   export let onRestore: OnRestore | undefined;
 
@@ -26,13 +27,13 @@
       onRestore?.(ids);
 
       notificationController.show({
-        message: `Restored ${ids.length}`,
+        message: $t('assets_restored_count', { values: { count: ids.length } }),
         type: NotificationType.Info,
       });
 
       clearSelect();
     } catch (error) {
-      handleError(error, 'Error restoring assets');
+      handleError(error, $t('errors.unable_to_restore_assets'));
     } finally {
       loading = false;
     }
@@ -41,5 +42,5 @@
 
 <Button disabled={loading} size="sm" color="transparent-gray" shadow={false} rounded="lg" on:click={handleRestore}>
   <Icon path={mdiHistory} size="24" />
-  <span class="ml-2">Restore</span>
+  <span class="ml-2">{$t('restore')}</span>
 </Button>

@@ -1,15 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { vectorExt } from 'src/database.config';
+import { getVectorExtension } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
+import { AssetType } from 'src/enum';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
+  AssetDuplicateResult,
+  AssetDuplicateSearch,
   AssetSearchOptions,
   FaceEmbeddingSearch,
   FaceSearchResult,
@@ -19,7 +22,6 @@ import {
 } from 'src/interfaces/search.interface';
 import { asVector, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { getCLIPModelInfo } from 'src/utils/misc';
 import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 import { Repository, SelectQueryBuilder } from 'typeorm';
@@ -50,18 +52,7 @@ export class SearchRepository implements ISearchRepository {
         .innerJoinAndSelect('asset.exifInfo', 'exif')
         .withDeleted()
         .getQuery() +
-      ' INNER JOIN cte ON asset.id = cte."assetId"';
-  }
-
-  async init(modelName: string): Promise<void> {
-    const { dimSize } = getCLIPModelInfo(modelName);
-    const curDimSize = await this.getDimSize();
-    this.logger.verbose(`Current database CLIP dimension size is ${curDimSize}`);
-
-    if (dimSize != curDimSize) {
-      this.logger.log(`Dimension size of model ${modelName} is ${dimSize}, but database expects ${curDimSize}.`);
-      await this.updateDimSize(dimSize);
-    }
+      ' INNER JOIN cte ON asset.id = cte."assetId" ORDER BY exif.city';
   }
 
   @GenerateSql({
@@ -148,6 +139,49 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({
     params: [
       {
+        embedding: Array.from({ length: 512 }, Math.random),
+        maxDistance: 0.6,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchDuplicates({
+    assetId,
+    embedding,
+    maxDistance,
+    type,
+    userIds,
+  }: AssetDuplicateSearch): Promise<AssetDuplicateResult[]> {
+    const cte = this.assetRepository.createQueryBuilder('asset');
+    cte
+      .select('search.assetId', 'assetId')
+      .addSelect('asset.duplicateId', 'duplicateId')
+      .addSelect(`search.embedding <=> :embedding`, 'distance')
+      .innerJoin('asset.smartSearch', 'search')
+      .where('asset.ownerId IN (:...userIds )')
+      .andWhere('asset.id != :assetId')
+      .andWhere('asset.isVisible = :isVisible')
+      .andWhere('asset.type = :type')
+      .orderBy('search.embedding <=> :embedding')
+      .limit(64)
+      .setParameters({ assetId, embedding: asVector(embedding), isVisible: true, type, userIds });
+
+    const builder = this.assetRepository.manager
+      .createQueryBuilder()
+      .addCommonTableExpression(cte, 'cte')
+      .from('cte', 'res')
+      .select('res.*');
+
+    if (maxDistance) {
+      builder.where('res.distance <= :maxDistance', { maxDistance });
+    }
+
+    return builder.getRawMany() as Promise<AssetDuplicateResult[]>;
+  }
+
+  @GenerateSql({
+    params: [
+      {
         userIds: [DummyValue.UUID],
         embedding: Array.from({ length: 512 }, Math.random),
         numResults: 100,
@@ -173,10 +207,11 @@ export class SearchRepository implements ISearchRepository {
     await this.assetRepository.manager.transaction(async (manager) => {
       const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
-        .select('faces.embedding <=> :embedding', 'distance')
+        .select('search.embedding <=> :embedding', 'distance')
         .innerJoin('faces.asset', 'asset')
+        .innerJoin('faces.faceSearch', 'search')
         .where('asset.ownerId IN (:...userIds )')
-        .orderBy('faces.embedding <=> :embedding')
+        .orderBy('search.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
       cte.limit(numResults);
@@ -254,31 +289,7 @@ export class SearchRepository implements ISearchRepository {
     );
   }
 
-  private async updateDimSize(dimSize: number): Promise<void> {
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
-      throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
-    }
-
-    const curDimSize = await this.getDimSize();
-    if (curDimSize === dimSize) {
-      return;
-    }
-
-    this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
-
-    await this.smartSearchRepository.manager.transaction(async (manager) => {
-      await manager.clear(SmartSearchEntity);
-      await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
-    });
-
-    this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);
-  }
-
-  deleteAllSearchEmbeddings(): Promise<void> {
-    return this.smartSearchRepository.clear();
-  }
-
-  private async getDimSize(): Promise<number> {
+  async getDimensionSize(): Promise<number> {
     const res = await this.smartSearchRepository.manager.query(`
       SELECT atttypmod as dimsize
       FROM pg_attribute f
@@ -295,8 +306,24 @@ export class SearchRepository implements ISearchRepository {
     return dimSize;
   }
 
+  setDimensionSize(dimSize: number): Promise<void> {
+    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+      throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
+    }
+
+    return this.smartSearchRepository.manager.transaction(async (manager) => {
+      await manager.clear(SmartSearchEntity);
+      await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
+      await manager.query(`REINDEX INDEX clip_index`);
+    });
+  }
+
+  async deleteAllSearchEmbeddings(): Promise<void> {
+    return this.smartSearchRepository.clear();
+  }
+
   private getRuntimeConfig(numResults?: number): string {
-    if (vectorExt === DatabaseExtension.VECTOR) {
+    if (getVectorExtension() === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 

@@ -33,23 +33,36 @@ const aggregation = new metrics.ExplicitBucketHistogramAggregation(
   true,
 );
 
-const metricsPort = Number.parseInt(process.env.IMMICH_METRICS_PORT ?? '8081');
+let otelSingleton: NodeSDK | undefined;
 
-export const otelSDK = new NodeSDK({
-  resource: new resources.Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: `immich`,
-    [SemanticResourceAttributes.SERVICE_VERSION]: serverVersion.toString(),
-  }),
-  metricReader: new PrometheusExporter({ port: metricsPort }),
-  contextManager: new AsyncLocalStorageContextManager(),
-  instrumentations: [
-    new HttpInstrumentation(),
-    new IORedisInstrumentation(),
-    new NestInstrumentation(),
-    new PgInstrumentation(),
-  ],
-  views: [new metrics.View({ aggregation, instrumentName: '*', instrumentUnit: 'ms' })],
-});
+export const otelStart = (port: number) => {
+  if (otelSingleton) {
+    throw new Error('OpenTelemetry SDK already started');
+  }
+  otelSingleton = new NodeSDK({
+    resource: new resources.Resource({
+      [SemanticResourceAttributes.SERVICE_NAME]: `immich`,
+      [SemanticResourceAttributes.SERVICE_VERSION]: serverVersion.toString(),
+    }),
+    metricReader: new PrometheusExporter({ port }),
+    contextManager: new AsyncLocalStorageContextManager(),
+    instrumentations: [
+      new HttpInstrumentation(),
+      new IORedisInstrumentation(),
+      new NestInstrumentation(),
+      new PgInstrumentation(),
+    ],
+    views: [new metrics.View({ aggregation, instrumentName: '*', instrumentUnit: 'ms' })],
+  });
+  otelSingleton.start();
+};
+
+export const otelShutdown = async () => {
+  if (otelSingleton) {
+    await otelSingleton.shutdown();
+    otelSingleton = undefined;
+  }
+};
 
 export const otelConfig: OpenTelemetryModuleOptions = {
   metrics: {

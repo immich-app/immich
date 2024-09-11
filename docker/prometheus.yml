@@ -3,10 +3,10 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: immich_server
+  - job_name: immich_api
     static_configs:
       - targets: ['immich-server:8081']
-  
+
   - job_name: immich_microservices
     static_configs:
-      - targets: ['immich-microservices:8081']
+      - targets: ['immich-server:8082']

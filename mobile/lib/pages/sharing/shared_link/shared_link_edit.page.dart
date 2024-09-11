@@ -10,7 +10,7 @@ import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 
 @RoutePage()
@@ -30,6 +30,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const padding = 20.0;
     final themeData = context.themeData;
+    final colorScheme = context.colorScheme;
     final descriptionController =
         useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
@@ -58,7 +59,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
               Text(
                 existingLink!.title,
                 style: TextStyle(
-                  color: themeData.primaryColor,
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -81,7 +82,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 child: Text(
                   existingLink!.description ?? "--",
                   style: TextStyle(
-                    color: themeData.primaryColor,
+                    color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -109,7 +110,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
           labelText: 'shared_link_edit_description'.tr(),
           labelStyle: TextStyle(
             fontWeight: FontWeight.bold,
-            color: themeData.primaryColor,
+            color: colorScheme.primary,
           ),
           floatingLabelBehavior: FloatingLabelBehavior.always,
           border: const OutlineInputBorder(),
@@ -135,7 +136,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
           labelText: 'shared_link_edit_password'.tr(),
           labelStyle: TextStyle(
             fontWeight: FontWeight.bold,
-            color: themeData.primaryColor,
+            color: colorScheme.primary,
           ),
           floatingLabelBehavior: FloatingLabelBehavior.always,
           border: const OutlineInputBorder(),
@@ -157,7 +158,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         onChanged: newShareLink.value.isEmpty
             ? (value) => showMetadata.value = value
             : null,
-        activeColor: themeData.primaryColor,
+        activeColor: colorScheme.primary,
         dense: true,
         title: Text(
           "shared_link_edit_show_meta",
@@ -173,7 +174,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         onChanged: newShareLink.value.isEmpty
             ? (value) => allowDownload.value = value
             : null,
-        activeColor: themeData.primaryColor,
+        activeColor: colorScheme.primary,
         dense: true,
         title: Text(
           "shared_link_edit_allow_download",
@@ -189,7 +190,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         onChanged: newShareLink.value.isEmpty
             ? (value) => allowUpload.value = value
             : null,
-        activeColor: themeData.primaryColor,
+        activeColor: colorScheme.primary,
         dense: true,
         title: Text(
           "shared_link_edit_allow_upload",
@@ -205,7 +206,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         onChanged: newShareLink.value.isEmpty
             ? (value) => editExpiry.value = value
             : null,
-        activeColor: themeData.primaryColor,
+        activeColor: colorScheme.primary,
         dense: true,
         title: Text(
           "shared_link_edit_change_expiry",
@@ -221,7 +222,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
           "shared_link_edit_expire_after",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: themeData.primaryColor,
+            color: colorScheme.primary,
           ),
         ).tr(),
         enableSearch: false,
@@ -233,14 +234,6 @@ class SharedLinkEditPage extends HookConsumerWidget {
         onSelected: (value) {
           expiryAfter.value = value!;
         },
-        inputDecorationTheme: themeData.inputDecorationTheme.copyWith(
-          disabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.withOpacity(0.5)),
-          ),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
-          ),
-        ),
         dropdownMenuEntries: [
           DropdownMenuEntry(
             value: 0,
@@ -328,7 +321,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
               alignment: Alignment.bottomRight,
               child: ElevatedButton(
                 onPressed: () {
-                  context.popRoute();
+                  context.maybePop();
                 },
                 child: const Text(
                   "share_done",
@@ -431,7 +424,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             changeExpiry: changeExpiry,
           );
       ref.invalidate(sharedLinksStateProvider);
-      context.popRoute();
+      context.maybePop();
     }
 
     return Scaffold(

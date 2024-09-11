@@ -2,8 +2,9 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import { mdiImageMinusOutline, mdiImageMultipleOutline } from '@mdi/js';
-  import { stackAssets, unstackAssets } from '$lib/utils/asset-utils';
+  import { stackAssets, deleteStack } from '$lib/utils/asset-utils';
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
+  import { t } from 'svelte-i18n';
 
   export let unstack = false;
   export let onStack: OnStack | undefined;
@@ -29,8 +30,7 @@
     if (!stack) {
       return;
     }
-    const assets = [selectedAssets[0], ...stack];
-    const unstackedAssets = await unstackAssets(assets);
+    const unstackedAssets = await deleteStack([stack.id]);
     if (unstackedAssets) {
       onUnstack?.(unstackedAssets);
     }
@@ -39,7 +39,7 @@
 </script>
 
 {#if unstack}
-  <MenuOption text="Un-stack" icon={mdiImageMinusOutline} on:click={handleUnstack} />
+  <MenuOption text={$t('unstack')} icon={mdiImageMinusOutline} onClick={handleUnstack} />
 {:else}
-  <MenuOption text="Stack" icon={mdiImageMultipleOutline} on:click={handleStack} />
+  <MenuOption text={$t('stack')} icon={mdiImageMultipleOutline} onClick={handleStack} />
 {/if}

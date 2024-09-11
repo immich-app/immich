@@ -1,4 +1,5 @@
-import { MemoryEntity, MemoryType } from 'src/entities/memory.entity';
+import { MemoryEntity } from 'src/entities/memory.entity';
+import { MemoryType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 

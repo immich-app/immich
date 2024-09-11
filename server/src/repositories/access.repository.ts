@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
-import { AlbumUserRole } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -12,6 +11,9 @@ import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { StackEntity } from 'src/entities/stack.entity';
+import { TagEntity } from 'src/entities/tag.entity';
+import { AlbumUserRole } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
@@ -20,11 +22,12 @@ type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
 type IAssetAccess = IAccessRepository['asset'];
 type IAuthDeviceAccess = IAccessRepository['authDevice'];
-type ILibraryAccess = IAccessRepository['library'];
-type ITimelineAccess = IAccessRepository['timeline'];
 type IMemoryAccess = IAccessRepository['memory'];
 type IPersonAccess = IAccessRepository['person'];
 type IPartnerAccess = IAccessRepository['partner'];
+type IStackAccess = IAccessRepository['stack'];
+type ITagAccess = IAccessRepository['tag'];
+type ITimelineAccess = IAccessRepository['timeline'];
 
 @Instrumentation()
 @Injectable()
@@ -241,6 +244,7 @@ class AssetAccess implements IAssetAccess {
       .innerJoin('sharedBy.assets', 'asset')
       .select('asset.id', 'assetId')
       .where('partner.sharedWithId = :userId', { userId })
+      .andWhere('asset.isArchived = false')
       .andWhere('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
       .getRawMany()
       .then((rows) => new Set(rows.map((row) => row.assetId)));
@@ -313,25 +317,25 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
   }
 }
 
-class LibraryAccess implements ILibraryAccess {
-  constructor(private libraryRepository: Repository<LibraryEntity>) {}
+class StackAccess implements IStackAccess {
+  constructor(private stackRepository: Repository<StackEntity>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>> {
-    if (libraryIds.size === 0) {
+  async checkOwnerAccess(userId: string, stackIds: Set<string>): Promise<Set<string>> {
+    if (stackIds.size === 0) {
       return new Set();
     }
 
-    return this.libraryRepository
+    return this.stackRepository
       .find({
         select: { id: true },
         where: {
-          id: In([...libraryIds]),
+          id: In([...stackIds]),
           ownerId: userId,
         },
       })
-      .then((libraries) => new Set(libraries.map((library) => library.id)));
+      .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
 }
 
@@ -442,15 +446,38 @@ class PartnerAccess implements IPartnerAccess {
   }
 }
 
+class TagAccess implements ITagAccess {
+  constructor(private tagRepository: Repository<TagEntity>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, tagIds: Set<string>): Promise<Set<string>> {
+    if (tagIds.size === 0) {
+      return new Set();
+    }
+
+    return this.tagRepository
+      .find({
+        select: { id: true },
+        where: {
+          id: In([...tagIds]),
+          userId,
+        },
+      })
+      .then((tags) => new Set(tags.map((tag) => tag.id)));
+  }
+}
+
 export class AccessRepository implements IAccessRepository {
   activity: IActivityAccess;
   album: IAlbumAccess;
   asset: IAssetAccess;
   authDevice: IAuthDeviceAccess;
-  library: ILibraryAccess;
   memory: IMemoryAccess;
   person: IPersonAccess;
   partner: IPartnerAccess;
+  stack: IStackAccess;
+  tag: ITagAccess;
   timeline: ITimelineAccess;
 
   constructor(
@@ -464,15 +491,18 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(AssetFaceEntity) assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SharedLinkEntity) sharedLinkRepository: Repository<SharedLinkEntity>,
     @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
+    @InjectRepository(StackEntity) stackRepository: Repository<StackEntity>,
+    @InjectRepository(TagEntity) tagRepository: Repository<TagEntity>,
   ) {
     this.activity = new ActivityAccess(activityRepository, albumRepository);
     this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
     this.authDevice = new AuthDeviceAccess(sessionRepository);
-    this.library = new LibraryAccess(libraryRepository);
     this.memory = new MemoryAccess(memoryRepository);
     this.person = new PersonAccess(assetFaceRepository, personRepository);
     this.partner = new PartnerAccess(partnerRepository);
+    this.stack = new StackAccess(stackRepository);
+    this.tag = new TagAccess(tagRepository);
     this.timeline = new TimelineAccess(partnerRepository);
   }
 }

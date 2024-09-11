@@ -1,5 +1,3 @@
-import { UserAvatarColor } from '@immich/sdk';
-
 export const uuidDto = {
   invalid: 'invalid-uuid',
   // valid uuid v4
@@ -70,8 +68,6 @@ export const userDto = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.Primary,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   },
@@ -88,8 +84,6 @@ export const userDto = {
     updatedAt: new Date('2021-01-01'),
     tags: [],
     assets: [],
-    memoriesEnabled: true,
-    avatarColor: UserAvatarColor.Primary,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
   },

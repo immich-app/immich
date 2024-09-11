@@ -5,21 +5,21 @@ sidebar_position: 3
 # Quick Start
 
 Here is a quick, no-choices path to install Immich and take it for a test drive.
-Once you've tried it, perhaps you'll use one of the many other ways
+Once you've tried it, you might use one of the many other ways
 to install and use it.
 
 ## Requirements
 
 Check the [requirements page](/docs/install/requirements) to get started.
 
-## Install and launch via Docker Compose
+## Install and Launch via Docker Compose
 
 Follow the [Docker Compose (Recommended)](/docs/install/docker-compose) instructions
 to install the server.
 
 - Where random passwords are required, `pwgen` is a handy utility.
 - `UPLOAD_LOCATION` should be set to some new directory on the server
-  with free space.
+  with enough free space.
 - You may ignore "Step 4 - Upgrading".
 
 ## Try the Web UI
@@ -48,26 +48,26 @@ import MobileAppLogin from '/docs/partials/_mobile-app-login.md';
 
 In the mobile app, you should see the photo you uploaded from the web UI.
 
-### Transfer Photos from your Mobile Device
+### Transfer Photos from Your Mobile Device
 
 import MobileAppBackup from '/docs/partials/_mobile-app-backup.md';
 
 <MobileAppBackup />
 
-Depending on how many photos are on your mobile device, this backup may
+The backup time differs depending on how many photos are on your mobile device. Large uploads may
 take quite a while.
 
-You can select the Jobs tab to see Immich processing your photos.
+You can select the **Jobs** tab to see Immich processing your photos.
 
 <img src={require('/docs/guides/img/jobs-tab.png').default} title="Jobs tab" />
 
-## Set up your backups
+## Set up Your Backups
 
 You may want to back up the content of your Immich instance
 along with other parts of your server; be sure to read about
 [database backup](/docs/administration/backup-and-restore).
 
-## Where to go from here?
+## Where to Go From Here
 
 You may decide you'd like to install the server a different way;
 the Install category on the left menu provides many options.

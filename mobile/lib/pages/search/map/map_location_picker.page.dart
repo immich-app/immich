@@ -8,11 +8,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
-import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
+import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:immich_mobile/modules/map/utils/map_utils.dart';
+import 'package:immich_mobile/utils/map_utils.dart';
 
-@RoutePage<LatLng?>()
+@RoutePage()
 class MapLocationPickerPage extends HookConsumerWidget {
   final LatLng initialLatLng;
 
@@ -41,7 +41,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
     }
 
     void onClose([LatLng? selected]) {
-      context.popRoute(selected);
+      context.maybePop(selected);
     }
 
     Future<void> getCurrentLocation() async {

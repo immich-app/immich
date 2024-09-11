@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/favorite_provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 
 @RoutePage()
 class FavoritesPage extends HookConsumerWidget {
@@ -15,7 +15,7 @@ class FavoritesPage extends HookConsumerWidget {
     AppBar buildAppBar() {
       return AppBar(
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         centerTitle: true,

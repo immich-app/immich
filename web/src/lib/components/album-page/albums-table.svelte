@@ -13,6 +13,7 @@
     sortOptionsMetadata,
     type AlbumGroup,
   } from '$lib/utils/album-utils';
+  import { t } from 'svelte-i18n';
 
   export let groupedAlbums: AlbumGroup[];
   export let albumGroupOption: string = AlbumGroupBy.None;
@@ -40,13 +41,14 @@
     {#each groupedAlbums as albumGroup (albumGroup.id)}
       {@const isCollapsed = isAlbumGroupCollapsed($albumViewSettings, albumGroup.id)}
       {@const iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90'}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <tbody
-        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg mt-4 hover:cursor-pointer"
-        on:click={() => toggleAlbumGroupCollapsing(albumGroup.id)}
+        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
-        <tr class="flex w-full place-items-center p-2 md:pl-5 md:pr-5 md:pt-3 md:pb-3">
+        <tr
+          class="flex w-full place-items-center p-2 md:pl-5 md:pr-5 md:pt-3 md:pb-3"
+          on:click={() => toggleAlbumGroupCollapsing(albumGroup.id)}
+          aria-expanded={!isCollapsed}
+        >
           <td class="text-md text-left -mb-1">
             <Icon
               path={mdiChevronRight}
@@ -54,7 +56,9 @@
               class="inline-block -mt-2 transition-all duration-[250ms] {iconRotation}"
             />
             <span class="font-bold text-2xl">{albumGroup.name}</span>
-            <span class="ml-1.5">({albumGroup.albums.length} {albumGroup.albums.length > 1 ? 'albums' : 'album'})</span>
+            <span class="ml-1.5">
+              ({$t('albums_count', { values: { count: albumGroup.albums.length } })})
+            </span>
           </td>
         </tr>
       </tbody>

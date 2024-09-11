@@ -1,6 +1,7 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
 
   export let value: string;
   export let label = '';
@@ -16,7 +17,7 @@
 
 <div class="mb-4 w-full">
   <div class={`flex h-[26px] place-items-center gap-1`}>
-    <label class={`immich-form-label text-sm`} for={label}>{label}</label>
+    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -26,7 +27,7 @@
         transition:fly={{ x: 10, duration: 200, easing: quintOut }}
         class="rounded-full bg-orange-100 px-2 text-[10px] text-orange-900"
       >
-        Unsaved change
+        {$t('unsaved_change')}
       </div>
     {/if}
   </div>

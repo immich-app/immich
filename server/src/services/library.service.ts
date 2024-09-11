@@ -1,50 +1,46 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { Trie } from 'mnemonist';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
+import { OnEmit } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
   ScanLibraryDto,
-  SearchLibraryDto,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
   mapLibrary,
 } from 'src/dtos/library.dto';
-import { AssetType } from 'src/entities/asset.entity';
-import { LibraryEntity, LibraryType } from 'src/entities/library.entity';
+import { AssetType } from 'src/enum';
 import { IAssetRepository, WithProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
   IJobRepository,
   ILibraryFileJob,
+  ILibraryOfflineJob,
   ILibraryRefreshJob,
-  JOBS_ASSET_PAGINATION_SIZE,
+  JOBS_LIBRARY_PAGINATION_SIZE,
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { validateCronExpression } from 'src/validation';
-
-const LIBRARY_SCAN_BATCH_SIZE = 5000;
 
 @Injectable()
 export class LibraryService {
@@ -55,7 +51,7 @@ export class LibraryService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
@@ -64,11 +60,12 @@ export class LibraryService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(LibraryService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  async init() {
-    const config = await this.configCore.getConfig();
+  @OnEmit({ event: 'app.bootstrap' })
+  async onBootstrap() {
+    const config = await this.configCore.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
 
@@ -104,8 +101,8 @@ export class LibraryService {
     });
   }
 
-  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
-  onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
       throw new Error(`Invalid cron expression ${scan.cronExpression}`);
@@ -118,10 +115,7 @@ export class LibraryService {
     }
 
     const library = await this.findOrFail(id);
-
-    if (library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only watch external libraries');
-    } else if (library.importPaths.length === 0) {
+    if (library.importPaths.length === 0) {
       return false;
     }
 
@@ -193,7 +187,8 @@ export class LibraryService {
     }
   }
 
-  async teardown() {
+  @OnEmit({ event: 'app.shutdown' })
+  async onShutdown() {
     await this.unwatchAll();
   }
 
@@ -212,16 +207,18 @@ export class LibraryService {
       return false;
     }
 
-    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
-
+    const libraries = await this.repository.getAll(false);
     for (const library of libraries) {
       await this.watch(library.id);
     }
   }
 
   async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
-    await this.findOrFail(id);
-    return this.repository.getStatistics(id);
+    const statistics = await this.repository.getStatistics(id);
+    if (!statistics) {
+      throw new BadRequestException('Library not found');
+    }
+    return statistics;
   }
 
   async get(id: string): Promise<LibraryResponseDto> {
@@ -229,8 +226,8 @@ export class LibraryService {
     return mapLibrary(library);
   }
 
-  async getAll(dto: SearchLibraryDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAll(false, dto.type);
+  async getAll(): Promise<LibraryResponseDto[]> {
+    const libraries = await this.repository.getAll(false);
     return libraries.map((library) => mapLibrary(library));
   }
 
@@ -244,62 +241,27 @@ export class LibraryService {
   }
 
   async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    switch (dto.type) {
-      case LibraryType.EXTERNAL: {
-        if (!dto.name) {
-          dto.name = 'New External Library';
-        }
-        break;
-      }
-      case LibraryType.UPLOAD: {
-        if (!dto.name) {
-          dto.name = 'New Upload Library';
-        }
-        if (dto.importPaths && dto.importPaths.length > 0) {
-          throw new BadRequestException('Upload libraries cannot have import paths');
-        }
-        if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
-          throw new BadRequestException('Upload libraries cannot have exclusion patterns');
-        }
-        break;
-      }
-    }
-
     const library = await this.repository.create({
       ownerId: dto.ownerId,
-      name: dto.name,
-      type: dto.type,
+      name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? [],
-      isVisible: dto.isVisible ?? true,
     });
-
-    this.logger.log(`Creating ${dto.type} library for ${dto.ownerId}}`);
-
     return mapLibrary(library);
   }
 
   private async scanAssets(libraryId: string, assetPaths: string[], ownerId: string, force = false) {
-    this.logger.verbose(`Queuing refresh of ${assetPaths.length} asset(s)`);
-
-    // We perform this in batches to save on memory when performing large refreshes (greater than 1M assets)
-    const batchSize = 5000;
-    for (let i = 0; i < assetPaths.length; i += batchSize) {
-      const batch = assetPaths.slice(i, i + batchSize);
-      await this.jobRepository.queueAll(
-        batch.map((assetPath) => ({
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: libraryId,
-            assetPath: assetPath,
-            ownerId,
-            force,
-          },
-        })),
-      );
-    }
-
-    this.logger.debug('Asset refresh queue completed');
+    await this.jobRepository.queueAll(
+      assetPaths.map((assetPath) => ({
+        name: JobName.LIBRARY_SCAN_ASSET,
+        data: {
+          id: libraryId,
+          assetPath,
+          ownerId,
+          force,
+        },
+      })),
+    );
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
@@ -363,11 +325,7 @@ export class LibraryService {
   }
 
   async delete(id: string) {
-    const library = await this.findOrFail(id);
-    const uploadCount = await this.repository.getUploadLibraryCount(library.ownerId);
-    if (library.type === LibraryType.UPLOAD && uploadCount <= 1) {
-      throw new BadRequestException('Cannot delete the last upload library');
-    }
+    await this.findOrFail(id);
 
     if (this.watchLibraries) {
       await this.unwatch(id);
@@ -378,21 +336,32 @@ export class LibraryService {
   }
 
   async handleDeleteLibrary(job: IEntityJob): Promise<JobStatus> {
-    const library = await this.repository.get(job.id, true);
-    if (!library) {
-      return JobStatus.FAILED;
-    }
+    const libraryId = job.id;
 
-    // TODO use pagination
-    const assetIds = await this.repository.getAssetIds(job.id, true);
-    this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    await this.jobRepository.queueAll(
-      assetIds.map((assetId) => ({ name: JobName.ASSET_DELETION, data: { id: assetId } })),
+    const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination, { libraryId, withDeleted: true }),
     );
 
-    if (assetIds.length === 0) {
-      this.logger.log(`Deleting library ${job.id}`);
-      await this.repository.delete(job.id);
+    let assetsFound = false;
+
+    this.logger.debug(`Will delete all assets in library ${libraryId}`);
+    for await (const assets of assetPagination) {
+      assetsFound = true;
+      this.logger.debug(`Queueing deletion of ${assets.length} asset(s) in library ${libraryId}`);
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: JobName.ASSET_DELETION,
+          data: {
+            id: asset.id,
+            deleteOnDisk: false,
+          },
+        })),
+      );
+    }
+
+    if (!assetsFound) {
+      this.logger.log(`Deleting library ${libraryId}`);
+      await this.repository.delete(libraryId);
     }
     return JobStatus.SUCCESS;
   }
@@ -477,6 +446,7 @@ export class LibraryService {
       sidecarPath = `${assetPath}.xmp`;
     }
 
+    // TODO: device asset id is deprecated, remove it
     const deviceAssetId = `${basename(assetPath)}`.replaceAll(/\s+/g, '');
 
     let assetId;
@@ -495,7 +465,7 @@ export class LibraryService {
         libraryId: job.id,
         checksum: pathHash,
         originalPath: assetPath,
-        deviceAssetId: deviceAssetId,
+        deviceAssetId,
         deviceId: 'Library Import',
         fileCreatedAt: stats.mtime,
         fileModifiedAt: stats.mtime,
@@ -518,7 +488,7 @@ export class LibraryService {
       return JobStatus.SKIPPED;
     }
 
-    this.logger.debug(`Queuing metadata extraction for: ${assetPath}`);
+    this.logger.debug(`Queueing metadata extraction for: ${assetPath}`);
 
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: assetId, source: 'upload' } });
 
@@ -530,10 +500,7 @@ export class LibraryService {
   }
 
   async queueScan(id: string, dto: ScanLibraryDto) {
-    const library = await this.findOrFail(id);
-    if (library.type !== LibraryType.EXTERNAL) {
-      throw new BadRequestException('Can only refresh external libraries');
-    }
+    await this.findOrFail(id);
 
     await this.jobRepository.queue({
       name: JobName.LIBRARY_SCAN,
@@ -546,18 +513,16 @@ export class LibraryService {
   }
 
   async queueRemoveOffline(id: string) {
-    this.logger.verbose(`Removing offline files from library: ${id}`);
+    this.logger.verbose(`Queueing offline file removal from library ${id}`);
     await this.jobRepository.queue({ name: JobName.LIBRARY_REMOVE_OFFLINE, data: { id } });
   }
 
   async handleQueueAllScan(job: IBaseJob): Promise<JobStatus> {
     this.logger.debug(`Refreshing all external libraries: force=${job.force}`);
 
-    // Queue cleanup
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
-    // Queue all library refresh
-    const libraries = await this.repository.getAll(true, LibraryType.EXTERNAL);
+    const libraries = await this.repository.getAll(true);
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
         name: JobName.LIBRARY_SCAN,
@@ -571,16 +536,76 @@ export class LibraryService {
     return JobStatus.SUCCESS;
   }
 
-  async handleOfflineRemoval(job: IEntityJob): Promise<JobStatus> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
+  async handleOfflineCheck(job: ILibraryOfflineJob): Promise<JobStatus> {
+    const asset = await this.assetRepository.getById(job.id);
+
+    if (!asset) {
+      // Asset is no longer in the database, skip
+      return JobStatus.SKIPPED;
+    }
+
+    if (asset.isOffline) {
+      this.logger.verbose(`Asset is already offline: ${asset.originalPath}`);
+      return JobStatus.SUCCESS;
+    }
+
+    const isInPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
+    if (!isInPath) {
+      this.logger.debug(`Asset is no longer in an import path, marking offline: ${asset.originalPath}`);
+      await this.assetRepository.update({ id: asset.id, isOffline: true });
+      return JobStatus.SUCCESS;
+    }
+
+    const isExcluded = job.exclusionPatterns.some((pattern) => picomatch.isMatch(asset.originalPath, pattern));
+    if (isExcluded) {
+      this.logger.debug(`Asset is covered by an exclusion pattern, marking offline: ${asset.originalPath}`);
+      await this.assetRepository.update({ id: asset.id, isOffline: true });
+      return JobStatus.SUCCESS;
+    }
+
+    const fileExists = await this.storageRepository.checkFileExists(asset.originalPath, R_OK);
+    if (!fileExists) {
+      this.logger.debug(`Asset is no longer found on disk, marking offline: ${asset.originalPath}`);
+      await this.assetRepository.update({ id: asset.id, isOffline: true });
+      return JobStatus.SUCCESS;
+    }
+
+    this.logger.verbose(
+      `Asset is found on disk, not covered by an exclusion pattern, and is in an import path, keeping online: ${asset.originalPath}`,
     );
 
+    return JobStatus.SUCCESS;
+  }
+
+  async handleRemoveOffline(job: IEntityJob): Promise<JobStatus> {
+    this.logger.debug(`Removing offline assets for library ${job.id}`);
+
+    const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id, true),
+    );
+
+    let offlineAssets = 0;
     for await (const assets of assetPagination) {
-      this.logger.debug(`Removing ${assets.length} offline assets`);
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
-      );
+      offlineAssets += assets.length;
+      if (assets.length > 0) {
+        this.logger.debug(`Discovered ${offlineAssets} offline assets in library ${job.id}`);
+        await this.jobRepository.queueAll(
+          assets.map((asset) => ({
+            name: JobName.ASSET_DELETION,
+            data: {
+              id: asset.id,
+              deleteOnDisk: false,
+            },
+          })),
+        );
+        this.logger.verbose(`Queued deletion of ${assets.length} offline assets in library ${job.id}`);
+      }
+    }
+
+    if (offlineAssets) {
+      this.logger.debug(`Finished queueing deletion of ${offlineAssets} offline assets for library ${job.id}`);
+    } else {
+      this.logger.debug(`Found no offline assets to delete from library ${job.id}`);
     }
 
     return JobStatus.SUCCESS;
@@ -588,107 +613,73 @@ export class LibraryService {
 
   async handleQueueAssetRefresh(job: ILibraryRefreshJob): Promise<JobStatus> {
     const library = await this.repository.get(job.id);
-    if (!library || library.type !== LibraryType.EXTERNAL) {
-      this.logger.warn('Can only refresh external libraries');
-      return JobStatus.FAILED;
+    if (!library) {
+      return JobStatus.SKIPPED;
     }
 
-    this.logger.log(`Refreshing library: ${job.id}`);
+    this.logger.log(`Refreshing library ${library.id}`);
 
-    const crawledAssetPaths = await this.getPathTrie(library);
-    this.logger.debug(`Found ${crawledAssetPaths.size} asset(s) when crawling import paths ${library.importPaths}`);
+    const validImportPaths: string[] = [];
 
-    const assetIdsToMarkOffline = [];
-    const assetIdsToMarkOnline = [];
-    const pagination = usePagination(LIBRARY_SCAN_BATCH_SIZE, (pagination) =>
-      this.assetRepository.getExternalLibraryAssetPaths(pagination, library.id),
+    for (const importPath of library.importPaths) {
+      const validation = await this.validateImportPath(importPath);
+      if (validation.isValid) {
+        validImportPaths.push(path.normalize(importPath));
+      } else {
+        this.logger.warn(`Skipping invalid import path: ${importPath}. Reason: ${validation.message}`);
+      }
+    }
+
+    if (validImportPaths.length === 0) {
+      this.logger.warn(`No valid import paths found for library ${library.id}`);
+    }
+
+    const assetsOnDisk = this.storageRepository.walk({
+      pathsToCrawl: validImportPaths,
+      includeHidden: false,
+      exclusionPatterns: library.exclusionPatterns,
+      take: JOBS_LIBRARY_PAGINATION_SIZE,
+    });
+
+    let crawledAssets = 0;
+
+    for await (const assetBatch of assetsOnDisk) {
+      crawledAssets += assetBatch.length;
+      this.logger.debug(`Discovered ${crawledAssets} asset(s) on disk for library ${library.id}...`);
+      await this.scanAssets(job.id, assetBatch, library.ownerId, job.refreshAllFiles ?? false);
+      this.logger.verbose(`Queued scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
+    }
+
+    if (crawledAssets) {
+      this.logger.debug(`Finished queueing scan of ${crawledAssets} assets on disk for library ${library.id}`);
+    } else {
+      this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
+    }
+
+    const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id),
     );
 
-    this.logger.verbose(`Crawled asset paths paginated`);
-
-    const shouldScanAll = job.refreshAllFiles || job.refreshModifiedFiles;
-    for await (const page of pagination) {
-      for (const asset of page) {
-        const isOffline = !crawledAssetPaths.has(asset.originalPath);
-        if (isOffline && !asset.isOffline) {
-          assetIdsToMarkOffline.push(asset.id);
-          this.logger.verbose(`Added to mark-offline list: ${asset.originalPath}`);
-        }
-
-        if (!isOffline && asset.isOffline) {
-          assetIdsToMarkOnline.push(asset.id);
-          this.logger.verbose(`Added to mark-online list: ${asset.originalPath}`);
-        }
-
-        if (!shouldScanAll) {
-          crawledAssetPaths.delete(asset.originalPath);
-        }
-      }
+    let onlineAssetCount = 0;
+    for await (const assets of onlineAssets) {
+      onlineAssetCount += assets.length;
+      this.logger.debug(`Discovered ${onlineAssetCount} asset(s) in library ${library.id}...`);
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: JobName.LIBRARY_CHECK_OFFLINE,
+          data: { id: asset.id, importPaths: validImportPaths, exclusionPatterns: library.exclusionPatterns },
+        })),
+      );
+      this.logger.debug(`Queued online check of ${assets.length} asset(s) in library ${library.id}...`);
     }
 
-    this.logger.verbose(`Crawled assets have been checked for online/offline status`);
-
-    if (assetIdsToMarkOffline.length > 0) {
-      this.logger.debug(`Found ${assetIdsToMarkOffline.length} offline asset(s) previously marked as online`);
-      await this.assetRepository.updateAll(assetIdsToMarkOffline, { isOffline: true });
-    }
-
-    if (assetIdsToMarkOnline.length > 0) {
-      this.logger.debug(`Found ${assetIdsToMarkOnline.length} online asset(s) previously marked as offline`);
-      await this.assetRepository.updateAll(assetIdsToMarkOnline, { isOffline: false });
-    }
-
-    if (crawledAssetPaths.size > 0) {
-      if (!shouldScanAll) {
-        this.logger.debug(`Will import ${crawledAssetPaths.size} new asset(s)`);
-      }
-
-      let batch = [];
-      for (const assetPath of crawledAssetPaths) {
-        batch.push(assetPath);
-
-        if (batch.length >= LIBRARY_SCAN_BATCH_SIZE) {
-          await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-          batch = [];
-        }
-      }
-
-      if (batch.length > 0) {
-        await this.scanAssets(job.id, batch, library.ownerId, job.refreshAllFiles ?? false);
-      }
+    if (onlineAssetCount) {
+      this.logger.log(`Finished queueing online check of ${onlineAssetCount} assets for library ${library.id}`);
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
 
     return JobStatus.SUCCESS;
-  }
-
-  private async getPathTrie(library: LibraryEntity): Promise<Trie<string>> {
-    const pathValidation = await Promise.all(
-      library.importPaths.map(async (importPath) => await this.validateImportPath(importPath)),
-    );
-
-    const validImportPaths = pathValidation
-      .map((validation) => {
-        if (!validation.isValid) {
-          this.logger.error(`Skipping invalid import path: ${validation.importPath}. Reason: ${validation.message}`);
-        }
-        return validation;
-      })
-      .filter((validation) => validation.isValid)
-      .map((validation) => validation.importPath);
-
-    const generator = this.storageRepository.walk({
-      pathsToCrawl: validImportPaths,
-      exclusionPatterns: library.exclusionPatterns,
-    });
-
-    const trie = new Trie<string>();
-    for await (const filePath of generator) {
-      trie.add(filePath);
-    }
-
-    return trie;
   }
 
   private async findOrFail(id: string) {

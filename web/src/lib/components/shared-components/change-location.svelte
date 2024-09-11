@@ -1,16 +1,18 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import ConfirmDialogue from './confirm-dialogue.svelte';
+  import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import { timeDebounceOnSearch } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
 
-  import { clickOutside } from '$lib/utils/click-outside';
+  import { clickOutside } from '$lib/actions/click-outside';
   import LoadingSpinner from './loading-spinner.svelte';
   import { delay } from '$lib/utils/asset-utils';
   import { timeToLoadTheMap } from '$lib/constants';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import SearchBar from '../elements/search-bar.svelte';
-  import { listNavigation } from '$lib/utils/list-navigation';
+  import { listNavigation } from '$lib/actions/list-navigation';
+  import { t } from 'svelte-i18n';
+  import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
 
   export let asset: AssetResponseDto | undefined = undefined;
 
@@ -33,9 +35,9 @@
     confirm: Point;
   }>();
 
-  $: lat = asset?.exifInfo?.latitude || 0;
-  $: lng = asset?.exifInfo?.longitude || 0;
-  $: zoom = lat && lng ? 15 : 1;
+  $: lat = asset?.exifInfo?.latitude ?? undefined;
+  $: lng = asset?.exifInfo?.longitude ?? undefined;
+  $: zoom = lat !== undefined && lng !== undefined ? 12.5 : 1;
 
   $: {
     if (places) {
@@ -67,15 +69,18 @@
   };
 
   const handleSearchPlaces = () => {
-    if (searchWord === '') {
-      return;
-    }
-
     if (latestSearchTimeout) {
       clearTimeout(latestSearchTimeout);
     }
     showLoadingSpinner = true;
+
     const searchTimeout = window.setTimeout(() => {
+      if (searchWord === '') {
+        places = [];
+        showLoadingSpinner = false;
+        return;
+      }
+
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening
@@ -88,7 +93,7 @@
           // skip error when a newer search is happening
           if (latestSearchTimeout === searchTimeout) {
             places = [];
-            handleError(error, "Can't search places");
+            handleError(error, $t('errors.cant_search_places'));
             showLoadingSpinner = false;
           }
         });
@@ -103,13 +108,12 @@
   };
 </script>
 
-<ConfirmDialogue
-  id="change-location-modal"
+<ConfirmDialog
   confirmColor="primary"
-  title="Change location"
+  title={$t('change_location')}
   width="wide"
   onConfirm={handleConfirm}
-  onClose={handleCancel}
+  onCancel={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <div
@@ -117,9 +121,9 @@
       use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
       use:listNavigation={suggestionContainer}
     >
-      <button class="w-full" on:click={() => (hideSuggestion = false)}>
+      <button type="button" class="w-full" on:click={() => (hideSuggestion = false)}>
         <SearchBar
-          placeholder="Search places"
+          placeholder={$t('search_places')}
           bind:name={searchWord}
           {showLoadingSpinner}
           on:reset={() => {
@@ -133,6 +137,7 @@
         {#if !hideSuggestion}
           {#each suggestedPlaces as place, index}
             <button
+              type="button"
               class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
               suggestedPlaces.length - 1
                 ? 'rounded-b-lg border-b'
@@ -147,7 +152,7 @@
         {/if}
       </div>
     </div>
-    <label for="datetime">Pick a location</label>
+    <span>{$t('pick_a_location')}</span>
     <div class="h-[500px] min-h-[300px] w-full">
       {#await import('../shared-components/map/map.svelte')}
         {#await delay(timeToLoadTheMap) then}
@@ -156,10 +161,9 @@
             <LoadingSpinner />
           </div>
         {/await}
-      {:then component}
-        <svelte:component
-          this={component.default}
-          mapMarkers={lat && lng && asset
+      {:then { default: Map }}
+        <Map
+          mapMarkers={lat !== undefined && lng !== undefined && asset
             ? [
                 {
                   id: asset.id,
@@ -180,5 +184,16 @@
         />
       {/await}
     </div>
+
+    <div class="grid sm:grid-cols-2 gap-4 text-sm text-left mt-4">
+      <CoordinatesInput
+        lat={point ? point.lat : lat}
+        lng={point ? point.lng : lng}
+        onUpdate={(lat, lng) => {
+          point = { lat, lng };
+          addClipMapMarker(lng, lat);
+        }}
+      />
+    </div>
   </div>
-</ConfirmDialogue>
+</ConfirmDialog>

@@ -77,6 +77,10 @@ The default configuration looks like this:
       "enabled": true,
       "modelName": "ViT-B-32__openai"
     },
+    "duplicateDetection": {
+      "enabled": false,
+      "maxDistance": 0.03
+    },
     "facialRecognition": {
       "enabled": true,
       "modelName": "buffalo_l",
@@ -153,9 +157,6 @@ The default configuration looks like this:
   "server": {
     "externalDomain": "",
     "loginPageMessage": ""
-  },
-  "user": {
-    "deleteDelay": 7
   }
 }
 ```

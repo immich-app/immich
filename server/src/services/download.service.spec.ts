@@ -2,13 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
 import { Mocked, vitest } from 'vitest';
@@ -27,6 +28,7 @@ describe(DownloadService.name, () => {
   let sut: DownloadService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
 
   it('should work', () => {
@@ -36,51 +38,13 @@ describe(DownloadService.name, () => {
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    loggerMock = newLoggerRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new DownloadService(accessMock, assetMock, storageMock);
+    sut = new DownloadService(accessMock, assetMock, loggerMock, storageMock);
   });
 
-  describe('downloadFile', () => {
-    it('should require the asset.download permission', async () => {
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
-    });
-
-    it('should throw an error if the asset is not found', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-    });
-
-    it('should throw an error if the asset is offline', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.offline]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
-    });
-
-    it('should download a file', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual(
-        new ImmichFileResponse({
-          path: '/original/path.jpg',
-          contentType: 'image/jpeg',
-          cacheControl: CacheControl.NONE,
-        }),
-      );
-    });
-
+  describe('downloadArchive', () => {
     it('should download an archive', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
@@ -149,6 +113,27 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
     });
+
+    it('should resolve symlinks', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.noResizePath, id: 'asset-1', originalPath: '/path/to/symlink.jpg' },
+      ]);
+      storageMock.realpath.mockResolvedValue('/path/to/realpath.jpg');
+      storageMock.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1'] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', 'IMG_123.jpg');
+    });
   });
 
   describe('getDownloadInfo', () => {
@@ -180,7 +165,6 @@ describe(DownloadService.name, () => {
     });
 
     it('should return a list of archives (userId)', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
       assetMock.getByUserId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
@@ -196,8 +180,6 @@ describe(DownloadService.name, () => {
     });
 
     it('should split archives by size', async () => {
-      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.user.id]));
-
       assetMock.getByUserId.mockResolvedValue({
         items: [
           { ...assetStub.image, id: 'asset-1' },
@@ -240,6 +222,32 @@ describe(DownloadService.name, () => {
           {
             assetIds: [assetStub.livePhotoStillAsset.id, assetStub.livePhotoMotionAsset.id],
             size: 125_000,
+          },
+        ],
+      });
+    });
+
+    it('should skip the video portion of an android live photo by default', async () => {
+      const assetIds = [assetStub.livePhotoStillAsset.id];
+      const assets = [
+        assetStub.livePhotoStillAsset,
+        { ...assetStub.livePhotoMotionAsset, originalPath: 'upload/encoded-video/uuid-MP.mp4' },
+      ];
+
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
+      assetMock.getByIds.mockImplementation(
+        (ids) =>
+          Promise.resolve(
+            ids.map((id) => assets.find((asset) => asset.id === id)).filter((asset) => !!asset),
+          ) as Promise<AssetEntity[]>,
+      );
+
+      await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
+        totalSize: 25_000,
+        archives: [
+          {
+            assetIds: [assetStub.livePhotoStillAsset.id],
+            size: 25_000,
           },
         ],
       });

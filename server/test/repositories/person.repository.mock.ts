@@ -10,11 +10,14 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
     getAllWithoutFaces: vitest.fn(),
 
     getByName: vitest.fn(),
+    getDistinctNames: vitest.fn(),
 
     create: vitest.fn(),
+    createAll: vitest.fn(),
     update: vitest.fn(),
-    deleteAll: vitest.fn(),
+    updateAll: vitest.fn(),
     delete: vitest.fn(),
+    deleteAll: vitest.fn(),
     deleteAllFaces: vitest.fn(),
 
     getStatistics: vitest.fn(),
@@ -24,10 +27,12 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
 
     reassignFaces: vitest.fn(),
     createFaces: vitest.fn(),
+    replaceFaces: vitest.fn(),
     getFaces: vitest.fn(),
     reassignFace: vitest.fn(),
     getFaceById: vitest.fn(),
     getFaceByIdWithAssets: vitest.fn(),
     getNumberOfPeople: vitest.fn(),
+    getLatestFaceDate: vitest.fn(),
   };
 };

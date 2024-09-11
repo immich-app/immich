@@ -1,3 +1,5 @@
+import { EmailImageAttachment } from 'src/interfaces/notification.interface';
+
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
@@ -5,6 +7,7 @@ export enum QueueName {
   FACE_DETECTION = 'faceDetection',
   FACIAL_RECOGNITION = 'facialRecognition',
   SMART_SEARCH = 'smartSearch',
+  DUPLICATE_DETECTION = 'duplicateDetection',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   MIGRATION = 'migration',
@@ -16,7 +19,7 @@ export enum QueueName {
 
 export type ConcurrentQueueName = Exclude<
   QueueName,
-  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION | QueueName.DUPLICATE_DETECTION
 >;
 
 export enum JobCommand {
@@ -73,6 +76,7 @@ export enum JobName {
   LIBRARY_SCAN = 'library-refresh',
   LIBRARY_SCAN_ASSET = 'library-refresh-asset',
   LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
+  LIBRARY_CHECK_OFFLINE = 'library-check-offline',
   LIBRARY_DELETE = 'library-delete',
   LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
@@ -86,6 +90,10 @@ export enum JobName {
   QUEUE_SMART_SEARCH = 'queue-smart-search',
   SMART_SEARCH = 'smart-search',
 
+  // duplicate detection
+  QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
+  DUPLICATE_DETECTION = 'duplicate-detection',
+
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
   SIDECAR_DISCOVERY = 'sidecar-discovery',
@@ -94,10 +102,16 @@ export enum JobName {
 
   // Notification
   NOTIFY_SIGNUP = 'notify-signup',
+  NOTIFY_ALBUM_INVITE = 'notify-album-invite',
+  NOTIFY_ALBUM_UPDATE = 'notify-album-update',
   SEND_EMAIL = 'notification-send-email',
+
+  // Version check
+  VERSION_CHECK = 'version-check',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
+export const JOBS_LIBRARY_PAGINATION_SIZE = 100_000;
 
 export interface IBaseJob {
   force?: boolean;
@@ -105,12 +119,21 @@ export interface IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write';
+  source?: 'upload' | 'sidecar-write' | 'copy';
+}
+
+export interface IAssetDeleteJob extends IEntityJob {
+  deleteOnDisk: boolean;
 }
 
 export interface ILibraryFileJob extends IEntityJob {
   ownerId: string;
   assetPath: string;
+}
+
+export interface ILibraryOfflineJob extends IEntityJob {
+  importPaths: string[];
+  exclusionPatterns: string[];
 }
 
 export interface ILibraryRefreshJob extends IEntityJob {
@@ -131,10 +154,16 @@ export interface ISidecarWriteJob extends IEntityJob {
   dateTimeOriginal?: string;
   latitude?: number;
   longitude?: number;
+  rating?: number;
+  tags?: true;
 }
 
 export interface IDeferrableJob extends IEntityJob {
   deferred?: boolean;
+}
+
+export interface INightlyJob extends IBaseJob {
+  nightly?: boolean;
 }
 
 export interface IEmailJob {
@@ -142,10 +171,19 @@ export interface IEmailJob {
   subject: string;
   html: string;
   text: string;
+  imageAttachments?: EmailImageAttachment[];
 }
 
 export interface INotifySignupJob extends IEntityJob {
   tempPassword?: string;
+}
+
+export interface INotifyAlbumInviteJob extends IEntityJob {
+  recipientId: string;
+}
+
+export interface INotifyAlbumUpdateJob extends IEntityJob {
+  senderId: string;
 }
 
 export interface JobCounts {
@@ -204,13 +242,17 @@ export type JobItem =
   // Facial Recognition
   | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
   | { name: JobName.FACE_DETECTION; data: IEntityJob }
-  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
+  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: INightlyJob }
   | { name: JobName.FACIAL_RECOGNITION; data: IDeferrableJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
 
   // Smart Search
   | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
   | { name: JobName.SMART_SEARCH; data: IEntityJob }
+
+  // Duplicate Detection
+  | { name: JobName.QUEUE_DUPLICATE_DETECTION; data: IBaseJob }
+  | { name: JobName.DUPLICATE_DETECTION; data: IEntityJob }
 
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
@@ -221,7 +263,7 @@ export type JobItem =
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
-  | { name: JobName.ASSET_DELETION; data: IEntityJob }
+  | { name: JobName.ASSET_DELETION; data: IAssetDeleteJob }
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management
@@ -230,11 +272,17 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
+  | { name: JobName.LIBRARY_CHECK_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Notification
   | { name: JobName.SEND_EMAIL; data: IEmailJob }
-  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob };
+  | { name: JobName.NOTIFY_ALBUM_INVITE; data: INotifyAlbumInviteJob }
+  | { name: JobName.NOTIFY_ALBUM_UPDATE; data: INotifyAlbumUpdateJob }
+  | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
+
+  // Version check
+  | { name: JobName.VERSION_CHECK; data: IBaseJob };
 
 export enum JobStatus {
   SUCCESS = 'success',

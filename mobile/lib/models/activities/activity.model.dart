@@ -43,7 +43,7 @@ class Activity {
         assetId = dto.assetId,
         comment = dto.comment,
         createdAt = dto.createdAt,
-        type = dto.type == ActivityResponseDtoTypeEnum.comment
+        type = dto.type == ReactionType.comment
             ? ActivityType.comment
             : ActivityType.like,
         user = User.fromSimpleUserDto(dto.user);

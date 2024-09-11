@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,6 +14,7 @@ class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
     required this.backgroundTask,
+    required this.duplicateDetection,
     required this.faceDetection,
     required this.facialRecognition,
     required this.library_,
@@ -29,6 +30,8 @@ class AllJobStatusResponseDto {
   });
 
   JobStatusDto backgroundTask;
+
+  JobStatusDto duplicateDetection;
 
   JobStatusDto faceDetection;
 
@@ -57,6 +60,7 @@ class AllJobStatusResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
     other.backgroundTask == backgroundTask &&
+    other.duplicateDetection == duplicateDetection &&
     other.faceDetection == faceDetection &&
     other.facialRecognition == facialRecognition &&
     other.library_ == library_ &&
@@ -74,6 +78,7 @@ class AllJobStatusResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
+    (duplicateDetection.hashCode) +
     (faceDetection.hashCode) +
     (facialRecognition.hashCode) +
     (library_.hashCode) +
@@ -88,11 +93,12 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
+      json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'faceDetection'] = this.faceDetection;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'library'] = this.library_;
@@ -117,6 +123,7 @@ class AllJobStatusResponseDto {
 
       return AllJobStatusResponseDto(
         backgroundTask: JobStatusDto.fromJson(json[r'backgroundTask'])!,
+        duplicateDetection: JobStatusDto.fromJson(json[r'duplicateDetection'])!,
         faceDetection: JobStatusDto.fromJson(json[r'faceDetection'])!,
         facialRecognition: JobStatusDto.fromJson(json[r'facialRecognition'])!,
         library_: JobStatusDto.fromJson(json[r'library'])!,
@@ -177,6 +184,7 @@ class AllJobStatusResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'backgroundTask',
+    'duplicateDetection',
     'faceDetection',
     'facialRecognition',
     'library',

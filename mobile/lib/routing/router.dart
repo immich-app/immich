@@ -1,35 +1,34 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/models/memories/memory.model.dart';
-import 'package:immich_mobile/models/search/search_filter.model.dart';
-import 'package:immich_mobile/pages/common/activities.page.dart';
-import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/pages/common/album_options.page.dart';
-import 'package:immich_mobile/pages/common/album_viewer.page.dart';
-import 'package:immich_mobile/pages/common/album_asset_selection.page.dart';
-import 'package:immich_mobile/pages/common/create_album.page.dart';
-import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
-import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
-import 'package:immich_mobile/pages/common/album_shared_user_selection.page.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/routing/auth_guard.dart';
-import 'package:immich_mobile/routing/custom_transition_builders.dart';
-import 'package:immich_mobile/routing/duplicate_guard.dart';
-import 'package:immich_mobile/routing/backup_permission_guard.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
-import 'package:immich_mobile/pages/common/app_log.page.dart';
+import 'package:immich_mobile/models/memories/memory.model.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/pages/backup/album_preview.page.dart';
 import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
+import 'package:immich_mobile/pages/common/activities.page.dart';
+import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
+import 'package:immich_mobile/pages/common/album_asset_selection.page.dart';
+import 'package:immich_mobile/pages/common/album_options.page.dart';
+import 'package:immich_mobile/pages/common/album_shared_user_selection.page.dart';
+import 'package:immich_mobile/pages/common/album_viewer.page.dart';
+import 'package:immich_mobile/pages/common/app_log.page.dart';
+import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
+import 'package:immich_mobile/pages/common/create_album.page.dart';
 import 'package:immich_mobile/pages/common/gallery_viewer.page.dart';
+import 'package:immich_mobile/pages/common/headers_settings.page.dart';
+import 'package:immich_mobile/pages/common/settings.page.dart';
+import 'package:immich_mobile/pages/common/splash_screen.page.dart';
+import 'package:immich_mobile/pages/common/tab_controller.page.dart';
+import 'package:immich_mobile/pages/editing/edit.page.dart';
+import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/pages/library/archive.page.dart';
 import 'package:immich_mobile/pages/library/favorite.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
@@ -43,22 +42,25 @@ import 'package:immich_mobile/pages/search/all_motion_videos.page.dart';
 import 'package:immich_mobile/pages/search/all_people.page.dart';
 import 'package:immich_mobile/pages/search/all_places.page.dart';
 import 'package:immich_mobile/pages/search/all_videos.page.dart';
-import 'package:immich_mobile/pages/search/map/map_location_picker.page.dart';
 import 'package:immich_mobile/pages/search/map/map.page.dart';
+import 'package:immich_mobile/pages/search/map/map_location_picker.page.dart';
 import 'package:immich_mobile/pages/search/person_result.page.dart';
 import 'package:immich_mobile/pages/search/recently_added.page.dart';
-import 'package:immich_mobile/pages/search/search_input.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
-import 'package:immich_mobile/pages/common/settings.page.dart';
-import 'package:immich_mobile/pages/sharing/partner/partner_detail.page.dart';
+import 'package:immich_mobile/pages/search/search_input.page.dart';
 import 'package:immich_mobile/pages/sharing/partner/partner.page.dart';
-import 'package:immich_mobile/pages/sharing/shared_link/shared_link_edit.page.dart';
+import 'package:immich_mobile/pages/sharing/partner/partner_detail.page.dart';
 import 'package:immich_mobile/pages/sharing/shared_link/shared_link.page.dart';
+import 'package:immich_mobile/pages/sharing/shared_link/shared_link_edit.page.dart';
 import 'package:immich_mobile/pages/sharing/sharing.page.dart';
-import 'package:immich_mobile/pages/common/splash_screen.page.dart';
-import 'package:immich_mobile/pages/common/tab_controller.page.dart';
-import 'package:immich_mobile/pages/common/video_viewer.page.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/routing/auth_guard.dart';
+import 'package:immich_mobile/routing/backup_permission_guard.dart';
+import 'package:immich_mobile/routing/custom_transition_builders.dart';
+import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:photo_manager/photo_manager.dart' hide LatLng;
@@ -66,7 +68,7 @@ import 'package:photo_manager/photo_manager.dart' hide LatLng;
 part 'router.gr.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
-class AppRouter extends _$AppRouter {
+class AppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
   late final DuplicateGuard _duplicateGuard;
   late final BackupPermissionGuard _backupPermissionGuard;
@@ -121,10 +123,6 @@ class AppRouter extends _$AppRouter {
       transitionsBuilder: CustomTransitionsBuilders.zoomedPage,
     ),
     AutoRoute(
-      page: VideoViewerRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-    ),
-    AutoRoute(
       page: BackupControllerRoute.page,
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
     ),
@@ -136,6 +134,8 @@ class AppRouter extends _$AppRouter {
       page: CreateAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(page: EditImageRoute.page),
+    AutoRoute(page: CropImageRoute.page),
     AutoRoute(page: FavoritesRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AllVideosRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(
@@ -226,6 +226,10 @@ class AppRouter extends _$AppRouter {
       page: SearchInputRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.noTransition,
+    ),
+    AutoRoute(
+      page: HeaderSettingsRoute.page,
+      guards: [_duplicateGuard],
     ),
   ];
 }

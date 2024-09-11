@@ -1,18 +1,20 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
+import { ImageFormat } from 'src/config';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { ImageFormat } from 'src/entities/system-config.entity';
+import { AssetFileType } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { getAssetFiles } from 'src/utils/asset.util';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',
@@ -49,10 +51,10 @@ export class StorageCore {
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
     private storageRepository: IStorageRepository,
-    systemConfigRepository: ISystemConfigRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
     private logger: ILoggerRepository,
   ) {
-    this.configCore = SystemConfigCore.create(systemConfigRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   static create(
@@ -61,7 +63,7 @@ export class StorageCore {
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
     storageRepository: IStorageRepository,
-    systemConfigRepository: ISystemConfigRepository,
+    systemMetadataRepository: ISystemMetadataRepository,
     logger: ILoggerRepository,
   ) {
     if (!instance) {
@@ -71,7 +73,7 @@ export class StorageCore {
         moveRepository,
         personRepository,
         storageRepository,
-        systemConfigRepository,
+        systemMetadataRepository,
         logger,
       );
     }
@@ -130,12 +132,14 @@ export class StorageCore {
   }
 
   async moveAssetImage(asset: AssetEntity, pathType: GeneratedImageType, format: ImageFormat) {
-    const { id: entityId, previewPath, thumbnailPath } = asset;
+    const { id: entityId, files } = asset;
+    const { thumbnailFile, previewFile } = getAssetFiles(files);
+    const oldFile = pathType === AssetPathType.PREVIEW ? previewFile : thumbnailFile;
     return this.moveFile({
       entityId,
       pathType,
-      oldPath: pathType === AssetPathType.PREVIEW ? previewPath : thumbnailPath,
-      newPath: StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, format),
+      oldPath: oldFile?.path || null,
+      newPath: StorageCore.getImagePath(asset, pathType, format),
     });
   }
 
@@ -254,7 +258,7 @@ export class StorageCore {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
     }
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: true });
     if (assetInfo && config.storageTemplate.hashVerificationEnabled) {
       const { checksum } = assetInfo;
       const newChecksum = await this.cryptoRepository.hashFile(newPath);
@@ -285,10 +289,10 @@ export class StorageCore {
         return this.assetRepository.update({ id, originalPath: newPath });
       }
       case AssetPathType.PREVIEW: {
-        return this.assetRepository.update({ id, previewPath: newPath });
+        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.PREVIEW, path: newPath });
       }
       case AssetPathType.THUMBNAIL: {
-        return this.assetRepository.update({ id, thumbnailPath: newPath });
+        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.THUMBNAIL, path: newPath });
       }
       case AssetPathType.ENCODED_VIDEO: {
         return this.assetRepository.update({ id, encodedVideoPath: newPath });

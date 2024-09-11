@@ -15,6 +15,11 @@ export interface PersonNameSearchOptions {
   withHidden?: boolean;
 }
 
+export interface PersonNameResponse {
+  id: string;
+  name: string;
+}
+
 export interface AssetFaceId {
   assetId: string;
   personId: string;
@@ -35,20 +40,27 @@ export interface PeopleStatistics {
   hidden: number;
 }
 
+export interface DeleteAllFacesOptions {
+  sourceType?: string;
+}
+
 export interface IPersonRepository {
   getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
-  getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
+  getAllForUser(pagination: PaginationOptions, userId: string, options: PersonSearchOptions): Paginated<PersonEntity>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
+  getDistinctNames(userId: string, options: PersonNameSearchOptions): Promise<PersonNameResponse[]>;
 
   getAssets(personId: string): Promise<AssetEntity[]>;
 
-  create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  create(person: Partial<PersonEntity>): Promise<PersonEntity>;
+  createAll(people: Partial<PersonEntity>[]): Promise<string[]>;
   createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
-  deleteAllFaces(): Promise<void>;
+  deleteAllFaces(options: DeleteAllFacesOptions): Promise<void>;
+  replaceFaces(assetId: string, entities: Partial<AssetFaceEntity>[], sourceType?: string): Promise<string[]>;
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;
   getFaceByIdWithAssets(
@@ -63,5 +75,7 @@ export interface IPersonRepository {
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
-  update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  update(person: Partial<PersonEntity>): Promise<PersonEntity>;
+  updateAll(people: Partial<PersonEntity>[]): Promise<void>;
+  getLatestFaceDate(): Promise<string | undefined>;
 }

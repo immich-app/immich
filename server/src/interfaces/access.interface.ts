@@ -1,4 +1,4 @@
-import { AlbumUserRole } from 'src/entities/album-user.entity';
+import { AlbumUserRole } from 'src/enum';
 
 export const IAccessRepository = 'IAccessRepository';
 
@@ -26,10 +26,6 @@ export interface IAccessRepository {
     checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>>;
   };
 
-  library: {
-    checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>>;
-  };
-
   timeline: {
     checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
@@ -45,5 +41,13 @@ export interface IAccessRepository {
 
   partner: {
     checkUpdateAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
+  };
+
+  stack: {
+    checkOwnerAccess(userId: string, stackIds: Set<string>): Promise<Set<string>>;
+  };
+
+  tag: {
+    checkOwnerAccess(userId: string, tagIds: Set<string>): Promise<Set<string>>;
   };
 }

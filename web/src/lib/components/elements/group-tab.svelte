@@ -1,21 +1,35 @@
 <script lang="ts">
+  import { generateId } from '$lib/utils/generate-id';
+
   export let filters: string[];
   export let selected: string;
+  export let label: string;
   export let onSelect: (selected: string) => void;
+
+  const id = `group-tab-${generateId()}`;
 </script>
 
-<div class="flex bg-gray-200 dark:bg-immich-dark-gray rounded-2xl h-full">
+<fieldset
+  class="dark:bg-immich-dark-gray flex h-full rounded-2xl bg-gray-200 ring-gray-400 has-[:focus-visible]:ring dark:ring-gray-600"
+>
+  <legend class="sr-only">{label}</legend>
   {#each filters as filter, index}
-    <button
-      class="text-sm px-4 {filter === selected
-        ? 'dark:bg-gray-700 bg-gray-300'
-        : 'dark:hover:bg-gray-800 hover:bg-gray-300'}  {index === 0 ? 'rounded-l-2xl' : ''} {index ===
-      filters.length - 1
-        ? 'rounded-r-2xl'
-        : ''}"
-      on:click={() => onSelect(filter)}
-    >
-      {filter}
-    </button>
+    <div class="group">
+      <input
+        type="radio"
+        name={id}
+        id="{id}-{index}"
+        class="peer sr-only"
+        value={filter}
+        checked={filter === selected}
+        on:change={() => onSelect(filter)}
+      />
+      <label
+        for="{id}-{index}"
+        class="flex h-full cursor-pointer items-center px-4 text-sm hover:bg-gray-300 group-first-of-type:rounded-s-2xl group-last-of-type:rounded-e-2xl peer-checked:bg-gray-300 dark:hover:bg-gray-800 peer-checked:dark:bg-gray-700"
+      >
+        {filter}
+      </label>
+    </div>
   {/each}
-</div>
+</fieldset>

@@ -9,12 +9,24 @@
   export let subtitle = '';
   export let key: string;
   export let isOpen = $accordionState.has(key);
+  export let autoScrollTo = false;
+
+  let accordionElement: HTMLDivElement;
 
   $: setIsOpen(isOpen);
 
   const setIsOpen = (isOpen: boolean) => {
     if (isOpen) {
       $accordionState = $accordionState.add(key);
+
+      if (autoScrollTo) {
+        setTimeout(() => {
+          accordionElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 200);
+      }
     } else {
       $accordionState.delete(key);
       $accordionState = $accordionState;
@@ -26,8 +38,13 @@
   });
 </script>
 
-<div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
-  <button on:click={() => (isOpen = !isOpen)} class="flex w-full place-items-center justify-between text-left">
+<div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700" bind:this={accordionElement}>
+  <button
+    type="button"
+    aria-expanded={isOpen}
+    on:click={() => (isOpen = !isOpen)}
+    class="flex w-full place-items-center justify-between text-left"
+  >
     <div>
       <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
         {title}
@@ -38,8 +55,7 @@
       </slot>
     </div>
 
-    <button
-      aria-expanded={isOpen}
+    <div
       class="immich-circle-icon-button flex place-content-center place-items-center rounded-full p-3 transition-all hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20"
     >
       <svg
@@ -55,11 +71,11 @@
       >
         <path d="M19 9l-7 7-7-7" />
       </svg>
-    </button>
+    </div>
   </button>
 
   {#if isOpen}
-    <ul transition:slide={{ duration: 250 }} class="mb-2 ml-4">
+    <ul transition:slide={{ duration: 150 }} class="mb-2 ml-4">
       <slot />
     </ul>
   {/if}

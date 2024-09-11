@@ -1,17 +1,17 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "bundler",
     "module": "es2020",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
-    "types": ["vitest/globals"],
-  }
+    "types": ["vitest/globals"]
+  },
+  "extends": "./.svelte-kit/tsconfig.json"
 }

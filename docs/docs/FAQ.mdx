@@ -52,14 +52,25 @@ On iOS (iPhone and iPad), the operating system determines if a particular app ca
 - Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
 - Use the Immich app more often.
 
+### Why are features not working with a self-signed cert or mTLS?
+
+Due to limitations in the upstream app/video library, using a self-signed TLS certificate or mutual TLS may break video playback or asset upload (both foreground and/or background).
+We recommend using a real SSL certificate from a free provider, for example [Let's Encrypt](https://letsencrypt.org/).
+
 ---
 
 ## Assets
 
 ### Does Immich change the file?
 
-No, Immich does not touch the original file under any circumstances,  
-all edited metadata are saved in the companion sidecar file and the database.
+No, Immich does not modify the original files.
+All edited metadata is saved in companion `.xmp` sidecar files and the database.
+However, Immich will delete original files that have been trashed when the trash is emptied in the Immich UI.
+
+### Why do my file names appear as a random string in the file manager?
+
+When Storage Template is off (default) Immich saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names. To retrieve the original file names, you must enable the Storage Template and then run the STORAGE TEMPLATE MIGRATION job.
+It is recommended to read about [Storage Template](https://immich.app/docs/administration/storage-template) before activation.
 
 ### Can I add my existing photo library?
 
@@ -67,7 +78,7 @@ Yes, with an [External Library](/docs/features/libraries.md).
 
 ### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
 
-Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs.md) page.
+Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs-workers/#jobs) page.
 
 ### Why are only photos and not videos being uploaded to Immich?
 
@@ -133,40 +144,6 @@ For example, say you have existing transcodes with the policy "Videos higher tha
 
 No. Our design principle is that the original assets should always be untouched.
 
-### How can I move all data (photos, persons, albums, libraries) from one user to another?
-
-This is not officially supported but can be accomplished with some database updates. You can do this on the command line (in the PostgreSQL container using the `psql` command), or you can add, for example, an [Adminer](https://www.adminer.org/) container to the `docker-compose.yml` file so that you can use a web interface.
-
-<details>
-<summary>Steps</summary>
-
-1. **MAKE A BACKUP** - See [backup and restore](/docs/administration/backup-and-restore.md).
-
-2. Find the ID of both the 'source' and the 'destination' user (it's the id column in the `users` table)
-
-3. Four tables need to be updated:
-
-```sql
-BEGIN;
--- reassign albums
-UPDATE albums SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-
--- reassign people
-UPDATE person SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-
--- reassign assets
-UPDATE assets SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>'
- AND CHECKSUM NOT IN (SELECT CHECKSUM FROM assets WHERE "ownerId" = '<destinationId>');
-
--- reassign external libraries
-UPDATE libraries SET "ownerId" = '<destinationId>' WHERE "ownerId" = '<sourceId>';
-COMMIT;
-```
-
-4. There might be left-over assets in the 'source' user's library if they are skipped by the last query because of duplicate checksums. These are probably duplicates anyway, and can probably be removed.
-
-</details>
-
 ---
 
 ## Albums
@@ -191,6 +168,19 @@ We haven't implemented an official mechanism for creating albums from external l
 
 Duplicate checking only exists for upload libraries, using the file hash. Furthermore, duplicate checking is not global, but _per library_. Therefore, a situation where the same file appears twice in the timeline is possible, especially for external libraries.
 
+### Why are my edits to files not being saved in read-only external libraries?
+
+Images in read-write external libraries (the default) can be edited as normal.
+In read-only libraries (`:ro` in the `docker-compose.yml`), Immich is unable to create the `.xmp` sidecar files to store edited file metadata.
+For this reason, the metadata (timestamp, location, description, star rating, etc.) cannot be edited for files in read-only external libraries.
+
+### How are deletions of files handled in external libraries?
+
+Immich will attempt to delete original files that have been trashed when the trash is emptied.
+In read-write external libraries (the default), Immich will delete the original file.
+In read-only libraries (`:ro` in the `docker-compose.yml`), files can still be trashed in the UI.
+However, when the trash is emptied, the files will re-appear in the main timeline since Immich is unable to delete the original file.
+
 ---
 
 ## Machine Learning
@@ -201,7 +191,7 @@ Immich uses CLIP models. For more information about CLIP and its capabilities, r
 
 ### How does facial recognition work?
 
-For face detection and recognition, Immich uses [InsightFace models](https://github.com/deepinsight/insightface/tree/master/model_zoo).
+See [How Facial Recognition Works](/docs/features/facial-recognition#How-Facial-Recognition-Works) for details.
 
 ### How can I disable machine learning?
 
@@ -215,19 +205,15 @@ However, disabling all jobs will not disable the machine learning service itself
 
 ### I'm getting errors about models being corrupt or failing to download. What do I do?
 
-You can delete the model cache volume, where models are downloaded. This will give the service a clean environment to download the model again. If models are failing to download entirely, you can manually download them from [Huggingface][huggingface] and place them in the cache folder.
+You can delete the model cache volume, where models are downloaded. This will give the service a clean environment to download the model again. If models are failing to download entirely, you can manually download them from [Hugging Face][huggingface] and place them in the cache folder.
 
 ### Can I use a custom CLIP model?
 
-No, this is not supported. Only models listed in the [Huggingface][huggingface] page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
+No, this is not supported. Only models listed in the [Hugging Face][huggingface] page are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
-You can change to a multilingual model listed [here](https://huggingface.co/collections/immich-app/multilingual-clip-654eb08c2382f591eeb8c2a7) by going to Administration > Machine Learning Settings > Smart Search and replacing the name of the model. Be sure to re-run Smart Search on all assets after this change. You can then search in over 100 languages.
-
-:::note
-Feel free to make a feature request if there's a model you want to use that isn't in [Immich Huggingface list][huggingface].
-:::
+You can change to a multilingual CLIP model. See [here](/docs/features/smart-search#CLIP-model) for instructions.
 
 ### Does Immich support Facial Recognition for videos?
 
@@ -268,7 +254,7 @@ ls clip/ facial-recognition/
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning), or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
+Immich optionally uses transcoding and machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning), or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### Can I lower CPU and RAM usage?
 
@@ -277,10 +263,12 @@ The initial backup is the most intensive due to the number of jobs running. The 
 - Lower the job concurrency for these jobs to 1.
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
 - Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good.
-- For facial recognition on new images to work properly, You must re-run the Face Detection job for all images after this.
+  - For facial recognition on new images to work properly, You must re-run the Face Detection job for all images after this.
+- At the container level, you can [set resource constraints](/docs/FAQ#can-i-limit-cpu-and-ram-usage) to lower usage further.
+  - It's recommended to only apply these constraints _after_ taking some of the measures here for best performance.
 - If these changes are not enough, see [below](/docs/FAQ#how-can-i-disable-machine-learning) for instructions on how to disable machine learning.
 
-### Can I limit the amount of CPU and RAM usage?
+### Can I limit CPU and RAM usage?
 
 By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows. To limit this, you can add the following to the `docker-compose.yml` block of any containers that you want to have limited resources.
 
@@ -300,6 +288,8 @@ deploy:
 </details>
 For more details, you can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit).
 
+Note that memory constraints work by terminating the container, so this can introduce instability if set too low.
+
 ### How can I boost machine learning speed?
 
 :::note
@@ -309,21 +299,16 @@ This advice improves throughput, not latency. This is to say that it will make S
 You can increase throughput by increasing the job concurrency for machine learning jobs (Smart Search, Face Detection). With higher concurrency, the host will work on more assets in parallel. You can do this by navigating to Administration > Settings > Job Settings and increasing concurrency as needed.
 
 :::danger
-On a normal machine, 2 or 3 concurrent jobs can probably max the CPU. Beyond this, note that storage speed and latency may quickly become the limiting factor; particularly when using HDDs.
+On a normal machine, 2 or 3 concurrent jobs can probably max the CPU. Storage speed and latency can quickly become the limiting factor beyond this, particularly when using HDDs.
 
-Do not exaggerate with the amount of jobs because you're probably thoroughly overloading the server.
+The concurrency can be increased more comfortably with a GPU, but should still not be above 16 in most cases.
 
-More details can be found [here](https://discord.com/channels/979116623879368755/994044917355663450/1174711719994605708)
+Do not exaggerate with the job concurrency because you're probably thoroughly overloading the server.
 :::
 
-### Why is Immich using so much of my CPU?
+### My server shows Server Status Offline | Version Unknown. What can I do?
 
-When a large number of assets are uploaded to Immich, it makes sense that the CPU and RAM will be heavily used for machine learning work and creating image thumbnails.
-Once this process is completed, the percentage of CPU usage will drop to around 3-5% usage
-
-### My server shows Server Status Offline | Version Unknown what can I do?
-
-You need to enable Websocket on your reverse proxy.
+You need to enable WebSockets on your reverse proxy.
 
 ---
 
@@ -332,6 +317,12 @@ You need to enable Websocket on your reverse proxy.
 ### How can I see Immich logs?
 
 Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/docs/guides/docker-help.md).
+
+### How can I reduce the log verbosity of Redis?
+
+To decrease Redis logs, you can add the following line to the `redis:` section of the `docker-compose.yml`:
+
+`    command: redis-server --loglevel warning`
 
 ### How can I run Immich as a non-root user?
 
@@ -399,8 +390,54 @@ If it mentions SIGILL (note the lack of a K) or error code 132, it most likely m
 
 If your version of Immich is below 1.92.0 and the crash occurs after logs about tracing or exporting a model, consider either upgrading or disabling the Tag Objects job.
 
-### Why does Immich log migration errors on startup?
+## Database
 
-Sometimes Immich logs errors such as "duplicate key value violates unique constraint" or "column (...) of relation (...) already exists". Because of Immich's container structure, this error can be seen when both immich and immich-microservices start at the same time and attempt to migrate or create the database structure. Since the database migration is run sequentially and inside of transactions, this error message does not cause harm to your installation of Immich and can safely be ignored. If needed, you can manually restart Immich by running `docker restart immich immich-microservices`.
+### Why am I getting database ownership errors?
+
+If you get database errors such as `FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership` upon database startup, this is likely due to an issue with your filesystem.
+NTFS and ex/FAT/32 filesystems are not supported. See [here](/docs/install/environment-variables#supported-filesystems) for more details.
+
+### How can I verify the integrity of my database?
+
+If you installed Immich using v1.104.0 or later, you likely have database checksums enabled by default. You can check this by running the following command.
+A result of `on` means that checksums are enabled.
+
+<details>
+<summary>Check if checksums are enabled</summary>
+
+```bash
+docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="show data_checksums"
+ data_checksums
+----------------
+ on
+(1 row)
+```
+
+</details>
+
+If checksums are enabled, you can check the status of the database with the following command. A normal result is all zeroes.
+
+<details>
+<summary>Check for database corruption</summary>
+
+```bash
+docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="SELECT datname, checksum_failures, checksum_last_failure FROM pg_stat_database WHERE datname IS NOT NULL"
+  datname  | checksum_failures | checksum_last_failure
+-----------+-------------------+-----------------------
+ postgres  |                 0 |
+ immich    |                 0 |
+ template1 |                 0 |
+ template0 |                 0 |
+(4 rows)
+```
+
+</details>
+
+If corruption is detected, you should immediately make a backup before performing any other work in the database.
+To do so, you may need to set the `zero_damaged_pages=on` flag for the database server to allow `pg_dumpall` to succeed.
+After taking a backup, the recommended next step is to restore the database from a healthy backup before corruption was detected.
+The damaged database dump can be used to manually recover any changes made since the last backup, if needed.
+
+The causes of possible corruption are many, but can include unexpected poweroffs or unmounts, use of a network share for Postgres data, or a poor storage medium such an SD card or failing HDD/SSD.
 
 [huggingface]: https://huggingface.co/immich-app

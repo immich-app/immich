@@ -37,9 +37,12 @@ ORDER BY
   "person"."isHidden" ASC,
   NULLIF("person"."name", '') IS NULL ASC,
   COUNT("face"."assetId") DESC,
-  NULLIF("person"."name", '') ASC NULLS LAST
+  NULLIF("person"."name", '') ASC NULLS LAST,
+  "person"."createdAt" ASC
 LIMIT
-  500
+  11
+OFFSET
+  10
 
 -- PersonRepository.getAllWithoutFaces
 SELECT
@@ -71,6 +74,7 @@ SELECT
   "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
   "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
   "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+  "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
   "AssetFaceEntity__AssetFaceEntity_person"."id" AS "AssetFaceEntity__AssetFaceEntity_person_id",
   "AssetFaceEntity__AssetFaceEntity_person"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_person_createdAt",
   "AssetFaceEntity__AssetFaceEntity_person"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_person_updatedAt",
@@ -103,6 +107,7 @@ FROM
       "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
       "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
       "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+      "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
       "AssetFaceEntity__AssetFaceEntity_person"."id" AS "AssetFaceEntity__AssetFaceEntity_person_id",
       "AssetFaceEntity__AssetFaceEntity_person"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_person_createdAt",
       "AssetFaceEntity__AssetFaceEntity_person"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_person_updatedAt",
@@ -138,6 +143,7 @@ FROM
       "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
       "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
       "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+      "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
       "AssetFaceEntity__AssetFaceEntity_person"."id" AS "AssetFaceEntity__AssetFaceEntity_person_id",
       "AssetFaceEntity__AssetFaceEntity_person"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_person_createdAt",
       "AssetFaceEntity__AssetFaceEntity_person"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_person_updatedAt",
@@ -154,8 +160,6 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
       "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."previewPath" AS "AssetFaceEntity__AssetFaceEntity_asset_previewPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."thumbnailPath" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbnailPath",
       "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
       "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
       "AssetFaceEntity__AssetFaceEntity_asset"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_asset_createdAt",
@@ -174,7 +178,8 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
       "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
+      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId",
+      "AssetFaceEntity__AssetFaceEntity_asset"."duplicateId" AS "AssetFaceEntity__AssetFaceEntity_asset_duplicateId"
     FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
@@ -224,6 +229,16 @@ ORDER BY
 LIMIT
   20
 
+-- PersonRepository.getDistinctNames
+SELECT DISTINCT
+  ON (lower("person"."name")) "person"."id" AS "person_id",
+  "person"."name" AS "person_name"
+FROM
+  "person" "person"
+WHERE
+  "person"."ownerId" = $1
+  AND "person"."name" != ''
+
 -- PersonRepository.getStatistics
 SELECT
   COUNT(DISTINCT ("asset"."id")) AS "count"
@@ -251,8 +266,6 @@ FROM
       "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
       "AssetEntity"."type" AS "AssetEntity_type",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-      "AssetEntity"."previewPath" AS "AssetEntity_previewPath",
-      "AssetEntity"."thumbnailPath" AS "AssetEntity_thumbnailPath",
       "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
       "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
       "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
@@ -272,6 +285,7 @@ FROM
       "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
       "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
       "AssetEntity"."stackId" AS "AssetEntity_stackId",
+      "AssetEntity"."duplicateId" AS "AssetEntity_duplicateId",
       "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
       "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
       "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
@@ -281,6 +295,7 @@ FROM
       "AssetEntity__AssetEntity_faces"."boundingBoxY1" AS "AssetEntity__AssetEntity_faces_boundingBoxY1",
       "AssetEntity__AssetEntity_faces"."boundingBoxX2" AS "AssetEntity__AssetEntity_faces_boundingBoxX2",
       "AssetEntity__AssetEntity_faces"."boundingBoxY2" AS "AssetEntity__AssetEntity_faces_boundingBoxY2",
+      "AssetEntity__AssetEntity_faces"."sourceType" AS "AssetEntity__AssetEntity_faces_sourceType",
       "8258e303a73a72cf6abb13d73fb592dde0d68280"."id" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_id",
       "8258e303a73a72cf6abb13d73fb592dde0d68280"."createdAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_createdAt",
       "8258e303a73a72cf6abb13d73fb592dde0d68280"."updatedAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_updatedAt",
@@ -317,6 +332,7 @@ FROM
       "AssetEntity__AssetEntity_exifInfo"."profileDescription" AS "AssetEntity__AssetEntity_exifInfo_profileDescription",
       "AssetEntity__AssetEntity_exifInfo"."colorspace" AS "AssetEntity__AssetEntity_exifInfo_colorspace",
       "AssetEntity__AssetEntity_exifInfo"."bitsPerSample" AS "AssetEntity__AssetEntity_exifInfo_bitsPerSample",
+      "AssetEntity__AssetEntity_exifInfo"."rating" AS "AssetEntity__AssetEntity_exifInfo_rating",
       "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps"
     FROM
       "assets" "AssetEntity"
@@ -373,6 +389,7 @@ SELECT
   "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
   "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
   "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+  "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
   "AssetFaceEntity__AssetFaceEntity_asset"."id" AS "AssetFaceEntity__AssetFaceEntity_asset_id",
   "AssetFaceEntity__AssetFaceEntity_asset"."deviceAssetId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceAssetId",
   "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" AS "AssetFaceEntity__AssetFaceEntity_asset_ownerId",
@@ -380,8 +397,6 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
   "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."previewPath" AS "AssetFaceEntity__AssetFaceEntity_asset_previewPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."thumbnailPath" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbnailPath",
   "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
   "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
   "AssetFaceEntity__AssetFaceEntity_asset"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_asset_createdAt",
@@ -400,7 +415,8 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
   "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
+  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId",
+  "AssetFaceEntity__AssetFaceEntity_asset"."duplicateId" AS "AssetFaceEntity__AssetFaceEntity_asset_duplicateId"
 FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"
@@ -424,10 +440,17 @@ SELECT
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
   "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
   "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
-  "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2"
+  "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+  "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType"
 FROM
   "asset_faces" "AssetFaceEntity"
 WHERE
   (("AssetFaceEntity"."personId" = $1))
 LIMIT
   1
+
+-- PersonRepository.getLatestFaceDate
+SELECT
+  MAX("jobStatus"."facesRecognizedAt")::text AS "latestDate"
+FROM
+  "asset_job_status" "jobStatus"

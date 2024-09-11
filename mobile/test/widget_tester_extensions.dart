@@ -23,8 +23,8 @@ extension PumpConsumerWidget on WidgetTester {
           home: Material(child: widget),
         ),
       ),
-      duration,
-      phase,
+      duration: duration,
+      phase: phase,
     );
   }
 }

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,20 +13,11 @@ part of openapi.api;
 class AssetFullSyncDto {
   /// Returns a new [AssetFullSyncDto] instance.
   AssetFullSyncDto({
-    this.lastCreationDate,
     this.lastId,
     required this.limit,
     required this.updatedUntil,
     this.userId,
   });
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? lastCreationDate;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -51,7 +42,6 @@ class AssetFullSyncDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFullSyncDto &&
-    other.lastCreationDate == lastCreationDate &&
     other.lastId == lastId &&
     other.limit == limit &&
     other.updatedUntil == updatedUntil &&
@@ -60,22 +50,16 @@ class AssetFullSyncDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (lastCreationDate == null ? 0 : lastCreationDate!.hashCode) +
     (lastId == null ? 0 : lastId!.hashCode) +
     (limit.hashCode) +
     (updatedUntil.hashCode) +
     (userId == null ? 0 : userId!.hashCode);
 
   @override
-  String toString() => 'AssetFullSyncDto[lastCreationDate=$lastCreationDate, lastId=$lastId, limit=$limit, updatedUntil=$updatedUntil, userId=$userId]';
+  String toString() => 'AssetFullSyncDto[lastId=$lastId, limit=$limit, updatedUntil=$updatedUntil, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.lastCreationDate != null) {
-      json[r'lastCreationDate'] = this.lastCreationDate!.toUtc().toIso8601String();
-    } else {
-    //  json[r'lastCreationDate'] = null;
-    }
     if (this.lastId != null) {
       json[r'lastId'] = this.lastId;
     } else {
@@ -99,7 +83,6 @@ class AssetFullSyncDto {
       final json = value.cast<String, dynamic>();
 
       return AssetFullSyncDto(
-        lastCreationDate: mapDateTime(json, r'lastCreationDate', r''),
         lastId: mapValueOfType<String>(json, r'lastId'),
         limit: mapValueOfType<int>(json, r'limit')!,
         updatedUntil: mapDateTime(json, r'updatedUntil', r'')!,

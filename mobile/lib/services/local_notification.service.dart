@@ -29,7 +29,8 @@ class LocalNotificationService {
   static const cancelUploadActionID = 'cancel_upload';
 
   Future<void> setup() async {
-    const androidSetting = AndroidInitializationSettings('notification_icon');
+    const androidSetting =
+        AndroidInitializationSettings('@drawable/notification_icon');
     const iosSetting = DarwinInitializationSettings();
 
     const initSettings =

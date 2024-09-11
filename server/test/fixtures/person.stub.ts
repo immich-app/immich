@@ -65,7 +65,7 @@ export const personStub = {
     ownerId: userStub.admin.id,
     owner: userStub.admin,
     name: 'Person 1',
-    birthDate: new Date('1976-06-30'),
+    birthDate: '1976-06-30',
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
     faceAssetId: null,

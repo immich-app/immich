@@ -5,14 +5,13 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Colorspace } from 'src/entities/system-config.entity';
+import { Colorspace } from 'src/config';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
-  CropOptions,
   IMediaRepository,
   ImageDimensions,
-  ResizeOptions,
-  TranscodeOptions,
+  ThumbnailOptions,
+  TranscodeCommand,
   VideoInfo,
 } from 'src/interfaces/media.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
@@ -45,23 +44,18 @@ export class MediaRepository implements IMediaRepository {
     return true;
   }
 
-  crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
-    return sharp(input, { failOn: 'none' })
-      .pipelineColorspace('rgb16')
-      .extract({
-        left: options.left,
-        top: options.top,
-        width: options.width,
-        height: options.height,
-      })
-      .toBuffer();
-  }
-
-  async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    await sharp(input, { failOn: 'none' })
+  async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
+    // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
+    const pipeline = sharp(input, { failOn: options.processInvalidImages ? 'none' : 'error', limitInputPixels: false })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+      .rotate();
+
+    if (options.crop) {
+      pipeline.extract(options.crop);
+    }
+
+    await pipeline
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-      .rotate()
       .withIccProfile(options.colorspace)
       .toFormat(options.format, {
         quality: options.quality,
@@ -82,6 +76,7 @@ export class MediaRepository implements IMediaRepository {
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
+        .filter((stream) => !stream.disposition?.attached_pic)
         .map((stream) => ({
           index: stream.index,
           height: stream.height || 0,
@@ -104,10 +99,13 @@ export class MediaRepository implements IMediaRepository {
     };
   }
 
-  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
+  transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
+        this.configureFfmpegCall(input, output, options)
+          .on('error', reject)
+          .on('end', () => resolve())
+          .run();
       });
     }
 
@@ -132,7 +130,7 @@ export class MediaRepository implements IMediaRepository {
             .on('error', reject)
             .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`), this.logger))
             .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true }), this.logger))
-            .on('end', resolve)
+            .on('end', () => resolve())
             .run();
         })
         .run();
@@ -157,7 +155,7 @@ export class MediaRepository implements IMediaRepository {
     return { width, height };
   }
 
-  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
+  private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
     return ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)

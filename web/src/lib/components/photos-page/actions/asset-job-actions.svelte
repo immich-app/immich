@@ -8,6 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { AssetJobName, AssetTypeEnum, runAssetJobs } from '@immich/sdk';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { t } from 'svelte-i18n';
 
   export let jobs: AssetJobName[] = [
     AssetJobName.RegenerateThumbnail,
@@ -23,16 +24,16 @@
     try {
       const ids = [...getOwnedAssets()].map(({ id }) => id);
       await runAssetJobs({ assetJobsDto: { assetIds: ids, name } });
-      notificationController.show({ message: getAssetJobMessage(name), type: NotificationType.Info });
+      notificationController.show({ message: $getAssetJobMessage(name), type: NotificationType.Info });
       clearSelect();
     } catch (error) {
-      handleError(error, 'Unable to submit job');
+      handleError(error, $t('errors.unable_to_submit_job'));
     }
   };
 </script>
 
 {#each jobs as job}
   {#if isAllVideos || job !== AssetJobName.TranscodeVideo}
-    <MenuOption text={getAssetJobName(job)} icon={getAssetJobIcon(job)} on:click={() => handleRunJob(job)} />
+    <MenuOption text={$getAssetJobName(job)} icon={getAssetJobIcon(job)} onClick={() => handleRunJob(job)} />
   {/if}
 {/each}

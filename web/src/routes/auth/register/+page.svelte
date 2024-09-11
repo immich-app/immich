@@ -2,14 +2,14 @@
   import AdminRegistrationForm from '$lib/components/forms/admin-registration-form.svelte';
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   export let data: PageData;
 </script>
 
 <FullscreenContainer title={data.meta.title}>
   <p slot="message">
-    Since you are the first user on the system, you will be assigned as the Admin and are responsible for administrative
-    tasks, and additional users will be created by you.
+    {$t('admin.registration_description')}
   </p>
 
   <AdminRegistrationForm />

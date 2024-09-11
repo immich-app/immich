@@ -18,7 +18,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { CLIPConfig, RecognitionConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -30,7 +29,9 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/entities/system-config.entity';
+  VideoContainer,
+} from 'src/config';
+import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ValidateBoolean, validateCronExpression } from 'src/validation';
 
@@ -78,6 +79,10 @@ export class SystemConfigFFmpegDto {
   @IsEnum(AudioCodec, { each: true })
   @ApiProperty({ enumName: 'AudioCodec', enum: AudioCodec, isArray: true })
   acceptedAudioCodecs!: AudioCodec[];
+
+  @IsEnum(VideoContainer, { each: true })
+  @ApiProperty({ enumName: 'VideoContainer', enum: VideoContainer, isArray: true })
+  acceptedContainers!: VideoContainer[];
 
   @IsString()
   targetResolution!: string;
@@ -131,6 +136,9 @@ export class SystemConfigFFmpegDto {
   @IsEnum(TranscodeHWAccel)
   @ApiProperty({ enumName: 'TranscodeHWAccel', enum: TranscodeHWAccel })
   accel!: TranscodeHWAccel;
+
+  @ValidateBoolean()
+  accelDecode!: boolean;
 
   @IsEnum(ToneMapping)
   @ApiProperty({ enumName: 'ToneMapping', enum: ToneMapping })
@@ -262,10 +270,15 @@ class SystemConfigMachineLearningDto {
   @IsObject()
   clip!: CLIPConfig;
 
-  @Type(() => RecognitionConfig)
+  @Type(() => DuplicateDetectionConfig)
   @ValidateNested()
   @IsObject()
-  facialRecognition!: RecognitionConfig;
+  duplicateDetection!: DuplicateDetectionConfig;
+
+  @Type(() => FacialRecognitionConfig)
+  @ValidateNested()
+  @IsObject()
+  facialRecognition!: FacialRecognitionConfig;
 }
 
 enum MapTheme {
@@ -342,6 +355,10 @@ class SystemConfigOAuthDto {
   signingAlgorithm!: string;
 
   @IsString()
+  @IsNotEmpty()
+  profileSigningAlgorithm!: string;
+
+  @IsString()
   storageLabelClaim!: string;
 
   @IsString()
@@ -358,8 +375,21 @@ class SystemConfigReverseGeocodingDto {
   enabled!: boolean;
 }
 
+class SystemConfigFacesDto {
+  @IsBoolean()
+  import!: boolean;
+}
+
+class SystemConfigMetadataDto {
+  @Type(() => SystemConfigFacesDto)
+  @ValidateNested()
+  @IsObject()
+  faces!: SystemConfigFacesDto;
+}
+
 class SystemConfigServerDto {
-  @IsString()
+  @ValidateIf((_, value: string) => value !== '')
+  @IsUrl({ require_tld: false, require_protocol: true, protocols: ['http', 'https'] })
   externalDomain!: string;
 
   @IsString()
@@ -386,7 +416,7 @@ class SystemConfigSmtpTransportDto {
   password!: string;
 }
 
-class SystemConfigSmtpDto {
+export class SystemConfigSmtpDto {
   @IsBoolean()
   enabled!: boolean;
 
@@ -536,6 +566,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   reverseGeocoding!: SystemConfigReverseGeocodingDto;
+
+  @Type(() => SystemConfigMetadataDto)
+  @ValidateNested()
+  @IsObject()
+  metadata!: SystemConfigMetadataDto;
 
   @Type(() => SystemConfigStorageTemplateDto)
   @ValidateNested()

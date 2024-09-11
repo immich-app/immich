@@ -1,19 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
-import { vectorExt } from 'src/database.config';
+import semver from 'semver';
+import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
+import { getVectorExtension } from 'src/database.config';
 import {
   DatabaseExtension,
   DatabaseLock,
+  EXTENSION_NAMES,
+  ExtensionVersion,
   IDatabaseRepository,
   VectorExtension,
   VectorIndex,
   VectorUpdateResult,
-  extName,
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Version, VersionType } from 'src/utils/version';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 
@@ -29,72 +31,79 @@ export class DatabaseRepository implements IDatabaseRepository {
     this.logger.setContext(DatabaseRepository.name);
   }
 
-  async getExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
-    const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);
-    const extVersion = res[0]?.['extversion'];
-    if (extVersion == null) {
-      return null;
+  async reconnect() {
+    try {
+      if (this.dataSource.isInitialized) {
+        await this.dataSource.destroy();
+      }
+      const { isInitialized } = await this.dataSource.initialize();
+      return isInitialized;
+    } catch (error) {
+      this.logger.error(`Database connection failed: ${error}`);
+      return false;
     }
+  }
 
-    const version = Version.fromString(extVersion);
-    if (version.isEqual(new Version(0, 1, 1))) {
-      return new Version(0, 1, 11);
-    }
+  async getExtensionVersion(extension: DatabaseExtension): Promise<ExtensionVersion> {
+    const [res]: ExtensionVersion[] = await this.dataSource.query(
+      `SELECT default_version as "availableVersion", installed_version as "installedVersion"
+      FROM pg_available_extensions
+      WHERE name = $1`,
+      [extension],
+    );
+    return res ?? { availableVersion: null, installedVersion: null };
+  }
 
+  getExtensionVersionRange(extension: VectorExtension): string {
+    return extension === DatabaseExtension.VECTORS ? VECTORS_VERSION_RANGE : VECTOR_VERSION_RANGE;
+  }
+
+  async getPostgresVersion(): Promise<string> {
+    const [{ server_version: version }] = await this.dataSource.query(`SHOW server_version`);
     return version;
   }
 
-  async getAvailableExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
-    const res = await this.dataSource.query(
-      `
-    SELECT version FROM pg_available_extension_versions
-    WHERE name = $1 AND installed = false
-    ORDER BY version DESC`,
-      [extension],
-    );
-    const version = res[0]?.['version'];
-    return version == null ? null : Version.fromString(version);
-  }
-
-  getPreferredVectorExtension(): VectorExtension {
-    return vectorExt;
-  }
-
-  async getPostgresVersion(): Promise<Version> {
-    const res = await this.dataSource.query(`SHOW server_version`);
-    return Version.fromString(res[0]['server_version']);
+  getPostgresVersionRange(): string {
+    return POSTGRES_VERSION_RANGE;
   }
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
   }
 
-  async updateExtension(extension: DatabaseExtension, version?: Version): Promise<void> {
+  async updateExtension(extension: DatabaseExtension, version?: string): Promise<void> {
     await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
-  async updateVectorExtension(extension: VectorExtension, version?: Version): Promise<VectorUpdateResult> {
-    const curVersion = await this.getExtensionVersion(extension);
-    if (!curVersion) {
-      throw new Error(`${extName[extension]} extension is not installed`);
+  async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
+    const { availableVersion, installedVersion } = await this.getExtensionVersion(extension);
+    if (!installedVersion) {
+      throw new Error(`${EXTENSION_NAMES[extension]} extension is not installed`);
     }
 
-    const minorOrMajor = version && curVersion.isOlderThan(version) >= VersionType.MINOR;
+    if (!availableVersion) {
+      throw new Error(`No available version for ${EXTENSION_NAMES[extension]} extension`);
+    }
+    targetVersion ??= availableVersion;
+
     const isVectors = extension === DatabaseExtension.VECTORS;
     let restartRequired = false;
     await this.dataSource.manager.transaction(async (manager) => {
       await this.setSearchPath(manager);
-      if (minorOrMajor && isVectors) {
-        await this.updateVectorsSchema(manager, curVersion);
+
+      if (isVectors && installedVersion === '0.1.1') {
+        await this.setExtVersion(manager, DatabaseExtension.VECTORS, '0.1.11');
       }
 
-      await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
-
-      if (!minorOrMajor) {
-        return;
+      const isSchemaUpgrade = semver.satisfies(installedVersion, '0.1.1 || 0.1.11');
+      if (isSchemaUpgrade && isVectors) {
+        await this.updateVectorsSchema(manager);
       }
 
-      if (isVectors) {
+      await manager.query(`ALTER EXTENSION ${extension} UPDATE TO '${targetVersion}'`);
+
+      const diff = semver.diff(installedVersion, targetVersion);
+      if (isVectors && diff && ['minor', 'major'].includes(diff)) {
         await manager.query('SELECT pgvectors_upgrade()');
         restartRequired = true;
       } else {
@@ -110,40 +119,35 @@ export class DatabaseRepository implements IDatabaseRepository {
     try {
       await this.dataSource.query(`REINDEX INDEX ${index}`);
     } catch (error) {
-      if (vectorExt === DatabaseExtension.VECTORS) {
-        this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
-        const table = index === VectorIndex.CLIP ? 'smart_search' : 'asset_faces';
-        const dimSize = await this.getDimSize(table);
-        await this.dataSource.manager.transaction(async (manager) => {
-          await this.setSearchPath(manager);
-          await manager.query(`DROP INDEX IF EXISTS ${index}`);
-          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE real[]`);
-          await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
-          await manager.query(`SET vectors.pgvector_compatibility=on`);
-          await manager.query(`
-            CREATE INDEX IF NOT EXISTS ${index} ON ${table}
-            USING hnsw (embedding vector_cosine_ops)
-            WITH (ef_construction = 300, m = 16)`);
-        });
-      } else {
+      if (getVectorExtension() !== DatabaseExtension.VECTORS) {
         throw error;
       }
+      this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
+
+      const table = await this.getIndexTable(index);
+      const dimSize = await this.getDimSize(table);
+      await this.dataSource.manager.transaction(async (manager) => {
+        await this.setSearchPath(manager);
+        await manager.query(`DROP INDEX IF EXISTS ${index}`);
+        await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE real[]`);
+        await manager.query(`ALTER TABLE ${table} ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
+        await manager.query(`SET vectors.pgvector_compatibility=on`);
+        await manager.query(`
+          CREATE INDEX IF NOT EXISTS ${index} ON ${table}
+          USING hnsw (embedding vector_cosine_ops)
+          WITH (ef_construction = 300, m = 16)`);
+      });
     }
   }
 
   async shouldReindex(name: VectorIndex): Promise<boolean> {
-    if (vectorExt !== DatabaseExtension.VECTORS) {
+    if (getVectorExtension() !== DatabaseExtension.VECTORS) {
       return false;
     }
 
     try {
-      const res = await this.dataSource.query(
-        `
-          SELECT idx_status
-          FROM pg_vector_index_stat
-          WHERE indexname = $1`,
-        [name],
-      );
+      const query = `SELECT idx_status FROM pg_vector_index_stat WHERE indexname = $1`;
+      const res = await this.dataSource.query(query, [name]);
       return res[0]?.['idx_status'] === 'UPGRADE';
     } catch (error) {
       const message: string = (error as any).message;
@@ -160,19 +164,27 @@ export class DatabaseRepository implements IDatabaseRepository {
     await manager.query(`SET search_path TO "$user", public, vectors`);
   }
 
-  private async updateVectorsSchema(manager: EntityManager, curVersion: Version): Promise<void> {
-    await manager.query('CREATE SCHEMA IF NOT EXISTS vectors');
-    await manager.query(`UPDATE pg_catalog.pg_extension SET extversion = $1 WHERE extname = $2`, [
-      curVersion.toString(),
-      DatabaseExtension.VECTORS,
-    ]);
-    await manager.query('UPDATE pg_catalog.pg_extension SET extrelocatable = true WHERE extname = $1', [
-      DatabaseExtension.VECTORS,
-    ]);
+  private async setExtVersion(manager: EntityManager, extName: DatabaseExtension, version: string): Promise<void> {
+    const query = `UPDATE pg_catalog.pg_extension SET extversion = $1 WHERE extname = $2`;
+    await manager.query(query, [version, extName]);
+  }
+
+  private async getIndexTable(index: VectorIndex): Promise<string> {
+    const tableQuery = `SELECT relname FROM pg_stat_all_indexes WHERE indexrelname = $1`;
+    const [res]: { relname: string | null }[] = await this.dataSource.manager.query(tableQuery, [index]);
+    const table = res?.relname;
+    if (!table) {
+      throw new Error(`Could not find table for index ${index}`);
+    }
+    return table;
+  }
+
+  private async updateVectorsSchema(manager: EntityManager): Promise<void> {
+    const extension = DatabaseExtension.VECTORS;
+    await manager.query(`CREATE SCHEMA IF NOT EXISTS ${extension}`);
+    await manager.query('UPDATE pg_catalog.pg_extension SET extrelocatable = true WHERE extname = $1', [extension]);
     await manager.query('ALTER EXTENSION vectors SET SCHEMA vectors');
-    await manager.query('UPDATE pg_catalog.pg_extension SET extrelocatable = false WHERE extname = $1', [
-      DatabaseExtension.VECTORS,
-    ]);
+    await manager.query('UPDATE pg_catalog.pg_extension SET extrelocatable = false WHERE extname = $1', [extension]);
   }
 
   private async getDimSize(table: string, column = 'embedding'): Promise<number> {

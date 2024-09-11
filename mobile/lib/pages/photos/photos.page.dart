@@ -9,14 +9,14 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
-import 'package:immich_mobile/modules/memories/ui/memory_lane.dart';
+import 'package:immich_mobile/widgets/memories/memory_lane.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
-import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 @RoutePage()
 class PhotosPage extends HookConsumerWidget {
@@ -33,7 +33,6 @@ class PhotosPage extends HookConsumerWidget {
       () {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
-        ref.read(assetProvider.notifier).getPartnerAssets();
         ref.read(albumProvider.notifier).getAllAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.read(serverInfoProvider.notifier).getServerInfo();
@@ -85,9 +84,6 @@ class PhotosPage extends HookConsumerWidget {
     Future<void> refreshAssets() async {
       final fullRefresh = refreshCount.value > 0;
       await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
-      if (timelineUsers.length > 1) {
-        await ref.read(assetProvider.notifier).getPartnerAssets();
-      }
       if (fullRefresh) {
         // refresh was forced: user requested another refresh within 2 seconds
         refreshCount.value = 0;
@@ -123,9 +119,7 @@ class PhotosPage extends HookConsumerWidget {
           child: Container(
             height: kToolbarHeight + MediaQuery.of(context).padding.top,
             color: context.themeData.appBarTheme.backgroundColor,
-            child: const SafeArea(
-              child: ImmichAppBar(),
-            ),
+            child: const ImmichAppBar(),
           ),
         ),
       ],

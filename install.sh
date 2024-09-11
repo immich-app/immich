@@ -2,14 +2,15 @@
 set -o nounset
 set -o pipefail
 
-create_immich_directory() { local -r Tgt='./immich-app'
+create_immich_directory() {
+  local -r Tgt='./immich-app'
   echo "Creating Immich directory..."
   if [[ -e $Tgt ]]; then
     echo "Found existing directory $Tgt, will overwrite YAML files"
   else
     mkdir "$Tgt" || return
-  fi 
-  cd "$Tgt" || return
+  fi
+  cd "$Tgt" || return 1
 }
 
 download_docker_compose_file() {
@@ -20,6 +21,16 @@ download_docker_compose_file() {
 download_dot_env_file() {
   echo "Downloading .env file..."
   "${Curl[@]}" "$RepoUrl"/example.env -o ./.env
+}
+
+generate_random_password() {
+  echo "Generate random password for .env file..."
+  rand_pass=$(echo "$RANDOM$(date)$RANDOM" | sha256sum | base64 | head -c10)
+  if [ -z "$rand_pass" ]; then
+    sed -i -e "s/DB_PASSWORD=postgres/DB_PASSWORD=postgres${RANDOM}${RANDOM}/" ./.env
+  else
+    sed -i -e "s/DB_PASSWORD=postgres/DB_PASSWORD=${rand_pass}/" ./.env
+  fi
 }
 
 start_docker_compose() {
@@ -40,16 +51,16 @@ start_docker_compose() {
 show_friendly_message() {
   local ip_address
   ip_address=$(hostname -I | awk '{print $1}')
-  cat << EOF
+  cat <<EOF
 Successfully deployed Immich!
 You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api
 ---------------------------------------------------
-If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
-  
-  1. First bring down the containers with the command 'docker compose down' in the immich-app directory, 
-  
-  2. Then change the information that fits your needs in the '.env' file, 
-  
+If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc.
+
+  1. First bring down the containers with the command 'docker compose down' in the immich-app directory,
+
+  2. Then change the information that fits your needs in the '.env' file,
+
   3. Finally, bring the containers back up with the command 'docker compose up --remove-orphans -d' in the immich-app directory
 EOF
 }
@@ -66,11 +77,25 @@ main() {
     return 14
   fi
 
-  create_immich_directory || { echo 'error creating Immich directory'; return 10; }
-  download_docker_compose_file || { echo 'error downloading Docker Compose file'; return 11; }
-  download_dot_env_file || { echo 'error downloading .env'; return 12; }
-  start_docker_compose || { echo 'error starting Docker'; return 13; }
-  return 0; }
+  create_immich_directory || {
+    echo 'error creating Immich directory'
+    return 10
+  }
+  download_docker_compose_file || {
+    echo 'error downloading Docker Compose file'
+    return 11
+  }
+  download_dot_env_file || {
+    echo 'error downloading .env'
+    return 12
+  }
+  generate_random_password
+  start_docker_compose || {
+    echo 'error starting Docker'
+    return 13
+  }
+  return 0
+}
 
 main
 Exit=$?

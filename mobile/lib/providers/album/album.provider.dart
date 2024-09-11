@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -23,6 +23,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     });
     _streamSub = query.watch().listen((data) => state = data);
   }
+
   final AlbumService _albumService;
   late final StreamSubscription<List<Album>> _streamSub;
 
@@ -40,6 +41,23 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     Set<Asset> assets,
   ) =>
       _albumService.createAlbum(albumTitle, assets, []);
+
+  Future<Album?> getAlbumByName(String albumName, {bool remoteOnly = false}) =>
+      _albumService.getAlbumByName(albumName, remoteOnly);
+
+  /// Create an album on the server with the same name as the selected album for backup
+  /// First this will check if the album already exists on the server with name
+  /// If it does not exist, it will create the album on the server
+  Future<void> createSyncAlbum(
+    String albumName,
+  ) async {
+    final album = await getAlbumByName(albumName, remoteOnly: true);
+    if (album != null) {
+      return;
+    }
+
+    await createAlbum(albumName, {});
+  }
 
   @override
   void dispose() {

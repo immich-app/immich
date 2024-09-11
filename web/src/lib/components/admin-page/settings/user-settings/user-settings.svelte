@@ -1,21 +1,21 @@
 <script lang="ts">
   import { type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
 
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 </script>
 
 <div>
@@ -25,8 +25,8 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           min={1}
-          label="DELETE DELAY"
-          desc="Number of days after removal to permanently delete a user's account and assets. The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution."
+          label={$t('admin.user_delete_delay_settings')}
+          desc={$t('admin.user_delete_delay_settings_description')}
           bind:value={config.user.deleteDelay}
           isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}
         />
@@ -34,8 +34,8 @@
 
       <div class="ml-4">
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['user'] })}
-          on:save={() => dispatch('save', { user: config.user })}
+          onReset={(options) => onReset({ ...options, configKeys: ['user'] })}
+          onSave={() => onSave({ user: config.user })}
           showResetToDefault={!isEqual(savedConfig.user, defaultConfig.user)}
           {disabled}
         />

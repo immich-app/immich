@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
@@ -18,7 +19,6 @@ class AppLogPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final immichLogger = ImmichLogger();
     final logMessages = useState(immichLogger.messages);
-    final isDarkTheme = context.isDarkTheme;
 
     Widget colorStatusIndicator(Color color) {
       return Column(
@@ -55,13 +55,9 @@ class AppLogPage extends HookConsumerWidget {
         case LogLevel.INFO:
           return Colors.transparent;
         case LogLevel.SEVERE:
-          return isDarkTheme
-              ? Colors.redAccent.withOpacity(0.25)
-              : Colors.redAccent.withOpacity(0.075);
+          return Colors.redAccent.withOpacity(0.25);
         case LogLevel.WARNING:
-          return isDarkTheme
-              ? Colors.orangeAccent.withOpacity(0.25)
-              : Colors.orangeAccent.withOpacity(0.075);
+          return Colors.orangeAccent.withOpacity(0.25);
         default:
           return context.primaryColor.withOpacity(0.1);
       }
@@ -91,21 +87,25 @@ class AppLogPage extends HookConsumerWidget {
               logMessages.value = [];
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.share_rounded,
-              color: context.primaryColor,
-              semanticLabel: "Share logs",
-              size: 20.0,
-            ),
-            onPressed: () {
-              immichLogger.shareLogs();
+          Builder(
+            builder: (BuildContext iconContext) {
+              return IconButton(
+                icon: Icon(
+                  Icons.share_rounded,
+                  color: context.primaryColor,
+                  semanticLabel: "Share logs",
+                  size: 20.0,
+                ),
+                onPressed: () {
+                  immichLogger.shareLogs(iconContext);
+                },
+              );
             },
           ),
         ],
         leading: IconButton(
           onPressed: () {
-            context.popRoute();
+            context.maybePop();
           },
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -116,10 +116,7 @@ class AppLogPage extends HookConsumerWidget {
       ),
       body: ListView.separated(
         separatorBuilder: (context, index) {
-          return Divider(
-            height: 0,
-            color: isDarkTheme ? Colors.white70 : Colors.grey[600],
-          );
+          return const Divider(height: 0);
         },
         itemCount: logMessages.value.length,
         itemBuilder: (context, index) {
@@ -137,8 +134,9 @@ class AppLogPage extends HookConsumerWidget {
             minLeadingWidth: 10,
             title: Text(
               truncateLogMessage(logMessage.message, 4),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14.0,
+                color: context.colorScheme.onSurface,
                 fontFamily: "Inconsolata",
               ),
             ),
@@ -146,7 +144,7 @@ class AppLogPage extends HookConsumerWidget {
               "at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)} in ${logMessage.context1}",
               style: TextStyle(
                 fontSize: 12.0,
-                color: Colors.grey[600],
+                color: context.colorScheme.onSurfaceSecondary,
               ),
             ),
             leading: buildLeadingIcon(logMessage.level),

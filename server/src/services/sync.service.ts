@@ -1,42 +1,34 @@
 import { Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetDeltaSyncDto, AssetDeltaSyncResponseDto, AssetFullSyncDto } from 'src/dtos/sync.dto';
-import { DatabaseAction, EntityType } from 'src/entities/audit.entity';
+import { DatabaseAction, EntityType, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { requireAccess } from 'src/utils/access';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 import { setIsEqual } from 'src/utils/set';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 
 export class SyncService {
-  private access: AccessCore;
-
   constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAuditRepository) private auditRepository: IAuditRepository,
-  ) {
-    this.access = AccessCore.create(accessRepository);
-  }
+  ) {}
 
   async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     // mobile implementation is faster if this is a single id
     const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    await requireAccess(this.access, { auth, permission: Permission.TIMELINE_READ, ids: [userId] });
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
-      // no archived assets for partner user
-      isArchived: userId === auth.user.id ? undefined : false,
-      // no stack for partner user
-      withStacked: userId === auth.user.id ? true : undefined,
-      lastCreationDate: dto.lastCreationDate,
       updatedUntil: dto.updatedUntil,
       lastId: dto.lastId,
       limit: dto.limit,
@@ -51,16 +43,14 @@ export class SyncService {
       return FULL_SYNC;
     }
 
-    const authUserId = auth.user.id;
-
     // app does not have the correct partners synced
-    const partner = await this.partnerRepository.getAll(authUserId);
-    const userIds = [authUserId, ...partner.filter((p) => p.sharedWithId == auth.user.id).map((p) => p.sharedById)];
+    const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
+    const userIds = [auth.user.id, ...partnerIds];
     if (!setIsEqual(new Set(userIds), new Set(dto.userIds))) {
       return FULL_SYNC;
     }
 
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, dto.userIds);
+    await requireAccess(this.access, { auth, permission: Permission.TIMELINE_READ, ids: dto.userIds });
 
     const limit = 10_000;
     const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
@@ -86,7 +76,7 @@ export class SyncService {
             auth,
             stripMetadata: false,
             // ignore stacks for non partner users
-            withStack: a.ownerId === authUserId,
+            withStack: a.ownerId === auth.user.id,
           }),
         ),
       deleted,

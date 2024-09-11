@@ -7,9 +7,10 @@
 </script>
 
 <script lang="ts">
-  import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
-  import Combobox, { toComboBoxOptions } from '../combobox.svelte';
+  import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
+  import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   export let filters: SearchLocationFilter;
 
@@ -24,9 +25,12 @@
   $: handlePromiseError(updateCities(countryFilter, stateFilter));
 
   async function updateCountries() {
-    countries = await getSearchSuggestions({
+    const results: Array<string | null> = await getSearchSuggestions({
       $type: SearchSuggestionType.Country,
+      includeNull: true,
     });
+
+    countries = results.map((result) => result ?? '');
 
     if (filters.country && !countries.includes(filters.country)) {
       filters.country = undefined;
@@ -34,10 +38,13 @@
   }
 
   async function updateStates(country?: string) {
-    states = await getSearchSuggestions({
+    const results: Array<string | null> = await getSearchSuggestions({
       $type: SearchSuggestionType.State,
       country,
+      includeNull: true,
     });
+
+    states = results.map((result) => result ?? '');
 
     if (filters.state && !states.includes(filters.state)) {
       filters.state = undefined;
@@ -45,11 +52,13 @@
   }
 
   async function updateCities(country?: string, state?: string) {
-    cities = await getSearchSuggestions({
+    const results: Array<string | null> = await getSearchSuggestions({
       $type: SearchSuggestionType.City,
       country,
       state,
     });
+
+    cities = results.map((result) => result ?? '');
 
     if (filters.city && !cities.includes(filters.city)) {
       filters.city = undefined;
@@ -58,39 +67,36 @@
 </script>
 
 <div id="location-selection">
-  <p class="immich-form-label">PLACE</p>
+  <p class="immich-form-label">{$t('place').toUpperCase()}</p>
 
-  <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-5 mt-1">
+  <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">
       <Combobox
-        id="location-country"
-        label="Country"
+        label={$t('country')}
         on:select={({ detail }) => (filters.country = detail?.value)}
-        options={toComboBoxOptions(countries)}
-        placeholder="Search country..."
-        selectedOption={filters.country ? { label: filters.country, value: filters.country } : undefined}
+        options={asComboboxOptions(countries)}
+        placeholder={$t('search_country')}
+        selectedOption={asSelectedOption(filters.country)}
       />
     </div>
 
     <div class="w-full">
       <Combobox
-        id="location-state"
-        label="State"
+        label={$t('state')}
         on:select={({ detail }) => (filters.state = detail?.value)}
-        options={toComboBoxOptions(states)}
-        placeholder="Search state..."
-        selectedOption={filters.state ? { label: filters.state, value: filters.state } : undefined}
+        options={asComboboxOptions(states)}
+        placeholder={$t('search_state')}
+        selectedOption={asSelectedOption(filters.state)}
       />
     </div>
 
     <div class="w-full">
       <Combobox
-        id="location-city"
-        label="City"
+        label={$t('city')}
         on:select={({ detail }) => (filters.city = detail?.value)}
-        options={toComboBoxOptions(cities)}
-        placeholder="Search city..."
-        selectedOption={filters.city ? { label: filters.city, value: filters.city } : undefined}
+        options={asComboboxOptions(cities)}
+        placeholder={$t('search_city')}
+        selectedOption={asSelectedOption(filters.city)}
       />
     </div>
   </div>

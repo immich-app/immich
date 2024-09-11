@@ -1,10 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsString, MaxDate, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { DateTime } from 'luxon';
+import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { SourceType } from 'src/enum';
+import { IsDateStringFormat, MaxDateString, Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class PersonCreateDto {
   /**
@@ -18,9 +21,11 @@ export class PersonCreateDto {
    * Person date of birth.
    * Note: the mobile app cannot currently set the birth date to null.
    */
-  @MaxDate(() => new Date(), { message: 'Birth date cannot be in the future' })
-  @ValidateDate({ optional: true, nullable: true, format: 'date' })
-  birthDate?: Date | null;
+  @ApiProperty({ format: 'date' })
+  @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
+  @IsDateStringFormat('yyyy-MM-dd')
+  @Optional({ nullable: true })
+  birthDate?: string | null;
 
   /**
    * Person visibility
@@ -62,15 +67,32 @@ export class MergePersonDto {
 export class PersonSearchDto {
   @ValidateBoolean({ optional: true })
   withHidden?: boolean;
+
+  /** Page number for pagination */
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page: number = 1;
+
+  /** Number of items per page */
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  size: number = 500;
 }
 
 export class PersonResponseDto {
   id!: string;
   name!: string;
   @ApiProperty({ format: 'date' })
-  birthDate!: Date | null;
+  birthDate!: string | null;
   thumbnailPath!: string;
   isHidden!: boolean;
+  @PropertyLifecycle({ addedAt: 'v1.107.0' })
+  updatedAt?: Date;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -92,6 +114,8 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
+  @ApiProperty({ enum: SourceType, enumName: 'SourceType' })
+  sourceType?: SourceType;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
@@ -129,6 +153,10 @@ export class PeopleResponseDto {
   @ApiProperty({ type: 'integer' })
   hidden!: number;
   people!: PersonResponseDto[];
+
+  // TODO: make required after a few versions
+  @PropertyLifecycle({ addedAt: 'v1.110.0' })
+  hasNextPage?: boolean;
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {
@@ -138,6 +166,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     birthDate: person.birthDate,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
+    updatedAt: person.updatedAt,
   };
 }
 
@@ -150,6 +179,7 @@ export function mapFacesWithoutPerson(face: AssetFaceEntity): AssetFaceWithoutPe
     boundingBoxX2: face.boundingBoxX2,
     boundingBoxY1: face.boundingBoxY1,
     boundingBoxY2: face.boundingBoxY2,
+    sourceType: face.sourceType,
   };
 }
 

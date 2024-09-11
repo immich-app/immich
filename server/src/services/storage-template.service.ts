@@ -3,6 +3,7 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
+import { SystemConfig } from 'src/config';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -14,21 +15,21 @@ import {
 } from 'src/constants';
 import { StorageCore, StorageFolder } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnServerEvent } from 'src/decorators';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { OnEmit } from 'src/decorators';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/entities/move.entity';
-import { SystemConfig } from 'src/entities/system-config.entity';
+import { AssetType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ServerAsyncEvent, ServerAsyncEventMap } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemConfigRepository } from 'src/interfaces/system-config.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 import { usePagination } from 'src/utils/pagination';
@@ -65,7 +66,7 @@ export class StorageTemplateService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -75,7 +76,7 @@ export class StorageTemplateService {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(StorageTemplateService.name);
-    this.configCore = SystemConfigCore.create(configRepository, this.logger);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.configCore.config$.subscribe((config) => this.onConfig(config));
     this.storageCore = StorageCore.create(
       assetRepository,
@@ -83,13 +84,13 @@ export class StorageTemplateService {
       moveRepository,
       personRepository,
       storageRepository,
-      configRepository,
+      systemMetadataRepository,
       this.logger,
     );
   }
 
-  @OnServerEvent(ServerAsyncEvent.CONFIG_VALIDATE)
-  onValidateConfig({ newConfig }: ServerAsyncEventMap[ServerAsyncEvent.CONFIG_VALIDATE]) {
+  @OnEmit({ event: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {
@@ -110,7 +111,7 @@ export class StorageTemplateService {
   }
 
   async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig();
+    const config = await this.configCore.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
       return JobStatus.SKIPPED;
@@ -140,14 +141,14 @@ export class StorageTemplateService {
 
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
-    const { storageTemplate } = await this.configCore.getConfig();
+    const { storageTemplate } = await this.configCore.getConfig({ withCache: true });
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
       return JobStatus.SKIPPED;
     }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { withExif: true }),
+      this.assetRepository.getAll(pagination, { withExif: true, withArchived: true }),
     );
     const users = await this.userRepository.getList();
 
@@ -226,7 +227,7 @@ export class StorageTemplateService {
       const storagePath = this.render(this.template.compiled, {
         asset,
         filename: sanitized,
-        extension: extension,
+        extension,
         albumName,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
@@ -307,7 +308,7 @@ export class StorageTemplateService {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
       //just throw into the root if it doesn't belong to an album
-      album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '.',
+      album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -328,6 +329,6 @@ export class StorageTemplateService {
       substitutions[token] = dt.toFormat(token);
     }
 
-    return template(substitutions);
+    return template(substitutions).replaceAll(/\/{2,}/gm, '/');
   }
 }

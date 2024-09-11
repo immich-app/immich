@@ -1,4 +1,4 @@
-import { vectorExt } from 'src/database.config';
+import { getVectorExtension } from 'src/database.config';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
@@ -7,7 +7,7 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET search_path TO "$user", public, vectors`);
-    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS ${vectorExt}`);
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS ${getVectorExtension()}`);
     const faceDimQuery = await queryRunner.query(`
         SELECT CARDINALITY(embedding::real[]) as dimsize
         FROM asset_faces

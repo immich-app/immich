@@ -1,9 +1,12 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import _ from 'lodash';
+import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { SharedLinkType } from 'src/entities/shared-link.entity';
+import { SharedLinkType } from 'src/enum';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -11,7 +14,9 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
+import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(SharedLinkService.name, () => {
@@ -19,13 +24,17 @@ describe(SharedLinkService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let cryptoMock: Mocked<ICryptoRepository>;
   let shareMock: Mocked<ISharedLinkRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
+  let logMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
+    logMock = newLoggerRepositoryMock();
 
-    sut = new SharedLinkService(accessMock, cryptoMock, shareMock);
+    sut = new SharedLinkService(accessMock, cryptoMock, logMock, shareMock, systemMock);
   });
 
   it('should work', () => {
@@ -164,6 +173,36 @@ describe(SharedLinkService.name, () => {
         key: Buffer.from('random-bytes', 'utf8'),
       });
     });
+
+    it('should create a shared link with allowDownload set to false when showMetadata is false', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      shareMock.create.mockResolvedValue(sharedLinkStub.individual);
+
+      await sut.create(authStub.admin, {
+        type: SharedLinkType.INDIVIDUAL,
+        assetIds: [assetStub.image.id],
+        showMetadata: false,
+        allowDownload: true,
+        allowUpload: true,
+      });
+
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+      expect(shareMock.create).toHaveBeenCalledWith({
+        type: SharedLinkType.INDIVIDUAL,
+        userId: authStub.admin.user.id,
+        albumId: null,
+        allowDownload: false,
+        allowUpload: true,
+        assets: [{ id: assetStub.image.id }],
+        description: null,
+        expiresAt: null,
+        showExif: false,
+        key: Buffer.from('random-bytes', 'utf8'),
+      });
+    });
   });
 
   describe('update', () => {
@@ -270,8 +309,7 @@ describe(SharedLinkService.name, () => {
       shareMock.get.mockResolvedValue(sharedLinkStub.individual);
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '1 shared photos & videos',
-        imageUrl:
-          '/api/asset/thumbnail/asset-id?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0',
+        imageUrl: `${DEFAULT_EXTERNAL_DOMAIN}/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0`,
         title: 'Public Share',
       });
       expect(shareMock.get).toHaveBeenCalled();

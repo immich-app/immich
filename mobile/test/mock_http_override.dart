@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:immich_mobile/shared/ui/transparent_image.dart';
+import 'package:immich_mobile/widgets/common/transparent_image.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Mocks the http client to always return a transparent image for all the requests. Only useful in widget

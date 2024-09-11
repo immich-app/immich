@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { resizeObserver } from '$lib/actions/resize-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { ThumbnailFormat, getMemoryLane } from '@immich/sdk';
+  import { getMemoryLane } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
 
   $: shouldRender = $memoryStore?.length > 0;
 
@@ -38,7 +39,7 @@
     id="memory-lane"
     bind:this={memoryLaneElement}
     class="relative mt-5 overflow-x-hidden whitespace-nowrap transition-all"
-    bind:offsetWidth
+    use:resizeObserver={({ width }) => (offsetWidth = width)}
     on:scroll={onScroll}
   >
     {#if canScrollLeft || canScrollRight}
@@ -46,6 +47,7 @@
         {#if canScrollLeft}
           <div class="absolute left-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
+              type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollLeft}
             >
@@ -56,6 +58,7 @@
         {#if canScrollRight}
           <div class="absolute right-4 top-[6rem] z-20" transition:fade={{ duration: 200 }}>
             <button
+              type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollRight}
             >
@@ -65,26 +68,26 @@
         {/if}
       </div>
     {/if}
-    <div class="inline-block" bind:offsetWidth={innerWidth}>
+    <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
       {#each $memoryStore as memory, index (memory.yearsAgo)}
         {#if memory.assets.length > 0}
-          <button
+          <a
             class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
-            on:click={() => goto(`${AppRoute.MEMORY}?${QueryParameter.MEMORY_INDEX}=${index}`)}
+            href="{AppRoute.MEMORY}?{QueryParameter.MEMORY_INDEX}={index}"
           >
             <img
               class="h-full w-full rounded-xl object-cover"
-              src={getAssetThumbnailUrl(memory.assets[0].id, ThumbnailFormat.Webp)}
-              alt={`Memory Lane ${getAltText(memory.assets[0])}`}
+              src={getAssetThumbnailUrl(memory.assets[0].id)}
+              alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
               draggable="false"
             />
             <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
-              {memoryLaneTitle(memory.yearsAgo)}
+              {$memoryLaneTitle(memory.yearsAgo)}
             </p>
             <div
               class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
             />
-          </button>
+          </a>
         {/if}
       {/each}
     </div>

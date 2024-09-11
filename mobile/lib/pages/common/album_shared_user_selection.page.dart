@@ -11,9 +11,9 @@ import 'package:immich_mobile/providers/album/suggested_shared_users.provider.da
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
-@RoutePage<List<String>>()
+@RoutePage()
 class AlbumSharedUserSelectionPage extends HookConsumerWidget {
   const AlbumSharedUserSelectionPage({super.key, required this.assets});
 
@@ -36,7 +36,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         // ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-        context.popRoute(true);
+        context.maybePop(true);
         context
             .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       }
@@ -152,7 +152,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () async {
-            context.popRoute();
+            context.maybePop();
           },
         ),
         actions: [

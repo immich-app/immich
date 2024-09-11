@@ -1,4 +1,4 @@
-import { getAssetStatistics, getMyUserInfo, getServerVersion, getSupportedMediaTypes } from '@immich/sdk';
+import { getAssetStatistics, getMyUser, getServerVersion, getSupportedMediaTypes } from '@immich/sdk';
 import { BaseOptions, authenticate } from 'src/utils';
 
 export const serverInfo = async (options: BaseOptions) => {
@@ -8,7 +8,7 @@ export const serverInfo = async (options: BaseOptions) => {
     getServerVersion(),
     getSupportedMediaTypes(),
     getAssetStatistics({}),
-    getMyUserInfo(),
+    getMyUser(),
   ]);
 
   console.log(`Server Info (via ${userInfo.email})`);

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,37 +14,30 @@ class MemoryLaneResponseDto {
   /// Returns a new [MemoryLaneResponseDto] instance.
   MemoryLaneResponseDto({
     this.assets = const [],
-    required this.title,
     required this.yearsAgo,
   });
 
   List<AssetResponseDto> assets;
-
-  /// This property was deprecated in v1.100.0
-  String title;
 
   int yearsAgo;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryLaneResponseDto &&
     _deepEquality.equals(other.assets, assets) &&
-    other.title == title &&
     other.yearsAgo == yearsAgo;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assets.hashCode) +
-    (title.hashCode) +
     (yearsAgo.hashCode);
 
   @override
-  String toString() => 'MemoryLaneResponseDto[assets=$assets, title=$title, yearsAgo=$yearsAgo]';
+  String toString() => 'MemoryLaneResponseDto[assets=$assets, yearsAgo=$yearsAgo]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assets'] = this.assets;
-      json[r'title'] = this.title;
       json[r'yearsAgo'] = this.yearsAgo;
     return json;
   }
@@ -58,7 +51,6 @@ class MemoryLaneResponseDto {
 
       return MemoryLaneResponseDto(
         assets: AssetResponseDto.listFromJson(json[r'assets']),
-        title: mapValueOfType<String>(json, r'title')!,
         yearsAgo: mapValueOfType<int>(json, r'yearsAgo')!,
       );
     }
@@ -108,7 +100,6 @@ class MemoryLaneResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assets',
-    'title',
     'yearsAgo',
   };
 }

@@ -153,6 +153,7 @@ FROM
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "partner"."sharedWithId" = $1
+  AND "asset"."isArchived" = false
   AND "asset"."id" IN ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
@@ -190,20 +191,6 @@ WHERE
     ("SessionEntity"."userId" = $1)
     AND ("SessionEntity"."id" IN ($2))
   )
-
--- AccessRepository.library.checkOwnerAccess
-SELECT
-  "LibraryEntity"."id" AS "LibraryEntity_id"
-FROM
-  "libraries" "LibraryEntity"
-WHERE
-  (
-    (
-      ("LibraryEntity"."id" IN ($1))
-      AND ("LibraryEntity"."ownerId" = $2)
-    )
-  )
-  AND ("LibraryEntity"."deletedAt" IS NULL)
 
 -- AccessRepository.memory.checkOwnerAccess
 SELECT
@@ -260,6 +247,28 @@ FROM
 WHERE
   "partner"."sharedById" IN ($1)
   AND "partner"."sharedWithId" = $2
+
+-- AccessRepository.stack.checkOwnerAccess
+SELECT
+  "StackEntity"."id" AS "StackEntity_id"
+FROM
+  "asset_stack" "StackEntity"
+WHERE
+  (
+    ("StackEntity"."id" IN ($1))
+    AND ("StackEntity"."ownerId" = $2)
+  )
+
+-- AccessRepository.tag.checkOwnerAccess
+SELECT
+  "TagEntity"."id" AS "TagEntity_id"
+FROM
+  "tags" "TagEntity"
+WHERE
+  (
+    ("TagEntity"."id" IN ($1))
+    AND ("TagEntity"."userId" = $2)
+  )
 
 -- AccessRepository.timeline.checkPartnerAccess
 SELECT

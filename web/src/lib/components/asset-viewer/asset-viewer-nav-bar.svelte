@@ -1,270 +1,191 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import type { OnAction } from '$lib/components/asset-viewer/actions/action';
+  import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
+  import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
+  import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
+  import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
+  import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
+  import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
+  import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
+  import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
+  import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
+  import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
+  import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
+  import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetJobName } from '$lib/utils';
-  import { clickOutside } from '$lib/utils/click-outside';
-  import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetTypeEnum, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import {
-    mdiAccountCircleOutline,
+    AssetJobName,
+    AssetTypeEnum,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type StackResponseDto,
+  } from '@immich/sdk';
+  import {
     mdiAlertOutline,
-    mdiArchiveArrowDownOutline,
-    mdiArchiveArrowUpOutline,
-    mdiArrowLeft,
     mdiCogRefreshOutline,
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
-    mdiDeleteOutline,
     mdiDotsVertical,
-    mdiFolderDownloadOutline,
-    mdiHeart,
-    mdiHeartOutline,
-    mdiHistory,
-    mdiImageAlbum,
-    mdiImageMinusOutline,
-    mdiImageOutline,
     mdiImageRefreshOutline,
-    mdiInformationOutline,
+    mdiImageSearch,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
-    mdiMotionPauseOutline,
-    mdiPlaySpeed,
     mdiPresentationPlay,
-    mdiShareVariantOutline,
+    mdiUpload,
   } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
-  import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
-  import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
+  import { t } from 'svelte-i18n';
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
-  export let showCopyButton: boolean;
-  export let showZoomButton: boolean;
-  export let showMotionPlayButton: boolean;
-  export let isMotionPhotoPlaying = false;
-  export let showDownloadButton: boolean;
+  export let stack: StackResponseDto | null = null;
   export let showDetailButton: boolean;
-  export let showShareButton: boolean;
   export let showSlideshow = false;
-  export let hasStackChildren = false;
+  export let onZoomImage: () => void;
+  export let onCopyImage: () => void;
+  export let onAction: OnAction;
+  export let onRunJob: (name: AssetJobName) => void;
+  export let onPlaySlideshow: () => void;
+  export let onShowDetail: () => void;
+  // export let showEditorHandler: () => void;
+  export let onClose: () => void;
 
-  $: isOwner = asset.ownerId === $user?.id;
+  const sharedLink = getSharedLink();
 
-  type MenuItemEvent =
-    | 'addToAlbum'
-    | 'restoreAsset'
-    | 'addToSharedAlbum'
-    | 'asProfileImage'
-    | 'setAsAlbumCover'
-    | 'download'
-    | 'playSlideShow'
-    | 'runJob'
-    | 'unstack';
-
-  const dispatch = createEventDispatcher<{
-    back: void;
-    stopMotionPhoto: void;
-    playMotionPhoto: void;
-    download: void;
-    showDetail: void;
-    favorite: void;
-    delete: void;
-    toggleArchive: void;
-    addToAlbum: void;
-    restoreAsset: void;
-    addToSharedAlbum: void;
-    asProfileImage: void;
-    setAsAlbumCover: void;
-    runJob: AssetJobName;
-    playSlideShow: void;
-    unstack: void;
-    showShareModal: void;
-  }>();
-
-  let contextMenuPosition = { x: 0, y: 0 };
-  let isShowAssetOptions = false;
-
-  const showOptionsMenu = (event: MouseEvent) => {
-    contextMenuPosition = getContextMenuPosition(event, 'top-right');
-    isShowAssetOptions = !isShowAssetOptions;
-  };
-
-  const onJobClick = (name: AssetJobName) => {
-    isShowAssetOptions = false;
-    dispatch('runJob', name);
-  };
-
-  const onMenuClick = (eventName: MenuItemEvent) => {
-    isShowAssetOptions = false;
-    dispatch(eventName);
-  };
+  $: isOwner = $user && asset.ownerId === $user?.id;
+  $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  // $: showEditorButton =
+  //   isOwner &&
+  //   asset.type === AssetTypeEnum.Image &&
+  //   !(
+  //     asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+  //     (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+  //   ) &&
+  //   !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
+  //   !asset.livePhotoVideoId;
 </script>
 
 <div
   class="z-[1001] flex h-16 place-items-center justify-between bg-gradient-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="text-white">
-    <CircleIconButton color="opaque" icon={mdiArrowLeft} title="Go back" on:click={() => dispatch('back')} />
+    <CloseAction {onClose} />
   </div>
-  <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
-    {#if showShareButton}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiShareVariantOutline}
-        on:click={() => dispatch('showShareModal')}
-        title="Share"
-      />
+  <div
+    class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
+    data-testid="asset-viewer-navbar-actions"
+  >
+    {#if !asset.isTrashed && $user}
+      <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiAlertOutline}
-        on:click={() => dispatch('showDetail')}
-        title="Asset Offline"
-      />
+      <CircleIconButton color="opaque" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
     {/if}
-    {#if showMotionPlayButton}
-      {#if isMotionPhotoPlaying}
-        <CircleIconButton
-          color="opaque"
-          icon={mdiMotionPauseOutline}
-          title="Stop Motion Photo"
-          on:click={() => dispatch('stopMotionPhoto')}
-        />
-      {:else}
-        <CircleIconButton
-          color="opaque"
-          icon={mdiPlaySpeed}
-          title="Play Motion Photo"
-          on:click={() => dispatch('playMotionPhoto')}
-        />
-      {/if}
+    {#if asset.livePhotoVideoId}
+      <slot name="motion-photo" />
     {/if}
-    {#if showZoomButton}
+    {#if asset.type === AssetTypeEnum.Image}
       <CircleIconButton
         color="opaque"
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
-        title="Zoom Image"
-        on:click={() => {
-          const zoomImage = new CustomEvent('zoomImage');
-          window.dispatchEvent(zoomImage);
-        }}
+        title={$t('zoom_image')}
+        on:click={onZoomImage}
       />
     {/if}
-    {#if showCopyButton}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiContentCopy}
-        title="Copy Image"
-        on:click={() => {
-          const copyEvent = new CustomEvent('copyImage');
-          window.dispatchEvent(copyEvent);
-        }}
-      />
+    {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} on:click={onCopyImage} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiFolderDownloadOutline}
-        on:click={() => dispatch('download')}
-        title="Download"
-      />
+      <DownloadAction {asset} />
     {/if}
 
     {#if showDetailButton}
-      <CircleIconButton
-        color="opaque"
-        icon={mdiInformationOutline}
-        on:click={() => dispatch('showDetail')}
-        title="Info"
-      />
+      <ShowDetailAction {onShowDetail} />
     {/if}
 
     {#if isOwner}
+      <FavoriteAction {asset} {onAction} />
+    {/if}
+    <!-- {#if showEditorButton}
       <CircleIconButton
         color="opaque"
-        icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
-        on:click={() => dispatch('favorite')}
-        title={asset.isFavorite ? 'Unfavorite' : 'Favorite'}
+        hideMobile={true}
+        icon={mdiImageEditOutline}
+        on:click={showEditorHandler}
+        title={$t('editor')}
       />
-    {/if}
+    {/if} -->
 
     {#if isOwner}
-      <CircleIconButton color="opaque" icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
-      <div
-        use:clickOutside={{
-          onOutclick: () => (isShowAssetOptions = false),
-          onEscape: () => (isShowAssetOptions = false),
-        }}
-      >
-        <CircleIconButton color="opaque" icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
-        {#if isShowAssetOptions}
-          <ContextMenu {...contextMenuPosition} direction="left">
-            {#if showSlideshow}
-              <MenuOption icon={mdiPresentationPlay} on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
-            {/if}
-            {#if showDownloadButton}
-              <MenuOption icon={mdiFolderDownloadOutline} on:click={() => onMenuClick('download')} text="Download" />
-            {/if}
-            {#if asset.isTrashed}
-              <MenuOption icon={mdiHistory} on:click={() => onMenuClick('restoreAsset')} text="Restore" />
-            {:else}
-              <MenuOption icon={mdiImageAlbum} on:click={() => onMenuClick('addToAlbum')} text="Add to album" />
-              <MenuOption
-                icon={mdiShareVariantOutline}
-                on:click={() => onMenuClick('addToSharedAlbum')}
-                text="Add to shared album"
-              />
-            {/if}
+      <DeleteAction {asset} {onAction} />
 
-            {#if isOwner}
-              {#if hasStackChildren}
-                <MenuOption icon={mdiImageMinusOutline} on:click={() => onMenuClick('unstack')} text="Un-stack" />
-              {/if}
-              {#if album}
-                <MenuOption
-                  text="Set as album cover"
-                  icon={mdiImageOutline}
-                  on:click={() => onMenuClick('setAsAlbumCover')}
-                />
-              {/if}
-              {#if asset.type === AssetTypeEnum.Image}
-                <MenuOption
-                  icon={mdiAccountCircleOutline}
-                  on:click={() => onMenuClick('asProfileImage')}
-                  text="Set as profile picture"
-                />
-              {/if}
-              <MenuOption
-                on:click={() => dispatch('toggleArchive')}
-                icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}
-                text={asset.isArchived ? 'Unarchive' : 'Archive'}
-              />
-              <hr />
-              <MenuOption
-                icon={mdiDatabaseRefreshOutline}
-                on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
-                text={getAssetJobName(AssetJobName.RefreshMetadata)}
-              />
-              <MenuOption
-                icon={mdiImageRefreshOutline}
-                on:click={() => onJobClick(AssetJobName.RegenerateThumbnail)}
-                text={getAssetJobName(AssetJobName.RegenerateThumbnail)}
-              />
-              {#if asset.type === AssetTypeEnum.Video}
-                <MenuOption
-                  icon={mdiCogRefreshOutline}
-                  on:click={() => onJobClick(AssetJobName.TranscodeVideo)}
-                  text={getAssetJobName(AssetJobName.TranscodeVideo)}
-                />
-              {/if}
-            {/if}
-          </ContextMenu>
+      <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
+        {#if showSlideshow}
+          <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
-      </div>
+        {#if showDownloadButton}
+          <DownloadAction {asset} menuItem />
+        {/if}
+        {#if asset.isTrashed}
+          <RestoreAction {asset} {onAction} />
+        {:else}
+          <AddToAlbumAction {asset} {onAction} />
+          <AddToAlbumAction {asset} {onAction} shared />
+        {/if}
+
+        {#if isOwner}
+          {#if stack}
+            <UnstackAction {stack} {onAction} />
+          {/if}
+          {#if album}
+            <SetAlbumCoverAction {asset} {album} />
+          {/if}
+          {#if asset.type === AssetTypeEnum.Image}
+            <SetProfilePictureAction {asset} />
+          {/if}
+          <ArchiveAction {asset} {onAction} />
+          <MenuOption
+            icon={mdiUpload}
+            onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+            text={$t('replace_with_upload')}
+          />
+          {#if !asset.isArchived && !asset.isTrashed}
+            <MenuOption
+              icon={mdiImageSearch}
+              onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+              text={$t('view_in_timeline')}
+            />
+          {/if}
+          <hr />
+          <MenuOption
+            icon={mdiDatabaseRefreshOutline}
+            onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
+            text={$getAssetJobName(AssetJobName.RefreshMetadata)}
+          />
+          <MenuOption
+            icon={mdiImageRefreshOutline}
+            onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
+            text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
+          />
+          {#if asset.type === AssetTypeEnum.Video}
+            <MenuOption
+              icon={mdiCogRefreshOutline}
+              onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
+              text={$getAssetJobName(AssetJobName.TranscodeVideo)}
+            />
+          {/if}
+        {/if}
+      </ButtonContextMenu>
     {/if}
   </div>
 </div>

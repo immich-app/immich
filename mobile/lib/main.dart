@@ -16,7 +16,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
-import 'package:immich_mobile/shared/cache/widgets_binding.dart';
+import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -39,7 +39,6 @@ import 'package:path_provider/path_provider.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-
   final db = await loadDb();
   await initApp();
   await migrateDatabaseIfNeeded(db);
@@ -65,12 +64,15 @@ Future<void> initApp() async {
     }
   }
 
+  await fetchSystemPalette();
+
   // Initialize Immich Logger Service
   ImmichLogger();
 
   var log = Logger("ImmichErrorLogger");
 
   FlutterError.onError = (details) {
+    debugPrint("FlutterError - Catch all: $details");
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
@@ -104,7 +106,7 @@ Future<Isar> loadDb() async {
       if (Platform.isIOS) IOSDeviceAssetSchema,
     ],
     directory: dir.path,
-    maxSizeMiB: 256,
+    maxSizeMiB: 1024,
   );
   Store.init(db);
   return db;
@@ -187,18 +189,19 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
+    var immichTheme = ref.watch(immichThemeProvider);
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       home: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: false,
-        themeMode: ref.watch(immichThemeProvider),
-        darkTheme: immichDarkTheme,
-        theme: immichLightTheme,
+        themeMode: ref.watch(immichThemeModeProvider),
+        darkTheme: getThemeData(colorScheme: immichTheme.dark),
+        theme: getThemeData(colorScheme: immichTheme.light),
         routeInformationParser: router.defaultRouteParser(),
         routerDelegate: router.delegate(
           navigatorObservers: () => [TabNavigationObserver(ref: ref)],

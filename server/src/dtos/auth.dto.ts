@@ -5,6 +5,7 @@ import { APIKeyEntity } from 'src/entities/api-key.entity';
 import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { toEmail } from 'src/validation';
 
 export enum ImmichCookie {
   ACCESS_TOKEN = 'immich_access_token',
@@ -17,8 +18,15 @@ export enum ImmichHeader {
   API_KEY = 'x-api-key',
   USER_TOKEN = 'x-immich-user-token',
   SESSION_TOKEN = 'x-immich-session-token',
-  SHARED_LINK_TOKEN = 'x-immich-share-key',
+  SHARED_LINK_KEY = 'x-immich-share-key',
   CHECKSUM = 'x-immich-checksum',
+  CID = 'x-immich-cid',
+}
+
+export enum ImmichQuery {
+  SHARED_LINK_KEY = 'key',
+  API_KEY = 'apiKey',
+  SESSION_KEY = 'sessionKey',
 }
 
 export type CookieResponse = {
@@ -36,7 +44,7 @@ export class AuthDto {
 
 export class LoginCredentialDto {
   @IsEmail({ require_tld: false })
-  @Transform(({ value }) => value?.toLowerCase())
+  @Transform(toEmail)
   @IsNotEmpty()
   @ApiProperty({ example: 'testuser@email.com' })
   email!: string;

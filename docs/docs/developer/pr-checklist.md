@@ -9,6 +9,11 @@ When contributing code through a pull request, please check the following:
 - [ ] `npm run check:svelte` (Type checking via SvelteKit)
 - [ ] `npm test` (unit tests)
 
+## Documentation
+
+- [ ] `npm run format` (formatting via Prettier)
+- [ ] Update the `_redirects` file if you have renamed a page or removed it from the documentation.
+
 :::tip AIO
 Run all web checks with `npm run check:all`
 :::

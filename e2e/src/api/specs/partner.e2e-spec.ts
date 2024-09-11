@@ -5,7 +5,7 @@ import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-describe('/partner', () => {
+describe('/partners', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
@@ -28,9 +28,9 @@ describe('/partner', () => {
     ]);
   });
 
-  describe('GET /partner', () => {
+  describe('GET /partners', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/partner');
+      const { status, body } = await request(app).get('/partners');
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -38,7 +38,7 @@ describe('/partner', () => {
 
     it('should get all partners shared by user', async () => {
       const { status, body } = await request(app)
-        .get('/partner')
+        .get('/partners')
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .query({ direction: 'shared-by' });
 
@@ -48,7 +48,7 @@ describe('/partner', () => {
 
     it('should get all partners that share with user', async () => {
       const { status, body } = await request(app)
-        .get('/partner')
+        .get('/partners')
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .query({ direction: 'shared-with' });
 
@@ -57,9 +57,9 @@ describe('/partner', () => {
     });
   });
 
-  describe('POST /partner/:id', () => {
+  describe('POST /partners/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/partner/${user3.userId}`);
+      const { status, body } = await request(app).post(`/partners/${user3.userId}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -67,7 +67,7 @@ describe('/partner', () => {
 
     it('should share with new partner', async () => {
       const { status, body } = await request(app)
-        .post(`/partner/${user3.userId}`)
+        .post(`/partners/${user3.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(201);
@@ -76,7 +76,7 @@ describe('/partner', () => {
 
     it('should not share with new partner if already sharing with this partner', async () => {
       const { status, body } = await request(app)
-        .post(`/partner/${user2.userId}`)
+        .post(`/partners/${user2.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
@@ -84,9 +84,9 @@ describe('/partner', () => {
     });
   });
 
-  describe('PUT /partner/:id', () => {
+  describe('PUT /partners/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/partner/${user2.userId}`);
+      const { status, body } = await request(app).put(`/partners/${user2.userId}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -94,7 +94,7 @@ describe('/partner', () => {
 
     it('should update partner', async () => {
       const { status, body } = await request(app)
-        .put(`/partner/${user2.userId}`)
+        .put(`/partners/${user2.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ inTimeline: false });
 
@@ -103,9 +103,9 @@ describe('/partner', () => {
     });
   });
 
-  describe('DELETE /partner/:id', () => {
+  describe('DELETE /partners/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/partner/${user3.userId}`);
+      const { status, body } = await request(app).delete(`/partners/${user3.userId}`);
 
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -113,7 +113,7 @@ describe('/partner', () => {
 
     it('should delete partner', async () => {
       const { status } = await request(app)
-        .delete(`/partner/${user3.userId}`)
+        .delete(`/partners/${user3.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -121,7 +121,7 @@ describe('/partner', () => {
 
     it('should throw a bad request if partner not found', async () => {
       const { status, body } = await request(app)
-        .delete(`/partner/${user3.userId}`)
+        .delete(`/partners/${user3.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);

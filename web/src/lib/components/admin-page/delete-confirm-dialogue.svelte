@@ -1,10 +1,12 @@
 <script lang="ts">
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteUser, type UserResponseDto } from '@immich/sdk';
+  import { deleteUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { createEventDispatcher } from 'svelte';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
+  import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let user: UserResponseDto;
 
@@ -20,9 +22,9 @@
 
   const handleDeleteUser = async () => {
     try {
-      const { deletedAt } = await deleteUser({
+      const { deletedAt } = await deleteUserAdmin({
         id: user.id,
-        deleteUserDto: { force: forceDelete },
+        userAdminDeleteDto: { force: forceDelete },
       });
 
       if (deletedAt == undefined) {
@@ -31,7 +33,7 @@
         dispatch('success');
       }
     } catch (error) {
-      handleError(error, 'Unable to delete user');
+      handleError(error, $t('errors.unable_to_delete_user'));
       dispatch('fail');
     }
   };
@@ -42,31 +44,37 @@
   };
 </script>
 
-<ConfirmDialogue
-  id="delete-user-confirmation-modal"
-  title="Delete user"
-  confirmText={forceDelete ? 'Permanently Delete' : 'Delete'}
+<ConfirmDialog
+  title={$t('delete_user')}
+  confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
   onConfirm={handleDeleteUser}
-  onClose={() => dispatch('cancel')}
+  onCancel={() => dispatch('cancel')}
   disabled={deleteButtonDisabled}
 >
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
       {#if forceDelete}
         <p>
-          <b>{user.name}</b>'s account and assets will be queued for permanent deletion <b>immediately</b>.
+          <FormatMessage key="admin.user_delete_immediately" values={{ user: user.name }} let:message>
+            <b>{message}</b>
+          </FormatMessage>
         </p>
       {:else}
         <p>
-          <b>{user.name}</b>'s account and assets will be scheduled for permanent deletion in {$serverConfig.userDeleteDelay}
-          days.
+          <FormatMessage
+            key="admin.user_delete_delay"
+            values={{ user: user.name, delay: $serverConfig.userDeleteDelay }}
+            let:message
+          >
+            <b>{message}</b>
+          </FormatMessage>
         </p>
       {/if}
 
       <div class="flex justify-center m-4 gap-2">
         <Checkbox
           id="queue-user-deletion-checkbox"
-          label="Queue user and assets for immediate deletion"
+          label={$t('admin.user_delete_immediately_checkbox')}
           labelClass="text-sm dark:text-immich-dark-fg"
           bind:checked={forceDelete}
           on:change={() => {
@@ -76,13 +84,10 @@
       </div>
 
       {#if forceDelete}
-        <p class="text-immich-error">
-          WARNING: This will immediately remove the user and all assets. This cannot be undone and the files cannot be
-          recovered.
-        </p>
+        <p class="text-immich-error">{$t('admin.force_delete_user_warning')}</p>
 
         <p class="immich-form-label text-sm" id="confirm-user-desc">
-          To confirm, type "{user.email}" below
+          {$t('admin.confirm_email_below', { values: { email: user.email } })}
         </p>
 
         <input
@@ -96,4 +101,4 @@
       {/if}
     </div>
   </svelte:fragment>
-</ConfirmDialogue>
+</ConfirmDialog>

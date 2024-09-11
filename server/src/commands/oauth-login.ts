@@ -1,19 +1,17 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { SystemConfigService } from 'src/services/system-config.service';
+import { CliService } from 'src/services/cli.service';
 
 @Command({
   name: 'enable-oauth-login',
   description: 'Enable OAuth login',
 })
 export class EnableOAuthLogin extends CommandRunner {
-  constructor(private configService: SystemConfigService) {
+  constructor(private service: CliService) {
     super();
   }
 
   async run(): Promise<void> {
-    const config = await this.configService.getConfig();
-    config.oauth.enabled = true;
-    await this.configService.updateConfig(config);
+    await this.service.enableOAuthLogin();
     console.log('OAuth login has been enabled.');
   }
 }
@@ -23,14 +21,12 @@ export class EnableOAuthLogin extends CommandRunner {
   description: 'Disable OAuth login',
 })
 export class DisableOAuthLogin extends CommandRunner {
-  constructor(private configService: SystemConfigService) {
+  constructor(private service: CliService) {
     super();
   }
 
   async run(): Promise<void> {
-    const config = await this.configService.getConfig();
-    config.oauth.enabled = false;
-    await this.configService.updateConfig(config);
+    await this.service.disableOAuthLogin();
     console.log('OAuth login has been disabled.');
   }
 }

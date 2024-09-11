@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { MemoryType } from 'src/entities/memory.entity';
+import { MemoryType } from 'src/enum';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { MemoryService } from 'src/services/memory.service';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -189,15 +189,6 @@ describe(MemoryService.name, () => {
       accessMock.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
       await expect(sut.removeAssets(authStub.admin, 'memory1', { ids: ['not-found'] })).resolves.toEqual([
         { error: 'not_found', id: 'not-found', success: false },
-      ]);
-      expect(memoryMock.removeAssetIds).not.toHaveBeenCalled();
-    });
-
-    it('should require asset access', async () => {
-      accessMock.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
-      memoryMock.getAssetIds.mockResolvedValue(new Set(['asset1']));
-      await expect(sut.removeAssets(authStub.admin, 'memory1', { ids: ['asset1'] })).resolves.toEqual([
-        { error: 'no_permission', id: 'asset1', success: false },
       ]);
       expect(memoryMock.removeAssetIds).not.toHaveBeenCalled();
     });

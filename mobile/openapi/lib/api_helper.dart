@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -61,6 +61,12 @@ String parameterToString(dynamic value) {
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
+  if (value is AssetMediaSize) {
+    return AssetMediaSizeTypeTransformer().encode(value).toString();
+  }
+  if (value is AssetMediaStatus) {
+    return AssetMediaStatusTypeTransformer().encode(value).toString();
+  }
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
@@ -69,9 +75,6 @@ String parameterToString(dynamic value) {
   }
   if (value is AudioCodec) {
     return AudioCodecTypeTransformer().encode(value).toString();
-  }
-  if (value is CLIPMode) {
-    return CLIPModeTypeTransformer().encode(value).toString();
   }
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
@@ -91,9 +94,6 @@ String parameterToString(dynamic value) {
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
   }
-  if (value is LibraryType) {
-    return LibraryTypeTypeTransformer().encode(value).toString();
-  }
   if (value is LogLevel) {
     return LogLevelTypeTransformer().encode(value).toString();
   }
@@ -103,14 +103,17 @@ String parameterToString(dynamic value) {
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
   }
-  if (value is ModelType) {
-    return ModelTypeTypeTransformer().encode(value).toString();
+  if (value is PartnerDirection) {
+    return PartnerDirectionTypeTransformer().encode(value).toString();
   }
   if (value is PathEntityType) {
     return PathEntityTypeTypeTransformer().encode(value).toString();
   }
   if (value is PathType) {
     return PathTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is Permission) {
+    return PermissionTypeTransformer().encode(value).toString();
   }
   if (value is ReactionLevel) {
     return ReactionLevelTypeTransformer().encode(value).toString();
@@ -124,11 +127,8 @@ String parameterToString(dynamic value) {
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
   }
-  if (value is TagTypeEnum) {
-    return TagTypeEnumTypeTransformer().encode(value).toString();
-  }
-  if (value is ThumbnailFormat) {
-    return ThumbnailFormatTypeTransformer().encode(value).toString();
+  if (value is SourceType) {
+    return SourceTypeTypeTransformer().encode(value).toString();
   }
   if (value is TimeBucketSize) {
     return TimeBucketSizeTypeTransformer().encode(value).toString();
@@ -150,6 +150,9 @@ String parameterToString(dynamic value) {
   }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();
+  }
+  if (value is VideoContainer) {
+    return VideoContainerTypeTransformer().encode(value).toString();
   }
   return value.toString();
 }

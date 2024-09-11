@@ -1,4 +1,4 @@
-import type { ServerInfoResponseDto } from '@immich/sdk';
+import type { ServerStorageResponseDto } from '@immich/sdk';
 import { writable } from 'svelte/store';
 
-export const serverInfo = writable<ServerInfoResponseDto>();
+export const serverInfo = writable<ServerStorageResponseDto>();

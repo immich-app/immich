@@ -93,4 +93,18 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
       pause: !state.pause,
     );
   }
+
+  void restart() {
+    state = VideoPlaybackControls(
+      position: 0,
+      mute: state.mute,
+      pause: true,
+    );
+
+    state = VideoPlaybackControls(
+      position: 0,
+      mute: state.mute,
+      pause: false,
+    );
+  }
 }

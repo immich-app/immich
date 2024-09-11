@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { serveFile, type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
+  import { getAssetOriginalUrl, getKey } from '$lib/utils';
+  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { AssetMediaSize, AssetTypeEnum, viewAsset, type AssetResponseDto } from '@immich/sdk';
+  import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { getAssetFileUrl, getKey } from '$lib/utils';
-  import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
-  export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
+  import { t } from 'svelte-i18n';
+  export let asset: { id: string; type: AssetTypeEnum.Video } | AssetResponseDto;
 
   const photoSphereConfigs =
     asset.type === AssetTypeEnum.Video
@@ -20,12 +22,15 @@
 
   const loadAssetData = async () => {
     if (asset.type === AssetTypeEnum.Video) {
-      return { source: getAssetFileUrl(asset.id, false, false) };
+      return { source: getAssetOriginalUrl(asset.id) };
     }
-    const data = await serveFile({ id: asset.id, isWeb: false, isThumb: false, key: getKey() });
+    const data = await viewAsset({ id: asset.id, size: AssetMediaSize.Preview, key: getKey() });
     const url = URL.createObjectURL(data);
     return url;
   };
+
+  const originalImageUrl =
+    asset.type === AssetTypeEnum.Image && isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : null;
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
@@ -33,8 +38,15 @@
   {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs])}
     <LoadingSpinner />
   {:then [data, module, adapter, plugins, navbar]}
-    <svelte:component this={module.default} panorama={data} plugins={plugins ?? undefined} {navbar} {adapter} />
+    <svelte:component
+      this={module.default}
+      panorama={data}
+      plugins={plugins ?? undefined}
+      {navbar}
+      {adapter}
+      {originalImageUrl}
+    />
   {:catch}
-    Failed to load asset
+    {$t('errors.failed_to_load_asset')}
   {/await}
 </div>

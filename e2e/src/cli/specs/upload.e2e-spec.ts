@@ -1,4 +1,4 @@
-import { LoginResponseDto, getAllAlbums, getAllAssets } from '@immich/sdk';
+import { LoginResponseDto, getAllAlbums, getAssetStatistics } from '@immich/sdk';
 import { readFileSync } from 'node:fs';
 import { mkdir, readdir, rm, symlink } from 'node:fs/promises';
 import { asKeyAuth, immichCli, testAssetDir, utils } from 'src/utils';
@@ -28,8 +28,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(1);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(1);
     });
 
     it('should skip a duplicate file', async () => {
@@ -40,8 +40,8 @@ describe(`immich upload`, () => {
       );
       expect(first.exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(1);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(1);
 
       const second = await immichCli(['upload', `${testAssetDir}/albums/nature/silver_fir.jpg`]);
       expect(second.stderr).toBe('');
@@ -60,8 +60,8 @@ describe(`immich upload`, () => {
       expect(stdout.split('\n')).toEqual(expect.arrayContaining([expect.stringContaining('No files found, exiting')]));
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(0);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(0);
     });
 
     it('should have accurate dry run', async () => {
@@ -76,8 +76,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(0);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(0);
     });
 
     it('dry run should handle duplicates', async () => {
@@ -88,8 +88,8 @@ describe(`immich upload`, () => {
       );
       expect(first.exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(1);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(1);
 
       const second = await immichCli(['upload', `${testAssetDir}/albums/nature/`, '--dry-run']);
       expect(second.stderr).toBe('');
@@ -112,8 +112,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(9);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(9);
     });
   });
 
@@ -135,8 +135,8 @@ describe(`immich upload`, () => {
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(9);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(9);
 
       const albums = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums.length).toBe(1);
@@ -151,8 +151,8 @@ describe(`immich upload`, () => {
       expect(response1.stderr).toBe('');
       expect(response1.exitCode).toBe(0);
 
-      const assets1 = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets1.length).toBe(9);
+      const assets1 = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets1.total).toBe(9);
 
       const albums1 = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums1.length).toBe(0);
@@ -167,8 +167,8 @@ describe(`immich upload`, () => {
       expect(response2.stderr).toBe('');
       expect(response2.exitCode).toBe(0);
 
-      const assets2 = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets2.length).toBe(9);
+      const assets2 = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets2.total).toBe(9);
 
       const albums2 = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums2.length).toBe(1);
@@ -193,8 +193,8 @@ describe(`immich upload`, () => {
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(0);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(0);
 
       const albums = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums.length).toBe(0);
@@ -219,8 +219,8 @@ describe(`immich upload`, () => {
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(9);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(9);
 
       const albums = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums.length).toBe(1);
@@ -245,8 +245,8 @@ describe(`immich upload`, () => {
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(0);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(0);
 
       const albums = await getAllAlbums({}, { headers: asKeyAuth(key) });
       expect(albums.length).toBe(0);
@@ -276,8 +276,8 @@ describe(`immich upload`, () => {
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(9);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(9);
     });
 
     it('should have accurate dry run', async () => {
@@ -302,8 +302,8 @@ describe(`immich upload`, () => {
       expect(stderr).toBe('');
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(0);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(0);
     });
   });
 
@@ -328,8 +328,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(1);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(1);
     });
 
     it('should throw an error if attempting dry run', async () => {
@@ -344,8 +344,8 @@ describe(`immich upload`, () => {
       expect(stderr).toEqual(`error: option '-n, --dry-run' cannot be used with option '-h, --skip-hash'`);
       expect(exitCode).not.toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(0);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(0);
     });
   });
 
@@ -367,8 +367,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(9);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(9);
     });
 
     it('should reject string argument', async () => {
@@ -408,8 +408,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(8);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(8);
     });
 
     it('should ignore assets matching glob pattern', async () => {
@@ -429,8 +429,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(1);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(1);
     });
 
     it('should have accurate dry run', async () => {
@@ -451,8 +451,8 @@ describe(`immich upload`, () => {
       );
       expect(exitCode).toBe(0);
 
-      const assets = await getAllAssets({}, { headers: asKeyAuth(key) });
-      expect(assets.length).toBe(0);
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(0);
     });
   });
 });

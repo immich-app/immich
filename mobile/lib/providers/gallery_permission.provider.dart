@@ -36,7 +36,8 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         // Return the joint result of those two permissions
         final PermissionStatus status;
-        if (photos.isGranted && videos.isGranted) {
+        if ((photos.isGranted && videos.isGranted) ||
+            (photos.isLimited && videos.isLimited)) {
           status = PermissionStatus.granted;
         } else if (photos.isDenied || videos.isDenied) {
           status = PermissionStatus.denied;
@@ -79,7 +80,8 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         // Return the joint result of those two permissions
         final PermissionStatus status;
-        if (photos.isGranted && videos.isGranted) {
+        if ((photos.isGranted && videos.isGranted) ||
+            (photos.isLimited && videos.isLimited)) {
           status = PermissionStatus.granted;
         } else if (photos.isDenied || videos.isDenied) {
           status = PermissionStatus.denied;

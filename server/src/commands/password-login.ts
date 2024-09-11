@@ -1,19 +1,17 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { SystemConfigService } from 'src/services/system-config.service';
+import { CliService } from 'src/services/cli.service';
 
 @Command({
   name: 'enable-password-login',
   description: 'Enable password login',
 })
 export class EnablePasswordLoginCommand extends CommandRunner {
-  constructor(private configService: SystemConfigService) {
+  constructor(private service: CliService) {
     super();
   }
 
   async run(): Promise<void> {
-    const config = await this.configService.getConfig();
-    config.passwordLogin.enabled = true;
-    await this.configService.updateConfig(config);
+    await this.service.enablePasswordLogin();
     console.log('Password login has been enabled.');
   }
 }
@@ -23,14 +21,12 @@ export class EnablePasswordLoginCommand extends CommandRunner {
   description: 'Disable password login',
 })
 export class DisablePasswordLoginCommand extends CommandRunner {
-  constructor(private configService: SystemConfigService) {
+  constructor(private service: CliService) {
     super();
   }
 
   async run(): Promise<void> {
-    const config = await this.configService.getConfig();
-    config.passwordLogin.enabled = false;
-    await this.configService.updateConfig(config);
+    await this.service.disablePasswordLogin();
     console.log('Password login has been disabled.');
   }
 }

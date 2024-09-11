@@ -46,7 +46,7 @@ class MapStateNotifier extends _$MapStateNotifier {
     // Fetch and save light theme
     final lightResponse = await ref
         .read(apiServiceProvider)
-        .systemConfigApi
+        .mapApi
         .getMapStyleWithHttpInfo(MapTheme.light);
 
     if (lightResponse.statusCode >= HttpStatus.badRequest) {
@@ -74,7 +74,7 @@ class MapStateNotifier extends _$MapStateNotifier {
     // Fetch and save dark theme
     final darkResponse = await ref
         .read(apiServiceProvider)
-        .systemConfigApi
+        .mapApi
         .getMapStyleWithHttpInfo(MapTheme.dark);
 
     if (darkResponse.statusCode >= HttpStatus.badRequest) {

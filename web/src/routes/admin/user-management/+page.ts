@@ -1,16 +1,18 @@
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
-import { getAllUsers } from '@immich/sdk';
+import { getFormatter } from '$lib/utils/i18n';
+import { searchUsersAdmin } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate({ admin: true });
   await requestServerInfo();
-  const allUsers = await getAllUsers({ isAll: false });
+  const allUsers = await searchUsersAdmin({ withDeleted: true });
+  const $t = await getFormatter();
 
   return {
     allUsers,
     meta: {
-      title: 'User Management',
+      title: $t('admin.user_management'),
     },
   };
 }) satisfies PageLoad;

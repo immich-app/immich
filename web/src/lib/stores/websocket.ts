@@ -1,3 +1,5 @@
+import { AppRoute } from '$lib/constants';
+import { handleLogout } from '$lib/utils/auth';
 import { createEventEmitter } from '$lib/utils/eventemitter';
 import type { AssetResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
@@ -6,7 +8,8 @@ import { user } from './user.store';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
-  checkedAt: Date;
+  /** ISO8601 */
+  checkedAt: string;
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }
@@ -23,9 +26,10 @@ export interface Events {
   on_server_version: (serverVersion: ServerVersionResponseDto) => void;
   on_config_update: () => void;
   on_new_release: (newRelase: ReleaseEvent) => void;
+  on_session_delete: (sessionId: string) => void;
 }
 
-const websocket: Socket<Events> = io('', {
+const websocket: Socket<Events> = io({
   path: '/api/socket.io',
   transports: ['websocket'],
   reconnection: true,
@@ -46,6 +50,7 @@ websocket
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
+  .on('on_session_delete', () => handleLogout(AppRoute.AUTH_LOGIN))
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
 export const openWebsocketConnection = () => {

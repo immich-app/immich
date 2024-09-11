@@ -77,17 +77,6 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should support globbing paths',
-    options: {
-      pathsToCrawl: ['/photos*'],
-    },
-    files: {
-      '/photos1/image1.jpg': true,
-      '/photos2/image2.jpg': true,
-      '/images/image3.jpg': false,
-    },
-  },
-  {
     test: 'should crawl a single path without trailing slash',
     options: {
       pathsToCrawl: ['/photos'],
@@ -179,6 +168,15 @@ const tests: Test[] = [
       [`/photos/3.jpg`]: false,
     },
   },
+  {
+    test: 'should support special characters in paths',
+    options: {
+      pathsToCrawl: ['/photos (new)'],
+    },
+    files: {
+      ['/photos (new)/1.jpg']: true,
+    },
+  },
 ];
 
 describe(StorageRepository.name, () => {
@@ -204,7 +202,7 @@ describe(StorageRepository.name, () => {
           .filter((entry) => entry[1])
           .map(([file]) => file);
 
-        expect(actual.sort()).toEqual(expected.sort());
+        expect(actual.toSorted()).toEqual(expected.toSorted());
       });
     }
   });

@@ -65,6 +65,10 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SMART_SEARCH]: QueueName.SMART_SEARCH,
   [JobName.SMART_SEARCH]: QueueName.SMART_SEARCH,
 
+  // duplicate detection
+  [JobName.QUEUE_DUPLICATE_DETECTION]: QueueName.DUPLICATE_DETECTION,
+  [JobName.DUPLICATE_DETECTION]: QueueName.DUPLICATE_DETECTION,
+
   // XMP sidecars
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
@@ -75,13 +79,19 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
   [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
   [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_CHECK_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 
   // Notification
   [JobName.SEND_EMAIL]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_ALBUM_INVITE]: QueueName.NOTIFICATION,
+  [JobName.NOTIFY_ALBUM_UPDATE]: QueueName.NOTIFICATION,
   [JobName.NOTIFY_SIGNUP]: QueueName.NOTIFICATION,
+
+  // Version check
+  [JobName.VERSION_CHECK]: QueueName.BACKGROUND_TASK,
 };
 
 @Instrumentation()
@@ -132,7 +142,11 @@ export class JobRepository implements IJobRepository {
       job.setTime(new CronTime(expression));
     }
     if (start !== undefined) {
-      start ? job.start() : job.stop();
+      if (start) {
+        job.start();
+      } else {
+        job.stop();
+      }
     }
   }
 

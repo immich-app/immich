@@ -8,6 +8,7 @@
   import { getAllJobsStatus, type AllJobStatusResponseDto } from '@immich/sdk';
   import { mdiCog } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -30,14 +31,12 @@
 
 <UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end" slot="buttons">
-    <a href="{AppRoute.ADMIN_SETTINGS}?isOpen=job">
-      <LinkButton>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiCog} size="18" />
-          Manage Concurrency
-        </div>
-      </LinkButton>
-    </a>
+    <LinkButton href="{AppRoute.ADMIN_SETTINGS}?isOpen=job">
+      <div class="flex place-items-center gap-2 text-sm">
+        <Icon path={mdiCog} size="18" />
+        {$t('admin.manage_concurrency')}
+      </div>
+    </LinkButton>
   </div>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">

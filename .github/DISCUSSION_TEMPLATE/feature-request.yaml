@@ -1,11 +1,13 @@
-title: "[Feature] <feature-name-goes-here>"
+title: "[Feature] feature-name-goes-here"
 labels: ["feature"]
 
 body:
   - type: markdown
     attributes:
       value: |
-        Please use this form to request new feature for Immich
+        Please use this form to request new feature for Immich.
+        Stick to only a single feature per request. If you list multiple different features at once, 
+        your request will be closed.
 
   - type: checkboxes
     attributes:

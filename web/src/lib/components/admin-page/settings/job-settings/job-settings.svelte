@@ -2,20 +2,20 @@
   import { getJobName } from '$lib/utils';
   import { JobName, type SystemConfigDto, type SystemConfigJobDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField, {
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { t } from 'svelte-i18n';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 
   const jobNames = [
     JobName.ThumbnailGeneration,
@@ -45,7 +45,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
-              label="{getJobName(jobName)} Concurrency"
+              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
               desc=""
               bind:value={config.job[jobName].concurrency}
               required={true}
@@ -54,11 +54,11 @@
           {:else}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label="{getJobName(jobName)} Concurrency"
+              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
               desc=""
               value="1"
               disabled={true}
-              title="This job is not concurrency-safe."
+              title={$t('admin.job_not_concurrency_safe')}
             />
           {/if}
         </div>
@@ -66,8 +66,8 @@
 
       <div class="ml-4">
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['job'] })}
-          on:save={() => dispatch('save', { job: config.job })}
+          onReset={(options) => onReset({ ...options, configKeys: ['job'] })}
+          onSave={() => onSave({ job: config.job })}
           showResetToDefault={!isEqual(savedConfig.job, defaultConfig.job)}
           {disabled}
         />

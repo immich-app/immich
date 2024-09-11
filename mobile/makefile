@@ -1,3 +1,5 @@
+.PHONY: build watch create_app_icon create_splash build_release_android
+
 build:
 	dart run build_runner build --delete-conflicting-outputs
 

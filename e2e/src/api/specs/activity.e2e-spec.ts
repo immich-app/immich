@@ -1,7 +1,8 @@
 import {
   ActivityCreateDto,
   AlbumResponseDto,
-  AssetFileUploadResponseDto,
+  AlbumUserRole,
+  AssetMediaResponseDto,
   LoginResponseDto,
   ReactionType,
   createActivity as create,
@@ -13,10 +14,10 @@ import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-describe('/activity', () => {
+describe('/activities', () => {
   let admin: LoginResponseDto;
   let nonOwner: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+  let asset: AssetMediaResponseDto;
   let album: AlbumResponseDto;
 
   const createActivity = (dto: ActivityCreateDto, accessToken?: string) =>
@@ -33,7 +34,7 @@ describe('/activity', () => {
         createAlbumDto: {
           albumName: 'Album 1',
           assetIds: [asset.id],
-          sharedWithUserIds: [nonOwner.userId],
+          albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
         },
       },
       { headers: asBearerAuth(admin.accessToken) },
@@ -44,22 +45,24 @@ describe('/activity', () => {
     await utils.resetDatabase(['activity']);
   });
 
-  describe('GET /activity', () => {
+  describe('GET /activities', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/activity');
+      const { status, body } = await request(app).get('/activities');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should require an albumId', async () => {
-      const { status, body } = await request(app).get('/activity').set('Authorization', `Bearer ${admin.accessToken}`);
+      const { status, body } = await request(app)
+        .get('/activities')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
     });
 
     it('should reject an invalid albumId', async () => {
       const { status, body } = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: uuidDto.invalid })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
@@ -68,7 +71,7 @@ describe('/activity', () => {
 
     it('should reject an invalid assetId', async () => {
       const { status, body } = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: uuidDto.notFound, assetId: uuidDto.invalid })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
@@ -77,7 +80,7 @@ describe('/activity', () => {
 
     it('should start off empty', async () => {
       const { status, body } = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: album.id })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([]);
@@ -101,7 +104,7 @@ describe('/activity', () => {
       ]);
 
       const { status, body } = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: album.id })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
@@ -120,7 +123,7 @@ describe('/activity', () => {
       ]);
 
       const { status, body } = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: album.id, type: 'comment' })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
@@ -139,7 +142,7 @@ describe('/activity', () => {
       ]);
 
       const { status, body } = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: album.id, type: 'like' })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
@@ -151,7 +154,7 @@ describe('/activity', () => {
       const reaction = await createActivity({ albumId: album.id, type: ReactionType.Like });
 
       const response1 = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: album.id, userId: uuidDto.notFound })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -159,7 +162,7 @@ describe('/activity', () => {
       expect(response1.body.length).toBe(0);
 
       const response2 = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: album.id, userId: admin.userId })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
@@ -179,7 +182,7 @@ describe('/activity', () => {
       ]);
 
       const { status, body } = await request(app)
-        .get('/activity')
+        .get('/activities')
         .query({ albumId: album.id, assetId: asset.id })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
@@ -188,16 +191,16 @@ describe('/activity', () => {
     });
   });
 
-  describe('POST /activity', () => {
+  describe('POST /activities', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/activity');
+      const { status, body } = await request(app).post('/activities');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should require an albumId', async () => {
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: uuidDto.invalid });
       expect(status).toEqual(400);
@@ -206,7 +209,7 @@ describe('/activity', () => {
 
     it('should require a comment when type is comment', async () => {
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: uuidDto.notFound, type: 'comment', comment: null });
       expect(status).toEqual(400);
@@ -215,7 +218,7 @@ describe('/activity', () => {
 
     it('should add a comment to an album', async () => {
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           albumId: album.id,
@@ -235,7 +238,7 @@ describe('/activity', () => {
 
     it('should add a like to an album', async () => {
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: album.id, type: 'like' });
       expect(status).toEqual(201);
@@ -252,7 +255,7 @@ describe('/activity', () => {
     it('should return a 200 for a duplicate like on the album', async () => {
       const reaction = await createActivity({ albumId: album.id, type: ReactionType.Like });
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: album.id, type: 'like' });
       expect(status).toEqual(200);
@@ -266,7 +269,7 @@ describe('/activity', () => {
         type: ReactionType.Like,
       });
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: album.id, type: 'like' });
       expect(status).toEqual(201);
@@ -275,7 +278,7 @@ describe('/activity', () => {
 
     it('should add a comment to an asset', async () => {
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           albumId: album.id,
@@ -296,7 +299,7 @@ describe('/activity', () => {
 
     it('should add a like to an asset', async () => {
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: album.id, assetId: asset.id, type: 'like' });
       expect(status).toEqual(201);
@@ -318,7 +321,7 @@ describe('/activity', () => {
       });
 
       const { status, body } = await request(app)
-        .post('/activity')
+        .post('/activities')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: album.id, assetId: asset.id, type: 'like' });
       expect(status).toEqual(200);
@@ -326,16 +329,16 @@ describe('/activity', () => {
     });
   });
 
-  describe('DELETE /activity/:id', () => {
+  describe('DELETE /activities/:id', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/activity/${uuidDto.notFound}`);
+      const { status, body } = await request(app).delete(`/activities/${uuidDto.notFound}`);
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should require a valid uuid', async () => {
       const { status, body } = await request(app)
-        .delete(`/activity/${uuidDto.invalid}`)
+        .delete(`/activities/${uuidDto.invalid}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
@@ -348,7 +351,7 @@ describe('/activity', () => {
         comment: 'This is a test comment',
       });
       const { status } = await request(app)
-        .delete(`/activity/${reaction.id}`)
+        .delete(`/activities/${reaction.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(204);
     });
@@ -359,7 +362,7 @@ describe('/activity', () => {
         type: ReactionType.Like,
       });
       const { status } = await request(app)
-        .delete(`/activity/${reaction.id}`)
+        .delete(`/activities/${reaction.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(204);
     });
@@ -372,7 +375,7 @@ describe('/activity', () => {
       });
 
       const { status } = await request(app)
-        .delete(`/activity/${reaction.id}`)
+        .delete(`/activities/${reaction.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toEqual(204);
@@ -386,7 +389,7 @@ describe('/activity', () => {
       });
 
       const { status, body } = await request(app)
-        .delete(`/activity/${reaction.id}`)
+        .delete(`/activities/${reaction.id}`)
         .set('Authorization', `Bearer ${nonOwner.accessToken}`);
 
       expect(status).toBe(400);
@@ -404,7 +407,7 @@ describe('/activity', () => {
       );
 
       const { status } = await request(app)
-        .delete(`/activity/${reaction.id}`)
+        .delete(`/activities/${reaction.id}`)
         .set('Authorization', `Bearer ${nonOwner.accessToken}`);
 
       expect(status).toBe(204);

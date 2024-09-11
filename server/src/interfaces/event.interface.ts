@@ -1,8 +1,38 @@
+import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server-info.dto';
-import { SystemConfig } from 'src/entities/system-config.entity';
+import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 
 export const IEventRepository = 'IEventRepository';
+
+type EmitEventMap = {
+  // app events
+  'app.bootstrap': ['api' | 'microservices'];
+  'app.shutdown': [];
+
+  // config events
+  'config.update': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+  'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+
+  // album events
+  'album.update': [{ id: string; updatedBy: string }];
+  'album.invite': [{ id: string; userId: string }];
+
+  // asset events
+  'asset.tag': [{ assetId: string }];
+  'asset.untag': [{ assetId: string }];
+  'asset.hide': [{ assetId: string; userId: string }];
+
+  // session events
+  'session.delete': [{ sessionId: string }];
+
+  // user events
+  'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];
+};
+
+export type EmitEvent = keyof EmitEventMap;
+export type EmitHandler<T extends EmitEvent> = (...args: ArgsOf<T>) => Promise<void> | void;
+export type ArgOf<T extends EmitEvent> = EmitEventMap[T][0];
+export type ArgsOf<T extends EmitEvent> = EmitEventMap[T];
 
 export enum ClientEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
@@ -17,6 +47,7 @@ export enum ClientEvent {
   SERVER_VERSION = 'on_server_version',
   CONFIG_UPDATE = 'on_config_update',
   NEW_RELEASE = 'on_new_release',
+  SESSION_DELETE = 'on_session_delete',
 }
 
 export interface ClientEventMap {
@@ -32,6 +63,7 @@ export interface ClientEventMap {
   [ClientEvent.SERVER_VERSION]: ServerVersionResponseDto;
   [ClientEvent.CONFIG_UPDATE]: Record<string, never>;
   [ClientEvent.NEW_RELEASE]: ReleaseNotification;
+  [ClientEvent.SESSION_DELETE]: string;
 }
 
 export enum ServerEvent {
@@ -44,19 +76,14 @@ export interface ServerEventMap {
   [ServerEvent.WEBSOCKET_CONNECT]: { userId: string };
 }
 
-export enum ServerAsyncEvent {
-  CONFIG_VALIDATE = 'config.validate',
-}
-
-export interface ServerAsyncEventMap {
-  [ServerAsyncEvent.CONFIG_VALIDATE]: { newConfig: SystemConfig; oldConfig: SystemConfig };
-}
-
 export interface IEventRepository {
+  on<T extends keyof EmitEventMap>(event: T, handler: EmitHandler<T>): void;
+  emit<T extends keyof EmitEventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
+
   /**
    * Send to connected clients for a specific user
    */
-  clientSend<E extends keyof ClientEventMap>(event: E, userId: string, data: ClientEventMap[E]): void;
+  clientSend<E extends keyof ClientEventMap>(event: E, room: string, data: ClientEventMap[E]): void;
   /**
    * Send to all connected clients
    */
@@ -65,8 +92,4 @@ export interface IEventRepository {
    * Notify listeners in this and connected processes. Subscribe to an event with `@OnServerEvent`
    */
   serverSend<E extends keyof ServerEventMap>(event: E, data: ServerEventMap[E]): boolean;
-  /**
-   * Notify and wait for responses from listeners in this process. Subscribe to an event with `@OnServerEvent`
-   */
-  serverSendAsync<E extends keyof ServerAsyncEventMap>(event: E, data: ServerAsyncEventMap[E]): Promise<any>;
 }

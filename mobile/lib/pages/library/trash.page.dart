@@ -6,13 +6,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
+import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/providers/trash.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 
 @RoutePage()
@@ -44,7 +44,7 @@ class TrashPage extends HookConsumerWidget {
       if (context.mounted) {
         ImmichToast.show(
           context: context,
-          msg: 'Emptied trash',
+          msg: 'trash_emptied'.tr(),
           gravity: ToastGravity.BOTTOM,
         );
       }
@@ -71,13 +71,11 @@ class TrashPage extends HookConsumerWidget {
               .removeAssets(selection.value);
 
           if (isRemoved) {
-            final assetOrAssets =
-                selection.value.length > 1 ? 'assets' : 'asset';
             if (context.mounted) {
               ImmichToast.show(
                 context: context,
-                msg:
-                    '${selection.value.length} $assetOrAssets deleted permanently',
+                msg: 'assets_deleted_permanently'
+                    .tr(args: ["${selection.value.length}"]),
                 gravity: ToastGravity.BOTTOM,
               );
             }
@@ -114,12 +112,11 @@ class TrashPage extends HookConsumerWidget {
               .read(trashProvider.notifier)
               .restoreAssets(selection.value);
 
-          final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
           if (result && context.mounted) {
             ImmichToast.show(
               context: context,
-              msg:
-                  '${selection.value.length} $assetOrAssets restored successfully',
+              msg: 'assets_restored_successfully'
+                  .tr(args: ["${selection.value.length}"]),
               gravity: ToastGravity.BOTTOM,
             );
           }
@@ -143,7 +140,7 @@ class TrashPage extends HookConsumerWidget {
       return AppBar(
         leading: IconButton(
           onPressed: !selectionEnabledHook.value
-              ? () => context.popRoute()
+              ? () => context.maybePop()
               : () {
                   selectionEnabledHook.value = false;
                   selection.value = {};

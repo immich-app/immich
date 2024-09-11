@@ -18,7 +18,14 @@ export class SessionRepository implements ISessionRepository {
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getByToken(token: string): Promise<SessionEntity | null> {
-    return this.repository.findOne({ where: { token }, relations: { user: true } });
+    return this.repository.findOne({
+      where: { token },
+      relations: {
+        user: {
+          metadata: true,
+        },
+      },
+    });
   }
 
   getByUserId(userId: string): Promise<SessionEntity[]> {

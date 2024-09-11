@@ -7,7 +7,7 @@ part of 'video_player_controller_provider.dart';
 // **************************************************************************
 
 String _$videoPlayerControllerHash() =>
-    r'40b31f7b1a73fab84c311b0f06bedf5322143cd9';
+    r'84b2961cc2aeaf9d03255dbf9b9484619d0c24f5';
 
 /// Copied from Dart SDK
 class _SystemHash {

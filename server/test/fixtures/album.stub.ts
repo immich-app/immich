@@ -1,5 +1,5 @@
-import { AlbumUserRole } from 'src/entities/album-user.entity';
-import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
+import { AlbumEntity } from 'src/entities/album.entity';
+import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -138,9 +138,9 @@ export const albumStub = {
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
-  emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
+  emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
-    albumName: 'Empty album with invalid thumbnail',
+    albumName: 'Empty album with valid thumbnail',
     description: '',
     ownerId: authStub.admin.user.id,
     owner: userStub.admin,
@@ -155,7 +155,7 @@ export const albumStub = {
     isActivityEnabled: true,
     order: AssetOrder.DESC,
   }),
-  emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
+  emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
     albumName: 'Empty album with invalid thumbnail',
     description: '',

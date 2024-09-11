@@ -2,9 +2,9 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@
 import { ApiTags } from '@nestjs/swagger';
 import {
   AddUsersDto,
-  AlbumCountResponseDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
@@ -12,32 +12,35 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { Auth, Authenticated, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { Permission } from 'src/enum';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
 import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
-@ApiTags('Album')
-@Controller('album')
-@Authenticated()
+@ApiTags('Albums')
+@Controller('albums')
 export class AlbumController {
   constructor(private service: AlbumService) {}
 
-  @Get('count')
-  getAlbumCount(@Auth() auth: AuthDto): Promise<AlbumCountResponseDto> {
-    return this.service.getCount(auth);
-  }
-
   @Get()
+  @Authenticated({ permission: Permission.ALBUM_READ })
   getAllAlbums(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(auth, query);
   }
 
   @Post()
+  @Authenticated({ permission: Permission.ALBUM_CREATE })
   createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     return this.service.create(auth, dto);
   }
 
-  @SharedLinkRoute()
+  @Get('statistics')
+  @Authenticated({ permission: Permission.ALBUM_STATISTICS })
+  getAlbumStatistics(@Auth() auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
+    return this.service.getStatistics(auth);
+  }
+
+  @Authenticated({ permission: Permission.ALBUM_READ, sharedLink: true })
   @Get(':id')
   getAlbumInfo(
     @Auth() auth: AuthDto,
@@ -48,6 +51,7 @@ export class AlbumController {
   }
 
   @Patch(':id')
+  @Authenticated({ permission: Permission.ALBUM_UPDATE })
   updateAlbumInfo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -57,12 +61,13 @@ export class AlbumController {
   }
 
   @Delete(':id')
+  @Authenticated({ permission: Permission.ALBUM_DELETE })
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
 
-  @SharedLinkRoute()
   @Put(':id/assets')
+  @Authenticated({ sharedLink: true })
   addAssetsToAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -72,6 +77,7 @@ export class AlbumController {
   }
 
   @Delete(':id/assets')
+  @Authenticated()
   removeAssetFromAlbum(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,
@@ -81,6 +87,7 @@ export class AlbumController {
   }
 
   @Put(':id/users')
+  @Authenticated()
   addUsersToAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -90,6 +97,7 @@ export class AlbumController {
   }
 
   @Put(':id/user/:userId')
+  @Authenticated()
   updateAlbumUser(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -100,6 +108,7 @@ export class AlbumController {
   }
 
   @Delete(':id/user/:userId')
+  @Authenticated()
   removeUserFromAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

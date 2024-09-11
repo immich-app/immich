@@ -4,6 +4,7 @@
 
 design/
 docker/
+!docker/scripts
 docs/
 e2e/
 fastlane/
@@ -21,11 +22,12 @@ open-api/typescript-sdk/node_modules/
 server/coverage/
 server/node_modules/
 server/upload/
+server/src/queries
 server/dist/
 server/www/
-server/test/assets/
 
 web/node_modules/
 web/coverage/
 web/.svelte-kit
 web/build/
+web/.env

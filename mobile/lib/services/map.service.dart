@@ -19,7 +19,7 @@ class MapSerivce with ErrorLoggerMixin {
   }) async {
     return logError(
       () async {
-        final markers = await _apiService.assetApi.getMapMarkers(
+        final markers = await _apiService.mapApi.getMapMarkers(
           isFavorite: isFavorite,
           isArchived: withArchived,
           withPartners: withPartners,

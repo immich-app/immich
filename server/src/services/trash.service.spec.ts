@@ -79,7 +79,7 @@ describe(TrashService.name, () => {
       assetMock.getByUserId.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
       await expect(sut.empty(authStub.user1)).resolves.toBeUndefined();
       expect(jobMock.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: assetStub.image.id } },
+        { name: JobName.ASSET_DELETION, data: { id: assetStub.image.id, deleteOnDisk: true } },
       ]);
     });
   });

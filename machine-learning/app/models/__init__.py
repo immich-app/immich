@@ -1,24 +1,40 @@
 from typing import Any
 
-from app.schemas import ModelType
+from app.models.base import InferenceModel
+from app.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
+from app.models.clip.visual import OpenClipVisualEncoder
+from app.schemas import ModelSource, ModelTask, ModelType
 
-from .base import InferenceModel
-from .clip import MCLIPEncoder, OpenCLIPEncoder
-from .constants import is_insightface, is_mclip, is_openclip
-from .facial_recognition import FaceRecognizer
+from .constants import get_model_source
+from .facial_recognition.detection import FaceDetector
+from .facial_recognition.recognition import FaceRecognizer
 
 
-def from_model_type(model_type: ModelType, model_name: str, **model_kwargs: Any) -> InferenceModel:
-    match model_type:
-        case ModelType.CLIP:
-            if is_openclip(model_name):
-                return OpenCLIPEncoder(model_name, **model_kwargs)
-            elif is_mclip(model_name):
-                return MCLIPEncoder(model_name, **model_kwargs)
-        case ModelType.FACIAL_RECOGNITION:
-            if is_insightface(model_name):
-                return FaceRecognizer(model_name, **model_kwargs)
+def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTask) -> type[InferenceModel]:
+    source = get_model_source(model_name)
+    match source, model_type, model_task:
+        case ModelSource.OPENCLIP | ModelSource.MCLIP, ModelType.VISUAL, ModelTask.SEARCH:
+            return OpenClipVisualEncoder
+
+        case ModelSource.OPENCLIP, ModelType.TEXTUAL, ModelTask.SEARCH:
+            return OpenClipTextualEncoder
+
+        case ModelSource.MCLIP, ModelType.TEXTUAL, ModelTask.SEARCH:
+            return MClipTextualEncoder
+
+        case ModelSource.INSIGHTFACE, ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION:
+            return FaceDetector
+
+        case ModelSource.INSIGHTFACE, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION:
+            return FaceRecognizer
+
         case _:
-            raise ValueError(f"Unknown model type {model_type}")
+            raise ValueError(f"Unknown model combination: {source}, {model_type}, {model_task}")
 
-    raise ValueError(f"Unknown {model_type} model {model_name}")
+
+def from_model_type(model_name: str, model_type: ModelType, model_task: ModelTask, **kwargs: Any) -> InferenceModel:
+    return get_model_class(model_name, model_type, model_task)(model_name, **kwargs)
+
+
+def get_model_deps(model_name: str, model_type: ModelType, model_task: ModelTask) -> list[tuple[ModelType, ModelTask]]:
+    return get_model_class(model_name, model_type, model_task).depends

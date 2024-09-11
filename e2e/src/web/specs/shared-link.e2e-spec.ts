@@ -1,6 +1,6 @@
 import {
   AlbumResponseDto,
-  AssetFileUploadResponseDto,
+  AssetMediaResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
@@ -11,13 +11,13 @@ import { asBearerAuth, utils } from 'src/utils';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
-  let asset: AssetFileUploadResponseDto;
+  let asset: AssetMediaResponseDto;
   let album: AlbumResponseDto;
   let sharedLink: SharedLinkResponseDto;
   let sharedLinkPassword: SharedLinkResponseDto;
 
   test.beforeAll(async () => {
-    utils.setApiEndpoint();
+    utils.initSdk();
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     asset = await utils.createAsset(admin.accessToken);
@@ -44,9 +44,16 @@ test.describe('Shared Links', () => {
   test('download from a shared link', async ({ page }) => {
     await page.goto(`/share/${sharedLink.key}`);
     await page.getByRole('heading', { name: 'Test Album' }).waitFor();
-    await page.locator('.group > div').first().hover();
+    await page.locator(`[data-asset-id="${asset.id}"]`).hover();
     await page.waitForSelector('#asset-group-by-date svg');
     await page.getByRole('checkbox').click();
+    await page.getByRole('button', { name: 'Download' }).click();
+    await page.getByText('DOWNLOADING', { exact: true }).waitFor();
+  });
+
+  test('download all from shared link', async ({ page }) => {
+    await page.goto(`/share/${sharedLink.key}`);
+    await page.getByRole('heading', { name: 'Test Album' }).waitFor();
     await page.getByRole('button', { name: 'Download' }).click();
     await page.getByText('DOWNLOADING', { exact: true }).waitFor();
   });
@@ -61,5 +68,16 @@ test.describe('Shared Links', () => {
   test('show error for invalid shared link', async ({ page }) => {
     await page.goto('/share/invalid');
     await page.getByRole('heading', { name: 'Invalid share key' }).waitFor();
+  });
+
+  test('auth on navigation from shared link to timeline', async ({ context, page }) => {
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto(`/share/${sharedLink.key}`);
+    await page.getByRole('heading', { name: 'Test Album' }).waitFor();
+
+    await page.locator('a[href="/"]').click();
+    await page.waitForURL('/photos');
+    await page.locator(`[data-asset-id="${asset.id}"]`).waitFor();
   });
 });

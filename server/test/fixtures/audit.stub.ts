@@ -1,4 +1,5 @@
-import { AuditEntity, DatabaseAction, EntityType } from 'src/entities/audit.entity';
+import { AuditEntity } from 'src/entities/audit.entity';
+import { DatabaseAction, EntityType } from 'src/enum';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const auditStub = {

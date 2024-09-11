@@ -1,14 +1,16 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetStackEntity } from 'src/entities/asset-stack.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
+import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AssetType } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -25,12 +27,17 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
+export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
 @Entity('assets')
 // Checksums must be unique per user and library
-@Index(ASSET_CHECKSUM_CONSTRAINT, ['owner', 'library', 'checksum'], {
+@Index(ASSET_CHECKSUM_CONSTRAINT, ['owner', 'checksum'], {
   unique: true,
+  where: '"libraryId" IS NULL',
+})
+@Index('UQ_assets_owner_library_checksum' + '', ['owner', 'library', 'checksum'], {
+  unique: true,
+  where: '"libraryId" IS NOT NULL',
 })
 @Index('IDX_day_of_month', { synchronize: false })
 @Index('IDX_month', { synchronize: false })
@@ -51,11 +58,11 @@ export class AssetEntity {
   @Column()
   ownerId!: string;
 
-  @ManyToOne(() => LibraryEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  library!: LibraryEntity;
+  @ManyToOne(() => LibraryEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  library?: LibraryEntity | null;
 
-  @Column()
-  libraryId!: string;
+  @Column({ nullable: true })
+  libraryId?: string | null;
 
   @Column()
   deviceId!: string;
@@ -66,11 +73,8 @@ export class AssetEntity {
   @Column()
   originalPath!: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  previewPath!: string | null;
-
-  @Column({ type: 'varchar', nullable: true, default: '' })
-  thumbnailPath!: string | null;
+  @OneToMany(() => AssetFileEntity, (assetFile) => assetFile.asset)
+  files!: AssetFileEntity[];
 
   @Column({ type: 'bytea', nullable: true })
   thumbhash!: Buffer | null;
@@ -119,7 +123,7 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;
 
-  @OneToOne(() => AssetEntity, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  @ManyToOne(() => AssetEntity, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
   @JoinColumn()
   livePhotoVideo!: AssetEntity | null;
 
@@ -159,17 +163,14 @@ export class AssetEntity {
   @Column({ nullable: true })
   stackId?: string | null;
 
-  @ManyToOne(() => AssetStackEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  @ManyToOne(() => StackEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   @JoinColumn()
-  stack?: AssetStackEntity | null;
+  stack?: StackEntity | null;
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;
-}
 
-export enum AssetType {
-  IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
-  AUDIO = 'AUDIO',
-  OTHER = 'OTHER',
+  @Index('IDX_assets_duplicateId')
+  @Column({ type: 'uuid', nullable: true })
+  duplicateId!: string | null;
 }

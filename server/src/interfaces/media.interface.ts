@@ -1,13 +1,22 @@
 import { Writable } from 'node:stream';
-import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/entities/system-config.entity';
+import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/config';
 
 export const IMediaRepository = 'IMediaRepository';
 
-export interface ResizeOptions {
+export interface CropOptions {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+export interface ThumbnailOptions {
   size: number;
   format: ImageFormat;
   colorspace: string;
   quality: number;
+  crop?: CropOptions;
+  processInvalidImages: boolean;
 }
 
 export interface VideoStreamInfo {
@@ -39,20 +48,17 @@ export interface ImageDimensions {
   height: number;
 }
 
+export interface InputDimensions extends ImageDimensions {
+  inputPath: string;
+}
+
 export interface VideoInfo {
   format: VideoFormat;
   videoStreams: VideoStreamInfo[];
   audioStreams: AudioStreamInfo[];
 }
 
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
-export interface TranscodeOptions {
+export interface TranscodeCommand {
   inputOptions: string[];
   outputOptions: string[];
   twoPass: boolean;
@@ -66,7 +72,7 @@ export interface BitrateDistribution {
 }
 
 export interface VideoCodecSWConfig {
-  getOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeOptions;
+  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeCommand;
 }
 
 export interface VideoCodecHWConfig extends VideoCodecSWConfig {
@@ -76,12 +82,11 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
 export interface IMediaRepository {
   // image
   extract(input: string, output: string): Promise<boolean>;
-  resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
-  crop(input: string, options: CropOptions): Promise<Buffer>;
+  generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void>;
   generateThumbhash(imagePath: string): Promise<Buffer>;
   getImageDimensions(input: string): Promise<ImageDimensions>;
 
   // video
   probe(input: string): Promise<VideoInfo>;
-  transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void>;
+  transcode(input: string, output: string | Writable, command: TranscodeCommand): Promise<void>;
 }

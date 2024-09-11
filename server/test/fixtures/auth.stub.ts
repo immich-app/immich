@@ -1,25 +1,8 @@
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
-
-export const adminSignupStub = {
-  name: 'Immich Admin',
-  email: 'admin@immich.app',
-  password: 'Password123',
-};
-
-export const userSignupStub = {
-  ...adminSignupStub,
-  memoriesEnabled: true,
-};
-
-export const loginStub = {
-  admin: {
-    email: 'admin@immich.app',
-    password: 'Password123',
-  },
-};
 
 export const authStub = {
   admin: Object.freeze<AuthDto>({
@@ -27,6 +10,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
   }),
   user1: Object.freeze<AuthDto>({
@@ -34,6 +18,7 @@ export const authStub = {
       id: 'user-id',
       email: 'immich@test.com',
       isAdmin: false,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     session: {
       id: 'token-id',
@@ -44,6 +29,7 @@ export const authStub = {
       id: 'user-2',
       email: 'user2@immich.app',
       isAdmin: false,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     session: {
       id: 'token-id',
@@ -54,6 +40,7 @@ export const authStub = {
       id: 'user-id',
       email: 'immich@test.com',
       isAdmin: false,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     session: {
       id: 'token-id',
@@ -64,6 +51,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',
@@ -78,6 +66,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',
@@ -92,6 +81,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',
@@ -105,6 +95,7 @@ export const authStub = {
       id: 'admin_id',
       email: 'admin@test.com',
       isAdmin: true,
+      metadata: [] as UserMetadataEntity[],
     } as UserEntity,
     sharedLink: {
       id: '123',

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -21,7 +21,6 @@ class LibraryResponseDto {
     required this.name,
     required this.ownerId,
     required this.refreshedAt,
-    required this.type,
     required this.updatedAt,
   });
 
@@ -41,8 +40,6 @@ class LibraryResponseDto {
 
   DateTime? refreshedAt;
 
-  LibraryType type;
-
   DateTime updatedAt;
 
   @override
@@ -55,7 +52,6 @@ class LibraryResponseDto {
     other.name == name &&
     other.ownerId == ownerId &&
     other.refreshedAt == refreshedAt &&
-    other.type == type &&
     other.updatedAt == updatedAt;
 
   @override
@@ -69,11 +65,10 @@ class LibraryResponseDto {
     (name.hashCode) +
     (ownerId.hashCode) +
     (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
-    (type.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -89,7 +84,6 @@ class LibraryResponseDto {
     } else {
     //  json[r'refreshedAt'] = null;
     }
-      json[r'type'] = this.type;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -114,7 +108,6 @@ class LibraryResponseDto {
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         refreshedAt: mapDateTime(json, r'refreshedAt', r''),
-        type: LibraryType.fromJson(json[r'type'])!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
@@ -171,7 +164,6 @@ class LibraryResponseDto {
     'name',
     'ownerId',
     'refreshedAt',
-    'type',
     'updatedAt',
   };
 }

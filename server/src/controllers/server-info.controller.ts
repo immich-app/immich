@@ -1,67 +1,83 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { EndpointLifecycle } from 'src/decorators';
 import {
+  ServerAboutResponseDto,
   ServerConfigDto,
   ServerFeaturesDto,
-  ServerInfoResponseDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
+  ServerStorageResponseDto,
   ServerThemeDto,
   ServerVersionResponseDto,
-} from 'src/dtos/server-info.dto';
-import { AdminRoute, Authenticated, PublicRoute } from 'src/middleware/auth.guard';
-import { ServerInfoService } from 'src/services/server-info.service';
+} from 'src/dtos/server.dto';
+import { Authenticated } from 'src/middleware/auth.guard';
+import { ServerService } from 'src/services/server.service';
+import { VersionService } from 'src/services/version.service';
 
+@ApiExcludeController()
 @ApiTags('Server Info')
 @Controller('server-info')
-@Authenticated()
 export class ServerInfoController {
-  constructor(private service: ServerInfoService) {}
+  constructor(
+    private service: ServerService,
+    private versionService: VersionService,
+  ) {}
 
-  @Get()
-  getServerInfo(): Promise<ServerInfoResponseDto> {
-    return this.service.getInfo();
+  @Get('about')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
+  @Authenticated()
+  getAboutInfo(): Promise<ServerAboutResponseDto> {
+    return this.service.getAboutInfo();
   }
 
-  @PublicRoute()
+  @Get('storage')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
+  @Authenticated()
+  getStorage(): Promise<ServerStorageResponseDto> {
+    return this.service.getStorage();
+  }
+
   @Get('ping')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   pingServer(): ServerPingResponse {
     return this.service.ping();
   }
 
-  @PublicRoute()
   @Get('version')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   getServerVersion(): ServerVersionResponseDto {
-    return this.service.getVersion();
+    return this.versionService.getVersion();
   }
 
-  @PublicRoute()
   @Get('features')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   getServerFeatures(): Promise<ServerFeaturesDto> {
     return this.service.getFeatures();
   }
 
-  @PublicRoute()
   @Get('theme')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   getTheme(): Promise<ServerThemeDto> {
     return this.service.getTheme();
   }
 
-  @PublicRoute()
   @Get('config')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   getServerConfig(): Promise<ServerConfigDto> {
     return this.service.getConfig();
   }
 
-  @AdminRoute()
   @Get('statistics')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
+  @Authenticated({ admin: true })
   getServerStatistics(): Promise<ServerStatsResponseDto> {
     return this.service.getStatistics();
   }
 
-  @PublicRoute()
   @Get('media-types')
+  @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return this.service.getSupportedMediaTypes();
   }

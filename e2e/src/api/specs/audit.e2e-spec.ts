@@ -2,7 +2,7 @@ import { deleteAssets, getAuditFiles, updateAsset, type LoginResponseDto } from 
 import { asBearerAuth, utils } from 'src/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-describe('/audit', () => {
+describe('/audits', () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {

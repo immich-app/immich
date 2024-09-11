@@ -13,6 +13,20 @@ Immich supports multiple users, each with their own library.
 
 <UserCreate />
 
+## Send new user email notification
+
+:::note
+This option is only available if an SMTP server has been configured in the administrator settings.
+:::
+
+Admin can send a welcome email if the Email option is set, you can learn here how to set up the SMTP server in Immich.
+
+<img
+  src={require('./img/send-user-email-notification.webp').default}
+  width="40%"
+  title="Send user email notification"
+/>
+
 ## Set Storage Quota For User
 
 Admin can specify the storage quota for the user as the instance's admin; once the limit is reached, the user won't be able to upload to the instance anymore.

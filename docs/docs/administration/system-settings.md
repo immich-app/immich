@@ -10,6 +10,59 @@ Viewing and modifying the system settings is restricted to the Administrator.
 You can always return to the default settings by clicking the `Reset to default` button.
 :::
 
+## Authentication Settings
+
+Manage password, OAuth, and other authentication settings
+
+### OAuth Authentication
+
+Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/docs/administration/oauth).
+
+### Password Authentication
+
+The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/docs/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
+
+:::tip
+You can always use the [Server CLI](/docs/administration/server-commands) to re-enable password login.
+:::
+
+## Image Settings (thumbnails and previews)
+
+- Thumbnails - Used in the main timeline.
+- Previews - Used in the asset viewer.
+
+By default Immich creates 3 thumbnails for each asset,
+Blurred (thumbhash) , Small - thumbnails (webp) , and Large - previews (jpeg/webp), using these settings you can change the quality for the thumbnails and previews files that are created.
+
+**Thumbnail format**  
+Allows you to choose the type of format you want for the Thumbnail images, Webp produces smaller files than jpeg, but is slower to encode.
+
+:::tip
+You can read in detail about the advantages and disadvantages of using webp over jpeg on [Adobe's website](https://www.adobe.com/creativecloud/file-types/image/raster/webp-file.html)
+:::
+
+**Thumbnail resolution**  
+Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
+
+**Preview format**  
+Allows you to choose the type of format you want for the Preview images, Webp produces smaller files than jpeg, but is slower to encode.
+
+**Preview resolution**  
+Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
+
+**Quality**  
+Image quality from 1-100. Higher is better for quality but produces larger files, this option affects the Preview and Thumbnail images.
+
+**Prefer wide gamut**  
+Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts.
+
+**Prefer embedded preview**  
+Use embedded previews in RAW photos as the input to image processing when available. This can produce more accurate colors for some images, but the quality of the preview is camera-dependent and the image may have more compression artifacts.
+
+:::tip
+The default resolution for Large thumbnails can be lowered from 1440p (default) to 1080p or 720p to save storage space.
+:::
+
 ## Job Settings
 
 Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
@@ -18,6 +71,11 @@ With higher concurrency, the host will work on more assets in parallel,
 this advice improves throughput, not latency, for example, it will make Smart Search jobs process more quickly, but it won't make searching faster.
 
 It is important to remember that jobs like Smart Search, Face Detection, Facial Recognition, and Transcode Videos require a **lot** of processing power and therefore do not exaggerate the amount of jobs because you're probably thoroughly overloading the server.
+
+:::danger IMPORTANT
+If you increase the concurrency from the defaults we set, especially for thumbnail generation, make sure you do not increase them past the amount of CPU cores you have available.
+Doing so can impact API responsiveness with no gain in thumbnail generation speed.
+:::
 
 :::info Facial Recognition Concurrency
 The Facial Recognition Concurrency value cannot be changed because
@@ -46,7 +104,7 @@ You can choose to disable a certain type of machine learning, for example smart 
 
 ### Smart Search
 
-The smart search settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
+The [smart search](/docs/features/smart-search) settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
 Smart Search job on all images to fully apply the change.
 
 :::info Internet connection
@@ -55,15 +113,23 @@ After downloading, there is no need for Immich to connect to the network
 Unless version checking has been enabled in the settings.
 :::
 
+### Duplicate Detection
+
+Use CLIP embeddings to find likely duplicates. The maximum detection distance can be configured in order to improve / reduce the level of accuracy.
+
+- **Maximum detection distance -** Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives.
+
 ### Facial Recognition
 
 Under these settings, you can change the facial recognition settings
 Editable settings:
 
-- **Facial Recognition Model -** Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model.
-- **Min Detection Score -** Minimum confidence score for a face to be detected from 0-1. Lower values will detect more faces but may result in false positives.
-- **Max Recognition Distance -** Maximum distance between two faces to be considered the same person, ranging from 0-2. Lowering this can prevent labeling two people as the same person, while raising it can prevent labeling the same person as two different people. Note that it is easier to merge two people than to split one person in two, so err on the side of a lower threshold when possible.
-- **Min Recognized Faces -** The minimum number of recognized faces for a person to be created (AKA: Core face). Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person.
+- **Facial Recognition Model**
+- **Min Detection Score**
+- **Max Recognition Distance**
+- **Min Recognized Faces**
+
+You can learn more about these options on the [Facial Recognition page](/docs/features/facial-recognition#how-face-detection-works)
 
 :::info
 When changing the values in Min Detection Score, Max Recognition Distance, and Min Recognized Faces.
@@ -87,23 +153,15 @@ The map can be adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for
 
 Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
-## OAuth Authentication
+## Notification Settings
 
-Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/docs/administration/oauth).
-
-## Password Authentication
-
-The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/docs/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
-
-:::tip
-You can always use the [Server CLI](/docs/administration/server-commands) to re-enable password login.
-:::
+SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/docs/administration/email-notification)
 
 ## Server Settings
 
 ### External Domain
 
-When set, will override the domain name used when viewing and copying a shared link.
+Overrides the domain name in shared links and email notifications. The URL should not include a trailing slash.
 
 ### Welcome Message
 
@@ -124,27 +182,6 @@ p {
   color: green;
 }
 ```
-
-## Thumbnail Settings
-
-By default Immich creates 3 thumbnails for each asset,
-Blurred (thumbhash) , Small (webp) , and Large (jpeg), using these settings you can change the quality for the thumbnail files that are created.
-
-**Small thumbnail resolution**  
-Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
-
-**Large thumbnail resolution**  
-Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
-
-**Quality**  
-Thumbnail quality from 1-100. Higher is better for quality but produces larger files.
-
-**Prefer wide gamut**  
-Use display p3 for thumbnails. This better preserves the vibrance of images with wide color spaces, but images may appear differently on old devices with an old browser version. Srgb images are kept as srgb to avoid color shifts.
-
-:::tip
-The default resolution for Large thumbnails can be lowered from 1440p (default) to 1080p or 720p to save storage space.
-:::
 
 ## Trash Settings
 

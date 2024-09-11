@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
@@ -26,7 +27,7 @@ class MemoryService {
   Future<List<Memory>?> getMemoryLane() async {
     try {
       final now = DateTime.now();
-      final data = await _apiService.assetApi.getMemoryLane(
+      final data = await _apiService.assetsApi.getMemoryLane(
         now.day,
         now.month,
       );
@@ -36,13 +37,20 @@ class MemoryService {
       }
 
       List<Memory> memories = [];
-      for (final MemoryLaneResponseDto(:title, :assets) in data) {
-        memories.add(
-          Memory(
-            title: title,
-            assets: await _db.assets.getAllByRemoteId(assets.map((e) => e.id)),
-          ),
-        );
+      for (final MemoryLaneResponseDto(:yearsAgo, :assets) in data) {
+        final dbAssets =
+            await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
+        if (dbAssets.isNotEmpty) {
+          final String title = yearsAgo <= 1
+              ? 'memories_year_ago'.tr()
+              : 'memories_years_ago'.tr(args: [yearsAgo.toString()]);
+          memories.add(
+            Memory(
+              title: title,
+              assets: dbAssets,
+            ),
+          );
+        }
       }
 
       return memories.isNotEmpty ? memories : null;

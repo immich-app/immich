@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumEntity, AssetOrder } from 'src/entities/album.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { LibraryType } from 'src/entities/library.entity';
-import { PartnerEntity } from 'src/entities/partner.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
+import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
 import {
   AssetBuilderOptions,
   AssetCreate,
@@ -18,11 +17,10 @@ import {
   AssetStats,
   AssetStatsOptions,
   AssetUpdateAllOptions,
+  AssetUpdateDuplicateOptions,
   AssetUpdateOptions,
   IAssetRepository,
   LivePhotoSearchOptions,
-  MapMarker,
-  MapMarkerSearchOptions,
   MonthDay,
   TimeBucketItem,
   TimeBucketOptions,
@@ -31,7 +29,7 @@ import {
   WithoutProperty,
 } from 'src/interfaces/asset.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
-import { OptionalBetween, searchAssetBuilder } from 'src/utils/database';
+import { searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
@@ -62,18 +60,17 @@ const dateTrunc = (options: TimeBucketOptions) =>
 export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
+    @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
     @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
-    @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
-    @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
-  async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void> {
+  async upsertJobStatus(...jobStatus: Partial<AssetJobStatusEntity>[]): Promise<void> {
     await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
   }
 
@@ -89,7 +86,6 @@ export class AssetRepository implements IAssetRepository {
         `entity.ownerId IN (:...ownerIds)
       AND entity.isVisible = true
       AND entity.isArchived = false
-      AND entity.previewPath IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
       AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
@@ -99,6 +95,7 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('entity.files', 'files')
       .orderBy('entity.localDateTime', 'ASC')
       .getMany();
   }
@@ -133,6 +130,7 @@ export class AssetRepository implements IAssetRepository {
         stack: {
           assets: true,
         },
+        files: true,
       },
       withDeleted: true,
     });
@@ -157,6 +155,20 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  async getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<string[]> {
+    const assets = await this.repository.find({
+      select: { deviceAssetId: true },
+      where: {
+        deviceAssetId: In(deviceAssetIds),
+        deviceId,
+        ownerId,
+      },
+      withDeleted: true,
+    });
+
+    return assets.map((asset) => asset.deviceAssetId);
+  }
+
   getByUserId(
     pagination: PaginationOptions,
     userId: string,
@@ -176,7 +188,8 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
-      where: { library: { id: libraryId }, originalPath: originalPath },
+      where: { library: { id: libraryId }, originalPath },
+      withDeleted: true,
     });
   }
 
@@ -204,7 +217,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
-    let builder = this.repository.createQueryBuilder('asset');
+    let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
     return paginatedBuilder<AssetEntity>(builder, {
@@ -237,6 +250,16 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getLivePhotoCount(motionId: string): Promise<number> {
+    return this.repository.count({
+      where: {
+        livePhotoVideoId: motionId,
+      },
+      withDeleted: true,
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   getById(
     id: string,
     relations: FindOptionsRelations<AssetEntity>,
@@ -257,6 +280,21 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.update({ id: In(ids) }, options);
   }
 
+  @GenerateSql({
+    params: [{ targetDuplicateId: DummyValue.UUID, duplicateIds: [DummyValue.UUID], assetIds: [DummyValue.UUID] }],
+  })
+  async updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ duplicateId: options.targetDuplicateId })
+      .where({
+        duplicateId: In(options.duplicateIds),
+      })
+      .orWhere({ id: In(options.assetIds) })
+      .execute();
+  }
+
   @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
     await this.repository.softDelete({ id: In(ids) });
@@ -275,9 +313,39 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.remove(asset);
   }
 
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, libraryId: DummyValue.UUID, checksum: DummyValue.BUFFER }] })
+  getByChecksum({
+    ownerId,
+    libraryId,
+    checksum,
+  }: {
+    ownerId: string;
+    checksum: Buffer;
+    libraryId?: string;
+  }): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: {
+        ownerId,
+        libraryId: libraryId || IsNull(),
+        checksum,
+      },
+    });
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  getByChecksum(libraryId: string, checksum: Buffer): Promise<AssetEntity | null> {
-    return this.repository.findOne({ where: { libraryId, checksum } });
+  getByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      select: {
+        id: true,
+        checksum: true,
+        deletedAt: true,
+      },
+      where: {
+        ownerId,
+        checksum: In(checksums),
+      },
+      withDeleted: true,
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
@@ -287,9 +355,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         ownerId,
         checksum,
-        library: {
-          type: LibraryType.UPLOAD,
-        },
+        library: IsNull(),
       },
       withDeleted: true,
     });
@@ -298,12 +364,13 @@ export class AssetRepository implements IAssetRepository {
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
-    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+    const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
 
     return this.repository.findOne({
       where: {
         id: Not(otherAssetId),
         ownerId,
+        libraryId: libraryId || IsNull(),
         type,
         exifInfo: {
           livePhotoCID,
@@ -317,7 +384,7 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql(
     ...Object.values(WithProperty)
-      .filter((property) => property !== WithProperty.IS_OFFLINE)
+      .filter((property) => property !== WithProperty.IS_OFFLINE && property !== WithProperty.IS_ONLINE)
       .map((property) => ({
         name: property,
         params: [DummyValue.PAGINATION, property],
@@ -329,11 +396,10 @@ export class AssetRepository implements IAssetRepository {
 
     switch (property) {
       case WithoutProperty.THUMBNAIL: {
+        relations = { jobStatus: true, files: true };
         where = [
-          { previewPath: IsNull(), isVisible: true },
-          { previewPath: '', isVisible: true },
-          { thumbnailPath: IsNull(), isVisible: true },
-          { thumbnailPath: '', isVisible: true },
+          { jobStatus: { previewAt: IsNull() }, isVisible: true },
+          { jobStatus: { thumbnailAt: IsNull() }, isVisible: true },
           { thumbhash: IsNull(), isVisible: true },
         ];
         break;
@@ -367,9 +433,21 @@ export class AssetRepository implements IAssetRepository {
         };
         where = {
           isVisible: true,
-          previewPath: Not(IsNull()),
+          jobStatus: { previewAt: Not(IsNull()) },
           smartSearch: {
             embedding: IsNull(),
+          },
+        };
+        break;
+      }
+
+      case WithoutProperty.DUPLICATE: {
+        where = {
+          isVisible: true,
+          smartSearch: true,
+          jobStatus: {
+            previewAt: Not(IsNull()),
+            duplicatesDetectedAt: IsNull(),
           },
         };
         break;
@@ -380,7 +458,9 @@ export class AssetRepository implements IAssetRepository {
           smartInfo: true,
         };
         where = {
-          previewPath: Not(IsNull()),
+          jobStatus: {
+            previewAt: Not(IsNull()),
+          },
           isVisible: true,
           smartInfo: {
             tags: IsNull(),
@@ -395,13 +475,13 @@ export class AssetRepository implements IAssetRepository {
           jobStatus: true,
         };
         where = {
-          previewPath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: IsNull(),
             personId: IsNull(),
           },
           jobStatus: {
+            previewAt: Not(IsNull()),
             facesRecognizedAt: IsNull(),
           },
         };
@@ -413,7 +493,9 @@ export class AssetRepository implements IAssetRepository {
           faces: true,
         };
         where = {
-          previewPath: Not(IsNull()),
+          jobStatus: {
+            previewAt: Not(IsNull()),
+          },
           isVisible: true,
           faces: {
             assetId: Not(IsNull()),
@@ -446,7 +528,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity> {
+  getWith(
+    pagination: PaginationOptions,
+    property: WithProperty,
+    libraryId?: string,
+    withDeleted = false,
+  ): Paginated<AssetEntity> {
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
     switch (property) {
@@ -458,7 +545,14 @@ export class AssetRepository implements IAssetRepository {
         if (!libraryId) {
           throw new Error('Library id is required when finding offline assets');
         }
-        where = [{ isOffline: true, libraryId: libraryId }];
+        where = [{ isOffline: true, libraryId }];
+        break;
+      }
+      case WithProperty.IS_ONLINE: {
+        if (!libraryId) {
+          throw new Error('Library id is required when finding online assets');
+        }
+        where = [{ isOffline: false, libraryId }];
         break;
       }
 
@@ -469,6 +563,7 @@ export class AssetRepository implements IAssetRepository {
 
     return paginate(this.repository, pagination, {
       where,
+      withDeleted,
       order: {
         // Ensures correct order when paginating
         createdAt: 'ASC',
@@ -488,49 +583,6 @@ export class AssetRepository implements IAssetRepository {
       where: { albums: { id: albumId } },
       order: { updatedAt: 'DESC' },
     });
-  }
-
-  async getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
-
-    const assets = await this.repository.find({
-      select: {
-        id: true,
-        exifInfo: {
-          city: true,
-          state: true,
-          country: true,
-          latitude: true,
-          longitude: true,
-        },
-      },
-      where: {
-        ownerId: In([...ownerIds]),
-        isVisible: true,
-        isArchived,
-        exifInfo: {
-          latitude: Not(IsNull()),
-          longitude: Not(IsNull()),
-        },
-        isFavorite,
-        fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-      },
-      relations: {
-        exifInfo: true,
-      },
-      order: {
-        fileCreatedAt: 'DESC',
-      },
-    });
-
-    return assets.map((asset) => ({
-      id: asset.id,
-      lat: asset.exifInfo!.latitude!,
-      lon: asset.exifInfo!.longitude!,
-      city: asset.exifInfo!.city,
-      state: asset.exifInfo!.state,
-      country: asset.exifInfo!.country,
-    }));
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
@@ -571,15 +623,14 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
-    // can't use queryBuilder because of custom OFFSET clause
-    return this.repository.query(
-      `SELECT *
-       FROM assets
-       WHERE "ownerId" = $1
-       OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS WHERE "ownerId" = $1)) LIMIT $2`,
-      [ownerId, count],
-    );
+    const builder = this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: true,
+    });
+
+    return builder.orderBy('RANDOM()').limit(count).getMany();
   }
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
@@ -605,6 +656,13 @@ export class AssetRepository implements IAssetRepository {
         .addOrderBy('asset.fileCreatedAt', options.order === AssetOrder.ASC ? 'ASC' : 'DESC')
         .getMany()
     );
+  }
+
+  @GenerateSql({ params: [{ userIds: [DummyValue.UUID, DummyValue.UUID] }] })
+  getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]> {
+    return this.getBuilder({ ...options, isDuplicate: true })
+      .orderBy('asset.duplicateId')
+      .getMany();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
@@ -666,16 +724,24 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: AssetBuilderOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked, exifInfo, assetType } = options;
-
     const builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
-    if (assetType !== undefined) {
-      builder.andWhere('asset.type = :assetType', { assetType });
+
+    if (options.assetType !== undefined) {
+      builder.andWhere('asset.type = :assetType', { assetType: options.assetType });
+    }
+
+    if (options.tagId) {
+      builder.innerJoin(
+        'asset.tags',
+        'asset_tags',
+        'asset_tags.id IN (SELECT id_descendant FROM tags_closure WHERE id_ancestor = :tagId)',
+        { tagId: options.tagId },
+      );
     }
 
     let stackJoined = false;
 
-    if (exifInfo !== false) {
+    if (options.exifInfo !== false) {
       stackJoined = true;
       builder
         .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
@@ -683,34 +749,38 @@ export class AssetRepository implements IAssetRepository {
         .leftJoinAndSelect('stack.assets', 'stackedAssets');
     }
 
-    if (albumId) {
-      builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+    if (options.albumId) {
+      builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId: options.albumId });
     }
 
-    if (userIds) {
-      builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
+    if (options.userIds) {
+      builder.andWhere('asset.ownerId IN (:...userIds )', { userIds: options.userIds });
     }
 
-    if (isArchived !== undefined) {
-      builder.andWhere('asset.isArchived = :isArchived', { isArchived });
+    if (options.isArchived !== undefined) {
+      builder.andWhere('asset.isArchived = :isArchived', { isArchived: options.isArchived });
     }
 
-    if (isFavorite !== undefined) {
-      builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    if (options.isFavorite !== undefined) {
+      builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite: options.isFavorite });
     }
 
-    if (isTrashed !== undefined) {
-      builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+    if (options.isTrashed !== undefined) {
+      builder.andWhere(`asset.deletedAt ${options.isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
     }
 
-    if (personId !== undefined) {
+    if (options.isDuplicate !== undefined) {
+      builder.andWhere(`asset.duplicateId ${options.isDuplicate ? 'IS NOT NULL' : 'IS NULL'}`);
+    }
+
+    if (options.personId !== undefined) {
       builder
         .innerJoin('asset.faces', 'faces')
         .innerJoin('faces.person', 'person')
-        .andWhere('person.id = :personId', { personId });
+        .andWhere('person.id = :personId', { personId: options.personId });
     }
 
-    if (withStacked) {
+    if (options.withStacked) {
       if (!stackJoined) {
         builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
       }
@@ -727,44 +797,96 @@ export class AssetRepository implements IAssetRepository {
       {
         ownerId: DummyValue.UUID,
         lastCreationDate: DummyValue.DATE,
-        lastId: DummyValue.STRING,
+        lastId: DummyValue.UUID,
         updatedUntil: DummyValue.DATE,
         limit: 10,
       },
     ],
   })
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]> {
-    const { ownerId, isArchived, withStacked, lastCreationDate, lastId, updatedUntil, limit } = options;
+    const { ownerId, lastId, updatedUntil, limit } = options;
     const builder = this.getBuilder({
       userIds: [ownerId],
-      exifInfo: true,
-      withStacked,
-      isArchived,
-    });
+      exifInfo: false, // need to do this manually because `exifInfo: true` also loads stacked assets messing with `limit`
+      withStacked: false, // return all assets individually as expected by the app
+    })
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack')
+      .loadRelationCountAndMap('stack.assetCount', 'stack.assets', 'stackedAssetsCount');
 
-    if (lastCreationDate !== undefined && lastId !== undefined) {
-      builder.andWhere('(asset.fileCreatedAt, asset.id) < (:lastCreationDate, :lastId)', {
-        lastCreationDate,
-        lastId,
-      });
+    if (lastId !== undefined) {
+      builder.andWhere('asset.id > :lastId', { lastId });
     }
-
-    return builder
+    builder
       .andWhere('asset.updatedAt <= :updatedUntil', { updatedUntil })
-      .orderBy('asset.fileCreatedAt', 'DESC')
-      .addOrderBy('asset.id', 'DESC')
-      .limit(limit)
-      .withDeleted()
-      .getMany();
+      .orderBy('asset.id', 'ASC')
+      .limit(limit) // cannot use `take` for performance reasons
+      .withDeleted();
+    return builder.getMany();
   }
 
   @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE }] })
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]> {
-    const builder = this.getBuilder({ userIds: options.userIds, exifInfo: true, withStacked: true })
+    const builder = this.getBuilder({
+      userIds: options.userIds,
+      exifInfo: false, // need to do this manually because `exifInfo: true` also loads stacked assets messing with `limit`
+      withStacked: false, // return all assets individually as expected by the app
+    })
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack')
+      .loadRelationCountAndMap('stack.assetCount', 'stack.assets', 'stackedAssetsCount')
       .andWhere({ updatedAt: MoreThan(options.updatedAfter) })
-      .take(options.limit)
+      .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
-
     return builder.getMany();
+  }
+
+  async getUniqueOriginalPaths(userId: string): Promise<string[]> {
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: false,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
+    });
+
+    const results = await builder
+      .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
+      .getRawMany();
+
+    return results.map((row: { directoryPath: string }) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
+    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
+
+    const builder = this.getBuilder({
+      userIds: [userId],
+      exifInfo: true,
+      withStacked: false,
+      isArchived: false,
+      isTrashed: false,
+    });
+
+    const assets = await builder
+      .where('asset.ownerId = :userId', { userId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('asset.originalPath LIKE :likePath', { likePath: `%${normalizedPath}/%` }).andWhere(
+            'asset.originalPath NOT LIKE :notLikePath',
+            { notLikePath: `%${normalizedPath}/%/%` },
+          );
+        }),
+      )
+      .orderBy(String.raw`regexp_replace(asset.originalPath, '.*/(.+)', '\1')`, 'ASC')
+      .getMany();
+
+    return assets;
+  }
+
+  @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
+  async upsertFile({ assetId, type, path }: { assetId: string; type: AssetFileType; path: string }): Promise<void> {
+    await this.fileRepository.upsert({ assetId, type, path }, { conflictPaths: ['assetId', 'type'] });
   }
 }

@@ -10,25 +10,26 @@ import {
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
 } from 'src/dtos/shared-link.dto';
-import { Auth, Authenticated, GetLoginDetails, SharedLinkRoute } from 'src/middleware/auth.guard';
+import { Permission } from 'src/enum';
+import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { respondWithCookie } from 'src/utils/response';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Shared Link')
-@Controller('shared-link')
-@Authenticated()
+@ApiTags('Shared Links')
+@Controller('shared-links')
 export class SharedLinkController {
   constructor(private service: SharedLinkService) {}
 
   @Get()
+  @Authenticated({ permission: Permission.SHARED_LINK_READ })
   getAllSharedLinks(@Auth() auth: AuthDto): Promise<SharedLinkResponseDto[]> {
     return this.service.getAll(auth);
   }
 
-  @SharedLinkRoute()
   @Get('me')
+  @Authenticated({ sharedLink: true })
   async getMySharedLink(
     @Auth() auth: AuthDto,
     @Query() dto: SharedLinkPasswordDto,
@@ -48,16 +49,19 @@ export class SharedLinkController {
   }
 
   @Get(':id')
+  @Authenticated({ permission: Permission.SHARED_LINK_READ })
   getSharedLinkById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Post()
+  @Authenticated({ permission: Permission.SHARED_LINK_CREATE })
   createSharedLink(@Auth() auth: AuthDto, @Body() dto: SharedLinkCreateDto) {
     return this.service.create(auth, dto);
   }
 
   @Patch(':id')
+  @Authenticated({ permission: Permission.SHARED_LINK_UPDATE })
   updateSharedLink(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -67,12 +71,13 @@ export class SharedLinkController {
   }
 
   @Delete(':id')
+  @Authenticated({ permission: Permission.SHARED_LINK_DELETE })
   removeSharedLink(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 
-  @SharedLinkRoute()
   @Put(':id/assets')
+  @Authenticated({ sharedLink: true })
   addSharedLinkAssets(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -81,8 +86,8 @@ export class SharedLinkController {
     return this.service.addAssets(auth, id, dto);
   }
 
-  @SharedLinkRoute()
   @Delete(':id/assets')
+  @Authenticated({ sharedLink: true })
   removeSharedLinkAssets(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

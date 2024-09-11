@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UploadFieldName } from 'src/dtos/asset.dto';
-import { UserAvatarColor, UserEntity } from 'src/entities/user.entity';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 
 export class CreateProfileImageDto {
   @ApiProperty({ type: 'string', format: 'binary' })
@@ -14,15 +13,7 @@ export class CreateProfileImageResponseDto {
 
 export function mapCreateProfileImageResponse(userId: string, profileImagePath: string): CreateProfileImageResponseDto {
   return {
-    userId: userId,
-    profileImagePath: profileImagePath,
+    userId,
+    profileImagePath,
   };
 }
-
-export const getRandomAvatarColor = (user: UserEntity): UserAvatarColor => {
-  const values = Object.values(UserAvatarColor);
-  const randomIndex = Math.floor(
-    [...user.email].map((letter) => letter.codePointAt(0) ?? 0).reduce((a, b) => a + b, 0) % values.length,
-  );
-  return values[randomIndex] as UserAvatarColor;
-};

@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
-import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
+import 'package:immich_mobile/widgets/search/explore_grid.dart';
 
 @RoutePage()
 class AllPlacesPage extends HookConsumerWidget {
@@ -22,7 +22,7 @@ class AllPlacesPage extends HookConsumerWidget {
           'curated_location_page_title',
         ).tr(),
         leading: IconButton(
-          onPressed: () => context.popRoute(),
+          onPressed: () => context.maybePop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),

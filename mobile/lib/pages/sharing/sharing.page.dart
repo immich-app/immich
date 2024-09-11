@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
-import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
+import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
-import 'package:immich_mobile/modules/partner/ui/partner_list.dart';
+import 'package:immich_mobile/widgets/partner/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
-import 'package:immich_mobile/shared/ui/immich_thumbnail.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 @RoutePage()
 class SharingPage extends HookConsumerWidget {
@@ -83,20 +84,24 @@ class SharingPage extends HookConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.primaryColor,
+                  color: context.colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: isOwner
                   ? Text(
                       'album_thumbnail_owned'.tr(),
-                      style: context.textTheme.bodyMedium,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.colorScheme.onSurfaceSecondary,
+                      ),
                     )
                   : album.ownerName != null
                       ? Text(
                           'album_thumbnail_shared_by'
                               .tr(args: [album.ownerName!]),
-                          style: context.textTheme.bodyMedium,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: context.colorScheme.onSurfaceSecondary,
+                          ),
                         )
                       : null,
               onTap: () => context
@@ -166,11 +171,13 @@ class SharingPage extends HookConsumerWidget {
           padding: const EdgeInsets.all(8.0),
           child: Card(
             elevation: 0,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
               side: BorderSide(
-                color: Colors.grey,
-                width: 0.5,
+                color: context.isDarkTheme
+                    ? const Color(0xFF383838)
+                    : Colors.black12,
+                width: 1,
               ),
             ),
             child: Padding(
@@ -220,51 +227,56 @@ class SharingPage extends HookConsumerWidget {
       );
     }
 
-    return Scaffold(
-      appBar: ImmichAppBar(
-        action: sharePartnerButton(),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: buildTopBottons()),
-          if (partner.isNotEmpty)
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+      },
+      child: Scaffold(
+        appBar: ImmichAppBar(
+          action: sharePartnerButton(),
+        ),
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: buildTopBottons()),
+            if (partner.isNotEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.all(12),
+                sliver: SliverToBoxAdapter(
+                  child: Text(
+                    "partner_page_title",
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ).tr(),
+                ),
+              ),
+            if (partner.isNotEmpty) PartnerList(partner: partner),
             SliverPadding(
               padding: const EdgeInsets.all(12),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  "partner_page_title",
+                  "sharing_page_album",
                   style: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                 ).tr(),
               ),
             ),
-          if (partner.isNotEmpty) PartnerList(partner: partner),
-          SliverPadding(
-            padding: const EdgeInsets.all(12),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                "sharing_page_album",
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ).tr(),
-            ),
-          ),
-          SliverLayoutBuilder(
-            builder: (context, constraints) {
-              if (sharedAlbums.isEmpty) {
-                return buildEmptyListIndication();
-              }
+            SliverLayoutBuilder(
+              builder: (context, constraints) {
+                if (sharedAlbums.isEmpty) {
+                  return buildEmptyListIndication();
+                }
 
-              if (constraints.crossAxisExtent < 600) {
-                return buildAlbumList();
-              } else {
-                return buildAlbumGrid();
-              }
-            },
-          ),
-        ],
+                if (constraints.crossAxisExtent < 600) {
+                  return buildAlbumList();
+                } else {
+                  return buildAlbumGrid();
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

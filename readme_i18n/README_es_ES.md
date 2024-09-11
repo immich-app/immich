@@ -1,7 +1,7 @@
 <p align="center">
   <br/>
   <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="Licencia: MIT"></a>
-  <a href="https://discord.gg/D8JsnBEuKb">
+  <a href="https://discord.immich.app">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
   </a>
   <br/>
@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Iniciar sesión con URL personalizada">
 </p>
-<h3 align="center">Immich: Una solución Self-Hosted de copia de seguridad de fotos y videos de alto rendimiento</h3>
+<h3 align="center">Immich: Una solución Self-Hosted de alto rendimiento para la copia de seguridad de fotos y videos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="Captura de pantalla principal">
@@ -28,46 +28,50 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_sv_SE.md">Svenska</a>
+  <a href="README_ar_JO.md">العربية</a>
 </p>
 
-## Descargo de responsabilidad
+## Advertencia
 
-- ⚠️ El proyecto está en **desarrollo muy activo**.
+- ⚠️ El proyecto está en **activo desarrollo**.
 - ⚠️ Es probable que haya errores y cambios disruptivos.
 - ⚠️ **¡No utilices la aplicación como única forma de almacenar tus fotos y videos!**
+- ⚠️ Siempre sigue el plan de backups [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) para tus fotos y videos.
 
 ## Contenido
 
 - [Documentación oficial](https://immich.app/docs)
 - [Hoja de ruta](https://github.com/orgs/immich-app/projects/1)
-- [Demostración](#demo)
-- [Funciones](#features)
+- [Demo](#demo)
+- [Funciones](#funciones)
 - [Introducción](https://immich.app/docs/overview/introduction)
 - [Instalación](https://immich.app/docs/install/requirements)
 - [Directrices para contribuir](https://immich.app/docs/overview/support-the-project)
 
 ## Documentación
 
-Puedes encontrar la documentación principal, incluidas las guías de instalación, en <https://immich.app/>.
+Puedes encontrar la documentación oficial, incluidas las guías de instalación, en <https://immich.app/>.
 
-## Demostración
+## Demo
 
 Puedes acceder a la demostración web en <https://demo.immich.app>
 
-Para la aplicación móvil, puedes usar `https://demo.immich.app/api` como `URL de la terminal del servidor`.
+Para la aplicación móvil, puedes usar `https://demo.immich.app/api` en la `URL de la terminal del servidor`.
 
-```bash title="Credenciales de la demostración"
-Las credenciales son
-correo electrónico: demo@immich.app
+```bash title="Credenciales de la demo"
+Las Credenciales
+correo: demo@immich.app
 contraseña: demo
 ```
 
 ```bash
-Especificaciones: VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cuatro núcleos a 2.4 GHz, 24 GB de RAM
+Especificaciones: Una VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cuatro núcleos a 2.4 GHz, 24 GB de RAM
 ```
 
-## Funcionalidades
+## Funciones
 
 | Funcionalidades                                       | Móvil | Web |
 | ----------------------------------------------------- | ------ | --- |
@@ -96,3 +100,19 @@ Especificaciones: VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de cua
 | Recuerdos (hace x años)                              | Sí     | Sí  |
 | Soporte sin conexión                                 | Sí     | No  |
 | Galería de solo lectura                              | Sí     | Sí  |
+
+## Contribuidores
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>
+
+## Historial de Estrellas
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>
