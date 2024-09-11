@@ -8,11 +8,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/main.dart';
+import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/album/albumv2.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 enum QuickFilterMode {
@@ -23,7 +26,10 @@ enum QuickFilterMode {
 
 @RoutePage()
 class AlbumsCollectionPage extends HookConsumerWidget {
-  const AlbumsCollectionPage({super.key});
+  const AlbumsCollectionPage({super.key, this.showImmichAppbar = false});
+
+  final bool showImmichAppbar;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums =
@@ -72,7 +78,13 @@ class AlbumsCollectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Albums ${albums.length}"),
+        title: showImmichAppbar ? null : Text('albums'.tr()),
+        bottom: showImmichAppbar
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(0),
+                child: ImmichAppBar(),
+              )
+            : null,
       ),
       body: ListView(
         shrinkWrap: true,
@@ -170,9 +182,11 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
-                        child: ListTile(
+                        child: LargeLeadingTile(
                           title: Text(
                             sorted[index].name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: context.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -180,6 +194,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                           subtitle: sorted[index].ownerId == userId
                               ? Text(
                                   '${sorted[index].assetCount} items',
+                                  overflow: TextOverflow.ellipsis,
                                   style: context.textTheme.bodyMedium?.copyWith(
                                     color:
                                         context.colorScheme.onSurfaceSecondary,
@@ -192,6 +207,7 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                                           sorted[index].ownerName!,
                                         ],
                                       )}',
+                                      overflow: TextOverflow.ellipsis,
                                       style: context.textTheme.bodyMedium
                                           ?.copyWith(
                                         color: context
@@ -202,19 +218,19 @@ class AlbumsCollectionPage extends HookConsumerWidget {
                           onTap: () => context.pushRoute(
                             AlbumViewerRoute(albumId: sorted[index].id),
                           ),
-                          contentPadding: const EdgeInsets.all(0),
-                          dense: false,
-                          visualDensity: VisualDensity.comfortable,
+                          leadingPadding: const EdgeInsets.only(
+                            right: 16,
+                          ),
                           leading: ClipRRect(
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(15)),
                             child: ImmichThumbnail(
                               asset: sorted[index].thumbnail.value,
-                              width: 60,
-                              height: 90,
+                              width: 80,
+                              height: 80,
                             ),
                           ),
-                          minVerticalPadding: 1,
+                          // minVerticalPadding: 1,
                         ),
                       );
                     },

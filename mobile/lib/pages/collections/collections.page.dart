@@ -154,11 +154,11 @@ class AlbumsCollectionCard extends HookConsumerWidget {
     final size = MediaQuery.of(context).size.width * 0.5 - 20;
 
     return GestureDetector(
-      onTap: () => context.pushRoute(
-        isLocal
-            ? const LocalAlbumsCollectionRoute()
-            : const AlbumsCollectionRoute(),
-      ),
+      onTap: () => isLocal
+          ? context.pushRoute(
+              const LocalAlbumsCollectionRoute(),
+            )
+          : context.pushRoute(AlbumsCollectionRoute()),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

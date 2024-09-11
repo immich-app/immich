@@ -78,6 +78,18 @@ class TabControllerPage extends HookConsumerWidget {
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.photo_album_outlined),
+            selectedIcon: const Icon(Icons.photo_album),
+            label: const Text('albums').tr(),
+          ),
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.space_dashboard_outlined),
+            selectedIcon: const Icon(Icons.space_dashboard_rounded),
+            label: const Text('collections').tr(),
+          ),
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.search_rounded),
             selectedIcon: const Icon(Icons.search),
             label: const Text('tab_controller_nav_search').tr(),
@@ -94,18 +106,6 @@ class TabControllerPage extends HookConsumerWidget {
           //   selectedIcon: const Icon(Icons.photo_album),
           //   label: const Text('tab_controller_nav_library').tr(),
           // ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.photo_album_outlined),
-            selectedIcon: const Icon(Icons.photo_album),
-            label: const Text('albums').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.space_dashboard_outlined),
-            selectedIcon: const Icon(Icons.space_dashboard_rounded),
-            label: const Text('collections').tr(),
-          ),
         ],
       );
     }
@@ -132,6 +132,30 @@ class TabControllerPage extends HookConsumerWidget {
             selectedIcon: buildIcon(
               Icon(
                 Icons.photo_library,
+                color: context.primaryColor,
+              ),
+            ),
+          ),
+          NavigationDestination(
+            label: 'albums'.tr(),
+            icon: const Icon(
+              Icons.photo_album_outlined,
+            ),
+            selectedIcon: buildIcon(
+              Icon(
+                Icons.photo_album_rounded,
+                color: context.primaryColor,
+              ),
+            ),
+          ),
+          NavigationDestination(
+            label: 'collections'.tr(),
+            icon: const Icon(
+              Icons.space_dashboard_outlined,
+            ),
+            selectedIcon: buildIcon(
+              Icon(
+                Icons.space_dashboard_rounded,
                 color: context.primaryColor,
               ),
             ),
@@ -168,43 +192,19 @@ class TabControllerPage extends HookConsumerWidget {
           //     ),
           //   ),
           // ),
-          NavigationDestination(
-            label: 'albums'.tr(),
-            icon: const Icon(
-              Icons.photo_album_outlined,
-            ),
-            selectedIcon: buildIcon(
-              Icon(
-                Icons.photo_album_rounded,
-                color: context.primaryColor,
-              ),
-            ),
-          ),
-          NavigationDestination(
-            label: 'collections'.tr(),
-            icon: const Icon(
-              Icons.space_dashboard_outlined,
-            ),
-            selectedIcon: buildIcon(
-              Icon(
-                Icons.space_dashboard_rounded,
-                color: context.primaryColor,
-              ),
-            ),
-          ),
         ],
       );
     }
 
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
-      routes: const [
-        PhotosRoute(),
-        SearchRoute(),
+      routes: [
+        const PhotosRoute(),
+        AlbumsCollectionRoute(showImmichAppbar: true),
+        const CollectionsRoute(),
         // SharingRoute(),
         // LibraryRoute(),
-        AlbumsCollectionRoute(),
-        CollectionsRoute(),
+        const SearchRoute(),
       ],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(

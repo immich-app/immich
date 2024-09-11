@@ -321,10 +321,17 @@ class AlbumViewerRouteArgs {
 
 /// generated route for
 /// [AlbumsCollectionPage]
-class AlbumsCollectionRoute extends PageRouteInfo<void> {
-  const AlbumsCollectionRoute({List<PageRouteInfo>? children})
-      : super(
+class AlbumsCollectionRoute extends PageRouteInfo<AlbumsCollectionRouteArgs> {
+  AlbumsCollectionRoute({
+    Key? key,
+    bool showImmichAppbar = false,
+    List<PageRouteInfo>? children,
+  }) : super(
           AlbumsCollectionRoute.name,
+          args: AlbumsCollectionRouteArgs(
+            key: key,
+            showImmichAppbar: showImmichAppbar,
+          ),
           initialChildren: children,
         );
 
@@ -333,9 +340,30 @@ class AlbumsCollectionRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const AlbumsCollectionPage();
+      final args = data.argsAs<AlbumsCollectionRouteArgs>(
+          orElse: () => const AlbumsCollectionRouteArgs());
+      return AlbumsCollectionPage(
+        key: args.key,
+        showImmichAppbar: args.showImmichAppbar,
+      );
     },
   );
+}
+
+class AlbumsCollectionRouteArgs {
+  const AlbumsCollectionRouteArgs({
+    this.key,
+    this.showImmichAppbar = false,
+  });
+
+  final Key? key;
+
+  final bool showImmichAppbar;
+
+  @override
+  String toString() {
+    return 'AlbumsCollectionRouteArgs{key: $key, showImmichAppbar: $showImmichAppbar}';
+  }
 }
 
 /// generated route for

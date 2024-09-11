@@ -6,8 +6,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/search/search_curated_content.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -100,33 +100,25 @@ class PlaceTile extends StatelessWidget {
       );
     }
 
-    return InkWell(
+    return LargeLeadingTile(
       onTap: () => navigateToPlace(),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: CachedNetworkImage(
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                imageUrl: thumbnailUrl,
-                httpHeaders: ApiService.getRequestHeaders(),
-                errorWidget: (context, url, error) =>
-                    const Icon(Icons.image_not_supported_outlined),
-              ),
-            ),
-          ),
-          Text(
-            name,
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+      title: Text(
+        name,
+        style: context.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: CachedNetworkImage(
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+          imageUrl: thumbnailUrl,
+          httpHeaders: ApiService.getRequestHeaders(),
+          errorWidget: (context, url, error) =>
+              const Icon(Icons.image_not_supported_outlined),
+        ),
       ),
     );
   }
