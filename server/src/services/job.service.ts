@@ -290,7 +290,6 @@ export class JobService {
       }
 
       case JobName.GENERATE_THUMBNAIL: {
-        console.log({ data: item.data });
         if (!(item.data.notify || item.data.source === 'upload')) {
           break;
         }
