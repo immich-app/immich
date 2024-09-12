@@ -26,7 +26,7 @@ class FaceRecognizer(InferenceModel):
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
-        if self.batch and session.get_inputs()[0].shape[0] != "batch":
+        if self.batch and str(session.get_inputs()[0].shape[0]) != "batch":
             self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
         self.model = ArcFaceONNX(
