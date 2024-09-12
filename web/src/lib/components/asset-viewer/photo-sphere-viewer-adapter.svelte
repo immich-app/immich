@@ -1,14 +1,14 @@
 <script lang="ts">
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import {
+    EquirectangularAdapter,
     Viewer,
     events,
-    EquirectangularAdapter,
-    type PluginConstructor,
     type AdapterConstructor,
+    type PluginConstructor,
   } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
   import { onDestroy, onMount } from 'svelte';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
 
   export let panorama: string | { source: string };
   export let originalImageUrl: string | null;

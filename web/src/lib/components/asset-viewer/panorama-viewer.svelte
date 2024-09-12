@@ -1,13 +1,12 @@
 <script lang="ts">
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { getAssetOriginalUrl, getKey } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { AssetMediaSize, AssetTypeEnum, viewAsset, type AssetResponseDto } from '@immich/sdk';
   import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
-
-  import { t } from 'svelte-i18n';
 
   export let asset: { id: string; type: AssetTypeEnum.Video } | AssetResponseDto;
 
