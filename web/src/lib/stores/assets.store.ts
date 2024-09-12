@@ -661,7 +661,7 @@ export class AssetStore {
     const updatedBuckets = new Set<AssetBucket>();
 
     for (const asset of assets) {
-      const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+      const timeBucket = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month').toString();
       let bucket = this.getBucketByDate(timeBucket);
 
       if (!bucket) {
@@ -791,7 +791,7 @@ export class AssetStore {
     if (assets.length === 0) {
       return;
     }
-    const assetsToReculculate: AssetResponseDto[] = [];
+    const assetsToRecalculate: AssetResponseDto[] = [];
 
     for (const _asset of assets) {
       const asset = this.assets.find((asset) => asset.id === _asset.id);
@@ -799,17 +799,17 @@ export class AssetStore {
         continue;
       }
 
-      const recalculate = asset.fileCreatedAt !== _asset.fileCreatedAt;
+      const recalculate = asset.localDateTime !== _asset.localDateTime;
       Object.assign(asset, _asset);
 
       if (recalculate) {
-        assetsToReculculate.push(asset);
+        assetsToRecalculate.push(asset);
       }
     }
 
-    this.removeAssets(assetsToReculculate.map((asset) => asset.id));
-    this.addAssetsToBuckets(assetsToReculculate);
-    this.emit(assetsToReculculate.length > 0);
+    this.removeAssets(assetsToRecalculate.map((asset) => asset.id));
+    this.addAssetsToBuckets(assetsToRecalculate);
+    this.emit(assetsToRecalculate.length > 0);
   }
 
   removeAssets(ids: string[]) {
