@@ -30,7 +30,7 @@ import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entit
 import { AssetType, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -194,8 +194,7 @@ export class AssetMediaService {
       const copiedPhoto = await this.createCopy(asset);
       // and immediate trash it
       await this.assetRepository.softDeleteAll([copiedPhoto.id]);
-
-      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, [copiedPhoto.id]);
+      await this.eventRepository.emit('asset.trash', { assetId: copiedPhoto.id, userId: auth.user.id });
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
