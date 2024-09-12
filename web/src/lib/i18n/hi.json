@@ -114,7 +114,7 @@
     "machine_learning_max_recognition_distance_description": "एक ही व्यक्ति माने जाने वाले दो चेहरों के बीच अधिकतम दूरी 0-2 के बीच है।",
     "machine_learning_min_detection_score": "न्यूनतम पहचान स्कोर",
     "machine_learning_min_detection_score_description": "किसी चेहरे का पता लगाने के लिए न्यूनतम आत्मविश्वास स्कोर 0-1 होना चाहिए।",
-    "machine_learning_min_recognized_faces": "न्यूनतम पहचाने गए चेहरे",
+    "machine_learning_min_recognized_faces": "निम्नतम पहचाने चेहरे",
     "machine_learning_min_recognized_faces_description": "किसी व्यक्ति के लिए पहचाने जाने वाले चेहरों की न्यूनतम संख्या।",
     "machine_learning_settings": "मशीन लर्निंग सेटिंग्स",
     "machine_learning_settings_description": "मशीन लर्निंग सुविधाओं और सेटिंग्स को प्रबंधित करें",

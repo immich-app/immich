@@ -1212,6 +1212,8 @@
   "sign_up": "S'enregistrer",
   "size": "Taille",
   "skip_to_content": "Passer",
+  "skip_to_folders": "Passer vers les dossiers",
+  "skip_to_tags": "Passer vers les tags",
   "slideshow": "Diaporama",
   "slideshow_settings": "Paramètres du diaporama",
   "sort_albums_by": "Trier les albums par...",

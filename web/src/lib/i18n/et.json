@@ -120,7 +120,7 @@
     "map_settings": "Kaart",
     "map_settings_description": "Halda kaardi seadeid",
     "metadata_extraction_job": "Metaandmete eraldamine",
-    "metadata_extraction_job_description": "Eralda igast üksusest metaandmed, nagu GPS-koordinaadid ja resolutsioon",
+    "metadata_extraction_job_description": "Eralda igast üksusest metaandmed, nagu GPS-koordinaadid, näod ja resolutsioon",
     "migration_job": "Migratsioon",
     "migration_job_description": "Migreeri üksuste ja nägude pisipildid uusimale kaustastruktuurile",
     "note_cannot_be_changed_later": "MÄRKUS: Seda ei saa hiljem muuta!",
