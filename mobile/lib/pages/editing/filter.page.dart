@@ -30,7 +30,9 @@ class FilterImagePage extends HookWidget {
     final selectedFilterIndex = useState<int>(0);
 
     Future<ui.Image> createFilteredImage(
-        ui.Image inputImage, ColorFilter filter,) {
+      ui.Image inputImage,
+      ColorFilter filter,
+    ) {
       final completer = Completer<ui.Image>();
       final size =
           Size(inputImage.width.toDouble(), inputImage.height.toDouble());
@@ -52,11 +54,11 @@ class FilterImagePage extends HookWidget {
 
     Future<Image> applyFilterAndConvert(ColorFilter filter) async {
       final completer = Completer<ui.Image>();
-      image.image
-          .resolve(ImageConfiguration.empty)
-          .addListener(ImageStreamListener((ImageInfo info, bool _) {
-        completer.complete(info.image);
-      }),);
+      image.image.resolve(ImageConfiguration.empty).addListener(
+        ImageStreamListener((ImageInfo info, bool _) {
+          completer.complete(info.image);
+        }),
+      );
       final uiImage = await completer.future;
 
       final filteredUiImage = await createFilteredImage(uiImage, filter);
@@ -82,11 +84,13 @@ class FilterImagePage extends HookWidget {
             onPressed: () async {
               final filteredImage =
                   await applyFilterAndConvert(colorFilter.value);
-              context.pushRoute(EditImageRoute(
-                asset: asset,
-                image: filteredImage,
-                isEdited: true,
-              ),);
+              context.pushRoute(
+                EditImageRoute(
+                  asset: asset,
+                  image: filteredImage,
+                  isEdited: true,
+                ),
+              );
             },
           ),
         ],
@@ -123,7 +127,9 @@ class FilterImagePage extends HookWidget {
                           decoration: BoxDecoration(
                             border: selectedFilterIndex.value == index
                                 ? Border.all(
-                                    color: context.primaryColor, width: 2,)
+                                    color: context.primaryColor,
+                                    width: 2,
+                                  )
                                 : null,
                           ),
                           child: ColorFiltered(
@@ -132,8 +138,10 @@ class FilterImagePage extends HookWidget {
                           ),
                         ),
                       ),
-                      Text(filterNames[index],
-                          style: Theme.of(context).textTheme.bodySmall,),
+                      Text(
+                        filterNames[index],
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ],
                   ),
                 );
