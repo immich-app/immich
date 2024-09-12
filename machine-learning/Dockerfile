@@ -49,7 +49,12 @@ RUN apt-get update && \
     apt-get remove wget -yqq && \
     rm -rf /var/lib/apt/lists/*
 
-FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04@sha256:fa44193567d1908f7ca1f3abf8623ce9c63bc8cba7bcfdb32702eb04d326f7a8 AS prod-cuda
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
