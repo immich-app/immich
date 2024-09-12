@@ -9,6 +9,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
 
+/// A widget for filtering an image.
+/// This widget uses [HookWidget] to manage its lifecycle and state. It allows
+/// users to add filters to an image and then navigate to the [EditImagePage] with the
+/// final composition.'
 @RoutePage()
 class FilterImagePage extends HookWidget {
   final Image image;
@@ -26,7 +30,7 @@ class FilterImagePage extends HookWidget {
     final selectedFilterIndex = useState<int>(0);
 
     Future<ui.Image> createFilteredImage(
-        ui.Image inputImage, ColorFilter filter) {
+        ui.Image inputImage, ColorFilter filter,) {
       final completer = Completer<ui.Image>();
       final size =
           Size(inputImage.width.toDouble(), inputImage.height.toDouble());
@@ -52,7 +56,7 @@ class FilterImagePage extends HookWidget {
           .resolve(ImageConfiguration.empty)
           .addListener(ImageStreamListener((ImageInfo info, bool _) {
         completer.complete(info.image);
-      }));
+      }),);
       final uiImage = await completer.future;
 
       final filteredUiImage = await createFilteredImage(uiImage, filter);
@@ -82,7 +86,7 @@ class FilterImagePage extends HookWidget {
                 asset: asset,
                 image: filteredImage,
                 isEdited: true,
-              ));
+              ),);
             },
           ),
         ],
@@ -119,7 +123,7 @@ class FilterImagePage extends HookWidget {
                           decoration: BoxDecoration(
                             border: selectedFilterIndex.value == index
                                 ? Border.all(
-                                    color: context.primaryColor, width: 2)
+                                    color: context.primaryColor, width: 2,)
                                 : null,
                           ),
                           child: ColorFiltered(
@@ -129,7 +133,7 @@ class FilterImagePage extends HookWidget {
                         ),
                       ),
                       Text(filterNames[index],
-                          style: Theme.of(context).textTheme.bodySmall),
+                          style: Theme.of(context).textTheme.bodySmall,),
                     ],
                   ),
                 );

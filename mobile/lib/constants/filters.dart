@@ -49,10 +49,26 @@ List<ColorFilter> filters = [
   ]),
   //Mood
   const ColorFilter.matrix([
-    1.2, 0.1, 0.1, 0, 10,
-    0.1, 1, 0.1, 0, 10,
-    0.1, 0.1, 1, 0, 10,
-    0, 0, 0, 1, 0, // Alpha
+    1.2,
+    0.1,
+    0.1,
+    0,
+    10,
+    0.1,
+    1,
+    0.1,
+    0,
+    10,
+    0.1,
+    0.1,
+    1,
+    0,
+    10,
+    0,
+    0,
+    0,
+    1,
+    0,
   ]),
   //Crisp
   const ColorFilter.matrix([
@@ -743,7 +759,7 @@ List<ColorFilter> filters = [
     0,
     1,
     0,
-  ])
+  ]),
 ];
 
 const List<String> filterNames = [
