@@ -175,7 +175,7 @@ export interface IAssetRepository {
     libraryId?: string,
     withDeleted?: boolean,
   ): Paginated<AssetEntity>;
-  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
+  getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;

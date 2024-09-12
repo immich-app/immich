@@ -623,14 +623,9 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
-  getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
-    const builder = this.getBuilder({
-      userIds: [ownerId],
-      exifInfo: true,
-    });
-
-    return builder.orderBy('RANDOM()').limit(count).getMany();
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER] })
+  getRandom(userIds: string[], count: number): Promise<AssetEntity[]> {
+    return this.getBuilder({ userIds, exifInfo: true }).orderBy('RANDOM()').limit(count).getMany();
   }
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })

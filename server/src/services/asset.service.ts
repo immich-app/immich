@@ -98,7 +98,12 @@ export class AssetService {
   }
 
   async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.getRandom(auth.user.id, count);
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
+    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
     return assets.map((a) => mapAsset(a, { auth }));
   }
 
