@@ -4,12 +4,11 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.drift.dart';
 import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
-import 'package:immich_mobile/domain/models/render_list.model.dart';
 import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
+import 'package:immich_mobile/domain/services/render_list.service.dart';
 import 'package:immich_mobile/utils/extensions/drift.extension.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
-import 'package:intl/intl.dart';
 
 class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
   final DriftDatabaseRepository _db;
@@ -66,7 +65,6 @@ class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
       ..orderBy([OrderingTerm.desc(createdTimeExp)]);
 
     int lastAssetOffset = 0;
-    final monthFormatter = DateFormat.yMMMM();
 
     return query
         .expand((row) {
@@ -76,9 +74,7 @@ class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
           lastAssetOffset += assetCount;
 
           return [
-            RenderListMonthHeaderElement(
-              header: monthFormatter.format(createdTime),
-            ),
+            RenderListMonthHeaderElement(date: createdTime),
             RenderListAssetElement(
               date: createdTime,
               assetCount: assetCount,

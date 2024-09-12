@@ -12,20 +12,8 @@ import 'package:immich_mobile/utils/constants/globals.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 import 'package:openapi/api.dart';
 
-@immutable
-class ImApiClientData {
-  final String endpoint;
-  final Map<String, String> headersMap;
-
-  const ImApiClientData({required this.endpoint, required this.headersMap});
-}
-
 class ImmichApiClient extends ApiClient with LogContext {
   ImmichApiClient({required String endpoint}) : super(basePath: endpoint);
-
-  /// Used to recreate the client in Isolates
-  ImApiClientData get clientData =>
-      ImApiClientData(endpoint: basePath, headersMap: defaultHeaderMap);
 
   Map<String, String> get headers => defaultHeaderMap;
 
@@ -47,15 +35,6 @@ class ImmichApiClient extends ApiClient with LogContext {
 
     addDefaultHeader(kImmichHeaderDeviceModel, deviceModel);
     addDefaultHeader(kImmichHeaderDeviceType, Platform.operatingSystem);
-  }
-
-  factory ImmichApiClient.clientData(ImApiClientData data) {
-    final client = ImmichApiClient(endpoint: data.endpoint);
-
-    for (final entry in data.headersMap.entries) {
-      client.addDefaultHeader(entry.key, entry.value);
-    }
-    return client;
   }
 
   @override

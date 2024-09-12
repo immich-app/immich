@@ -5,6 +5,12 @@ extension BuildContextHelper on BuildContext {
   /// Get the current [ThemeData] used
   ThemeData get theme => Theme.of(this);
 
+  /// Get the current [ColorScheme] used
+  ColorScheme get colorScheme => theme.colorScheme;
+
+  /// Get the current [TextTheme] used
+  TextTheme get textTheme => theme.textTheme;
+
   /// Get the default [TextStyle]
   TextStyle get defaultTextStyle => DefaultTextStyle.of(this).style;
 

@@ -18,7 +18,7 @@ enum AppTheme {
       primaryColor: color.primary,
       iconTheme: const IconThemeData(weight: 500, opticalSize: 24),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: color.surface,
+        backgroundColor: color.surfaceContainer,
         indicatorColor: color.primary,
         iconTheme: WidgetStateProperty.resolveWith(
           (Set<WidgetState> states) {
@@ -29,8 +29,9 @@ enum AppTheme {
           },
         ),
       ),
+      scaffoldBackgroundColor: color.surface,
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: color.surface,
+        backgroundColor: color.surfaceContainer,
         elevation: 3,
         indicatorColor: color.primary,
         selectedIconTheme:
@@ -41,9 +42,21 @@ enum AppTheme {
           color: color.onSurface.withAlpha(175),
         ),
       ),
-      inputDecorationTheme: const InputDecorationTheme(
-        border: OutlineInputBorder(),
+      inputDecorationTheme: InputDecorationTheme(
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: color.primary),
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: color.outlineVariant),
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+        ),
+        hintStyle: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.normal,
+        ),
       ),
+      textSelectionTheme: TextSelectionThemeData(cursorColor: color.primary),
       sliderTheme: SliderThemeData(
         valueIndicatorColor:
             Color.alphaBlend(color.primary.withAlpha(80), color.onSurface)

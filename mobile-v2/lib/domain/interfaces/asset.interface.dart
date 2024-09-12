@@ -1,5 +1,5 @@
 import 'package:immich_mobile/domain/models/asset.model.dart';
-import 'package:immich_mobile/domain/models/render_list.model.dart';
+import 'package:immich_mobile/domain/services/render_list.service.dart';
 
 abstract class IAssetRepository {
   /// Batch insert asset

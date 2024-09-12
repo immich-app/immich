@@ -1,41 +1,69 @@
+import 'package:intl/intl.dart';
+
+enum RenderListGroupBy { month, day }
+
 sealed class RenderListElement {
-  const RenderListElement();
+  const RenderListElement({required this.date});
+
+  final DateTime date;
+
+  @override
+  bool operator ==(covariant RenderListElement other) {
+    if (identical(this, other)) return true;
+
+    return date == other.date;
+  }
+
+  @override
+  int get hashCode => date.hashCode;
 }
 
 class RenderListMonthHeaderElement extends RenderListElement {
-  final String header;
+  late final String header;
 
-  const RenderListMonthHeaderElement({required this.header});
+  RenderListMonthHeaderElement({required super.date}) {
+    final formatter = DateTime.now().year == date.year
+        ? DateFormat.MMMM()
+        : DateFormat.yMMMM();
+    header = formatter.format(date);
+  }
+
+  @override
+  bool operator ==(covariant RenderListMonthHeaderElement other) {
+    if (identical(this, other)) return true;
+
+    return super == other && header == other.header;
+  }
+
+  @override
+  int get hashCode => super.hashCode ^ date.hashCode;
 }
 
 class RenderListDayHeaderElement extends RenderListElement {
   final String header;
 
-  const RenderListDayHeaderElement({required this.header});
+  const RenderListDayHeaderElement({required super.date, required this.header});
+
+  @override
+  bool operator ==(covariant RenderListDayHeaderElement other) {
+    if (identical(this, other)) return true;
+
+    return super == other && header == other.header;
+  }
+
+  @override
+  int get hashCode => super.hashCode ^ date.hashCode;
 }
 
 class RenderListAssetElement extends RenderListElement {
-  final DateTime date;
   final int assetCount;
   final int assetOffset;
 
   const RenderListAssetElement({
-    required this.date,
+    required super.date,
     required this.assetCount,
     required this.assetOffset,
   });
-
-  RenderListAssetElement copyWith({
-    DateTime? date,
-    int? assetCount,
-    int? assetOffset,
-  }) {
-    return RenderListAssetElement(
-      date: date ?? this.date,
-      assetCount: assetCount ?? this.assetCount,
-      assetOffset: assetOffset ?? this.assetOffset,
-    );
-  }
 
   @override
   String toString() =>
@@ -45,12 +73,12 @@ class RenderListAssetElement extends RenderListElement {
   bool operator ==(covariant RenderListAssetElement other) {
     if (identical(this, other)) return true;
 
-    return other.date == date &&
+    return super == other &&
         other.assetCount == assetCount &&
         other.assetOffset == assetOffset;
   }
 
   @override
   int get hashCode =>
-      date.hashCode ^ assetCount.hashCode ^ assetOffset.hashCode;
+      super.hashCode ^ assetCount.hashCode ^ assetOffset.hashCode;
 }

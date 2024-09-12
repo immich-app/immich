@@ -25,60 +25,83 @@ final di = GetIt.I;
 class ServiceLocator {
   const ServiceLocator._internal();
 
+  static void _registerFactory<T extends Object>(T Function() factoryFun) {
+    if (!di.isRegistered<T>()) {
+      di.registerFactory<T>(factoryFun);
+    }
+  }
+
+  static void _registerSingleton<T extends Object>(T instance) {
+    if (!di.isRegistered<T>()) {
+      di.registerSingleton<T>(instance);
+    }
+  }
+
+  static void _registerLazySingleton<T extends Object>(
+    T Function() factoryFun,
+  ) {
+    if (!di.isRegistered<T>()) {
+      di.registerLazySingleton<T>(factoryFun);
+    }
+  }
+
   static void configureServices() {
-    di.registerSingleton<DriftDatabaseRepository>(DriftDatabaseRepository());
+    _registerSingleton(DriftDatabaseRepository());
     _registerRepositories();
     _registerPreGlobalStates();
   }
 
   static void configureServicesForIsolate({
     required DriftDatabaseRepository database,
+    required ImmichApiClient apiClient,
   }) {
-    di.registerSingleton<DriftDatabaseRepository>(database);
+    _registerSingleton(database);
+    _registerSingleton(apiClient);
+
     _registerRepositories();
+    registerPostValidationServices();
   }
 
   static void _registerRepositories() {
     /// Repositories
-    di.registerFactory<IStoreRepository>(() => StoreDriftRepository(di()));
-    di.registerFactory<ILogRepository>(() => LogDriftRepository(di()));
-    di.registerFactory<AppSettingService>(() => AppSettingService(di()));
-    di.registerFactory<IUserRepository>(() => UserDriftRepository(di()));
-    di.registerFactory<IAssetRepository>(
+    _registerFactory<IStoreRepository>(() => StoreDriftRepository(di()));
+    _registerFactory<ILogRepository>(() => LogDriftRepository(di()));
+    _registerFactory<AppSettingService>(() => AppSettingService(di()));
+    _registerFactory<IUserRepository>(() => UserDriftRepository(di()));
+    _registerFactory<IAssetRepository>(
       () => RemoteAssetDriftRepository(di()),
     );
 
     /// Services
-    di.registerFactory<LoginService>(() => const LoginService());
+    _registerFactory<LoginService>(() => const LoginService());
   }
 
   static void _registerPreGlobalStates() {
-    di.registerSingleton<AppRouter>(AppRouter());
-    di.registerLazySingleton<AppThemeCubit>(() => AppThemeCubit(di()));
+    _registerSingleton(AppRouter());
+    _registerLazySingleton<AppThemeCubit>(() => AppThemeCubit(di()));
   }
 
-  static void registerPostValidationServices(String endpoint) {
-    di.registerSingleton<ImmichApiClient>(ImmichApiClient(endpoint: endpoint));
-    di.registerFactory<UserService>(() => UserService(
+  static void registerApiClient(String endpoint) {
+    _registerSingleton(ImmichApiClient(endpoint: endpoint));
+  }
+
+  static void registerPostValidationServices() {
+    _registerFactory<UserService>(() => UserService(
           di<ImmichApiClient>().getUsersApi(),
         ));
-    di.registerFactory<ServerInfoService>(() => ServerInfoService(
+    _registerFactory<ServerInfoService>(() => ServerInfoService(
           di<ImmichApiClient>().getServerApi(),
         ));
-    di.registerFactory<SyncService>(() => SyncService(di(), di()));
+    _registerFactory<SyncService>(() => SyncService(di()));
   }
 
   static void registerPostGlobalStates() {
-    di.registerLazySingleton<ServerFeatureConfigCubit>(
+    _registerLazySingleton<ServerFeatureConfigCubit>(
       () => ServerFeatureConfigCubit(di()),
     );
   }
 
   static void registerCurrentUser(User user) {
-    if (di.isRegistered<CurrentUserCubit>()) {
-      di<CurrentUserCubit>().updateUser(user);
-    } else {
-      di.registerSingleton<CurrentUserCubit>(CurrentUserCubit(user));
-    }
+    _registerSingleton(CurrentUserCubit(user));
   }
 }

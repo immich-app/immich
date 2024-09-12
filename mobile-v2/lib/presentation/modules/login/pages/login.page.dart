@@ -146,6 +146,7 @@ class _LoginPageState extends State<LoginPage>
         child: Column(children: [
           Expanded(child: rotatingLogo),
           serverUrl,
+          const SizedGap.sh(),
           Expanded(flex: 2, child: form),
           bottom,
         ]),

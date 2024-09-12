@@ -66,7 +66,8 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
       url = await loginService.resolveEndpoint(uri);
 
       di<IStoreRepository>().set(StoreKey.serverEndpoint, url);
-      ServiceLocator.registerPostValidationServices(url);
+      ServiceLocator.registerApiClient(url);
+      ServiceLocator.registerPostValidationServices();
       ServiceLocator.registerPostGlobalStates();
 
       // Fetch server features

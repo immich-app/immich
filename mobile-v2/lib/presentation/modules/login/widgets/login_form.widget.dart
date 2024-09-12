@@ -32,28 +32,28 @@ class LoginForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocSelector<LoginPageCubit, LoginPageState, bool>(
       selector: (model) => model.isServerValidated,
-      builder: (_, isServerValidated) => AnimatedSwitcher(
-        duration: Durations.medium1,
-        child: SingleChildScrollView(
+      builder: (_, isServerValidated) => SingleChildScrollView(
+        child: AnimatedSwitcher(
+          duration: Durations.medium1,
           child: isServerValidated
-              ? _CredentialsPage(
+              ? _CredentialsForm(
                   emailController: emailController,
                   passwordController: passwordController,
                 )
-              : _ServerPage(controller: serverUrlController),
+              : _ServerForm(controller: serverUrlController),
+          layoutBuilder: (current, previous) =>
+              current ?? (previous.lastOrNull ?? const SizedBox.shrink()),
         ),
-        layoutBuilder: (current, previous) =>
-            current ?? (previous.lastOrNull ?? const SizedBox.shrink()),
       ),
     );
   }
 }
 
-class _ServerPage extends StatelessWidget {
+class _ServerForm extends StatelessWidget {
   final TextEditingController controller;
   final GlobalKey<FormState> _formKey = GlobalKey();
 
-  _ServerPage({required this.controller});
+  _ServerForm({required this.controller});
 
   Future<void> _validateForm(BuildContext context) async {
     if (_formKey.currentState?.validate() == true) {
@@ -96,20 +96,20 @@ class _ServerPage extends StatelessWidget {
   }
 }
 
-class _CredentialsPage extends StatefulWidget {
+class _CredentialsForm extends StatefulWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
 
-  const _CredentialsPage({
+  const _CredentialsForm({
     required this.emailController,
     required this.passwordController,
   });
 
   @override
-  State<_CredentialsPage> createState() => _CredentialsPageState();
+  State<_CredentialsForm> createState() => _CredentialsFormState();
 }
 
-class _CredentialsPageState extends State<_CredentialsPage> {
+class _CredentialsFormState extends State<_CredentialsForm> {
   final passwordFocusNode = FocusNode();
 
   @override

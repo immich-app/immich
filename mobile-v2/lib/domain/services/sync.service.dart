@@ -6,32 +6,29 @@ import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
-import 'package:immich_mobile/utils/log_manager.dart';
+import 'package:immich_mobile/utils/isolate_helper.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class SyncService with LogContext {
-  final ImmichApiClient _appClient;
   final DriftDatabaseRepository _db;
 
-  SyncService(this._appClient, this._db);
+  SyncService(this._db);
 
   Future<bool> doFullSyncForUserDrift(
     User user, {
     DateTime? updatedUtil,
     int? limit,
   }) async {
-    final clientData = _appClient.clientData;
+    final helper = IsolateHelper()..preIsolateHandling();
     try {
       await _db.computeWithDatabase(
         connect: (connection) => DriftDatabaseRepository(connection),
         computation: (database) async {
-          ServiceLocator.configureServicesForIsolate(database: database);
-          LogManager.I.init();
+          helper.postIsolateHandling(database: database);
           final logger = Logger("SyncService <Isolate>");
-          final syncClient =
-              ImmichApiClient.clientData(clientData).getSyncApi();
+          final syncClient = di<ImmichApiClient>().getSyncApi();
 
           final chunkSize = limit ?? kFullSyncChunkSize;
           final updatedTill = updatedUtil ?? DateTime.now().toUtc();
