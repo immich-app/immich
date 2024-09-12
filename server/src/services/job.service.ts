@@ -231,6 +231,7 @@ export class JobService {
           name: JobName.METADATA_EXTRACTION,
           data: { id: item.data.id, source: 'sidecar-write' },
         });
+        break;
       }
 
       case JobName.METADATA_EXTRACTION: {
