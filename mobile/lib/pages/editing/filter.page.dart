@@ -113,7 +113,7 @@ class FilterImagePage extends HookWidget {
             ),
           ),
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.13,
+            height: 120,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: filters.length,
