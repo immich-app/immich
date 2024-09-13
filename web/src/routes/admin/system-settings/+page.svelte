@@ -125,7 +125,7 @@
       title: $t('admin.library_settings'),
       subtitle: $t('admin.library_settings_description'),
       key: 'external-library',
-      icon: mdiLibraryOutline,
+      icon: mdiBookshelf,
     },
     {
       component: LoggingSettings,
