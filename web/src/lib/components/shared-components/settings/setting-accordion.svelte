@@ -53,7 +53,7 @@
     <div>
       <div class="flex gap-2 place-items-center">
         {#if icon}
-          <Icon path={icon} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
+          <Icon path={icon} class="text-immich-primary dark:text-immich-dark-primary" size="24" ariaHidden />
         {/if}
         <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
           {title}
