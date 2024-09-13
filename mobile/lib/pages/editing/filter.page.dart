@@ -52,6 +52,11 @@ class FilterImagePage extends HookWidget {
       return completer.future;
     }
 
+    void applyFilter(ColorFilter filter, int index) {
+      colorFilter.value = filter;
+      selectedFilterIndex.value = index;
+    }
+
     Future<Image> applyFilterAndConvert(ColorFilter filter) async {
       final completer = Completer<ui.Image>();
       image.image.resolve(ImageConfiguration.empty).addListener(
@@ -98,7 +103,8 @@ class FilterImagePage extends HookWidget {
       backgroundColor: context.scaffoldBackgroundColor,
       body: Column(
         children: [
-          Expanded(
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
             child: Center(
               child: ColorFiltered(
                 colorFilter: colorFilter.value,
@@ -107,42 +113,19 @@ class FilterImagePage extends HookWidget {
             ),
           ),
           SizedBox(
-            height: 100,
+            height: MediaQuery.of(context).size.height * 0.13,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: filters.length,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          colorFilter.value = filters[index];
-                          selectedFilterIndex.value = index;
-                        },
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            border: selectedFilterIndex.value == index
-                                ? Border.all(
-                                    color: context.primaryColor,
-                                    width: 2,
-                                  )
-                                : null,
-                          ),
-                          child: ColorFiltered(
-                            colorFilter: filters[index],
-                            child: Image(image: image.image, fit: BoxFit.cover),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        filterNames[index],
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+                  child: _FilterButton(
+                    image: image,
+                    label: filterNames[index],
+                    filter: filters[index],
+                    isSelected: selectedFilterIndex.value == index,
+                    onTap: () => applyFilter(filters[index], index),
                   ),
                 );
               },
