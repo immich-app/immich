@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
 import 'dart:ui';
@@ -8,7 +7,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -91,9 +89,6 @@ class EditImagePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Image imageWidget =
-        Image(image: ImmichImage.imageProvider(asset: asset));
-
     return Scaffold(
       appBar: AppBar(
         title: Text("edit_image_title".tr()),
@@ -158,24 +153,20 @@ class EditImagePage extends ConsumerWidget {
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(
-          // Changed from Column to Row
-          mainAxisAlignment:
-              MainAxisAlignment.spaceEvenly, // Evenly space the buttons
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 IconButton(
                   icon: Icon(
-                    Platform.isAndroid
-                        ? Icons.crop_rotate_rounded
-                        : Icons.crop_rotate_rounded,
+                    Icons.crop_rotate_rounded,
                     color: Theme.of(context).iconTheme.color,
                     size: 25,
                   ),
                   onPressed: () {
                     context.pushRoute(
-                      CropImageRoute(asset: asset, image: imageWidget),
+                      CropImageRoute(asset: asset, image: image),
                     );
                   },
                 ),
@@ -183,25 +174,24 @@ class EditImagePage extends ConsumerWidget {
               ],
             ),
             Column(
-              // New column for the filter button
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 IconButton(
                   icon: Icon(
-                    Icons.filter, // You can change the icon
+                    Icons.filter,
                     color: Theme.of(context).iconTheme.color,
                     size: 25,
                   ),
                   onPressed: () {
                     context.pushRoute(
                       FilterImageRoute(
-                          asset: asset,
-                          image:
-                              imageWidget), // Assuming you have a FilterImageRoute
+                        asset: asset,
+                        image: image,
+                      ),
                     );
                   },
                 ),
-                Text("filters".tr(), style: context.textTheme.displayMedium),
+                Text("filter".tr(), style: context.textTheme.displayMedium),
               ],
             ),
           ],
