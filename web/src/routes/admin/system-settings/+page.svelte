@@ -208,9 +208,8 @@
 
   let searchQuery = '';
 
-  $: filteredSettings = settings.filter(({ title, subtitle, component }) => {
+  $: filteredSettings = settings.filter(({ title, subtitle }) => {
     const query = searchQuery.toLowerCase();
-    console.log(component.element);
     return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
   });
 </script>
