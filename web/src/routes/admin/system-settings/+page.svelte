@@ -31,13 +31,13 @@
     mdiAccountOutline,
     mdiAlert,
     mdiBellOutline,
+    mdiBookshelf,
     mdiContentCopy,
     mdiDatabaseOutline,
     mdiDownload,
     mdiFileDocumentOutline,
     mdiFolderOutline,
     mdiImageOutline,
-    mdiLibraryOutline,
     mdiLockOutline,
     mdiMapMarkerOutline,
     mdiPaletteOutline,
@@ -228,7 +228,9 @@
 
   <UserPageLayout title={data.meta.title} admin>
     <div class="flex justify-end gap-2" slot="buttons">
-      <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
+      <div class="hidden lg:block">
+        <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
+      </div>
       <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentCopy} size="18" />
@@ -254,6 +256,9 @@
     <AdminSettings bind:config let:handleReset bind:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
         <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
+          <div class="block lg:hidden">
+            <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
+          </div>
           <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
             {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
               <SettingAccordion {title} {subtitle} {key} {icon}>
