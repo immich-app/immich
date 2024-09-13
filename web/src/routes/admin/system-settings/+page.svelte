@@ -53,7 +53,6 @@
   import { t } from 'svelte-i18n';
   import type { ComponentType, SvelteComponent } from 'svelte';
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
 
   export let data: PageData;
@@ -209,8 +208,9 @@
 
   let searchQuery = '';
 
-  $: filteredSettings = settings.filter(({ title, subtitle }) => {
+  $: filteredSettings = settings.filter(({ title, subtitle, component }) => {
     const query = searchQuery.toLowerCase();
+    console.log(component.element);
     return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
   });
 </script>
@@ -254,9 +254,9 @@
 
     <AdminSettings bind:config let:handleReset bind:handleSave let:savedConfig let:defaultConfig>
       <section id="setting-content" class="flex place-content-center sm:mx-4">
-        <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+        <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
           <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-            {#each filteredSettings as { component: Component, title, subtitle, key, icon }}
+            {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
               <SettingAccordion {title} {subtitle} {key} {icon}>
                 <Component
                   onSave={(config) => handleSave(config)}
