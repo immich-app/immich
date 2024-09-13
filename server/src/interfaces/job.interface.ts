@@ -60,6 +60,9 @@ export enum JobName {
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
 
+  // tags
+  TAG_CLEANUP = 'tag-cleanup',
+
   // migration
   QUEUE_MIGRATION = 'queue-migration',
   MIGRATE_ASSET = 'migrate-asset',
@@ -261,6 +264,9 @@ export type JobItem =
   // Cleanup
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
   | { name: JobName.CLEAN_OLD_SESSION_TOKENS; data?: IBaseJob }
+
+  // Tags
+  | { name: JobName.TAG_CLEANUP; data?: IBaseJob }
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }

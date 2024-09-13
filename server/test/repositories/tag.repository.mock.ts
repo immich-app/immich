@@ -17,5 +17,6 @@ export const newTagRepositoryMock = (): Mocked<ITagRepository> => {
     addAssetIds: vitest.fn(),
     removeAssetIds: vitest.fn(),
     upsertAssetIds: vitest.fn(),
+    deleteEmptyTags: vitest.fn(),
   };
 };
