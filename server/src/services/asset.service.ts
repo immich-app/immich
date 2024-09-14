@@ -23,7 +23,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeleteJob,
   IJobRepository,
@@ -98,7 +98,12 @@ export class AssetService {
   }
 
   async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.getRandom(auth.user.id, count);
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
+    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
     return assets.map((a) => mapAsset(a, { auth }));
   }
 
@@ -268,7 +273,8 @@ export class AssetService {
     if (!asset.libraryId) {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
-    this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
+
+    await this.eventRepository.emit('asset.delete', { assetId: id, userId: asset.ownerId });
 
     // delete the motion if it is not used by another asset
     if (asset.livePhotoVideoId) {
@@ -306,7 +312,7 @@ export class AssetService {
       );
     } else {
       await this.assetRepository.softDeleteAll(ids);
-      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, ids);
+      await this.eventRepository.emit('assets.trash', { assetIds: ids, userId: auth.user.id });
     }
   }
 

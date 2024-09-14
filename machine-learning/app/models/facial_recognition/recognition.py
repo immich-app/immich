@@ -13,7 +13,6 @@ from app.config import log
 from app.models.base import InferenceModel
 from app.models.transforms import decode_cv2
 from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelFormat, ModelSession, ModelTask, ModelType
-from app.sessions import has_batch_axis
 
 
 class FaceRecognizer(InferenceModel):
@@ -27,7 +26,7 @@ class FaceRecognizer(InferenceModel):
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
-        if self.batch and not has_batch_axis(session):
+        if self.batch and str(session.get_inputs()[0].shape[0]) != "batch":
             self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
         self.model = ArcFaceONNX(

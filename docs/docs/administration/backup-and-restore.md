@@ -21,6 +21,8 @@ The recommended way to backup and restore the Immich database is to use the `pg_
 It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
 :::
 
+### Manual Backup and Restore
+
 <Tabs>
   <TabItem value="Linux system" label="Linux system" default>
 
@@ -29,10 +31,11 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 ```
 
 ```bash title='Restore'
-docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
-# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
+docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
+## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
+# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
 docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them.
+docker compose create   # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
 gunzip < "/path/to/backup/dump.sql.gz" \
@@ -49,10 +52,11 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 ```
 
 ```powershell title='Restore'
-docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
-# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
+docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
+## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
+# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
 docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them.
+docker compose create   # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10    # Wait for Postgres server to start up
 gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres   # Restore Backup
@@ -67,6 +71,8 @@ Note that for the database restore to proceed properly, it requires a completely
 :::tip
 Some deployment methods make it difficult to start the database without also starting the server or microservices. In these cases, you may set the environmental variable `DB_SKIP_MIGRATIONS=true` before starting the services. This will prevent the server from running migrations that interfere with the restore process. Note that both the server and microservices must have this variable set to prevent the migrations from running. Be sure to remove this variable and restart the services after the database is restored.
 :::
+
+### Automatic Database Backups
 
 The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
 
@@ -157,7 +163,7 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
 
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
-  - Stored in `UPLOAD_LOCATION/postgres`.
+  - Stored in `DB_DATA_LOCATION`.
 
   :::danger
   A backup of this folder does not constitute a backup of your database!
@@ -203,7 +209,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
-  - Stored in `UPLOAD_LOCATION/postgres`.
+  - Stored in `DB_DATA_LOCATION`.
 
   :::danger
   A backup of this folder does not constitute a backup of your database!

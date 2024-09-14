@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.114.0",
+  "version": "1.115.0",
   "description": "",
   "author": "",
   "private": true,
@@ -109,7 +109,7 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.16.2",
+    "@types/node": "^20.16.5",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^3.0.0",
     "@types/react": "^18.3.4",

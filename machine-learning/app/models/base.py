@@ -71,7 +71,6 @@ class InferenceModel(ABC):
             f"immich-app/{clean_name(self.model_name)}",
             cache_dir=self.cache_dir,
             local_dir=self.cache_dir,
-            local_dir_use_symlinks=False,
             ignore_patterns=ignore_patterns,
         )
 
