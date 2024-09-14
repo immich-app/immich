@@ -1095,6 +1095,18 @@ describe(MetadataService.name, () => {
       expect(personMock.updateAll).toHaveBeenCalledWith([]);
       expect(jobMock.queueAll).toHaveBeenCalledWith([]);
     });
+
+    it('should handle invalid modify date', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ ModifyDate: '00:00:00.000' });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          modifyDate: expect.any(Date),
+        }),
+      );
+    });
   });
 
   describe('handleQueueSidecar', () => {
