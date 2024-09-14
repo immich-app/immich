@@ -48,7 +48,7 @@ dependencies:
   flutter_web_auth_2: ^3.1.2
   # components
   material_symbols_icons: ^4.2785.1
-  flutter_adaptive_scaffold: ^0.2.6
+  flutter_adaptive_scaffold: ^0.3.1
   scrollable_positioned_list: ^0.3.8
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
@@ -77,6 +77,8 @@ dev_dependencies:
   slang_build_runner: ^3.31.0
   # Assets constant generator
   flutter_gen_runner: ^5.7.0
+  # Type safe platform channels
+  pigeon: ^22.4.0
 
 flutter:
   uses-material-design: true

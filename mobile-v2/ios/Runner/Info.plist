@@ -57,5 +57,9 @@
       <string>https</string>
     </array>
 	<!-- /URL Launcher -->
+	<!-- photo_manager -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>In order to access iOS photo library for local assets and albums</string>
+	<!-- /photo_manager -->
 </dict>
 </plist>

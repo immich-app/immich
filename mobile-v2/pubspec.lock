@@ -359,10 +359,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_adaptive_scaffold
-      sha256: "6b587d439c7da037432bbfc78d9676e1d08f2d7490f08e8d689a20f08e049802"
+      sha256: "8c515a2cb8abb3a567f8e77f10b33f47bb6fcadfe31f62364e0aca36280cdf93"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.6"
+    version: "0.3.1"
   flutter_bloc:
     dependency: "direct main"
     description:
@@ -769,6 +769,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  pigeon:
+    dependency: "direct dev"
+    description:
+      name: pigeon
+      sha256: "95481446c02fa79fcf0e8014882f8a3b87fd06c257e9e1c3d4cc6d102a925ad8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "22.4.0"
   platform:
     dependency: transitive
     description:

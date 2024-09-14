@@ -9,13 +9,19 @@ class UserService with LogContext {
 
   Future<User?> getMyUser() async {
     try {
-      final userDto = await _userApi.getMyUser();
+      final [
+        userDto as UserAdminResponseDto?,
+        preferencesDto as UserPreferencesResponseDto?
+      ] = await Future.wait([
+        _userApi.getMyUser(),
+        _userApi.getMyPreferences(),
+      ]);
+
       if (userDto == null) {
         log.severe("Cannot fetch my user.");
         return null;
       }
 
-      final preferencesDto = await _userApi.getMyPreferences();
       return User.fromAdminDto(userDto, preferencesDto);
     } catch (e, s) {
       log.severe("Error while fetching my user", e, s);

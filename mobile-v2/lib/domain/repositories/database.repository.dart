@@ -14,7 +14,11 @@ import 'database.repository.drift.dart';
 @DriftDatabase(tables: [Logs, Store, LocalAlbum, Asset, User])
 class DriftDatabaseRepository extends $DriftDatabaseRepository {
   DriftDatabaseRepository([QueryExecutor? executor])
-      : super(executor ?? driftDatabase(name: 'db'));
+      : super(executor ??
+            driftDatabase(
+              name: 'db',
+              native: const DriftNativeOptions(shareAcrossIsolates: true),
+            ));
 
   @override
   int get schemaVersion => 1;

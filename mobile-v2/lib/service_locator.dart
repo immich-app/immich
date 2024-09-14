@@ -92,7 +92,7 @@ class ServiceLocator {
     _registerFactory<ServerInfoService>(() => ServerInfoService(
           di<ImmichApiClient>().getServerApi(),
         ));
-    _registerFactory<SyncService>(() => SyncService(di()));
+    _registerFactory<SyncService>(() => SyncService());
   }
 
   static void registerPostGlobalStates() {

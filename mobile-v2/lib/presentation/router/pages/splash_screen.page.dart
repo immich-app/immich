@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/presentation/components/image/immich_logo.widget.dart';
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
@@ -45,6 +48,14 @@ class _SplashScreenState extends State<SplashScreenPage>
     super.dispose();
   }
 
+  Future<void> _tryLogin() async {
+    if (await di<LoginService>().tryLoginFromSplash() && mounted) {
+      unawaited(context.replaceRoute(const TabControllerRoute()));
+    } else {
+      unawaited(context.replaceRoute(const LoginRoute()));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +63,7 @@ class _SplashScreenState extends State<SplashScreenPage>
         future: di.allReady(),
         builder: (_, snap) {
           if (snap.hasData) {
-            context.replaceRoute(const LoginRoute());
+            _tryLogin();
           } else if (snap.hasError) {
             log.severe(
               "Error while initializing the app",

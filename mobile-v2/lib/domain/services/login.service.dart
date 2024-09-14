@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart';
+import 'package:immich_mobile/domain/interfaces/store.interface.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
@@ -102,5 +105,33 @@ class LoginService with LogContext {
       log.severe("Exception occured while performing oauth login", e);
     }
     return null;
+  }
+
+  Future<bool> tryLoginFromSplash() async {
+    final serverEndpoint =
+        await di<IStoreRepository>().tryGet(StoreKey.serverEndpoint);
+    if (serverEndpoint == null) {
+      return false;
+    }
+
+    ServiceLocator.registerApiClient(serverEndpoint);
+    ServiceLocator.registerPostValidationServices();
+    ServiceLocator.registerPostGlobalStates();
+
+    final accessToken =
+        await di<IStoreRepository>().tryGet(StoreKey.accessToken);
+    if (accessToken == null) {
+      return false;
+    }
+
+    /// Set token to interceptor
+    await di<ImmichApiClient>().init(accessToken: accessToken);
+
+    final user = await di<UserService>().getMyUser();
+    if (user == null) {
+      return false;
+    }
+
+    return true;
   }
 }

@@ -3,6 +3,8 @@
 *.gr.dart
 *.drift.dart
 *.gen.dart
+*.g.swift
+*.g.kt
 openapi/*
 
 # Miscellaneous
