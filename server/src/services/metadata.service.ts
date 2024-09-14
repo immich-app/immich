@@ -629,11 +629,16 @@ export class MetadataService {
       this.logger.debug(`Asset ${asset.id} local time is offset by ${offsetMinutes} minutes`);
     }
 
+    let modifyDate = asset.fileModifiedAt;
+    try {
+      modifyDate = (exifTags.ModifyDate as ExifDateTime)?.toDate() ?? modifyDate;
+    } catch {}
+
     return {
       dateTimeOriginal,
       timeZone,
       localDateTime,
-      modifyDate: (exifTags.ModifyDate as ExifDateTime)?.toDate() ?? asset.fileModifiedAt,
+      modifyDate,
     };
   }
 

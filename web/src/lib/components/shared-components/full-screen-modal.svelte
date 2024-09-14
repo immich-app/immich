@@ -74,7 +74,7 @@
     aria-modal="true"
     aria-labelledby={titleId}
   >
-    <div class="immich-scrollbar overflow-y-auto max-h-[min(85dvh,44rem)]">
+    <div class="immich-scrollbar overflow-y-auto max-h-[min(85dvh,44rem)] py-1">
       <ModalHeader id={titleId} {title} {showLogo} {icon} {onClose} />
       <div class="px-5 pt-0" class:pb-5={isStickyBottom}>
         <slot />
