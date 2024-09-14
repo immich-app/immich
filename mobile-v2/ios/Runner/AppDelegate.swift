@@ -8,6 +8,11 @@ import Flutter
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+
+    // Register piegon handler
+    let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
+    ImmichHostServiceSetup.setUp(binaryMessenger: controller.binaryMessenger, api: ImmichHostServiceImpl())
+    
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
