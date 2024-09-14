@@ -75,7 +75,7 @@
     aria-labelledby={titleId}
   >
     <div
-      class="immich-scrollbar overflow-y-auto max-h-[min(92dvh,64rem)]"
+      class="immich-scrollbar overflow-y-auto max-h-[min(92dvh,64rem)] py-1"
       class:scroll-pb-40={isStickyBottom}
       class:sm:scroll-p-24={isStickyBottom}
     >

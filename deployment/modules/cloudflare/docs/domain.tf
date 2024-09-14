@@ -18,7 +18,7 @@ output "immich_app_branch_subdomain" {
 }
 
 output "immich_app_branch_pages_hostname" {
-  value = cloudflare_record.immich_app_branch_subdomain.value
+  value = cloudflare_record.immich_app_branch_subdomain.content
 }
 
 output "pages_project_name" {
