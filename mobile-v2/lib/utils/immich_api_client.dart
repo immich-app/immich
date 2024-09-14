@@ -70,10 +70,8 @@ class ImmichApiClient extends ApiClient with LogContext {
   static dynamic _patchDto(dynamic value, String targetType) {
     switch (targetType) {
       case 'UserPreferencesResponseDto':
-        if (value is Map) {
-          if (value['rating'] == null) {
-            value['rating'] = RatingResponse().toJson();
-          }
+        if (value is Map && value['rating'] == null) {
+          value['rating'] = RatingResponse().toJson();
         }
     }
   }

@@ -49,15 +49,23 @@ class LoginForm extends StatelessWidget {
   }
 }
 
-class _ServerForm extends StatelessWidget {
+class _ServerForm extends StatefulWidget {
   final TextEditingController controller;
-  final GlobalKey<FormState> _formKey = GlobalKey();
 
-  _ServerForm({required this.controller});
+  const _ServerForm({required this.controller});
+
+  @override
+  State createState() => _ServerFormState();
+}
+
+class _ServerFormState extends State<_ServerForm> {
+  final GlobalKey<FormState> _formKey = GlobalKey();
 
   Future<void> _validateForm(BuildContext context) async {
     if (_formKey.currentState?.validate() == true) {
-      await context.read<LoginPageCubit>().validateServer(controller.text);
+      await context
+          .read<LoginPageCubit>()
+          .validateServer(widget.controller.text);
     }
   }
 
@@ -72,7 +80,7 @@ class _ServerForm extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ImTextFormField(
-              controller: controller,
+              controller: widget.controller,
               label: context.t.login.label.endpoint,
               validator: context.read<LoginPageCubit>().validateServerUrl,
               autoFillHints: const [AutofillHints.url],

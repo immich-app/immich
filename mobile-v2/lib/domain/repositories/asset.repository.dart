@@ -4,9 +4,9 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.drift.dart';
 import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
+import 'package:immich_mobile/domain/models/render_list.model.dart';
 import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
-import 'package:immich_mobile/domain/services/render_list.service.dart';
 import 'package:immich_mobile/utils/extensions/drift.extension.dart';
 import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
 
@@ -54,7 +54,7 @@ class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
   }
 
   @override
-  Stream<RenderList> getRenderList() {
+  Stream<RenderList> watchRenderList() {
     final assetCountExp = _db.asset.id.count();
     final createdTimeExp = _db.asset.createdTime;
     final monthYearExp = _db.asset.createdTime.strftime('%m-%Y');
@@ -83,19 +83,7 @@ class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
           ];
         })
         .watch()
-        .map((elements) {
-          final int totalCount;
-          final lastAssetElement =
-              elements.whereType<RenderListAssetElement>().lastOrNull;
-          if (lastAssetElement == null) {
-            totalCount = 0;
-          } else {
-            totalCount =
-                lastAssetElement.assetCount + lastAssetElement.assetOffset;
-          }
-
-          return RenderList(elements: elements, totalCount: totalCount);
-        });
+        .map((elements) => RenderList(elements: elements));
   }
 }
 

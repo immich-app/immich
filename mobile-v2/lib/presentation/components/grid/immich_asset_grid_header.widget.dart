@@ -9,18 +9,15 @@ class _HeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 32.0, left: 16.0, right: 12.0),
+      padding: const EdgeInsets.only(top: 32.0, left: 16.0, right: 24.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(text, style: style),
           const Spacer(),
-          IconButton(
-            // ignore: no-empty-block
-            onPressed: () {},
-            icon: Icon(
-              Symbols.check_circle_rounded,
-              color: context.colorScheme.onSurfaceVariant,
-            ),
+          Icon(
+            Symbols.check_circle_rounded,
+            color: context.colorScheme.onSurface,
           ),
         ],
       ),
@@ -37,7 +34,11 @@ class _MonthHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return _HeaderText(
       text: text,
-      style: context.textTheme.bodyLarge?.copyWith(fontSize: 24.0),
+      style: context.textTheme.bodyLarge?.copyWith(
+        fontSize: 24.0,
+        fontWeight: FontWeight.w500,
+        color: context.colorScheme.onSurface,
+      ),
     );
   }
 }

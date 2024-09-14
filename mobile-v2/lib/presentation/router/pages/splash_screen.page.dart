@@ -18,6 +18,7 @@ class SplashScreenWrapperPage extends AutoRouter implements AutoRouteWrapper {
 }
 
 @RoutePage()
+// ignore: prefer-single-widget-per-file
 class SplashScreenPage extends StatefulWidget {
   const SplashScreenPage({super.key});
 

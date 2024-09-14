@@ -29,6 +29,10 @@ class RenderListMonthHeaderElement extends RenderListElement {
   }
 
   @override
+  String toString() =>
+      'RenderListMonthHeaderElement(header: $header, date: $date)';
+
+  @override
   bool operator ==(covariant RenderListMonthHeaderElement other) {
     if (identical(this, other)) return true;
 
@@ -43,6 +47,10 @@ class RenderListDayHeaderElement extends RenderListElement {
   final String header;
 
   const RenderListDayHeaderElement({required super.date, required this.header});
+
+  @override
+  String toString() =>
+      'RenderListDayHeaderElement(header: $header, date: $date)';
 
   @override
   bool operator ==(covariant RenderListDayHeaderElement other) {

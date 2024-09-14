@@ -1,5 +1,5 @@
 import 'package:immich_mobile/domain/models/asset.model.dart';
-import 'package:immich_mobile/domain/services/render_list.service.dart';
+import 'package:immich_mobile/domain/models/render_list.model.dart';
 
 abstract class IAssetRepository {
   /// Batch insert asset
@@ -12,5 +12,5 @@ abstract class IAssetRepository {
   Future<List<Asset>> fetchAssets({int? offset, int? limit});
 
   /// Streams assets as groups grouped by the group type passed
-  Stream<RenderList> getRenderList();
+  Stream<RenderList> watchRenderList();
 }

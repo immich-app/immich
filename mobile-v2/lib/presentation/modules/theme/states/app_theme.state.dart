@@ -7,7 +7,7 @@ import 'package:immich_mobile/presentation/modules/theme/models/app_theme.model.
 
 class AppThemeCubit extends Cubit<AppTheme> {
   final AppSettingService _appSettings;
-  StreamSubscription? _appSettingSubscription;
+  late final StreamSubscription _appSettingSubscription;
 
   AppThemeCubit(this._appSettings) : super(AppTheme.blue) {
     _appSettingSubscription = _appSettings
@@ -17,7 +17,7 @@ class AppThemeCubit extends Cubit<AppTheme> {
 
   @override
   Future<void> close() {
-    _appSettingSubscription?.cancel();
+    _appSettingSubscription.cancel();
     return super.close();
   }
 }

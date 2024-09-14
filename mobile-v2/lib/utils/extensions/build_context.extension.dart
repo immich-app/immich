@@ -20,6 +20,12 @@ extension BuildContextHelper on BuildContext {
   /// Get the [EdgeInsets] of [MediaQuery]
   EdgeInsets get viewInsets => MediaQuery.viewInsetsOf(this);
 
+  // Returns the current width from MediaQuery
+  double get width => mediaQuerySize.width;
+
+  // Returns the current height from MediaQuery
+  double get height => mediaQuerySize.height;
+
   /// True if the current device is a Tablet
   bool get isTablet => (mediaQuerySize.width >= 600);
 

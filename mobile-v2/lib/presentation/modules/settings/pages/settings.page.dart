@@ -22,6 +22,7 @@ class SettingsWrapperPage extends StatelessWidget {
 }
 
 @RoutePage()
+// ignore: prefer-single-widget-per-file
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
@@ -35,9 +36,7 @@ class SettingsPage extends StatelessWidget {
           final section = SettingSection.values.elementAt(index);
           return ListTile(
             title: Text(context.t[section.labelKey]),
-            onTap: () {
-              context.navigateRoot(section.destination);
-            },
+            onTap: () => context.navigateRoot(section.destination),
             leading: Icon(section.icon),
           );
         },

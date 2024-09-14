@@ -19,7 +19,7 @@ class LogManager {
 
   List<LogMessage> _msgBuffer = [];
   Timer? _timer;
-  late StreamSubscription<LogRecord> _subscription;
+  late final StreamSubscription<LogRecord> _subscription;
 
   void _onLogRecord(LogRecord record) {
     // Only print in development

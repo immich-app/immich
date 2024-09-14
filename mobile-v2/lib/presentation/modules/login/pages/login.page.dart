@@ -53,6 +53,12 @@ class _LoginPageState extends State<LoginPage>
     _passwordController.text = 'demo';
   }
 
+  void _onLoginPageStateChange(BuildContext context, LoginPageState state) {
+    if (state.isLoginSuccessful) {
+      context.replaceRoute(const TabControllerRoute());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final PreferredSizeWidget? appBar;
@@ -154,11 +160,7 @@ class _LoginPageState extends State<LoginPage>
     }
 
     return BlocListener<LoginPageCubit, LoginPageState>(
-      listener: (_, loginState) {
-        if (loginState.isLoginSuccessful) {
-          context.replaceRoute(const TabControllerRoute());
-        }
-      },
+      listener: _onLoginPageStateChange,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: appBar,
