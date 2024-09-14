@@ -80,12 +80,12 @@
       class:sm:scroll-p-24={isStickyBottom}
     >
       <ModalHeader id={titleId} {title} {showLogo} {icon} {onClose} />
-      <div class="px-5 pt-0" class:pb-5={isStickyBottom}>
+      <div class="px-5 pt-0">
         <slot />
       </div>
       {#if isStickyBottom}
         <div
-          class="flex flex-col sm:flex-row justify-end w-full gap-2 sm:gap-4 sticky bottom-0 pt-4 px-5 bg-immich-bg dark:bg-immich-dark-gray border-t border-gray-200 dark:border-gray-500 shadow z-[9999]"
+          class="flex flex-col sm:flex-row justify-end w-full gap-2 sm:gap-4 sticky -bottom-[4px] py-2 px-5 bg-immich-bg dark:bg-immich-dark-gray border-t border-gray-200 dark:border-gray-500 shadow z-[9999]"
         >
           <slot name="sticky-bottom" />
         </div>
