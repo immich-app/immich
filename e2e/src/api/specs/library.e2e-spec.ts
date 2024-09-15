@@ -851,4 +851,26 @@ describe('/libraries', () => {
       expect(existsSync(`${testAssetDir}/temp/directoryB/assetB.png`)).toBe(true);
     });
   });
+
+  describe('POST /search/metadata', () => {
+    it('should search by originalPath', async () => {
+      const directory = `some-61498-directory`;
+      const infix = 'me-61498-di';
+
+      utils.createImageFile(`${testAssetDir}/temp/${directory}/assetZ.jpg`);
+      await scan(admin.accessToken, library.id);
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .send({ originalPath: infix })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.assets).toBeDefined();
+      expect(Array.isArray(body.assets.items)).toBe(true);
+      expect(body.assets.items).toHaveLength(1);
+      expect(body.assets.items[0]).toEqual(expect.objectContaining({ originalFileName: 'assetZ.jpg' }));
+    });
+  });
 });
