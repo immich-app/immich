@@ -1,4 +1,5 @@
 import { BinaryField, ExifDateTime } from 'exiftool-vendored';
+import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
@@ -854,10 +855,30 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(tags);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           timeZone: 'UTC+0',
+          dateTimeOriginal: DateTime.fromISO('2024-09-01T00:00:00.000Z').toJSDate(),
+        }),
+      );
+    });
+
+    it('should extract +00:00 timezone from raw value despite conflicting GPS location/timezone', async () => {
+      // exiftool-vendored returns a timezone derived from GPS coordinates even though "+00:00" might be set explicitly
+      // https://github.com/photostructure/exiftool-vendored.js/issues/203
+
+      const tags: ImmichTags = {
+        DateTimeOriginal: ExifDateTime.fromISO('2024-09-15T00:00:00.000+00:00'),
+        tz: 'America/Santiago',
+      };
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue(tags);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeZone: 'UTC+0',
+          dateTimeOriginal: DateTime.fromISO('2024-09-15T00:00:00.000Z').toJSDate(),
         }),
       );
     });

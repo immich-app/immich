@@ -608,12 +608,10 @@ export class MetadataService {
     }
 
     // timezone
-    let timeZone = exifTags.tz ?? null;
-    if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
-      // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
-      // https://github.com/photostructure/exiftool-vendored.js/issues/203
-      timeZone = 'UTC+0';
-    }
+    // exiftool-vendored returns "no timezone" information or one derived from GPS coordinates even though "+00:00"
+    // might be set explicitly
+    // https://github.com/photostructure/exiftool-vendored.js/issues/203
+    const timeZone = dateTime?.rawValue?.endsWith('+00:00') ? 'UTC+0' : (exifTags.tz ?? null);
 
     if (timeZone) {
       this.logger.debug(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
