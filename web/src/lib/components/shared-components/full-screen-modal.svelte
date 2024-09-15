@@ -82,7 +82,7 @@
     </div>
     {#if isStickyBottom}
       <div
-        class="flex flex-col sm:flex-row justify-end w-full gap-2 sm:gap-4 sticky -bottom-[4px] py-2 px-5 bg-immich-bg dark:bg-immich-dark-gray border-t border-gray-200 dark:border-gray-500"
+        class="flex flex-col sm:flex-row justify-end w-full gap-2 sm:gap-4 sticky pt-4 px-5 bg-immich-bg dark:bg-immich-dark-gray border-t border-gray-200 dark:border-gray-500"
       >
         <slot name="sticky-bottom" />
       </div>
