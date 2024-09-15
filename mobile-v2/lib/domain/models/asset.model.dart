@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:immich_mobile/utils/collection_util.dart';
 import 'package:immich_mobile/utils/extensions/string.extension.dart';
 import 'package:openapi/api.dart';
 
@@ -70,8 +72,8 @@ class Asset {
     DateTime? createdTime,
     DateTime? modifiedTime,
     int? duration,
-    String? localId,
-    String? remoteId,
+    ValueGetter<String?>? localId,
+    ValueGetter<String?>? remoteId,
     String? livePhotoVideoId,
   }) {
     return Asset(
@@ -84,9 +86,29 @@ class Asset {
       createdTime: createdTime ?? this.createdTime,
       modifiedTime: modifiedTime ?? this.modifiedTime,
       duration: duration ?? this.duration,
-      localId: localId ?? this.localId,
-      remoteId: remoteId ?? this.remoteId,
+      localId: localId != null ? localId() : this.localId,
+      remoteId: remoteId != null ? remoteId() : this.remoteId,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+    );
+  }
+
+  Asset merge(Asset newAsset) {
+    if (newAsset.modifiedTime.isAfter(modifiedTime)) {
+      return newAsset.copyWith(
+        height: newAsset.height ?? height,
+        width: newAsset.width ?? width,
+        localId: () => newAsset.localId ?? localId,
+        remoteId: () => newAsset.remoteId ?? remoteId,
+        livePhotoVideoId: newAsset.livePhotoVideoId ?? livePhotoVideoId,
+      );
+    }
+
+    return copyWith(
+      height: height ?? newAsset.height,
+      width: width ?? newAsset.width,
+      localId: () => localId ?? newAsset.localId,
+      remoteId: () => remoteId ?? newAsset.remoteId,
+      livePhotoVideoId: livePhotoVideoId ?? newAsset.livePhotoVideoId,
     );
   }
 
@@ -140,6 +162,12 @@ class Asset {
         remoteId.hashCode ^
         livePhotoVideoId.hashCode;
   }
+
+  static int compareByRemoteId(Asset a, Asset b) =>
+      CollectionUtil.compareToNullable(a.remoteId, b.remoteId);
+
+  static int compareByLocalId(Asset a, Asset b) =>
+      CollectionUtil.compareToNullable(a.localId, b.localId);
 }
 
 AssetType _toAssetType(AssetTypeEnum type) => switch (type) {

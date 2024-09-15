@@ -1,3 +1,5 @@
+// ignore_for_file: avoid-passing-self-as-argument
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';

@@ -17,7 +17,6 @@ class ImAdaptiveRoutePrimaryAppBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-// ignore: prefer-single-widget-per-file
 class ImAdaptiveRouteSecondaryAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   const ImAdaptiveRouteSecondaryAppBar({super.key});

@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/models/render_list.model.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
 
 typedef RenderListProvider = Stream<RenderList> Function();
-typedef RenderListAssetProvider = Future<List<Asset>> Function({
+typedef RenderListAssetProvider = FutureOr<List<Asset>> Function({
   int? offset,
   int? limit,
 });

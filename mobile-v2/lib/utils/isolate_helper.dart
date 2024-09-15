@@ -16,12 +16,18 @@ class _ImApiClientData {
   const _ImApiClientData({required this.endpoint, required this.headersMap});
 }
 
+class InvalidIsolateUsageException implements Exception {
+  const InvalidIsolateUsageException();
+
+  @override
+  String toString() =>
+      "IsolateHelper should only be used from the root isolate";
+}
+
 // !! Should be used only from the root isolate
 class IsolateHelper {
   // Cache the ApiClient to reconstruct it later after inside the isolate
   late final _ImApiClientData? _clientData;
-
-  static RootIsolateToken get _rootToken => RootIsolateToken.instance!;
 
   IsolateHelper();
 
@@ -52,12 +58,21 @@ class IsolateHelper {
   }
 
   static Future<T> run<T>(FutureOr<T> Function() computation) async {
+    final token = RootIsolateToken.instance;
+    if (token == null) {
+      throw const InvalidIsolateUsageException();
+    }
+
     final helper = IsolateHelper()..preIsolateHandling();
-    final token = _rootToken;
     return await Isolate.run(() async {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
       helper.postIsolateHandling();
-      return await computation();
+      try {
+        return await computation();
+      } finally {
+        // Always close the new database connection on Isolate end
+        await di<DriftDatabaseRepository>().close();
+      }
     });
   }
 }

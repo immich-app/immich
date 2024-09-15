@@ -132,6 +132,7 @@ class LoginService with LogContext {
       return false;
     }
 
+    ServiceLocator.registerCurrentUser(user);
     return true;
   }
 }

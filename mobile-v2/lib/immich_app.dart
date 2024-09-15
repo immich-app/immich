@@ -17,6 +17,8 @@ class ImApp extends StatefulWidget {
 }
 
 class _ImAppState extends State<ImApp> with WidgetsBindingObserver {
+  _ImAppState();
+
   @override
   Widget build(BuildContext context) {
     return TranslationProvider(

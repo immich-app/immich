@@ -27,7 +27,6 @@ class ImLogo extends StatelessWidget {
   }
 }
 
-// ignore: prefer-single-widget-per-file
 class ImLogoText extends StatelessWidget {
   const ImLogoText({
     super.key,

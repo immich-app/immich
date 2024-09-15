@@ -75,7 +75,7 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
       _ => null,
     } as U?;
     if (primitive != null) {
-      return key.converter.fromPrimitive(primitive);
+      return await key.converter.fromPrimitive(primitive);
     }
     return null;
   }

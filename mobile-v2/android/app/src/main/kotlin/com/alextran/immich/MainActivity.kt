@@ -7,9 +7,9 @@ import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity: FlutterActivity() {
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-    super.configureFlutterEngine(flutterEngine)
-
     // Register piegon handler
     ImmichHostService.setUp(flutterEngine.dartExecutor.binaryMessenger, ImmichHostServiceImpl())
+
+    super.configureFlutterEngine(flutterEngine)
   }
 }

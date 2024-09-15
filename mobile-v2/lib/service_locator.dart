@@ -10,9 +10,9 @@ import 'package:immich_mobile/domain/repositories/log.repository.dart';
 import 'package:immich_mobile/domain/repositories/store.repository.dart';
 import 'package:immich_mobile/domain/repositories/user.repository.dart';
 import 'package:immich_mobile/domain/services/app_setting.service.dart';
+import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/domain/services/server_info.service.dart';
-import 'package:immich_mobile/domain/services/sync.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/presentation/modules/common/states/current_user.state.dart';
 import 'package:immich_mobile/presentation/modules/common/states/server_info/server_feature_config.state.dart';
@@ -92,7 +92,7 @@ class ServiceLocator {
     _registerFactory<ServerInfoService>(() => ServerInfoService(
           di<ImmichApiClient>().getServerApi(),
         ));
-    _registerFactory<SyncService>(() => SyncService());
+    _registerFactory<AssetSyncService>(() => const AssetSyncService());
   }
 
   static void registerPostGlobalStates() {

@@ -5,8 +5,8 @@ import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
-import 'package:immich_mobile/domain/services/sync.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/modules/common/states/server_info/server_feature_config.state.dart';
@@ -139,7 +139,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
     await di<IUserRepository>().add(user);
     // Remove and Sync assets in background
     await di<IAssetRepository>().clearAll();
-    unawaited(di<SyncService>().doFullSyncForUserDrift(user));
+    unawaited(di<AssetSyncService>().doFullRemoteSyncForUserDrift(user));
 
     emit(state.copyWith(
       isValidationInProgress: false,

@@ -85,6 +85,29 @@ class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
         .watch()
         .map((elements) => RenderList(elements: elements));
   }
+
+  @override
+  Future<List<Asset>> fetchLocalAssetsForIds(List<String> localIds) async {
+    final query = _db.asset.select()
+      ..where((row) => row.localId.isIn(localIds))
+      ..orderBy([(asset) => OrderingTerm.asc(asset.localId)]);
+
+    return (await query.get()).map(_toModel).toList();
+  }
+
+  @override
+  Future<List<Asset>> fetchRemoteAssetsForIds(List<String> remoteIds) async {
+    final query = _db.asset.select()
+      ..where((row) => row.remoteId.isIn(remoteIds))
+      ..orderBy([(asset) => OrderingTerm.asc(asset.remoteId)]);
+
+    return (await query.get()).map(_toModel).toList();
+  }
+
+  @override
+  FutureOr<void> deleteAssetsForIds(List<int> ids) async {
+    await _db.asset.deleteWhere((row) => row.id.isIn(ids));
+  }
 }
 
 AssetCompanion _toEntity(Asset asset) {
