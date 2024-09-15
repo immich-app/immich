@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
-import { Duration } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
@@ -52,6 +52,7 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'SubSecMediaCreateDate',
   'MediaCreateDate',
   'DateTimeCreated',
+  'TimeStamp',
 ];
 
 export enum Orientation {
@@ -615,6 +616,20 @@ export class MetadataService {
       timeZone = 'UTC+0';
     }
 
+    let offsetMinutes = dateTime?.tzoffsetMinutes || 0;
+    if (dateTime && timeZone == null) {
+      const { parsedTimezone, parsedOffsetMinutes } = this.parseSamsungTimeStamp(dateTime, exifTags);
+      if (parsedTimezone) {
+        timeZone = parsedTimezone;
+        dateTimeOriginal = ExifDateTime.fromMillis(
+          dateTime.toEpochSeconds() * 1000 -
+            parsedOffsetMinutes * 60 * 1000 -
+            dateTimeOriginal.getTimezoneOffset() * 60 * 1000,
+        ).toDate();
+        offsetMinutes = parsedOffsetMinutes;
+      }
+    }
+
     if (timeZone) {
       this.logger.debug(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
     } else {
@@ -622,7 +637,6 @@ export class MetadataService {
     }
 
     // offset minutes
-    const offsetMinutes = dateTime?.tzoffsetMinutes || 0;
     let localDateTime = dateTimeOriginal;
     if (offsetMinutes) {
       localDateTime = new Date(dateTimeOriginal.getTime() + offsetMinutes * 60_000);
@@ -640,6 +654,47 @@ export class MetadataService {
       localDateTime,
       modifyDate,
     };
+  }
+
+  /**
+   * Samsung devices may add information about the (timezone) offset in a non-standard tag, while not mentioning this
+   * information anywhere else. We can extract this offset information, which works by comparing the local time (for
+   * which we do not know the offset) with the UTC time.
+   */
+  private parseSamsungTimeStamp(
+    dateTime: ExifDateTime | undefined,
+    exifTags: ImmichTags,
+  ): {
+    parsedTimezone: string | null;
+    parsedOffsetMinutes: number;
+  } {
+    if (!dateTime || !exifTags.TimeStamp || !(exifTags.TimeStamp instanceof ExifDateTime)) {
+      return { parsedTimezone: null, parsedOffsetMinutes: 0 };
+    }
+
+    // we do not know the offset for the local time, just assume UTC for now
+    const localTimeAssumedUTC = DateTime.fromISO(dateTime.toISOString() + 'Z');
+    const timeStamp = exifTags.TimeStamp as ExifDateTime;
+
+    // timeStamp contains the local time in UTC: any difference between the two times is the offset we are looking for
+    const offsetSeconds = localTimeAssumedUTC.toUnixInteger() - timeStamp.toEpochSeconds();
+    const offsetMinutes = Math.floor(offsetSeconds / 60);
+    const offsetJustHours = Math.floor(Math.abs(offsetSeconds) / 60 / 60);
+    const offsetJustMinutes = (Math.abs(offsetSeconds) / 60) % 60;
+
+    // sanity check, offsets range from -12:00 to +14:00 with +13:45 and +05:45 as weird yet valid offsets
+    if (offsetSeconds < -12 * 60 * 60 || offsetSeconds > 14 * 60 * 60 || offsetJustMinutes % 15 != 0) {
+      this.logger.warn(`Unable to use Image_UTC_Data TimeStamp (${exifTags.TimeStamp}) to determine missing offset`);
+      return { parsedTimezone: null, parsedOffsetMinutes: 0 };
+    }
+
+    const sign = offsetSeconds >= 0 ? '+' : '-';
+    const timezone =
+      offsetMinutes > 0 ? `UTC${sign}${offsetJustHours}:${offsetJustMinutes}` : `UTC${sign}${offsetJustHours}`;
+    this.logger.debug(
+      `Determined timezone offset ${timezone} (${offsetMinutes} minutes) based on Samsung Image_UTC_Data TimeStamp`,
+    );
+    return { parsedTimezone: timezone, parsedOffsetMinutes: offsetMinutes };
   }
 
   private async getGeo(tags: ImmichTags, reverseGeocoding: SystemConfig['reverseGeocoding']) {

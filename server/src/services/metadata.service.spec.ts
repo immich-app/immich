@@ -1,4 +1,5 @@
 import { BinaryField, ExifDateTime } from 'exiftool-vendored';
+import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
@@ -858,6 +859,99 @@ describe(MetadataService.name, () => {
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           timeZone: 'UTC+0',
+        }),
+      );
+    });
+
+    it('should extract timezone offset from from Image_UTC_Data', async () => {
+      // A Samsung phone might provide the local time (e.g. 09:00) without any timezone or offset information. If the
+      // file also includes the non-standard trailer tag "TimeStamp" in "Image_UTC_Data", we can use the unix timestamp
+      // contained within to deduce the offset.
+      //
+      // As an example, if the local date/time is "2024-09-15T09:00" and the Image_UTC_Data Timestamp contains the
+      // unix timestamp is 1726408800 (which is 2024-09-15T16:00 UTC), we know that the offset is -07:00.
+      //
+      // Note that exiftool-vendored returns the ImageTag with the offset of the server's timezone. We are only
+      // interested in the underlying UTC value, though. As such, 2024-09-15T18:00[Europe/Berlin] is the same as
+      // 2024-09-15T16:00 UTC.
+      //
+      // Also see
+      // https://github.com/exiftool/exiftool/blob/0f63a780906abcccba796761fc2e66a0737e2f16/lib/Image/ExifTool/Samsung.pm#L996-L1001
+
+      const localDateWithoutTimezoneOrOffset = new ExifDateTime(2024, 9, 15, 9, 0, 0);
+      const sameDateWithTimezone = ExifDateTime.fromDateTime(
+        DateTime.fromISO('2024-09-15T18:00', { zone: 'Europe/Berlin' }),
+      );
+      const tags: ImmichTags = {
+        DateTimeOriginal: localDateWithoutTimezoneOrOffset,
+        TimeStamp: sameDateWithTimezone,
+        tz: undefined,
+      };
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue(tags);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeZone: 'UTC-7',
+          dateTimeOriginal: DateTime.fromISO('2024-09-15T09:00-07:00').toJSDate(),
+        }),
+      );
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          localDateTime: DateTime.fromISO('2024-09-15T09:00Z').toJSDate(),
+        }),
+      );
+    });
+
+    it('should extract timezone offset from from Image_UTC_Data with 15min offset', async () => {
+      const localDateWithoutTimezoneOrOffset = new ExifDateTime(2024, 9, 15, 18, 15, 0);
+      const sameDateWithTimezone = ExifDateTime.fromDateTime(DateTime.fromISO('2024-09-15T16:00', { zone: 'utc' }));
+      const tags: ImmichTags = {
+        DateTimeOriginal: localDateWithoutTimezoneOrOffset,
+        TimeStamp: sameDateWithTimezone,
+        tz: undefined,
+      };
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue(tags);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeZone: 'UTC+2:15',
+          dateTimeOriginal: DateTime.fromISO('2024-09-15T18:15+02:15').toJSDate(),
+        }),
+      );
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          localDateTime: DateTime.fromISO('2024-09-15T18:15Z').toJSDate(),
+        }),
+      );
+    });
+
+    it('should ignore timezone offset with +2:16 offset', async () => {
+      const localDateWithoutTimezoneOrOffset = new ExifDateTime(2024, 9, 15, 18, 16, 0);
+      const sameDateWithTimezone = ExifDateTime.fromDateTime(DateTime.fromISO('2024-09-15T16:00', { zone: 'utc' }));
+      const tags: ImmichTags = {
+        DateTimeOriginal: localDateWithoutTimezoneOrOffset,
+        TimeStamp: sameDateWithTimezone,
+        tz: undefined,
+      };
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue(tags);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeZone: null,
+          // note: no "Z", this uses the server's local time
+          dateTimeOriginal: DateTime.fromISO('2024-09-15T18:16').toJSDate(),
+        }),
+      );
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          // note: no "Z", this uses the server's local time
+          localDateTime: DateTime.fromISO('2024-09-15T18:16').toJSDate(),
         }),
       );
     });
