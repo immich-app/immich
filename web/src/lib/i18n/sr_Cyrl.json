@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "НАПОМЕНА: Ovo se kasnije ne može promeniti!",
     "note_unlimited_quota": "Напомена: Unesite 0 za neograničenu kvotu",
     "notification_email_from_address": "Са адресе",
-    "notification_email_from_address_description": "Адреса е-поште пошиљаоца, на пример: \"Immich foto server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Адреса е-поште пошиљаоца, на пример: \"Immich foto server <noreply@example.com>\"",
     "notification_email_host_description": "Хост сервера е-поште (нпр. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Занемарите грешке сертификата",
     "notification_email_ignore_certificate_errors_description": "Игноришите грешке у валидацији ТЛС сертификата (не препоручује се)",

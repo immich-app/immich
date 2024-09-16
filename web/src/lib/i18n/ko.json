@@ -148,7 +148,7 @@
     "note_cannot_be_changed_later": "주의: 추후 변경할 수 없습니다!",
     "note_unlimited_quota": "참고: 할당량을 설정하지 않으려면 0을 입력하세요.",
     "notification_email_from_address": "보낸 사람 이메일",
-    "notification_email_from_address_description": "보낸 사람의 이메일 주소, 예: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "보낸 사람의 이메일 주소, 예: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "이메일 서버의 호스트 (예: smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "인증서 오류 무시",
     "notification_email_ignore_certificate_errors_description": "TLS 인증서 유효성 검사 오류 무시 (권장되지 않음)",

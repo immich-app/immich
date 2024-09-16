@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "注意：此项一旦设定，以后无法更改！",
     "note_unlimited_quota": "提示：输入0表示无限制",
     "notification_email_from_address": "发件人地址",
-    "notification_email_from_address_description": "发件人邮箱地址，例如“Immich 服务器 <noreply@immich.app>”",
+    "notification_email_from_address_description": "发件人邮箱地址，例如“Immich 服务器 <noreply@example.com>”",
     "notification_email_host_description": "邮件服务器主机（例如 smtp.immich.app）",
     "notification_email_ignore_certificate_errors": "忽略证书错误",
     "notification_email_ignore_certificate_errors_description": "忽略TLS证书验证错误（不建议）",

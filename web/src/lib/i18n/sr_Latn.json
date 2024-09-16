@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "NAPOMENA: Ovo se kasnije ne može promeniti!",
     "note_unlimited_quota": "Napomena: Unesite 0 za neograničenu kvotu",
     "notification_email_from_address": "Sa adrese",
-    "notification_email_from_address_description": "Adresa e-pošte pošiljaoca, na primer: \"Immich foto server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Adresa e-pošte pošiljaoca, na primer: \"Immich foto server <noreply@example.com>\"",
     "notification_email_host_description": "Host servera e-pošte (npr. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Zanemarite greške sertifikata",
     "notification_email_ignore_certificate_errors_description": "Ignorišite greške u validaciji TLS sertifikata (ne preporučuje se)",

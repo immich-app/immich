@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "UPOZORNĚNÍ: Toto nelze později změnit!",
     "note_unlimited_quota": "Upozornění: Pro neomezenou kvótu zadejte 0",
     "notification_email_from_address": "Adresa Od",
-    "notification_email_from_address_description": "E-mailová adresa odesílatele, např.: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "E-mailová adresa odesílatele, např.: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "Adresa e-mailového serveru (např. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Ignorovat chyby certifikátů",
     "notification_email_ignore_certificate_errors_description": "Ignorovat chyby ověření certifikátu TLS (nedoporučuje se)",
