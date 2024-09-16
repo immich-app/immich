@@ -517,6 +517,11 @@ export class LibraryService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_REMOVE_OFFLINE, data: { id } });
   }
 
+  async queueMigration(id: string) {
+    this.logger.verbose(`Queueing migration of library ${id}`);
+    await this.jobRepository.queue({ name: JobName.LIBARY_MIGRATE, data: { id } });
+  }
+
   async handleQueueAllScan(job: IBaseJob): Promise<JobStatus> {
     this.logger.debug(`Refreshing all external libraries: force=${job.force}`);
 
@@ -606,6 +611,27 @@ export class LibraryService {
       this.logger.debug(`Finished queueing deletion of ${offlineAssets} offline assets for library ${job.id}`);
     } else {
       this.logger.debug(`Found no offline assets to delete from library ${job.id}`);
+    }
+
+    return JobStatus.SUCCESS;
+  }
+
+  async handleMigrate(job: IEntityJob): Promise<JobStatus> {
+    this.logger.debug(`Migrating library ${job.id} to upload`);
+    const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_ONLINE, job.id, false),
+    );
+    for await (const assets of assetPagination) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE,
+          data: {
+            id: asset.id,
+            externalLibraryId: job.id,
+          },
+        })),
+      );
+      this.logger.verbose(`Queued migration of ${assets.length} asset(s) in library ${job.id}`);
     }
 
     return JobStatus.SUCCESS;

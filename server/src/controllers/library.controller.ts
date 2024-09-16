@@ -77,4 +77,11 @@ export class LibraryController {
   removeOfflineFiles(@Param() { id }: UUIDParamDto) {
     return this.service.queueRemoveOffline(id);
   }
+
+  @Post(':id/migrate')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated({ admin: true })
+  migrateLibrary(@Param() { id }: UUIDParamDto) {
+    return this.service.queueMigration(id);
+  }
 }

@@ -37,6 +37,7 @@ import { usePagination } from 'src/utils/pagination';
 export interface MoveAssetMetadata {
   storageLabel: string | null;
   filename: string;
+  externalLibraryId?: string;
 }
 
 interface RenderMetadata {
@@ -110,7 +111,7 @@ export class StorageTemplateService {
     }
   }
 
-  async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
+  async handleMigrationSingle({ id, externalLibraryId }: IEntityJob): Promise<JobStatus> {
     const config = await this.configCore.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
@@ -125,7 +126,7 @@ export class StorageTemplateService {
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
-    await this.moveAsset(asset, { storageLabel, filename });
+    await this.moveAsset(asset, { storageLabel, filename, externalLibraryId });
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
@@ -134,12 +135,12 @@ export class StorageTemplateService {
         return JobStatus.FAILED;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename, externalLibraryId });
     }
     return JobStatus.SUCCESS;
   }
 
-  async handleMigration(): Promise<JobStatus> {
+  async handleMigration(externalLibraryId?: string): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
     const { storageTemplate } = await this.configCore.getConfig({ withCache: true });
     const { enabled } = storageTemplate;
@@ -157,7 +158,7 @@ export class StorageTemplateService {
         const user = users.find((user) => user.id === asset.ownerId);
         const storageLabel = user?.storageLabel || null;
         const filename = asset.originalFileName || asset.id;
-        await this.moveAsset(asset, { storageLabel, filename });
+        await this.moveAsset(asset, { storageLabel, filename, externalLibraryId });
       }
     }
 
@@ -171,9 +172,10 @@ export class StorageTemplateService {
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
-      // External assets are not affected by storage template
-      // TODO: shouldn't this only apply to external assets?
+    if (
+      (asset.isExternal && asset.libraryId !== metadata.externalLibraryId) ||
+      StorageCore.isAndroidMotionPath(asset.originalPath)
+    ) {
       return;
     }
 

@@ -241,6 +241,7 @@ export class StorageCore {
     }
 
     await this.savePath(pathType, entityId, newPath);
+    await this.assetRepository.update({ id: entityId, isExternal: false, libraryId: null });
     await this.moveRepository.delete(move);
   }
 

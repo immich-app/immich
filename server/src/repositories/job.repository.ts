@@ -83,6 +83,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
+  [JobName.LIBARY_MIGRATE]: QueueName.LIBRARY,
 
   // Notification
   [JobName.SEND_EMAIL]: QueueName.NOTIFICATION,

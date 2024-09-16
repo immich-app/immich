@@ -2023,6 +2023,14 @@ export function scanLibrary({ id, scanLibraryDto }: {
         body: scanLibraryDto
     })));
 }
+export function migrateLibrary({id}: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/migrate`, {
+        ...opts,
+        method: "POST"
+    }));
+}
 export function getLibraryStatistics({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {

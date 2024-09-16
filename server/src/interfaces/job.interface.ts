@@ -80,6 +80,7 @@ export enum JobName {
   LIBRARY_DELETE = 'library-delete',
   LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
+  LIBARY_MIGRATE = 'library-migrate',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -121,6 +122,7 @@ export interface IEntityJob extends IBaseJob {
   id: string;
   source?: 'upload' | 'sidecar-write' | 'copy';
   notify?: boolean;
+  externalLibraryId?: string;
 }
 
 export interface IAssetDeleteJob extends IEntityJob {
@@ -275,6 +277,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
   | { name: JobName.LIBRARY_CHECK_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
+  | { name: JobName.LIBARY_MIGRATE; data: IEntityJob }
 
   // Notification
   | { name: JobName.SEND_EMAIL; data: IEmailJob }

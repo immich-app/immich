@@ -23,6 +23,7 @@
     removeOfflineFiles,
     scanLibrary,
     updateLibrary,
+    migrateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
     type UserResponseDto,
@@ -181,6 +182,18 @@
     }
   };
 
+  const handleMigrateLibrary = async (libraryId: string) => {
+    try {
+      await migrateLibrary({ id: libraryId });
+      notificationController.show({
+        message: 'migrating', // $t('admin.migrating_library'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'error'); // $t('errors.unable_to_migrate_library'));
+    }
+  };
+
   const onRenameClicked = (index: number) => {
     closeAll();
     renameLibrary = index;
@@ -225,6 +238,13 @@
     closeAll();
     if (library) {
       await handleRemoveOffline(library.id);
+    }
+  };
+
+  const onMigrateLibraryClicked = async (library: LibraryResponseDto) => {
+    closeAll();
+    if (library) {
+      await handleMigrateLibrary(library.id);
     }
   };
 
@@ -374,6 +394,7 @@
                       onClick={() => onRemoveOfflineFilesClicked(library)}
                       text={$t('remove_offline_files')}
                     />
+                    <MenuOption onClick={() => onMigrateLibraryClicked(library)} text={'migrate'} />
                     <MenuOption
                       text={$t('delete_library')}
                       activeColor="bg-red-200"
