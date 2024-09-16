@@ -148,7 +148,7 @@
     "note_cannot_be_changed_later": "Huom: Tätä ei voi enää myöhemmin vaihtaa!",
     "note_unlimited_quota": "Huom: Määritä 0 rajoittamattomaksi kiintiöksi",
     "notification_email_from_address": "Lähettäjän osoite",
-    "notification_email_from_address_description": "Lähettäjän sähköpostiosoite. Esimerkiksi \"Immich Kuvapalvelin <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Lähettäjän sähköpostiosoite. Esimerkiksi \"Immich Kuvapalvelin <noreply@example.com>\"",
     "notification_email_host_description": "Sähköpostipalvelin (esim. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Älä huomioi sertifikaattivirheitä",
     "notification_email_ignore_certificate_errors_description": "Älä huomioi TLS sertifikaattien validointivirheitä (ei suositeltu)",

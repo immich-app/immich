@@ -125,7 +125,7 @@
     "migration_job_description": "Migreeri üksuste ja nägude pisipildid uusimale kaustastruktuurile",
     "note_cannot_be_changed_later": "MÄRKUS: Seda ei saa hiljem muuta!",
     "notification_email_from_address": "Saatja aadress",
-    "notification_email_from_address_description": "Saatja e-posti aadress, näiteks: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Saatja e-posti aadress, näiteks: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "E-posti serveri host (nt. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Ignoreeri sertifikaadi vigu",
     "notification_email_ignore_certificate_errors_description": "Ignoreeri TLS sertifikaadi valideerimise vigu (mittesoovituslik)",

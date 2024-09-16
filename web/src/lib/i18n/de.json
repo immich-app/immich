@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "HINWEIS: Dies kann später nicht mehr geändert werden!",
     "note_unlimited_quota": "Hinweis: 0 eingeben für unlimitiertes Kontingent",
     "notification_email_from_address": "Von",
-    "notification_email_from_address_description": "E-Mail-Adresse des Senders, zum Beispiel: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "E-Mail-Adresse des Senders, zum Beispiel: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "Host des E-Mail-Servers (z.B. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Ignoriere Zertifikats-Fehler",
     "notification_email_ignore_certificate_errors_description": "TLS-Zertifikatsvalidierungsfehler ignorieren (nicht empfohlen)",

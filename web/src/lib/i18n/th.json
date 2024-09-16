@@ -147,7 +147,7 @@
     "note_cannot_be_changed_later": "หมายเหตุ: ไม่สามารถเปลี่ยนภายหลังได้!",
     "note_unlimited_quota": "หมายเหตุ: ใส่เลข 0 สําหรับโควต้าไม่จํากัด",
     "notification_email_from_address": "จากที่อยู่",
-    "notification_email_from_address_description": "อีเมลผู้ส่ง อย่างเช่น \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "อีเมลผู้ส่ง อย่างเช่น \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "ที่อยู่เซิร์ฟเวอร์อีเมล (เช่น smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "ไม่สนใจข้อผิดพลาดเกี่ยวกับใบรับรอง",
     "notification_email_ignore_certificate_errors_description": "ไม่สนใจการยืนยันใบรับรอง TLS ผิดพลาด (ไม่แนะนำ)",

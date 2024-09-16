@@ -148,7 +148,7 @@
     "note_cannot_be_changed_later": "הערה: אי אפשר לשנות זאת מאוחר יותר!",
     "note_unlimited_quota": "הערה: הזן 0 עבור מכסת אחסון בלתי מוגבלת",
     "notification_email_from_address": "מכתובת",
-    "notification_email_from_address_description": "כתובת דוא\"ל של השולח, לדוגמה: \"Immich שרת תמונות <noreply@immich.app>\"",
+    "notification_email_from_address_description": "כתובת דוא\"ל של השולח, לדוגמה: \"Immich שרת תמונות <noreply@example.com>\"",
     "notification_email_host_description": "מארח שרת הדוא\"ל (למשל smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "התעלם משגיאות תעודה",
     "notification_email_ignore_certificate_errors_description": "התעלם משגיאות אימות תעודת TLS (לא מומלץ)",

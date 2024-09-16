@@ -146,7 +146,7 @@
     "note_cannot_be_changed_later": "MERK: Dette kan ikke endres senere!",
     "note_unlimited_quota": "Merk: Skriv inn 0 for ubegrenset kvote",
     "notification_email_from_address": "Fra adresse",
-    "notification_email_from_address_description": "Avsenderens e-postadresse, for eksempel: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Avsenderens e-postadresse, for eksempel: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "Verten til e-posts serveren (f.eks. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Ignorer sertifikatfeil",
     "notification_email_ignore_certificate_errors_description": "Ignorer valideringsfeil for TLS-sertifikat (ikke anbefalt)",

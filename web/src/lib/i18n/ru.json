@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "ПРИМЕЧАНИЕ: Это невозможно изменить позже!",
     "note_unlimited_quota": "Примечание: Введите 0 для неограниченной квоты или оставьте пустым",
     "notification_email_from_address": "Адрес отправителя",
-    "notification_email_from_address_description": "Адрес электронной почты отправителя, например: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Адрес электронной почты отправителя, например: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "Доменное имя почтового сервера (например, smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Игнорировать ошибки сертификата",
     "notification_email_ignore_certificate_errors_description": "Игнорировать ошибки проверки сертификата TLS (не рекомендуется)",

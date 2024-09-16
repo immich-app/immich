@@ -149,7 +149,7 @@
     "note_cannot_be_changed_later": "NOTA: Isto não pode ser alterado posteriormente!",
     "note_unlimited_quota": "Observação: insira 0 para cota ilimitada",
     "notification_email_from_address": "A partir do endereço",
-    "notification_email_from_address_description": "Endereço de e-mail do remetente, por exemplo: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Endereço de e-mail do remetente, por exemplo: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "Host do servidor de e-mail (por exemplo, smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Ignorar erros de certificado",
     "notification_email_ignore_certificate_errors_description": "Ignorar erros de validação de certificado TLS (não recomendado)",

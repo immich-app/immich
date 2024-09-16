@@ -150,7 +150,7 @@
     "note_cannot_be_changed_later": "NOTE: This cannot be changed later!",
     "note_unlimited_quota": "Note: Enter 0 for unlimited quota",
     "notification_email_from_address": "From address",
-    "notification_email_from_address_description": "Sender email address, for example: \"Immich Photo Server <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Sender email address, for example: \"Immich Photo Server <noreply@example.com>\"",
     "notification_email_host_description": "Host of the email server (e.g. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Ignore certificate errors",
     "notification_email_ignore_certificate_errors_description": "Ignore TLS certificate validation errors (not recommended)",
