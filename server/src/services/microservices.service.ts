@@ -15,6 +15,7 @@ import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
+import { TagService } from 'src/services/tag.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { otelShutdown } from 'src/utils/instrumentation';
@@ -34,6 +35,7 @@ export class MicroservicesService {
     private sessionService: SessionService,
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
+    private tagService: TagService,
     private userService: UserService,
     private duplicateService: DuplicateService,
     private versionService: VersionService,
@@ -93,6 +95,7 @@ export class MicroservicesService {
       [JobName.NOTIFY_ALBUM_INVITE]: (data) => this.notificationService.handleAlbumInvite(data),
       [JobName.NOTIFY_ALBUM_UPDATE]: (data) => this.notificationService.handleAlbumUpdate(data),
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
+      [JobName.TAG_CLEANUP]: () => this.tagService.handleTagCleanup(),
       [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
     });
   }

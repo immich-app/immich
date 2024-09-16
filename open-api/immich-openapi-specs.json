@@ -2561,6 +2561,39 @@
         "tags": [
           "Jobs"
         ]
+      },
+      "post": {
+        "operationId": "createJob",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Jobs"
+        ]
       }
     },
     "/jobs/{id}": {
@@ -9269,6 +9302,17 @@
         ],
         "type": "object"
       },
+      "JobCreateDto": {
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/ManualJobName"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "JobName": {
         "enum": [
           "thumbnailGeneration",
@@ -9510,6 +9554,14 @@
           "successful"
         ],
         "type": "object"
+      },
+      "ManualJobName": {
+        "enum": [
+          "person-cleanup",
+          "tag-cleanup",
+          "user-cleanup"
+        ],
+        "type": "string"
       },
       "MapMarkerResponseDto": {
         "properties": {

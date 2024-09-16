@@ -220,7 +220,7 @@
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}
-    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-10"
+    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-[10000]"
     class:border={isOpen}
     tabindex="-1"
   >
