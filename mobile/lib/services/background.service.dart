@@ -14,7 +14,7 @@ import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
-import 'package:immich_mobile/repositories/backupalbum.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
@@ -362,7 +362,7 @@ class BackgroundService {
     AlbumRepository albumRepository = AlbumRepository(db);
     AssetRepository assetRepository = AssetRepository(db);
     UserRepository userRepository = UserRepository(db);
-    BackupAlbumRepository backupAlbumRepository = BackupAlbumRepository(db);
+    BackupRepository backupAlbumRepository = BackupRepository(db);
     HashService hashService = HashService(db, this);
     SyncService syncSerive = SyncService(db, hashService);
     UserService userService =

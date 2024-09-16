@@ -17,8 +17,13 @@ class AssetRepository implements IAssetRepository {
   );
 
   @override
-  Future<List<Asset>> getByAlbumWithOwnerUnequal(Album album, User user) =>
-      album.assets.filter().not().ownerIdEqualTo(user.isarId).findAll();
+  Future<List<Asset>> getByAlbum(Album album, {User? notOwnedBy}) {
+    var query = album.assets.filter();
+    if (notOwnedBy != null) {
+      query = query.not().ownerIdEqualTo(notOwnedBy.isarId);
+    }
+    return query.findAll();
+  }
 
   @override
   Future<void> deleteById(List<int> ids) =>

@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/backupalbum.interface.dart';
+import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -18,7 +18,7 @@ import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
-import 'package:immich_mobile/repositories/backupalbum.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
@@ -35,7 +35,7 @@ final albumServiceProvider = Provider(
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
     ref.watch(userRepositoryProvider),
-    ref.watch(backupAlbumRepositoryProvider),
+    ref.watch(backupRepositoryProvider),
   ),
 );
 
@@ -46,7 +46,7 @@ class AlbumService {
   final IAlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;
   final IUserRepository _userRepository;
-  final IBackupAlbumRepository _backupAlbumRepository;
+  final IBackupRepository _backupAlbumRepository;
   final Logger _log = Logger('AlbumService');
   Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);
@@ -78,7 +78,7 @@ class AlbumService {
       final List<String> selectedIds = await _backupAlbumRepository
           .getIdsBySelection(BackupSelection.select);
       if (selectedIds.isEmpty) {
-        final numLocal = await _albumRepository.countLocal();
+        final numLocal = await _albumRepository.count(local: true);
         if (numLocal > 0) {
           _syncService.removeAllLocalAlbumsAndAssets();
         }
@@ -282,10 +282,7 @@ class AlbumService {
     if (album == null) return;
     await _albumRepository.addAssets(album, add);
     await _albumRepository.removeAssets(album, remove);
-    album.startDate = await _albumRepository.getStartDate(album);
-    album.endDate = await _albumRepository.getEndDate(album);
-    album.lastModifiedAssetTimestamp =
-        await _albumRepository.getLastModified(album);
+    await _albumRepository.recalculateMetadata(album);
     await _albumRepository.update(album);
   }
 
@@ -339,14 +336,14 @@ class AlbumService {
       }
       if (album.shared) {
         final foreignAssets =
-            await _assetRepository.getByAlbumWithOwnerUnequal(album, user);
-        await _albumRepository.delete(album);
+            await _assetRepository.getByAlbum(album, notOwnedBy: user);
+        await _albumRepository.delete(album.id);
 
         final List<Album> albums = await _albumRepository.getAll(shared: true);
         final List<Asset> existing = [];
         for (Album album in albums) {
           existing.addAll(
-            await _assetRepository.getByAlbumWithOwnerUnequal(album, user),
+            await _assetRepository.getByAlbum(album, notOwnedBy: user),
           );
         }
         final List<int> idsToRemove =
@@ -355,7 +352,7 @@ class AlbumService {
           await _assetRepository.deleteById(idsToRemove);
         }
       } else {
-        await _albumRepository.delete(album);
+        await _albumRepository.delete(album.id);
       }
       return true;
     } catch (e) {

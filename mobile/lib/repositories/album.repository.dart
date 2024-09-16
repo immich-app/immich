@@ -17,7 +17,11 @@ class AlbumRepository implements IAlbumRepository {
   );
 
   @override
-  Future<int> countLocal() => _db.albums.where().localIdIsNotNull().count();
+  Future<int> count({bool? local}) {
+    if (local == true) return _db.albums.where().localIdIsNotNull().count();
+    if (local == false) return _db.albums.where().remoteIdIsNotNull().count();
+    return _db.albums.count();
+  }
 
   @override
   Future<Album> create(Album album) =>
@@ -42,8 +46,8 @@ class AlbumRepository implements IAlbumRepository {
       _db.writeTxn(() => _db.albums.store(album));
 
   @override
-  Future<void> delete(Album album) =>
-      _db.writeTxn(() => _db.albums.delete(album.id));
+  Future<void> delete(int albumId) =>
+      _db.writeTxn(() => _db.albums.delete(albumId));
 
   @override
   Future<List<Album>> getAll({bool? shared}) {
@@ -71,13 +75,11 @@ class AlbumRepository implements IAlbumRepository {
       _db.writeTxn(() => album.assets.update(unlink: assets));
 
   @override
-  Future<DateTime?> getStartDate(Album album) =>
-      album.assets.filter().fileCreatedAtProperty().min();
-  @override
-  Future<DateTime?> getEndDate(Album album) =>
-      album.assets.filter().fileCreatedAtProperty().max();
-
-  @override
-  Future<DateTime?> getLastModified(Album album) =>
-      album.assets.filter().updatedAtProperty().max();
+  Future<Album> recalculateMetadata(Album album) async {
+    album.startDate = await album.assets.filter().fileCreatedAtProperty().min();
+    album.endDate = await album.assets.filter().fileCreatedAtProperty().max();
+    album.lastModifiedAssetTimestamp =
+        await album.assets.filter().updatedAtProperty().max();
+    return album;
+  }
 }
