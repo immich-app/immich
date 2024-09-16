@@ -9,6 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   ArgsOf,
   ClientEventMap,
@@ -19,6 +20,8 @@ import {
   ServerEventMap,
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { AuthService } from 'src/services/auth.service';
 import { Instrumentation } from 'src/utils/instrumentation';
 
@@ -33,6 +36,7 @@ type EmitHandlers = Partial<{ [T in EmitEvent]: EmitHandler<T>[] }>;
 @Injectable()
 export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, IEventRepository {
   private emitHandlers: EmitHandlers = {};
+  private configCore: SystemConfigCore;
 
   @WebSocketServer()
   private server?: Server;
@@ -41,8 +45,11 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     private moduleRef: ModuleRef,
     private eventEmitter: EventEmitter2,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
   ) {
     this.logger.setContext(EventRepository.name);
+    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   afterInit(server: Server) {
@@ -68,6 +75,16 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
         queryParams: {},
         metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io' },
       });
+      if ('background' in client.handshake.query && client.handshake.query.background === 'false') {
+        const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+        if (machineLearning.clip.loadTextualModelOnConnection.enabled) {
+          try {
+            this.machineLearningRepository.loadTextModel(machineLearning.url, machineLearning.clip);
+          } catch (error) {
+            this.logger.warn(error);
+          }
+        }
+      }
       await client.join(auth.user.id);
       if (auth.session) {
         await client.join(auth.session.id);

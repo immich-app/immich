@@ -75,6 +75,38 @@
               </FormatMessage>
             </p>
           </SettingInputField>
+
+          <SettingAccordion
+            key="Preload clip model"
+            title={$t('admin.machine_learning_preload_model')}
+            subtitle={$t('admin.machine_learning_preload_model_setting_description')}
+          >
+            <div class="ml-4 mt-4 flex flex-col gap-4">
+              <SettingSwitch
+                title={$t('admin.machine_learning_preload_model_enabled')}
+                subtitle={$t('admin.machine_learning_preload_model_enabled_description')}
+                bind:checked={config.machineLearning.clip.loadTextualModelOnConnection.enabled}
+                disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
+              />
+
+              <hr />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label={$t('admin.machine_learning_preload_model_ttl')}
+                bind:value={config.machineLearning.clip.loadTextualModelOnConnection.ttl}
+                step="1"
+                min={0}
+                desc={$t('admin.machine_learning_max_detection_distance_description')}
+                disabled={disabled ||
+                  !config.machineLearning.enabled ||
+                  !config.machineLearning.clip.enabled ||
+                  !config.machineLearning.clip.loadTextualModelOnConnection.enabled}
+                isEdited={config.machineLearning.clip.loadTextualModelOnConnection.ttl !==
+                  savedConfig.machineLearning.clip.loadTextualModelOnConnection.ttl}
+              />
+            </div>
+          </SettingAccordion>
         </div>
       </SettingAccordion>
 

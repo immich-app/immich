@@ -20,18 +20,33 @@ const errorPrefix = 'Machine learning request';
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
   private async predict<T>(url: string, payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
-    const formData = await this.getFormData(payload, config);
+    const formData = await this.getFormData(config, payload);
 
-    const res = await fetch(new URL('/predict', url), { method: 'POST', body: formData }).catch(
-      (error: Error | any) => {
-        throw new Error(`${errorPrefix} to "${url}" failed with ${error?.cause || error}`);
-      },
-    );
+    const res = await this.fetchData(url, '/predict', formData);
 
     if (res.status >= 400) {
       throw new Error(`${errorPrefix} '${JSON.stringify(config)}' failed with status ${res.status}: ${res.statusText}`);
     }
     return res.json();
+  }
+
+  private async fetchData(url: string, path: string, formData?: FormData): Promise<Response> {
+    const res = await fetch(new URL(path, url), { method: 'POST', body: formData }).catch((error: Error | any) => {
+      throw new Error(`${errorPrefix} to "${url}" failed with ${error?.cause || error}`);
+    });
+
+    return res;
+  }
+
+  async loadTextModel(url: string, { modelName, loadTextualModelOnConnection: { ttl } }: CLIPConfig) {
+    try {
+      const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, ttl } } };
+      const formData = await this.getFormData(request);
+      const res = await this.fetchData(url, '/load', formData);
+      if (res.status >= 400) {
+        throw new Error(`${errorPrefix} Loadings textual model failed with status ${res.status}: ${res.statusText}`);
+      }
+    } catch (error) {}
   }
 
   async detectFaces(url: string, imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
@@ -61,16 +76,17 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
-  private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {
+  private async getFormData(config: MachineLearningRequest, payload?: ModelPayload): Promise<FormData> {
     const formData = new FormData();
     formData.append('entries', JSON.stringify(config));
-
-    if ('imagePath' in payload) {
-      formData.append('image', new Blob([await readFile(payload.imagePath)]));
-    } else if ('text' in payload) {
-      formData.append('text', payload.text);
-    } else {
-      throw new Error('Invalid input');
+    if (payload) {
+      if ('imagePath' in payload) {
+        formData.append('image', new Blob([await readFile(payload.imagePath)]));
+      } else if ('text' in payload) {
+        formData.append('text', payload.text);
+      } else {
+        throw new Error('Invalid input');
+      }
     }
 
     return formData;

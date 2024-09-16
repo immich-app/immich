@@ -8603,12 +8603,16 @@
           "enabled": {
             "type": "boolean"
           },
+          "loadTextualModelOnConnection": {
+            "$ref": "#/components/schemas/LoadTextualModelOnConnection"
+          },
           "modelName": {
             "type": "string"
           }
         },
         "required": [
           "enabled",
+          "loadTextualModelOnConnection",
           "modelName"
         ],
         "type": "object"
@@ -9430,6 +9434,23 @@
           "activatedAt",
           "activationKey",
           "licenseKey"
+        ],
+        "type": "object"
+      },
+      "LoadTextualModelOnConnection": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "ttl": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "ttl"
         ],
         "type": "object"
       },

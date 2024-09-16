@@ -151,6 +151,7 @@ part 'model/library_response_dto.dart';
 part 'model/library_stats_response_dto.dart';
 part 'model/license_key_dto.dart';
 part 'model/license_response_dto.dart';
+part 'model/load_textual_model_on_connection.dart';
 part 'model/log_level.dart';
 part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';

@@ -14,30 +14,36 @@ class CLIPConfig {
   /// Returns a new [CLIPConfig] instance.
   CLIPConfig({
     required this.enabled,
+    required this.loadTextualModelOnConnection,
     required this.modelName,
   });
 
   bool enabled;
+
+  LoadTextualModelOnConnection loadTextualModelOnConnection;
 
   String modelName;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CLIPConfig &&
     other.enabled == enabled &&
+    other.loadTextualModelOnConnection == loadTextualModelOnConnection &&
     other.modelName == modelName;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
+    (loadTextualModelOnConnection.hashCode) +
     (modelName.hashCode);
 
   @override
-  String toString() => 'CLIPConfig[enabled=$enabled, modelName=$modelName]';
+  String toString() => 'CLIPConfig[enabled=$enabled, loadTextualModelOnConnection=$loadTextualModelOnConnection, modelName=$modelName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
+      json[r'loadTextualModelOnConnection'] = this.loadTextualModelOnConnection;
       json[r'modelName'] = this.modelName;
     return json;
   }
@@ -51,6 +57,7 @@ class CLIPConfig {
 
       return CLIPConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        loadTextualModelOnConnection: LoadTextualModelOnConnection.fromJson(json[r'loadTextualModelOnConnection'])!,
         modelName: mapValueOfType<String>(json, r'modelName')!,
       );
     }
@@ -100,6 +107,7 @@ class CLIPConfig {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'enabled',
+    'loadTextualModelOnConnection',
     'modelName',
   };
 }

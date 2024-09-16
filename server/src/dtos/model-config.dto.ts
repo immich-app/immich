@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsObject, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { ValidateBoolean } from 'src/validation';
 
 export class TaskConfig {
@@ -14,7 +14,20 @@ export class ModelConfig extends TaskConfig {
   modelName!: string;
 }
 
-export class CLIPConfig extends ModelConfig {}
+export class LoadTextualModelOnConnection extends TaskConfig {
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'int64' })
+  ttl!: number;
+}
+
+export class CLIPConfig extends ModelConfig {
+  @Type(() => LoadTextualModelOnConnection)
+  @ValidateNested()
+  @IsObject()
+  loadTextualModelOnConnection!: LoadTextualModelOnConnection;
+}
 
 export class DuplicateDetectionConfig extends TaskConfig {
   @IsNumber()

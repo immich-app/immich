@@ -35,6 +35,9 @@ const websocket: Socket<Events> = io({
   reconnection: true,
   forceNew: true,
   autoConnect: false,
+  query: {
+    background: false,
+  },
 });
 
 export const websocketStore = {

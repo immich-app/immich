@@ -337,6 +337,7 @@ Class | Method | HTTP request | Description
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
  - [LicenseResponseDto](doc//LicenseResponseDto.md)
+ - [LoadTextualModelOnConnection](doc//LoadTextualModelOnConnection.md)
  - [LogLevel](doc//LogLevel.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)

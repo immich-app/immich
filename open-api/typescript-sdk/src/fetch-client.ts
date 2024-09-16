@@ -1100,8 +1100,13 @@ export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
 };
+export type LoadTextualModelOnConnection = {
+    enabled: boolean;
+    ttl: number;
+};
 export type ClipConfig = {
     enabled: boolean;
+    loadTextualModelOnConnection: LoadTextualModelOnConnection;
     modelName: string;
 };
 export type DuplicateDetectionConfig = {

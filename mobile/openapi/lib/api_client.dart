@@ -357,6 +357,8 @@ class ApiClient {
           return LicenseKeyDto.fromJson(value);
         case 'LicenseResponseDto':
           return LicenseResponseDto.fromJson(value);
+        case 'LoadTextualModelOnConnection':
+          return LoadTextualModelOnConnection.fromJson(value);
         case 'LogLevel':
           return LogLevelTypeTransformer().decode(value);
         case 'LoginCredentialDto':

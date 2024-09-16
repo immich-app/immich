@@ -109,6 +109,17 @@ class InferenceEntry(TypedDict):
     options: dict[str, Any]
 
 
+class LoadModelEntry(InferenceEntry):
+    ttl: int
+
+    def __init__(self, name: str, task: ModelTask, type: ModelType, options: dict[str, Any], ttl: int):
+        super().__init__(name=name, task=task, type=type, options=options)
+
+        if ttl <= 0:
+            raise ValueError("ttl must be a positive integer")
+        self.ttl = ttl
+
+
 InferenceEntries = tuple[list[InferenceEntry], list[InferenceEntry]]
 
 
