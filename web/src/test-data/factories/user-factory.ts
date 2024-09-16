@@ -8,6 +8,7 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   name: Sync.each(() => faker.person.fullName()),
   profileImagePath: '',
   avatarColor: UserAvatarColor.Primary,
+  profileChangedAt: Sync.each(() => faker.date.recent().toISOString()),
 });
 
 export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
@@ -31,4 +32,5 @@ export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
     activationKey: 'activation-key',
     activatedAt: new Date().toISOString(),
   },
+  profileChangedAt: Sync.each(() => faker.date.recent().toISOString()),
 });

@@ -204,7 +204,8 @@ export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: s
   return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: checksum });
 };
 
-export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));
+export const getProfileImageUrl = (userId: string, updatedAt?: string) =>
+  createUrl(getUserProfileImagePath(userId), { updatedAt });
 
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });

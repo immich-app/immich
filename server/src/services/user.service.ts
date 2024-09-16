@@ -95,11 +95,15 @@ export class UserService {
 
   async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
     const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
-    const updatedUser = await this.userRepository.update(auth.user.id, { profileImagePath: fileInfo.path });
+    const profileChangedAt = new Date();
+    const updatedUser = await this.userRepository.update(auth.user.id, {
+      profileImagePath: fileInfo.path,
+      profileChangedAt,
+    });
     if (oldpath !== '') {
       await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldpath] } });
     }
-    return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
+    return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath, profileChangedAt);
   }
 
   async deleteProfileImage(auth: AuthDto): Promise<void> {
@@ -107,7 +111,7 @@ export class UserService {
     if (user.profileImagePath === '') {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
-    await this.userRepository.update(auth.user.id, { profileImagePath: '' });
+    await this.userRepository.update(auth.user.id, { profileImagePath: '', profileChangedAt: new Date() });
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
