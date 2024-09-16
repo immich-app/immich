@@ -164,12 +164,13 @@ class Album {
 }
 
 extension AssetsHelper on IsarCollection<Album> {
-  Future<void> store(Album a) async {
+  Future<Album> store(Album a) async {
     await put(a);
     await a.owner.save();
     await a.thumbnail.save();
     await a.sharedUsers.save();
     await a.assets.save();
+    return a;
   }
 }
 
