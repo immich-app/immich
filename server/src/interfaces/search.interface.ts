@@ -1,7 +1,7 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { AssetType } from 'src/enum';
+import { AssetStatus, AssetType } from 'src/enum';
 import { Paginated } from 'src/utils/pagination';
 
 export const ISearchRepository = 'ISearchRepository';
@@ -61,6 +61,7 @@ export interface SearchStatusOptions {
   isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;
+  status?: AssetStatus;
   withArchived?: boolean;
   withDeleted?: boolean;
 }

@@ -8,6 +8,7 @@ SELECT
   "asset"."libraryId" AS "asset_libraryId",
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
+  "asset"."status" AS "asset_status",
   "asset"."originalPath" AS "asset_originalPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
