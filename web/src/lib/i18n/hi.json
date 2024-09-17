@@ -147,7 +147,7 @@
     "note_cannot_be_changed_later": "नोट: इसे बाद में बदला नहीं जा सकता!",
     "note_unlimited_quota": "नोट: असीमित कोटा के लिए 0 दर्ज करें",
     "notification_email_from_address": "इस पते से",
-    "notification_email_from_address_description": "प्रेषक का ईमेल पता, उदाहरण के लिए: \"इमिच फोटो सर्वर <noreply@immich.app>\"",
+    "notification_email_from_address_description": "प्रेषक का ईमेल पता, उदाहरण के लिए: \"इमिच फोटो सर्वर <noreply@example.com>\"",
     "notification_email_host_description": "ईमेल सर्वर का होस्ट (उदा. smtp.immitch.app)",
     "notification_email_ignore_certificate_errors": "प्रमाणपत्र त्रुटियों पर ध्यान न दें",
     "notification_email_ignore_certificate_errors_description": "टीएलएस प्रमाणपत्र सत्यापन त्रुटियों पर ध्यान न दें (अनुशंसित नहीं)",

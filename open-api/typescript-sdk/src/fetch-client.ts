@@ -548,6 +548,9 @@ export type AllJobStatusResponseDto = {
     thumbnailGeneration: JobStatusDto;
     videoConversion: JobStatusDto;
 };
+export type JobCreateDto = {
+    name: ManualJobName;
+};
 export type JobCommandDto = {
     command: JobCommand;
     force: boolean;
@@ -1940,6 +1943,15 @@ export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
     }>("/jobs", {
         ...opts
     }));
+}
+export function createJob({ jobCreateDto }: {
+    jobCreateDto: JobCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/jobs", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: jobCreateDto
+    })));
 }
 export function sendJobCommand({ id, jobCommandDto }: {
     id: JobName;
@@ -3363,6 +3375,11 @@ export enum AssetMediaSize {
 export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
+}
+export enum ManualJobName {
+    PersonCleanup = "person-cleanup",
+    TagCleanup = "tag-cleanup",
+    UserCleanup = "user-cleanup"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",

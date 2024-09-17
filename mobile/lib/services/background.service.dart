@@ -12,6 +12,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
+import 'package:immich_mobile/repositories/album.repository.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
+import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -355,12 +359,23 @@ class BackgroundService {
     AppSettingsService settingService = AppSettingsService();
     AppSettingsService settingsService = AppSettingsService();
     PartnerService partnerService = PartnerService(apiService, db);
+    AlbumRepository albumRepository = AlbumRepository(db);
+    AssetRepository assetRepository = AssetRepository(db);
+    UserRepository userRepository = UserRepository(db);
+    BackupRepository backupAlbumRepository = BackupRepository(db);
     HashService hashService = HashService(db, this);
     SyncService syncSerive = SyncService(db, hashService);
     UserService userService =
         UserService(apiService, db, syncSerive, partnerService);
-    AlbumService albumService =
-        AlbumService(apiService, userService, syncSerive, db);
+    AlbumService albumService = AlbumService(
+      apiService,
+      userService,
+      syncSerive,
+      albumRepository,
+      assetRepository,
+      userRepository,
+      backupAlbumRepository,
+    );
     BackupService backupService =
         BackupService(apiService, db, settingService, albumService);
 
