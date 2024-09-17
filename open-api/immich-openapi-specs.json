@@ -8779,6 +8779,10 @@
       },
       "CreateProfileImageResponseDto": {
         "properties": {
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -8787,6 +8791,7 @@
           }
         },
         "required": [
+          "profileChangedAt",
           "profileImagePath",
           "userId"
         ],
@@ -10015,6 +10020,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -10024,6 +10033,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"
@@ -12454,6 +12464,10 @@
           "oauthId": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -12492,6 +12506,7 @@
           "license",
           "name",
           "oauthId",
+          "profileChangedAt",
           "profileImagePath",
           "quotaSizeInBytes",
           "quotaUsageInBytes",
@@ -12653,6 +12668,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -12662,6 +12681,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"
