@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/media.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -19,13 +20,13 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
+import 'package:immich_mobile/repositories/media.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 final albumServiceProvider = Provider(
   (ref) => AlbumService(
@@ -36,6 +37,7 @@ final albumServiceProvider = Provider(
     ref.watch(assetRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(backupRepositoryProvider),
+    ref.watch(mediaRepositoryProvider),
   ),
 );
 
@@ -47,6 +49,7 @@ class AlbumService {
   final IAssetRepository _assetRepository;
   final IUserRepository _userRepository;
   final IBackupRepository _backupAlbumRepository;
+  final IMediaRepository _mediaRepository;
   final Logger _log = Logger('AlbumService');
   Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);
@@ -59,6 +62,7 @@ class AlbumService {
     this._assetRepository,
     this._userRepository,
     this._backupAlbumRepository,
+    this._mediaRepository,
   );
 
   /// Checks all selected device albums for changes of albums and their assets
@@ -84,11 +88,7 @@ class AlbumService {
         }
         return false;
       }
-      final List<AssetPathEntity> onDevice =
-          await PhotoManager.getAssetPathList(
-        hasAll: true,
-        filterOption: FilterOptionGroup(containsPathModified: true),
-      );
+      final List<Album> onDevice = await _mediaRepository.getAllAlbums();
       _log.info("Found ${onDevice.length} device albums");
       Set<String>? excludedAssets;
       if (excludedIds.isNotEmpty) {
@@ -104,13 +104,15 @@ class AlbumService {
           _log.info("Found ${excludedAssets.length} assets to exclude");
         }
         // remove all excluded albums
-        onDevice.removeWhere((e) => excludedIds.contains(e.id));
+        onDevice.removeWhere((e) => excludedIds.contains(e.localId));
         _log.info(
           "Ignoring ${excludedIds.length} excluded albums resulting in ${onDevice.length} device albums",
         );
       }
       final hasAll = selectedIds
-          .map((id) => onDevice.firstWhereOrNull((a) => a.id == id))
+          .map(
+            (id) => onDevice.firstWhereOrNull((album) => album.localId == id),
+          )
           .whereNotNull()
           .any((a) => a.isAll);
       if (hasAll) {
@@ -122,7 +124,7 @@ class AlbumService {
         }
       } else {
         // keep only the explicitly selected albums
-        onDevice.removeWhere((e) => !selectedIds.contains(e.id));
+        onDevice.removeWhere((e) => !selectedIds.contains(e.localId));
         _log.info("'Recents' is not selected, keeping only selected albums");
       }
       changes =
@@ -136,15 +138,15 @@ class AlbumService {
   }
 
   Future<Set<String>> _loadExcludedAssetIds(
-    List<AssetPathEntity> albums,
+    List<Album> albums,
     List<String> excludedAlbumIds,
   ) async {
     final Set<String> result = HashSet<String>();
-    for (AssetPathEntity a in albums) {
-      if (excludedAlbumIds.contains(a.id)) {
-        final List<AssetEntity> assets =
-            await a.getAssetListRange(start: 0, end: 0x7fffffffffffffff);
-        result.addAll(assets.map((e) => e.id));
+    for (Album album in albums) {
+      if (excludedAlbumIds.contains(album.localId)) {
+        final assetIds =
+            await _mediaRepository.getAssetIdsByAlbumId(album.localId!);
+        result.addAll(assetIds);
       }
     }
     return result;

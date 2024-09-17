@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
+import 'package:immich_mobile/repositories/media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
@@ -28,7 +30,7 @@ import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 class BackupNotifier extends StateNotifier<BackUpState> {
   BackupNotifier(
@@ -224,22 +226,24 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     Stopwatch stopwatch = Stopwatch()..start();
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
-    List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
-      hasAll: true,
-      type: RequestType.common,
-    );
+    List<Album> albums = await ref.read(mediaRepositoryProvider).getAllAlbums();
 
     // Map of id -> album for quick album lookup later on.
-    Map<String, AssetPathEntity> albumMap = {};
+    Map<String, Album> albumMap = {};
 
     log.info('Found ${albums.length} local albums');
 
-    for (AssetPathEntity album in albums) {
-      AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
+    for (Album album in albums) {
+      AvailableAlbum availableAlbum = AvailableAlbum(
+        album: album,
+        assetCount: await ref
+            .read(mediaRepositoryProvider)
+            .countAssetsInAlbum(album.localId!),
+      );
 
       availableAlbums.add(availableAlbum);
 
-      albumMap[album.id] = album;
+      albumMap[album.localId!] = album;
     }
     state = state.copyWith(availableAlbums: availableAlbums);
 
@@ -255,7 +259,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       if (albumAsset != null) {
         selectedAlbums.add(
-          AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
+          AvailableAlbum(
+            album: albumAsset,
+            assetCount: await ref
+                .read(mediaRepositoryProvider)
+                .countAssetsInAlbum(albumAsset.localId!),
+            lastBackup: ba.lastBackup,
+          ),
         );
       } else {
         log.severe('Selected album not found');
@@ -268,7 +278,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       if (albumAsset != null) {
         excludedAlbums.add(
-          AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
+          AvailableAlbum(
+            album: albumAsset,
+            assetCount: await ref
+                .read(mediaRepositoryProvider)
+                .countAssetsInAlbum(albumAsset.localId!),
+            lastBackup: ba.lastBackup,
+          ),
         );
       } else {
         log.severe('Excluded album not found');
@@ -297,16 +313,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<BackupCandidate> assetsFromExcludedAlbums = {};
 
     for (final album in state.selectedBackupAlbums) {
-      final assetCount = await album.albumEntity.assetCountAsync;
+      final assetCount = await ref
+          .read(mediaRepositoryProvider)
+          .countAssetsInAlbum(album.album.localId!);
 
       if (assetCount == 0) {
         continue;
       }
 
-      final assets = await album.albumEntity.getAssetListRange(
-        start: 0,
-        end: assetCount,
-      );
+      final assets = await ref
+          .read(mediaRepositoryProvider)
+          .getAssetsByAlbumId(album.album.localId!);
 
       // Add album's name to the asset info
       for (final asset in assets) {
@@ -331,16 +348,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     for (final album in state.excludedBackupAlbums) {
-      final assetCount = await album.albumEntity.assetCountAsync;
+      final assetCount = await ref
+          .read(mediaRepositoryProvider)
+          .countAssetsInAlbum(album.album.localId!);
 
       if (assetCount == 0) {
         continue;
       }
 
-      final assets = await album.albumEntity.getAssetListRange(
-        start: 0,
-        end: assetCount,
-      );
+      final assets = await ref
+          .read(mediaRepositoryProvider)
+          .getAssetsByAlbumId(album.album.localId!);
 
       for (final asset in assets) {
         assetsFromExcludedAlbums.add(
@@ -367,7 +385,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Remove duplicated asset from all unique assets
     allUniqueAssets.removeWhere(
-      (candidate) => duplicatedAssetIds.contains(candidate.asset.id),
+      (candidate) => duplicatedAssetIds.contains(candidate.asset.localId),
     );
 
     if (allUniqueAssets.isEmpty) {
@@ -454,7 +472,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     final hasPermission = _galleryPermissionNotifier.hasPermission;
     if (hasPermission) {
-      await PhotoManager.clearFileCache();
+      await ref.read(mediaRepositoryProvider).clearFileCache();
 
       if (state.allUniqueAssets.isEmpty) {
         log.info("No Asset On Device - Abort Backup Process");
@@ -465,7 +483,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       Set<BackupCandidate> assetsWillBeBackup = Set.from(state.allUniqueAssets);
       // Remove item that has already been backed up
       for (final assetId in state.allAssetsInDatabase) {
-        assetsWillBeBackup.removeWhere((e) => e.asset.id == assetId);
+        assetsWillBeBackup.removeWhere((e) => e.asset.localId == assetId);
       }
 
       if (assetsWillBeBackup.isEmpty) {
@@ -539,11 +557,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
         selectedAlbumsBackupAssetsIds: {
           ...state.selectedAlbumsBackupAssetsIds,
-          result.candidate.asset.id,
+          result.candidate.asset.localId!,
         },
         allAssetsInDatabase: [
           ...state.allAssetsInDatabase,
-          result.candidate.asset.id,
+          result.candidate.asset.localId!,
         ],
       );
     }
@@ -552,7 +570,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             state.selectedAlbumsBackupAssetsIds.length ==
         0) {
       final latestAssetBackup = state.allUniqueAssets
-          .map((candidate) => candidate.asset.modifiedDateTime)
+          .map((candidate) => candidate.asset.fileModifiedAt)
           .reduce(
             (v, e) => e.isAfter(v) ? e : v,
           );

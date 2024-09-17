@@ -14,6 +14,7 @@ void main() {
   late MockAssetRepository assetRepository;
   late MockUserRepository userRepository;
   late MockBackupRepository backupRepository;
+  late MockMediaRepository mediaRepository;
 
   setUp(() {
     apiService = MockApiService();
@@ -23,6 +24,7 @@ void main() {
     assetRepository = MockAssetRepository();
     userRepository = MockUserRepository();
     backupRepository = MockBackupRepository();
+    mediaRepository = MockMediaRepository();
 
     sut = AlbumService(
       apiService,
@@ -32,6 +34,7 @@ void main() {
       assetRepository,
       userRepository,
       backupRepository,
+      mediaRepository,
     );
   });
 

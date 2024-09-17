@@ -63,7 +63,6 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:photo_manager/photo_manager.dart' hide LatLng;
 
 part 'router.gr.dart';
 

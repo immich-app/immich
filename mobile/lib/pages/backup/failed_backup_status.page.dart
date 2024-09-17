@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
+import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
 import 'package:intl/intl.dart';
-import 'package:photo_manager/photo_manager.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 @RoutePage()
 class FailedBackupStatusPage extends HookConsumerWidget {
@@ -70,11 +69,10 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                       clipBehavior: Clip.hardEdge,
                       child: Image(
                         fit: BoxFit.cover,
-                        image: AssetEntityImageProvider(
-                          errorAsset.asset,
-                          isOriginal: false,
-                          thumbnailSize: const ThumbnailSize.square(512),
-                          thumbnailFormat: ThumbnailFormat.jpeg,
+                        image: ImmichLocalThumbnailProvider(
+                          asset: errorAsset.asset,
+                          height: 512,
+                          width: 512,
                         ),
                       ),
                     ),
