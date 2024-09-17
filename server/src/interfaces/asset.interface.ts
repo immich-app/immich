@@ -147,8 +147,6 @@ export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffli
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
-  getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]>;
-  getUniqueOriginalPaths(userId: string): Promise<string[]>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByIds(
     ids: string[],
@@ -175,8 +173,7 @@ export interface IAssetRepository {
     libraryId?: string,
     withDeleted?: boolean,
   ): Paginated<AssetEntity>;
-  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
-  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
+  getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;

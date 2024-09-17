@@ -219,9 +219,9 @@
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
               {#if person.birthDate}
                 {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const age = Math.floor(DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'years').years)}
                 {@const ageInMonths = Math.floor(
-                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'months').months,
                 )}
                 {#if age >= 0}
                   <p
@@ -331,8 +331,10 @@
             locale: $locale,
           })
         : DateTime.now()}
+      {@const assetTimeZoneOriginal = asset.exifInfo?.timeZone ?? ''}
       <ChangeDate
         initialDate={assetDateTimeOriginal}
+        initialTimeZone={assetTimeZoneOriginal}
         on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
         on:cancel={() => (isShowChangeDate = false)}
       />

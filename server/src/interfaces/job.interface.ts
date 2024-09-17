@@ -60,6 +60,9 @@ export enum JobName {
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
 
+  // tags
+  TAG_CLEANUP = 'tag-cleanup',
+
   // migration
   QUEUE_MIGRATION = 'queue-migration',
   MIGRATE_ASSET = 'migrate-asset',
@@ -120,6 +123,7 @@ export interface IBaseJob {
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: 'upload' | 'sidecar-write' | 'copy';
+  notify?: boolean;
 }
 
 export interface IAssetDeleteJob extends IEntityJob {
@@ -261,6 +265,9 @@ export type JobItem =
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
   | { name: JobName.CLEAN_OLD_SESSION_TOKENS; data?: IBaseJob }
 
+  // Tags
+  | { name: JobName.TAG_CLEANUP; data?: IBaseJob }
+
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
   | { name: JobName.ASSET_DELETION; data: IAssetDeleteJob }
@@ -299,7 +306,6 @@ export interface IJobRepository {
   addHandler(queueName: QueueName, concurrency: number, handler: JobItemHandler): void;
   addCronJob(name: string, expression: string, onTick: () => void, start?: boolean): void;
   updateCronJob(name: string, expression?: string, start?: boolean): void;
-  deleteCronJob(name: string): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   queueAll(items: JobItem[]): Promise<void>;

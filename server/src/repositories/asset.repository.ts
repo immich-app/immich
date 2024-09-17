@@ -338,6 +338,7 @@ export class AssetRepository implements IAssetRepository {
       select: {
         id: true,
         checksum: true,
+        deletedAt: true,
       },
       where: {
         ownerId,
@@ -570,13 +571,6 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
-    return this.repository.findOne({
-      where: { albums: { id: albumId } },
-      order: { fileCreatedAt: 'DESC' },
-    });
-  }
-
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { albums: { id: albumId } },
@@ -622,14 +616,9 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
-  getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
-    const builder = this.getBuilder({
-      userIds: [ownerId],
-      exifInfo: true,
-    });
-
-    return builder.orderBy('RANDOM()').limit(count).getMany();
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER] })
+  getRandom(userIds: string[], count: number): Promise<AssetEntity[]> {
+    return this.getBuilder({ userIds, exifInfo: true }).orderBy('RANDOM()').limit(count).getMany();
   }
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
@@ -838,50 +827,6 @@ export class AssetRepository implements IAssetRepository {
       .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
     return builder.getMany();
-  }
-
-  async getUniqueOriginalPaths(userId: string): Promise<string[]> {
-    const builder = this.getBuilder({
-      userIds: [userId],
-      exifInfo: false,
-      withStacked: false,
-      isArchived: false,
-      isTrashed: false,
-    });
-
-    const results = await builder
-      .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
-      .getRawMany();
-
-    return results.map((row: { directoryPath: string }) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
-    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
-
-    const builder = this.getBuilder({
-      userIds: [userId],
-      exifInfo: true,
-      withStacked: false,
-      isArchived: false,
-      isTrashed: false,
-    });
-
-    const assets = await builder
-      .where('asset.ownerId = :userId', { userId })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('asset.originalPath LIKE :likePath', { likePath: `%${normalizedPath}/%` }).andWhere(
-            'asset.originalPath NOT LIKE :notLikePath',
-            { notLikePath: `%${normalizedPath}/%/%` },
-          );
-        }),
-      )
-      .orderBy(String.raw`regexp_replace(asset.originalPath, '.*/(.+)', '\1')`, 'ASC')
-      .getMany();
-
-    return assets;
   }
 
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })

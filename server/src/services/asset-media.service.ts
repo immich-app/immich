@@ -30,13 +30,13 @@ import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entit
 import { AssetType, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { requireAccess, requireUploadAccess } from 'src/utils/access';
-import { getAssetFiles } from 'src/utils/asset.util';
+import { getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -158,20 +158,10 @@ export class AssetMediaService {
       this.requireQuota(auth, file.size);
 
       if (dto.livePhotoVideoId) {
-        const motionAsset = await this.assetRepository.getById(dto.livePhotoVideoId);
-        if (!motionAsset) {
-          throw new BadRequestException('Live photo video not found');
-        }
-        if (motionAsset.type !== AssetType.VIDEO) {
-          throw new BadRequestException('Live photo video must be a video');
-        }
-        if (motionAsset.ownerId !== auth.user.id) {
-          throw new BadRequestException('Live photo video does not belong to the user');
-        }
-        if (motionAsset.isVisible) {
-          await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
-          this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, auth.user.id, motionAsset.id);
-        }
+        await onBeforeLink(
+          { asset: this.assetRepository, event: this.eventRepository },
+          { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },
+        );
       }
 
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
@@ -204,8 +194,7 @@ export class AssetMediaService {
       const copiedPhoto = await this.createCopy(asset);
       // and immediate trash it
       await this.assetRepository.softDeleteAll([copiedPhoto.id]);
-
-      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, [copiedPhoto.id]);
+      await this.eventRepository.emit('asset.trash', { assetId: copiedPhoto.id, userId: auth.user.id });
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
@@ -289,10 +278,10 @@ export class AssetMediaService {
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
     const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
-    const checksumMap: Record<string, string> = {};
+    const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};
 
-    for (const { id, checksum } of results) {
-      checksumMap[checksum.toString('hex')] = id;
+    for (const { id, deletedAt, checksum } of results) {
+      checksumMap[checksum.toString('hex')] = { id, isTrashed: !!deletedAt };
     }
 
     return {
@@ -301,13 +290,12 @@ export class AssetMediaService {
         if (duplicate) {
           return {
             id,
-            assetId: duplicate,
             action: AssetUploadAction.REJECT,
             reason: AssetRejectReason.DUPLICATE,
+            assetId: duplicate.id,
+            isTrashed: duplicate.isTrashed,
           };
         }
-
-        // TODO mime-check
 
         return {
           id,

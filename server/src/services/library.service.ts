@@ -245,7 +245,7 @@ export class LibraryService {
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.exclusionPatterns ?? [],
+      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*'],
     });
     return mapLibrary(library);
   }

@@ -215,19 +215,14 @@ SELECT
   "person"."isHidden" AS "person_isHidden"
 FROM
   "person" "person"
-  LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
 WHERE
   "person"."ownerId" = $1
   AND (
     LOWER("person"."name") LIKE $2
     OR LOWER("person"."name") LIKE $3
   )
-GROUP BY
-  "person"."id"
-ORDER BY
-  COUNT("face"."assetId") DESC
 LIMIT
-  20
+  1000
 
 -- PersonRepository.getDistinctNames
 SELECT DISTINCT

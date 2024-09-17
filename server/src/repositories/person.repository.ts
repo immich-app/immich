@@ -184,14 +184,11 @@ export class PersonRepository implements IPersonRepository {
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
       .where(
         'person.ownerId = :userId AND (LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere)',
         { userId, nameStart: `${personName.toLowerCase()}%`, nameAnywhere: `% ${personName.toLowerCase()}%` },
       )
-      .groupBy('person.id')
-      .orderBy('COUNT(face.assetId)', 'DESC')
-      .limit(20);
+      .limit(1000);
 
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
@@ -280,8 +277,13 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
-  create(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
-    return this.personRepository.save(entities);
+  create(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    return this.save(person);
+  }
+
+  async createAll(people: Partial<PersonEntity>[]): Promise<string[]> {
+    const results = await this.personRepository.save(people);
+    return results.map((person) => person.id);
   }
 
   async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
@@ -297,8 +299,12 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
-  async update(entities: Partial<PersonEntity>[]): Promise<PersonEntity[]> {
-    return await this.personRepository.save(entities);
+  async update(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    return this.save(person);
+  }
+
+  async updateAll(people: Partial<PersonEntity>[]): Promise<void> {
+    await this.personRepository.save(people);
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
@@ -319,5 +325,10 @@ export class PersonRepository implements IPersonRepository {
       .select('MAX(jobStatus.facesRecognizedAt)::text', 'latestDate')
       .getRawOne();
     return result?.latestDate;
+  }
+
+  private async save(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    const { id } = await this.personRepository.save(person);
+    return this.personRepository.findOneByOrFail({ id });
   }
 }

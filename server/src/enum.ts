@@ -186,3 +186,9 @@ export enum SourceType {
   MACHINE_LEARNING = 'machine-learning',
   EXIF = 'exif',
 }
+
+export enum ManualJobName {
+  PERSON_CLEANUP = 'person-cleanup',
+  TAG_CLEANUP = 'tag-cleanup',
+  USER_CLEANUP = 'user-cleanup',
+}

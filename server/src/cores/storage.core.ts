@@ -301,7 +301,7 @@ export class StorageCore {
         return this.assetRepository.update({ id, sidecarPath: newPath });
       }
       case PersonPathType.FACE: {
-        return this.personRepository.update([{ id, thumbnailPath: newPath }]);
+        return this.personRepository.update({ id, thumbnailPath: newPath });
       }
     }
   }

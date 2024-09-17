@@ -106,7 +106,7 @@ in User `settings.json` (`cmd + shift + p` and search for `Open User Settings JS
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": false,
+    "editor.wordBasedSuggestions": "off",
     "editor.defaultFormatter": "Dart-Code.dart-code"
   }
 }

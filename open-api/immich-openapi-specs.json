@@ -2561,6 +2561,39 @@
         "tags": [
           "Jobs"
         ]
+      },
+      "post": {
+        "operationId": "createJob",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Jobs"
+        ]
       }
     },
     "/jobs/{id}": {
@@ -7394,7 +7427,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.114.0",
+    "version": "1.115.0",
     "contact": {}
   },
   "tags": [],
@@ -7927,6 +7960,9 @@
           },
           "id": {
             "type": "string"
+          },
+          "isTrashed": {
+            "type": "boolean"
           },
           "reason": {
             "enum": [
@@ -8743,6 +8779,10 @@
       },
       "CreateProfileImageResponseDto": {
         "properties": {
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -8751,6 +8791,7 @@
           }
         },
         "required": [
+          "profileChangedAt",
           "profileImagePath",
           "userId"
         ],
@@ -9266,6 +9307,17 @@
         ],
         "type": "object"
       },
+      "JobCreateDto": {
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/ManualJobName"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "JobName": {
         "enum": [
           "thumbnailGeneration",
@@ -9507,6 +9559,14 @@
           "successful"
         ],
         "type": "object"
+      },
+      "ManualJobName": {
+        "enum": [
+          "person-cleanup",
+          "tag-cleanup",
+          "user-cleanup"
+        ],
+        "type": "string"
       },
       "MapMarkerResponseDto": {
         "properties": {
@@ -9960,6 +10020,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -9969,6 +10033,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"
@@ -12238,6 +12303,11 @@
           "latitude": {
             "type": "number"
           },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
           "longitude": {
             "type": "number"
           },
@@ -12394,6 +12464,10 @@
           "oauthId": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -12432,6 +12506,7 @@
           "license",
           "name",
           "oauthId",
+          "profileChangedAt",
           "profileImagePath",
           "quotaSizeInBytes",
           "quotaUsageInBytes",
@@ -12593,6 +12668,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -12602,6 +12681,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"

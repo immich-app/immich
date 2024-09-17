@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.114.0
+ * 1.115.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -19,6 +19,7 @@ export type UserResponseDto = {
     email: string;
     id: string;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type ActivityResponseDto = {
@@ -53,6 +54,7 @@ export type UserAdminResponseDto = {
     license: (UserLicense) | null;
     name: string;
     oauthId: string;
+    profileChangedAt: string;
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -395,6 +397,7 @@ export type AssetBulkUploadCheckResult = {
     action: Action;
     assetId?: string;
     id: string;
+    isTrashed?: boolean;
     reason?: Reason;
 };
 export type AssetBulkUploadCheckResponseDto = {
@@ -426,6 +429,7 @@ export type UpdateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
+    livePhotoVideoId?: string | null;
     longitude?: number;
     rating?: number;
 };
@@ -546,6 +550,9 @@ export type AllJobStatusResponseDto = {
     thumbnailGeneration: JobStatusDto;
     videoConversion: JobStatusDto;
 };
+export type JobCreateDto = {
+    name: ManualJobName;
+};
 export type JobCommandDto = {
     command: JobCommand;
     force: boolean;
@@ -664,6 +671,7 @@ export type PartnerResponseDto = {
     id: string;
     inTimeline?: boolean;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type UpdatePartnerDto = {
@@ -1247,6 +1255,7 @@ export type CreateProfileImageDto = {
     file: Blob;
 };
 export type CreateProfileImageResponseDto = {
+    profileChangedAt: string;
     profileImagePath: string;
     userId: string;
 };
@@ -1938,6 +1947,15 @@ export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
     }>("/jobs", {
         ...opts
     }));
+}
+export function createJob({ jobCreateDto }: {
+    jobCreateDto: JobCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/jobs", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: jobCreateDto
+    })));
 }
 export function sendJobCommand({ id, jobCommandDto }: {
     id: JobName;
@@ -3361,6 +3379,11 @@ export enum AssetMediaSize {
 export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
+}
+export enum ManualJobName {
+    PersonCleanup = "person-cleanup",
+    TagCleanup = "tag-cleanup",
+    UserCleanup = "user-cleanup"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",

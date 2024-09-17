@@ -115,7 +115,7 @@ export class AuditService {
         }
 
         case PersonPathType.FACE: {
-          await this.personRepository.update([{ id, thumbnailPath: pathValue }]);
+          await this.personRepository.update({ id, thumbnailPath: pathValue });
           break;
         }
 

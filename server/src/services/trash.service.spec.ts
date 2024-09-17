@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { TrashService } from 'src/services/trash.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -62,9 +62,7 @@ describe(TrashService.name, () => {
       assetMock.getByUserId.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
       await expect(sut.restore(authStub.user1)).resolves.toBeUndefined();
       expect(assetMock.restoreAll).toHaveBeenCalledWith([assetStub.image.id]);
-      expect(eventMock.clientSend).toHaveBeenCalledWith(ClientEvent.ASSET_RESTORE, authStub.user1.user.id, [
-        assetStub.image.id,
-      ]);
+      expect(eventMock.emit).toHaveBeenCalledWith('assets.restore', { assetIds: ['asset-id'], userId: 'user-id' });
     });
   });
 
