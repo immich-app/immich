@@ -19,7 +19,6 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getUploadAssetIdByChecksum: vitest.fn(),
     getWith: vitest.fn(),
     getRandom: vitest.fn(),
-    getFirstAssetForAlbumId: vitest.fn(),
     getLastUpdatedAssetForAlbumId: vitest.fn(),
     getAll: vitest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
     getAllByDeviceId: vitest.fn(),

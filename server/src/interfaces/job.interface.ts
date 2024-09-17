@@ -306,7 +306,6 @@ export interface IJobRepository {
   addHandler(queueName: QueueName, concurrency: number, handler: JobItemHandler): void;
   addCronJob(name: string, expression: string, onTick: () => void, start?: boolean): void;
   updateCronJob(name: string, expression?: string, start?: boolean): void;
-  deleteCronJob(name: string): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   queueAll(items: JobItem[]): Promise<void>;

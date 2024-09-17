@@ -52,11 +52,7 @@ export class AlbumService {
   }
 
   async getAll({ user: { id: ownerId } }: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
-    const invalidAlbumIds = await this.albumRepository.getInvalidThumbnail();
-    for (const albumId of invalidAlbumIds) {
-      const newThumbnail = await this.assetRepository.getFirstAssetForAlbumId(albumId);
-      await this.albumRepository.update({ id: albumId, albumThumbnailAsset: newThumbnail });
-    }
+    await this.albumRepository.updateThumbnails();
 
     let albums: AlbumEntity[];
     if (assetId) {

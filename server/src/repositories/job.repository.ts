@@ -153,10 +153,6 @@ export class JobRepository implements IJobRepository {
     }
   }
 
-  deleteCronJob(name: string): void {
-    this.schedulerReqistry.deleteCronJob(name);
-  }
-
   setConcurrency(queueName: QueueName, concurrency: number) {
     const worker = this.workers[queueName];
     if (!worker) {
