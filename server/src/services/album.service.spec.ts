@@ -67,7 +67,6 @@ describe(AlbumService.name, () => {
         { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
         { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
       ]);
-      albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
       const result = await sut.getAll(authStub.admin, {});
       expect(result).toHaveLength(2);
@@ -85,7 +84,6 @@ describe(AlbumService.name, () => {
           endDate: new Date('1970-01-01'),
         },
       ]);
-      albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
       const result = await sut.getAll(authStub.admin, { assetId: albumStub.oneAsset.id });
       expect(result).toHaveLength(1);
@@ -98,7 +96,6 @@ describe(AlbumService.name, () => {
       albumMock.getMetadataForIds.mockResolvedValue([
         { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
       ]);
-      albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
       const result = await sut.getAll(authStub.admin, { shared: true });
       expect(result).toHaveLength(1);
@@ -111,7 +108,6 @@ describe(AlbumService.name, () => {
       albumMock.getMetadataForIds.mockResolvedValue([
         { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
       ]);
-      albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
       const result = await sut.getAll(authStub.admin, { shared: false });
       expect(result).toHaveLength(1);
@@ -130,55 +126,12 @@ describe(AlbumService.name, () => {
         endDate: new Date('1970-01-01'),
       },
     ]);
-    albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
     const result = await sut.getAll(authStub.admin, {});
 
     expect(result).toHaveLength(1);
     expect(result[0].assetCount).toEqual(1);
     expect(albumMock.getOwned).toHaveBeenCalledTimes(1);
-  });
-
-  it('updates the album thumbnail by listing all albums', async () => {
-    albumMock.getOwned.mockResolvedValue([albumStub.oneAssetInvalidThumbnail]);
-    albumMock.getMetadataForIds.mockResolvedValue([
-      {
-        albumId: albumStub.oneAssetInvalidThumbnail.id,
-        assetCount: 1,
-        startDate: new Date('1970-01-01'),
-        endDate: new Date('1970-01-01'),
-      },
-    ]);
-    albumMock.getInvalidThumbnail.mockResolvedValue([albumStub.oneAssetInvalidThumbnail.id]);
-    albumMock.update.mockResolvedValue(albumStub.oneAssetValidThumbnail);
-    assetMock.getFirstAssetForAlbumId.mockResolvedValue(albumStub.oneAssetInvalidThumbnail.assets[0]);
-
-    const result = await sut.getAll(authStub.admin, {});
-
-    expect(result).toHaveLength(1);
-    expect(albumMock.getInvalidThumbnail).toHaveBeenCalledTimes(1);
-    expect(albumMock.update).toHaveBeenCalledTimes(1);
-  });
-
-  it('removes the thumbnail for an empty album', async () => {
-    albumMock.getOwned.mockResolvedValue([albumStub.emptyWithInvalidThumbnail]);
-    albumMock.getMetadataForIds.mockResolvedValue([
-      {
-        albumId: albumStub.emptyWithInvalidThumbnail.id,
-        assetCount: 1,
-        startDate: new Date('1970-01-01'),
-        endDate: new Date('1970-01-01'),
-      },
-    ]);
-    albumMock.getInvalidThumbnail.mockResolvedValue([albumStub.emptyWithInvalidThumbnail.id]);
-    albumMock.update.mockResolvedValue(albumStub.emptyWithValidThumbnail);
-    assetMock.getFirstAssetForAlbumId.mockResolvedValue(null);
-
-    const result = await sut.getAll(authStub.admin, {});
-
-    expect(result).toHaveLength(1);
-    expect(albumMock.getInvalidThumbnail).toHaveBeenCalledTimes(1);
-    expect(albumMock.update).toHaveBeenCalledTimes(1);
   });
 
   describe('create', () => {
