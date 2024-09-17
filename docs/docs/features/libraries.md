@@ -46,7 +46,7 @@ Some basic examples:
 - `**/Raw/**` will exclude all files in any directory named `Raw`
 - `**/*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
 
-Special characters such as @ should be escaped, such as
+Special characters such as @ should be escaped, for instance:
 
 - `**/\@eadir/**` will exclude all files in any directory named `@eadir`
 
@@ -68,7 +68,7 @@ In rare cases, the library watcher can hang, preventing Immich from starting up.
 
 ### Nightly job
 
-There is an automatic scan job that is scheduled run once a day. This job also cleans up any libraries stuck in deletion.
+There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion.
 
 ## Usage
 

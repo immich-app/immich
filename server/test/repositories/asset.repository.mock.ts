@@ -25,7 +25,6 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getLivePhotoCount: vitest.fn(),
     updateAll: vitest.fn(),
     updateDuplicates: vitest.fn(),
-    getExternalLibraryAssetPaths: vitest.fn(),
     getByLibraryIdAndOriginalPath: vitest.fn(),
     deleteAll: vitest.fn(),
     update: vitest.fn(),
@@ -40,9 +39,5 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getChangedDeltaSync: vitest.fn(),
     getDuplicates: vitest.fn(),
     upsertFile: vitest.fn(),
-    getAssetsByOriginalPath: vitest.fn(),
-    getUniqueOriginalPaths: vitest.fn(),
-    restoreAllDeleted: vitest.fn(),
-    restoreAllDeletedById: vitest.fn(),
   };
 };

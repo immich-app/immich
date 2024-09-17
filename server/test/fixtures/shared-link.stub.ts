@@ -56,6 +56,7 @@ const assetResponse: AssetResponseDto = {
   originalFileName: 'asset_1.jpeg',
   thumbhash: null,
   fileModifiedAt: today,
+  isOffline: false,
   fileCreatedAt: today,
   localDateTime: today,
   updatedAt: today,
@@ -203,6 +204,7 @@ export const sharedLinkStub = {
           isFavorite: false,
           isArchived: false,
           isExternal: false,
+          isOffline: false,
           smartInfo: {
             assetId: 'id_1',
             tags: [],
@@ -255,7 +257,6 @@ export const sharedLinkStub = {
           sidecarPath: null,
           deletedAt: null,
           duplicateId: null,
-          trashReason: null,
         },
       ],
     },

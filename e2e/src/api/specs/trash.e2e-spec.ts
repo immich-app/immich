@@ -1,4 +1,4 @@
-import { LoginResponseDto, TrashReason, getAssetInfo, getAssetStatistics, scanLibrary } from '@immich/sdk';
+import { LoginResponseDto, getAssetInfo, getAssetStatistics, scanLibrary } from '@immich/sdk';
 import { existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { errorDto } from 'src/responses';
@@ -35,9 +35,7 @@ describe('/trash', () => {
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
-      expect(before).toStrictEqual(
-        expect.objectContaining({ id: assetId, isTrashed: true, trashReason: TrashReason.Deleted }),
-      );
+      expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true }));
 
       const { status, body } = await request(app)
         .post('/trash/empty')
@@ -59,9 +57,7 @@ describe('/trash', () => {
       await utils.deleteAssets(admin.accessToken, [assetId]);
 
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
-      expect(before).toStrictEqual(
-        expect.objectContaining({ id: assetId, isTrashed: true, isArchived: true, trashReason: TrashReason.Deleted }),
-      );
+      expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true, isArchived: true }));
 
       const { status, body } = await request(app)
         .post('/trash/empty')
@@ -89,23 +85,26 @@ describe('/trash', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(assets.count).toBe(1);
-      const assetId = assets.items[0].id;
+      expect(assets.items.length).toBe(1);
+      const asset = assets.items[0];
 
       utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
+      const assetBefore = await utils.getAssetInfo(admin.accessToken, asset.id);
+      expect(assetBefore).toMatchObject({ isTrashed: true, isOffline: true });
+
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
+      expect(status).toBe(200);
 
-      await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
+      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
 
-      const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
-      expect(after.total).toBe(0);
+      const assetAfter = await utils.getAssetInfo(admin.accessToken, asset.id);
+      expect(assetAfter).toMatchObject({ isTrashed: true, isOffline: true });
 
       expect(existsSync(`${testAssetDir}/temp/offline/offline.png`)).toBe(true);
 
@@ -160,17 +159,13 @@ describe('/trash', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
-      expect(before).toStrictEqual(
-        expect.objectContaining({ id: assetId, isTrashed: true, trashReason: TrashReason.Offline }),
-      );
+      expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isOffline: true }));
 
       const { status } = await request(app).post('/trash/restore').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
+      expect(status).toBe(200);
 
       const after = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
-      expect(after).toStrictEqual(
-        expect.objectContaining({ id: assetId, isTrashed: true, trashReason: TrashReason.Offline }),
-      );
+      expect(after).toStrictEqual(expect.objectContaining({ id: assetId, isOffline: true }));
     });
   });
 
@@ -227,7 +222,7 @@ describe('/trash', () => {
         .post('/trash/restore/assets')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ ids: [assetId] });
-      expect(status).toBe(204);
+      expect(status).toBe(200);
 
       const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(true);

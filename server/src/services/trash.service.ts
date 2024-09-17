@@ -6,7 +6,7 @@ import { TrashResponseDto } from 'src/dtos/trash.dto';
 import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from 'src/interfaces/job.interface';
+import { IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { requireAccess } from 'src/utils/access';

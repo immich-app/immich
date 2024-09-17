@@ -253,6 +253,7 @@ export type AssetResponseDto = {
     id: string;
     isArchived: boolean;
     isFavorite: boolean;
+    isOffline: boolean;
     isTrashed: boolean;
     /** This property was deprecated in v1.106.0 */
     libraryId?: string | null;
@@ -270,7 +271,6 @@ export type AssetResponseDto = {
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
     thumbhash: string | null;
-    trashReason?: string | null;
     "type": AssetTypeEnum;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     updatedAt: string;
@@ -356,7 +356,6 @@ export type ApiKeyUpdateDto = {
 export type AssetBulkDeleteDto = {
     force?: boolean;
     ids: string[];
-    trashReason?: TrashReason;
 };
 export type AssetMediaCreateDto = {
     assetData: Blob;
@@ -776,6 +775,7 @@ export type MetadataSearchDto = {
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
+    isOffline?: boolean;
     isVisible?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
@@ -880,6 +880,7 @@ export type SmartSearchDto = {
     isFavorite?: boolean;
     isMotion?: boolean;
     isNotInAlbum?: boolean;
+    isOffline?: boolean;
     isVisible?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
@@ -3392,10 +3393,6 @@ export enum Permission {
     AdminUserRead = "admin.user.read",
     AdminUserUpdate = "admin.user.update",
     AdminUserDelete = "admin.user.delete"
-}
-export enum TrashReason {
-    Deleted = "deleted",
-    Offline = "offline"
 }
 export enum AssetMediaStatus {
     Created = "created",

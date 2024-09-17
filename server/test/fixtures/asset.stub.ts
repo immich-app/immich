@@ -1,4 +1,3 @@
-import { AssetTrashReason } from 'src/dtos/asset.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -73,7 +72,7 @@ export const assetStub = {
     deletedAt: null,
     isExternal: false,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   noWebpPath: Object.freeze<AssetEntity>({
@@ -111,7 +110,7 @@ export const assetStub = {
     } as ExifEntity,
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   noThumbhash: Object.freeze<AssetEntity>({
@@ -146,7 +145,7 @@ export const assetStub = {
     sidecarPath: null,
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   primaryImage: Object.freeze<AssetEntity>({
@@ -191,7 +190,7 @@ export const assetStub = {
       { id: 'stack-child-asset-2' } as AssetEntity,
     ]),
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   image: Object.freeze<AssetEntity>({
@@ -231,7 +230,7 @@ export const assetStub = {
       exifImageWidth: 2160,
     } as ExifEntity,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   trashed: Object.freeze<AssetEntity>({
@@ -251,7 +250,6 @@ export const assetStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     deletedAt: new Date('2023-02-24T05:06:29.716Z'),
-    trashReason: AssetTrashReason.DELETED,
     localDateTime: new Date('2023-02-23T05:06:29.716Z'),
     isFavorite: false,
     isArchived: false,
@@ -271,6 +269,8 @@ export const assetStub = {
       exifImageWidth: 2160,
     } as ExifEntity,
     duplicateId: null,
+    isOffline: false,
+    status: AssetStatus.TRASHED,
   }),
 
   trashedOffline: Object.freeze<AssetEntity>({
@@ -291,7 +291,6 @@ export const assetStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     deletedAt: new Date('2023-02-24T05:06:29.716Z'),
-    trashReason: AssetTrashReason.OFFLINE,
     localDateTime: new Date('2023-02-23T05:06:29.716Z'),
     isFavorite: false,
     isArchived: false,
@@ -311,6 +310,7 @@ export const assetStub = {
       exifImageWidth: 2160,
     } as ExifEntity,
     duplicateId: null,
+    isOffline: true,
   }),
   archived: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -349,7 +349,7 @@ export const assetStub = {
       exifImageWidth: 2160,
     } as ExifEntity,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   external: Object.freeze<AssetEntity>({
@@ -389,7 +389,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
     } as ExifEntity,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   image1: Object.freeze<AssetEntity>({
@@ -427,7 +427,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
     } as ExifEntity,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   imageFrom2015: Object.freeze<AssetEntity>({
@@ -465,7 +465,7 @@ export const assetStub = {
     } as ExifEntity,
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   video: Object.freeze<AssetEntity>({
@@ -505,7 +505,7 @@ export const assetStub = {
     } as ExifEntity,
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -643,7 +643,7 @@ export const assetStub = {
     } as ExifEntity,
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
   sidecar: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -677,7 +677,7 @@ export const assetStub = {
     sidecarPath: '/original/path.ext.xmp',
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
   sidecarWithoutExt: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -711,7 +711,7 @@ export const assetStub = {
     sidecarPath: '/original/path.xmp',
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
 
   hasEncodedVideo: Object.freeze<AssetEntity>({
@@ -749,7 +749,7 @@ export const assetStub = {
     } as ExifEntity,
     deletedAt: null,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
   missingFileExtension: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -788,7 +788,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
     } as ExifEntity,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
   hasFileExtension: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -827,7 +827,7 @@ export const assetStub = {
       fileSizeInByte: 5000,
     } as ExifEntity,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
   imageDng: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -866,7 +866,7 @@ export const assetStub = {
       bitsPerSample: 14,
     } as ExifEntity,
     duplicateId: null,
-    trashReason: null,
+    isOffline: false,
   }),
   hasEmbedding: Object.freeze<AssetEntity>({
     id: 'asset-id-embedding',
@@ -907,7 +907,7 @@ export const assetStub = {
       assetId: 'asset-id',
       embedding: Array.from({ length: 512 }, Math.random),
     },
-    trashReason: null,
+    isOffline: false,
   }),
   hasDupe: Object.freeze<AssetEntity>({
     id: 'asset-id-dupe',
@@ -948,6 +948,6 @@ export const assetStub = {
       assetId: 'asset-id',
       embedding: Array.from({ length: 512 }, Math.random),
     },
-    trashReason: null,
+    isOffline: false,
   }),
 };

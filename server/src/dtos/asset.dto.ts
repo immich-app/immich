@@ -84,19 +84,11 @@ export class RandomAssetsDto {
 export class AssetBulkDeleteDto extends BulkIdsDto {
   @ValidateBoolean({ optional: true })
   force?: boolean;
-
-  @Optional()
-  trashReason?: AssetTrashReason;
 }
 
 export class AssetIdsDto {
   @ValidateUUID({ each: true })
   assetIds!: string[];
-}
-
-export enum AssetTrashReason {
-  DELETED = 'deleted',
-  OFFLINE = 'offline',
 }
 
 export enum AssetJobName {

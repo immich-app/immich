@@ -1,4 +1,4 @@
-import { LibraryResponseDto, LoginResponseDto, TrashReason, getAllLibraries, scanLibrary } from '@immich/sdk';
+import { LibraryResponseDto, LoginResponseDto, getAllLibraries, scanLibrary } from '@immich/sdk';
 import { cpSync, existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
@@ -411,7 +411,7 @@ describe('/libraries', () => {
       expect(assets.count).toBe(0);
     });
 
-    it('should trash an asset if its file is missing', async () => {
+    it('should set an asset offline if its file is missing', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/offline`],
@@ -436,15 +436,14 @@ describe('/libraries', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
-      expect(trashedAsset.isTrashed).toBe(true);
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
-      expect(trashedAsset.trashReason).toEqual(TrashReason.Offline);
+      expect(trashedAsset.isOffline).toEqual(true);
 
       const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
       expect(newAssets.items).toEqual([]);
     });
 
-    it('should trash an asset if its file is not in any import path', async () => {
+    it('should set an asset offline its file is not in any import path', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/offline`],
@@ -474,9 +473,8 @@ describe('/libraries', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
-      expect(trashedAsset.isTrashed).toBe(true);
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
-      expect(trashedAsset.trashReason).toEqual(TrashReason.Offline);
+      expect(trashedAsset.isOffline).toBe(true);
 
       const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
@@ -486,7 +484,7 @@ describe('/libraries', () => {
       utils.removeDirectory(`${testAssetDir}/temp/another-path/`);
     });
 
-    it('should trash an asset if its file is covered by an exclusion pattern', async () => {
+    it('should set an asset offline if its file is covered by an exclusion pattern', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp`],
@@ -512,7 +510,7 @@ describe('/libraries', () => {
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(trashedAsset.isTrashed).toBe(true);
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/directoryB/assetB.png`);
-      expect(trashedAsset.trashReason).toEqual(TrashReason.Offline);
+      expect(trashedAsset.isOffline).toBe(true);
 
       const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 

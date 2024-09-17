@@ -7838,13 +7838,6 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "trashReason": {
-            "enum": [
-              "deleted",
-              "offline"
-            ],
-            "type": "string"
           }
         },
         "required": [
@@ -8382,6 +8375,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isOffline": {
+            "type": "boolean"
+          },
           "isTrashed": {
             "type": "boolean"
           },
@@ -8446,10 +8442,6 @@
             "nullable": true,
             "type": "string"
           },
-          "trashReason": {
-            "nullable": true,
-            "type": "string"
-          },
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
@@ -8475,6 +8467,7 @@
           "id",
           "isArchived",
           "isFavorite",
+          "isOffline",
           "isTrashed",
           "localDateTime",
           "originalFileName",
@@ -9825,6 +9818,9 @@
             "type": "boolean"
           },
           "isNotInAlbum": {
+            "type": "boolean"
+          },
+          "isOffline": {
             "type": "boolean"
           },
           "isVisible": {
@@ -11311,6 +11307,9 @@
             "type": "boolean"
           },
           "isNotInAlbum": {
+            "type": "boolean"
+          },
+          "isOffline": {
             "type": "boolean"
           },
           "isVisible": {

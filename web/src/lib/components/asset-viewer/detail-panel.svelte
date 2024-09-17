@@ -19,7 +19,6 @@
   import {
     AssetMediaSize,
     getAssetInfo,
-    TrashReason,
     updateAsset,
     type AlbumResponseDto,
     type AssetResponseDto,
@@ -75,7 +74,6 @@
     }
   }
 
-  $: isOffline = asset.trashReason === TrashReason.Offline;
   $: isOwner = $user?.id === asset.ownerId;
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
@@ -147,7 +145,7 @@
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
-  {#if isOffline}
+  {#if asset.isOffline}
     <section class="px-4 py-4">
       <div role="alert">
         <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">
