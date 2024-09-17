@@ -67,7 +67,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.7.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
+    "@mapbox/mapbox-gl-rtl-text": "^0.3.0",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.7.1",
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.7.2",
