@@ -68,13 +68,13 @@
   use:focusTrap
 >
   <div
-    class="z-[9999] max-w-[95vw] {modalWidth} overflow-hidden rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg pt-3 pb-4"
+    class="flex flex-col max-h-[min(95dvh,60rem)] z-[9999] max-w-[95vw] {modalWidth} overflow-hidden rounded-3xl bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg pt-3 pb-4"
     use:clickOutside={{ onOutclick: onClose, onEscape: onClose }}
     tabindex="-1"
     aria-modal="true"
     aria-labelledby={titleId}
   >
-    <div class="immich-scrollbar overflow-y-auto max-h-[min(85dvh,44rem)] py-1">
+    <div class="immich-scrollbar overflow-y-auto py-1">
       <ModalHeader id={titleId} {title} {showLogo} {icon} {onClose} />
       <div class="px-5 pt-0">
         <slot />
