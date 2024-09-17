@@ -181,4 +181,9 @@ export interface ISearchRepository {
   deleteAllSearchEmbeddings(): Promise<void>;
   getDimensionSize(): Promise<number>;
   setDimensionSize(dimSize: number): Promise<void>;
+  getCountries(userIds: string[]): Promise<Array<string | null>>;
+  getStates(userIds: string[], country?: string): Promise<Array<string | null>>;
+  getCities(userIds: string[], country?: string, state?: string): Promise<Array<string | null>>;
+  getCameraMakes(userIds: string[], model?: string): Promise<Array<string | null>>;
+  getCameraModels(userIds: string[], make?: string): Promise<Array<string | null>>;
 }
