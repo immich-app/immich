@@ -638,9 +638,7 @@ export class AssetStore {
         this.options.userId ||
         this.options.personId ||
         this.options.albumId ||
-        isMismatched(this.options.isArchived, asset.isArchived) ||
-        isMismatched(this.options.isFavorite, asset.isFavorite) ||
-        isMismatched(this.options.isTrashed, asset.isTrashed)
+        this.isExcluded(asset)
       ) {
         // If asset is already in the bucket we don't need to recalculate
         // asset store containers
@@ -699,24 +697,20 @@ export class AssetStore {
 
   async findAndLoadBucketAsPending(id: string) {
     const bucketInfo = this.assetToBucket[id];
-    if (bucketInfo) {
-      const bucket = bucketInfo.bucket;
+    let bucket: AssetBucket | null = bucketInfo?.bucket ?? null;
+    if (!bucket) {
+      const asset = await getAssetInfo({ id });
+      if (!asset || this.isExcluded(asset)) {
+        return;
+      }
+
+      bucket = await this.loadBucketAtTime(asset.localDateTime, { preventCancel: true, pending: true });
+    }
+
+    if (bucket && bucket.assets.some((a) => a.id === id)) {
       this.pendingScrollBucket = bucket;
       this.pendingScrollAssetId = id;
       this.emit(false);
-      return bucket;
-    }
-    const asset = await getAssetInfo({ id });
-    if (asset) {
-      if (this.options.isArchived !== asset.isArchived) {
-        return;
-      }
-      const bucket = await this.loadBucketAtTime(asset.localDateTime, { preventCancel: true, pending: true });
-      if (bucket) {
-        this.pendingScrollBucket = bucket;
-        this.pendingScrollAssetId = asset.id;
-        this.emit(false);
-      }
       return bucket;
     }
   }
@@ -904,6 +898,14 @@ export class AssetStore {
       this.assetToBucket = assetToBucket;
     }
     this.store$.set(this);
+  }
+
+  private isExcluded(asset: AssetResponseDto) {
+    return (
+      isMismatched(this.options.isArchived ?? false, asset.isArchived) ||
+      isMismatched(this.options.isFavorite, asset.isFavorite) ||
+      isMismatched(this.options.isTrashed ?? false, asset.isTrashed)
+    );
   }
 }
 
