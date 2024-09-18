@@ -12,16 +12,17 @@
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { type SwipeCustomEvent, swipe } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import { imageManager } from '$lib/utils/image-manager';
 
   export let asset: AssetResponseDto;
-  export let preloadAssets: AssetResponseDto[] | undefined = undefined;
+  export let preloadAssets: AssetResponseDto[] = [];
   export let element: HTMLDivElement | undefined = undefined;
   export let haveFadeTransition = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -36,7 +37,6 @@
   let imageLoaded: boolean = false;
   let imageError: boolean = false;
   let forceUseOriginal: boolean = false;
-  let loader: HTMLImageElement;
 
   $: isWebCompatible = isWebCompatibleImage(asset);
   $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
@@ -44,9 +44,24 @@
   // when true, will force loading of the original image
   $: forceUseOriginal =
     forceUseOriginal || asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible);
+  $: mainPhotoUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
 
-  $: preload(useOriginalImage, preloadAssets);
-  $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
+  $: {
+    const preloads = preloadAssets
+      .filter((preloadAsset) => preloadAsset.type === AssetTypeEnum.Image)
+      .map((preloadAsset) => getAssetUrl(preloadAsset.id, useOriginalImage, preloadAsset.checksum));
+    // [0] will always be the loader of the main photo, the rest of the elements are preloads, if any
+    imageManager.exclusiveLoadImages([mainPhotoUrl, ...preloads])[0].then(
+      () => {
+        imageLoaded = true;
+        assetFileUrl = mainPhotoUrl;
+      },
+      () => {
+        imageLoaded = true;
+        imageError = true;
+      },
+    );
+  }
 
   photoZoomState.set({
     currentRotation: 0,
@@ -60,15 +75,6 @@
   onDestroy(() => {
     $boundingBoxesArray = [];
   });
-
-  const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
-    for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.type === AssetTypeEnum.Image) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
-      }
-    }
-  };
 
   const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
@@ -120,25 +126,6 @@
       onPreviousAsset();
     }
   };
-
-  onMount(() => {
-    const onload = () => {
-      imageLoaded = true;
-      assetFileUrl = imageLoaderUrl;
-    };
-    const onerror = () => {
-      imageError = imageLoaded = true;
-    };
-    if (loader.complete) {
-      onload();
-    }
-    loader.addEventListener('load', onload);
-    loader.addEventListener('error', onerror);
-    return () => {
-      loader?.removeEventListener('load', onload);
-      loader?.removeEventListener('error', onerror);
-    };
-  });
 </script>
 
 <svelte:window
@@ -150,16 +137,8 @@
 {#if imageError}
   <BrokenAsset class="text-xl" />
 {/if}
-<!-- svelte-ignore a11y-missing-attribute -->
-<img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
+
 <div bind:this={element} class="relative h-full select-none">
-  <img
-    style="display:none"
-    src={imageLoaderUrl}
-    alt={$getAltText(asset)}
-    on:load={() => ((imageLoaded = true), (assetFileUrl = imageLoaderUrl))}
-    on:error={() => (imageError = imageLoaded = true)}
-  />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
