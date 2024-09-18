@@ -11,7 +11,6 @@
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { thumbhash } from '$lib/actions/thumbhash';
 
   $: shouldRender = $memoryStore?.length > 0;
 
