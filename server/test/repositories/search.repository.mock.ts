@@ -13,5 +13,10 @@ export const newSearchRepositoryMock = (): Mocked<ISearchRepository> => {
     deleteAllSearchEmbeddings: vitest.fn(),
     getDimensionSize: vitest.fn(),
     setDimensionSize: vitest.fn(),
+    getCameraMakes: vitest.fn(),
+    getCameraModels: vitest.fn(),
+    getCities: vitest.fn(),
+    getCountries: vitest.fn(),
+    getStates: vitest.fn(),
   };
 };
