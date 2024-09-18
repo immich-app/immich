@@ -2,18 +2,19 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
   const CurrentUploadingAssetInfoBox({super.key});
@@ -148,17 +149,6 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
       );
     }
 
-    buildAssetThumbnail() async {
-      var assetEntity = await AssetEntity.fromId(asset.id);
-
-      if (assetEntity != null) {
-        return assetEntity.thumbnailDataWithSize(
-          const ThumbnailSize(500, 500),
-          quality: 100,
-        );
-      }
-    }
-
     buildiCloudDownloadProgerssBar() {
       if (asset.iCloudAsset != null && asset.iCloudAsset!) {
         return Padding(
@@ -239,8 +229,8 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
       );
     }
 
-    return FutureBuilder<Uint8List?>(
-      future: buildAssetThumbnail(),
+    return FutureBuilder<Asset?>(
+      future: ref.read(assetMediaRepositoryProvider).get(asset.id),
       builder: (context, thumbnail) => ListTile(
         isThreeLine: true,
         leading: AnimatedCrossFade(
@@ -250,9 +240,8 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
             child: thumbnail.hasData
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(5),
-                    child: Image.memory(
-                      thumbnail.data!,
-                      fit: BoxFit.cover,
+                    child: ImmichThumbnail(
+                      asset: thumbnail.data,
                       width: 50,
                       height: 50,
                     ),
