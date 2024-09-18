@@ -132,18 +132,20 @@ class MediaRepository implements IMediaRepository {
     return _toAsset(entity);
   }
 
-  static Album _toAlbum(AssetPathEntity ape) {
-    final Album a = Album(
-      name: ape.name,
-      createdAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
-      modifiedAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
+  static Album _toAlbum(AssetPathEntity assetPathEntity) {
+    final Album album = Album(
+      name: assetPathEntity.name,
+      createdAt:
+          assetPathEntity.lastModified?.toUtc() ?? DateTime.now().toUtc(),
+      modifiedAt:
+          assetPathEntity.lastModified?.toUtc() ?? DateTime.now().toUtc(),
       shared: false,
       activityEnabled: false,
     );
-    a.owner.value = Store.get(StoreKey.currentUser);
-    a.localId = ape.id;
-    a.isAll = ape.isAll;
-    return a;
+    album.owner.value = Store.get(StoreKey.currentUser);
+    album.localId = assetPathEntity.id;
+    album.isAll = assetPathEntity.isAll;
+    return album;
   }
 
   static Asset? _toAsset(AssetEntity? local) {

@@ -91,7 +91,7 @@ class HashService {
     if (toHash.isNotEmpty) {
       await _processBatch(toHash, toAdd);
     }
-    return _mapAllHashedAssets(assets, hashes);
+    return _getHashedAssets(assets, hashes);
   }
 
   /// Lookup hashes of assets by their local ID
@@ -138,8 +138,8 @@ class HashService {
     return hashes;
   }
 
-  /// Converts [AssetEntity]s that were successfully hashed to [Asset]s
-  List<Asset> _mapAllHashedAssets(
+  /// Returns all successfully hashed [Asset]s with their hash value set
+  List<Asset> _getHashedAssets(
     List<Asset> assets,
     List<DeviceAsset?> hashes,
   ) {

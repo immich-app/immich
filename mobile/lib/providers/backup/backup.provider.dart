@@ -252,7 +252,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final List<BackupAlbum> selectedBackupAlbums =
         await _backupService.selectedAlbumsQuery().findAll();
 
-    // Generate AssetPathEntity from id to add to local state
     final Set<AvailableAlbum> selectedAlbums = {};
     for (final BackupAlbum ba in selectedBackupAlbums) {
       final albumAsset = albumMap[ba.id];

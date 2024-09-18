@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:analyzer/error/listener.dart';
 import 'package:analyzer/error/error.dart' show ErrorSeverity;
 import 'package:custom_lint_builder/custom_lint_builder.dart';
@@ -21,7 +23,7 @@ class PhotoManagerRule extends DartLintRule {
     }
   }
 
-  final Set<String> _excludePaths = {};
+  final Set<String> _excludePaths = HashSet();
 
   static const _code = LintCode(
     name: 'photo_manager',
@@ -37,6 +39,7 @@ class PhotoManagerRule extends DartLintRule {
     CustomLintContext context,
   ) {
     if (_excludePaths.contains(resolver.source.shortName)) return;
+
     context.registry.addImportDirective((node) {
       if (node.uri.stringValue?.startsWith("package:photo_manager") == true) {
         reporter.atNode(node, code);
