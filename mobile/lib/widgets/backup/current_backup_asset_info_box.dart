@@ -230,7 +230,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     }
 
     return FutureBuilder<Asset?>(
-      future: ref.read(assetMediaRepositoryProvider).getAsset(asset.id),
+      future: ref.read(assetMediaRepositoryProvider).get(asset.id),
       builder: (context, thumbnail) => ListTile(
         isThreeLine: true,
         leading: AnimatedCrossFade(

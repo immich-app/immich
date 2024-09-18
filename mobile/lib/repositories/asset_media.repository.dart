@@ -13,7 +13,7 @@ class AssetMediaRepository implements IAssetMediaRepository {
       PhotoManager.editor.deleteWithIds(ids);
 
   @override
-  Future<Asset?> getAsset(String id) async {
+  Future<Asset?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
     return toAsset(entity);
   }
