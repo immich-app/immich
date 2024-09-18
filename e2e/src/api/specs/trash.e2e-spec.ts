@@ -34,8 +34,11 @@ describe('/trash', () => {
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true }));
 
-      const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
+      const { status, body } = await request(app)
+        .post('/trash/empty')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ count: 1 });
 
       await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
 
@@ -51,8 +54,11 @@ describe('/trash', () => {
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true, isArchived: true }));
 
-      const { status } = await request(app).post('/trash/empty').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
+      const { status, body } = await request(app)
+        .post('/trash/empty')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ count: 1 });
 
       await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
 
@@ -76,8 +82,11 @@ describe('/trash', () => {
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: true }));
 
-      const { status } = await request(app).post('/trash/restore').set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(204);
+      const { status, body } = await request(app)
+        .post('/trash/restore')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual({ count: 1 });
 
       const after = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(after).toStrictEqual(expect.objectContaining({ id: assetId, isTrashed: false }));
@@ -99,11 +108,12 @@ describe('/trash', () => {
       const before = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(before.isTrashed).toBe(true);
 
-      const { status } = await request(app)
+      const { status, body } = await request(app)
         .post('/trash/restore/assets')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ ids: [assetId] });
-      expect(status).toBe(204);
+      expect(status).toBe(200);
+      expect(body).toEqual({ count: 1 });
 
       const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(false);

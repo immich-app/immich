@@ -321,7 +321,7 @@ class AssetService {
 
       for (BackupCandidate candidate in candidates) {
         final asset = remoteAssets.firstWhereOrNull(
-          (a) => a.localId == candidate.asset.id,
+          (a) => a.localId == candidate.asset.localId,
         );
 
         if (asset != null) {

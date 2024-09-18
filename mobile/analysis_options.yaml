@@ -36,8 +36,31 @@ analyzer:
     - openapi/**
     - lib/generated_plugin_registrant.dart
 
-plugins:
-  - custom_lint
+  plugins:
+    - custom_lint
+
+custom_lint:
+  debug: true
+  rules:
+    - avoid_build_context_in_providers: false
+    - avoid_public_notifier_properties: false
+    - avoid_manual_providers_as_generated_provider_dependency: false
+    - unsupported_provider_value: false
+    - photo_manager:
+      exclude:
+        # required / wanted
+        - album_media.repository.dart
+        - asset_media.repository.dart
+        - file_media.repository.dart
+          # acceptable exceptions for the time being
+        - asset.entity.dart # to provide local AssetEntity for now
+        - immich_local_image_provider.dart # accesses thumbnails via PhotoManager
+        - immich_local_thumbnail_provider.dart # accesses thumbnails via PhotoManager
+          # refactor to make the providers and services testable
+        - backup.provider.dart # uses only PMProgressHandler
+        - manual_upload.provider.dart # uses only PMProgressHandler
+        - background.service.dart # uses only PMProgressHandler
+        - backup.service.dart # uses only PMProgressHandler
 
 dart_code_metrics:
   metrics:

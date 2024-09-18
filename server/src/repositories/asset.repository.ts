@@ -6,7 +6,7 @@ import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
-import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import {
   AssetBuilderOptions,
   AssetCreate,
@@ -293,16 +293,6 @@ export class AssetRepository implements IAssetRepository {
       })
       .orWhere({ id: In(options.assetIds) })
       .execute();
-  }
-
-  @Chunked()
-  async softDeleteAll(ids: string[]): Promise<void> {
-    await this.repository.softDelete({ id: In(ids) });
-  }
-
-  @Chunked()
-  async restoreAll(ids: string[]): Promise<void> {
-    await this.repository.restore({ id: In(ids) });
   }
 
   async update(asset: AssetUpdateOptions): Promise<void> {
@@ -597,7 +587,10 @@ export class AssetRepository implements IAssetRepository {
     }
 
     if (isTrashed !== undefined) {
-      builder.withDeleted().andWhere(`asset.deletedAt is not null`);
+      builder
+        .withDeleted()
+        .andWhere(`asset.deletedAt is not null`)
+        .andWhere('asset.status = :status', { status: AssetStatus.TRASHED });
     }
 
     const items = await builder.getRawMany();
@@ -755,6 +748,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (options.isTrashed !== undefined) {
       builder.andWhere(`asset.deletedAt ${options.isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+
+      if (options.isTrashed) {
+        builder.andWhere('asset.status = :status', { status: AssetStatus.TRASHED });
+      }
     }
 
     if (options.isDuplicate !== undefined) {

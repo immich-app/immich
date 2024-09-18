@@ -93,6 +93,8 @@ export enum JobName {
   QUEUE_SMART_SEARCH = 'queue-smart-search',
   SMART_SEARCH = 'smart-search',
 
+  QUEUE_TRASH_EMPTY = 'queue-trash-empty',
+
   // duplicate detection
   QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
   DUPLICATE_DETECTION = 'duplicate-detection',
@@ -253,6 +255,7 @@ export type JobItem =
   // Smart Search
   | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
   | { name: JobName.SMART_SEARCH; data: IEntityJob }
+  | { name: JobName.QUEUE_TRASH_EMPTY; data?: IBaseJob }
 
   // Duplicate Detection
   | { name: JobName.QUEUE_DUPLICATE_DETECTION; data: IBaseJob }

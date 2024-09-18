@@ -6839,7 +6839,14 @@
         "operationId": "emptyTrash",
         "parameters": [],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -6864,7 +6871,14 @@
         "operationId": "restoreTrash",
         "parameters": [],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -6899,7 +6913,14 @@
           "required": true
         },
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -12253,6 +12274,17 @@
           "disabled"
         ],
         "type": "string"
+      },
+      "TrashResponseDto": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "type": "object"
       },
       "UpdateAlbumDto": {
         "properties": {

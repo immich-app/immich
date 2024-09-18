@@ -265,6 +265,7 @@ part 'model/time_bucket_size.dart';
 part 'model/tone_mapping.dart';
 part 'model/transcode_hw_accel.dart';
 part 'model/transcode_policy.dart';
+part 'model/trash_response_dto.dart';
 part 'model/update_album_dto.dart';
 part 'model/update_album_user_dto.dart';
 part 'model/update_asset_dto.dart';
