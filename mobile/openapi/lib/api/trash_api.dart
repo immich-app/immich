@@ -42,11 +42,19 @@ class TrashApi {
     );
   }
 
-  Future<void> emptyTrash() async {
+  Future<TrashResponseDto?> emptyTrash() async {
     final response = await emptyTrashWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TrashResponseDto',) as TrashResponseDto;
+    
+    }
+    return null;
   }
 
   /// Performs an HTTP 'POST /trash/restore/assets' operation and returns the [Response].
@@ -81,11 +89,19 @@ class TrashApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> restoreAssets(BulkIdsDto bulkIdsDto,) async {
+  Future<TrashResponseDto?> restoreAssets(BulkIdsDto bulkIdsDto,) async {
     final response = await restoreAssetsWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TrashResponseDto',) as TrashResponseDto;
+    
+    }
+    return null;
   }
 
   /// Performs an HTTP 'POST /trash/restore' operation and returns the [Response].
@@ -114,10 +130,18 @@ class TrashApi {
     );
   }
 
-  Future<void> restoreTrash() async {
+  Future<TrashResponseDto?> restoreTrash() async {
     final response = await restoreTrashWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TrashResponseDto',) as TrashResponseDto;
+    
+    }
+    return null;
   }
 }

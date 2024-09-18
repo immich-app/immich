@@ -182,6 +182,12 @@ export enum UserStatus {
   DELETED = 'deleted',
 }
 
+export enum AssetStatus {
+  ACTIVE = 'active',
+  TRASHED = 'trashed',
+  DELETED = 'deleted',
+}
+
 export enum SourceType {
   MACHINE_LEARNING = 'machine-learning',
   EXIF = 'exif',

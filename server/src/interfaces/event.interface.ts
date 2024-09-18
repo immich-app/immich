@@ -27,6 +27,7 @@ type EmitEventMap = {
 
   // asset bulk events
   'assets.trash': [{ assetIds: string[]; userId: string }];
+  'assets.delete': [{ assetIds: string[]; userId: string }];
   'assets.restore': [{ assetIds: string[]; userId: string }];
 
   // session events
