@@ -44,15 +44,15 @@ class HashService {
     return _hashAssets(filtered);
   }
 
-  /// Converts a list of [AssetEntity]s to [Asset]s including only those
+  /// Processes a list of local [Asset]s, storing their hash and returning only those
   /// that were successfully hashed. Hashes are looked up in a DB table
   /// [AndroidDeviceAsset] / [IOSDeviceAsset] by local id. Only missing
   /// entries are newly hashed and added to the DB table.
-  Future<List<Asset>> _hashAssets(List<Asset> assetEntities) async {
+  Future<List<Asset>> _hashAssets(List<Asset> assets) async {
     const int batchFileCount = 128;
     const int batchDataSize = 1024 * 1024 * 1024; // 1GB
 
-    final ids = assetEntities
+    final ids = assets
         .map(Platform.isAndroid ? (a) => a.localId!.toInt() : (a) => a.localId!)
         .toList();
     final List<DeviceAsset?> hashes = await _lookupHashes(ids);
@@ -61,16 +61,16 @@ class HashService {
 
     int bytes = 0;
 
-    for (int i = 0; i < assetEntities.length; i++) {
+    for (int i = 0; i < assets.length; i++) {
       if (hashes[i] != null) {
         continue;
       }
-      final file = await assetEntities[i].local!.originFile;
+      final file = await assets[i].local!.originFile;
       if (file == null) {
-        final fileName = assetEntities[i].fileName;
+        final fileName = assets[i].fileName;
 
         _log.warning(
-          "Failed to get file for asset ${assetEntities[i].id}, name: $fileName, created on: ${assetEntities[i].fileCreatedAt}, skipping",
+          "Failed to get file for asset ${assets[i].localId}, name: $fileName, created on: ${assets[i].fileCreatedAt}, skipping",
         );
         continue;
       }
@@ -91,7 +91,7 @@ class HashService {
     if (toHash.isNotEmpty) {
       await _processBatch(toHash, toAdd);
     }
-    return _mapAllHashedAssets(assetEntities, hashes);
+    return _mapAllHashedAssets(assets, hashes);
   }
 
   /// Lookup hashes of assets by their local ID

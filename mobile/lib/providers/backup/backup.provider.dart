@@ -330,7 +330,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         List<String> albumNames = [album.name];
 
         final existingAsset = assetsFromSelectedAlbums.firstWhereOrNull(
-          (a) => a.asset.id == asset.id,
+          (a) => a.asset.localId == asset.localId,
         );
 
         if (existingAsset != null) {
@@ -378,7 +378,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Find asset that were backup from selected albums
     final Set<String> selectedAlbumsBackupAssets =
-        Set.from(allUniqueAssets.map((e) => e.asset.id));
+        Set.from(allUniqueAssets.map((e) => e.asset.localId));
 
     selectedAlbumsBackupAssets
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
@@ -549,7 +549,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
         allUniqueAssets: state.allUniqueAssets
             .where(
-              (candidate) => candidate.asset.id != result.candidate.asset.id,
+              (candidate) =>
+                  candidate.asset.localId != result.candidate.asset.localId,
             )
             .toSet(),
       );
