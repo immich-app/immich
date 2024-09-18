@@ -16,10 +16,12 @@ dynamic upgradeDto(dynamic value, String targetType) {
       if (value is Map) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
       }
+      break;
     case 'UserAdminResponseDto':
       if (value is Map) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
       }
+      break;
   }
 }
 
