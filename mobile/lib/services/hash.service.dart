@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/interfaces/media.interface.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -16,10 +16,10 @@ import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
-  HashService(this._db, this._backgroundService, this._mediaRepository);
+  HashService(this._db, this._backgroundService, this._albumMediaRepository);
   final Isar _db;
   final BackgroundService _backgroundService;
-  final IMediaRepository _mediaRepository;
+  final IAlbumMediaRepository _albumMediaRepository;
   final _log = Logger('HashService');
 
   /// Returns all assets that were successfully hashed
@@ -31,7 +31,7 @@ class HashService {
     DateTime? modifiedUntil,
     Set<String>? excludedAssets,
   }) async {
-    final entities = await _mediaRepository.getAssetsByAlbumId(
+    final entities = await _albumMediaRepository.getAssets(
       album.localId!,
       start: start,
       end: end,
@@ -158,6 +158,6 @@ final hashServiceProvider = Provider(
   (ref) => HashService(
     ref.watch(dbProvider),
     ref.watch(backgroundServiceProvider),
-    ref.watch(mediaRepositoryProvider),
+    ref.watch(albumMediaRepositoryProvider),
   ),
 );

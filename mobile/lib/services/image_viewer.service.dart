@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/media.interface.dart';
+import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 
@@ -14,16 +14,16 @@ import 'package:path_provider/path_provider.dart';
 final imageViewerServiceProvider = Provider(
   (ref) => ImageViewerService(
     ref.watch(apiServiceProvider),
-    ref.watch(mediaRepositoryProvider),
+    ref.watch(fileMediaRepositoryProvider),
   ),
 );
 
 class ImageViewerService {
   final ApiService _apiService;
-  final IMediaRepository _mediaRepository;
+  final IFileMediaRepository _fileMediaRepository;
   final Logger _log = Logger("ImageViewerService");
 
-  ImageViewerService(this._apiService, this._mediaRepository);
+  ImageViewerService(this._apiService, this._fileMediaRepository);
 
   Future<bool> downloadAsset(Asset asset) async {
     File? imageFile;
@@ -60,7 +60,7 @@ class ImageViewerService {
         videoFile.writeAsBytesSync(motionResponse.bodyBytes);
         imageFile.writeAsBytesSync(imageResponse.bodyBytes);
 
-        resultAsset = await _mediaRepository.saveLivePhoto(
+        resultAsset = await _fileMediaRepository.saveLivePhoto(
           image: imageFile,
           video: videoFile,
           title: asset.fileName,
@@ -70,7 +70,7 @@ class ImageViewerService {
           _log.warning(
             "Asset cannot be saved as a live photo. This is most likely a motion photo. Saving only the image file",
           );
-          resultAsset = await _mediaRepository
+          resultAsset = await _fileMediaRepository
               .saveImage(imageResponse.bodyBytes, title: asset.fileName);
         }
 
@@ -88,7 +88,7 @@ class ImageViewerService {
         final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
 
         if (asset.isImage) {
-          resultAsset = await _mediaRepository.saveImage(
+          resultAsset = await _fileMediaRepository.saveImage(
             res.bodyBytes,
             title: asset.fileName,
             relativePath: relativePath,
@@ -97,7 +97,7 @@ class ImageViewerService {
           final tempDir = await getTemporaryDirectory();
           videoFile = await File('${tempDir.path}/${asset.fileName}').create();
           videoFile.writeAsBytesSync(res.bodyBytes);
-          resultAsset = await _mediaRepository.saveVideo(
+          resultAsset = await _fileMediaRepository.saveVideo(
             videoFile,
             title: asset.fileName,
             relativePath: relativePath,

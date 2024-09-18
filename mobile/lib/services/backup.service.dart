@@ -11,7 +11,8 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/interfaces/media.interface.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
@@ -19,7 +20,8 @@ import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -36,7 +38,8 @@ final backupServiceProvider = Provider(
     ref.watch(dbProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(albumServiceProvider),
-    ref.watch(mediaRepositoryProvider),
+    ref.watch(albumMediaRepositoryProvider),
+    ref.watch(fileMediaRepositoryProvider),
   ),
 );
 
@@ -47,14 +50,16 @@ class BackupService {
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
   final AlbumService _albumService;
-  final IMediaRepository _mediaRepository;
+  final IAlbumMediaRepository _albumMediaRepository;
+  final IFileMediaRepository _fileMediaRepository;
 
   BackupService(
     this._apiService,
     this._db,
     this._appSetting,
     this._albumService,
-    this._mediaRepository,
+    this._albumMediaRepository,
+    this._fileMediaRepository,
   );
 
   Future<List<String>?> getDeviceBackupAsset() async {
@@ -122,7 +127,7 @@ class BackupService {
     for (final BackupAlbum backupAlbum in backupAlbums) {
       final Album localAlbum;
       try {
-        localAlbum = await _mediaRepository.getAlbumById(backupAlbum.id);
+        localAlbum = await _albumMediaRepository.get(backupAlbum.id);
       } on StateError {
         // the album no longer exists
         continue;
@@ -134,7 +139,7 @@ class BackupService {
       }
       final List<Asset> assets;
       try {
-        assets = await _mediaRepository.getAssetsByAlbumId(
+        assets = await _albumMediaRepository.getAssets(
           backupAlbum.id,
           modifiedFrom: useTimeFilter
               ?
@@ -228,7 +233,7 @@ class BackupService {
 
     // DON'T KNOW WHY BUT THIS HELPS BACKGROUND BACKUP TO WORK ON IOS
     if (Platform.isIOS) {
-      await _mediaRepository.requestExtendedPermissions();
+      await _fileMediaRepository.requestExtendedPermissions();
     }
 
     return true;

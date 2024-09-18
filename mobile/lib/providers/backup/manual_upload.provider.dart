@@ -8,7 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -194,7 +194,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.manualInProgress);
 
       if (ref.read(galleryPermissionNotifier.notifier).hasPermission) {
-        await ref.read(mediaRepositoryProvider).clearFileCache();
+        await ref.read(fileMediaRepositoryProvider).clearFileCache();
 
         final allAssetsFromDevice =
             allManualUploads.where((e) => e.isLocal && !e.isRemote).toList();

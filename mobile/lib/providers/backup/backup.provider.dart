@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
@@ -14,7 +16,8 @@ import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
@@ -40,6 +43,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._backgroundService,
     this._galleryPermissionNotifier,
     this._db,
+    this._albumMediaRepository,
+    this._fileMediaRepository,
     this.ref,
   ) : super(
           BackUpState(
@@ -88,6 +93,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
   final Isar _db;
+  final IAlbumMediaRepository _albumMediaRepository;
+  final IFileMediaRepository _fileMediaRepository;
   final Ref ref;
 
   ///
@@ -226,7 +233,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     Stopwatch stopwatch = Stopwatch()..start();
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
-    List<Album> albums = await ref.read(mediaRepositoryProvider).getAllAlbums();
+    List<Album> albums = await _albumMediaRepository.getAll();
 
     // Map of id -> album for quick album lookup later on.
     Map<String, Album> albumMap = {};
@@ -237,8 +244,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       AvailableAlbum availableAlbum = AvailableAlbum(
         album: album,
         assetCount: await ref
-            .read(mediaRepositoryProvider)
-            .countAssetsInAlbum(album.localId!),
+            .read(albumMediaRepositoryProvider)
+            .getAssetCount(album.localId!),
       );
 
       availableAlbums.add(availableAlbum);
@@ -260,9 +267,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         selectedAlbums.add(
           AvailableAlbum(
             album: albumAsset,
-            assetCount: await ref
-                .read(mediaRepositoryProvider)
-                .countAssetsInAlbum(albumAsset.localId!),
+            assetCount:
+                await _albumMediaRepository.getAssetCount(albumAsset.localId!),
             lastBackup: ba.lastBackup,
           ),
         );
@@ -280,8 +286,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           AvailableAlbum(
             album: albumAsset,
             assetCount: await ref
-                .read(mediaRepositoryProvider)
-                .countAssetsInAlbum(albumAsset.localId!),
+                .read(albumMediaRepositoryProvider)
+                .getAssetCount(albumAsset.localId!),
             lastBackup: ba.lastBackup,
           ),
         );
@@ -313,16 +319,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     for (final album in state.selectedBackupAlbums) {
       final assetCount = await ref
-          .read(mediaRepositoryProvider)
-          .countAssetsInAlbum(album.album.localId!);
+          .read(albumMediaRepositoryProvider)
+          .getAssetCount(album.album.localId!);
 
       if (assetCount == 0) {
         continue;
       }
 
       final assets = await ref
-          .read(mediaRepositoryProvider)
-          .getAssetsByAlbumId(album.album.localId!);
+          .read(albumMediaRepositoryProvider)
+          .getAssets(album.album.localId!);
 
       // Add album's name to the asset info
       for (final asset in assets) {
@@ -348,16 +354,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     for (final album in state.excludedBackupAlbums) {
       final assetCount = await ref
-          .read(mediaRepositoryProvider)
-          .countAssetsInAlbum(album.album.localId!);
+          .read(albumMediaRepositoryProvider)
+          .getAssetCount(album.album.localId!);
 
       if (assetCount == 0) {
         continue;
       }
 
       final assets = await ref
-          .read(mediaRepositoryProvider)
-          .getAssetsByAlbumId(album.album.localId!);
+          .read(albumMediaRepositoryProvider)
+          .getAssets(album.album.localId!);
 
       for (final asset in assets) {
         assetsFromExcludedAlbums.add(
@@ -471,7 +477,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     final hasPermission = _galleryPermissionNotifier.hasPermission;
     if (hasPermission) {
-      await ref.read(mediaRepositoryProvider).clearFileCache();
+      await _fileMediaRepository.clearFileCache();
 
       if (state.allUniqueAssets.isEmpty) {
         log.info("No Asset On Device - Abort Backup Process");
@@ -759,6 +765,8 @@ final backupProvider =
     ref.watch(backgroundServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
     ref.watch(dbProvider),
+    ref.watch(albumMediaRepositoryProvider),
+    ref.watch(fileMediaRepositoryProvider),
     ref,
   );
 });

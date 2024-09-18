@@ -1,7 +1,9 @@
 import 'package:immich_mobile/interfaces/album.interface.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/backup.interface.dart';
-import 'package:immich_mobile/interfaces/media.interface.dart';
+import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -13,4 +15,8 @@ class MockUserRepository extends Mock implements IUserRepository {}
 
 class MockBackupRepository extends Mock implements IBackupRepository {}
 
-class MockMediaRepository extends Mock implements IMediaRepository {}
+class MockAlbumMediaRepository extends Mock implements IAlbumMediaRepository {}
+
+class MockAssetMediaRepository extends Mock implements IAssetMediaRepository {}
+
+class MockFileMediaRepository extends Mock implements IFileMediaRepository {}

@@ -8,7 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
@@ -67,7 +67,7 @@ class EditImagePage extends ConsumerWidget {
   ) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
-      await ref.read(mediaRepositoryProvider).saveImage(
+      await ref.read(fileMediaRepositoryProvider).saveImage(
             imageData,
             title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
           );

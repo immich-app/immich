@@ -6,7 +6,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 @RoutePage()
@@ -20,8 +20,8 @@ class AlbumPreviewPage extends HookConsumerWidget {
 
     getAssetsInAlbum() async {
       assets.value = await ref
-          .read(mediaRepositoryProvider)
-          .getAssetsByAlbumId(album.localId!);
+          .read(albumMediaRepositoryProvider)
+          .getAssets(album.localId!);
     }
 
     useEffect(

@@ -15,7 +15,8 @@ import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
@@ -364,9 +365,10 @@ class BackgroundService {
     AssetRepository assetRepository = AssetRepository(db);
     UserRepository userRepository = UserRepository(db);
     BackupRepository backupAlbumRepository = BackupRepository(db);
-    MediaRepository mediaRepository = MediaRepository();
-    HashService hashService = HashService(db, this, mediaRepository);
-    SyncService syncSerive = SyncService(db, hashService, mediaRepository);
+    AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
+    FileMediaRepository fileMediaRepository = FileMediaRepository();
+    HashService hashService = HashService(db, this, albumMediaRepository);
+    SyncService syncSerive = SyncService(db, hashService, albumMediaRepository);
     UserService userService =
         UserService(apiService, db, syncSerive, partnerService);
     AlbumService albumService = AlbumService(
@@ -377,14 +379,15 @@ class BackgroundService {
       assetRepository,
       userRepository,
       backupAlbumRepository,
-      mediaRepository,
+      albumMediaRepository,
     );
     BackupService backupService = BackupService(
       apiService,
       db,
       settingService,
       albumService,
-      mediaRepository,
+      albumMediaRepository,
+      fileMediaRepository,
     );
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
@@ -393,7 +396,7 @@ class BackgroundService {
       return true;
     }
 
-    await mediaRepository.enableBackgroundAccess();
+    await fileMediaRepository.enableBackgroundAccess();
 
     do {
       final bool backupOk = await _runBackup(

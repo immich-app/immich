@@ -12,7 +12,7 @@ import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
@@ -230,7 +230,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     }
 
     return FutureBuilder<Asset?>(
-      future: ref.read(mediaRepositoryProvider).getAssetById(asset.id),
+      future: ref.read(assetMediaRepositoryProvider).getAsset(asset.id),
       builder: (context, thumbnail) => ListTile(
         isThreeLine: true,
         leading: AnimatedCrossFade(

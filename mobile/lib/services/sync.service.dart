@@ -8,9 +8,9 @@ import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/interfaces/media.interface.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
@@ -24,18 +24,18 @@ final syncServiceProvider = Provider(
   (ref) => SyncService(
     ref.watch(dbProvider),
     ref.watch(hashServiceProvider),
-    ref.watch(mediaRepositoryProvider),
+    ref.watch(albumMediaRepositoryProvider),
   ),
 );
 
 class SyncService {
   final Isar _db;
   final HashService _hashService;
-  final IMediaRepository _mediaRepository;
+  final IAlbumMediaRepository _albumMediaRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
 
-  SyncService(this._db, this._hashService, this._mediaRepository);
+  SyncService(this._db, this._hashService, this._albumMediaRepository);
 
   // public methods:
 
@@ -573,7 +573,7 @@ class SyncService {
         .findAll();
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
     final int assetCountOnDevice =
-        await _mediaRepository.countAssetsInAlbum(deviceAlbum.localId!);
+        await _albumMediaRepository.getAssetCount(deviceAlbum.localId!);
     final List<Asset> onDevice = await _hashService.getHashedAssets(
       deviceAlbum,
       excludedAssets: excludedAssets,
@@ -649,7 +649,7 @@ class SyncService {
       return false;
     }
     final int totalOnDevice =
-        await _mediaRepository.countAssetsInAlbum(deviceAlbum.localId!);
+        await _albumMediaRepository.getAssetCount(deviceAlbum.localId!);
     final int lastKnownTotal =
         (await _db.eTags.getById(deviceAlbum.eTagKeyAssetCount))?.assetCount ??
             0;
@@ -820,7 +820,7 @@ class SyncService {
   ) async {
     return deviceAlbum.name != dbAlbum.name ||
         !deviceAlbum.modifiedAt.isAtSameMomentAs(dbAlbum.modifiedAt) ||
-        await _mediaRepository.countAssetsInAlbum(deviceAlbum.localId!) !=
+        await _albumMediaRepository.getAssetCount(deviceAlbum.localId!) !=
             (await _db.eTags.getById(deviceAlbum.eTagKeyAssetCount))
                 ?.assetCount;
   }

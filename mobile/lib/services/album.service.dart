@@ -6,9 +6,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/backup.interface.dart';
-import 'package:immich_mobile/interfaces/media.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -20,7 +20,7 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
-import 'package:immich_mobile/repositories/media.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
@@ -37,7 +37,7 @@ final albumServiceProvider = Provider(
     ref.watch(assetRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(backupRepositoryProvider),
-    ref.watch(mediaRepositoryProvider),
+    ref.watch(albumMediaRepositoryProvider),
   ),
 );
 
@@ -49,7 +49,7 @@ class AlbumService {
   final IAssetRepository _assetRepository;
   final IUserRepository _userRepository;
   final IBackupRepository _backupAlbumRepository;
-  final IMediaRepository _mediaRepository;
+  final IAlbumMediaRepository _albumMediaRepository;
   final Logger _log = Logger('AlbumService');
   Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);
@@ -62,7 +62,7 @@ class AlbumService {
     this._assetRepository,
     this._userRepository,
     this._backupAlbumRepository,
-    this._mediaRepository,
+    this._albumMediaRepository,
   );
 
   /// Checks all selected device albums for changes of albums and their assets
@@ -88,7 +88,7 @@ class AlbumService {
         }
         return false;
       }
-      final List<Album> onDevice = await _mediaRepository.getAllAlbums();
+      final List<Album> onDevice = await _albumMediaRepository.getAll();
       _log.info("Found ${onDevice.length} device albums");
       Set<String>? excludedAssets;
       if (excludedIds.isNotEmpty) {
@@ -145,7 +145,7 @@ class AlbumService {
     for (Album album in albums) {
       if (excludedAlbumIds.contains(album.localId)) {
         final assetIds =
-            await _mediaRepository.getAssetIdsByAlbumId(album.localId!);
+            await _albumMediaRepository.getAssetIds(album.localId!);
         result.addAll(assetIds);
       }
     }
