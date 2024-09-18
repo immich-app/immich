@@ -48,14 +48,19 @@ custom_lint:
     - unsupported_provider_value: false
     - photo_manager:
       exclude:
-        - media.repository.dart # This should be the only place in an ideal world :-)
-        - asset.entity.dart # to provide local AssetEntity for now (ok)
-        - immich_local_image_provider.dart # accesses thumbnails via PhotoManager (ok)
-        - immich_local_thumbnail_provider.dart # accesses thumbnails via PhotoManager (ok)
-        - backup.provider.dart # uses only PMProgressHandler -> refactor
-        - manual_upload.provider.dart # uses only PMProgressHandler -> refactor
-        - background.service.dart # uses only PMProgressHandler -> refactor
-        - backup.service.dart # uses only PMProgressHandler -> refactor
+        # required / wanted
+        - album_media.repository.dart
+        - asset_media.repository.dart
+        - file_media.repository.dart
+          # acceptable exceptions for the time being
+        - asset.entity.dart # to provide local AssetEntity for now
+        - immich_local_image_provider.dart # accesses thumbnails via PhotoManager
+        - immich_local_thumbnail_provider.dart # accesses thumbnails via PhotoManager
+          # refactor to make the providers and services testable
+        - backup.provider.dart # uses only PMProgressHandler
+        - manual_upload.provider.dart # uses only PMProgressHandler
+        - background.service.dart # uses only PMProgressHandler
+        - backup.service.dart # uses only PMProgressHandler
 
 dart_code_metrics:
   metrics:
