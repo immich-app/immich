@@ -13,12 +13,14 @@ import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
+import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -363,23 +365,33 @@ class BackgroundService {
     PartnerService partnerService = PartnerService(apiService, db);
     AlbumRepository albumRepository = AlbumRepository(db);
     AssetRepository assetRepository = AssetRepository(db);
-    UserRepository userRepository = UserRepository(db);
     BackupRepository backupAlbumRepository = BackupRepository(db);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
     FileMediaRepository fileMediaRepository = FileMediaRepository();
+    UserRepository userRepository = UserRepository(db);
+    AlbumApiRepository albumApiRepository =
+        AlbumApiRepository(apiService.albumsApi);
     HashService hashService = HashService(db, this, albumMediaRepository);
-    SyncService syncSerive = SyncService(db, hashService, albumMediaRepository);
+    EntityService entityService =
+        EntityService(assetRepository, userRepository);
+    SyncService syncSerive = SyncService(
+      db,
+      hashService,
+      entityService,
+      albumMediaRepository,
+      albumApiRepository,
+    );
     UserService userService =
         UserService(apiService, db, syncSerive, partnerService);
     AlbumService albumService = AlbumService(
-      apiService,
       userService,
       syncSerive,
+      entityService,
       albumRepository,
       assetRepository,
-      userRepository,
       backupAlbumRepository,
       albumMediaRepository,
+      albumApiRepository,
     );
     BackupService backupService = BackupService(
       apiService,

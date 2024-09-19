@@ -1,4 +1,5 @@
 import 'package:immich_mobile/interfaces/album.interface.dart';
+import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
@@ -20,3 +21,5 @@ class MockAlbumMediaRepository extends Mock implements IAlbumMediaRepository {}
 class MockAssetMediaRepository extends Mock implements IAssetMediaRepository {}
 
 class MockFileMediaRepository extends Mock implements IFileMediaRepository {}
+
+class MockAlbumApiRepository extends Mock implements IAlbumApiRepository {}

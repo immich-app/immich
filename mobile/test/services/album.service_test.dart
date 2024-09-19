@@ -8,34 +8,34 @@ import '../service.mocks.dart';
 
 void main() {
   late AlbumService sut;
-  late MockApiService apiService;
   late MockUserService userService;
   late MockSyncService syncService;
+  late MockEntityService entityService;
   late MockAlbumRepository albumRepository;
   late MockAssetRepository assetRepository;
-  late MockUserRepository userRepository;
   late MockBackupRepository backupRepository;
   late MockAlbumMediaRepository albumMediaRepository;
+  late MockAlbumApiRepository albumApiRepository;
 
   setUp(() {
-    apiService = MockApiService();
     userService = MockUserService();
     syncService = MockSyncService();
+    entityService = MockEntityService();
     albumRepository = MockAlbumRepository();
     assetRepository = MockAssetRepository();
-    userRepository = MockUserRepository();
     backupRepository = MockBackupRepository();
     albumMediaRepository = MockAlbumMediaRepository();
+    albumApiRepository = MockAlbumApiRepository();
 
     sut = AlbumService(
-      apiService,
       userService,
       syncService,
+      entityService,
       albumRepository,
       assetRepository,
-      userRepository,
       backupRepository,
       albumMediaRepository,
+      albumApiRepository,
     );
   });
 
