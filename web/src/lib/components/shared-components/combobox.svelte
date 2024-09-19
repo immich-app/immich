@@ -53,20 +53,17 @@
   let optionRefs: HTMLElement[] = [];
   let input: HTMLInputElement;
   let bounds: DOMRect | undefined;
-  let scrollable: Element | null;
-  let direction: 'bottom' | 'top' = 'bottom';
+  let scrollableAncestor: Element | null;
+  let dropdownDirection: 'bottom' | 'top' = 'bottom';
+
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
   const dropdownOffset = 15;
   const observer = new IntersectionObserver(
     (entries) => {
-      if (!isOpen) {
-        return;
-      }
-      for (const entry of entries) {
-        if (entry.intersectionRatio < 1) {
-          isOpen = false;
-        }
+      const inputEntry = entries[0];
+      if (inputEntry.intersectionRatio < 1) {
+        isOpen = false;
       }
     },
     { threshold: 0.5 },
@@ -80,20 +77,14 @@
 
   $: position = calculatePosition(bounds);
 
-  $: {
-    if (input) {
-      scrollable?.removeEventListener('scroll', onPositionChange);
-      scrollable = input.closest('.overflow-y-auto, .overflow-y-scroll');
-      scrollable?.addEventListener('scroll', onPositionChange);
-    }
-  }
-
   onMount(() => {
     observer.observe(input);
+    scrollableAncestor = input.closest('.overflow-y-auto, .overflow-y-scroll');
+    scrollableAncestor?.addEventListener('scroll', onPositionChange);
   });
 
   onDestroy(() => {
-    scrollable?.removeEventListener('scroll', onPositionChange);
+    scrollableAncestor?.removeEventListener('scroll', onPositionChange);
     observer.disconnect();
   });
 
@@ -158,7 +149,7 @@
   };
 
   const calculatePosition = (boundary: DOMRect | undefined) => {
-    direction = getComboboxDirection(boundary);
+    dropdownDirection = getComboboxDirection(boundary);
 
     if (!boundary) {
       return undefined;
@@ -166,12 +157,12 @@
 
     const viewportHeight = window.innerHeight;
 
-    if (direction === 'top') {
+    if (dropdownDirection === 'top') {
       return {
         bottom: `${viewportHeight - boundary.top}px`,
         left: `${boundary.left}px`,
         width: `${boundary.width}px`,
-        maxHeight: `${boundary.top - dropdownOffset}px`,
+        maxHeight: maxHeight(boundary.top - dropdownOffset),
       };
     }
 
@@ -180,8 +171,12 @@
       top: `${boundary.bottom}px`,
       left: `${boundary.left}px`,
       width: `${boundary.width}px`,
-      maxHeight: `${availableHeight - dropdownOffset}px`,
+      maxHeight: maxHeight(availableHeight - dropdownOffset),
     };
+  };
+
+  const maxHeight = (size: number) => {
+    return `min(${size}px,18rem)`;
   };
 
   const onPositionChange = () => {
@@ -197,9 +192,10 @@
     }
 
     const viewportHeight = window.innerHeight;
-    const availableHeight = viewportHeight - boundary.bottom;
+    const heightBelow = viewportHeight - boundary.bottom;
+    const heightAbove = boundary.top;
 
-    return availableHeight > 150 ? 'bottom' : 'top';
+    return heightBelow <= 225 && heightAbove > heightBelow ? 'top' : 'bottom';
   };
 
   const getInputPosition = () => input?.getBoundingClientRect();
@@ -238,8 +234,8 @@
       autocomplete="off"
       bind:this={input}
       class:!pl-8={isActive}
-      class:!rounded-b-none={isOpen && direction === 'bottom'}
-      class:!rounded-t-none={isOpen && direction === 'top'}
+      class:!rounded-b-none={isOpen && dropdownDirection === 'bottom'}
+      class:!rounded-t-none={isOpen && dropdownDirection === 'top'}
       class:cursor-pointer={!isActive}
       class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
       id={inputId}
@@ -307,15 +303,15 @@
     id={listboxId}
     transition:fly={{ duration: 250 }}
     class="fixed text-left text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900 z-[10000]"
-    class:rounded-b-xl={direction === 'bottom'}
-    class:rounded-t-xl={direction === 'top'}
-    class:shadow={direction === 'bottom'}
+    class:rounded-b-xl={dropdownDirection === 'bottom'}
+    class:rounded-t-xl={dropdownDirection === 'top'}
+    class:shadow={dropdownDirection === 'bottom'}
     class:border={isOpen}
     style:top={position?.top}
     style:bottom={position?.bottom}
     style:left={position?.left}
     style:width={position?.width}
-    style:max-height="min({position?.maxHeight},18rem)"
+    style:max-height={position?.maxHeight}
     tabindex="-1"
   >
     {#if isOpen}
