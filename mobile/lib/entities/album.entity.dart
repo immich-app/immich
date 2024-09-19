@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 part 'album.entity.g.dart';
 
@@ -44,6 +42,9 @@ class Album {
   final IsarLinks<Asset> assets = IsarLinks<Asset>();
 
   @ignore
+  bool isAll = false;
+
+  @ignore
   bool get isRemote => remoteId != null;
 
   @ignore
@@ -69,6 +70,9 @@ class Album {
 
     return name.join(' ');
   }
+
+  @ignore
+  String get eTagKeyAssetCount => "device-album-$localId-asset-count";
 
   @override
   bool operator ==(other) {
@@ -111,19 +115,6 @@ class Album {
       thumbnail.value.hashCode ^
       sharedUsers.length.hashCode ^
       assets.length.hashCode;
-
-  static Album local(AssetPathEntity ape) {
-    final Album a = Album(
-      name: ape.name,
-      createdAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
-      modifiedAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
-      shared: false,
-      activityEnabled: false,
-    );
-    a.owner.value = Store.get(StoreKey.currentUser);
-    a.localId = ape.id;
-    return a;
-  }
 
   static Future<Album> remote(AlbumResponseDto dto) async {
     final Isar db = Isar.getInstance()!;
@@ -176,8 +167,4 @@ extension AssetsHelper on IsarCollection<Album> {
 
 extension AlbumResponseDtoHelper on AlbumResponseDto {
   List<Asset> getAssets() => assets.map(Asset.remote).toList();
-}
-
-extension AssetPathEntityHelper on AssetPathEntity {
-  String get eTagKeyAssetCount => "device-album-$id-asset-count";
 }

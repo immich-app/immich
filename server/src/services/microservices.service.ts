@@ -16,6 +16,7 @@ import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
 import { TagService } from 'src/services/tag.service';
+import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { otelShutdown } from 'src/utils/instrumentation';
@@ -36,6 +37,7 @@ export class MicroservicesService {
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private tagService: TagService,
+    private trashService: TrashService,
     private userService: UserService,
     private duplicateService: DuplicateService,
     private versionService: VersionService,
@@ -97,6 +99,7 @@ export class MicroservicesService {
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
       [JobName.TAG_CLEANUP]: () => this.tagService.handleTagCleanup(),
       [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
+      [JobName.QUEUE_TRASH_EMPTY]: () => this.trashService.handleQueueEmptyTrash(),
     });
   }
 

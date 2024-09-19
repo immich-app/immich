@@ -8,7 +8,7 @@ export const upsertTags = async (repository: ITagRepository, { userId, tags }: U
   const results: TagEntity[] = [];
 
   for (const tag of tags) {
-    const parts = tag.split('/');
+    const parts = tag.split('/').filter(Boolean);
     let parent: TagEntity | undefined;
 
     for (const part of parts) {

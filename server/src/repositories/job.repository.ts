@@ -95,6 +95,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Version check
   [JobName.VERSION_CHECK]: QueueName.BACKGROUND_TASK,
+
+  // Trash
+  [JobName.QUEUE_TRASH_EMPTY]: QueueName.BACKGROUND_TASK,
 };
 
 @Instrumentation()
@@ -151,10 +154,6 @@ export class JobRepository implements IJobRepository {
         job.stop();
       }
     }
-  }
-
-  deleteCronJob(name: string): void {
-    this.schedulerReqistry.deleteCronJob(name);
   }
 
   setConcurrency(queueName: QueueName, concurrency: number) {

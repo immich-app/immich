@@ -6839,7 +6839,14 @@
         "operationId": "emptyTrash",
         "parameters": [],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -6864,7 +6871,14 @@
         "operationId": "restoreTrash",
         "parameters": [],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -6899,7 +6913,14 @@
           "required": true
         },
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -8779,6 +8800,10 @@
       },
       "CreateProfileImageResponseDto": {
         "properties": {
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -8787,6 +8812,7 @@
           }
         },
         "required": [
+          "profileChangedAt",
           "profileImagePath",
           "userId"
         ],
@@ -10015,6 +10041,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -10024,6 +10054,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"
@@ -12244,6 +12275,17 @@
         ],
         "type": "string"
       },
+      "TrashResponseDto": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "type": "object"
+      },
       "UpdateAlbumDto": {
         "properties": {
           "albumName": {
@@ -12454,6 +12496,10 @@
           "oauthId": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -12492,6 +12538,7 @@
           "license",
           "name",
           "oauthId",
+          "profileChangedAt",
           "profileImagePath",
           "quotaSizeInBytes",
           "quotaUsageInBytes",
@@ -12653,6 +12700,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -12662,6 +12713,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"

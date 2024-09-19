@@ -19,6 +19,7 @@ export type UserResponseDto = {
     email: string;
     id: string;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type ActivityResponseDto = {
@@ -53,6 +54,7 @@ export type UserAdminResponseDto = {
     license: (UserLicense) | null;
     name: string;
     oauthId: string;
+    profileChangedAt: string;
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -669,6 +671,7 @@ export type PartnerResponseDto = {
     id: string;
     inTimeline?: boolean;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type UpdatePartnerDto = {
@@ -1243,6 +1246,9 @@ export type TimeBucketResponseDto = {
     count: number;
     timeBucket: string;
 };
+export type TrashResponseDto = {
+    count: number;
+};
 export type UserUpdateMeDto = {
     email?: string;
     name?: string;
@@ -1252,6 +1258,7 @@ export type CreateProfileImageDto = {
     file: Blob;
 };
 export type CreateProfileImageResponseDto = {
+    profileChangedAt: string;
     profileImagePath: string;
     userId: string;
 };
@@ -3069,13 +3076,19 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
     }));
 }
 export function emptyTrash(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/empty", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/empty", {
         ...opts,
         method: "POST"
     }));
 }
 export function restoreTrash(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/restore", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/restore", {
         ...opts,
         method: "POST"
     }));
@@ -3083,7 +3096,10 @@ export function restoreTrash(opts?: Oazapfts.RequestOpts) {
 export function restoreAssets({ bulkIdsDto }: {
     bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/restore/assets", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/restore/assets", oazapfts.json({
         ...opts,
         method: "POST",
         body: bulkIdsDto

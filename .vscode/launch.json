@@ -5,8 +5,8 @@
       "type": "node",
       "request": "attach",
       "restart": true,
-      "port": 9230,
-      "name": "Immich Server",
+      "port": 9231,
+      "name": "Immich API Server",
       "remoteRoot": "/usr/src/app",
       "localRoot": "${workspaceFolder}/server"
     },
@@ -14,8 +14,8 @@
       "type": "node",
       "request": "attach",
       "restart": true,
-      "port": 9231,
-      "name": "Immich Microservices",
+      "port": 9230,
+      "name": "Immich Workers",
       "remoteRoot": "/usr/src/app",
       "localRoot": "${workspaceFolder}/server"
     }

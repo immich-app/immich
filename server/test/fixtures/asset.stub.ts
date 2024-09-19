@@ -2,7 +2,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { StackEntity } from 'src/entities/stack.entity';
-import { AssetFileType, AssetType } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { libraryStub } from 'test/fixtures/library.stub';
@@ -42,6 +42,7 @@ export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity =
 export const assetStub = {
   noResizePath: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     originalFileName: 'IMG_123.jpg',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -76,6 +77,7 @@ export const assetStub = {
 
   noWebpPath: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -83,7 +85,6 @@ export const assetStub = {
     ownerId: 'user-id',
     deviceId: 'device-id',
     originalPath: 'upload/library/IMG_456.jpg',
-
     files: [previewFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
@@ -114,6 +115,7 @@ export const assetStub = {
 
   noThumbhash: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -148,6 +150,7 @@ export const assetStub = {
 
   primaryImage: Object.freeze<AssetEntity>({
     id: 'primary-asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -192,6 +195,7 @@ export const assetStub = {
 
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -231,6 +235,7 @@ export const assetStub = {
 
   trashed: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -270,6 +275,7 @@ export const assetStub = {
 
   archived: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -309,6 +315,7 @@ export const assetStub = {
 
   external: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -348,6 +355,7 @@ export const assetStub = {
 
   offline: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -385,6 +393,7 @@ export const assetStub = {
 
   externalOffline: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -424,6 +433,7 @@ export const assetStub = {
 
   image1: Object.freeze<AssetEntity>({
     id: 'asset-id-1',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -461,6 +471,7 @@ export const assetStub = {
 
   imageFrom2015: Object.freeze<AssetEntity>({
     id: 'asset-id-1',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2015-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2015-02-23T05:06:29.716Z'),
@@ -498,6 +509,7 @@ export const assetStub = {
 
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     originalFileName: 'asset-id.ext',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -536,6 +548,7 @@ export const assetStub = {
   }),
 
   livePhotoMotionAsset: Object.freeze({
+    status: AssetStatus.ACTIVE,
     id: fileStub.livePhotoMotion.uuid,
     originalPath: fileStub.livePhotoMotion.originalPath,
     ownerId: authStub.user1.user.id,
@@ -551,6 +564,7 @@ export const assetStub = {
 
   liveMotionWithThumb: Object.freeze({
     id: fileStub.livePhotoMotion.uuid,
+    status: AssetStatus.ACTIVE,
     originalPath: fileStub.livePhotoMotion.originalPath,
     ownerId: authStub.user1.user.id,
     type: AssetType.VIDEO,
@@ -581,6 +595,7 @@ export const assetStub = {
 
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
+    status: AssetStatus.ACTIVE,
     originalPath: fileStub.livePhotoStill.originalPath,
     ownerId: authStub.user1.user.id,
     type: AssetType.IMAGE,
@@ -596,6 +611,7 @@ export const assetStub = {
 
   livePhotoStillAssetWithTheSameLivePhotoMotionAsset: Object.freeze({
     id: 'live-photo-still-asset-1',
+    status: AssetStatus.ACTIVE,
     originalPath: fileStub.livePhotoStill.originalPath,
     ownerId: authStub.user1.user.id,
     type: AssetType.IMAGE,
@@ -611,6 +627,7 @@ export const assetStub = {
 
   livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',
+    status: AssetStatus.ACTIVE,
     originalPath: fileStub.livePhotoStill.originalPath,
     originalFileName: fileStub.livePhotoStill.originalName,
     ownerId: authStub.user1.user.id,
@@ -627,6 +644,7 @@ export const assetStub = {
 
   withLocation: Object.freeze<AssetEntity>({
     id: 'asset-with-favorite-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-22T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-22T05:06:29.716Z'),
@@ -668,6 +686,7 @@ export const assetStub = {
   }),
   sidecar: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -701,6 +720,7 @@ export const assetStub = {
   }),
   sidecarWithoutExt: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -735,6 +755,7 @@ export const assetStub = {
 
   readOnly: Object.freeze<AssetEntity>({
     id: 'read-only-asset',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -769,6 +790,7 @@ export const assetStub = {
 
   hasEncodedVideo: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     originalFileName: 'asset-id.ext',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -805,6 +827,7 @@ export const assetStub = {
   }),
   missingFileExtension: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -843,6 +866,7 @@ export const assetStub = {
   }),
   hasFileExtension: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -881,6 +905,7 @@ export const assetStub = {
   }),
   imageDng: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -919,6 +944,7 @@ export const assetStub = {
   }),
   hasEmbedding: Object.freeze<AssetEntity>({
     id: 'asset-id-embedding',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -959,6 +985,7 @@ export const assetStub = {
   }),
   hasDupe: Object.freeze<AssetEntity>({
     id: 'asset-id-dupe',
+    status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),

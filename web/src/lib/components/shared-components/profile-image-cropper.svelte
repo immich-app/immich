@@ -56,13 +56,14 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      const { profileImagePath } = await createProfileImage({ createProfileImageDto: { file } });
+      const { profileImagePath, profileChangedAt } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
         message: $t('profile_picture_set'),
         timeout: 3000,
       });
       $user.profileImagePath = profileImagePath;
+      $user.profileChangedAt = profileChangedAt;
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_profile_picture'));
     }
