@@ -76,6 +76,7 @@ class ServerConfigDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerConfigDto? fromJson(dynamic value) {
+    upgradeDto(value, "ServerConfigDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
