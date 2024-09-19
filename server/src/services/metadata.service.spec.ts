@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType, SourceType } from 'src/enum';
+import { AssetType, Orientation, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -20,7 +20,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { MetadataService, Orientation } from 'src/services/metadata.service';
+import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -537,9 +537,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
-      expect(assetMock.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({ orientation: Orientation.Rotate270CW.toString() }),
-      );
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ orientation: Orientation.Rotate90 }));
     });
 
     it('should extract the MotionPhotoVideo tag from Samsung HEIC motion photos', async () => {
@@ -786,7 +784,7 @@ describe(MetadataService.name, () => {
         Make: 'test-factory',
         Model: "'mockel'",
         ModifyDate: ExifDateTime.fromISO(dateForTest.toISOString()),
-        Orientation: 0,
+        Orientation: 1,
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
         tz: 'UTC-11:30',
@@ -819,7 +817,7 @@ describe(MetadataService.name, () => {
         make: tags.Make,
         model: tags.Model,
         modifyDate: expect.any(Date),
-        orientation: tags.Orientation?.toString(),
+        orientation: 1,
         profileDescription: tags.ProfileDescription,
         projectionType: 'EQUIRECTANGULAR',
         timeZone: tags.tz,

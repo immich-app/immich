@@ -1,4 +1,5 @@
 import { AssetEntity } from 'src/entities/asset.entity';
+import { Orientation } from 'src/enum';
 import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column.js';
 import { Entity } from 'typeorm/decorator/entity/Entity.js';
@@ -25,8 +26,8 @@ export class ExifEntity {
   @Column({ type: 'bigint', nullable: true })
   fileSizeInByte!: number | null;
 
-  @Column({ type: 'varchar', nullable: true })
-  orientation!: string | null;
+  @Column({ type: 'enum', enum: Orientation, nullable: true })
+  orientation!: Orientation | null;
 
   @Column({ type: 'timestamptz', nullable: true })
   dateTimeOriginal!: Date | null;

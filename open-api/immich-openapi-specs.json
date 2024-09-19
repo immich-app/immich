@@ -9074,8 +9074,18 @@
           },
           "orientation": {
             "default": null,
+            "enum": [
+              1,
+              2,
+              8,
+              7,
+              3,
+              4,
+              6,
+              5
+            ],
             "nullable": true,
-            "type": "string"
+            "type": "number"
           },
           "projectionType": {
             "default": null,

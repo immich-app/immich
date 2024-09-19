@@ -198,3 +198,14 @@ export enum ManualJobName {
   TAG_CLEANUP = 'tag-cleanup',
   USER_CLEANUP = 'user-cleanup',
 }
+
+export enum Orientation {
+  Rotate0 = 1,
+  Rotate0Mirrored = 2,
+  Rotate90 = 8,
+  Rotate90Mirrored = 7,
+  Rotate180 = 3,
+  Rotate180Mirrored = 4,
+  Rotate270 = 6,
+  Rotate270Mirrored = 5,
+}

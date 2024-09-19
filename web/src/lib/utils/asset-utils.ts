@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
 import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
-import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
+import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -19,6 +19,8 @@ import {
   getBaseUrl,
   getDownloadInfo,
   getStack,
+  LameGeneratedOrientation,
+  Orientation,
   tagAssets as tagAllAssets,
   untagAssets,
   updateAsset,
@@ -290,17 +292,17 @@ export function getAssetFilename(asset: AssetResponseDto): string {
   return `${asset.originalFileName}.${fileExtension}`;
 }
 
-function isRotated90CW(orientation: number) {
-  return orientation === 5 || orientation === 6 || orientation === 90;
-}
+export function isFlipped(orientation?: LameGeneratedOrientation | null) {
+  if (!orientation) {
+    return false;
+  }
 
-function isRotated270CW(orientation: number) {
-  return orientation === 7 || orientation === 8 || orientation === -90;
-}
-
-export function isFlipped(orientation?: string | null) {
-  const value = Number(orientation);
-  return value && (isRotated270CW(value) || isRotated90CW(value));
+  return [
+    Orientation.Rotate90,
+    Orientation.Rotate90Mirrored,
+    Orientation.Rotate270,
+    Orientation.Rotate270Mirrored,
+  ].includes(orientation as unknown as Orientation);
 }
 
 export function getFileSize(asset: AssetResponseDto): string {

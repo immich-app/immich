@@ -1052,7 +1052,7 @@ describe('/asset', () => {
             dateTimeOriginal: '2010-07-20T17:27:12.000Z',
             latitude: null,
             longitude: null,
-            orientation: '1',
+            orientation: 1,
           },
         },
       },

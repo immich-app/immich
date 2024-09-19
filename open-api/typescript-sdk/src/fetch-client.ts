@@ -195,7 +195,7 @@ export type ExifResponseDto = {
     make?: string | null;
     model?: string | null;
     modifyDate?: string | null;
-    orientation?: string | null;
+    orientation?: Orientation | null;
     projectionType?: string | null;
     rating?: number | null;
     state?: string | null;
@@ -3265,6 +3265,16 @@ export enum UserStatus {
 export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
+}
+export enum Orientation {
+    $1 = 1,
+    $2 = 2,
+    $8 = 8,
+    $7 = 7,
+    $3 = 3,
+    $4 = 4,
+    $6 = 6,
+    $5 = 5
 }
 export enum SourceType {
     MachineLearning = "machine-learning",

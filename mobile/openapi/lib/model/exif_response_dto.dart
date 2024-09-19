@@ -71,7 +71,7 @@ class ExifResponseDto {
 
   DateTime? modifyDate;
 
-  String? orientation;
+  ExifResponseDtoOrientationEnum? orientation;
 
   String? projectionType;
 
@@ -289,7 +289,9 @@ class ExifResponseDto {
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         modifyDate: mapDateTime(json, r'modifyDate', r''),
-        orientation: mapValueOfType<String>(json, r'orientation'),
+        orientation: json[r'orientation'] == null
+            ? null
+            : ExifResponseDtoOrientationEnum.parse('${json[r'orientation']}'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
         rating: json[r'rating'] == null
             ? null
@@ -345,4 +347,96 @@ class ExifResponseDto {
   static const requiredKeys = <String>{
   };
 }
+
+
+class ExifResponseDtoOrientationEnum {
+  /// Instantiate a new enum with the provided [value].
+  const ExifResponseDtoOrientationEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final num value;
+
+  @override
+  String toString() => value.toString();
+
+  num toJson() => value;
+
+  static const n1 = ExifResponseDtoOrientationEnum._('1');
+  static const n2 = ExifResponseDtoOrientationEnum._('2');
+  static const n8 = ExifResponseDtoOrientationEnum._('8');
+  static const n7 = ExifResponseDtoOrientationEnum._('7');
+  static const n3 = ExifResponseDtoOrientationEnum._('3');
+  static const n4 = ExifResponseDtoOrientationEnum._('4');
+  static const n6 = ExifResponseDtoOrientationEnum._('6');
+  static const n5 = ExifResponseDtoOrientationEnum._('5');
+
+  /// List of all possible values in this [enum][ExifResponseDtoOrientationEnum].
+  static const values = <ExifResponseDtoOrientationEnum>[
+    n1,
+    n2,
+    n8,
+    n7,
+    n3,
+    n4,
+    n6,
+    n5,
+  ];
+
+  static ExifResponseDtoOrientationEnum? fromJson(dynamic value) => ExifResponseDtoOrientationEnumTypeTransformer().decode(value);
+
+  static List<ExifResponseDtoOrientationEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <ExifResponseDtoOrientationEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = ExifResponseDtoOrientationEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [ExifResponseDtoOrientationEnum] to num,
+/// and [decode] dynamic data back to [ExifResponseDtoOrientationEnum].
+class ExifResponseDtoOrientationEnumTypeTransformer {
+  factory ExifResponseDtoOrientationEnumTypeTransformer() => _instance ??= const ExifResponseDtoOrientationEnumTypeTransformer._();
+
+  const ExifResponseDtoOrientationEnumTypeTransformer._();
+
+  num encode(ExifResponseDtoOrientationEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a ExifResponseDtoOrientationEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  ExifResponseDtoOrientationEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case '1': return ExifResponseDtoOrientationEnum.n1;
+        case '2': return ExifResponseDtoOrientationEnum.n2;
+        case '8': return ExifResponseDtoOrientationEnum.n8;
+        case '7': return ExifResponseDtoOrientationEnum.n7;
+        case '3': return ExifResponseDtoOrientationEnum.n3;
+        case '4': return ExifResponseDtoOrientationEnum.n4;
+        case '6': return ExifResponseDtoOrientationEnum.n6;
+        case '5': return ExifResponseDtoOrientationEnum.n5;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [ExifResponseDtoOrientationEnumTypeTransformer] instance.
+  static ExifResponseDtoOrientationEnumTypeTransformer? _instance;
+}
+
 

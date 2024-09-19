@@ -5,7 +5,7 @@ import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { AssetOrder, AssetStatus, AssetType, SharedLinkType } from 'src/enum';
+import { AssetOrder, AssetStatus, AssetType, Orientation, SharedLinkType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -27,7 +27,7 @@ const assetInfo: ExifResponseDto = {
   exifImageWidth: 500,
   exifImageHeight: 500,
   fileSizeInByte: 100,
-  orientation: 'orientation',
+  orientation: Orientation.Rotate0,
   dateTimeOriginal: today,
   modifyDate: today,
   timeZone: 'America/Los_Angeles',
@@ -227,7 +227,7 @@ export const sharedLinkStub = {
             exifImageWidth: 500,
             exifImageHeight: 500,
             fileSizeInByte: 100,
-            orientation: 'orientation',
+            orientation: Orientation.Rotate0,
             dateTimeOriginal: today,
             modifyDate: today,
             timeZone: 'America/Los_Angeles',

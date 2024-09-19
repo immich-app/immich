@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { Orientation } from 'src/enum';
 
 export class ExifResponseDto {
   make?: string | null = null;
@@ -9,7 +10,9 @@ export class ExifResponseDto {
 
   @ApiProperty({ type: 'integer', format: 'int64' })
   fileSizeInByte?: number | null = null;
-  orientation?: string | null = null;
+
+  @ApiProperty({ enum: Orientation })
+  orientation?: Orientation | null = null;
   dateTimeOriginal?: Date | null = null;
   modifyDate?: Date | null = null;
   timeZone?: string | null = null;
