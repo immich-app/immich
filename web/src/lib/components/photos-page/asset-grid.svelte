@@ -760,7 +760,7 @@
 {/if}
 
 {#if showShortcuts}
-  <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
+  <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
 {/if}
 {#if assetStore.buckets.length > 0}
   <Scrubber
