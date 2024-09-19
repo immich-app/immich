@@ -43,11 +43,5 @@
     <slot />
   </div>
 
-  <Slider
-    id={sliderId}
-    bind:checked
-    {disabled}
-    on:toggle={({ detail }) => onToggle(detail)}
-    ariaDescribedBy={subtitleId}
-  />
+  <Slider id={sliderId} bind:checked {disabled} {onToggle} ariaDescribedBy={subtitleId} />
 </div>

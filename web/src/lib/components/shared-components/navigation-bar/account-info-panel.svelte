@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
@@ -9,12 +10,11 @@
   import { deleteProfileImage, updateMyPreferences, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { NotificationType, notificationController } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
-  import { t } from 'svelte-i18n';
-  import { page } from '$app/stores';
 
   let isShowSelectAvatar = false;
 
@@ -120,9 +120,5 @@
 </div>
 
 {#if isShowSelectAvatar}
-  <AvatarSelector
-    user={$user}
-    on:close={() => (isShowSelectAvatar = false)}
-    on:choose={({ detail: color }) => handleSaveProfile(color)}
-  />
+  <AvatarSelector user={$user} onClose={() => (isShowSelectAvatar = false)} onChoose={handleSaveProfile} />
 {/if}
