@@ -411,7 +411,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
     }
-
   }
 
   /// Get all necessary information for calculating the available albums,
