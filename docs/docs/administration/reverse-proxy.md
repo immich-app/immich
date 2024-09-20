@@ -77,14 +77,6 @@ The most important is to increase the `respondingTimeouts` of the entrypoint use
 entryPoints:
   websecure:
     address: :443
-    AsDefault: true
-    http:
-      tls:
-        certresolver: cloudflare-resolver
-        domains:
-          - main: "*.domain.com"
-            sans: 
-              - "domain.com"
     # this section needs to be added
     transport:
       respondingTimeouts:
@@ -95,32 +87,19 @@ entryPoints:
 ```
 
 The second part is in the `docker-compose.yml` file where immich is in. Add your external network, where traefik is in, inside the `networks` section and add all the traefik labels like in the example.
+Also adding a default network is required now. It needs to be added to every immich container.
 
 `docker-compose.yml`
 ```yaml
 [...]
 services:
   immich-server:
-    container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
-    ports:
-      - 2283:3001
+    [...]
     networks:
       # this is the network where traefik is in
       - proxy
-      # this is the network where all other immich containers are in
+      # network for all immich containers
       - default
-    depends_on:
-      - redis
-      - database
-    restart: always
-    healthcheck:
-      disable: false
     labels:
       traefik.enable: true
       # increase readingTimeouts for the entrypoint used here
