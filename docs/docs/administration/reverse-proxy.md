@@ -69,7 +69,7 @@ Below is an example config for Apache2 site configuration.
 
 The example below is for Traefik version 3.
 
-The most important is to increase the `respondingTimeouts` of the entrypoint used by immich. In this example of entrypoint `websecure` for port `443`. Per default it's set to 60s which leeds to videos stop uploading after 1 minute (Error Code 499). In the example it's set to 10 minutes. Hence video-uploads will fail after 10 minutes instead of one.
+The most important is to increase the `respondingTimeouts` of the entrypoint used by immich. In this example of entrypoint `websecure` for port `443`. Per default it's set to 60s which leeds to videos stop uploading after 1 minute (Error Code 499). With this config it will fail after 10 minutes which is in most cases enough. Increase it if needed. 
 
 `traefik.yaml`
 ```yaml
@@ -80,8 +80,9 @@ entryPoints:
     # this section needs to be added
     transport:
       respondingTimeouts:
-        readTimeout: 0
-        idleTimeout: 0
+        readTimeout: 600s
+        idleTimeout: 600s
+        writeTImeout: 0
 ```
 
 The second part is in the `docker-compose.yml` file where immich is in. Add the Traefik specific labels like in the example.
