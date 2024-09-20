@@ -8,9 +8,12 @@ import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
@@ -18,24 +21,33 @@ import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 final syncServiceProvider = Provider(
   (ref) => SyncService(
     ref.watch(dbProvider),
     ref.watch(hashServiceProvider),
+    ref.watch(entityServiceProvider),
     ref.watch(albumMediaRepositoryProvider),
+    ref.watch(albumApiRepositoryProvider),
   ),
 );
 
 class SyncService {
   final Isar _db;
   final HashService _hashService;
+  final EntityService _entityService;
   final IAlbumMediaRepository _albumMediaRepository;
+  final IAlbumApiRepository _albumApiRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
 
-  SyncService(this._db, this._hashService, this._albumMediaRepository);
+  SyncService(
+    this._db,
+    this._hashService,
+    this._entityService,
+    this._albumMediaRepository,
+    this._albumApiRepository,
+  );
 
   // public methods:
 
@@ -65,11 +77,10 @@ class SyncService {
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
   Future<bool> syncRemoteAlbumsToDb(
-    List<AlbumResponseDto> remote, {
+    List<Album> remote, {
     required bool isShared,
-    required FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   }) =>
-      _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
+      _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared));
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
@@ -289,11 +300,10 @@ class SyncService {
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
   Future<bool> _syncRemoteAlbumsToDb(
-    List<AlbumResponseDto> remote,
+    List<Album> remoteAlbums,
     bool isShared,
-    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   ) async {
-    remote.sortBy((e) => e.id);
+    remoteAlbums.sortBy((e) => e.remoteId!);
 
     final baseQuery = _db.albums.where().remoteIdIsNotNull().filter();
     final QueryBuilder<Album, Album, QAfterFilterCondition> query;
@@ -310,14 +320,14 @@ class SyncService {
     final List<Asset> existing = [];
 
     final bool changes = await diffSortedLists(
-      remote,
+      remoteAlbums,
       dbAlbums,
-      compare: (AlbumResponseDto a, Album b) => a.id.compareTo(b.remoteId!),
-      both: (AlbumResponseDto a, Album b) =>
-          _syncRemoteAlbum(a, b, toDelete, existing, loadDetails),
-      onlyFirst: (AlbumResponseDto a) =>
-          _addAlbumFromServer(a, existing, loadDetails),
-      onlySecond: (Album a) => _removeAlbumFromDb(a, toDelete),
+      compare: (remoteAlbum, dbAlbum) =>
+          remoteAlbum.remoteId!.compareTo(dbAlbum.remoteId!),
+      both: (remoteAlbum, dbAlbum) =>
+          _syncRemoteAlbum(remoteAlbum, dbAlbum, toDelete, existing),
+      onlyFirst: (remoteAlbum) => _addAlbumFromServer(remoteAlbum, existing),
+      onlySecond: (dbAlbum) => _removeAlbumFromDb(dbAlbum, toDelete),
     );
 
     if (isShared && toDelete.isNotEmpty) {
@@ -338,26 +348,22 @@ class SyncService {
   /// syncing changes from local back to server)
   /// accumulates
   Future<bool> _syncRemoteAlbum(
-    AlbumResponseDto dto,
+    Album dto,
     Album album,
     List<Asset> deleteCandidates,
     List<Asset> existing,
-    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   ) async {
-    if (!_hasAlbumResponseDtoChanged(dto, album)) {
+    if (!_hasRemoteAlbumChanged(dto, album)) {
       return false;
     }
     // loadDetails (/api/album/:id) will not include lastModifiedAssetTimestamp,
     // i.e. it will always be null. Save it here.
     final originalDto = dto;
-    dto = await loadDetails(dto);
-    if (dto.assetCount != dto.assets.length) {
-      return false;
-    }
+    dto = await _albumApiRepository.get(dto.remoteId!);
     final assetsInDb =
         await album.assets.filter().sortByOwnerId().thenByChecksum().findAll();
     assert(assetsInDb.isSorted(Asset.compareByOwnerChecksum), "inDb unsorted!");
-    final List<Asset> assetsOnRemote = dto.getAssets();
+    final List<Asset> assetsOnRemote = dto.remoteAssets.toList();
     assetsOnRemote.sort(Asset.compareByOwnerChecksum);
     final (toAdd, toUpdate, toUnlink) = _diffAssets(
       assetsOnRemote,
@@ -368,15 +374,16 @@ class SyncService {
     // update shared users
     final List<User> sharedUsers = album.sharedUsers.toList(growable: false);
     sharedUsers.sort((a, b) => a.id.compareTo(b.id));
-    dto.albumUsers.sort((a, b) => a.user.id.compareTo(b.user.id));
+    final List<User> users = dto.remoteUsers.toList()
+      ..sort((a, b) => a.id.compareTo(b.id));
     final List<String> userIdsToAdd = [];
     final List<User> usersToUnlink = [];
     diffSortedListsSync(
-      dto.albumUsers,
+      users,
       sharedUsers,
-      compare: (AlbumUserResponseDto a, User b) => a.user.id.compareTo(b.id),
+      compare: (User a, User b) => a.id.compareTo(b.id),
       both: (a, b) => false,
-      onlyFirst: (AlbumUserResponseDto a) => userIdsToAdd.add(a.user.id),
+      onlyFirst: (User a) => userIdsToAdd.add(a.id),
       onlySecond: (User a) => usersToUnlink.add(a),
     );
 
@@ -386,19 +393,19 @@ class SyncService {
     final assetsToLink = existingInDb + updated;
     final usersToLink = (await _db.users.getAllById(userIdsToAdd)).cast<User>();
 
-    album.name = dto.albumName;
+    album.name = dto.name;
     album.shared = dto.shared;
     album.createdAt = dto.createdAt;
-    album.modifiedAt = dto.updatedAt;
+    album.modifiedAt = dto.modifiedAt;
     album.startDate = dto.startDate;
     album.endDate = dto.endDate;
     album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
     album.shared = dto.shared;
-    album.activityEnabled = dto.isActivityEnabled;
-    if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
+    album.activityEnabled = dto.activityEnabled;
+    if (album.thumbnail.value?.remoteId != dto.remoteThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
-          .remoteIdEqualTo(dto.albumThumbnailAssetId)
+          .remoteIdEqualTo(dto.remoteThumbnailAssetId)
           .findFirst();
     }
 
@@ -434,27 +441,26 @@ class SyncService {
   /// (shared) assets to the database beforehand
   /// accumulates assets already existing in the database
   Future<void> _addAlbumFromServer(
-    AlbumResponseDto dto,
+    Album album,
     List<Asset> existing,
-    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   ) async {
-    if (dto.assetCount != dto.assets.length) {
-      dto = await loadDetails(dto);
+    if (album.remoteAssetCount != album.remoteAssets.length) {
+      album = await _albumApiRepository.get(album.remoteId!);
     }
-    if (dto.assetCount == dto.assets.length) {
+    if (album.remoteAssetCount == album.remoteAssets.length) {
       // in case an album contains assets not yet present in local DB:
       // put missing album assets into local DB
       final (existingInDb, updated) =
-          await _linkWithExistingFromDb(dto.getAssets());
+          await _linkWithExistingFromDb(album.remoteAssets.toList());
       existing.addAll(existingInDb);
       await upsertAssetsWithExif(updated);
 
-      final Album a = await Album.remote(dto);
-      await _db.writeTxn(() => _db.albums.store(a));
+      await _entityService.fillAlbumWithDatabaseEntities(album);
+      await _db.writeTxn(() => _db.albums.store(album));
     } else {
       _log.warning(
-          "Failed to add album from server: assetCount ${dto.assetCount} != "
-          "asset array length ${dto.assets.length} for album ${dto.albumName}");
+          "Failed to add album from server: assetCount ${album.remoteAssetCount} != "
+          "asset array length ${album.remoteAssets.length} for album ${album.name}");
     }
   }
 
@@ -919,17 +925,17 @@ class SyncService {
 }
 
 /// returns `true` if the albums differ on the surface
-bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
-  return dto.assetCount != a.assetCount ||
-      dto.albumName != a.name ||
-      dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
-      dto.shared != a.shared ||
-      dto.albumUsers.length != a.sharedUsers.length ||
-      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt) ||
-      !isAtSameMomentAs(dto.startDate, a.startDate) ||
-      !isAtSameMomentAs(dto.endDate, a.endDate) ||
+bool _hasRemoteAlbumChanged(Album remoteAlbum, Album dbAlbum) {
+  return remoteAlbum.remoteAssetCount != dbAlbum.assetCount ||
+      remoteAlbum.name != dbAlbum.name ||
+      remoteAlbum.remoteThumbnailAssetId != dbAlbum.thumbnail.value?.remoteId ||
+      remoteAlbum.shared != dbAlbum.shared ||
+      remoteAlbum.remoteUsers.length != dbAlbum.sharedUsers.length ||
+      !remoteAlbum.modifiedAt.isAtSameMomentAs(dbAlbum.modifiedAt) ||
+      !isAtSameMomentAs(remoteAlbum.startDate, dbAlbum.startDate) ||
+      !isAtSameMomentAs(remoteAlbum.endDate, dbAlbum.endDate) ||
       !isAtSameMomentAs(
-        dto.lastModifiedAssetTimestamp,
-        a.lastModifiedAssetTimestamp,
+        remoteAlbum.lastModifiedAssetTimestamp,
+        dbAlbum.lastModifiedAssetTimestamp,
       );
 }
