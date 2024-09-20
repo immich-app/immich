@@ -64,3 +64,73 @@ Below is an example config for Apache2 site configuration.
    ProxyPreserveHost On
 </VirtualHost>
 ```
+
+### Traefik Proxy example config
+
+The example below is for Traefik version 3.
+
+The most important is to increase the `respondingTimeouts` of the entrypoint used by immich. In this example of entrypoint `websecure` for port `443`. Per default it's set to 60s which leeds to videos stop uploading after 1 minute (Error Code 499). In the example it's set to 10 minutes. Hence video-uploads will fail after 10 minutes instead of one.
+
+`traefik.yaml`
+```yaml
+[...]
+entryPoints:
+  websecure:
+    address: :443
+    AsDefault: true
+    http:
+      tls:
+        certresolver: cloudflare-resolver
+        domains:
+          - main: "*.domain.com"
+            sans: 
+              - "domain.com"
+    # this section needs to be added
+    transport:
+      respondingTimeouts:
+        readTimeout: 600s
+        writeTimeout: 600s
+        idleTimeout: 600s
+[...]
+```
+
+The second part is in the `docker-compose.yml` file where immich is in. Add your external network, where traefik is in, inside the `networks` section and add all the traefik labels like in the example.
+
+`docker-compose.yml`
+```yaml
+[...]
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ports:
+      - 2283:3001
+    networks:
+      # this is the network where traefik is in
+      - proxy
+      # this is the network where all other immich containers are in
+      - default
+    depends_on:
+      - redis
+      - database
+    restart: always
+    healthcheck:
+      disable: false
+    labels:
+      traefik.enable: true
+      # increase readingTimeouts for the entrypoint used here
+      traefik.http.routers.immich.entrypoints: websecure  
+      traefik.http.routers.immich.rule: Host(`immich.your-domain.com`)
+      traefik.http.services.immich.loadbalancer.server.port: 3001
+[...]
+
+# add the external network where traefik is in
+networks:
+  proxy:
+    external: true 
+```
