@@ -64,8 +64,8 @@ class ImportRule extends DartLintRule {
     CustomLintContext context,
   ) {
     if (_rootOffset == -1) {
-      print(resolver.path);
-      _rootOffset = resolver.path.indexOf("/mobile/lib/") + 8;
+      const project = "/immich/mobile/";
+      _rootOffset = resolver.path.indexOf(project) + project.length;
     }
     final path = resolver.path.substring(_rootOffset);
 
