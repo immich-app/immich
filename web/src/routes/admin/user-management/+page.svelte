@@ -110,8 +110,8 @@
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
         <CreateUserForm
-          on:submit={onUserCreated}
-          on:cancel={() => (shouldShowCreateUserForm = false)}
+          onSubmit={onUserCreated}
+          onCancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
         />
       {/if}
@@ -121,8 +121,8 @@
           user={selectedUser}
           bind:newPassword
           canResetPassword={selectedUser?.id !== $user.id}
-          on:editSuccess={onEditUserSuccess}
-          on:resetPasswordSuccess={onEditPasswordSuccess}
+          onEditSuccess={onEditUserSuccess}
+          onResetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}
         />
       {/if}

@@ -674,8 +674,8 @@
               disabled={!album.isActivityEnabled}
               {isLiked}
               numberOfComments={$numberOfComments}
-              on:favorite={handleFavorite}
-              on:openActivityTab={handleOpenAndCloseActivityTab}
+              onFavorite={handleFavorite}
+              onOpenActivityTab={handleOpenAndCloseActivityTab}
             />
           </div>
         {/if}
@@ -697,10 +697,10 @@
           albumId={album.id}
           {isLiked}
           bind:reactions
-          on:addComment={() => updateNumberOfComments(1)}
-          on:deleteComment={() => updateNumberOfComments(-1)}
-          on:deleteLike={() => (isLiked = null)}
-          on:close={handleOpenAndCloseActivityTab}
+          onAddComment={() => updateNumberOfComments(1)}
+          onDeleteComment={() => updateNumberOfComments(-1)}
+          onDeleteLike={() => (isLiked = null)}
+          onClose={handleOpenAndCloseActivityTab}
         />
       </div>
     </div>
@@ -709,8 +709,8 @@
 {#if viewMode === ViewMode.SELECT_USERS}
   <UserSelectionModal
     {album}
-    on:select={({ detail: users }) => handleAddUsers(users)}
-    on:share={() => (viewMode = ViewMode.LINK_SHARING)}
+    onSelect={handleAddUsers}
+    onShare={() => (viewMode = ViewMode.LINK_SHARING)}
     onClose={() => (viewMode = ViewMode.VIEW)}
   />
 {/if}
@@ -723,8 +723,8 @@
   <ShareInfoModal
     onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
-    on:remove={({ detail: userId }) => handleRemoveUser(userId)}
-    on:refreshAlbum={refreshAlbum}
+    onRemove={handleRemoveUser}
+    onRefreshAlbum={refreshAlbum}
   />
 {/if}
 
@@ -737,9 +737,9 @@
       albumOrder = order;
       await setModeToView();
     }}
-    on:close={() => (viewMode = ViewMode.VIEW)}
-    on:toggleEnableActivity={handleToggleEnableActivity}
-    on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
+    onClose={() => (viewMode = ViewMode.VIEW)}
+    onToggleEnabledActivity={handleToggleEnableActivity}
+    onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
   />
 {/if}
 

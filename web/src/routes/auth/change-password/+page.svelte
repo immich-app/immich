@@ -25,5 +25,5 @@
     {$t('change_password_description')}
   </p>
 
-  <ChangePasswordForm on:success={onSuccess} />
+  <ChangePasswordForm {onSuccess} />
 </FullscreenContainer>

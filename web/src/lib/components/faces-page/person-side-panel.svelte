@@ -18,7 +18,7 @@
   import { mdiAccountOff } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiArrowLeftThin, mdiMinus, mdiRestart } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -31,6 +31,8 @@
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
+  export let onClose: () => void;
+  export let onRefresh: () => void;
 
   // keep track of the changes
   let peopleToCreate: string[] = [];
@@ -56,11 +58,6 @@
 
   const thumbnailWidth = '90px';
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    refresh: void;
-  }>();
-
   async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
@@ -85,7 +82,7 @@
     ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
-      dispatch('refresh');
+      onRefresh();
     }
   };
 
@@ -96,10 +93,6 @@
 
   const isEqual = (a: string[], b: string[]): boolean => {
     return b.every((valueB) => a.includes(valueB));
-  };
-
-  const handleBackButton = () => {
-    dispatch('close');
   };
 
   const handleReset = (id: string) => {
@@ -153,9 +146,9 @@
     isShowLoadingDone = false;
     if (peopleToCreate.length === 0) {
       clearTimeout(loaderLoadingDoneTimeout);
-      dispatch('refresh');
+      onRefresh();
     } else {
-      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15_000);
+      automaticRefreshTimeout = setTimeout(onRefresh, 15_000);
     }
   };
 
@@ -185,7 +178,7 @@
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={handleBackButton} />
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('edit_faces')}</p>
     </div>
     {#if !isShowLoadingDone}
@@ -336,8 +329,8 @@
     {editedFace}
     {assetId}
     {assetType}
-    on:close={() => (showSelectedFaces = false)}
-    on:createPerson={(event) => handleCreatePerson(event.detail)}
-    on:reassign={(event) => handleReassignFace(event.detail)}
+    onClose={() => (showSelectedFaces = false)}
+    onCreatePerson={handleCreatePerson}
+    onReassign={handleReassignFace}
   />
 {/if}

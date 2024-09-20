@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import Combobox from './combobox.svelte';
@@ -8,6 +7,8 @@
 
   export let initialDate: DateTime = DateTime.now();
   export let initialTimeZone: string = '';
+  export let onCancel: () => void;
+  export let onConfirm: (date: string) => void;
 
   type ZoneOption = {
     /**
@@ -118,17 +119,10 @@
     return zoneA.value.localeCompare(zoneB.value, undefined, { sensitivity: 'base' });
   }
 
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    confirm: string;
-  }>();
-
-  const handleCancel = () => dispatch('cancel');
-
   const handleConfirm = () => {
     const value = date.toISO();
     if (value) {
-      dispatch('confirm', value);
+      onConfirm(value);
     }
   };
 </script>
@@ -139,7 +133,7 @@
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onConfirm={handleConfirm}
-  onCancel={handleCancel}
+  {onCancel}
 >
   <div class="flex flex-col text-left gap-2" slot="prompt">
     <div class="flex flex-col">
