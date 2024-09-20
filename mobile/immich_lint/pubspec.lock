@@ -159,7 +159,7 @@ packages:
     source: hosted
     version: "2.4.4"
   glob:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: glob
       sha256: "0e7014b3b7d4dac1ca4d6114f82bf1782ee86745b9b42a92c9289c23d8a0ab63"

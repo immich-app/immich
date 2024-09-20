@@ -1,15 +1,15 @@
 <script lang="ts">
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { serverInfo } from '$lib/stores/server-info.store';
+  import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { createUserAdmin } from '@immich/sdk';
   import { createEventDispatcher } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import PasswordField from '../shared-components/password-field.svelte';
-  import Slider from '../elements/slider.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { t } from 'svelte-i18n';
-  import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
+  import Button from '../elements/buttons/button.svelte';
+  import Slider from '../elements/slider.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
 
   export let onClose: () => void;
 
