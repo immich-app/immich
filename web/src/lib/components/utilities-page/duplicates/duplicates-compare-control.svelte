@@ -151,15 +151,15 @@
       <AssetViewer
         asset={$viewingAsset}
         showNavigation={assets.length > 1}
-        on:next={() => {
+        onNext={() => {
           const index = getAssetIndex($viewingAsset.id) + 1;
           setAsset(assets[index % assets.length]);
         }}
-        on:previous={() => {
+        onPrevious={() => {
           const index = getAssetIndex($viewingAsset.id) - 1 + assets.length;
           setAsset(assets[index % assets.length]);
         }}
-        on:close={() => {
+        onClose={() => {
           assetViewingStore.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
         }}

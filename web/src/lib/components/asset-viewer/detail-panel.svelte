@@ -36,7 +36,6 @@
     mdiPencil,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -49,6 +48,7 @@
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
   export let currentAlbum: AlbumResponseDto | null = null;
+  export let onClose: () => void;
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -106,10 +106,6 @@
       ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
       : fromLocalDateTime(asset.localDateTime);
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
-
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
 
@@ -144,7 +140,7 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={() => dispatch('close')} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
@@ -332,8 +328,8 @@
       <ChangeDate
         initialDate={dateTime}
         initialTimeZone={timeZone ?? ''}
-        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
-        on:cancel={() => (isShowChangeDate = false)}
+        onConfirm={handleConfirmChangeDate}
+        onCancel={() => (isShowChangeDate = false)}
       />
     {/if}
 
@@ -511,9 +507,7 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    on:close={() => {
-      showEditFaces = false;
-    }}
-    on:refresh={handleRefreshPeople}
+    onClose={() => (showEditFaces = false)}
+    onRefresh={handleRefreshPeople}
   />
 {/if}

@@ -5,13 +5,14 @@
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { createUserAdmin } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import Button from '../elements/buttons/button.svelte';
   import Slider from '../elements/slider.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
 
   export let onClose: () => void;
+  export let onSubmit: () => void;
+  export let onCancel: () => void;
 
   let error: string;
   let success: string;
@@ -39,10 +40,6 @@
       canCreateUser = true;
     }
   }
-  const dispatch = createEventDispatcher<{
-    submit: void;
-    cancel: void;
-  }>();
 
   async function registerUser() {
     if (canCreateUser && !isCreatingUser) {
@@ -63,7 +60,7 @@
 
         success = $t('new_user_created');
 
-        dispatch('submit');
+        onSubmit();
 
         return;
       } catch (error) {
@@ -132,7 +129,7 @@
     {/if}
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => dispatch('cancel')}>{$t('cancel')}</Button>
+    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
   </svelte:fragment>
 </FullScreenModal>

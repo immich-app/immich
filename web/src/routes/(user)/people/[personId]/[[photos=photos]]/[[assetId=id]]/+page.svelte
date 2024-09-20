@@ -347,8 +347,8 @@
   <UnMergeFaceSelector
     assetIds={[...$selectedAssets].map((a) => a.id)}
     personAssets={person}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:confirm={handleUnmerge}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onConfirm={handleUnmerge}
   />
 {/if}
 
@@ -357,22 +357,22 @@
     {personMerge1}
     {personMerge2}
     {potentialMergePeople}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:reject={() => changeName()}
-    on:confirm={(event) => handleMergeSamePerson(event.detail)}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onReject={changeName}
+    onConfirm={handleMergeSamePerson}
   />
 {/if}
 
 {#if viewMode === ViewMode.BIRTH_DATE}
   <SetBirthDateModal
     birthDate={person.birthDate ?? ''}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:updated={(event) => handleSetBirthDate(event.detail)}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onUpdate={handleSetBirthDate}
   />
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector {person} on:back={handleGoBack} on:merge={({ detail }) => handleMerge(detail)} />
+  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
 
 <header>
@@ -464,7 +464,7 @@
                 bind:suggestedPeople
                 name={person.name}
                 bind:isSearchingPeople
-                on:change={(event) => handleNameChange(event.detail)}
+                onChange={handleNameChange}
                 {thumbnailData}
               />
             {:else}

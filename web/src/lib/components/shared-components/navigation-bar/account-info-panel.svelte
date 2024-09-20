@@ -9,19 +9,16 @@
   import { handleError } from '$lib/utils/handle-error';
   import { deleteProfileImage, updateMyPreferences, type UserAvatarColor } from '@immich/sdk';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { NotificationType, notificationController } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
 
-  let isShowSelectAvatar = false;
+  export let onLogout: () => void;
+  export let onClose: () => void = () => {};
 
-  const dispatch = createEventDispatcher<{
-    logout: void;
-    close: void;
-  }>();
+  let isShowSelectAvatar = false;
 
   const handleSaveProfile = async (color: UserAvatarColor) => {
     try {
@@ -75,14 +72,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <Button
-        href={AppRoute.USER_SETTINGS}
-        on:click={() => dispatch('close')}
-        color="dark-gray"
-        size="sm"
-        shadow={false}
-        border
-      >
+      <Button href={AppRoute.USER_SETTINGS} on:click={onClose} color="dark-gray" size="sm" shadow={false} border>
         <div class="flex place-content-center place-items-center text-center gap-2 px-2">
           <Icon path={mdiCog} size="18" ariaHidden />
           {$t('account_settings')}
@@ -91,7 +81,7 @@
       {#if $user.isAdmin}
         <Button
           href={AppRoute.ADMIN_USER_MANAGEMENT}
-          on:click={() => dispatch('close')}
+          on:click={onClose}
           color="dark-gray"
           size="sm"
           shadow={false}
@@ -111,7 +101,7 @@
     <button
       type="button"
       class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
-      on:click={() => dispatch('logout')}
+      on:click={onLogout}
     >
       <Icon path={mdiLogout} size={24} />
       {$t('sign_out')}</button

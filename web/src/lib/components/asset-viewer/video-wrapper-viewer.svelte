@@ -15,13 +15,5 @@
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
   <PanoramaViewer asset={{ id: assetId, type: AssetTypeEnum.Video }} />
 {:else}
-  <VideoNativeViewer
-    {loopVideo}
-    {checksum}
-    {assetId}
-    {onPreviousAsset}
-    {onNextAsset}
-    on:onVideoEnded
-    on:onVideoStarted
-  />
+  <VideoNativeViewer {loopVideo} {checksum} {assetId} {onPreviousAsset} {onNextAsset} />
 {/if}
