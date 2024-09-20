@@ -177,7 +177,7 @@
               title={$t('show_in_timeline')}
               subtitle={$t('show_in_timeline_setting_description')}
               bind:checked={partner.inTimeline}
-              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
+              onToggle={(isChecked) => handleShowOnTimelineChanged(partner, isChecked)}
             />
           {/if}
         </div>

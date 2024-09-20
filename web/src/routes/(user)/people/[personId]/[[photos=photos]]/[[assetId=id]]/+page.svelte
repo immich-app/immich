@@ -400,7 +400,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
             <MenuOption
@@ -429,7 +429,7 @@
     {/if}
 
     {#if viewMode === ViewMode.SELECT_PERSON}
-      <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+      <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}>
         <svelte:fragment slot="leading">{$t('select_featured_photo')}</svelte:fragment>
       </ControlAppBar>
     {/if}
@@ -444,8 +444,8 @@
       {assetInteractionStore}
       isSelectionMode={viewMode === ViewMode.SELECT_PERSON}
       singleSelect={viewMode === ViewMode.SELECT_PERSON}
-      on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
-      on:escape={handleEscape}
+      onSelect={handleSelectFeaturePhoto}
+      onEscape={handleEscape}
     >
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Person information block -->

@@ -32,7 +32,7 @@
 >
   <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
     {#each showPeople as person (person.id)}
-      <FaceThumbnail {person} on:click={() => onSelect(person)} circle border selectable />
+      <FaceThumbnail {person} onClick={() => onSelect(person)} circle border selectable />
     {/each}
   </div>
 </div>
