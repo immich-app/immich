@@ -50,6 +50,33 @@ class AlbumApiRepository implements IAlbumApiRepository {
   }
 
   @override
+  Future<Album> update(
+    String albumId, {
+    String? name,
+    String? thumbnailAssetId,
+    String? description,
+    bool? activityEnabled,
+  }) async {
+    final response = await _checkNull(
+      _api.updateAlbumInfo(
+        albumId,
+        UpdateAlbumDto(
+          albumName: name,
+          albumThumbnailAssetId: thumbnailAssetId,
+          description: description,
+          isActivityEnabled: activityEnabled,
+        ),
+      ),
+    );
+    return _toAlbum(response);
+  }
+
+  @override
+  Future<void> delete(String albumId) {
+    return _api.deleteAlbum(albumId);
+  }
+
+  @override
   Future<({List<String> added, List<String> duplicates})> addAssets(
     String albumId,
     Iterable<String> assetIds,
@@ -112,33 +139,6 @@ class AlbumApiRepository implements IAlbumApiRepository {
   @override
   Future<void> removeUser(String albumId, {required String userId}) {
     return _api.removeUserFromAlbum(albumId, userId);
-  }
-
-  @override
-  Future<Album> update(
-    String albumId, {
-    String? name,
-    String? thumbnailAssetId,
-    String? description,
-    bool? activityEnabled,
-  }) async {
-    final response = await _checkNull(
-      _api.updateAlbumInfo(
-        albumId,
-        UpdateAlbumDto(
-          albumName: name,
-          albumThumbnailAssetId: thumbnailAssetId,
-          description: description,
-          isActivityEnabled: activityEnabled,
-        ),
-      ),
-    );
-    return _toAlbum(response);
-  }
-
-  @override
-  Future<void> delete(String albumId) {
-    return _api.deleteAlbum(albumId);
   }
 
   static Future<T> _checkNull<T>(Future<T?> future) async {

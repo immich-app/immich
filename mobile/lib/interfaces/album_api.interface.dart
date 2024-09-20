@@ -11,6 +11,16 @@ abstract interface class IAlbumApiRepository {
     Iterable<String> sharedUserIds = const [],
   });
 
+  Future<Album> update(
+    String albumId, {
+    String? name,
+    String? thumbnailAssetId,
+    String? description,
+    bool? activityEnabled,
+  });
+
+  Future<void> delete(String albumId);
+
   Future<({List<String> added, List<String> duplicates})> addAssets(
     String albumId,
     Iterable<String> assetIds,
@@ -27,14 +37,4 @@ abstract interface class IAlbumApiRepository {
   );
 
   Future<void> removeUser(String albumId, {required String userId});
-
-  Future<Album> update(
-    String albumId, {
-    String? name,
-    String? thumbnailAssetId,
-    String? description,
-    bool? activityEnabled,
-  });
-
-  Future<void> delete(String albumId);
 }
