@@ -470,7 +470,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === ViewMode.VIEW}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
             {#if isEditor}
               <CircleIconButton
@@ -527,7 +527,7 @@
       {/if}
 
       {#if viewMode === ViewMode.SELECT_ASSETS}
-        <ControlAppBar on:close={handleCloseSelectAssets}>
+        <ControlAppBar onClose={handleCloseSelectAssets}>
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
@@ -554,7 +554,7 @@
       {/if}
 
       {#if viewMode === ViewMode.SELECT_THUMBNAIL}
-        <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW)}>
+        <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW)}>
           <svelte:fragment slot="leading">{$t('select_album_cover')}</svelte:fragment>
         </ControlAppBar>
       {/if}
@@ -583,8 +583,8 @@
             isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
-            on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
-            on:escape={handleEscape}
+            onSelect={({ id }) => handleUpdateThumbnail(id)}
+            onEscape={handleEscape}
           >
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->

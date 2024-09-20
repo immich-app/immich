@@ -168,7 +168,7 @@
               circle
               selectable
               thumbnailSize={180}
-              on:click={handleRemoveSelectedPerson}
+              onClick={handleRemoveSelectedPerson}
             />
           </div>
         </div>
