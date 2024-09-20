@@ -2,8 +2,8 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { snakeCase } from 'lodash';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
-import { AssetType } from 'src/enum';
+import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
+import { AssetType, ManualJobName } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -22,6 +22,26 @@ import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
+const asJobItem = (dto: JobCreateDto): JobItem => {
+  switch (dto.name) {
+    case ManualJobName.TAG_CLEANUP: {
+      return { name: JobName.TAG_CLEANUP };
+    }
+
+    case ManualJobName.PERSON_CLEANUP: {
+      return { name: JobName.PERSON_CLEANUP };
+    }
+
+    case ManualJobName.USER_CLEANUP: {
+      return { name: JobName.USER_DELETE_CHECK };
+    }
+
+    default: {
+      throw new BadRequestException('Invalid job name');
+    }
+  }
+};
+
 @Injectable()
 export class JobService {
   private configCore: SystemConfigCore;
@@ -37,6 +57,10 @@ export class JobService {
   ) {
     this.logger.setContext(JobService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
+  }
+
+  async create(dto: JobCreateDto): Promise<void> {
+    await this.jobRepository.queue(asJobItem(dto));
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
@@ -231,6 +255,7 @@ export class JobService {
           name: JobName.METADATA_EXTRACTION,
           data: { id: item.data.id, source: 'sidecar-write' },
         });
+        break;
       }
 
       case JobName.METADATA_EXTRACTION: {
@@ -289,7 +314,7 @@ export class JobService {
       }
 
       case JobName.GENERATE_THUMBNAIL: {
-        if (item.data.source !== 'upload') {
+        if (!(item.data.notify || item.data.source === 'upload')) {
           break;
         }
 

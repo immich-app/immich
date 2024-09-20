@@ -1,5 +1,9 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
+  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
@@ -9,6 +13,9 @@
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
+  import { getByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
+  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
   import {
     AssetMediaSize,
     getAssetInfo,
@@ -18,6 +25,7 @@
     type ExifResponseDto,
   } from '@immich/sdk';
   import {
+    mdiAccountOff,
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
@@ -26,24 +34,17 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
-    mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
-  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
-  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
-  import { t } from 'svelte-i18n';
-  import { goto } from '$app/navigation';
-  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -98,6 +99,12 @@
   $: showingHiddenPeople = false;
 
   $: unassignedFaces = asset.unassignedFaces || [];
+
+  $: timeZone = asset.exifInfo?.timeZone;
+  $: dateTime =
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromLocalDateTime(asset.localDateTime);
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -219,9 +226,9 @@
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
               {#if person.birthDate}
                 {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const age = Math.floor(DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'years').years)}
                 {@const ageInMonths = Math.floor(
-                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'months').months,
                 )}
                 {#if age >= 0}
                   <p
@@ -261,10 +268,7 @@
       <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
+    {#if dateTime}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
@@ -280,7 +284,7 @@
 
           <div>
             <p>
-              {assetDateTimeOriginal.toLocaleString(
+              {dateTime.toLocaleString(
                 {
                   month: 'short',
                   day: 'numeric',
@@ -291,12 +295,12 @@
             </p>
             <div class="flex gap-2 text-sm">
               <p>
-                {assetDateTimeOriginal.toLocaleString(
+                {dateTime.toLocaleString(
                   {
                     weekday: 'short',
                     hour: 'numeric',
                     minute: '2-digit',
-                    timeZoneName: 'longOffset',
+                    timeZoneName: timeZone ? 'longOffset' : undefined,
                   },
                   { locale: $locale },
                 )}
@@ -311,7 +315,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
+    {:else if !dateTime && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -325,16 +329,9 @@
     {/if}
 
     {#if isShowChangeDate}
-      {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
-        ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-            zone: asset.exifInfo.timeZone ?? undefined,
-            locale: $locale,
-          })
-        : DateTime.now()}
-      {@const assetTimeZoneOriginal = asset.exifInfo?.timeZone ?? ''}
       <ChangeDate
-        initialDate={assetDateTimeOriginal}
-        initialTimeZone={assetTimeZoneOriginal}
+        initialDate={dateTime}
+        initialTimeZone={timeZone ?? ''}
         on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
         on:cancel={() => (isShowChangeDate = false)}
       />

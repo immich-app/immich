@@ -19,7 +19,6 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getUploadAssetIdByChecksum: vitest.fn(),
     getWith: vitest.fn(),
     getRandom: vitest.fn(),
-    getFirstAssetForAlbumId: vitest.fn(),
     getLastUpdatedAssetForAlbumId: vitest.fn(),
     getAll: vitest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
     getAllByDeviceId: vitest.fn(),
@@ -35,15 +34,11 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getStatistics: vitest.fn(),
     getTimeBucket: vitest.fn(),
     getTimeBuckets: vitest.fn(),
-    restoreAll: vitest.fn(),
-    softDeleteAll: vitest.fn(),
     getAssetIdByCity: vitest.fn(),
     getAssetIdByTag: vitest.fn(),
     getAllForUserFullSync: vitest.fn(),
     getChangedDeltaSync: vitest.fn(),
     getDuplicates: vitest.fn(),
     upsertFile: vitest.fn(),
-    getAssetsByOriginalPath: vitest.fn(),
-    getUniqueOriginalPaths: vitest.fn(),
   };
 };

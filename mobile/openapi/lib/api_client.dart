@@ -343,6 +343,8 @@ class ApiClient {
           return JobCommandDto.fromJson(value);
         case 'JobCountsDto':
           return JobCountsDto.fromJson(value);
+        case 'JobCreateDto':
+          return JobCreateDto.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
         case 'JobSettingsDto':
@@ -365,6 +367,8 @@ class ApiClient {
           return LoginResponseDto.fromJson(value);
         case 'LogoutResponseDto':
           return LogoutResponseDto.fromJson(value);
+        case 'ManualJobName':
+          return ManualJobNameTypeTransformer().decode(value);
         case 'MapMarkerResponseDto':
           return MapMarkerResponseDto.fromJson(value);
         case 'MapReverseGeocodeResponseDto':
@@ -581,6 +585,8 @@ class ApiClient {
           return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':
           return TranscodePolicyTypeTransformer().decode(value);
+        case 'TrashResponseDto':
+          return TrashResponseDto.fromJson(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAlbumUserDto':

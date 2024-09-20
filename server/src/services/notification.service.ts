@@ -60,8 +60,52 @@ export class NotificationService {
 
   @OnEmit({ event: 'asset.hide' })
   onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
-    // Notify clients to hide the linked live photo asset
     this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, userId, assetId);
+  }
+
+  @OnEmit({ event: 'asset.show' })
+  async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
+    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAIL, data: { id: assetId, notify: true } });
+  }
+
+  @OnEmit({ event: 'asset.trash' })
+  onAssetTrash({ assetId, userId }: ArgOf<'asset.trash'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, [assetId]);
+  }
+
+  @OnEmit({ event: 'asset.delete' })
+  onAssetDelete({ assetId, userId }: ArgOf<'asset.delete'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, userId, assetId);
+  }
+
+  @OnEmit({ event: 'assets.trash' })
+  onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, assetIds);
+  }
+
+  @OnEmit({ event: 'assets.restore' })
+  onAssetsRestore({ assetIds, userId }: ArgOf<'assets.restore'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_RESTORE, userId, assetIds);
+  }
+
+  @OnEmit({ event: 'stack.create' })
+  onStackCreate({ userId }: ArgOf<'stack.create'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+  }
+
+  @OnEmit({ event: 'stack.update' })
+  onStackUpdate({ userId }: ArgOf<'stack.update'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+  }
+
+  @OnEmit({ event: 'stack.delete' })
+  onStackDelete({ userId }: ArgOf<'stack.delete'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+  }
+
+  @OnEmit({ event: 'stacks.delete' })
+  onStacksDelete({ userId }: ArgOf<'stacks.delete'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
   }
 
   @OnEmit({ event: 'user.signup' })

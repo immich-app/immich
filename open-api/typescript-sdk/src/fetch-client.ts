@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.114.0
+ * 1.115.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -19,6 +19,7 @@ export type UserResponseDto = {
     email: string;
     id: string;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type ActivityResponseDto = {
@@ -53,6 +54,7 @@ export type UserAdminResponseDto = {
     license: (UserLicense) | null;
     name: string;
     oauthId: string;
+    profileChangedAt: string;
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -427,7 +429,7 @@ export type UpdateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
-    livePhotoVideoId?: string;
+    livePhotoVideoId?: string | null;
     longitude?: number;
     rating?: number;
 };
@@ -548,6 +550,9 @@ export type AllJobStatusResponseDto = {
     thumbnailGeneration: JobStatusDto;
     videoConversion: JobStatusDto;
 };
+export type JobCreateDto = {
+    name: ManualJobName;
+};
 export type JobCommandDto = {
     command: JobCommand;
     force: boolean;
@@ -666,6 +671,7 @@ export type PartnerResponseDto = {
     id: string;
     inTimeline?: boolean;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type UpdatePartnerDto = {
@@ -1240,6 +1246,9 @@ export type TimeBucketResponseDto = {
     count: number;
     timeBucket: string;
 };
+export type TrashResponseDto = {
+    count: number;
+};
 export type UserUpdateMeDto = {
     email?: string;
     name?: string;
@@ -1249,6 +1258,7 @@ export type CreateProfileImageDto = {
     file: Blob;
 };
 export type CreateProfileImageResponseDto = {
+    profileChangedAt: string;
     profileImagePath: string;
     userId: string;
 };
@@ -1940,6 +1950,15 @@ export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
     }>("/jobs", {
         ...opts
     }));
+}
+export function createJob({ jobCreateDto }: {
+    jobCreateDto: JobCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/jobs", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: jobCreateDto
+    })));
 }
 export function sendJobCommand({ id, jobCommandDto }: {
     id: JobName;
@@ -3057,13 +3076,19 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
     }));
 }
 export function emptyTrash(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/empty", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/empty", {
         ...opts,
         method: "POST"
     }));
 }
 export function restoreTrash(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/restore", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/restore", {
         ...opts,
         method: "POST"
     }));
@@ -3071,7 +3096,10 @@ export function restoreTrash(opts?: Oazapfts.RequestOpts) {
 export function restoreAssets({ bulkIdsDto }: {
     bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/restore/assets", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/restore/assets", oazapfts.json({
         ...opts,
         method: "POST",
         body: bulkIdsDto
@@ -3363,6 +3391,11 @@ export enum AssetMediaSize {
 export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
+}
+export enum ManualJobName {
+    PersonCleanup = "person-cleanup",
+    TagCleanup = "tag-cleanup",
+    UserCleanup = "user-cleanup"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",

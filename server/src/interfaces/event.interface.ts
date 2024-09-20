@@ -21,9 +21,25 @@ type EmitEventMap = {
   'asset.tag': [{ assetId: string }];
   'asset.untag': [{ assetId: string }];
   'asset.hide': [{ assetId: string; userId: string }];
+  'asset.show': [{ assetId: string; userId: string }];
+  'asset.trash': [{ assetId: string; userId: string }];
+  'asset.delete': [{ assetId: string; userId: string }];
+
+  // asset bulk events
+  'assets.trash': [{ assetIds: string[]; userId: string }];
+  'assets.delete': [{ assetIds: string[]; userId: string }];
+  'assets.restore': [{ assetIds: string[]; userId: string }];
 
   // session events
   'session.delete': [{ sessionId: string }];
+
+  // stack events
+  'stack.create': [{ stackId: string; userId: string }];
+  'stack.update': [{ stackId: string; userId: string }];
+  'stack.delete': [{ stackId: string; userId: string }];
+
+  // stack bulk events
+  'stacks.delete': [{ stackIds: string[]; userId: string }];
 
   // user events
   'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];

@@ -8,17 +8,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
-import 'package:photo_manager/photo_manager.dart' show PhotoManager;
 
 /// Finds duplicates originating from missing EXIF information
 class BackupVerificationService {
   final Isar _db;
+  final IFileMediaRepository _fileMediaRepository;
 
-  BackupVerificationService(this._db);
+  BackupVerificationService(this._db, this._fileMediaRepository);
 
   /// Returns at most [limit] assets that were backed up without exif
   Future<List<Asset>> findWronglyBackedUpAssets({int limit = 100}) async {
@@ -71,6 +73,7 @@ class BackupVerificationService {
           auth: Store.get(StoreKey.accessToken),
           endpoint: Store.get(StoreKey.serverEndpoint),
           rootIsolateToken: isolateToken,
+          fileMediaRepository: _fileMediaRepository,
         ),
       );
       final upper = compute(
@@ -81,6 +84,7 @@ class BackupVerificationService {
           auth: Store.get(StoreKey.accessToken),
           endpoint: Store.get(StoreKey.serverEndpoint),
           rootIsolateToken: isolateToken,
+          fileMediaRepository: _fileMediaRepository,
         ),
       );
       toDelete = await lower + await upper;
@@ -93,6 +97,7 @@ class BackupVerificationService {
           auth: Store.get(StoreKey.accessToken),
           endpoint: Store.get(StoreKey.serverEndpoint),
           rootIsolateToken: isolateToken,
+          fileMediaRepository: _fileMediaRepository,
         ),
       );
     }
@@ -106,12 +111,13 @@ class BackupVerificationService {
       String auth,
       String endpoint,
       RootIsolateToken rootIsolateToken,
+      IFileMediaRepository fileMediaRepository,
     }) tuple,
   ) async {
     assert(tuple.deleteCandidates.length == tuple.originals.length);
     final List<Asset> result = [];
     BackgroundIsolateBinaryMessenger.ensureInitialized(tuple.rootIsolateToken);
-    await PhotoManager.setIgnorePermissionCheck(true);
+    await tuple.fileMediaRepository.enableBackgroundAccess();
     final ApiService apiService = ApiService();
     apiService.setEndpoint(tuple.endpoint);
     apiService.setAccessToken(tuple.auth);
@@ -228,5 +234,6 @@ class BackupVerificationService {
 final backupVerificationServiceProvider = Provider(
   (ref) => BackupVerificationService(
     ref.watch(dbProvider),
+    ref.watch(fileMediaRepositoryProvider),
   ),
 );

@@ -148,7 +148,7 @@
     "note_cannot_be_changed_later": "注意: 後から変更できません！",
     "note_unlimited_quota": "注意: 無制限にする場合は0を入力してください",
     "notification_email_from_address": "送信メールアドレス",
-    "notification_email_from_address_description": "送信メールアドレスを設定します（例： \"Immich Photo Server <noreply@immich.app>\" ）",
+    "notification_email_from_address_description": "送信メールアドレスを設定します（例： \"Immich Photo Server <noreply@example.com>\" ）",
     "notification_email_host_description": "送信メールサーバーを設定します（例：smtp.immich.app）",
     "notification_email_ignore_certificate_errors": "証明書エラーを無視",
     "notification_email_ignore_certificate_errors_description": "TLS証明書の検証エラーを無視します（非推奨）",
