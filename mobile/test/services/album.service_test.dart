@@ -77,9 +77,12 @@ void main() {
       when(() => userService.refreshUsers()).thenAnswer((_) async => true);
       when(() => albumApiRepository.getAll(shared: null))
           .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
-      when(() => syncService.syncRemoteAlbumsToDb(
-              [AlbumStub.oneAsset, AlbumStub.twoAsset], isShared: false))
-          .thenAnswer((_) async => true);
+      when(
+        () => syncService.syncRemoteAlbumsToDb(
+          [AlbumStub.oneAsset, AlbumStub.twoAsset],
+          isShared: false,
+        ),
+      ).thenAnswer((_) async => true);
       final result = await sut.refreshRemoteAlbums(isShared: false);
       expect(result, true);
       verify(() => userService.refreshUsers()).called(1);
