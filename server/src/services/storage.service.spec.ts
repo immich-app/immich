@@ -41,6 +41,11 @@ describe(StorageService.name, () => {
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/library');
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/profile');
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs');
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/encoded-video/.immich', expect.any(Buffer));
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/profile/.immich', expect.any(Buffer));
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/thumbs/.immich', expect.any(Buffer));
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/upload/.immich', expect.any(Buffer));
     });
 
     it('should throw an error if .immich is missing', async () => {
@@ -49,13 +54,13 @@ describe(StorageService.name, () => {
 
       await expect(sut.onBootstrap()).rejects.toThrow('Failed to validate folder mount');
 
-      expect(storageMock.writeFile).not.toHaveBeenCalled();
+      expect(storageMock.createOrOverwriteFile).not.toHaveBeenCalled();
       expect(systemMock.set).not.toHaveBeenCalled();
     });
 
     it('should throw an error if .immich is present but read-only', async () => {
       systemMock.get.mockResolvedValue({ mountFiles: true });
-      storageMock.writeFile.mockRejectedValue(new Error("ENOENT: no such file or directory, open '/app/.immich'"));
+      storageMock.overwriteFile.mockRejectedValue(new Error("ENOENT: no such file or directory, open '/app/.immich'"));
 
       await expect(sut.onBootstrap()).rejects.toThrow('Failed to validate folder mount');
 

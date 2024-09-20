@@ -32,7 +32,7 @@ export class StorageService {
       for (const folder of Object.values(StorageFolder)) {
         if (!flags.mountFiles) {
           this.logger.log(`Writing initial mount file for the ${folder} folder`);
-          await this.verifyWriteAccess(folder);
+          await this.createMountFile(folder);
         }
 
         await this.verifyReadAccess(folder);
@@ -81,17 +81,30 @@ export class StorageService {
     }
   }
 
-  private async verifyWriteAccess(folder: StorageFolder) {
+  private async createMountFile(folder: StorageFolder) {
     const { folderPath, filePath } = this.getMountFilePaths(folder);
     try {
       this.storageRepository.mkdirSync(folderPath);
-      await this.storageRepository.writeFile(filePath, Buffer.from(`${Date.now()}`));
+      await this.storageRepository.createFile(filePath, Buffer.from(`${Date.now()}`));
+    } catch (error) {
+      this.logger.error(`Failed to create ${filePath}: ${error}`);
+      this.logger.error(
+        `The "${folder}" folder cannot be written to, please make sure the volume is mounted with the correct permissions`,
+      );
+      throw new ImmichStartupError(`Failed to validate folder mount (write to "<UPLOAD_LOCATION>/${folder}")`);
+    }
+  }
+
+  private async verifyWriteAccess(folder: StorageFolder) {
+    const { filePath } = this.getMountFilePaths(folder);
+    try {
+      await this.storageRepository.overwriteFile(filePath, Buffer.from(`${Date.now()}`));
     } catch (error) {
       this.logger.error(`Failed to write ${filePath}: ${error}`);
       this.logger.error(
         `The "${folder}" folder cannot be written to, please make sure the volume is mounted with the correct permissions`,
       );
-      throw new ImmichStartupError(`Failed to validate folder mount (write to "<MEDIA_LOCATION>/${folder}")`);
+      throw new ImmichStartupError(`Failed to validate folder mount (write to "<UPLOAD_LOCATION>/${folder}")`);
     }
   }
 
