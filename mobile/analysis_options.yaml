@@ -46,21 +46,46 @@ custom_lint:
     - avoid_public_notifier_properties: false
     - avoid_manual_providers_as_generated_provider_dependency: false
     - unsupported_provider_value: false
-    - photo_manager:
-      exclude:
+    - import_rule_photo_manager:
+      message: photo_manager must only be used in MediaRepositories
+      restrict: package:photo_manager
+      allowed:
         # required / wanted
-        - album_media.repository.dart
-        - asset_media.repository.dart
-        - file_media.repository.dart
-          # acceptable exceptions for the time being
-        - asset.entity.dart # to provide local AssetEntity for now
-        - immich_local_image_provider.dart # accesses thumbnails via PhotoManager
-        - immich_local_thumbnail_provider.dart # accesses thumbnails via PhotoManager
-          # refactor to make the providers and services testable
-        - backup.provider.dart # uses only PMProgressHandler
-        - manual_upload.provider.dart # uses only PMProgressHandler
-        - background.service.dart # uses only PMProgressHandler
-        - backup.service.dart # uses only PMProgressHandler
+        - 'lib/repositories/{album,asset,file}_media.repository.dart'
+        # acceptable exceptions for the time being
+        # - lib/entities/asset.entity.dart # to provide local AssetEntity for now
+        - lib/providers/image/immich_local_{image,thumbnail}_provider.dart # accesses thumbnails via PhotoManager
+        # refactor to make the providers and services testable
+        - lib/providers/backup/{backup,manual_upload}.provider.dart # uses only PMProgressHandler
+        - lib/services/{background,backup}.service.dart # uses only PMProgressHandler
+    - import_rule_openapi:
+      message: openapi must only be used through ApiRepositories
+      restrict: package:openapi
+      allowed:
+        # requried / wanted
+        - lib/repositories/album_api.repository.dart
+        # acceptable exceptions for the time being
+        - lib/entities/{album,asset,exif_info,user}.entity.dart # to convert DTOs to entities
+        - lib/utils/{image_url_builder,openapi_patching}.dart # utils are fine
+        - test/modules/utils/openapi_patching_test.dart # filename is self-explanatory...
+        # refactor
+        - lib/models/activities/activity.model.dart
+        - lib/models/map/map_marker.model.dart
+        - lib/models/search/search_filter.model.dart
+        - lib/models/server_info/server_{config,disk_info,features,version}.model.dart
+        - lib/models/shared_link/shared_link.model.dart
+        - lib/pages/search/search_input.page.dart
+        - lib/providers/asset_viewer/asset_people.provider.dart
+        - lib/providers/authentication.provider.dart
+        # - lib/providers/image/immich_remote_{image,thumbnail}_provider.dart
+        - lib/providers/map/map_state.provider.dart
+        - lib/providers/search/{people,search,search_filter}.provider.dart
+        - lib/providers/websocket.provider.dart
+        - lib/routing/auth_guard.dart
+        - lib/services/{activity,api,asset,asset_description,backup,memory,oauth,partner,person,search,shared_link,stack,trash,user}.service.dart
+        - lib/widgets/album/album_thumbnail_listtile.dart
+        - lib/widgets/forms/login/login_form.dart
+        - lib/widgets/search/search_filter/{camera_picker,location_picker,people_picker}.dart
 
 dart_code_metrics:
   metrics:
