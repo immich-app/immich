@@ -313,6 +313,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
+    // Save to persistent storage
+    await _updatePersistentAlbumsSelection();
+
     final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
     final Set<BackupCandidate> assetsFromSelectedAlbums = {};
     final Set<BackupCandidate> assetsFromExcludedAlbums = {};
@@ -408,9 +411,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
     }
-
-    // Save to persistent storage
-    await _updatePersistentAlbumsSelection();
   }
 
   /// Get all necessary information for calculating the available albums,
