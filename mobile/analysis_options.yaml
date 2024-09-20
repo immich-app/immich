@@ -53,7 +53,7 @@ custom_lint:
         # required / wanted
         - 'lib/repositories/{album,asset,file}_media.repository.dart'
         # acceptable exceptions for the time being
-        # - lib/entities/asset.entity.dart # to provide local AssetEntity for now
+        - lib/entities/asset.entity.dart # to provide local AssetEntity for now
         - lib/providers/image/immich_local_{image,thumbnail}_provider.dart # accesses thumbnails via PhotoManager
         # refactor to make the providers and services testable
         - lib/providers/backup/{backup,manual_upload}.provider.dart # uses only PMProgressHandler
@@ -77,7 +77,7 @@ custom_lint:
         - lib/pages/search/search_input.page.dart
         - lib/providers/asset_viewer/asset_people.provider.dart
         - lib/providers/authentication.provider.dart
-        # - lib/providers/image/immich_remote_{image,thumbnail}_provider.dart
+        - lib/providers/image/immich_remote_{image,thumbnail}_provider.dart
         - lib/providers/map/map_state.provider.dart
         - lib/providers/search/{people,search,search_filter}.provider.dart
         - lib/providers/websocket.provider.dart
