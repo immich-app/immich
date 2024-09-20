@@ -80,9 +80,8 @@ entryPoints:
     # this section needs to be added
     transport:
       respondingTimeouts:
-        readTimeout: 600s
-        writeTimeout: 600s
-        idleTimeout: 600s
+        readTimeout: 0
+        idleTimeout: 0
 ```
 
 The second part is in the `docker-compose.yml` file where immich is in. Add the Traefik specific labels like in the example.
