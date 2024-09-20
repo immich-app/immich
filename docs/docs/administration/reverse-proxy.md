@@ -83,33 +83,22 @@ entryPoints:
         readTimeout: 600s
         writeTimeout: 600s
         idleTimeout: 600s
-[...]
 ```
 
-The second part is in the `docker-compose.yml` file where immich is in. Add your external network, where traefik is in, inside the `networks` section and add all the traefik labels like in the example.
-Also adding a default network is required now. It needs to be added to every immich container.
+The second part is in the `docker-compose.yml` file where immich is in. Add the Traefik specific labels like in the example.
 
 `docker-compose.yml`
 ```yaml
-[...]
 services:
   immich-server:
     [...]
-    networks:
-      # this is the network where traefik is in
-      - proxy
-      # network for all immich containers
-      - default
     labels:
       traefik.enable: true
       # increase readingTimeouts for the entrypoint used here
       traefik.http.routers.immich.entrypoints: websecure  
       traefik.http.routers.immich.rule: Host(`immich.your-domain.com`)
       traefik.http.services.immich.loadbalancer.server.port: 3001
-[...]
-
-# add the external network where traefik is in
-networks:
-  proxy:
-    external: true 
 ```
+
+Keep in mind, that Traefik needs to communicate with the network where immich is in, usually done
+by adding the Traefik network to the `immich-server`. 
