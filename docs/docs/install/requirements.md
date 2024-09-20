@@ -31,6 +31,7 @@ Immich requires the command `docker compose` - the similarly named `docker-compo
 
 <details>
 <summary>Database storage on Windows systems</summary>
+  
 The Immich Postgres database (`DB_DATA_LOCATION`) must be located on a filesystem that supports user/group
 ownership and permissions (EXT2/3/4, ZFS, APFS, BTRFS, XFS, etc.). It will not work on any filesystem formatted in NTFS or ex/FAT/32.
 It will not work in WSL (Windows Subsystem for Linux) when using a mounted host directory (commonly under `/mnt`).
