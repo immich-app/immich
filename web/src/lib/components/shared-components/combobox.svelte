@@ -80,10 +80,12 @@
     observer.observe(input);
     const scrollableAncestor = input.closest('.overflow-y-auto, .overflow-y-scroll');
     scrollableAncestor?.addEventListener('scroll', onPositionChange);
+    window.visualViewport?.addEventListener('resize', onPositionChange);
 
     return () => {
       observer.disconnect();
       scrollableAncestor?.removeEventListener('scroll', onPositionChange);
+      window.visualViewport?.removeEventListener('resize', onPositionChange);
     };
   });
 
