@@ -65,7 +65,19 @@ class HashService {
       if (hashes[i] != null) {
         continue;
       }
-      final file = await assets[i].local!.originFile;
+
+      File? file;
+
+      try {
+        file = await assets[i].local!.originFile;
+      } catch (error, stackTrace) {
+        _log.warning(
+          "Error getting file to hash for asset ${assets[i].localId}, name: ${assets[i].fileName}, created on: ${assets[i].fileCreatedAt}, skipping",
+          error,
+          stackTrace,
+        );
+      }
+
       if (file == null) {
         final fileName = assets[i].fileName;
 
