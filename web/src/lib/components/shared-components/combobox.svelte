@@ -81,11 +81,13 @@
     const scrollableAncestor = input.closest('.overflow-y-auto, .overflow-y-scroll');
     scrollableAncestor?.addEventListener('scroll', onPositionChange);
     window.visualViewport?.addEventListener('resize', onPositionChange);
+    window.visualViewport?.addEventListener('scroll', onPositionChange);
 
     return () => {
       observer.disconnect();
       scrollableAncestor?.removeEventListener('scroll', onPositionChange);
       window.visualViewport?.removeEventListener('resize', onPositionChange);
+      window.visualViewport?.removeEventListener('scroll', onPositionChange);
     };
   });
 
@@ -156,21 +158,24 @@
       return undefined;
     }
 
-    const viewportHeight = window.innerHeight;
+    const vv = window.visualViewport;
+    const left = boundary.left + (vv?.offsetLeft || 0);
 
     if (dropdownDirection === 'top') {
       return {
-        bottom: `${viewportHeight - boundary.top}px`,
-        left: `${boundary.left}px`,
+        bottom: `${window.innerHeight - boundary.top - (vv?.offsetTop || 0)}px`,
+        left: `${left}px`,
         width: `${boundary.width}px`,
         maxHeight: maxHeight(boundary.top - dropdownOffset),
       };
     }
 
+    const offsetTop = vv?.offsetTop || 0;
+    const viewportHeight = vv?.height || 0;
     const availableHeight = viewportHeight - boundary.bottom;
     return {
-      top: `${boundary.bottom}px`,
-      left: `${boundary.left}px`,
+      top: `${boundary.bottom + offsetTop}px`,
+      left: `${left}px`,
       width: `${boundary.width}px`,
       maxHeight: maxHeight(availableHeight - dropdownOffset),
     };
@@ -192,7 +197,7 @@
       return 'bottom';
     }
 
-    const viewportHeight = window.innerHeight;
+    const viewportHeight = window.visualViewport?.height || 0;
     const heightBelow = viewportHeight - boundary.bottom;
     const heightAbove = boundary.top;
 
