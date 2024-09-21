@@ -10,6 +10,10 @@
         "about": "About",
         "general": "General",
         "advance": "Advance"
+      },
+      "about": {
+        "third_party_title": "Third Party Notices",
+        "third_party_sub_title": "Notice and license for third party libraries"
       }
     },
     "login": {
