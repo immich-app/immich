@@ -53,7 +53,7 @@ class LogManager {
     _timer = null;
     final buffer = _msgBuffer;
     _msgBuffer = [];
-    di<ILogRepository>().addAll(buffer);
+    di<ILogRepository>().createAll(buffer);
   }
 
   void init() {
@@ -78,7 +78,7 @@ class LogManager {
     _timer?.cancel();
     _timer = null;
     _msgBuffer.clear();
-    di<ILogRepository>().clear();
+    di<ILogRepository>().deleteAll();
   }
 
   static void setGlobalErrorCallbacks() {

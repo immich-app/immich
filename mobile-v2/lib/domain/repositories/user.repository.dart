@@ -13,7 +13,7 @@ class UserDriftRepository with LogMixin implements IUserRepository {
   const UserDriftRepository(this._db);
 
   @override
-  FutureOr<User?> fetch(String userId) async {
+  FutureOr<User?> getForId(String userId) async {
     return await _db.managers.user
         .filter((f) => f.id.equals(userId))
         .map(_toModel)
@@ -21,7 +21,7 @@ class UserDriftRepository with LogMixin implements IUserRepository {
   }
 
   @override
-  FutureOr<bool> add(User user) async {
+  FutureOr<bool> upsert(User user) async {
     try {
       await _db.into(_db.user).insertOnConflictUpdate(
             UserCompanion.insert(

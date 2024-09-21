@@ -16,7 +16,7 @@ import 'package:openapi/api.dart';
 class AssetSyncService with LogMixin {
   const AssetSyncService();
 
-  Future<bool> doFullRemoteSyncForUserDrift(
+  Future<bool> performFullRemoteSyncForUser(
     User user, {
     DateTime? updatedUtil,
     int? limit,
@@ -49,12 +49,11 @@ class AssetSyncService with LogMixin {
           final assetsFromServer =
               assets.map(Asset.remote).sorted(Asset.compareByRemoteId);
 
-          final assetsInDb =
-              await di<IAssetRepository>().fetchRemoteAssetsForIds(
+          final assetsInDb = await di<IAssetRepository>().getForRemoteIds(
             assetsFromServer.map((a) => a.remoteId!).toList(),
           );
 
-          await _syncAssetsToDbDrift(
+          await _syncAssetsToDb(
             assetsFromServer,
             assetsInDb,
             Asset.compareByRemoteId,
@@ -73,7 +72,7 @@ class AssetSyncService with LogMixin {
     });
   }
 
-  Future<void> _syncAssetsToDbDrift(
+  Future<void> _syncAssetsToDb(
     List<Asset> newAssets,
     List<Asset> existingAssets,
     Comparator<Asset> compare, {
@@ -88,9 +87,9 @@ class AssetSyncService with LogMixin {
 
     final assetsToAdd = toAdd.followedBy(toUpdate);
 
-    await di<IAssetRepository>().addAll(assetsToAdd);
+    await di<IAssetRepository>().upsertAll(assetsToAdd);
     await di<IAssetRepository>()
-        .deleteAssetsForIds(assetsToRemove.map((a) => a.id).toList());
+        .deleteIds(assetsToRemove.map((a) => a.id).toList());
   }
 
   /// Returns a triple (toAdd, toUpdate, toRemove)

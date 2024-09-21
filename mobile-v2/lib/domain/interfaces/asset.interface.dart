@@ -1,27 +1,23 @@
 import 'dart:async';
 
 import 'package:immich_mobile/domain/models/asset.model.dart';
-import 'package:immich_mobile/domain/models/render_list.model.dart';
 
-abstract class IAssetRepository {
-  /// Batch insert asset
-  FutureOr<bool> addAll(Iterable<Asset> assets);
+abstract interface class IAssetRepository {
+  /// Batch upsert asset
+  FutureOr<bool> upsertAll(Iterable<Asset> assets);
 
   /// Removes assets with the [localIds]
-  FutureOr<List<Asset>> fetchLocalAssetsForIds(List<String> localIds);
+  FutureOr<List<Asset>> getForLocalIds(List<String> localIds);
 
   /// Removes assets with the [remoteIds]
-  FutureOr<List<Asset>> fetchRemoteAssetsForIds(List<String> remoteIds);
-
-  /// Removes assets with the given [ids]
-  FutureOr<void> deleteAssetsForIds(List<int> ids);
-
-  /// Removes all assets
-  FutureOr<bool> clearAll();
+  FutureOr<List<Asset>> getForRemoteIds(List<String> remoteIds);
 
   /// Fetch assets from the [offset] with the [limit]
-  FutureOr<List<Asset>> fetchAssets({int? offset, int? limit});
+  FutureOr<List<Asset>> getAll({int? offset, int? limit});
 
-  /// Streams assets as groups grouped by the group type passed
-  Stream<RenderList> watchRenderList();
+  /// Removes assets with the given [ids]
+  FutureOr<void> deleteIds(List<int> ids);
+
+  /// Removes all assets
+  FutureOr<bool> deleteAll();
 }

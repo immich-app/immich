@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:immich_mobile/domain/models/user.model.dart';
 
-abstract class IUserRepository {
-  /// Fetches user
-  FutureOr<User?> fetch(String userId);
-
+abstract interface class IUserRepository {
   /// Insert user
-  FutureOr<bool> add(User user);
+  FutureOr<bool> upsert(User user);
+
+  /// Fetches user
+  FutureOr<User?> getForId(String userId);
 }

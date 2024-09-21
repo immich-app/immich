@@ -37,7 +37,7 @@ class _ImSwitchListTileState<T> extends State<ImSwitchListTile<T>> {
 
     final value = T != bool ? widget.toAppSetting!(enabled) : enabled as T;
     if (value != null &&
-        await _appSettingService.setSetting(widget.setting, value) &&
+        await _appSettingService.upsert(widget.setting, value) &&
         context.mounted) {
       setState(() {
         isEnabled = enabled;
@@ -48,7 +48,7 @@ class _ImSwitchListTileState<T> extends State<ImSwitchListTile<T>> {
   @override
   void initState() {
     super.initState();
-    _appSettingService.getSetting(widget.setting).then((value) {
+    _appSettingService.get(widget.setting).then((value) {
       if (context.mounted) {
         setState(() {
           isEnabled = T != bool ? widget.fromAppSetting!(value) : value as bool;

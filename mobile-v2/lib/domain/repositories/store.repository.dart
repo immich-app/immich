@@ -30,7 +30,7 @@ class StoreDriftRepository with LogMixin implements IStoreRepository {
   }
 
   @override
-  FutureOr<bool> set<T, U>(StoreKey<T, U> key, T value) async {
+  FutureOr<bool> upsert<T, U>(StoreKey<T, U> key, T value) async {
     try {
       final storeValue = key.converter.toPrimitive(value);
       final intValue = (key.type == int) ? storeValue as int : null;
@@ -61,7 +61,7 @@ class StoreDriftRepository with LogMixin implements IStoreRepository {
   }
 
   @override
-  FutureOr<void> clearStore() async {
+  FutureOr<void> deleteAll() async {
     await _db.managers.store.delete();
   }
 

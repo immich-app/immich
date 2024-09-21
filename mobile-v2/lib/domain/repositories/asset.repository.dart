@@ -4,19 +4,16 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/entities/asset.entity.drift.dart';
 import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
-import 'package:immich_mobile/domain/models/render_list.model.dart';
-import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
-import 'package:immich_mobile/utils/extensions/drift.extension.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
-class RemoteAssetDriftRepository with LogMixin implements IAssetRepository {
+class AssetDriftRepository with LogMixin implements IAssetRepository {
   final DriftDatabaseRepository _db;
 
-  const RemoteAssetDriftRepository(this._db);
+  const AssetDriftRepository(this._db);
 
   @override
-  Future<bool> addAll(Iterable<Asset> assets) async {
+  Future<bool> upsertAll(Iterable<Asset> assets) async {
     try {
       await _db.batch((batch) => batch.insertAllOnConflictUpdate(
             _db.asset,
@@ -31,7 +28,7 @@ class RemoteAssetDriftRepository with LogMixin implements IAssetRepository {
   }
 
   @override
-  Future<bool> clearAll() async {
+  Future<bool> deleteAll() async {
     try {
       await _db.asset.deleteAll();
       return true;
@@ -42,7 +39,7 @@ class RemoteAssetDriftRepository with LogMixin implements IAssetRepository {
   }
 
   @override
-  Future<List<Asset>> fetchAssets({int? offset, int? limit}) async {
+  Future<List<Asset>> getAll({int? offset, int? limit}) async {
     final query = _db.asset.select()
       ..orderBy([(asset) => OrderingTerm.desc(asset.createdTime)]);
 
@@ -54,40 +51,7 @@ class RemoteAssetDriftRepository with LogMixin implements IAssetRepository {
   }
 
   @override
-  Stream<RenderList> watchRenderList() {
-    final assetCountExp = _db.asset.id.count();
-    final createdTimeExp = _db.asset.createdTime;
-    final monthYearExp = _db.asset.createdTime.strftime('%m-%Y');
-
-    final query = _db.asset.selectOnly()
-      ..addColumns([assetCountExp, createdTimeExp])
-      ..groupBy([monthYearExp])
-      ..orderBy([OrderingTerm.desc(createdTimeExp)]);
-
-    int lastAssetOffset = 0;
-
-    return query
-        .expand((row) {
-          final createdTime = row.read<DateTime>(createdTimeExp)!;
-          final assetCount = row.read(assetCountExp)!;
-          final assetOffset = lastAssetOffset;
-          lastAssetOffset += assetCount;
-
-          return [
-            RenderListMonthHeaderElement(date: createdTime),
-            RenderListAssetElement(
-              date: createdTime,
-              assetCount: assetCount,
-              assetOffset: assetOffset,
-            ),
-          ];
-        })
-        .watch()
-        .map((elements) => RenderList(elements: elements));
-  }
-
-  @override
-  Future<List<Asset>> fetchLocalAssetsForIds(List<String> localIds) async {
+  Future<List<Asset>> getForLocalIds(List<String> localIds) async {
     final query = _db.asset.select()
       ..where((row) => row.localId.isIn(localIds))
       ..orderBy([(asset) => OrderingTerm.asc(asset.localId)]);
@@ -96,7 +60,7 @@ class RemoteAssetDriftRepository with LogMixin implements IAssetRepository {
   }
 
   @override
-  Future<List<Asset>> fetchRemoteAssetsForIds(List<String> remoteIds) async {
+  Future<List<Asset>> getForRemoteIds(List<String> remoteIds) async {
     final query = _db.asset.select()
       ..where((row) => row.remoteId.isIn(remoteIds))
       ..orderBy([(asset) => OrderingTerm.asc(asset.remoteId)]);
@@ -105,7 +69,7 @@ class RemoteAssetDriftRepository with LogMixin implements IAssetRepository {
   }
 
   @override
-  FutureOr<void> deleteAssetsForIds(List<int> ids) async {
+  FutureOr<void> deleteIds(List<int> ids) async {
     await _db.asset.deleteWhere((row) => row.id.isIn(ids));
   }
 }
@@ -115,7 +79,7 @@ AssetCompanion _toEntity(Asset asset) {
     localId: Value(asset.localId),
     remoteId: Value(asset.remoteId),
     name: asset.name,
-    checksum: asset.checksum,
+    hash: asset.hash,
     height: Value(asset.height),
     width: Value(asset.width),
     type: asset.type,
@@ -133,7 +97,7 @@ Asset _toModel(AssetData asset) {
     remoteId: asset.remoteId,
     name: asset.name,
     type: asset.type,
-    checksum: asset.checksum,
+    hash: asset.hash,
     createdTime: asset.createdTime,
     modifiedTime: asset.modifiedTime,
     height: asset.height,

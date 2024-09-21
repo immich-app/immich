@@ -10,9 +10,8 @@ class AppThemeCubit extends Cubit<AppTheme> {
   late final StreamSubscription _appSettingSubscription;
 
   AppThemeCubit(this._appSettings) : super(AppTheme.blue) {
-    _appSettingSubscription = _appSettings
-        .watchSetting(AppSetting.appTheme)
-        .listen((theme) => emit(theme));
+    _appSettingSubscription =
+        _appSettings.watch(AppSetting.appTheme).listen((theme) => emit(theme));
   }
 
   @override

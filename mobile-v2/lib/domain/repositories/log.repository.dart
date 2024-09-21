@@ -13,12 +13,12 @@ class LogDriftRepository implements ILogRepository {
   const LogDriftRepository(this._db);
 
   @override
-  Future<List<LogMessage>> fetchAll() async {
+  Future<List<LogMessage>> getAll() async {
     return await _db.managers.logs.map(_toModel).get();
   }
 
   @override
-  Future<void> truncateLogs({int limit = 250}) async {
+  Future<void> truncate({int limit = 250}) async {
     final totalCount = await _db.managers.logs.count();
     if (totalCount > limit) {
       final rowsToDelete = totalCount - limit;
@@ -30,7 +30,7 @@ class LogDriftRepository implements ILogRepository {
   }
 
   @override
-  FutureOr<bool> add(LogMessage log) async {
+  FutureOr<bool> create(LogMessage log) async {
     try {
       await _db.into(_db.logs).insert(LogsCompanion.insert(
             content: log.content,
@@ -48,7 +48,7 @@ class LogDriftRepository implements ILogRepository {
   }
 
   @override
-  FutureOr<bool> addAll(List<LogMessage> logs) async {
+  FutureOr<bool> createAll(List<LogMessage> logs) async {
     try {
       await _db.batch((b) {
         b.insertAll(
@@ -71,7 +71,7 @@ class LogDriftRepository implements ILogRepository {
   }
 
   @override
-  FutureOr<bool> clear() async {
+  FutureOr<bool> deleteAll() async {
     try {
       await _db.managers.logs.delete();
       return true;

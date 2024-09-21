@@ -14,7 +14,7 @@ enum AssetType {
 class Asset {
   final int id;
   final String name;
-  final String checksum;
+  final String hash;
   final int? height;
   final int? width;
   final AssetType type;
@@ -36,7 +36,7 @@ class Asset {
   const Asset({
     required this.id,
     required this.name,
-    required this.checksum,
+    required this.hash,
     this.height,
     this.width,
     required this.type,
@@ -55,7 +55,7 @@ class Asset {
         duration: dto.duration.tryParseInt() ?? 0,
         height: dto.exifInfo?.exifImageHeight?.toInt(),
         width: dto.exifInfo?.exifImageWidth?.toInt(),
-        checksum: dto.checksum,
+        hash: dto.checksum,
         name: dto.originalFileName,
         livePhotoVideoId: dto.livePhotoVideoId,
         modifiedTime: dto.fileModifiedAt,
@@ -65,7 +65,7 @@ class Asset {
   Asset copyWith({
     int? id,
     String? name,
-    String? checksum,
+    String? hash,
     int? height,
     int? width,
     AssetType? type,
@@ -79,7 +79,7 @@ class Asset {
     return Asset(
       id: id ?? this.id,
       name: name ?? this.name,
-      checksum: checksum ?? this.checksum,
+      hash: hash ?? this.hash,
       height: height ?? this.height,
       width: width ?? this.width,
       type: type ?? this.type,
@@ -119,7 +119,7 @@ class Asset {
   "remoteId": "${remoteId ?? "-"}",
   "localId": "${localId ?? "-"}",
   "name": "$name",
-  "checksum": "$checksum",
+  "hash": "$hash",
   "height": ${height ?? "-"},
   "width": ${width ?? "-"},
   "type": "$type",
@@ -135,7 +135,7 @@ class Asset {
 
     return other.id == id &&
         other.name == name &&
-        other.checksum == checksum &&
+        other.hash == hash &&
         other.height == height &&
         other.width == width &&
         other.type == type &&
@@ -151,7 +151,7 @@ class Asset {
   int get hashCode {
     return id.hashCode ^
         name.hashCode ^
-        checksum.hashCode ^
+        hash.hashCode ^
         height.hashCode ^
         width.hashCode ^
         type.hashCode ^

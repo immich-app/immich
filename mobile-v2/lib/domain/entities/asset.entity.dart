@@ -9,7 +9,7 @@ class Asset extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   TextColumn get name => text()();
-  TextColumn get checksum => text().unique()();
+  TextColumn get hash => text().unique()();
   IntColumn get height => integer().nullable()();
   IntColumn get width => integer().nullable()();
   IntColumn get type => intEnum<AssetType>()();

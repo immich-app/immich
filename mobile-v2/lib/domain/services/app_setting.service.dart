@@ -6,16 +6,16 @@ class AppSettingService {
 
   const AppSettingService(this._store);
 
-  Future<T> getSetting<T>(AppSetting<T> setting) async {
+  Future<T> get<T>(AppSetting<T> setting) async {
     final value = await _store.tryGet(setting.storeKey);
     return value ?? setting.defaultValue;
   }
 
-  Future<bool> setSetting<T>(AppSetting<T> setting, T value) async {
-    return await _store.set(setting.storeKey, value);
+  Future<bool> upsert<T>(AppSetting<T> setting, T value) async {
+    return await _store.upsert(setting.storeKey, value);
   }
 
-  Stream<T> watchSetting<T>(AppSetting<T> setting) {
+  Stream<T> watch<T>(AppSetting<T> setting) {
     return _store
         .watch(setting.storeKey)
         .map((value) => value ?? setting.defaultValue);

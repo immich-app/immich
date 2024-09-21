@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/presentation/components/image/immich_logo.widget.dart';
+import 'package:immich_mobile/presentation/modules/common/states/current_user.state.dart';
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
 import 'package:immich_mobile/service_locator.dart';
@@ -49,7 +51,9 @@ class _SplashScreenState extends State<SplashScreenPage>
   }
 
   Future<void> _tryLogin() async {
-    if (await di<LoginService>().tryLoginFromSplash() && mounted) {
+    if (await di<LoginService>().tryAutoLogin() && mounted) {
+      unawaited(di<AssetSyncService>()
+          .performFullRemoteSyncForUser(di<CurrentUserCubit>().state));
       unawaited(context.replaceRoute(const TabControllerRoute()));
     } else {
       unawaited(context.replaceRoute(const LoginRoute()));

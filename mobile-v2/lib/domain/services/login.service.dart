@@ -107,7 +107,7 @@ class LoginService with LogMixin {
     return null;
   }
 
-  Future<bool> tryLoginFromSplash() async {
+  Future<bool> tryAutoLogin() async {
     final serverEndpoint =
         await di<IStoreRepository>().tryGet(StoreKey.serverEndpoint);
     if (serverEndpoint == null) {

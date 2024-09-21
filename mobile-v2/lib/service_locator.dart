@@ -69,7 +69,7 @@ class ServiceLocator {
     _registerFactory<AppSettingService>(() => AppSettingService(di()));
     _registerFactory<IUserRepository>(() => UserDriftRepository(di()));
     _registerFactory<IAssetRepository>(
-      () => RemoteAssetDriftRepository(di()),
+      () => AssetDriftRepository(di()),
     );
 
     /// Services

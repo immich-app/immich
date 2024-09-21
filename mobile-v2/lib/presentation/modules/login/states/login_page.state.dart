@@ -65,7 +65,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
       // Check for /.well-known/immich
       url = await loginService.resolveEndpoint(uri);
 
-      di<IStoreRepository>().set(StoreKey.serverEndpoint, url);
+      di<IStoreRepository>().upsert(StoreKey.serverEndpoint, url);
       ServiceLocator.registerApiClient(url);
       ServiceLocator.registerPostValidationServices();
       ServiceLocator.registerPostGlobalStates();
@@ -123,7 +123,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
   }
 
   Future<void> _postLogin(String accessToken) async {
-    await di<IStoreRepository>().set(StoreKey.accessToken, accessToken);
+    await di<IStoreRepository>().upsert(StoreKey.accessToken, accessToken);
 
     /// Set token to interceptor
     await di<ImmichApiClient>().init(accessToken: accessToken);
@@ -136,10 +136,10 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
 
     // Register user
     ServiceLocator.registerCurrentUser(user);
-    await di<IUserRepository>().add(user);
+    await di<IUserRepository>().upsert(user);
     // Remove and Sync assets in background
-    await di<IAssetRepository>().clearAll();
-    unawaited(di<AssetSyncService>().doFullRemoteSyncForUserDrift(user));
+    await di<IAssetRepository>().deleteAll();
+    unawaited(di<AssetSyncService>().performFullRemoteSyncForUser(user));
 
     emit(state.copyWith(
       isValidationInProgress: false,

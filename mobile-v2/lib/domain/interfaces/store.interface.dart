@@ -12,16 +12,16 @@ abstract class IStoreConverter<T, U> {
   FutureOr<T?> fromPrimitive(U value);
 }
 
-abstract class IStoreRepository {
-  FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key);
+abstract interface class IStoreRepository {
+  FutureOr<bool> upsert<T, U>(StoreKey<T, U> key, T value);
 
   FutureOr<T> get<T, U>(StoreKey<T, U> key);
 
-  FutureOr<bool> set<T, U>(StoreKey<T, U> key, T value);
-
-  FutureOr<void> delete(StoreKey key);
+  FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key);
 
   Stream<T?> watch<T, U>(StoreKey<T, U> key);
 
-  FutureOr<void> clearStore();
+  FutureOr<void> delete(StoreKey key);
+
+  FutureOr<void> deleteAll();
 }
