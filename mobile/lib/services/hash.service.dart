@@ -65,7 +65,13 @@ class HashService {
       if (hashes[i] != null) {
         continue;
       }
-      final file = await assets[i].local!.originFile;
+
+      File? file;
+
+      try {
+        file = await assets[i].local!.originFile;
+      } catch (_) {}
+
       if (file == null) {
         final fileName = assets[i].fileName;
 
