@@ -250,7 +250,7 @@
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if current && current.memory.assets.length > 0}
-    <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} forceDark>
+    <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark>
       <svelte:fragment slot="leading">
         <p class="text-lg">
           {$memoryLaneTitle(current.memory.yearsAgo)}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
 
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
@@ -12,12 +12,9 @@
   export let backIcon = mdiClose;
   export let tailwindClasses = '';
   export let forceDark = false;
+  export let onClose: () => void = () => {};
 
   let appBarBorder = 'bg-immich-bg border border-transparent';
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
 
   const onScroll = () => {
     if (window.pageYOffset > 80) {
@@ -33,7 +30,7 @@
 
   const handleClose = () => {
     $isSelectingAllAssets = false;
-    dispatch('close');
+    onClose();
   };
 
   onMount(() => {

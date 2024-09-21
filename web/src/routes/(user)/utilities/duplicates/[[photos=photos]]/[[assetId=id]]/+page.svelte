@@ -196,5 +196,5 @@
 </UserPageLayout>
 
 {#if isShowKeyboardShortcut}
-  <ShowShortcuts shortcuts={duplicateShortcuts} on:close={() => (isShowKeyboardShortcut = false)} />
+  <ShowShortcuts shortcuts={duplicateShortcuts} onClose={() => (isShowKeyboardShortcut = false)} />
 {/if}

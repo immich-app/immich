@@ -21,7 +21,7 @@
   import { fly } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
-  import { createEventDispatcher, onMount, tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
@@ -35,6 +35,7 @@
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption | undefined = undefined;
   export let placeholder = '';
+  export let onSelect: (option: ComboBoxOption | undefined) => void = () => {};
 
   /**
    * Unique identifier for the combobox.
@@ -91,10 +92,6 @@
     };
   });
 
-  const dispatch = createEventDispatcher<{
-    select: ComboBoxOption | undefined;
-  }>();
-
   const activate = () => {
     isActive = true;
     searchQuery = '';
@@ -136,10 +133,10 @@
     optionRefs[0]?.scrollIntoView({ block: 'nearest' });
   };
 
-  let onSelect = (option: ComboBoxOption) => {
+  let handleSelect = (option: ComboBoxOption) => {
     selectedOption = option;
     searchQuery = option.label;
-    dispatch('select', option);
+    onSelect(option);
     closeDropdown();
   };
 
@@ -148,7 +145,7 @@
     selectedIndex = undefined;
     selectedOption = undefined;
     searchQuery = '';
-    dispatch('select', selectedOption);
+    onSelect(selectedOption);
   };
 
   const calculatePosition = (boundary: DOMRect | undefined) => {
@@ -276,7 +273,7 @@
           shortcut: { key: 'Enter' },
           onShortcut: () => {
             if (selectedIndex !== undefined && filteredOptions.length > 0) {
-              onSelect(filteredOptions[selectedIndex]);
+              handleSelect(filteredOptions[selectedIndex]);
             }
             closeDropdown();
           },
@@ -341,7 +338,7 @@
           bind:this={optionRefs[index]}
           class="text-left w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 break-words"
           id={`${listboxId}-${index}`}
-          on:click={() => onSelect(option)}
+          on:click={() => handleSelect(option)}
           role="option"
         >
           {option.label}

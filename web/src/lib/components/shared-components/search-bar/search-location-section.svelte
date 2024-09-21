@@ -73,7 +73,7 @@
     <div class="w-full">
       <Combobox
         label={$t('country')}
-        on:select={({ detail }) => (filters.country = detail?.value)}
+        onSelect={(option) => (filters.country = option?.value)}
         options={asComboboxOptions(countries)}
         placeholder={$t('search_country')}
         selectedOption={asSelectedOption(filters.country)}
@@ -83,7 +83,7 @@
     <div class="w-full">
       <Combobox
         label={$t('state')}
-        on:select={({ detail }) => (filters.state = detail?.value)}
+        onSelect={(option) => (filters.state = option?.value)}
         options={asComboboxOptions(states)}
         placeholder={$t('search_state')}
         selectedOption={asSelectedOption(filters.state)}
@@ -93,7 +93,7 @@
     <div class="w-full">
       <Combobox
         label={$t('city')}
-        on:select={({ detail }) => (filters.city = detail?.value)}
+        onSelect={(option) => (filters.city = option?.value)}
         options={asComboboxOptions(cities)}
         placeholder={$t('search_city')}
         selectedOption={asSelectedOption(filters.city)}

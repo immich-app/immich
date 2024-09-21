@@ -529,7 +529,7 @@ export class MetadataService {
       const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
       if (!existsOnDisk) {
         this.storageCore.ensureFolders(motionAsset.originalPath);
-        await this.storageRepository.writeFile(motionAsset.originalPath, video);
+        await this.storageRepository.createFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }

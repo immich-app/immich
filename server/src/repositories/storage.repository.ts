@@ -40,8 +40,16 @@ export class StorageRepository implements IStorageRepository {
     return fs.stat(filepath);
   }
 
-  writeFile(filepath: string, buffer: Buffer) {
-    return fs.writeFile(filepath, buffer);
+  createFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'wx' });
+  }
+
+  createOrOverwriteFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'w' });
+  }
+
+  overwriteFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'r+' });
   }
 
   rename(source: string, target: string) {

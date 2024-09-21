@@ -10,7 +10,6 @@
   import { handleLogout } from '$lib/utils/auth';
   import { logout } from '@immich/sdk';
   import { mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { AppRoute } from '../../../constants';
@@ -21,13 +20,11 @@
   import AccountInfoPanel from './account-info-panel.svelte';
 
   export let showUploadButton = true;
+  export let onUploadClick: () => void;
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
   let innerWidth: number;
-  const dispatch = createEventDispatcher<{
-    uploadClicked: void;
-  }>();
 
   const onLogout = async () => {
     const { redirectUri } = await logout();
@@ -67,14 +64,14 @@
         <ThemeButton padding="2" />
 
         {#if !$page.url.pathname.includes('/admin') && showUploadButton}
-          <LinkButton on:click={() => dispatch('uploadClicked')} class="hidden lg:block">
+          <LinkButton on:click={onUploadClick} class="hidden lg:block">
             <div class="flex gap-2">
               <Icon path={mdiTrayArrowUp} size="1.5em" />
               <span>{$t('upload')}</span>
             </div>
           </LinkButton>
           <CircleIconButton
-            on:click={() => dispatch('uploadClicked')}
+            on:click={onUploadClick}
             title={$t('upload')}
             icon={mdiTrayArrowUp}
             class="lg:hidden"
@@ -114,7 +111,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel on:logout={onLogout} />
+            <AccountInfoPanel {onLogout} />
           {/if}
         </div>
       </section>

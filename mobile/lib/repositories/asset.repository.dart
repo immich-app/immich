@@ -28,4 +28,11 @@ class AssetRepository implements IAssetRepository {
   @override
   Future<void> deleteById(List<int> ids) =>
       _db.writeTxn(() => _db.assets.deleteAll(ids));
+
+  @override
+  Future<Asset?> getByRemoteId(String id) => _db.assets.getByRemoteId(id);
+
+  @override
+  Future<List<Asset>> getAllByRemoteId(Iterable<String> ids) =>
+      _db.assets.getAllByRemoteId(ids);
 }

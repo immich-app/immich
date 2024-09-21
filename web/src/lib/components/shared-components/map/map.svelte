@@ -13,7 +13,6 @@
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import maplibregl from 'maplibre-gl';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -52,6 +51,8 @@
   }
 
   export let onOpenInMapView: (() => Promise<void> | void) | undefined = undefined;
+  export let onSelect: (assetIds: string[]) => void = () => {};
+  export let onClickPoint: ({ lat, lng }: { lat: number; lng: number }) => void = () => {};
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
@@ -62,16 +63,11 @@
       key: getKey(),
     }) as Promise<StyleSpecification>)();
 
-  const dispatch = createEventDispatcher<{
-    selected: string[];
-    clickedPoint: { lat: number; lng: number };
-  }>();
-
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
       return;
     }
-    dispatch('selected', [assetId]);
+    onSelect([assetId]);
   }
 
   async function handleClusterClick(clusterId: number, map: Map | null) {
@@ -82,13 +78,13 @@
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
     const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
     const ids = leaves.map((leaf) => leaf.properties?.id);
-    dispatch('selected', ids);
+    onSelect(ids);
   }
 
   function handleMapClick(event: maplibregl.MapMouseEvent) {
     if (clickable) {
       const { lng, lat } = event.lngLat;
-      dispatch('clickedPoint', { lng, lat });
+      onClickPoint({ lng, lat });
 
       if (marker) {
         marker.remove();
