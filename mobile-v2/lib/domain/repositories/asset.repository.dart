@@ -8,9 +8,9 @@ import 'package:immich_mobile/domain/models/render_list.model.dart';
 import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/extensions/drift.extension.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
-class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
+class RemoteAssetDriftRepository with LogMixin implements IAssetRepository {
   final DriftDatabaseRepository _db;
 
   const RemoteAssetDriftRepository(this._db);
@@ -25,7 +25,7 @@ class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
 
       return true;
     } catch (e, s) {
-      log.severe("Cannot insert remote assets into table", e, s);
+      log.e("Cannot insert remote assets into table", e, s);
       return false;
     }
   }
@@ -36,7 +36,7 @@ class RemoteAssetDriftRepository with LogContext implements IAssetRepository {
       await _db.asset.deleteAll();
       return true;
     } catch (e, s) {
-      log.severe("Cannot clear remote assets", e, s);
+      log.e("Cannot clear remote assets", e, s);
       return false;
     }
   }

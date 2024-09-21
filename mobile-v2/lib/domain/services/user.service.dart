@@ -1,8 +1,8 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:openapi/api.dart';
 
-class UserService with LogContext {
+class UserService with LogMixin {
   final UsersApi _userApi;
 
   const UserService(this._userApi);
@@ -18,13 +18,13 @@ class UserService with LogContext {
       ]);
 
       if (userDto == null) {
-        log.severe("Cannot fetch my user.");
+        log.e("Cannot fetch my user.");
         return null;
       }
 
       return User.fromAdminDto(userDto, preferencesDto);
     } catch (e, s) {
-      log.severe("Error while fetching my user", e, s);
+      log.e("Error while fetching my user", e, s);
     }
     return null;
   }

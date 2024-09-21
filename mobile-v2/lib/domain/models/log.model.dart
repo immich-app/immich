@@ -4,22 +4,24 @@ import 'package:logging/logging.dart';
 /// Log levels according to dart logging [Level]
 enum LogLevel {
   // do not change this order!
-  all,
-  finest,
-  finer,
-  fine,
-  config,
+  verbose,
+  debug,
   info,
   warning,
-  severe,
-  shout,
-  off,
+  error,
+  wtf,
 }
 
 extension LevelExtension on Level {
-  LogLevel toLogLevel() =>
-      LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ??
-      LogLevel.info;
+  LogLevel toLogLevel() => switch (this) {
+        Level.FINEST => LogLevel.verbose,
+        Level.FINE => LogLevel.debug,
+        Level.INFO => LogLevel.info,
+        Level.WARNING => LogLevel.warning,
+        Level.SEVERE => LogLevel.error,
+        Level.SHOUT => LogLevel.wtf,
+        _ => LogLevel.info,
+      };
 }
 
 @immutable

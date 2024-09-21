@@ -5,9 +5,9 @@ import 'package:immich_mobile/domain/entities/store.entity.drift.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
-class StoreDriftRepository with LogContext implements IStoreRepository {
+class StoreDriftRepository with LogMixin implements IStoreRepository {
   final DriftDatabaseRepository _db;
 
   const StoreDriftRepository(this._db);
@@ -42,7 +42,7 @@ class StoreDriftRepository with LogContext implements IStoreRepository {
           ));
       return true;
     } catch (e, s) {
-      log.severe("Cannot set store value - ${key.name}; id - ${key.id}", e, s);
+      log.e("Cannot set store value - ${key.name}; id - ${key.id}", e, s);
       return false;
     }
   }

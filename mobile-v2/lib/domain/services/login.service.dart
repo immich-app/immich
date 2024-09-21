@@ -9,10 +9,10 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:openapi/api.dart';
 
-class LoginService with LogContext {
+class LoginService with LogMixin {
   const LoginService();
 
   Future<bool> isEndpointAvailable(Uri uri, {ImmichApiClient? client}) async {
@@ -27,7 +27,7 @@ class LoginService with LogContext {
     try {
       await serverAPI.pingServer();
     } catch (e) {
-      log.severe("Exception occured while validating endpoint", e);
+      log.e("Exception occured while validating endpoint", e);
       return false;
     }
     return true;
@@ -52,7 +52,7 @@ class LoginService with LogContext {
         return endpoint.startsWith('/') ? "$baseUrl$endpoint" : endpoint;
       }
     } catch (e) {
-      log.fine("Could not locate /.well-known/immich at $baseUrl", e);
+      log.e("Could not locate /.well-known/immich at $baseUrl", e);
     }
 
     // No well-known, return the baseUrl
@@ -68,7 +68,7 @@ class LoginService with LogContext {
 
       return loginResponse?.accessToken;
     } catch (e, s) {
-      log.severe("Exception occured while performing password login", e, s);
+      log.e("Exception occured while performing password login", e, s);
     }
     return null;
   }
@@ -85,7 +85,7 @@ class LoginService with LogContext {
 
       final oAuthUrlRes = oAuthUrl?.url;
       if (oAuthUrlRes == null) {
-        log.severe(
+        log.e(
           "oAuth Server URL not available. Kindly ensure oAuth login is enabled in the server",
         );
         return null;
@@ -102,7 +102,7 @@ class LoginService with LogContext {
 
       return loginResponse?.accessToken;
     } catch (e) {
-      log.severe("Exception occured while performing oauth login", e);
+      log.e("Exception occured while performing oauth login", e);
     }
     return null;
   }

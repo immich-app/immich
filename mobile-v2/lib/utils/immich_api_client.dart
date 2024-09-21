@@ -9,10 +9,10 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:openapi/api.dart';
 
-class ImmichApiClient extends ApiClient with LogContext {
+class ImmichApiClient extends ApiClient with LogMixin {
   ImmichApiClient({required String endpoint}) : super(basePath: endpoint);
 
   Map<String, String> get headers => defaultHeaderMap;
@@ -58,7 +58,7 @@ class ImmichApiClient extends ApiClient with LogContext {
     );
 
     if (res.statusCode == HttpStatus.unauthorized) {
-      log.severe("Token invalid. Redirecting to login route");
+      log.e("Token invalid. Redirecting to login route");
       await di<AppRouter>().replaceAll([const LoginRoute()]);
       throw ApiException(res.statusCode, "Unauthorized");
     }

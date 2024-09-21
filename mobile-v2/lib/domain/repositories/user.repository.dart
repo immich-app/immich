@@ -5,9 +5,9 @@ import 'package:immich_mobile/domain/entities/user.entity.drift.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
-class UserDriftRepository with LogContext implements IUserRepository {
+class UserDriftRepository with LogMixin implements IUserRepository {
   final DriftDatabaseRepository _db;
 
   const UserDriftRepository(this._db);
@@ -40,7 +40,7 @@ class UserDriftRepository with LogContext implements IUserRepository {
           );
       return true;
     } catch (e, s) {
-      log.severe("Cannot insert User into table - $user", e, s);
+      log.e("Cannot insert User into table - $user", e, s);
       return false;
     }
   }

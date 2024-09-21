@@ -1,9 +1,9 @@
 import 'package:immich_mobile/domain/models/server-info/server_config.model.dart';
 import 'package:immich_mobile/domain/models/server-info/server_features.model.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:openapi/api.dart';
 
-class ServerInfoService with LogContext {
+class ServerInfoService with LogMixin {
   final ServerApi _serverInfo;
 
   const ServerInfoService(this._serverInfo);
@@ -15,7 +15,7 @@ class ServerInfoService with LogContext {
         return ServerFeatures.fromDto(dto);
       }
     } catch (e, s) {
-      log.severe("Error while fetching server features", e, s);
+      log.e("Error while fetching server features", e, s);
     }
     return null;
   }
@@ -27,7 +27,7 @@ class ServerInfoService with LogContext {
         return ServerConfig.fromDto(dto);
       }
     } catch (e, s) {
-      log.severe("Error while fetching server config", e, s);
+      log.e("Error while fetching server config", e, s);
     }
     return null;
   }

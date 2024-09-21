@@ -13,10 +13,10 @@ import 'package:immich_mobile/presentation/modules/common/states/server_info/ser
 import 'package:immich_mobile/presentation/modules/login/models/login_page.model.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:immich_mobile/utils/snackbar_manager.dart';
 
-class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
+class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
   LoginPageCubit() : super(LoginPageState.reset());
 
   String _appendSchema(String url) {
@@ -96,7 +96,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
       await _postLogin(accessToken);
     } catch (e, s) {
       SnackbarManager.showError(t.login.error.error_login);
-      log.severe("Cannot perform password login", e, s);
+      log.e("Cannot perform password login", e, s);
     } finally {
       emit(state.copyWith(isValidationInProgress: false));
     }
@@ -116,7 +116,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogContext {
       await _postLogin(accessToken);
     } catch (e, s) {
       SnackbarManager.showError(t.login.error.error_login_oauth);
-      log.severe("Cannot perform oauth login", e, s);
+      log.e("Cannot perform oauth login", e, s);
     } finally {
       emit(state.copyWith(isValidationInProgress: false));
     }

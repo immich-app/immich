@@ -8,7 +8,7 @@ import 'package:immich_mobile/presentation/components/image/immich_logo.widget.d
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
 import 'package:immich_mobile/service_locator.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
 @RoutePage()
 class SplashScreenWrapperPage extends AutoRouter implements AutoRouteWrapper {
@@ -30,7 +30,7 @@ class SplashScreenPage extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreenPage>
-    with SingleTickerProviderStateMixin, LogContext {
+    with SingleTickerProviderStateMixin, LogMixin {
   late final AnimationController _animationController;
 
   @override
@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreenPage>
           if (snap.hasData) {
             _tryLogin();
           } else if (snap.hasError) {
-            log.severe(
+            log.wtf(
               "Error while initializing the app",
               snap.error,
               snap.stackTrace,

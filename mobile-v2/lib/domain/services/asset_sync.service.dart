@@ -9,11 +9,11 @@ import 'package:immich_mobile/utils/collection_util.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/isolate_helper.dart';
-import 'package:immich_mobile/utils/mixins/log_context.mixin.dart';
-import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/log_manager.dart';
+import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:openapi/api.dart';
 
-class AssetSyncService with LogContext {
+class AssetSyncService with LogMixin {
   const AssetSyncService();
 
   Future<bool> doFullRemoteSyncForUserDrift(
@@ -23,7 +23,7 @@ class AssetSyncService with LogContext {
   }) async {
     return await IsolateHelper.run(() async {
       try {
-        final logger = Logger("SyncService <Isolate>");
+        final logger = LogManager.I.get("SyncService <Isolate>");
         final syncClient = di<ImmichApiClient>().getSyncApi();
 
         final chunkSize = limit ?? kFullSyncChunkSize;
@@ -32,7 +32,7 @@ class AssetSyncService with LogContext {
         String? lastAssetId;
 
         while (true) {
-          logger.info(
+          logger.d(
             "Requesting more chunks from lastId - ${lastAssetId ?? "<initial_fetch>"}",
           );
 
@@ -67,7 +67,7 @@ class AssetSyncService with LogContext {
 
         return true;
       } catch (e, s) {
-        log.severe("Error performing full sync for user - ${user.name}", e, s);
+        log.e("Error performing full sync for user - ${user.name}", e, s);
       }
       return false;
     });
