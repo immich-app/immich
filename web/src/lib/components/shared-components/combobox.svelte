@@ -157,17 +157,17 @@
 
     const vv = window.visualViewport;
     const left = boundary.left + (vv?.offsetLeft || 0);
+    const offsetTop = vv?.offsetTop || 0;
 
     if (dropdownDirection === 'top') {
       return {
-        bottom: `${window.innerHeight - boundary.top - (vv?.offsetTop || 0)}px`,
+        bottom: `${window.innerHeight - boundary.top - offsetTop}px`,
         left: `${left}px`,
         width: `${boundary.width}px`,
         maxHeight: maxHeight(boundary.top - dropdownOffset),
       };
     }
 
-    const offsetTop = vv?.offsetTop || 0;
     const viewportHeight = vv?.height || 0;
     const availableHeight = viewportHeight - boundary.bottom;
     return {
