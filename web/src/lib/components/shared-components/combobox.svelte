@@ -21,7 +21,7 @@
   import { fly } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
-  import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
+  import { createEventDispatcher, onMount, tick } from 'svelte';
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/actions/shortcut';
   import { focusOutside } from '$lib/actions/focus-outside';
@@ -53,7 +53,6 @@
   let optionRefs: HTMLElement[] = [];
   let input: HTMLInputElement;
   let bounds: DOMRect | undefined;
-  let scrollableAncestor: Element | null;
   let dropdownDirection: 'bottom' | 'top' = 'bottom';
 
   const inputId = `combobox-${id}`;
@@ -79,13 +78,13 @@
 
   onMount(() => {
     observer.observe(input);
-    scrollableAncestor = input.closest('.overflow-y-auto, .overflow-y-scroll');
+    const scrollableAncestor = input.closest('.overflow-y-auto, .overflow-y-scroll');
     scrollableAncestor?.addEventListener('scroll', onPositionChange);
-  });
 
-  onDestroy(() => {
-    scrollableAncestor?.removeEventListener('scroll', onPositionChange);
-    observer.disconnect();
+    return () => {
+      observer.disconnect();
+      scrollableAncestor?.removeEventListener('scroll', onPositionChange);
+    };
   });
 
   const dispatch = createEventDispatcher<{
