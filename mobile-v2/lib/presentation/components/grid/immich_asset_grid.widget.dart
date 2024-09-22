@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:immich_mobile/domain/models/render_list.model.dart';
 import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/presentation/components/grid/draggable_scrollbar.dart';
@@ -10,7 +11,6 @@ import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 import 'package:immich_mobile/utils/extensions/color.extension.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 part 'immich_asset_grid_header.widget.dart';
 part 'immich_grid_asset_placeholder.widget.dart';
@@ -24,9 +24,13 @@ class ImAssetGrid extends StatefulWidget {
 
 class _ImAssetGridState extends State<ImAssetGrid> {
   bool _isDragScrolling = false;
-  final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _itemPositionsListener =
-      ItemPositionsListener.create();
+  final FlutterListViewController _controller = FlutterListViewController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   void _onDragScrolling(bool isScrolling) {
     if (_isDragScrolling != isScrolling) {
@@ -56,62 +60,64 @@ class _ImAssetGridState extends State<ImAssetGrid> {
       BlocBuilder<ImmichAssetGridCubit, RenderList>(
         builder: (_, renderList) {
           final elements = renderList.elements;
-          final grid = ScrollablePositionedList.builder(
-            itemCount: elements.length,
-            addAutomaticKeepAlives: false,
-            minCacheExtent: 100,
-            itemPositionsListener: _itemPositionsListener,
-            itemScrollController: _itemScrollController,
-            itemBuilder: (_, sectionIndex) {
-              final section = elements[sectionIndex];
+          final grid = FlutterListView(
+            controller: _controller,
+            delegate: FlutterListViewDelegate(
+              (_, sectionIndex) {
+                // ignore: avoid-unsafe-collection-methods
+                final section = elements[sectionIndex];
 
-              return switch (section) {
-                RenderListMonthHeaderElement() =>
-                  _MonthHeader(text: section.header),
-                RenderListDayHeaderElement() => Text(section.header),
-                RenderListAssetElement() => FutureBuilder(
-                    future: context.read<ImmichAssetGridCubit>().loadAssets(
-                          section.assetOffset,
-                          section.assetCount,
-                        ),
-                    builder: (_, assetsSnap) {
-                      final assets = assetsSnap.data;
-                      return GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        addAutomaticKeepAlives: false,
-                        cacheExtent: 100,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          mainAxisSpacing: 3,
-                          crossAxisSpacing: 3,
-                        ),
-                        itemBuilder: (_, i) {
-                          final asset = assetsSnap.isWaiting || assets == null
-                              ? null
-                              : assets.elementAtOrNull(i);
-                          return SizedBox.square(
-                            dimension: 200,
-                            // Show Placeholder when drag scrolled
-                            child: asset == null || _isDragScrolling
-                                ? const _ImImagePlaceholder()
-                                : ImImage(asset),
-                          );
-                        },
-                        itemCount: section.assetCount,
-                      );
-                    },
-                  ),
-              };
-            },
+                return switch (section) {
+                  RenderListMonthHeaderElement() =>
+                    _MonthHeader(text: section.header),
+                  RenderListDayHeaderElement() => Text(section.header),
+                  RenderListAssetElement() => FutureBuilder(
+                      future: context.read<ImmichAssetGridCubit>().loadAssets(
+                            section.assetOffset,
+                            section.assetCount,
+                          ),
+                      builder: (_, assetsSnap) {
+                        final assets = assetsSnap.data;
+                        return GridView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          addAutomaticKeepAlives: false,
+                          cacheExtent: 100,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 3,
+                            crossAxisSpacing: 3,
+                          ),
+                          itemBuilder: (_, i) {
+                            final asset = assetsSnap.isWaiting || assets == null
+                                ? null
+                                : assets.elementAtOrNull(i);
+                            return SizedBox.square(
+                              dimension: 200,
+                              // Show Placeholder when drag scrolled
+                              child: asset == null || _isDragScrolling
+                                  ? const _ImImagePlaceholder()
+                                  : ImImage(asset),
+                            );
+                          },
+                          itemCount: section.assetCount,
+                        );
+                      },
+                    ),
+                };
+              },
+              childCount: elements.length,
+              addAutomaticKeepAlives: false,
+            ),
           );
+
           return DraggableScrollbar(
             foregroundColor: context.colorScheme.onSurface,
             backgroundColor: context.colorScheme.surfaceContainerHighest,
             scrollStateListener: _onDragScrolling,
-            itemPositionsListener: _itemPositionsListener,
-            controller: _itemScrollController,
+            controller: _controller,
+            maxItemCount: elements.length,
             labelTextBuilder: (int position) =>
                 _labelBuilder(elements, position),
             labelConstraints: const BoxConstraints(maxHeight: 36),

@@ -49,7 +49,7 @@ dependencies:
   # components
   material_symbols_icons: ^4.2785.1
   flutter_adaptive_scaffold: ^0.3.1
-  scrollable_positioned_list: ^0.3.8
+  flutter_list_view: ^1.1.28
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
 

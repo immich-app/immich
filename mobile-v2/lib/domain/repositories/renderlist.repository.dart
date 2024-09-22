@@ -41,6 +41,10 @@ class RenderListDriftRepository with LogMixin implements IRenderListRepository {
           ];
         })
         .watch()
-        .map((elements) => RenderList(elements: elements));
+        .map((elements) {
+          // Resets the value in closure so the watch refresh will work properly
+          lastAssetOffset = 0;
+          return RenderList(elements: elements);
+        });
   }
 }

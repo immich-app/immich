@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 
 /// Build the Scroll Thumb and label using the current configuration
 typedef ScrollThumbBuilder = Widget Function(
@@ -24,9 +24,12 @@ typedef LabelTextBuilder = Text? Function(int item);
 /// for quick navigation of the BoxScrollView.
 class DraggableScrollbar extends StatefulWidget {
   /// The view that will be scrolled with the scroll thumb
-  final ScrollablePositionedList child;
+  final CustomScrollView child;
 
-  final ItemPositionsListener itemPositionsListener;
+  /// Total number of children in the list
+  final int maxItemCount;
+
+  final FlutterListViewController controller;
 
   /// A function that builds a thumb using the current configuration
   final ScrollThumbBuilder scrollThumbBuilder;
@@ -55,9 +58,6 @@ class DraggableScrollbar extends StatefulWidget {
   /// Determines box constraints for Container displaying label
   final BoxConstraints? labelConstraints;
 
-  /// The ScrollController for the BoxScrollView
-  final ItemScrollController controller;
-
   /// Determines scrollThumb displaying. If you draw own ScrollThumb and it is true you just don't need to use animation parameters in [scrollThumbBuilder]
   final bool alwaysVisibleScrollThumb;
 
@@ -69,7 +69,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.alwaysVisibleScrollThumb = false,
     required this.child,
     required this.controller,
-    required this.itemPositionsListener,
+    required this.maxItemCount,
     required this.scrollStateListener,
     this.heightScrollThumb = 48.0,
     this.backgroundColor = Colors.white,
@@ -217,6 +217,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
   late AnimationController _labelAnimationController;
   late Animation<double> _labelAnimation;
   Timer? _fadeoutTimer;
+  List<FlutterListViewItemPosition> _positions = [];
 
   @override
   void initState() {
@@ -244,6 +245,11 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
       parent: _labelAnimationController,
       curve: Curves.fastOutSlowIn,
     );
+
+    widget.controller.sliverController.onPaintItemPositionsCallback =
+        (height, pos) {
+      _positions = pos;
+    };
   }
 
   @override
@@ -300,9 +306,10 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
   double get _barMaxScrollExtent =>
       (context.size?.height ?? 0) - widget.heightScrollThumb;
 
-  double get _barMinScrollExtent => 0;
+  double get _maxScrollRatio =>
+      _barMaxScrollExtent / widget.controller.position.maxScrollExtent;
 
-  int get maxItemCount => widget.child.itemCount;
+  double get _barMinScrollExtent => 0;
 
   bool _onScrollNotification(ScrollNotification notification) {
     _changePosition(notification);
@@ -326,11 +333,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
     setState(() {
       try {
         if (notification is ScrollUpdateNotification) {
-          int? firstItemIndex = widget
-              .itemPositionsListener.itemPositions.value.firstOrNull?.index;
-          if (firstItemIndex != null) {
-            _barOffset = (firstItemIndex / maxItemCount) * _barMaxScrollExtent;
-          }
+          _barOffset = widget.controller.offset * _maxScrollRatio;
 
           _barOffset =
               clampDouble(_barOffset, _barMinScrollExtent, _barMaxScrollExtent);
@@ -342,8 +345,9 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
             _thumbAnimationController.forward();
           }
 
-          if (itemPos < maxItemCount) {
-            _currentItem = itemPos;
+          final lastItemPos = itemPos;
+          if (lastItemPos < widget.maxItemCount) {
+            _currentItem = lastItemPos;
           }
 
           _fadeoutTimer?.cancel();
@@ -363,26 +367,30 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
     widget.scrollStateListener(true);
   }
 
-  int get itemPos {
-    int numberOfItems = widget.child.itemCount;
-    return ((_barOffset / (_barMaxScrollExtent)) * numberOfItems).toInt();
+  int get itemIndex {
+    int index = 0;
+    double minDiff = 1000;
+    for (final pos in _positions) {
+      final diff = (_barOffset - pos.offset).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        index = pos.index;
+      }
+    }
+    return index;
   }
 
+  int get itemPos =>
+      ((_barOffset / (_barMaxScrollExtent)) * widget.maxItemCount).toInt();
+
   void _jumpToBarPos() {
-    if (itemPos > maxItemCount - 1) {
+    final lastItemPos = itemPos;
+    if (lastItemPos > widget.maxItemCount - 1) {
       return;
     }
 
-    _currentItem = itemPos;
-
-    final alignment = (_barOffset / _barMaxScrollExtent);
-
-    widget.controller.jumpTo(
-      index: _currentItem,
-      // // Align at the top or middle while scrolling, but always align at the top while
-      // // towards the end.
-      alignment: alignment > 0.95 ? 0 : clampDouble(alignment - 0.2, 0, 1),
-    );
+    _currentItem = itemIndex;
+    widget.controller.sliverController.jumpToIndex(lastItemPos);
   }
 
   Timer? _dragHaltTimer;
@@ -399,8 +407,9 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
         _barOffset =
             clampDouble(_barOffset, _barMinScrollExtent, _barMaxScrollExtent);
 
-        if (itemPos != lastTimerPos) {
-          lastTimerPos = itemPos;
+        final lastItemPos = itemPos;
+        if (lastItemPos != lastTimerPos) {
+          lastTimerPos = lastItemPos;
           _dragHaltTimer?.cancel();
           widget.scrollStateListener(true);
 
