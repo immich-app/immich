@@ -198,7 +198,9 @@
     const heightBelow = viewportHeight - boundary.bottom;
     const heightAbove = boundary.top;
 
-    return heightBelow <= 225 && heightAbove > heightBelow ? 'top' : 'bottom';
+    const isViewportScaled = viewportHeight && Math.floor(viewportHeight) !== Math.floor(window.innerHeight);
+
+    return heightBelow <= 225 && heightAbove > heightBelow && !isViewportScaled ? 'top' : 'bottom';
   };
 
   const getInputPosition = () => input?.getBoundingClientRect();
