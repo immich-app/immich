@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -87,6 +88,12 @@ Future<void> initApp() async {
   };
 
   initializeTimeZones();
+
+  FileDownloader().configureNotification(
+    running: const TaskNotification('Downloading media', 'file: {filename}'),
+    complete: const TaskNotification('Download finished', 'file: {filename}'),
+    progressBar: true,
+  );
 }
 
 Future<Isar> loadDb() async {
@@ -188,8 +195,44 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   @override
   Widget build(BuildContext context) {
-    var router = ref.watch(appRouterProvider);
-    var immichTheme = ref.watch(immichThemeProvider);
+    final router = ref.watch(appRouterProvider);
+    final immichTheme = ref.watch(immichThemeProvider);
+
+    // FileDownloader().updates.listen((update) {
+    //   switch (update) {
+    //     case TaskStatusUpdate():
+    //       // process the TaskStatusUpdate, e.g.
+    //       switch (update.status) {
+    //         case TaskStatus.complete:
+    //           print('Task ${update.task.taskId} success!');
+
+    //         case TaskStatus.canceled:
+    //           print('Download was canceled');
+
+    //         case TaskStatus.paused:
+    //           print('Download was paused');
+
+    //         default:
+    //           print('Download not successful');
+    //       }
+
+    //     case TaskProgressUpdate():
+    //       Overlay.of(context).insert(
+    //         OverlayEntry(
+    //           builder: (context) {
+    //             return Container(
+    //               color: Colors.red.withOpacity(0.5),
+    //               child: Center(
+    //                 child: CircularProgressIndicator(
+    //                   value: update.progress,
+    //                 ),
+    //               ),
+    //             );
+    //           },
+    //         ),
+    //       );
+    //   }
+    // });
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,

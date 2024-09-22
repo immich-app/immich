@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
@@ -23,9 +25,12 @@ class ImageViewerService {
   final IFileMediaRepository _fileMediaRepository;
   final Logger _log = Logger("ImageViewerService");
 
-  ImageViewerService(this._apiService, this._fileMediaRepository);
+  ImageViewerService(
+    this._apiService,
+    this._fileMediaRepository,
+  );
 
-  Future<bool> downloadAsset(Asset asset) async {
+  Future<bool> downloadAsset1(Asset asset) async {
     File? imageFile;
     File? videoFile;
     try {
@@ -113,5 +118,30 @@ class ImageViewerService {
       imageFile?.delete();
       videoFile?.delete();
     }
+  }
+
+  Future<bool> downloadAsset(Asset asset) async {
+    final task = _buildDownloadTask(
+      asset.remoteId!,
+      asset.fileName,
+    );
+
+    return await FileDownloader().enqueue(
+      task,
+    );
+  }
+
+  DownloadTask _buildDownloadTask(String id, String filename) {
+    final path = r'/assets/{id}/original'.replaceAll('{id}', id);
+    final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+    final headers = ApiService.getRequestHeaders();
+
+    return DownloadTask(
+      taskId: id,
+      url: serverEndpoint + path,
+      headers: headers,
+      filename: filename,
+      updates: Updates.statusAndProgress,
+    );
   }
 }
