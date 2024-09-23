@@ -116,6 +116,7 @@ export interface SearchPeopleOptions {
 
 export interface SearchOrderOptions {
   orderDirection?: 'ASC' | 'DESC';
+  random?: boolean;
 }
 
 export interface SearchPaginationOptions {
