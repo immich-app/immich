@@ -486,17 +486,10 @@
                   <div
                     class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
                   >
-                    {#if person.name}
-                      <p class="w-40 sm:w-72 font-medium truncate">{person.name}</p>
-                      <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
-                        {$t('assets_count', { values: { count: numberOfAssets } })}
-                      </p>
-                    {:else}
-                      <p class="font-medium">{$t('add_a_name')}</p>
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">
-                        {$t('find_them_fast')}
-                      </p>
-                    {/if}
+                    <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
+                    <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                      {$t('assets_count', { values: { count: numberOfAssets } })}
+                    </p>
                   </div>
                 </button>
               </div>
