@@ -32,35 +32,35 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   void downloadAsset(Asset asset, BuildContext context) async {
     state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.loading);
 
-    ImmichToast.show(
-      context: context,
-      msg: 'download_started'.tr(),
-      toastType: ToastType.info,
-      gravity: ToastGravity.BOTTOM,
-    );
+    // ImmichToast.show(
+    //   context: context,
+    //   msg: 'download_started'.tr(),
+    //   toastType: ToastType.info,
+    //   gravity: ToastGravity.BOTTOM,
+    // );
 
     bool isSuccess = await _imageViewerService.downloadAsset(asset);
 
     if (isSuccess) {
       state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.success);
 
-      ImmichToast.show(
-        context: context,
-        msg: Platform.isAndroid
-            ? 'download_sucess_android'.tr()
-            : 'download_sucess'.tr(),
-        toastType: ToastType.success,
-        gravity: ToastGravity.BOTTOM,
-      );
+      // ImmichToast.show(
+      //   context: context,
+      //   msg: Platform.isAndroid
+      //       ? 'download_sucess_android'.tr()
+      //       : 'download_sucess'.tr(),
+      //   toastType: ToastType.success,
+      //   gravity: ToastGravity.BOTTOM,
+      // );
       _albumService.refreshDeviceAlbums();
     } else {
       state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.error);
-      ImmichToast.show(
-        context: context,
-        msg: 'download_error'.tr(),
-        toastType: ToastType.error,
-        gravity: ToastGravity.BOTTOM,
-      );
+      // ImmichToast.show(
+      //   context: context,
+      //   msg: 'download_error'.tr(),
+      //   toastType: ToastType.error,
+      //   gravity: ToastGravity.BOTTOM,
+      // );
     }
 
     state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.idle);
