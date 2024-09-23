@@ -40,10 +40,38 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
       taskStatusCallback: _downloadVideoCallback,
       taskProgressCallback: _taskProgressCallback,
     );
+
+    FileDownloader().registerCallbacks(
+      group: downloadGroupLivePhoto,
+      taskStatusCallback: _downloadLivePhotoCallback,
+      taskProgressCallback: _taskProgressCallback,
+    );
   }
 
   void _updateDownloadStatus(TaskStatus status) {
     state = state.copyWith(downloadStatus: status);
+  }
+
+  // Download live photo callback
+  void _downloadLivePhotoCallback(TaskStatusUpdate update) {
+    _updateDownloadStatus(update.status);
+
+    switch (update.status) {
+      case TaskStatus.complete:
+        _imageViewerService.saveLivePhoto(update.task);
+        _onDownloadComplete();
+        break;
+
+      case TaskStatus.failed:
+        print("task failed");
+        break;
+
+      case TaskStatus.running:
+        print("running");
+
+      default:
+        break;
+    }
   }
 
   // Download image callback
@@ -91,6 +119,11 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
+    // Ignore if the task is cancled or completed
+    if (update.progress == -2 || update.progress == -1) {
+      return;
+    }
+
     state = state.copyWith(
       downloadProgress: update,
       showProgress: true,
@@ -108,6 +141,16 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   void downloadAsset(Asset asset, BuildContext context) async {
     await _imageViewerService.downloadAsset(asset);
     // await _albumService.refreshDeviceAlbums();
+  }
+
+  void cancelDownload(String id) async {
+    final isCanceled = await FileDownloader().cancelTaskWithId(id);
+
+    if (isCanceled) {
+      state = state.copyWith(
+        showProgress: false,
+      );
+    }
   }
 
   void shareAsset(Asset asset, BuildContext context) async {

@@ -13,13 +13,19 @@ class DownloadStatusInfo extends ConsumerWidget {
     final showProgress = ref.watch(
       imageViewerStateProvider.select((state) => state.showProgress),
     );
-
     final status = ref.watch(
       imageViewerStateProvider.select((state) => state.downloadProgress),
     );
 
-    final timeRemaining = status?.timeRemaining.inSeconds;
     final progress = status != null ? (status.progress * 100).floor() : 0;
+
+    onCancelDownload() {
+      if (status != null) {
+        ref
+            .watch(imageViewerStateProvider.notifier)
+            .cancelDownload(status.task.taskId);
+      }
+    }
 
     return Positioned(
       bottom: 140,
@@ -31,12 +37,16 @@ class DownloadStatusInfo extends ConsumerWidget {
                 key: const ValueKey('download_progress'),
                 width: MediaQuery.of(context).size.width - 32,
                 child: Card(
+                  clipBehavior: Clip.antiAlias,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                   child: ListTile(
                     minVerticalPadding: 24,
                     leading: const Icon(Icons.cloud_download_rounded),
                     title: Text(
                       'Downloading...',
-                      style: context.textTheme.labelMedium,
+                      style: context.textTheme.labelLarge,
                     ),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -46,7 +56,8 @@ class DownloadStatusInfo extends ConsumerWidget {
                           height: 24,
                           width: 24,
                           child: CircularProgressIndicator(
-                            backgroundColor: context.colorScheme.onSurface,
+                            backgroundColor:
+                                context.colorScheme.surfaceContainerHighest,
                             value: status?.progress,
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
@@ -58,7 +69,7 @@ class DownloadStatusInfo extends ConsumerWidget {
                         if (progress != 0)
                           Text(
                             '$progress%',
-                            style: context.textTheme.labelSmall,
+                            style: context.textTheme.labelMedium,
                           ),
                       ],
                     ),
@@ -67,13 +78,16 @@ class DownloadStatusInfo extends ConsumerWidget {
                       children: [
                         Text(
                           status?.task.filename ?? 'Unknown file',
-                          style: context.textTheme.labelMedium,
+                          style: context.textTheme.labelLarge,
                         ),
-                        if (timeRemaining != -1 && timeRemaining != null)
-                          Text(
-                            'Time remaining: $timeRemaining seconds',
-                            style: context.textTheme.labelMedium,
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: onCancelDownload,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.colorScheme.error,
                           ),
+                          child: const Text("Cancel"),
+                        ),
                       ],
                     ),
                   ),

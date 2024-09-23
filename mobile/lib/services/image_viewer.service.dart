@@ -152,20 +152,27 @@ class ImageViewerService {
   }
 
   Future<bool> saveLivePhoto(
-    String imageFilePath,
-    String videoFilePath,
-    String title,
+    Task task,
   ) async {
-    final imageFile = File(imageFilePath);
-    final videoFile = File(videoFilePath);
+    final records = await FileDownloader().database.allRecordsWithStatus(
+          TaskStatus.complete,
+          group: downloadGroupLivePhoto,
+        );
 
-    final Asset? resultAsset = await _fileMediaRepository.saveLivePhoto(
-      image: imageFile,
-      video: videoFile,
-      title: title,
-    );
+    print(records);
 
-    return resultAsset != null;
+    // await FileDownloader().database.deleteAllRecords();
+    return true;
+    // final imageFile = File(imageFilePath);
+    // final videoFile = File(videoFilePath);
+
+    // final Asset? resultAsset = await _fileMediaRepository.saveLivePhoto(
+    //   image: imageFile,
+    //   video: videoFile,
+    //   title: title,
+    // );
+
+    // return resultAsset != null;
   }
 
   Future<void> downloadAsset(Asset asset) async {
