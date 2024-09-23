@@ -84,8 +84,10 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 };
 
 const validateRange = (value: number | undefined, min: number, max: number): NonNullable<number> | null => {
-  // reutilizes the validate function and checks if the value is within the range
+  // reutilizes the validate function
   const val = validate(value);
+
+  // check if the value is within the range
   if (val == null || val < min || val > max) {
     return null;
   }
