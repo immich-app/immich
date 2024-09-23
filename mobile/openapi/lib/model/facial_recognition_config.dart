@@ -22,14 +22,14 @@ class FacialRecognitionConfig {
 
   bool enabled;
 
-  /// Minimum value: 0
+  /// Minimum value: 0.1
   /// Maximum value: 2
   double maxDistance;
 
   /// Minimum value: 1
   int minFaces;
 
-  /// Minimum value: 0
+  /// Minimum value: 0.1
   /// Maximum value: 1
   double minScore;
 

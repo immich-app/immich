@@ -9168,7 +9168,7 @@
           "maxDistance": {
             "format": "double",
             "maximum": 2,
-            "minimum": 0,
+            "minimum": 0.1,
             "type": "number"
           },
           "minFaces": {
@@ -9178,7 +9178,7 @@
           "minScore": {
             "format": "double",
             "maximum": 1,
-            "minimum": 0,
+            "minimum": 0.1,
             "type": "number"
           },
           "modelName": {
