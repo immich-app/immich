@@ -43,17 +43,6 @@ export class MapService {
     return this.mapRepository.getMapMarkers(userIds, albumIds, options);
   }
 
-  async getMapStyle(theme: 'light' | 'dark') {
-    const { map } = await this.configCore.getConfig({ withCache: false });
-    const styleUrl = theme === 'dark' ? map.darkStyle : map.lightStyle;
-
-    if (styleUrl) {
-      return this.mapRepository.fetchStyle(styleUrl);
-    }
-
-    return JSON.parse(await this.systemMetadataRepository.readFile(`./resources/style-${theme}.json`));
-  }
-
   async reverseGeocode(dto: MapReverseGeocodeDto) {
     const { lat: latitude, lon: longitude } = dto;
     // eventually this should probably return an array of results

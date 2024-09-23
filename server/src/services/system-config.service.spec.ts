@@ -100,8 +100,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    lightStyle: '',
-    darkStyle: '',
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
   },
   reverseGeocoding: {
     enabled: true,
