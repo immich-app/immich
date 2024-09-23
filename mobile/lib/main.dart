@@ -8,10 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:flutter_hooks/flutter_hooks.dart' as hooks;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -121,11 +119,6 @@ Future<Isar> loadDb() async {
   return db;
 }
 
-final overlayPortalControllerProvider =
-    Provider<OverlayPortalController>((ref) {
-  return OverlayPortalController();
-});
-
 class ImmichApp extends ConsumerStatefulWidget {
   const ImmichApp({super.key});
 
@@ -194,41 +187,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // needs to be delayed so that EasyLocalization is working
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
-
-    FileDownloader().updates.listen((update) {
-      switch (update) {
-        case TaskStatusUpdate():
-          // process the TaskStatusUpdate, e.g.
-          switch (update.status) {
-            case TaskStatus.complete:
-              print('Task ${update.task.taskId} success!');
-              ref.read(overlayPortalControllerProvider).hide();
-
-            case TaskStatus.canceled:
-              print('Download was canceled');
-
-            case TaskStatus.paused:
-              print('Download was paused');
-
-            case TaskStatus.enqueued:
-              print('Download was enqueued');
-
-            case TaskStatus.running:
-              ref.read(overlayPortalControllerProvider).show();
-              print('Download is running');
-
-            default:
-              print('Download not successful ${update.status}');
-          }
-
-        case TaskProgressUpdate():
-          setState(() {
-            progress = (update.progress * 100).round();
-          });
-      }
-    });
-
-    ref.read(overlayPortalControllerProvider).show();
   }
 
   @override
@@ -247,49 +205,15 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       debugShowCheckedModeBanner: true,
-      home: OverlayPortal(
-        controller: ref.read(overlayPortalControllerProvider),
-        overlayChildBuilder: (BuildContext context) {
-          return DownloadInfoOverlay(progress: progress);
-        },
-        child: MaterialApp.router(
-          title: 'Immich',
-          debugShowCheckedModeBanner: false,
-          themeMode: ref.watch(immichThemeModeProvider),
-          darkTheme: getThemeData(colorScheme: immichTheme.dark),
-          theme: getThemeData(colorScheme: immichTheme.light),
-          routeInformationParser: router.defaultRouteParser(),
-          routerDelegate: router.delegate(
-            navigatorObservers: () => [TabNavigationObserver(ref: ref)],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class DownloadInfoOverlay extends HookConsumerWidget {
-  final int progress;
-
-  const DownloadInfoOverlay({
-    super.key,
-    required this.progress,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Positioned(
-      left: 8,
-      bottom: 120,
-      child: Card(
-        elevation: 5,
-        color: context.colorScheme.surface,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Progress: $progress',
-            style: const TextStyle(fontSize: 12),
-          ),
+      home: MaterialApp.router(
+        title: 'Immich',
+        debugShowCheckedModeBanner: false,
+        themeMode: ref.watch(immichThemeModeProvider),
+        darkTheme: getThemeData(colorScheme: immichTheme.dark),
+        theme: getThemeData(colorScheme: immichTheme.light),
+        routeInformationParser: router.defaultRouteParser(),
+        routerDelegate: router.delegate(
+          navigatorObservers: () => [TabNavigationObserver(ref: ref)],
         ),
       ),
     );

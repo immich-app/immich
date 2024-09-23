@@ -9,6 +9,7 @@ import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/download.dart';
 import 'package:logging/logging.dart';
 
 import 'package:path_provider/path_provider.dart';
@@ -120,18 +121,91 @@ class ImageViewerService {
     }
   }
 
-  Future<bool> downloadAsset(Asset asset) async {
-    final task = _buildDownloadTask(
-      asset.remoteId!,
-      asset.fileName,
+  Future<bool> saveImage(Task task) async {
+    final filePath = await task.filePath();
+    final title = task.filename;
+    final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
+    final data = await File(filePath).readAsBytes();
+
+    print("Saving image: $title");
+    final Asset? resultAsset = await _fileMediaRepository.saveImage(
+      data,
+      title: title,
+      relativePath: relativePath,
     );
 
-    return await FileDownloader().enqueue(
-      task,
-    );
+    return resultAsset != null;
   }
 
-  DownloadTask _buildDownloadTask(String id, String filename) {
+  Future<bool> saveVideo(Task task) async {
+    final filePath = await task.filePath();
+    final title = task.filename;
+    final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
+    final file = File(filePath);
+
+    print("Saving video: $title $filePath");
+    final Asset? resultAsset = await _fileMediaRepository.saveVideo(
+      file,
+      title: title,
+      relativePath: relativePath,
+    );
+
+    return resultAsset != null;
+  }
+
+  Future<bool> saveLivePhoto(
+    String imageFilePath,
+    String videoFilePath,
+    String title,
+  ) async {
+    final imageFile = File(imageFilePath);
+    final videoFile = File(videoFilePath);
+
+    final Asset? resultAsset = await _fileMediaRepository.saveLivePhoto(
+      image: imageFile,
+      video: videoFile,
+      title: title,
+    );
+
+    return resultAsset != null;
+  }
+
+  Future<void> downloadAsset(Asset asset) async {
+    if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
+      await FileDownloader().enqueue(
+        _buildDownloadTask(
+          asset.remoteId!,
+          asset.fileName,
+          group: DownloadGroupLivePhoto,
+          metadata: 'image_part',
+        ),
+      );
+
+      await FileDownloader().enqueue(
+        _buildDownloadTask(
+          asset.livePhotoVideoId!,
+          asset.fileName,
+          group: DownloadGroupLivePhoto,
+          metadata: 'video_part',
+        ),
+      );
+    } else {
+      await FileDownloader().enqueue(
+        _buildDownloadTask(
+          asset.remoteId!,
+          asset.fileName,
+          group: asset.isImage ? DownloadGroupImage : DownloadGroupVideo,
+        ),
+      );
+    }
+  }
+
+  DownloadTask _buildDownloadTask(
+    String id,
+    String filename, {
+    String? group,
+    String? metadata,
+  }) {
     final path = r'/assets/{id}/original'.replaceAll('{id}', id);
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final headers = ApiService.getRequestHeaders();
@@ -142,6 +216,8 @@ class ImageViewerService {
       headers: headers,
       filename: filename,
       updates: Updates.statusAndProgress,
+      group: group ?? '',
+      metaData: metadata ?? '',
     );
   }
 }

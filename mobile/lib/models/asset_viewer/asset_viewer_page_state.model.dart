@@ -1,55 +1,45 @@
-import 'dart:convert';
-
-enum DownloadAssetStatus { idle, loading, success, error }
+import 'package:background_downloader/background_downloader.dart';
 
 class AssetViewerPageState {
   // enum
-  final DownloadAssetStatus downloadAssetStatus;
+  final TaskStatus downloadStatus;
+  final TaskProgressUpdate? downloadProgress;
+  final bool showProgress;
 
   AssetViewerPageState({
-    required this.downloadAssetStatus,
+    required this.downloadStatus,
+    required this.downloadProgress,
+    required this.showProgress,
   });
 
   AssetViewerPageState copyWith({
-    DownloadAssetStatus? downloadAssetStatus,
+    TaskStatus? downloadStatus,
+    TaskProgressUpdate? downloadProgress,
+    bool? showProgress,
   }) {
     return AssetViewerPageState(
-      downloadAssetStatus: downloadAssetStatus ?? this.downloadAssetStatus,
+      downloadStatus: downloadStatus ?? this.downloadStatus,
+      downloadProgress: downloadProgress ?? this.downloadProgress,
+      showProgress: showProgress ?? this.showProgress,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    result.addAll({'downloadAssetStatus': downloadAssetStatus.index});
-
-    return result;
-  }
-
-  factory AssetViewerPageState.fromMap(Map<String, dynamic> map) {
-    return AssetViewerPageState(
-      downloadAssetStatus:
-          DownloadAssetStatus.values[map['downloadAssetStatus'] ?? 0],
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory AssetViewerPageState.fromJson(String source) =>
-      AssetViewerPageState.fromMap(json.decode(source));
 
   @override
   String toString() =>
-      'ImageViewerPageState(downloadAssetStatus: $downloadAssetStatus)';
+      'AssetViewerPageState(downloadStatus: $downloadStatus, downloadProgress: $downloadProgress, showProgress: $showProgress)';
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(covariant AssetViewerPageState other) {
     if (identical(this, other)) return true;
 
-    return other is AssetViewerPageState &&
-        other.downloadAssetStatus == downloadAssetStatus;
+    return other.downloadStatus == downloadStatus &&
+        other.downloadProgress == downloadProgress &&
+        other.showProgress == showProgress;
   }
 
   @override
-  int get hashCode => downloadAssetStatus.hashCode;
+  int get hashCode =>
+      downloadStatus.hashCode ^
+      downloadProgress.hashCode ^
+      showProgress.hashCode;
 }
