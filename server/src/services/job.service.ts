@@ -186,11 +186,16 @@ export class JobService {
       this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
         const { name, data } = item;
 
+        const handler = jobHandlers[name];
+        if (!handler) {
+          this.logger.warn(`Skipping unknown job: "${name}"`);
+          return;
+        }
+
         const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
         this.metricRepository.jobs.addToGauge(queueMetric, 1);
 
         try {
-          const handler = jobHandlers[name];
           const status = await handler(data);
           const jobMetric = `immich.jobs.${name.replaceAll('-', '_')}.${status}`;
           this.metricRepository.jobs.addToCounter(jobMetric, 1);
