@@ -379,8 +379,6 @@ export class MetadataService {
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
-    this.logger.verbose("Reading asset's exif data", asset.originalPath);
-
     const mediaTags = await this.repository.readTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.readTags(asset.sidecarPath) : {};
     const videoTags = asset.type === AssetType.VIDEO ? await this.getVideoTags(asset.originalPath) : {};
