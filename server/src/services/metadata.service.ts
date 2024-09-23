@@ -83,6 +83,18 @@ const validate = <T>(value: T): NonNullable<T> | null => {
   return value ?? null;
 };
 
+const validateRange = (value: number | undefined, min: number, max: number): NonNullable<number> | null => {
+  // reutilizes the validate function
+  const val = validate(value);
+
+  // check if the value is within the range
+  if (val == null || val < min || val > max) {
+    return null;
+  }
+
+  return val;
+};
+
 @Injectable()
 export class MetadataService {
   private storageCore: StorageCore;
@@ -261,7 +273,7 @@ export class MetadataService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: exifTags.Rating ?? null,
+      rating: validateRange(exifTags.Rating, 0, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,

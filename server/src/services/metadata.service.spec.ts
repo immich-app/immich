@@ -1107,6 +1107,30 @@ describe(MetadataService.name, () => {
         }),
       );
     });
+
+    it('should handle invalid rating value', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Rating: 6 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: null,
+        }),
+      );
+    });
+
+    it('should handle valid rating value', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Rating: 5 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: 5,
+        }),
+      );
+    });
   });
 
   describe('handleQueueSidecar', () => {
