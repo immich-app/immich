@@ -46,6 +46,7 @@ class SearchExploreItem {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchExploreItem? fromJson(dynamic value) {
+    upgradeDto(value, "SearchExploreItem");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
