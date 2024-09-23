@@ -928,6 +928,8 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    mapDarkStyleUrl: string;
+    mapLightStyleUrl: string;
     oauthButtonText: string;
     trashDays: number;
     userDeleteDelay: number;
@@ -2134,20 +2136,6 @@ export function reverseGeocode({ lat, lon }: {
     }>(`/map/reverse-geocode${QS.query(QS.explode({
         lat,
         lon
-    }))}`, {
-        ...opts
-    }));
-}
-export function getMapStyle({ key, theme }: {
-    key?: string;
-    theme: MapTheme;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: object;
-    }>(`/map/style.json${QS.query(QS.explode({
-        key,
-        theme
     }))}`, {
         ...opts
     }));
@@ -3468,10 +3456,6 @@ export enum JobCommand {
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
-}
-export enum MapTheme {
-    Light = "light",
-    Dark = "dark"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"

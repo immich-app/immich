@@ -3167,55 +3167,6 @@
         ]
       }
     },
-    "/map/style.json": {
-      "get": {
-        "operationId": "getMapStyle",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "theme",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/MapTheme"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Map"
-        ]
-      }
-    },
     "/memories": {
       "get": {
         "operationId": "searchMemories",
@@ -5356,8 +5307,8 @@
             "name": "password",
             "required": false,
             "in": "query",
-            "example": "password",
             "schema": {
+              "example": "password",
               "type": "string"
             }
           },
@@ -9695,13 +9646,6 @@
         ],
         "type": "object"
       },
-      "MapTheme": {
-        "enum": [
-          "light",
-          "dark"
-        ],
-        "type": "string"
-      },
       "MemoriesResponse": {
         "properties": {
           "enabled": {
@@ -10917,6 +10861,12 @@
           "loginPageMessage": {
             "type": "string"
           },
+          "mapDarkStyleUrl": {
+            "type": "string"
+          },
+          "mapLightStyleUrl": {
+            "type": "string"
+          },
           "oauthButtonText": {
             "type": "string"
           },
@@ -10932,6 +10882,8 @@
           "isInitialized",
           "isOnboarded",
           "loginPageMessage",
+          "mapDarkStyleUrl",
+          "mapLightStyleUrl",
           "oauthButtonText",
           "trashDays",
           "userDeleteDelay"

@@ -373,8 +373,6 @@ class ApiClient {
           return MapMarkerResponseDto.fromJson(value);
         case 'MapReverseGeocodeResponseDto':
           return MapReverseGeocodeResponseDto.fromJson(value);
-        case 'MapTheme':
-          return MapThemeTypeTransformer().decode(value);
         case 'MemoriesResponse':
           return MemoriesResponse.fromJson(value);
         case 'MemoriesUpdate':

@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:http/http.dart' as http;
 
 part 'map_state.provider.g.dart';
 
@@ -43,11 +43,11 @@ class MapStateNotifier extends _$MapStateNotifier {
     // Set to loading
     state = state.copyWith(lightStyleFetched: const AsyncLoading());
 
-    // Fetch and save light theme
-    final lightResponse = await ref
-        .read(apiServiceProvider)
-        .mapApi
-        .getMapStyleWithHttpInfo(MapTheme.light);
+    final lightStyleUrl =
+        ref.read(serverInfoProvider).serverConfig.mapLightStyleUrl;
+
+    // Fetch from url and save light theme
+    final lightResponse = await http.get(Uri.parse(lightStyleUrl));
 
     if (lightResponse.statusCode >= HttpStatus.badRequest) {
       state = state.copyWith(
@@ -71,11 +71,11 @@ class MapStateNotifier extends _$MapStateNotifier {
     // Set to loading
     state = state.copyWith(darkStyleFetched: const AsyncLoading());
 
+    final darkStyleUrl =
+        ref.read(serverInfoProvider).serverConfig.mapDarkStyleUrl;
+
     // Fetch and save dark theme
-    final darkResponse = await ref
-        .read(apiServiceProvider)
-        .mapApi
-        .getMapStyleWithHttpInfo(MapTheme.dark);
+    final darkResponse = await http.get(Uri.parse(darkStyleUrl));
 
     if (darkResponse.statusCode >= HttpStatus.badRequest) {
       state = state.copyWith(
