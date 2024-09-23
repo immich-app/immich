@@ -300,7 +300,7 @@ export class PersonService {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination, {
-            orderDirection: 'DESC',
+            orderDirection: 'desc',
             withFaces: true,
             withArchived: true,
             isVisible: true,
@@ -323,13 +323,7 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = {
-      exifInfo: true,
-      faces: {
-        person: false,
-      },
-      files: true,
-    };
+    const relations = { exifInfo: true, faces: { person: false }, files: true };
     const [asset] = await this.assetRepository.getByIds([id], relations);
     const { previewFile } = getAssetFiles(asset.files);
     if (!asset || !previewFile || asset.faces?.length > 0) {
@@ -481,7 +475,7 @@ export class PersonService {
       return JobStatus.SKIPPED;
     }
 
-    let personId = matches.find((match) => match.face.personId)?.face.personId;
+    let personId = matches.find((match) => match.personId)?.personId;
     if (!personId) {
       const matchWithPerson = await this.smartInfoRepository.searchFaces({
         userIds: [face.asset.ownerId],
@@ -492,7 +486,7 @@ export class PersonService {
       });
 
       if (matchWithPerson.length > 0) {
-        personId = matchWithPerson[0].face.personId;
+        personId = matchWithPerson[0].personId;
       }
     }
 

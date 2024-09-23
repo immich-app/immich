@@ -166,7 +166,7 @@ export class MetadataSearchDto extends BaseSearchDto {
 
   @IsEnum(AssetOrder)
   @Optional()
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder, default: AssetOrder.DESC })
   order?: AssetOrder;
 }
 

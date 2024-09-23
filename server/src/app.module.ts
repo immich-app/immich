@@ -7,11 +7,12 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ClsModule } from 'nestjs-cls';
+import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
 import { bullConfig, bullQueues, clsConfig, immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
-import { databaseConfig } from 'src/database.config';
+import { databaseConfig, kyselyConfig } from 'src/database.config';
 import { entities } from 'src/entities';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -56,6 +57,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forFeature(entities),
+  KyselyModule.forRoot(kyselyConfig),
 ];
 
 @Module({

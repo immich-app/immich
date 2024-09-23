@@ -68,10 +68,6 @@ describe(SearchService.name, () => {
         fieldName: 'exifInfo.city',
         items: [{ value: 'Paris', data: assetStub.image.id }],
       });
-      assetMock.getAssetIdByTag.mockResolvedValue({
-        fieldName: 'smartInfo.tags',
-        items: [{ value: 'train', data: assetStub.imageFrom2015.id }],
-      });
       assetMock.getByIdsWithAllRelations.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
       const expectedResponse = [
         { fieldName: 'exifInfo.city', items: [{ value: 'Paris', data: mapAsset(assetStub.image) }] },

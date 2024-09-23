@@ -739,13 +739,14 @@ describe(PersonService.name, () => {
         assetId: assetStub.image.id,
         facesRecognizedAt: expect.any(Date),
       });
-      expect(assetMock.upsertJobStatus.mock.calls[0][0].facesRecognizedAt?.getTime()).toBeGreaterThan(start);
+      const facesRecognizedAt = assetMock.upsertJobStatus.mock.calls[0][0].facesRecognizedAt as Date;
+      expect(facesRecognizedAt.getTime()).toBeGreaterThan(start);
     });
 
     it('should create a face with no person and queue recognition job', async () => {
       personMock.createFaces.mockResolvedValue([faceStub.face1.id]);
       machineLearningMock.detectFaces.mockResolvedValue(detectFaceMock);
-      searchMock.searchFaces.mockResolvedValue([{ face: faceStub.face1, distance: 0.7 }]);
+      searchMock.searchFaces.mockResolvedValue([{ ...faceStub.face1, distance: 0.7 }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       const faceId = 'face-id';
       cryptoMock.randomUUID.mockReturnValue(faceId);
@@ -810,10 +811,10 @@ describe(PersonService.name, () => {
       }
 
       const faces = [
-        { face: faceStub.noPerson1, distance: 0 },
-        { face: faceStub.primaryFace1, distance: 0.2 },
-        { face: faceStub.noPerson2, distance: 0.3 },
-        { face: faceStub.face1, distance: 0.4 },
+        { ...faceStub.noPerson1, distance: 0 },
+        { ...faceStub.primaryFace1, distance: 0.2 },
+        { ...faceStub.noPerson2, distance: 0.3 },
+        { ...faceStub.face1, distance: 0.4 },
       ] as FaceSearchResult[];
 
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
@@ -837,8 +838,8 @@ describe(PersonService.name, () => {
 
     it('should create a new person if the face is a core point with no person', async () => {
       const faces = [
-        { face: faceStub.noPerson1, distance: 0 },
-        { face: faceStub.noPerson2, distance: 0.3 },
+        { ...faceStub.noPerson1, distance: 0 },
+        { ...faceStub.noPerson2, distance: 0.3 },
       ] as FaceSearchResult[];
 
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
@@ -859,7 +860,7 @@ describe(PersonService.name, () => {
     });
 
     it('should not queue face with no matches', async () => {
-      const faces = [{ face: faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
+      const faces = [{ ...faceStub.noPerson1, distance: 0 }] as FaceSearchResult[];
 
       searchMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
@@ -875,8 +876,8 @@ describe(PersonService.name, () => {
 
     it('should defer non-core faces to end of queue', async () => {
       const faces = [
-        { face: faceStub.noPerson1, distance: 0 },
-        { face: faceStub.noPerson2, distance: 0.4 },
+        { ...faceStub.noPerson1, distance: 0 },
+        { ...faceStub.noPerson2, distance: 0.4 },
       ] as FaceSearchResult[];
 
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
@@ -897,8 +898,8 @@ describe(PersonService.name, () => {
 
     it('should not assign person to deferred non-core face with no matching person', async () => {
       const faces = [
-        { face: faceStub.noPerson1, distance: 0 },
-        { face: faceStub.noPerson2, distance: 0.4 },
+        { ...faceStub.noPerson1, distance: 0 },
+        { ...faceStub.noPerson2, distance: 0.4 },
       ] as FaceSearchResult[];
 
       systemMock.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });

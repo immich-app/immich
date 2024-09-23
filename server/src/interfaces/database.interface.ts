@@ -1,3 +1,6 @@
+import { TableMetadata } from 'kysely';
+import { DB } from 'src/db';
+
 export enum DatabaseExtension {
   CUBE = 'cube',
   EARTH_DISTANCE = 'earthdistance',
@@ -46,6 +49,7 @@ export interface IDatabaseRepository {
   getExtensionVersionRange(extension: VectorExtension): string;
   getPostgresVersion(): Promise<string>;
   getPostgresVersionRange(): string;
+  getTable<K extends keyof DB>(name: K): TableMetadata & { name: K };
   createExtension(extension: DatabaseExtension): Promise<void>;
   updateExtension(extension: DatabaseExtension, version?: string): Promise<void>;
   updateVectorExtension(extension: VectorExtension, version?: string): Promise<VectorUpdateResult>;

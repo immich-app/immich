@@ -1,9 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
+import { Kysely, TableMetadata } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { getVectorExtension } from 'src/database.config';
+import { DB } from 'src/db';
+import { OnEmit } from 'src/decorators';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -19,16 +23,32 @@ import { Instrumentation } from 'src/utils/instrumentation';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 
+type TableMetadataMap = { [K in keyof DB]: TableMetadata & { name: K } };
+
 @Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
-  readonly asyncLock = new AsyncLock();
+  private readonly asyncLock = new AsyncLock();
+  private tables?: TableMetadataMap;
 
   constructor(
     @InjectDataSource() private dataSource: DataSource,
+    @InjectKysely() private db: Kysely<DB>,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(DatabaseRepository.name);
+  }
+
+  @OnEmit({ event: 'app.bootstrap', priority: -199 }) // runs right after migrations
+  async onBootstrap() {
+    if (!this.tables) {
+      await this.asyncLock.acquire('getTable', async () => {
+        if (!this.tables) {
+          const tables = await this.db.introspection.getTables();
+          this.tables = Object.fromEntries(tables.map((table) => [table.name, table])) as TableMetadataMap;
+        }
+      });
+    }
   }
 
   async reconnect() {
@@ -65,6 +85,14 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   getPostgresVersionRange(): string {
     return POSTGRES_VERSION_RANGE;
+  }
+
+  getTable<K extends keyof DB>(name: K): TableMetadata & { name: K } {
+    const table = this.tables?.[name];
+    if (!table) {
+      throw new Error(`Could not find table with name ${name}`);
+    }
+    return table;
   }
 
   async createExtension(extension: DatabaseExtension): Promise<void> {

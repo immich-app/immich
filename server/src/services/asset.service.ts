@@ -69,27 +69,11 @@ export class AssetService {
     const userIds = [auth.user.id, ...partnerIds];
 
     const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
-    const assetsWithThumbnails = assets.filter(({ files }) => !!getAssetFiles(files).thumbnailFile);
-    const groups: Record<number, AssetEntity[]> = {};
-    const currentYear = new Date().getFullYear();
-    for (const asset of assetsWithThumbnails) {
-      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
-      if (!groups[yearsAgo]) {
-        groups[yearsAgo] = [];
-      }
-      groups[yearsAgo].push(asset);
-    }
-
-    return Object.keys(groups)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .filter((yearsAgo) => yearsAgo > 0)
-      .map((yearsAgo) => ({
-        yearsAgo,
-        // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
-      }));
+    return assets.map(({ yearsAgo, assets }) => ({
+      yearsAgo,
+      title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
+      assets: assets.map((a) => mapAsset(a, { auth })),
+    }));
   }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
@@ -114,30 +98,13 @@ export class AssetService {
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [id] });
 
-    const asset = await this.assetRepository.getById(
-      id,
-      {
-        exifInfo: true,
-        tags: true,
-        sharedLinks: true,
-        smartInfo: true,
-        owner: true,
-        faces: {
-          person: true,
-        },
-        stack: {
-          assets: {
-            exifInfo: true,
-          },
-        },
-        files: true,
-      },
-      {
-        faces: {
-          boundingBoxX1: 'ASC',
-        },
-      },
-    );
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      owner: true,
+      faces: { person: true },
+      stack: { assets: true },
+      tags: true,
+    });
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -178,22 +145,11 @@ export class AssetService {
 
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
-    await this.assetRepository.update({ id, ...rest });
+    const asset = await this.assetRepository.update({ id, ...rest });
 
     if (previousMotion) {
       await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
     }
-
-    const asset = await this.assetRepository.getById(id, {
-      exifInfo: true,
-      owner: true,
-      smartInfo: true,
-      tags: true,
-      faces: {
-        person: true,
-      },
-      files: true,
-    });
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -242,9 +198,7 @@ export class AssetService {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetRepository.getById(id, {
-      faces: {
-        person: true,
-      },
+      faces: { person: true },
       library: true,
       stack: { assets: true },
       exifInfo: true,

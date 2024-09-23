@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { EmitConfig } from 'src/decorators';
 import { EmitEvent, EmitHandler, IEventRepository } from 'src/interfaces/event.interface';
 import { Metadata } from 'src/middleware/auth.guard';
+import { repositories } from 'src/repositories';
 import { services } from 'src/services';
 
 type Item<T extends EmitEvent> = {
@@ -21,8 +22,16 @@ export const setupEventHandlers = (moduleRef: ModuleRef) => {
   const items: Item<EmitEvent>[] = [];
 
   // discovery
-  for (const Service of services) {
-    const instance = moduleRef.get<any>(Service);
+  for (const classRef of [...services, ...repositories.map((r) => r.provide)]) {
+    let instance;
+    try {
+      instance = moduleRef.get<any>(classRef);
+    } catch (error: any) {
+      if (!error.message.includes('scoped provider')) {
+        throw error;
+      }
+      continue;
+    }
     const ctx = Object.getPrototypeOf(instance);
     for (const property of Object.getOwnPropertyNames(ctx)) {
       const descriptor = Object.getOwnPropertyDescriptor(ctx, property);
@@ -44,7 +53,7 @@ export const setupEventHandlers = (moduleRef: ModuleRef) => {
         event: options.event,
         priority: options.priority || 0,
         handler: handler.bind(instance),
-        label: `${Service.name}.${handler.name}`,
+        label: `${typeof classRef === 'string' ? classRef : classRef.name}.${handler.name}`,
       });
     }
   }
