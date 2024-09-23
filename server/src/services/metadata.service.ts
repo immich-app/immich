@@ -85,11 +85,12 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 
 const validateRange = (value: number | undefined, min: number, max: number): NonNullable<number> | null => {
   // reutilizes the validate function and checks if the value is within the range
-  if (validate(value) == null || value! < min || value! > max) {
+  const val = validate(value);
+  if (val == null || val < min || val > max) {
     return null;
   }
 
-  return value!;
+  return val;
 };
 
 @Injectable()
