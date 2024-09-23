@@ -127,7 +127,6 @@ class ImageViewerService {
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
     final data = await File(filePath).readAsBytes();
 
-    print("Saving image: $title");
     final Asset? resultAsset = await _fileMediaRepository.saveImage(
       data,
       title: title,
@@ -143,7 +142,6 @@ class ImageViewerService {
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
     final file = File(filePath);
 
-    print("Saving video: $title $filePath");
     final Asset? resultAsset = await _fileMediaRepository.saveVideo(
       file,
       title: title,
@@ -176,7 +174,7 @@ class ImageViewerService {
         _buildDownloadTask(
           asset.remoteId!,
           asset.fileName,
-          group: DownloadGroupLivePhoto,
+          group: downloadGroupLivePhoto,
           metadata: 'image_part',
         ),
       );
@@ -185,7 +183,7 @@ class ImageViewerService {
         _buildDownloadTask(
           asset.livePhotoVideoId!,
           asset.fileName,
-          group: DownloadGroupLivePhoto,
+          group: downloadGroupLivePhoto,
           metadata: 'video_part',
         ),
       );
@@ -194,7 +192,7 @@ class ImageViewerService {
         _buildDownloadTask(
           asset.remoteId!,
           asset.fileName,
-          group: asset.isImage ? DownloadGroupImage : DownloadGroupVideo,
+          group: asset.isImage ? downloadGroupImage : downloadGroupVideo,
         ),
       );
     }

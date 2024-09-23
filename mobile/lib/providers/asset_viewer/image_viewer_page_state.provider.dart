@@ -30,14 +30,14 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
           ),
         ) {
     FileDownloader().registerCallbacks(
-      group: DownloadGroupImage,
-      taskStatusCallback: _downloadImageTaskStatusCallback,
+      group: downloadGroupImage,
+      taskStatusCallback: _downloadImageCallback,
       taskProgressCallback: _taskProgressCallback,
     );
 
     FileDownloader().registerCallbacks(
-      group: DownloadGroupVideo,
-      taskStatusCallback: _downloadVideoTaskStatusCallback,
+      group: downloadGroupVideo,
+      taskStatusCallback: _downloadVideoCallback,
       taskProgressCallback: _taskProgressCallback,
     );
   }
@@ -47,13 +47,13 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   }
 
   // Download image callback
-  void _downloadImageTaskStatusCallback(TaskStatusUpdate update) {
+  void _downloadImageCallback(TaskStatusUpdate update) {
     _updateDownloadStatus(update.status);
 
     switch (update.status) {
       case TaskStatus.complete:
         _imageViewerService.saveImage(update.task);
-        print("[DOWNLOAD IMAGE] Complete: ${update.task}");
+        _onDownloadComplete();
         break;
 
       case TaskStatus.failed:
@@ -63,24 +63,19 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
       case TaskStatus.running:
         print("running");
 
-      case TaskStatus.paused:
-      case TaskStatus.enqueued:
-      case TaskStatus.notFound:
-      case TaskStatus.canceled:
-      case TaskStatus.waitingToRetry:
-        print("other task status: ${update.status}");
+      default:
         break;
     }
   }
 
   // Download video callback
-  void _downloadVideoTaskStatusCallback(TaskStatusUpdate update) {
+  void _downloadVideoCallback(TaskStatusUpdate update) {
     _updateDownloadStatus(update.status);
 
     switch (update.status) {
       case TaskStatus.complete:
         _imageViewerService.saveVideo(update.task);
-        print("[DOWNLOAD VIDEO] Complete: ${update.task.filePath()}");
+        _onDownloadComplete();
         break;
 
       case TaskStatus.failed:
@@ -90,12 +85,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
       case TaskStatus.running:
         print("running");
 
-      case TaskStatus.paused:
-      case TaskStatus.enqueued:
-      case TaskStatus.notFound:
-      case TaskStatus.canceled:
-      case TaskStatus.waitingToRetry:
-        print("other task status: ${update.status}");
+      default:
         break;
     }
   }
@@ -105,6 +95,14 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
       downloadProgress: update,
       showProgress: true,
     );
+  }
+
+  void _onDownloadComplete() {
+    Future.delayed(const Duration(seconds: 1), () {
+      state = state.copyWith(
+        showProgress: false,
+      );
+    });
   }
 
   void downloadAsset(Asset asset, BuildContext context) async {

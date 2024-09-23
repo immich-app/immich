@@ -1,3 +1,3 @@
-const DownloadGroupImage = 'group_image';
-const DownloadGroupVideo = 'group_video';
-const DownloadGroupLivePhoto = 'group_livephoto';
+const downloadGroupImage = 'group_image';
+const downloadGroupVideo = 'group_video';
+const downloadGroupLivePhoto = 'group_livephoto';
