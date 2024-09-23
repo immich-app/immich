@@ -159,7 +159,6 @@ part 'model/logout_response_dto.dart';
 part 'model/manual_job_name.dart';
 part 'model/map_marker_response_dto.dart';
 part 'model/map_reverse_geocode_response_dto.dart';
-part 'model/map_theme.dart';
 part 'model/memories_response.dart';
 part 'model/memories_update.dart';
 part 'model/memory_create_dto.dart';

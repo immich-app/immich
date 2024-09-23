@@ -296,10 +296,12 @@ class SystemConfigMapDto {
   @ValidateBoolean()
   enabled!: boolean;
 
-  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
   lightStyle!: string;
 
-  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
   darkStyle!: string;
 }
 
