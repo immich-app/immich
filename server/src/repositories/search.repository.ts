@@ -73,8 +73,13 @@ export class SearchRepository implements ISearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
-
     builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
+
+    if (options.random) {
+      // TODO replace with complicated SQL magic after kysely migration
+      builder.addSelect('RANDOM() as r').orderBy('r');
+    }
+
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: (pagination.page - 1) * pagination.size,

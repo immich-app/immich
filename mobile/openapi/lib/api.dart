@@ -192,6 +192,7 @@ part 'model/places_response_dto.dart';
 part 'model/purchase_response.dart';
 part 'model/purchase_update.dart';
 part 'model/queue_status_dto.dart';
+part 'model/random_search_dto.dart';
 part 'model/ratings_response.dart';
 part 'model/ratings_update.dart';
 part 'model/reaction_level.dart';

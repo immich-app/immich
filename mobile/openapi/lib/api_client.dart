@@ -439,6 +439,8 @@ class ApiClient {
           return PurchaseUpdate.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RandomSearchDto':
+          return RandomSearchDto.fromJson(value);
         case 'RatingsResponse':
           return RatingsResponse.fromJson(value);
         case 'RatingsUpdate':
