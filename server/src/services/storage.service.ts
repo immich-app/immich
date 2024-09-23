@@ -25,12 +25,13 @@ export class StorageService {
   async onBootstrap() {
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
       const flags = (await this.systemMetadata.get(SystemMetadataKey.SYSTEM_FLAGS)) || { mountFiles: false };
+      const enabled = flags.mountFiles ?? false;
 
-      this.logger.log('Verifying system mount folder checks');
+      this.logger.log(`Verifying system mount folder checks (enabled=${enabled})`);
 
       // check each folder exists and is writable
       for (const folder of Object.values(StorageFolder)) {
-        if (!flags.mountFiles) {
+        if (!enabled) {
           this.logger.log(`Writing initial mount file for the ${folder} folder`);
           await this.createMountFile(folder);
         }
