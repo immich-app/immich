@@ -9,9 +9,13 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/interfaces/asset_api.interface.dart';
+import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
@@ -24,6 +28,8 @@ import 'package:openapi/api.dart';
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(
+    ref.watch(assetApiRepositoryProvider),
+    ref.watch(exifInfoRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(userServiceProvider),
@@ -34,6 +40,8 @@ final assetServiceProvider = Provider(
 );
 
 class AssetService {
+  final IAssetApiRepository _assetApiRepository;
+  final IExifInfoRepository _exifInfoRepository;
   final ApiService _apiService;
   final SyncService _syncService;
   final UserService _userService;
@@ -43,6 +51,8 @@ class AssetService {
   final Isar _db;
 
   AssetService(
+    this._assetApiRepository,
+    this._exifInfoRepository,
     this._apiService,
     this._syncService,
     this._userService,
@@ -341,5 +351,47 @@ class AssetService {
     } catch (error, stack) {
       log.severe("Error while syncing uploaded asset to albums", error, stack);
     }
+  }
+
+  Future<void> setDescription(
+    Asset asset,
+    String newDescription,
+  ) async {
+    final remoteAssetId = asset.remoteId;
+    final localExifId = asset.exifInfo?.id;
+
+    // Guard [remoteAssetId] and [localExifId] null
+    if (remoteAssetId == null || localExifId == null) {
+      return;
+    }
+
+    final result = await _assetApiRepository.update(
+      remoteAssetId,
+      description: newDescription,
+    );
+
+    final description = result.exifInfo?.description;
+
+    if (description != null) {
+      var exifInfo = await _exifInfoRepository.get(localExifId);
+
+      if (exifInfo != null) {
+        exifInfo.description = description;
+        await _exifInfoRepository.update(exifInfo);
+      }
+    }
+  }
+
+  Future<String> getDescription(Asset asset) async {
+    final localExifId = asset.exifInfo?.id;
+
+    // Guard [remoteAssetId] and [localExifId] null
+    if (localExifId == null) {
+      return "";
+    }
+
+    final exifInfo = await _exifInfoRepository.get(localExifId);
+
+    return exifInfo?.description ?? "";
   }
 }

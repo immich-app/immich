@@ -1,5 +1,4 @@
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:openapi/api.dart';
 
 enum ActivityType { comment, like }
 
@@ -37,16 +36,6 @@ class Activity {
       user: user ?? this.user,
     );
   }
-
-  Activity.fromDto(ActivityResponseDto dto)
-      : id = dto.id,
-        assetId = dto.assetId,
-        comment = dto.comment,
-        createdAt = dto.createdAt,
-        type = dto.type == ReactionType.comment
-            ? ActivityType.comment
-            : ActivityType.like,
-        user = User.fromSimpleUserDto(dto.user);
 
   @override
   String toString() {
