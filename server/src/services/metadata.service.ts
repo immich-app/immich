@@ -83,6 +83,15 @@ const validate = <T>(value: T): NonNullable<T> | null => {
   return value ?? null;
 };
 
+const validateRange = (value: number | undefined, min: number, max: number): NonNullable<number> | null => {
+  // reutilizes the validate function and checks if the value is within the range
+  if (validate(value) == null || value! < min || value! > max) {
+    return null;
+  }
+
+  return value!;
+};
+
 @Injectable()
 export class MetadataService {
   private storageCore: StorageCore;
@@ -261,7 +270,7 @@ export class MetadataService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: exifTags.Rating ?? null,
+      rating: validateRange(exifTags.Rating, 0, 65_535),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -367,6 +376,8 @@ export class MetadataService {
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
+    this.logger.verbose("Reading asset's exif data", asset.originalPath);
+
     const mediaTags = await this.repository.readTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.readTags(asset.sidecarPath) : {};
     const videoTags = asset.type === AssetType.VIDEO ? await this.getVideoTags(asset.originalPath) : {};
