@@ -152,7 +152,7 @@
     dropdownDirection = getComboboxDirection(boundary);
 
     if (!boundary) {
-      return undefined;
+      return;
     }
 
     const vv = window.visualViewport;
@@ -178,9 +178,7 @@
     };
   };
 
-  const maxHeight = (size: number) => {
-    return `min(${size}px,18rem)`;
-  };
+  const maxHeight = (size: number) => `min(${size}px,18rem)`;
 
   const onPositionChange = () => {
     if (!isOpen) {
