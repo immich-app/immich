@@ -120,6 +120,10 @@ export class SystemConfigCore {
       }
     }
 
+    if (config.server.externalDomain.length > 0) {
+      config.server.externalDomain = new URL(config.server.externalDomain).origin;
+    }
+
     if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
       config.ffmpeg.acceptedVideoCodecs.push(config.ffmpeg.targetVideoCodec);
     }
