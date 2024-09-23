@@ -58,6 +58,9 @@
 
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
+  /**
+   * Buffer distance between the dropdown and top/bottom of the viewport.
+   */
   const dropdownOffset = 15;
   const observer = new IntersectionObserver(
     (entries) => {
@@ -149,15 +152,15 @@
   };
 
   const calculatePosition = (boundary: DOMRect | undefined) => {
-    dropdownDirection = getComboboxDirection(boundary);
+    const visualViewport = window.visualViewport;
+    dropdownDirection = getComboboxDirection(boundary, visualViewport);
 
     if (!boundary) {
       return;
     }
 
-    const vv = window.visualViewport;
-    const left = boundary.left + (vv?.offsetLeft || 0);
-    const offsetTop = vv?.offsetTop || 0;
+    const left = boundary.left + (visualViewport?.offsetLeft || 0);
+    const offsetTop = visualViewport?.offsetTop || 0;
 
     if (dropdownDirection === 'top') {
       return {
@@ -168,7 +171,7 @@
       };
     }
 
-    const viewportHeight = vv?.height || 0;
+    const viewportHeight = visualViewport?.height || 0;
     const availableHeight = viewportHeight - boundary.bottom;
     return {
       top: `${boundary.bottom + offsetTop}px`,
@@ -187,16 +190,19 @@
     bounds = getInputPosition();
   };
 
-  const getComboboxDirection = (boundary: DOMRect | undefined): 'bottom' | 'top' => {
+  const getComboboxDirection = (
+    boundary: DOMRect | undefined,
+    visualViewport: VisualViewport | null,
+  ): 'bottom' | 'top' => {
     if (!boundary) {
       return 'bottom';
     }
 
-    const viewportHeight = window.visualViewport?.height || 0;
-    const heightBelow = viewportHeight - boundary.bottom;
+    const visualHeight = visualViewport?.height || 0;
+    const heightBelow = visualHeight - boundary.bottom;
     const heightAbove = boundary.top;
 
-    const isViewportScaled = viewportHeight && Math.floor(viewportHeight) !== Math.floor(window.innerHeight);
+    const isViewportScaled = visualHeight && Math.floor(visualHeight) !== Math.floor(window.innerHeight);
 
     return heightBelow <= 225 && heightAbove > heightBelow && !isViewportScaled ? 'top' : 'bottom';
   };
