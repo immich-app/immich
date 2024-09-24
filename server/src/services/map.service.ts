@@ -6,6 +6,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 
@@ -18,6 +19,7 @@ export class MapService {
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IMapRepository) private mapRepository: IMapRepository,
     @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.logger.setContext(MapService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
@@ -41,6 +43,11 @@ export class MapService {
     }
 
     return this.mapRepository.getMapMarkers(userIds, albumIds, options);
+  }
+
+  async getLocalTilesStream() {
+    const readStream = await this.storageRepository.createReadStream('/usr/src/app/uploads/tiles/tiles.pmtiles');
+    return readStream.stream;
   }
 
   async reverseGeocode(dto: MapReverseGeocodeDto) {
