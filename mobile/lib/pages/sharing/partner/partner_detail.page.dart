@@ -22,7 +22,7 @@ class PartnerDetailPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(assetProvider.notifier).getAllAsset();
+        Future(() => ref.read(assetProvider.notifier).getAllAsset());
         return null;
       },
       [],
@@ -81,6 +81,7 @@ class PartnerDetailPage extends HookConsumerWidget {
         onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
         deleteEnabled: false,
         favoriteEnabled: false,
+        showUserThumbnail: false,
       ),
     );
   }
