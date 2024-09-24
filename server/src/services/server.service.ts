@@ -129,6 +129,8 @@ export class ServerService {
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
+      mapDarkStyleUrl: config.map.darkStyle,
+      mapLightStyleUrl: config.map.lightStyle,
     };
   }
 

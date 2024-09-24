@@ -6,6 +6,7 @@ import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
+  RandomSearchDto,
   SearchPeopleDto,
   SearchPlacesDto,
   SearchResponseDto,
@@ -87,6 +88,22 @@ export class SearchService {
         checksum,
         userIds,
         orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
+      },
+    );
+
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+  }
+
+  async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<SearchResponseDto> {
+    const userIds = await this.getUserIdsToSearch(auth);
+    const page = dto.page ?? 1;
+    const size = dto.size || 250;
+    const { hasNextPage, items } = await this.searchRepository.searchMetadata(
+      { page, size },
+      {
+        ...dto,
+        userIds,
+        random: true,
       },
     );
 

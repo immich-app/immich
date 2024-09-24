@@ -449,7 +449,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/random' operation and returns the [Response].
+  /// This property was deprecated in v1.116.0
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [num] count:
@@ -482,6 +485,8 @@ class AssetsApi {
     );
   }
 
+  /// This property was deprecated in v1.116.0
+  ///
   /// Parameters:
   ///
   /// * [num] count:

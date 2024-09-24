@@ -175,6 +175,7 @@ class SystemConfigFFmpegDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigFFmpegDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigFFmpegDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

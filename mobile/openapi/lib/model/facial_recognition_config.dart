@@ -22,14 +22,14 @@ class FacialRecognitionConfig {
 
   bool enabled;
 
-  /// Minimum value: 0
+  /// Minimum value: 0.1
   /// Maximum value: 2
   double maxDistance;
 
   /// Minimum value: 1
   int minFaces;
 
-  /// Minimum value: 0
+  /// Minimum value: 0.1
   /// Maximum value: 1
   double minScore;
 
@@ -69,6 +69,7 @@ class FacialRecognitionConfig {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static FacialRecognitionConfig? fromJson(dynamic value) {
+    upgradeDto(value, "FacialRecognitionConfig");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
