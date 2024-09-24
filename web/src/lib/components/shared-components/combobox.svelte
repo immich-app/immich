@@ -62,6 +62,10 @@
    * Buffer distance between the dropdown and top/bottom of the viewport.
    */
   const dropdownOffset = 15;
+  /**
+   * Minimum space required for the dropdown to be displayed at the bottom of the input.
+   */
+  const bottomBreakpoint = 225;
   const observer = new IntersectionObserver(
     (entries) => {
       const inputEntry = entries[0];
@@ -204,7 +208,7 @@
 
     const isViewportScaled = visualHeight && Math.floor(visualHeight) !== Math.floor(window.innerHeight);
 
-    return heightBelow <= 225 && heightAbove > heightBelow && !isViewportScaled ? 'top' : 'bottom';
+    return heightBelow <= bottomBreakpoint && heightAbove > heightBelow && !isViewportScaled ? 'top' : 'bottom';
   };
 
   const getInputPosition = () => input?.getBoundingClientRect();
