@@ -5,27 +5,27 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/models/asset_viewer/asset_viewer_page_state.model.dart';
-import 'package:immich_mobile/services/image_viewer.service.dart';
+import 'package:immich_mobile/models/asset_viewer/download_state.model..dart';
+import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/share.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/share_dialog.dart';
 
-class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
-  final ImageViewerService _imageViewerService;
+class DownloadStateNotifier extends StateNotifier<DownloadState> {
+  final DownloadService _imageViewerService;
   final ShareService _shareService;
   final AlbumService _albumService;
 
-  ImageViewerStateNotifier(
+  DownloadStateNotifier(
     this._imageViewerService,
     this._shareService,
     this._albumService,
   ) : super(
-          AssetViewerPageState(
+          DownloadState(
             downloadStatus: TaskStatus.complete,
             showProgress: false,
-            downloadProgress: null,
+            taskProgress: <String, DownloadProgress>{},
           ),
         ) {
     _imageViewerService.onImageDownloadStatus = _downloadImageCallback;
@@ -45,7 +45,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
     switch (update.status) {
       case TaskStatus.complete:
         _imageViewerService.saveLivePhoto(update.task);
-        _onDownloadComplete();
+        _onDownloadComplete(update.task.taskId);
         break;
 
       case TaskStatus.failed:
@@ -67,7 +67,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
     switch (update.status) {
       case TaskStatus.complete:
         _imageViewerService.saveImage(update.task);
-        _onDownloadComplete();
+        _onDownloadComplete(update.task.taskId);
         break;
 
       case TaskStatus.failed:
@@ -89,7 +89,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
     switch (update.status) {
       case TaskStatus.complete:
         _imageViewerService.saveVideo(update.task);
-        _onDownloadComplete();
+        _onDownloadComplete(update.task.taskId);
         break;
 
       case TaskStatus.failed:
@@ -111,21 +111,32 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
     }
 
     state = state.copyWith(
-      downloadProgress: update,
       showProgress: true,
+      taskProgress: <String, DownloadProgress>{}
+        ..addAll(state.taskProgress)
+        ..addAll({
+          update.task.taskId: DownloadProgress(
+            progress: update.progress,
+          ),
+        }),
     );
+
+    print("task progress: ${state.taskProgress}");
   }
 
-  void _onDownloadComplete() {
+  void _onDownloadComplete(String id) {
     Future.delayed(const Duration(seconds: 1), () {
       state = state.copyWith(
         showProgress: false,
+        taskProgress: <String, DownloadProgress>{}
+          ..addAll(state.taskProgress)
+          ..remove(id),
       );
     });
   }
 
   void downloadAsset(Asset asset, BuildContext context) async {
-    await _imageViewerService.downloadAsset(asset);
+    await _imageViewerService.download(asset);
     // await _albumService.refreshDeviceAlbums();
   }
 
@@ -163,10 +174,10 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   }
 }
 
-final imageViewerStateProvider =
-    StateNotifierProvider<ImageViewerStateNotifier, AssetViewerPageState>(
-  ((ref) => ImageViewerStateNotifier(
-        ref.watch(imageViewerServiceProvider),
+final downloadStateProvider =
+    StateNotifierProvider<DownloadStateNotifier, DownloadState>(
+  ((ref) => DownloadStateNotifier(
+        ref.watch(downloadServiceProvider),
         ref.watch(shareServiceProvider),
         ref.watch(albumServiceProvider),
       )),
