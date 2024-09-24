@@ -29,6 +29,7 @@ class AssetApiRepository extends BaseApiRepository
 
   @override
   Future<List<Asset>> search({List<String> personIds = const []}) async {
+    // TODO this always fetches all assets, change API and usage to actually do pagination
     final List<Asset> result = [];
     bool hasNext = true;
     int currentPage = 1;

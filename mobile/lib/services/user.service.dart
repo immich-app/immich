@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/interfaces/user_api.interface.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
@@ -12,6 +14,7 @@ import 'package:logging/logging.dart';
 
 final userServiceProvider = Provider(
   (ref) => UserService(
+    ref.watch(partnerApiRepositoryProvider),
     ref.watch(userApiRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(syncServiceProvider),
@@ -19,12 +22,14 @@ final userServiceProvider = Provider(
 );
 
 class UserService {
+  final IPartnerApiRepository _partnerApiRepository;
   final IUserApiRepository _userApiRepository;
   final IUserRepository _userRepository;
   final SyncService _syncService;
   final Logger _log = Logger("UserService");
 
   UserService(
+    this._partnerApiRepository,
     this._userApiRepository,
     this._userRepository,
     this._syncService,
@@ -49,13 +54,14 @@ class UserService {
     List<User>? users;
     try {
       users = await _userApiRepository.getAll();
-    } catch (exception) {
+    } catch (e) {
+      _log.warning("Failed to fetch users", e);
       users = null;
     }
     final List<User> sharedBy =
-        await _userApiRepository.getPartners(Direction.sharedByMe);
+        await _partnerApiRepository.getAll(Direction.sharedByMe);
     final List<User> sharedWith =
-        await _userApiRepository.getPartners(Direction.sharedWithMe);
+        await _partnerApiRepository.getAll(Direction.sharedWithMe);
 
     if (users == null) {
       _log.warning("Failed to refresh users");

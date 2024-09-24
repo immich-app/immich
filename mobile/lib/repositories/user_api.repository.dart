@@ -11,16 +11,14 @@ import 'package:openapi/api.dart';
 final userApiRepositoryProvider = Provider(
   (ref) => UserApiRepository(
     ref.watch(apiServiceProvider).usersApi,
-    ref.watch(apiServiceProvider).partnersApi,
   ),
 );
 
 class UserApiRepository extends BaseApiRepository
     implements IUserApiRepository {
   final UsersApi _api;
-  final PartnersApi _partnerApi;
 
-  UserApiRepository(this._api, this._partnerApi);
+  UserApiRepository(this._api);
 
   @override
   Future<List<User>> getAll() async {
@@ -39,38 +37,5 @@ class UserApiRepository extends BaseApiRepository
       ),
     );
     return (profileImagePath: response.profileImagePath);
-  }
-
-  @override
-  Future<List<User>> getPartners(Direction direction) async {
-    final response = await checkNull(
-      _partnerApi.getPartners(
-        direction == Direction.sharedByMe
-            ? PartnerDirection.by
-            : PartnerDirection.with_,
-      ),
-    );
-    return response.map(User.fromPartnerDto).toList();
-  }
-
-  @override
-  Future<User> addPartner(String id) async {
-    final dto = await checkNull(_partnerApi.createPartner(id));
-    return User.fromPartnerDto(dto);
-  }
-
-  @override
-  Future<void> removePartner(String id) =>
-      checkNull(_partnerApi.removePartner(id));
-
-  @override
-  Future<User> updatePartner(String id, {required bool inTimeline}) async {
-    final dto = await checkNull(
-      _partnerApi.updatePartner(
-        id,
-        UpdatePartnerDto(inTimeline: inTimeline),
-      ),
-    );
-    return User.fromPartnerDto(dto);
   }
 }

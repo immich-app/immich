@@ -1,31 +1,31 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
-import 'package:immich_mobile/interfaces/user_api.interface.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
-import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:logging/logging.dart';
 
 final partnerServiceProvider = Provider(
   (ref) => PartnerService(
-    ref.watch(userApiRepositoryProvider),
+    ref.watch(partnerApiRepositoryProvider),
     ref.watch(userRepositoryProvider),
   ),
 );
 
 class PartnerService {
-  final IUserApiRepository _userApiRepository;
+  final IPartnerApiRepository _partnerApiRepository;
   final IUserRepository _userRepository;
   final Logger _log = Logger("PartnerService");
 
   PartnerService(
-    this._userApiRepository,
+    this._partnerApiRepository,
     this._userRepository,
   );
 
   Future<bool> removePartner(User partner) async {
     try {
-      await _userApiRepository.removePartner(partner.id);
+      await _partnerApiRepository.delete(partner.id);
       partner.isPartnerSharedBy = false;
       await _userRepository.update(partner);
     } catch (e) {
@@ -37,7 +37,7 @@ class PartnerService {
 
   Future<bool> addPartner(User partner) async {
     try {
-      await _userApiRepository.addPartner(partner.id);
+      await _partnerApiRepository.create(partner.id);
       partner.isPartnerSharedBy = true;
       await _userRepository.update(partner);
       return true;
@@ -49,7 +49,7 @@ class PartnerService {
 
   Future<bool> updatePartner(User partner, {required bool inTimeline}) async {
     try {
-      final dto = await _userApiRepository.updatePartner(
+      final dto = await _partnerApiRepository.update(
         partner.id,
         inTimeline: inTimeline,
       );

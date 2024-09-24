@@ -18,6 +18,7 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
@@ -369,9 +370,11 @@ class BackgroundService {
     FileMediaRepository fileMediaRepository = FileMediaRepository();
     UserRepository userRepository = UserRepository(db);
     UserApiRepository userApiRepository =
-        UserApiRepository(apiService.usersApi, apiService.partnersApi);
+        UserApiRepository(apiService.usersApi);
     AlbumApiRepository albumApiRepository =
         AlbumApiRepository(apiService.albumsApi);
+    PartnerApiRepository partnerApiRepository =
+        PartnerApiRepository(apiService.partnersApi);
     HashService hashService =
         HashService(assetRepository, this, albumMediaRepository);
     EntityService entityService =
@@ -384,6 +387,7 @@ class BackgroundService {
       albumApiRepository,
     );
     UserService userService = UserService(
+      partnerApiRepository,
       userApiRepository,
       userRepository,
       syncSerive,
