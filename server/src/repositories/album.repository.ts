@@ -277,32 +277,26 @@ export class AlbumRepository implements IAlbumRepository {
   @GenerateSql()
   async updateThumbnails(): Promise<number | undefined> {
     // Subquery for getting a new thumbnail.
-    const newThumbnail = this.assetRepository
-      .createQueryBuilder('assets')
-      .select('albums_assets2.assetsId')
-      .addFrom('albums_assets_assets', 'albums_assets2')
-      .where('albums_assets2.assetsId = assets.id')
-      .andWhere('albums_assets2.albumsId = "albums"."id"') // Reference to albums.id outside this query
-      .orderBy('assets.fileCreatedAt', 'DESC')
-      .limit(1);
 
-    // Using dataSource, because there is no direct access to albums_assets_assets.
-    const albumHasAssets = this.dataSource
-      .createQueryBuilder()
-      .select('1')
-      .from('albums_assets_assets', 'albums_assets')
-      .where('"albums"."id" = "albums_assets"."albumsId"');
+    const builder = this.dataSource
+      .createQueryBuilder('albums_assets_assets', 'album_assets')
+      .innerJoin('assets', 'assets', '"album_assets"."assetsId" = "assets"."id"')
+      .where('"album_assets"."albumsId" = "albums"."id"');
 
-    const albumContainsThumbnail = albumHasAssets
+    const newThumbnail = builder
       .clone()
-      .andWhere('"albums"."albumThumbnailAssetId" = "albums_assets"."assetsId"');
+      .select('"album_assets"."assetsId"')
+      .orderBy('"assets"."fileCreatedAt"', 'DESC')
+      .limit(1);
+    const hasAssets = builder.clone().select('1');
+    const hasInvalidAsset = hasAssets.clone().andWhere('"albums"."albumThumbnailAssetId" = "album_assets"."assetsId"');
 
     const updateAlbums = this.repository
       .createQueryBuilder('albums')
       .update(AlbumEntity)
       .set({ albumThumbnailAssetId: () => `(${newThumbnail.getQuery()})` })
-      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${albumHasAssets.getQuery()})`)
-      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${albumContainsThumbnail.getQuery()})`);
+      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${hasAssets.getQuery()})`)
+      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${hasInvalidAsset.getQuery()})`);
 
     const result = await updateAlbums.execute();
 
