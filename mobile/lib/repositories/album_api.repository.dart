@@ -1,30 +1,31 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/errors.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/repositories/base_api.repository.dart';
 import 'package:openapi/api.dart';
 
 final albumApiRepositoryProvider = Provider(
   (ref) => AlbumApiRepository(ref.watch(apiServiceProvider).albumsApi),
 );
 
-class AlbumApiRepository implements IAlbumApiRepository {
+class AlbumApiRepository extends BaseApiRepository
+    implements IAlbumApiRepository {
   final AlbumsApi _api;
 
   AlbumApiRepository(this._api);
 
   @override
   Future<Album> get(String id) async {
-    final dto = await _checkNull(_api.getAlbumInfo(id));
+    final dto = await checkNull(_api.getAlbumInfo(id));
     return _toAlbum(dto);
   }
 
   @override
   Future<List<Album>> getAll({bool? shared}) async {
-    final dtos = await _checkNull(_api.getAllAlbums(shared: shared));
+    final dtos = await checkNull(_api.getAllAlbums(shared: shared));
     return dtos.map(_toAlbum).toList().cast();
   }
 
@@ -37,7 +38,7 @@ class AlbumApiRepository implements IAlbumApiRepository {
     final users = sharedUserIds.map(
       (id) => AlbumUserCreateDto(userId: id, role: AlbumUserRole.editor),
     );
-    final responseDto = await _checkNull(
+    final responseDto = await checkNull(
       _api.createAlbum(
         CreateAlbumDto(
           albumName: name,
@@ -57,7 +58,7 @@ class AlbumApiRepository implements IAlbumApiRepository {
     String? description,
     bool? activityEnabled,
   }) async {
-    final response = await _checkNull(
+    final response = await checkNull(
       _api.updateAlbumInfo(
         albumId,
         UpdateAlbumDto(
@@ -81,7 +82,7 @@ class AlbumApiRepository implements IAlbumApiRepository {
     String albumId,
     Iterable<String> assetIds,
   ) async {
-    final response = await _checkNull(
+    final response = await checkNull(
       _api.addAssetsToAlbum(
         albumId,
         BulkIdsDto(ids: assetIds.toList()),
@@ -106,7 +107,7 @@ class AlbumApiRepository implements IAlbumApiRepository {
     String albumId,
     Iterable<String> assetIds,
   ) async {
-    final response = await _checkNull(
+    final response = await checkNull(
       _api.removeAssetFromAlbum(
         albumId,
         BulkIdsDto(ids: assetIds.toList()),
@@ -127,7 +128,7 @@ class AlbumApiRepository implements IAlbumApiRepository {
   Future<Album> addUsers(String albumId, Iterable<String> userIds) async {
     final albumUsers =
         userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
-    final response = await _checkNull(
+    final response = await checkNull(
       _api.addUsersToAlbum(
         albumId,
         AddUsersDto(albumUsers: albumUsers),
@@ -139,12 +140,6 @@ class AlbumApiRepository implements IAlbumApiRepository {
   @override
   Future<void> removeUser(String albumId, {required String userId}) {
     return _api.removeUserFromAlbum(albumId, userId);
-  }
-
-  static Future<T> _checkNull<T>(Future<T?> future) async {
-    final response = await future;
-    if (response == null) throw NoResponseDtoError();
-    return response;
   }
 
   static Album _toAlbum(AlbumResponseDto dto) {

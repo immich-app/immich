@@ -35,4 +35,84 @@ class AssetRepository implements IAssetRepository {
   @override
   Future<List<Asset>> getAllByRemoteId(Iterable<String> ids) =>
       _db.assets.getAllByRemoteId(ids);
+
+  @override
+  Future<List<Asset>> getAll({
+    required int ownerId,
+    bool? remote,
+    int limit = 100,
+  }) {
+    if (remote == null) {
+      return _db.assets
+          .where()
+          .ownerIdEqualToAnyChecksum(ownerId)
+          .limit(limit)
+          .findAll();
+    }
+    final QueryBuilder<Asset, Asset, QAfterFilterCondition> query;
+    if (remote) {
+      query = _db.assets
+          .where()
+          .localIdIsNull()
+          .filter()
+          .remoteIdIsNotNull()
+          .ownerIdEqualTo(ownerId);
+    } else {
+      query = _db.assets
+          .where()
+          .remoteIdIsNull()
+          .filter()
+          .localIdIsNotNull()
+          .ownerIdEqualTo(ownerId);
+    }
+
+    return query.limit(limit).findAll();
+  }
+
+  @override
+  Future<List<Asset>> getMatches({
+    required List<Asset> assets,
+    required int ownerId,
+    bool? remote,
+    int limit = 100,
+  }) {
+    final QueryBuilder<Asset, Asset, QAfterFilterCondition> query;
+    if (remote == null) {
+      query = _db.assets.filter().remoteIdIsNotNull().or().localIdIsNotNull();
+    } else if (remote) {
+      query = _db.assets.where().localIdIsNull().filter().remoteIdIsNotNull();
+    } else {
+      query = _db.assets.where().remoteIdIsNull().filter().localIdIsNotNull();
+    }
+    return _getMatchesImpl(query, ownerId, assets, limit);
+  }
 }
+
+Future<List<Asset>> _getMatchesImpl(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> query,
+  int ownerId,
+  List<Asset> assets,
+  int limit,
+) =>
+    query
+        .ownerIdEqualTo(ownerId)
+        .anyOf(
+          assets,
+          (q, Asset a) => q
+              .fileNameEqualTo(a.fileName)
+              .and()
+              .durationInSecondsEqualTo(a.durationInSeconds)
+              .and()
+              .fileCreatedAtBetween(
+                a.fileCreatedAt.subtract(const Duration(hours: 12)),
+                a.fileCreatedAt.add(const Duration(hours: 12)),
+              )
+              .and()
+              .not()
+              .checksumEqualTo(a.checksum),
+        )
+        .sortByFileName()
+        .thenByFileCreatedAt()
+        .thenByFileModifiedAt()
+        .limit(limit)
+        .findAll();
