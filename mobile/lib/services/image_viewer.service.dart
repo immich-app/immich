@@ -25,11 +25,49 @@ class ImageViewerService {
   final ApiService _apiService;
   final IFileMediaRepository _fileMediaRepository;
   final Logger _log = Logger("ImageViewerService");
+  void Function(TaskStatusUpdate)? onImageDownloadStatus;
+  void Function(TaskStatusUpdate)? onVideoDownloadStatus;
+  void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
+  void Function(TaskProgressUpdate)? onTaskProgress;
 
   ImageViewerService(
     this._apiService,
     this._fileMediaRepository,
-  );
+  ) {
+    FileDownloader().registerCallbacks(
+      group: downloadGroupImage,
+      taskStatusCallback: _downloadImageCallback,
+      taskProgressCallback: _taskProgressCallback,
+    );
+
+    FileDownloader().registerCallbacks(
+      group: downloadGroupVideo,
+      taskStatusCallback: _downloadVideoCallback,
+      taskProgressCallback: _taskProgressCallback,
+    );
+
+    FileDownloader().registerCallbacks(
+      group: downloadGroupLivePhoto,
+      taskStatusCallback: _downloadLivePhotoCallback,
+      taskProgressCallback: _taskProgressCallback,
+    );
+  }
+
+  void _downloadImageCallback(TaskStatusUpdate update) {
+    onImageDownloadStatus?.call(update);
+  }
+
+  void _downloadVideoCallback(TaskStatusUpdate update) {
+    onVideoDownloadStatus?.call(update);
+  }
+
+  void _downloadLivePhotoCallback(TaskStatusUpdate update) {
+    onLivePhotoDownloadStatus?.call(update);
+  }
+
+  void _taskProgressCallback(TaskProgressUpdate update) {
+    onTaskProgress?.call(update);
+  }
 
   Future<bool> downloadAsset1(Asset asset) async {
     File? imageFile;
@@ -159,24 +197,38 @@ class ImageViewerService {
           group: downloadGroupLivePhoto,
         );
 
-    print(records);
+    if (records.length != 2) {
+      return false;
+    }
 
-    // await FileDownloader().database.deleteAllRecords();
-    return true;
-    // final imageFile = File(imageFilePath);
-    // final videoFile = File(videoFilePath);
+    final imageRecord = records.firstWhere(
+      (element) => element.task.metaData == 'image_part',
+    );
+    final videoRecord = records.firstWhere(
+      (element) => element.task.metaData == 'video_part',
+    );
 
-    // final Asset? resultAsset = await _fileMediaRepository.saveLivePhoto(
-    //   image: imageFile,
-    //   video: videoFile,
-    //   title: title,
-    // );
+    final imageFilePath = await imageRecord.task.filePath();
+    final videoFilePath = await videoRecord.task.filePath();
 
-    // return resultAsset != null;
+    final resultAsset = await _fileMediaRepository.saveLivePhoto(
+      image: File(imageFilePath),
+      video: File(videoFilePath),
+      title: task.filename,
+    );
+
+    return resultAsset != null;
+  }
+
+  Future<bool> cancelDownload(String id) async {
+    return await FileDownloader().cancelTaskWithId(id);
   }
 
   Future<void> downloadAsset(Asset asset) async {
     if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
+      // Remove all track records for saveLivePhoto to track when to start the linking process
+      await FileDownloader().database.deleteAllRecords();
+
       await FileDownloader().enqueue(
         _buildDownloadTask(
           asset.remoteId!,
@@ -189,7 +241,7 @@ class ImageViewerService {
       await FileDownloader().enqueue(
         _buildDownloadTask(
           asset.livePhotoVideoId!,
-          asset.fileName,
+          asset.fileName.toUpperCase().replaceAll(".HEIC", '.MOV'),
           group: downloadGroupLivePhoto,
           metadata: 'video_part',
         ),

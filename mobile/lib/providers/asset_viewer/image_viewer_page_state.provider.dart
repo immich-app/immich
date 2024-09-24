@@ -9,7 +9,6 @@ import 'package:immich_mobile/models/asset_viewer/asset_viewer_page_state.model.
 import 'package:immich_mobile/services/image_viewer.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/share.service.dart';
-import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/share_dialog.dart';
 
@@ -29,23 +28,10 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
             downloadProgress: null,
           ),
         ) {
-    FileDownloader().registerCallbacks(
-      group: downloadGroupImage,
-      taskStatusCallback: _downloadImageCallback,
-      taskProgressCallback: _taskProgressCallback,
-    );
-
-    FileDownloader().registerCallbacks(
-      group: downloadGroupVideo,
-      taskStatusCallback: _downloadVideoCallback,
-      taskProgressCallback: _taskProgressCallback,
-    );
-
-    FileDownloader().registerCallbacks(
-      group: downloadGroupLivePhoto,
-      taskStatusCallback: _downloadLivePhotoCallback,
-      taskProgressCallback: _taskProgressCallback,
-    );
+    _imageViewerService.onImageDownloadStatus = _downloadImageCallback;
+    _imageViewerService.onVideoDownloadStatus = _downloadVideoCallback;
+    _imageViewerService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
+    _imageViewerService.onTaskProgress = _taskProgressCallback;
   }
 
   void _updateDownloadStatus(TaskStatus status) {
@@ -144,7 +130,7 @@ class ImageViewerStateNotifier extends StateNotifier<AssetViewerPageState> {
   }
 
   void cancelDownload(String id) async {
-    final isCanceled = await FileDownloader().cancelTaskWithId(id);
+    final isCanceled = await _imageViewerService.cancelDownload(id);
 
     if (isCanceled) {
       state = state.copyWith(
