@@ -19,6 +19,7 @@ import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
+import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
@@ -30,7 +31,6 @@ import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/services/partner.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
@@ -362,13 +362,14 @@ class BackgroundService {
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
     AppSettingsService settingService = AppSettingsService();
     AppSettingsService settingsService = AppSettingsService();
-    PartnerService partnerService = PartnerService(apiService, db);
     AlbumRepository albumRepository = AlbumRepository(db);
     AssetRepository assetRepository = AssetRepository(db);
     BackupRepository backupAlbumRepository = BackupRepository(db);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
     FileMediaRepository fileMediaRepository = FileMediaRepository();
     UserRepository userRepository = UserRepository(db);
+    UserApiRepository userApiRepository =
+        UserApiRepository(apiService.usersApi, apiService.partnersApi);
     AlbumApiRepository albumApiRepository =
         AlbumApiRepository(apiService.albumsApi);
     HashService hashService = HashService(db, this, albumMediaRepository);
@@ -381,8 +382,11 @@ class BackgroundService {
       albumMediaRepository,
       albumApiRepository,
     );
-    UserService userService =
-        UserService(apiService, db, syncSerive, partnerService);
+    UserService userService = UserService(
+      userApiRepository,
+      userRepository,
+      syncSerive,
+    );
     AlbumService albumService = AlbumService(
       userService,
       syncSerive,
