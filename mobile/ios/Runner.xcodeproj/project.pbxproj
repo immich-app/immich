@@ -11,6 +11,8 @@
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		65F32F31299BD2F800CE9261 /* BackgroundServicePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F32F30299BD2F800CE9261 /* BackgroundServicePlugin.swift */; };
 		65F32F33299D349D00CE9261 /* BackgroundSyncWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F32F32299D349D00CE9261 /* BackgroundSyncWorker.swift */; };
+		6FC4C0DB2CA3268700D44B0C /* BackgroundSyncShortcutIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC4C0DA2CA3268700D44B0C /* BackgroundSyncShortcutIntent.swift */; };
+		6FC4C0DD2CA32AF000D44B0C /* BackgroundSyncAppShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC4C0DC2CA32AF000D44B0C /* BackgroundSyncAppShortcut.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -19,6 +21,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		6FC4C0D82CA324C200D44B0C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -38,6 +50,11 @@
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		65F32F30299BD2F800CE9261 /* BackgroundServicePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundServicePlugin.swift; sourceTree = "<group>"; };
 		65F32F32299D349D00CE9261 /* BackgroundSyncWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundSyncWorker.swift; sourceTree = "<group>"; };
+		6FC4C0AE2CA322AB00D44B0C /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		6FC4C0B62CA324C100D44B0C /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
+		6FC4C0C12CA324C200D44B0C /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
+		6FC4C0DA2CA3268700D44B0C /* BackgroundSyncShortcutIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundSyncShortcutIntent.swift; sourceTree = "<group>"; };
+		6FC4C0DC2CA32AF000D44B0C /* BackgroundSyncAppShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundSyncAppShortcut.swift; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -80,6 +97,8 @@
 			isa = PBXGroup;
 			children = (
 				886774DBDDE6B35BF2B4F2CD /* Pods_Runner.framework */,
+				6FC4C0B62CA324C100D44B0C /* Intents.framework */,
+				6FC4C0C12CA324C200D44B0C /* IntentsUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -87,8 +106,10 @@
 		65DD438629917FAD0047FFA8 /* BackgroundSync */ = {
 			isa = PBXGroup;
 			children = (
+				6FC4C0DA2CA3268700D44B0C /* BackgroundSyncShortcutIntent.swift */,
 				65F32F32299D349D00CE9261 /* BackgroundSyncWorker.swift */,
 				65F32F30299BD2F800CE9261 /* BackgroundServicePlugin.swift */,
+				6FC4C0DC2CA32AF000D44B0C /* BackgroundSyncAppShortcut.swift */,
 			);
 			path = BackgroundSync;
 			sourceTree = "<group>";
@@ -126,6 +147,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				6FC4C0AE2CA322AB00D44B0C /* Runner.entitlements */,
 				65DD438629917FAD0047FFA8 /* BackgroundSync */,
 				FAC7416727DB9F5500C668D8 /* RunnerProfile.entitlements */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -156,6 +178,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				D218A34AEE62BC1EF119F5B0 /* [CP] Embed Pods Frameworks */,
 				6724EEB7D74949FA08581154 /* [CP] Copy Pods Resources */,
+				6FC4C0D82CA324C200D44B0C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -173,6 +196,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1530;
 				LastUpgradeCheck = 1510;
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
@@ -313,6 +337,8 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				65F32F33299D349D00CE9261 /* BackgroundSyncWorker.swift in Sources */,
+				6FC4C0DB2CA3268700D44B0C /* BackgroundSyncShortcutIntent.swift in Sources */,
+				6FC4C0DD2CA32AF000D44B0C /* BackgroundSyncAppShortcut.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,6 +422,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/RunnerProfile.entitlements;
@@ -539,8 +566,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 175;
@@ -567,8 +596,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 175;

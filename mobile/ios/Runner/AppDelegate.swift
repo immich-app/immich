@@ -42,6 +42,10 @@ import permission_handler_apple
           }
       }
       
+      if #available(iOS 16.0, *) {
+          BackgroundSyncAppShortcut.updateAppShortcutParameters()
+      }
+      
       return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
     
