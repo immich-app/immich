@@ -372,7 +372,8 @@ class BackgroundService {
         UserApiRepository(apiService.usersApi, apiService.partnersApi);
     AlbumApiRepository albumApiRepository =
         AlbumApiRepository(apiService.albumsApi);
-    HashService hashService = HashService(db, this, albumMediaRepository);
+    HashService hashService =
+        HashService(assetRepository, this, albumMediaRepository);
     EntityService entityService =
         EntityService(assetRepository, userRepository);
     SyncService syncSerive = SyncService(
