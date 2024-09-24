@@ -17,4 +17,7 @@ class UserRepository implements IUserRepository {
   @override
   Future<List<User>> getByIds(List<String> ids) async =>
       (await _db.users.getAllById(ids)).cast();
+
+  @override
+  Future<User?> get(String id) => _db.users.getById(id);
 }

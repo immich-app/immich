@@ -100,8 +100,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    lightStyle: '',
-    darkStyle: '',
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
   },
   reverseGeocoding: {
     enabled: true,
@@ -288,6 +288,23 @@ describe(SystemConfigService.name, () => {
       const config = await sut.getConfig();
       expect(config.machineLearning.url).toEqual('immich_machine_learning');
     });
+
+    const externalDomainTests = [
+      { should: 'with a trailing slash', externalDomain: 'https://demo.immich.app/' },
+      { should: 'without a trailing slash', externalDomain: 'https://demo.immich.app' },
+      { should: 'with a port', externalDomain: 'https://demo.immich.app:42', result: 'https://demo.immich.app:42' },
+    ];
+
+    for (const { should, externalDomain, result } of externalDomainTests) {
+      it(`should normalize an external domain ${should}`, async () => {
+        process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+        const partialConfig = { server: { externalDomain } };
+        systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
+
+        const config = await sut.getConfig();
+        expect(config.server.externalDomain).toEqual(result ?? 'https://demo.immich.app');
+      });
+    }
 
     it('should warn for unknown options in yaml', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';

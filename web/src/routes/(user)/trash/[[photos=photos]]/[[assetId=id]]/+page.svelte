@@ -33,7 +33,8 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const assetStore = new AssetStore({ isTrashed: true });
+  const options = { isTrashed: true };
+  const assetStore = new AssetStore(options);
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -47,16 +48,15 @@
     }
 
     try {
-      await emptyTrash();
-
-      const deletedAssetIds = assetStore.assets.map((a) => a.id);
-      const numberOfAssets = deletedAssetIds.length;
-      assetStore.removeAssets(deletedAssetIds);
+      const { count } = await emptyTrash();
 
       notificationController.show({
-        message: $t('assets_permanently_deleted_count', { values: { count: numberOfAssets } }),
+        message: $t('assets_permanently_deleted_count', { values: { count } }),
         type: NotificationType.Info,
       });
+
+      // reset asset grid (TODO fix in asset store that it should reset when it is empty)
+      await assetStore.updateOptions(options);
     } catch (error) {
       handleError(error, $t('errors.unable_to_empty_trash'));
     }
@@ -71,16 +71,14 @@
       return;
     }
     try {
-      await restoreTrash();
-
-      const restoredAssetIds = assetStore.assets.map((a) => a.id);
-      const numberOfAssets = restoredAssetIds.length;
-      assetStore.removeAssets(restoredAssetIds);
-
+      const { count } = await restoreTrash();
       notificationController.show({
-        message: $t('assets_restored_count', { values: { count: numberOfAssets } }),
+        message: $t('assets_restored_count', { values: { count } }),
         type: NotificationType.Info,
       });
+
+      // reset asset grid (TODO fix in asset store that it should reset when it is empty)
+      await assetStore.updateOptions(options);
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_trash'));
     }

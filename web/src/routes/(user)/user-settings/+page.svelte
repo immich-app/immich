@@ -27,5 +27,5 @@
 </UserPageLayout>
 
 {#if isShowKeyboardShortcut}
-  <ShowShortcuts on:close={() => (isShowKeyboardShortcut = false)} />
+  <ShowShortcuts onClose={() => (isShowKeyboardShortcut = false)} />
 {/if}

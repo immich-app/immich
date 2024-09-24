@@ -95,6 +95,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Version check
   [JobName.VERSION_CHECK]: QueueName.BACKGROUND_TASK,
+
+  // Trash
+  [JobName.QUEUE_TRASH_EMPTY]: QueueName.BACKGROUND_TASK,
 };
 
 @Instrumentation()

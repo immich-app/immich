@@ -96,7 +96,7 @@
           title={$t('admin.image_prefer_wide_gamut')}
           subtitle={$t('admin.image_prefer_wide_gamut_setting_description')}
           checked={config.image.colorspace === Colorspace.P3}
-          on:toggle={(e) => (config.image.colorspace = e.detail ? Colorspace.P3 : Colorspace.Srgb)}
+          onToggle={(isChecked) => (config.image.colorspace = isChecked ? Colorspace.P3 : Colorspace.Srgb)}
           isEdited={config.image.colorspace !== savedConfig.image.colorspace}
           {disabled}
         />
@@ -105,7 +105,7 @@
           title={$t('admin.image_prefer_embedded_preview')}
           subtitle={$t('admin.image_prefer_embedded_preview_setting_description')}
           checked={config.image.extractEmbedded}
-          on:toggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}
+          onToggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}
           isEdited={config.image.extractEmbedded !== savedConfig.image.extractEmbedded}
           {disabled}
         />

@@ -13,10 +13,14 @@ import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
+import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -34,7 +38,7 @@ import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 final backgroundServiceProvider = Provider(
   (ref) => BackgroundService(),
@@ -361,23 +365,42 @@ class BackgroundService {
     PartnerService partnerService = PartnerService(apiService, db);
     AlbumRepository albumRepository = AlbumRepository(db);
     AssetRepository assetRepository = AssetRepository(db);
-    UserRepository userRepository = UserRepository(db);
     BackupRepository backupAlbumRepository = BackupRepository(db);
-    HashService hashService = HashService(db, this);
-    SyncService syncSerive = SyncService(db, hashService);
+    AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
+    FileMediaRepository fileMediaRepository = FileMediaRepository();
+    UserRepository userRepository = UserRepository(db);
+    AlbumApiRepository albumApiRepository =
+        AlbumApiRepository(apiService.albumsApi);
+    HashService hashService = HashService(db, this, albumMediaRepository);
+    EntityService entityService =
+        EntityService(assetRepository, userRepository);
+    SyncService syncSerive = SyncService(
+      db,
+      hashService,
+      entityService,
+      albumMediaRepository,
+      albumApiRepository,
+    );
     UserService userService =
         UserService(apiService, db, syncSerive, partnerService);
     AlbumService albumService = AlbumService(
-      apiService,
       userService,
       syncSerive,
+      entityService,
       albumRepository,
       assetRepository,
-      userRepository,
       backupAlbumRepository,
+      albumMediaRepository,
+      albumApiRepository,
     );
-    BackupService backupService =
-        BackupService(apiService, db, settingService, albumService);
+    BackupService backupService = BackupService(
+      apiService,
+      db,
+      settingService,
+      albumService,
+      albumMediaRepository,
+      fileMediaRepository,
+    );
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
     final excludedAlbums = backupService.excludedAlbumsQuery().findAllSync();
@@ -385,7 +408,7 @@ class BackgroundService {
       return true;
     }
 
-    await PhotoManager.setIgnorePermissionCheck(true);
+    await fileMediaRepository.enableBackgroundAccess();
 
     do {
       final bool backupOk = await _runBackup(

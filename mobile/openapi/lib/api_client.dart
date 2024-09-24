@@ -166,7 +166,6 @@ class ApiClient {
 
   /// Returns a native instance of an OpenAPI class matching the [specified type][targetType].
   static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
-    upgradeDto(value, targetType);
     try {
       switch (targetType) {
         case 'String':
@@ -373,8 +372,6 @@ class ApiClient {
           return MapMarkerResponseDto.fromJson(value);
         case 'MapReverseGeocodeResponseDto':
           return MapReverseGeocodeResponseDto.fromJson(value);
-        case 'MapTheme':
-          return MapThemeTypeTransformer().decode(value);
         case 'MemoriesResponse':
           return MemoriesResponse.fromJson(value);
         case 'MemoriesUpdate':
@@ -439,6 +436,8 @@ class ApiClient {
           return PurchaseUpdate.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RandomSearchDto':
+          return RandomSearchDto.fromJson(value);
         case 'RatingsResponse':
           return RatingsResponse.fromJson(value);
         case 'RatingsUpdate':
@@ -585,6 +584,8 @@ class ApiClient {
           return TranscodeHWAccelTypeTransformer().decode(value);
         case 'TranscodePolicy':
           return TranscodePolicyTypeTransformer().decode(value);
+        case 'TrashResponseDto':
+          return TrashResponseDto.fromJson(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAlbumUserDto':

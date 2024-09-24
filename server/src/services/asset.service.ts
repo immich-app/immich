@@ -20,7 +20,7 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { Permission } from 'src/enum';
+import { AssetStatus, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -302,18 +302,11 @@ export class AssetService {
     const { ids, force } = dto;
 
     await requireAccess(this.access, { auth, permission: Permission.ASSET_DELETE, ids });
-
-    if (force) {
-      await this.jobRepository.queueAll(
-        ids.map((id) => ({
-          name: JobName.ASSET_DELETION,
-          data: { id, deleteOnDisk: true },
-        })),
-      );
-    } else {
-      await this.assetRepository.softDeleteAll(ids);
-      await this.eventRepository.emit('assets.trash', { assetIds: ids, userId: auth.user.id });
-    }
+    await this.assetRepository.updateAll(ids, {
+      deletedAt: new Date(),
+      status: force ? AssetStatus.DELETED : AssetStatus.TRASHED,
+    });
+    await this.eventRepository.emit(force ? 'assets.delete' : 'assets.trash', { assetIds: ids, userId: auth.user.id });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {

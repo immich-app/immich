@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -11,38 +14,46 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 class HashService {
-  HashService(this._db, this._backgroundService);
+  HashService(this._db, this._backgroundService, this._albumMediaRepository);
   final Isar _db;
   final BackgroundService _backgroundService;
+  final IAlbumMediaRepository _albumMediaRepository;
   final _log = Logger('HashService');
 
   /// Returns all assets that were successfully hashed
   Future<List<Asset>> getHashedAssets(
-    AssetPathEntity album, {
+    Album album, {
     int start = 0,
     int end = 0x7fffffffffffffff,
+    DateTime? modifiedFrom,
+    DateTime? modifiedUntil,
     Set<String>? excludedAssets,
   }) async {
-    final entities = await album.getAssetListRange(start: start, end: end);
+    final entities = await _albumMediaRepository.getAssets(
+      album.localId!,
+      start: start,
+      end: end,
+      modifiedFrom: modifiedFrom,
+      modifiedUntil: modifiedUntil,
+    );
     final filtered = excludedAssets == null
         ? entities
-        : entities.where((e) => !excludedAssets.contains(e.id)).toList();
+        : entities.where((e) => !excludedAssets.contains(e.localId!)).toList();
     return _hashAssets(filtered);
   }
 
-  /// Converts a list of [AssetEntity]s to [Asset]s including only those
+  /// Processes a list of local [Asset]s, storing their hash and returning only those
   /// that were successfully hashed. Hashes are looked up in a DB table
   /// [AndroidDeviceAsset] / [IOSDeviceAsset] by local id. Only missing
   /// entries are newly hashed and added to the DB table.
-  Future<List<Asset>> _hashAssets(List<AssetEntity> assetEntities) async {
+  Future<List<Asset>> _hashAssets(List<Asset> assets) async {
     const int batchFileCount = 128;
     const int batchDataSize = 1024 * 1024 * 1024; // 1GB
 
-    final ids = assetEntities
-        .map(Platform.isAndroid ? (a) => a.id.toInt() : (a) => a.id)
+    final ids = assets
+        .map(Platform.isAndroid ? (a) => a.localId!.toInt() : (a) => a.localId!)
         .toList();
     final List<DeviceAsset?> hashes = await _lookupHashes(ids);
     final List<DeviceAsset> toAdd = [];
@@ -50,22 +61,28 @@ class HashService {
 
     int bytes = 0;
 
-    for (int i = 0; i < assetEntities.length; i++) {
+    for (int i = 0; i < assets.length; i++) {
       if (hashes[i] != null) {
         continue;
       }
-      final file = await assetEntities[i].originFile;
-      if (file == null) {
-        final fileName = await assetEntities[i].titleAsync.catchError((error) {
-          _log.warning(
-            "Failed to get title for asset ${assetEntities[i].id}",
-          );
 
-          return "";
-        });
+      File? file;
+
+      try {
+        file = await assets[i].local!.originFile;
+      } catch (error, stackTrace) {
+        _log.warning(
+          "Error getting file to hash for asset ${assets[i].localId}, name: ${assets[i].fileName}, created on: ${assets[i].fileCreatedAt}, skipping",
+          error,
+          stackTrace,
+        );
+      }
+
+      if (file == null) {
+        final fileName = assets[i].fileName;
 
         _log.warning(
-          "Failed to get file for asset ${assetEntities[i].id}, name: $fileName, created on: ${assetEntities[i].createDateTime}, skipping",
+          "Failed to get file for asset ${assets[i].localId}, name: $fileName, created on: ${assets[i].fileCreatedAt}, skipping",
         );
         continue;
       }
@@ -86,7 +103,7 @@ class HashService {
     if (toHash.isNotEmpty) {
       await _processBatch(toHash, toAdd);
     }
-    return _mapAllHashedAssets(assetEntities, hashes);
+    return _getHashedAssets(assets, hashes);
   }
 
   /// Lookup hashes of assets by their local ID
@@ -133,15 +150,16 @@ class HashService {
     return hashes;
   }
 
-  /// Converts [AssetEntity]s that were successfully hashed to [Asset]s
-  List<Asset> _mapAllHashedAssets(
-    List<AssetEntity> assets,
+  /// Returns all successfully hashed [Asset]s with their hash value set
+  List<Asset> _getHashedAssets(
+    List<Asset> assets,
     List<DeviceAsset?> hashes,
   ) {
     final List<Asset> result = [];
     for (int i = 0; i < assets.length; i++) {
       if (hashes[i] != null && hashes[i]!.hash.isNotEmpty) {
-        result.add(Asset.local(assets[i], hashes[i]!.hash));
+        assets[i].byteHash = hashes[i]!.hash;
+        result.add(assets[i]);
       }
     }
     return result;
@@ -152,5 +170,6 @@ final hashServiceProvider = Provider(
   (ref) => HashService(
     ref.watch(dbProvider),
     ref.watch(backgroundServiceProvider),
+    ref.watch(albumMediaRepositoryProvider),
   ),
 );

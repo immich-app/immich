@@ -1,5 +1,4 @@
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:openapi/api.dart';
 
 enum ActivityType { comment, like }
 
@@ -38,16 +37,6 @@ class Activity {
     );
   }
 
-  Activity.fromDto(ActivityResponseDto dto)
-      : id = dto.id,
-        assetId = dto.assetId,
-        comment = dto.comment,
-        createdAt = dto.createdAt,
-        type = dto.type == ReactionType.comment
-            ? ActivityType.comment
-            : ActivityType.like,
-        user = User.fromSimpleUserDto(dto.user);
-
   @override
   String toString() {
     return 'Activity(id: $id, assetId: $assetId, comment: $comment, createdAt: $createdAt, type: $type, user: $user)';
@@ -74,4 +63,10 @@ class Activity {
         type.hashCode ^
         user.hashCode;
   }
+}
+
+class ActivityStats {
+  final int comments;
+
+  const ActivityStats({required this.comments});
 }

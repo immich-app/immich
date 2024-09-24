@@ -4,6 +4,7 @@ import { getVectorExtension } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
@@ -35,6 +36,7 @@ export class SearchRepository implements ISearchRepository {
   constructor(
     @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
@@ -71,8 +73,13 @@ export class SearchRepository implements ISearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
     builder = searchAssetBuilder(builder, options);
-
     builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
+
+    if (options.random) {
+      // TODO replace with complicated SQL magic after kysely migration
+      builder.addSelect('RANDOM() as r').orderBy('r');
+    }
+
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: (pagination.page - 1) * pagination.size,
@@ -320,6 +327,93 @@ export class SearchRepository implements ISearchRepository {
 
   async deleteAllSearchEmbeddings(): Promise<void> {
     return this.smartSearchRepository.clear();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getCountries(userIds: string[]): Promise<string[]> {
+    const results = await this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.country', 'country')
+      .distinctOn(['exif.country'])
+      .getRawMany<{ country: string }>();
+
+    return results.map(({ country }) => country).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getStates(userIds: string[], country: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.state', 'state')
+      .distinctOn(['exif.state']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    const result = await query.getRawMany<{ state: string }>();
+
+    return result.map(({ state }) => state).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
+  async getCities(userIds: string[], country: string | undefined, state: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.city', 'city')
+      .distinctOn(['exif.city']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    if (state) {
+      query.andWhere('exif.state = :state', { state });
+    }
+
+    const results = await query.getRawMany<{ city: string }>();
+
+    return results.map(({ city }) => city).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getCameraMakes(userIds: string[], model: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.make', 'make')
+      .distinctOn(['exif.make']);
+
+    if (model) {
+      query.andWhere('exif.model = :model', { model });
+    }
+
+    const results = await query.getRawMany<{ make: string }>();
+    return results.map(({ make }) => make).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getCameraModels(userIds: string[], make: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.model', 'model')
+      .distinctOn(['exif.model']);
+
+    if (make) {
+      query.andWhere('exif.make = :make', { make });
+    }
+
+    const results = await query.getRawMany<{ model: string }>();
+    return results.map(({ model }) => model).filter((item) => item !== '');
   }
 
   private getRuntimeConfig(numResults?: number): string {

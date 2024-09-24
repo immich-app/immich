@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -10,6 +9,7 @@
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import {
     NotificationType,
     notificationController,
@@ -21,11 +21,11 @@
   import { copyToClipboard } from '$lib/utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { mdiInfinity, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiContentCopy, mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
-  import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -110,8 +110,8 @@
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
         <CreateUserForm
-          on:submit={onUserCreated}
-          on:cancel={() => (shouldShowCreateUserForm = false)}
+          onSubmit={onUserCreated}
+          onCancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
         />
       {/if}
@@ -121,8 +121,8 @@
           user={selectedUser}
           bind:newPassword
           canResetPassword={selectedUser?.id !== $user.id}
-          on:editSuccess={onEditUserSuccess}
-          on:resetPasswordSuccess={onEditPasswordSuccess}
+          onEditSuccess={onEditUserSuccess}
+          onResetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}
         />
       {/if}
@@ -130,18 +130,18 @@
       {#if shouldShowDeleteConfirmDialog}
         <DeleteConfirmDialog
           user={selectedUser}
-          on:success={onUserDelete}
-          on:fail={onUserDelete}
-          on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
+          onSuccess={onUserDelete}
+          onFail={onUserDelete}
+          onCancel={() => (shouldShowDeleteConfirmDialog = false)}
         />
       {/if}
 
       {#if shouldShowRestoreDialog}
         <RestoreDialogue
           user={selectedUser}
-          on:success={onUserRestore}
-          on:fail={onUserRestore}
-          on:cancel={() => (shouldShowRestoreDialog = false)}
+          onSuccess={onUserRestore}
+          onFail={onUserRestore}
+          onCancel={() => (shouldShowRestoreDialog = false)}
         />
       {/if}
 
