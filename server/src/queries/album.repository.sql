@@ -483,16 +483,13 @@ UPDATE "albums"
 SET
   "albumThumbnailAssetId" = (
     SELECT
-      "albums_assets2"."assetsId"
+      "album_assets"."assetsId"
     FROM
-      "assets" "assets",
-      "albums_assets_assets" "albums_assets2"
+      "albums_assets_assets" "album_assets"
+      INNER JOIN "assets" "assets" ON "album_assets"."assetsId" = "assets"."id"
+      AND "assets"."deletedAt" IS NULL
     WHERE
-      (
-        "albums_assets2"."assetsId" = "assets"."id"
-        AND "albums_assets2"."albumsId" = "albums"."id"
-      )
-      AND ("assets"."deletedAt" IS NULL)
+      "album_assets"."albumsId" = "albums"."id"
     ORDER BY
       "assets"."fileCreatedAt" DESC
     LIMIT
@@ -505,17 +502,21 @@ WHERE
     SELECT
       1
     FROM
-      "albums_assets_assets" "albums_assets"
+      "albums_assets_assets" "album_assets"
+      INNER JOIN "assets" "assets" ON "album_assets"."assetsId" = "assets"."id"
+      AND "assets"."deletedAt" IS NULL
     WHERE
-      "albums"."id" = "albums_assets"."albumsId"
+      "album_assets"."albumsId" = "albums"."id"
   )
   OR "albums"."albumThumbnailAssetId" IS NOT NULL
   AND NOT EXISTS (
     SELECT
       1
     FROM
-      "albums_assets_assets" "albums_assets"
+      "albums_assets_assets" "album_assets"
+      INNER JOIN "assets" "assets" ON "album_assets"."assetsId" = "assets"."id"
+      AND "assets"."deletedAt" IS NULL
     WHERE
-      "albums"."id" = "albums_assets"."albumsId"
-      AND "albums"."albumThumbnailAssetId" = "albums_assets"."assetsId"
+      "album_assets"."albumsId" = "albums"."id"
+      AND "albums"."albumThumbnailAssetId" = "album_assets"."assetsId"
   )
