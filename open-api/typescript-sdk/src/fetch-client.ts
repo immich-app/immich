@@ -837,6 +837,40 @@ export type PlacesResponseDto = {
     longitude: number;
     name: string;
 };
+export type RandomSearchDto = {
+    city?: string | null;
+    country?: string | null;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceId?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    isVisible?: boolean;
+    lensModel?: string | null;
+    libraryId?: string | null;
+    make?: string;
+    model?: string | null;
+    page?: number;
+    personIds?: string[];
+    size?: number;
+    state?: string | null;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    "type"?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+    withPeople?: boolean;
+    withStacked?: boolean;
+};
 export type SmartSearchDto = {
     city?: string | null;
     country?: string | null;
@@ -894,6 +928,8 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    mapDarkStyleUrl: string;
+    mapLightStyleUrl: string;
     oauthButtonText: string;
     trashDays: number;
     userDeleteDelay: number;
@@ -1696,6 +1732,9 @@ export function getMemoryLane({ day, month }: {
         ...opts
     }));
 }
+/**
+ * This property was deprecated in v1.116.0
+ */
 export function getRandom({ count }: {
     count?: number;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2101,20 +2140,6 @@ export function reverseGeocode({ lat, lon }: {
         ...opts
     }));
 }
-export function getMapStyle({ key, theme }: {
-    key?: string;
-    theme: MapTheme;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: object;
-    }>(`/map/style.json${QS.query(QS.explode({
-        key,
-        theme
-    }))}`, {
-        ...opts
-    }));
-}
 export function searchMemories(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2499,6 +2524,18 @@ export function searchPlaces({ name }: {
     }))}`, {
         ...opts
     }));
+}
+export function searchRandom({ randomSearchDto }: {
+    randomSearchDto: RandomSearchDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SearchResponseDto;
+    }>("/search/random", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: randomSearchDto
+    })));
 }
 export function searchSmart({ smartSearchDto }: {
     smartSearchDto: SmartSearchDto;
@@ -3419,10 +3456,6 @@ export enum JobCommand {
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
-}
-export enum MapTheme {
-    Light = "light",
-    Dark = "dark"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
