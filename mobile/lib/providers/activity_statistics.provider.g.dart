@@ -7,7 +7,7 @@ part of 'activity_statistics.provider.dart';
 // **************************************************************************
 
 String _$activityStatisticsHash() =>
-    r'a5f7bbee1891c33b72919a34e632ca9ef9cd8dbf';
+    r'1f43f0bcb11c754ca3cb586a13570db25023b9a8';
 
 /// Copied from Dart SDK
 class _SystemHash {
