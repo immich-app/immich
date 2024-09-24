@@ -75,6 +75,12 @@ class AssetRepository implements IAssetRepository {
   }
 
   @override
+  Future<List<Asset>> updateAll(List<Asset> assets) async {
+    await _db.writeTxn(() => _db.assets.putAll(assets));
+    return assets;
+  }
+
+  @override
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
     required int ownerId,

@@ -13,6 +13,7 @@ abstract interface class IAssetRepository {
     bool? remote,
     int limit = 100,
   });
+  Future<List<Asset>> updateAll(List<Asset> assets);
 
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
