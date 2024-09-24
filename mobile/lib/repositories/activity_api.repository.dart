@@ -48,10 +48,10 @@ class ActivityApiRepository extends BaseApiRepository
   }
 
   @override
-  Future<int> countComments(String albumId, {String? assetId}) async {
+  Future<ActivityStats> getStats(String albumId, {String? assetId}) async {
     final response =
         await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));
-    return response.comments;
+    return ActivityStats(comments: response.comments);
   }
 
   static Activity _toActivity(ActivityResponseDto dto) => Activity(

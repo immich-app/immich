@@ -12,5 +12,5 @@ abstract interface class IActivityApiRepository {
     String? comment,
   });
   Future<void> delete(String id);
-  Future<int> countComments(String albumId, {String? assetId});
+  Future<ActivityStats> getStats(String albumId, {String? assetId});
 }

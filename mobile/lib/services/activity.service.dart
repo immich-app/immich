@@ -22,10 +22,10 @@ class ActivityService with ErrorLoggerMixin {
     );
   }
 
-  Future<int> getStatistics(String albumId, {String? assetId}) async {
+  Future<ActivityStats> getStatistics(String albumId, {String? assetId}) async {
     return logError(
-      () => _activityApiRepository.countComments(albumId, assetId: assetId),
-      defaultValue: 0,
+      () => _activityApiRepository.getStats(albumId, assetId: assetId),
+      defaultValue: const ActivityStats(comments: 0),
       errorMessage: "Failed to statistics for album $albumId",
     );
   }

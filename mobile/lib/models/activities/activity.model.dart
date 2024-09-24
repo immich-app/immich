@@ -64,3 +64,9 @@ class Activity {
         user.hashCode;
   }
 }
+
+class ActivityStats {
+  final int comments;
+
+  const ActivityStats({required this.comments});
+}
