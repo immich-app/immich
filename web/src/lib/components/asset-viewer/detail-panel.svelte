@@ -44,6 +44,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -325,12 +326,14 @@
     {/if}
 
     {#if isShowChangeDate}
-      <ChangeDate
-        initialDate={dateTime}
-        initialTimeZone={timeZone ?? ''}
-        onConfirm={handleConfirmChangeDate}
-        onCancel={() => (isShowChangeDate = false)}
-      />
+      <Portal>
+        <ChangeDate
+          initialDate={dateTime}
+          initialTimeZone={timeZone ?? ''}
+          onConfirm={handleConfirmChangeDate}
+          onCancel={() => (isShowChangeDate = false)}
+        />
+      </Portal>
     {/if}
 
     {#if asset.exifInfo?.fileSizeInByte}
