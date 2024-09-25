@@ -4,55 +4,63 @@ import 'dart:convert';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 
-class DownloadProgress {
-  double progress;
-  DownloadProgress({
+class DownloadInfo {
+  final String fileName;
+  final double progress;
+
+  DownloadInfo({
+    required this.fileName,
     required this.progress,
   });
 
-  DownloadProgress copyWith({
+  DownloadInfo copyWith({
+    String? fileName,
     double? progress,
   }) {
-    return DownloadProgress(
+    return DownloadInfo(
+      fileName: fileName ?? this.fileName,
       progress: progress ?? this.progress,
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      'fileName': fileName,
       'progress': progress,
     };
   }
 
-  factory DownloadProgress.fromMap(Map<String, dynamic> map) {
-    return DownloadProgress(
+  factory DownloadInfo.fromMap(Map<String, dynamic> map) {
+    return DownloadInfo(
+      fileName: map['fileName'] as String,
       progress: map['progress'] as double,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory DownloadProgress.fromJson(String source) =>
-      DownloadProgress.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory DownloadInfo.fromJson(String source) =>
+      DownloadInfo.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() => 'DownloadProgress(progress: $progress)';
+  String toString() =>
+      'DownloadProgress(fileName: $fileName, progress: $progress)';
 
   @override
-  bool operator ==(covariant DownloadProgress other) {
+  bool operator ==(covariant DownloadInfo other) {
     if (identical(this, other)) return true;
 
-    return other.progress == progress;
+    return other.fileName == fileName && other.progress == progress;
   }
 
   @override
-  int get hashCode => progress.hashCode;
+  int get hashCode => fileName.hashCode ^ progress.hashCode;
 }
 
 class DownloadState {
   // enum
   final TaskStatus downloadStatus;
-  final Map<String, DownloadProgress> taskProgress;
+  final Map<String, DownloadInfo> taskProgress;
   final bool showProgress;
   DownloadState({
     required this.downloadStatus,
@@ -62,7 +70,7 @@ class DownloadState {
 
   DownloadState copyWith({
     TaskStatus? downloadStatus,
-    Map<String, DownloadProgress>? taskProgress,
+    Map<String, DownloadInfo>? taskProgress,
     bool? showProgress,
   }) {
     return DownloadState(
