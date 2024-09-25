@@ -60,6 +60,9 @@ export enum JobName {
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
 
+  // tags
+  TAG_CLEANUP = 'tag-cleanup',
+
   // migration
   QUEUE_MIGRATION = 'queue-migration',
   MIGRATE_ASSET = 'migrate-asset',
@@ -89,6 +92,8 @@ export enum JobName {
   // smart search
   QUEUE_SMART_SEARCH = 'queue-smart-search',
   SMART_SEARCH = 'smart-search',
+
+  QUEUE_TRASH_EMPTY = 'queue-trash-empty',
 
   // duplicate detection
   QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
@@ -250,6 +255,7 @@ export type JobItem =
   // Smart Search
   | { name: JobName.QUEUE_SMART_SEARCH; data: IBaseJob }
   | { name: JobName.SMART_SEARCH; data: IEntityJob }
+  | { name: JobName.QUEUE_TRASH_EMPTY; data?: IBaseJob }
 
   // Duplicate Detection
   | { name: JobName.QUEUE_DUPLICATE_DETECTION; data: IBaseJob }
@@ -261,6 +267,9 @@ export type JobItem =
   // Cleanup
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
   | { name: JobName.CLEAN_OLD_SESSION_TOKENS; data?: IBaseJob }
+
+  // Tags
+  | { name: JobName.TAG_CLEANUP; data?: IBaseJob }
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
@@ -300,7 +309,6 @@ export interface IJobRepository {
   addHandler(queueName: QueueName, concurrency: number, handler: JobItemHandler): void;
   addCronJob(name: string, expression: string, onTick: () => void, start?: boolean): void;
   updateCronJob(name: string, expression?: string, start?: boolean): void;
-  deleteCronJob(name: string): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   queueAll(items: JobItem[]): Promise<void>;

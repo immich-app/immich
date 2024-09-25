@@ -1,18 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
   return MemoryService(
     ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
+    ref.watch(assetRepositoryProvider),
   );
 });
 
@@ -20,9 +19,9 @@ class MemoryService {
   final log = Logger("MemoryService");
 
   final ApiService _apiService;
-  final Isar _db;
+  final IAssetRepository _assetRepository;
 
-  MemoryService(this._apiService, this._db);
+  MemoryService(this._apiService, this._assetRepository);
 
   Future<List<Memory>?> getMemoryLane() async {
     try {
@@ -39,7 +38,7 @@ class MemoryService {
       List<Memory> memories = [];
       for (final MemoryLaneResponseDto(:yearsAgo, :assets) in data) {
         final dbAssets =
-            await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
+            await _assetRepository.getAllByRemoteId(assets.map((e) => e.id));
         if (dbAssets.isNotEmpty) {
           final String title = yearsAgo <= 1
               ? 'memories_year_ago'.tr()

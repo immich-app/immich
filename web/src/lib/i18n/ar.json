@@ -148,7 +148,7 @@
     "note_cannot_be_changed_later": "ملاحظة: لا يمكن تغيير هذا لاحقًا!",
     "note_unlimited_quota": "ملاحظة: أدخل 0 للحصول على حصة غير محدودة",
     "notification_email_from_address": "عنوان المرسل",
-    "notification_email_from_address_description": "عنوان البريد الإلكتروني للمرسل، على سبيل المثال: \"Immich Photo Server noreply@immich.app\"",
+    "notification_email_from_address_description": "عنوان البريد الإلكتروني للمرسل، على سبيل المثال: \"Immich Photo Server noreply@example.com\"",
     "notification_email_host_description": "مضيف خادم البريد الإلكتروني (مثلًا: smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "تجاهل أخطاء الشهادة",
     "notification_email_ignore_certificate_errors_description": "تجاهل أخطاء التحقق من صحة شهادة TLS (غير مستحسن)",

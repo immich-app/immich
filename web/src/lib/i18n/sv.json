@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "OBS: Detta kan inte ändras i efterhand!",
     "note_unlimited_quota": "OBS: Skriv 0 för obegränsad kvota",
     "notification_email_from_address": "Från adress",
-    "notification_email_from_address_description": "Avsändarens epost, t.ex.: \"Immich Fotoserver <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Avsändarens epost, t.ex.: \"Immich Fotoserver <noreply@example.com>\"",
     "notification_email_host_description": "Värd för epostservern (t.ex. smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Ignorera certifikatfel",
     "notification_email_ignore_certificate_errors_description": "Ignorera valideringsfel för TLS-certifikat (rekommenderas ej)",

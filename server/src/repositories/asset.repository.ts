@@ -6,7 +6,7 @@ import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
-import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import {
   AssetBuilderOptions,
   AssetCreate,
@@ -295,16 +295,6 @@ export class AssetRepository implements IAssetRepository {
       .execute();
   }
 
-  @Chunked()
-  async softDeleteAll(ids: string[]): Promise<void> {
-    await this.repository.softDelete({ id: In(ids) });
-  }
-
-  @Chunked()
-  async restoreAll(ids: string[]): Promise<void> {
-    await this.repository.restore({ id: In(ids) });
-  }
-
   async update(asset: AssetUpdateOptions): Promise<void> {
     await this.repository.update(asset.id, asset);
   }
@@ -571,13 +561,6 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
-    return this.repository.findOne({
-      where: { albums: { id: albumId } },
-      order: { fileCreatedAt: 'DESC' },
-    });
-  }
-
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { albums: { id: albumId } },
@@ -604,7 +587,10 @@ export class AssetRepository implements IAssetRepository {
     }
 
     if (isTrashed !== undefined) {
-      builder.withDeleted().andWhere(`asset.deletedAt is not null`);
+      builder
+        .withDeleted()
+        .andWhere(`asset.deletedAt is not null`)
+        .andWhere('asset.status = :status', { status: AssetStatus.TRASHED });
     }
 
     const items = await builder.getRawMany();
@@ -762,6 +748,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (options.isTrashed !== undefined) {
       builder.andWhere(`asset.deletedAt ${options.isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+
+      if (options.isTrashed) {
+        builder.andWhere('asset.status = :status', { status: AssetStatus.TRASHED });
+      }
     }
 
     if (options.isDuplicate !== undefined) {
@@ -834,50 +824,6 @@ export class AssetRepository implements IAssetRepository {
       .limit(options.limit) // cannot use `take` for performance reasons
       .withDeleted();
     return builder.getMany();
-  }
-
-  async getUniqueOriginalPaths(userId: string): Promise<string[]> {
-    const builder = this.getBuilder({
-      userIds: [userId],
-      exifInfo: false,
-      withStacked: false,
-      isArchived: false,
-      isTrashed: false,
-    });
-
-    const results = await builder
-      .select("DISTINCT substring(asset.originalPath FROM '^(.*/)[^/]*$')", 'directoryPath')
-      .getRawMany();
-
-    return results.map((row: { directoryPath: string }) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
-    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
-
-    const builder = this.getBuilder({
-      userIds: [userId],
-      exifInfo: true,
-      withStacked: false,
-      isArchived: false,
-      isTrashed: false,
-    });
-
-    const assets = await builder
-      .where('asset.ownerId = :userId', { userId })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('asset.originalPath LIKE :likePath', { likePath: `%${normalizedPath}/%` }).andWhere(
-            'asset.originalPath NOT LIKE :notLikePath',
-            { notLikePath: `%${normalizedPath}/%/%` },
-          );
-        }),
-      )
-      .orderBy(String.raw`regexp_replace(asset.originalPath, '.*/(.+)', '\1')`, 'ASC')
-      .getMany();
-
-    return assets;
   }
 
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })

@@ -55,7 +55,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ml-4 mt-4 flex flex-col">
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={foldersEnabled} />

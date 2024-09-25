@@ -119,7 +119,15 @@ class BaseSearchDto {
   personIds?: string[];
 }
 
-export class MetadataSearchDto extends BaseSearchDto {
+export class RandomSearchDto extends BaseSearchDto {
+  @ValidateBoolean({ optional: true })
+  withStacked?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withPeople?: boolean;
+}
+
+export class MetadataSearchDto extends RandomSearchDto {
   @ValidateUUID({ optional: true })
   id?: string;
 
@@ -132,12 +140,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsNotEmpty()
   @Optional()
   checksum?: string;
-
-  @ValidateBoolean({ optional: true })
-  withStacked?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withPeople?: boolean;
 
   @IsString()
   @IsNotEmpty()

@@ -177,7 +177,7 @@
             desc={$t('admin.machine_learning_min_detection_score_description')}
             bind:value={config.machineLearning.facialRecognition.minScore}
             step="0.1"
-            min={0}
+            min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.facialRecognition.enabled}
             isEdited={config.machineLearning.facialRecognition.minScore !==
@@ -190,7 +190,7 @@
             desc={$t('admin.machine_learning_max_recognition_distance_description')}
             bind:value={config.machineLearning.facialRecognition.maxDistance}
             step="0.1"
-            min={0}
+            min={0.1}
             max={2}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.facialRecognition.enabled}
             isEdited={config.machineLearning.facialRecognition.maxDistance !==

@@ -152,7 +152,7 @@
     "note_cannot_be_changed_later": "註：之後就無法更改嘍！",
     "note_unlimited_quota": "註：輸入 0 表示不限制配額",
     "notification_email_from_address": "寄件地址",
-    "notification_email_from_address_description": "寄件者電子郵件地址（例：Immich Photo Server <noreply@immich.app>）",
+    "notification_email_from_address_description": "寄件者電子郵件地址（例：Immich Photo Server <noreply@example.com>）",
     "notification_email_host_description": "電子郵件伺服器主機（例：smtp.immich.app）",
     "notification_email_ignore_certificate_errors": "忽略憑證錯誤",
     "notification_email_ignore_certificate_errors_description": "忽略 TLS 憑證驗證錯誤（不建議）",

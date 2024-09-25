@@ -13,6 +13,7 @@
     email: string;
     profileImagePath: string;
     avatarColor: UserAvatarColor;
+    profileChangedAt: string;
   }
 
   export let user: User;
@@ -79,7 +80,7 @@
   {#if showProfileImage && user.profileImagePath}
     <img
       bind:this={img}
-      src={getProfileImageUrl(user.id)}
+      src={getProfileImageUrl(user)}
       alt={$t('profile_image_of_user', { values: { user: title } })}
       class="h-full w-full object-cover"
       class:hidden={showFallback}

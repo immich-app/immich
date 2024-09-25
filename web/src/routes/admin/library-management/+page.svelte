@@ -267,10 +267,7 @@
 </script>
 
 {#if toCreateLibrary}
-  <LibraryUserPickerForm
-    on:submit={({ detail }) => handleCreate(detail.ownerId)}
-    on:cancel={() => (toCreateLibrary = false)}
-  />
+  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
 {/if}
 
 <UserPageLayout title={data.meta.title} admin>
@@ -385,28 +382,20 @@
               </tr>
               {#if renameLibrary === index}
                 <div transition:slide={{ duration: 250 }}>
-                  <LibraryRenameForm
-                    {library}
-                    on:submit={({ detail }) => handleUpdate(detail)}
-                    on:cancel={() => (renameLibrary = null)}
-                  />
+                  <LibraryRenameForm {library} onSubmit={handleUpdate} onCancel={() => (renameLibrary = null)} />
                 </div>
               {/if}
               {#if editImportPaths === index}
                 <div transition:slide={{ duration: 250 }}>
-                  <LibraryImportPathsForm
-                    {library}
-                    on:submit={({ detail }) => handleUpdate(detail)}
-                    on:cancel={() => (editImportPaths = null)}
-                  />
+                  <LibraryImportPathsForm {library} onSubmit={handleUpdate} onCancel={() => (editImportPaths = null)} />
                 </div>
               {/if}
               {#if editScanSettings === index}
                 <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryScanSettingsForm
                     {library}
-                    on:submit={({ detail: library }) => handleUpdate(library)}
-                    on:cancel={() => (editScanSettings = null)}
+                    onSubmit={handleUpdate}
+                    onCancel={() => (editScanSettings = null)}
                   />
                 </div>
               {/if}

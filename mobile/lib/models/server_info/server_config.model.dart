@@ -4,11 +4,15 @@ class ServerConfig {
   final int trashDays;
   final String oauthButtonText;
   final String externalDomain;
+  final String mapDarkStyleUrl;
+  final String mapLightStyleUrl;
 
   const ServerConfig({
     required this.trashDays,
     required this.oauthButtonText,
     required this.externalDomain,
+    required this.mapDarkStyleUrl,
+    required this.mapLightStyleUrl,
   });
 
   ServerConfig copyWith({
@@ -20,6 +24,8 @@ class ServerConfig {
       trashDays: trashDays ?? this.trashDays,
       oauthButtonText: oauthButtonText ?? this.oauthButtonText,
       externalDomain: externalDomain ?? this.externalDomain,
+      mapDarkStyleUrl: mapDarkStyleUrl,
+      mapLightStyleUrl: mapLightStyleUrl,
     );
   }
 
@@ -30,7 +36,9 @@ class ServerConfig {
   ServerConfig.fromDto(ServerConfigDto dto)
       : trashDays = dto.trashDays,
         oauthButtonText = dto.oauthButtonText,
-        externalDomain = dto.externalDomain;
+        externalDomain = dto.externalDomain,
+        mapDarkStyleUrl = dto.mapDarkStyleUrl,
+        mapLightStyleUrl = dto.mapLightStyleUrl;
 
   @override
   bool operator ==(covariant ServerConfig other) {

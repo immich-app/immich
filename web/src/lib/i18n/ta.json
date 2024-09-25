@@ -143,7 +143,7 @@
     "note_cannot_be_changed_later": "குறிப்பு: இதை பின்னர் மாற்ற முடியாது!",
     "note_unlimited_quota": "குறிப்பு: வரம்பற்ற ஒதுக்கீட்டிற்கு 0 ஐ உள்ளிடவும்",
     "notification_email_from_address": "முகவரியிலிருந்து",
-    "notification_email_from_address_description": "அனுப்புநரின் மின்னஞ்சல் முகவரி, எடுத்துக்காட்டாக: \"இம்மிச் புகைப்பட சேவையகம் <noreply@immich.app>\"",
+    "notification_email_from_address_description": "அனுப்புநரின் மின்னஞ்சல் முகவரி, எடுத்துக்காட்டாக: \"இம்மிச் புகைப்பட சேவையகம் <noreply@example.com>\"",
     "notification_email_host_description": "மின்னஞ்சல் சேவையகத்தின் ஹோஸ்ட் (எடுத்துக்காட்டாக: smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "சான்றிதழ் பிழைகளை புறக்கணிக்கவும்",
     "notification_email_ignore_certificate_errors_description": "TLS சான்றிதழ் சரிபார்ப்பு பிழைகளை புறக்கணிக்கவும் (பரிந்துரைக்கப்படவில்லை)",

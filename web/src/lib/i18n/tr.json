@@ -151,7 +151,7 @@
     "note_cannot_be_changed_later": "NOT: Bu daha sonra değiştirilemez!",
     "note_unlimited_quota": "NOT: Sınırsız kota için 0 yazın",
     "notification_email_from_address": "Şu adresten",
-    "notification_email_from_address_description": "Göndericinin email adresi, örnek: \"Immich Fotoğraf Sunucusu <noreply@immich.app>\"",
+    "notification_email_from_address_description": "Göndericinin email adresi, örnek: \"Immich Fotoğraf Sunucusu <noreply@example.com>\"",
     "notification_email_host_description": "E-posta sunucusunun ana bilgisayarı (örneğin, smtp.immich.app)",
     "notification_email_ignore_certificate_errors": "Sertifika hatalarını görmezden gel",
     "notification_email_ignore_certificate_errors_description": "TLS sertifika doğrulama ayarlarını görmezden gel (Önerilmez)",

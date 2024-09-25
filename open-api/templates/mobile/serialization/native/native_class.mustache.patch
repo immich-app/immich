@@ -1,5 +1,5 @@
---- native_class.mustache	2023-08-31 23:09:59.584269162 +0200
-+++ native_class1.mustache	2023-08-31 22:59:53.633083270 +0200
+--- native_class.mustache	2024-09-19 11:41:07.855683995 -0400
++++ native_class_temp.mustache	2024-09-19 11:41:57.113249395 -0400
 @@ -91,14 +91,14 @@
      {{/isDateTime}}
      {{#isNullable}}
@@ -17,10 +17,14 @@
      }
          {{/defaultValue}}
        {{/required}}
-@@ -114,17 +114,6 @@
+@@ -111,20 +111,10 @@
+   /// [value] if it's a [Map], null otherwise.
+   // ignore: prefer_constructors_over_static_methods
+   static {{{classname}}}? fromJson(dynamic value) {
++    upgradeDto(value, "{{{classname}}}");
      if (value is Map) {
        final json = value.cast<String, dynamic>();
- 
+
 -      // Ensure that the map contains the required keys.
 -      // Note 1: the values aren't checked for validity beyond being non-null.
 -      // Note 2: this code is stripped in release mode!
@@ -35,9 +39,9 @@
        return {{{classname}}}(
    {{#vars}}
      {{#isDateTime}}
-@@ -215,6 +204,10 @@
+@@ -215,6 +205,10 @@
              ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
-             : {{{datatypeWithEnum}}}.parse(json[r'{{{baseName}}}'].toString()),
+             : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
                {{/isNumber}}
 +              {{#isDouble}}
 +        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(),
@@ -46,7 +50,7 @@
                {{^isNumber}}
                  {{^isEnum}}
          {{{name}}}: mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
-@@ -223,6 +216,7 @@
+@@ -223,6 +217,7 @@
          {{{name}}}: {{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
                  {{/isEnum}}
                {{/isNumber}}
