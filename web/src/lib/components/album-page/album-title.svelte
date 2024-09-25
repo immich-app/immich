@@ -7,6 +7,7 @@
   export let id: string;
   export let albumName: string;
   export let isOwned: boolean;
+  export let onUpdate: (albumName: string) => void;
 
   $: newAlbumName = albumName;
 
@@ -16,17 +17,17 @@
     }
 
     try {
-      await updateAlbumInfo({
+      ({ albumName } = await updateAlbumInfo({
         id,
         updateAlbumDto: {
           albumName: newAlbumName,
         },
-      });
+      }));
+      onUpdate(albumName);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_album'));
       return;
     }
-    albumName = newAlbumName;
   };
 </script>
 

@@ -169,12 +169,13 @@
 
   const handleToggleEnableActivity = async () => {
     try {
-      album = await updateAlbumInfo({
+      await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           isActivityEnabled: !album.isActivityEnabled,
         },
       });
+      await refreshAlbum();
       notificationController.show({
         type: NotificationType.Info,
         message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
@@ -277,7 +278,7 @@
   };
 
   const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    data.album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
 
   const handleAddAssets = async () => {
@@ -330,12 +331,13 @@
 
   const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
     try {
-      album = await addUsersToAlbum({
+      await addUsersToAlbum({
         id: album.id,
         addUsersDto: {
           albumUsers,
         },
       });
+      await refreshAlbum();
 
       viewMode = ViewMode.VIEW;
     } catch (error) {
@@ -589,7 +591,12 @@
             {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-8 md:pt-24">
-                <AlbumTitle id={album.id} bind:albumName={album.albumName} {isOwned} />
+                <AlbumTitle
+                  id={album.id}
+                  albumName={album.albumName}
+                  {isOwned}
+                  onUpdate={(albumName) => (album.albumName = albumName)}
+                />
 
                 {#if album.assetCount > 0}
                   <AlbumSummary {album} />

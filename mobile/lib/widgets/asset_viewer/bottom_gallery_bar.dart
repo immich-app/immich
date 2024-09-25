@@ -186,15 +186,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
     void handleEdit() async {
       final image = Image(image: ImmichImage.imageProvider(asset: asset));
-      if (asset.isOffline) {
-        ImmichToast.show(
-          durationInSecond: 1,
-          context: context,
-          msg: 'asset_action_edit_err_offline'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
-        return;
-      }
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => EditImagePage(

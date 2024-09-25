@@ -1,29 +1,37 @@
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/asset_api.interface.dart';
+import 'package:immich_mobile/interfaces/person_api.interface.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/person_api.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'person.service.g.dart';
 
 @riverpod
-PersonService personService(PersonServiceRef ref) =>
-    PersonService(ref.read(apiServiceProvider), ref.read(dbProvider));
+PersonService personService(PersonServiceRef ref) => PersonService(
+      ref.watch(personApiRepositoryProvider),
+      ref.watch(assetApiRepositoryProvider),
+      ref.read(assetRepositoryProvider),
+    );
 
 class PersonService {
   final Logger _log = Logger("PersonService");
-  final ApiService _apiService;
-  final Isar _db;
+  final IPersonApiRepository _personApiRepository;
+  final IAssetApiRepository _assetApiRepository;
+  final IAssetRepository _assetRepository;
 
-  PersonService(this._apiService, this._db);
+  PersonService(
+    this._personApiRepository,
+    this._assetApiRepository,
+    this._assetRepository,
+  );
 
-  Future<List<PersonResponseDto>> getAllPeople() async {
+  Future<List<Person>> getAllPeople() async {
     try {
-      final peopleResponseDto = await _apiService.peopleApi.getAllPeople();
-      return peopleResponseDto?.people ?? [];
+      return await _personApiRepository.getAll();
     } catch (error, stack) {
       _log.severe("Error while fetching curated people", error, stack);
       return [];
@@ -31,50 +39,19 @@ class PersonService {
   }
 
   Future<List<Asset>> getPersonAssets(String id) async {
-    List<Asset> result = [];
-    var hasNext = true;
-    var currentPage = 1;
-
     try {
-      while (hasNext) {
-        final response = await _apiService.searchApi.searchMetadata(
-          MetadataSearchDto(
-            personIds: [id],
-            page: currentPage,
-            size: 1000,
-          ),
-        );
-
-        if (response == null) {
-          break;
-        }
-
-        if (response.assets.nextPage == null) {
-          hasNext = false;
-        }
-
-        final assets = response.assets.items;
-        final mapAssets =
-            await _db.assets.getAllByRemoteId(assets.map((e) => e.id));
-        result.addAll(mapAssets);
-
-        currentPage++;
-      }
+      final assets = await _assetApiRepository.search(personIds: [id]);
+      return await _assetRepository
+          .getAllByRemoteId(assets.map((a) => a.remoteId!));
     } catch (error, stack) {
       _log.severe("Error while fetching person assets", error, stack);
     }
-
-    return result;
+    return [];
   }
 
-  Future<PersonResponseDto?> updateName(String id, String name) async {
+  Future<Person?> updateName(String id, String name) async {
     try {
-      return await _apiService.peopleApi.updatePerson(
-        id,
-        PersonUpdateDto(
-          name: name,
-        ),
-      );
+      return await _personApiRepository.update(id, name: name);
     } catch (error, stack) {
       _log.severe("Error while updating person name", error, stack);
     }

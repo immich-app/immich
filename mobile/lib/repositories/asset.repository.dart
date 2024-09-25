@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/device_asset.entity.dart';
+import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -70,6 +75,12 @@ class AssetRepository implements IAssetRepository {
   }
 
   @override
+  Future<List<Asset>> updateAll(List<Asset> assets) async {
+    await _db.writeTxn(() => _db.assets.putAll(assets));
+    return assets;
+  }
+
+  @override
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
     required int ownerId,
@@ -86,6 +97,20 @@ class AssetRepository implements IAssetRepository {
     }
     return _getMatchesImpl(query, ownerId, assets, limit);
   }
+
+  @override
+  Future<List<DeviceAsset?>> getDeviceAssetsById(List<Object> ids) =>
+      Platform.isAndroid
+          ? _db.androidDeviceAssets.getAll(ids.cast())
+          : _db.iOSDeviceAssets.getAllById(ids.cast());
+
+  @override
+  Future<void> upsertDeviceAssets(List<DeviceAsset> deviceAssets) =>
+      _db.writeTxn(
+        () => Platform.isAndroid
+            ? _db.androidDeviceAssets.putAll(deviceAssets.cast())
+            : _db.iOSDeviceAssets.putAll(deviceAssets.cast()),
+      );
 }
 
 Future<List<Asset>> _getMatchesImpl(

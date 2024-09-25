@@ -3,7 +3,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus } from 'src/enum';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { Paginated, paginatedBuilder, PaginationOptions } from 'src/utils/pagination';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 export class TrashRepository implements ITrashRepository {
   constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
@@ -26,7 +26,7 @@ export class TrashRepository implements ITrashRepository {
 
   async restore(userId: string): Promise<number> {
     const result = await this.assetRepository.update(
-      { ownerId: userId, deletedAt: Not(IsNull()) },
+      { ownerId: userId, status: AssetStatus.TRASHED },
       { status: AssetStatus.ACTIVE, deletedAt: null },
     );
 
@@ -35,7 +35,7 @@ export class TrashRepository implements ITrashRepository {
 
   async empty(userId: string): Promise<number> {
     const result = await this.assetRepository.update(
-      { ownerId: userId, deletedAt: Not(IsNull()), status: AssetStatus.TRASHED },
+      { ownerId: userId, status: AssetStatus.TRASHED },
       { status: AssetStatus.DELETED },
     );
 
@@ -43,7 +43,10 @@ export class TrashRepository implements ITrashRepository {
   }
 
   async restoreAll(ids: string[]): Promise<number> {
-    const result = await this.assetRepository.update({ id: In(ids) }, { status: AssetStatus.ACTIVE, deletedAt: null });
+    const result = await this.assetRepository.update(
+      { id: In(ids), status: AssetStatus.TRASHED },
+      { status: AssetStatus.ACTIVE, deletedAt: null },
+    );
     return result.affected ?? 0;
   }
 }

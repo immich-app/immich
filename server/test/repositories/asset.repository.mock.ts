@@ -25,7 +25,6 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getLivePhotoCount: vitest.fn(),
     updateAll: vitest.fn(),
     updateDuplicates: vitest.fn(),
-    getExternalLibraryAssetPaths: vitest.fn(),
     getByLibraryIdAndOriginalPath: vitest.fn(),
     deleteAll: vitest.fn(),
     update: vitest.fn(),
