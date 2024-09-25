@@ -737,6 +737,7 @@
       albumOrder = order;
       await setModeToView();
     }}
+        onRemove={handleRemoveUser}
     onClose={() => (viewMode = ViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
     onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
