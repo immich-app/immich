@@ -656,6 +656,9 @@ export type SystemConfigSmtpDto = {
     replyTo: string;
     transport: SystemConfigSmtpTransportDto;
 };
+export type TestEmailResponseDto = {
+    messageId: string;
+};
 export type OAuthConfigDto = {
     redirectUri: string;
 };
@@ -2220,7 +2223,10 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
 export function sendTestEmail({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/notifications/test-email", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TestEmailResponseDto;
+    }>("/notifications/test-email", oazapfts.json({
         ...opts,
         method: "POST",
         body: systemConfigSmtpDto
