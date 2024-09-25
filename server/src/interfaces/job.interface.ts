@@ -76,12 +76,12 @@ export enum JobName {
   FACIAL_RECOGNITION = 'facial-recognition',
 
   // library management
-  LIBRARY_SCAN = 'library-refresh',
-  LIBRARY_SCAN_ASSET = 'library-refresh-asset',
-  LIBRARY_REMOVE_OFFLINE = 'library-remove-offline',
-  LIBRARY_CHECK_OFFLINE = 'library-check-offline',
+  LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
+  LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
+  LIBRARY_SYNC_FILE = 'library-sync-file',
+  LIBRARY_SYNC_ASSET = 'library-sync-asset',
   LIBRARY_DELETE = 'library-delete',
-  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-all-refresh',
+  LIBRARY_QUEUE_SYNC_ALL = 'library-queue-sync-all',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
 
   // cleanup
@@ -137,14 +137,9 @@ export interface ILibraryFileJob extends IEntityJob {
   assetPath: string;
 }
 
-export interface ILibraryOfflineJob extends IEntityJob {
+export interface ILibraryAssetJob extends IEntityJob {
   importPaths: string[];
   exclusionPatterns: string[];
-}
-
-export interface ILibraryRefreshJob extends IEntityJob {
-  refreshModifiedFiles: boolean;
-  refreshAllFiles: boolean;
 }
 
 export interface IBulkEntityJob extends IBaseJob {
@@ -277,12 +272,12 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management
-  | { name: JobName.LIBRARY_SCAN_ASSET; data: ILibraryFileJob }
-  | { name: JobName.LIBRARY_SCAN; data: ILibraryRefreshJob }
-  | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
+  | { name: JobName.LIBRARY_SYNC_FILE; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
+  | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
+  | { name: JobName.LIBRARY_SYNC_ASSET; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
-  | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_CHECK_OFFLINE; data: IEntityJob }
+  | { name: JobName.LIBRARY_QUEUE_SYNC_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Notification

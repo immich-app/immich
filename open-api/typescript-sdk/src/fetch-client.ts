@@ -366,7 +366,6 @@ export type AssetMediaCreateDto = {
     fileModifiedAt: string;
     isArchived?: boolean;
     isFavorite?: boolean;
-    isOffline?: boolean;
     isVisible?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -579,10 +578,6 @@ export type UpdateLibraryDto = {
     importPaths?: string[];
     name?: string;
 };
-export type ScanLibraryDto = {
-    refreshAllFiles?: boolean;
-    refreshModifiedFiles?: boolean;
-};
 export type LibraryStatsResponseDto = {
     photos: number;
     total: number;
@@ -655,6 +650,9 @@ export type SystemConfigSmtpDto = {
     "from": string;
     replyTo: string;
     transport: SystemConfigSmtpTransportDto;
+};
+export type TestEmailResponseDto = {
+    messageId: string;
 };
 export type OAuthConfigDto = {
     redirectUri: string;
@@ -928,6 +926,8 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    mapDarkStyleUrl: string;
+    mapLightStyleUrl: string;
     oauthButtonText: string;
     trashDays: number;
     userDeleteDelay: number;
@@ -2061,23 +2061,13 @@ export function updateLibrary({ id, updateLibraryDto }: {
         body: updateLibraryDto
     })));
 }
-export function removeOfflineFiles({ id }: {
+export function scanLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/removeOffline`, {
+    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, {
         ...opts,
         method: "POST"
     }));
-}
-export function scanLibrary({ id, scanLibraryDto }: {
-    id: string;
-    scanLibraryDto: ScanLibraryDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: scanLibraryDto
-    })));
 }
 export function getLibraryStatistics({ id }: {
     id: string;
@@ -2134,20 +2124,6 @@ export function reverseGeocode({ lat, lon }: {
     }>(`/map/reverse-geocode${QS.query(QS.explode({
         lat,
         lon
-    }))}`, {
-        ...opts
-    }));
-}
-export function getMapStyle({ key, theme }: {
-    key?: string;
-    theme: MapTheme;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: object;
-    }>(`/map/style.json${QS.query(QS.explode({
-        key,
-        theme
     }))}`, {
         ...opts
     }));
@@ -2232,7 +2208,10 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
 export function sendTestEmail({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/notifications/test-email", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TestEmailResponseDto;
+    }>("/notifications/test-email", oazapfts.json({
         ...opts,
         method: "POST",
         body: systemConfigSmtpDto
@@ -3468,10 +3447,6 @@ export enum JobCommand {
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
-}
-export enum MapTheme {
-    Light = "light",
-    Dark = "dark"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"

@@ -133,12 +133,10 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**getAllLibraries**](doc//LibrariesApi.md#getalllibraries) | **GET** /libraries | 
 *LibrariesApi* | [**getLibrary**](doc//LibrariesApi.md#getlibrary) | **GET** /libraries/{id} | 
 *LibrariesApi* | [**getLibraryStatistics**](doc//LibrariesApi.md#getlibrarystatistics) | **GET** /libraries/{id}/statistics | 
-*LibrariesApi* | [**removeOfflineFiles**](doc//LibrariesApi.md#removeofflinefiles) | **POST** /libraries/{id}/removeOffline | 
 *LibrariesApi* | [**scanLibrary**](doc//LibrariesApi.md#scanlibrary) | **POST** /libraries/{id}/scan | 
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | 
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | 
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | 
-*MapApi* | [**getMapStyle**](doc//MapApi.md#getmapstyle) | **GET** /map/style.json | 
 *MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | 
 *MemoriesApi* | [**addMemoryAssets**](doc//MemoriesApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | 
 *MemoriesApi* | [**createMemory**](doc//MemoriesApi.md#creatememory) | **POST** /memories | 
@@ -348,7 +346,6 @@ Class | Method | HTTP request | Description
  - [ManualJobName](doc//ManualJobName.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
  - [MapReverseGeocodeResponseDto](doc//MapReverseGeocodeResponseDto.md)
- - [MapTheme](doc//MapTheme.md)
  - [MemoriesResponse](doc//MemoriesResponse.md)
  - [MemoriesUpdate](doc//MemoriesUpdate.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
@@ -387,7 +384,6 @@ Class | Method | HTTP request | Description
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
- - [ScanLibraryDto](doc//ScanLibraryDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)
@@ -450,6 +446,7 @@ Class | Method | HTTP request | Description
  - [TagUpsertDto](doc//TagUpsertDto.md)
  - [TagsResponse](doc//TagsResponse.md)
  - [TagsUpdate](doc//TagsUpdate.md)
+ - [TestEmailResponseDto](doc//TestEmailResponseDto.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
  - [TimeBucketSize](doc//TimeBucketSize.md)
  - [ToneMapping](doc//ToneMapping.md)

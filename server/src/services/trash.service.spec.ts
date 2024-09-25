@@ -67,7 +67,7 @@ describe(TrashService.name, () => {
     });
 
     it('should restore', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-id'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
       trashMock.restore.mockResolvedValue(1);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.restore).toHaveBeenCalledWith('user-id');
@@ -83,7 +83,7 @@ describe(TrashService.name, () => {
     });
 
     it('should empty the trash', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-id'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
       trashMock.empty.mockResolvedValue(1);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.empty).toHaveBeenCalledWith('user-id');

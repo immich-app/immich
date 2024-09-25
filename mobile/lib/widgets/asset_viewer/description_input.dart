@@ -8,7 +8,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/services/asset_description.service.dart';
+import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 
@@ -29,14 +29,16 @@ class DescriptionInput extends HookConsumerWidget {
     final focusNode = useFocusNode();
     final isFocus = useState(false);
     final isTextEmpty = useState(controller.text.isEmpty);
-    final descriptionProvider = ref.watch(assetDescriptionServiceProvider);
+    final assetService = ref.watch(assetServiceProvider);
     final owner = ref.watch(currentUserProvider);
     final hasError = useState(false);
     final assetWithExif = ref.watch(assetDetailProvider(asset));
 
     useEffect(
       () {
-        controller.text = descriptionProvider.getAssetDescription(asset);
+        assetService
+            .getDescription(asset)
+            .then((value) => controller.text = value);
         return null;
       },
       [assetWithExif.value],
@@ -45,7 +47,7 @@ class DescriptionInput extends HookConsumerWidget {
     submitDescription(String description) async {
       hasError.value = false;
       try {
-        await descriptionProvider.setDescription(
+        await assetService.setDescription(
           asset,
           description,
         );
