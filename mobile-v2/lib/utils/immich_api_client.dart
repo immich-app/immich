@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -64,53 +62,6 @@ class ImmichApiClient extends ApiClient with LogMixin {
     }
 
     return res;
-  }
-
-  // ignore: avoid-dynamic
-  static dynamic _patchDto(dynamic value, String targetType) {
-    switch (targetType) {
-      case 'UserPreferencesResponseDto':
-        if (value is Map && value['rating'] == null) {
-          value['rating'] = RatingResponse().toJson();
-        }
-    }
-  }
-
-  // ignore: avoid-dynamic
-  static dynamic fromJson(
-    // ignore: avoid-dynamic
-    dynamic value,
-    String targetType, {
-    bool growable = false,
-  }) {
-    _patchDto(value, targetType);
-    return ApiClient.fromJson(value, targetType, growable: growable);
-  }
-
-  @override
-  // ignore: avoid-dynamic
-  Future<dynamic> deserializeAsync(
-    String value,
-    String targetType, {
-    bool growable = false,
-  }) =>
-      deserialize(value, targetType, growable: growable);
-
-  @override
-  // ignore: avoid-dynamic
-  Future<dynamic> deserialize(
-    String value,
-    String targetType, {
-    bool growable = false,
-  }) async {
-    targetType = targetType.replaceAll(' ', '');
-    return targetType == 'String'
-        ? value
-        : fromJson(
-            await compute((String j) => json.decode(j), value),
-            targetType,
-            growable: growable,
-          );
   }
 
   UsersApi getUsersApi() => UsersApi(this);

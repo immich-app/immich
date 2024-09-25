@@ -22,18 +22,19 @@ function dart {
   rm ../mobile/openapi/analysis_options.yaml
 }
 
-function dartDio {
+function dart2 {
   rm -rf ../mobile-v2/openapi
-  cd ./templates/mobile-v2/serialization/native
+  cd ./templates/mobile/serialization/native
   wget -O native_class.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/serialization/native/native_class.mustache
   patch --no-backup-if-mismatch -u native_class.mustache < native_class.mustache.patch
   cd ../../../../
 
-  npx --yes @openapitools/openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile-v2/openapi -t ./templates/mobile-v2
+  npx --yes @openapitools/openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile-v2/openapi -t ./templates/mobile
 
   # Post generate patches
-  patch --no-backup-if-mismatch -u ../mobile-v2/openapi/lib/api_client.dart <./patch/api_client.dart.patch
-  patch --no-backup-if-mismatch -u ../mobile-v2/openapi/lib/api.dart <./patch/api-v2.dart.patch
+  patch --no-backup-if-mismatch -u ../mobile-v2/openapi/lib/api_client.dart < ./patch/api_client.dart.patch
+  patch --no-backup-if-mismatch -u ../mobile-v2/openapi/lib/api.dart < ./patch/api.dart.patch
+  patch --no-backup-if-mismatch -u ../mobile-v2/openapi/pubspec.yaml < ./patch/pubspec_immich_mobile.yaml.patch
   # Don't include analysis_options.yaml for the generated openapi files
   # so that language servers can properly exclude the mobile/openapi directory
   rm ../mobile-v2/openapi/analysis_options.yaml
@@ -49,8 +50,8 @@ npm run sync:open-api --prefix=../server
 
 if [[ $1 == 'dart' ]]; then
   dart
-elif [[ $1 == 'dart-dio' ]]; then
-  dartDio
+elif [[ $1 == 'dart-2' ]]; then
+  dart2
 elif [[ $1 == 'typescript' ]]; then
   typescript
 else

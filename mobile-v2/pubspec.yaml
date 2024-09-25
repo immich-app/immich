@@ -56,11 +56,6 @@ dependencies:
   openapi:
     path: openapi
 
-dependency_overrides:
-  # openapi uses an older version of http for backward compatibility. New versions do not have
-  # a breaking change so it is safer to override it and use the latest version for the app
-  http: ^1.2.1
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

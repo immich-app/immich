@@ -127,7 +127,14 @@ class LoginService with LogMixin {
     /// Set token to interceptor
     await di<ImmichApiClient>().init(accessToken: accessToken);
 
-    final user = await di<UserService>().getMyUser();
+    final user = await di<UserService>().getMyUser().timeout(
+      const Duration(seconds: 10),
+      // ignore: function-always-returns-null
+      onTimeout: () {
+        log.w("Timedout while fetching user details using saved credentials");
+        return null;
+      },
+    );
     if (user == null) {
       return false;
     }
