@@ -27,23 +27,14 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
 :::
 
-### Supported filesystems
-
-The Immich Postgres database (`DB_DATA_LOCATION`) must be located on a filesystem that supports user/group
-ownership and permissions (EXT2/3/4, ZFS, APFS, BTRFS, XFS, etc.). It will not work on any filesystem formatted in NTFS or ex/FAT/32.
-It will not work in WSL (Windows Subsystem for Linux) when using a mounted host directory (commonly under `/mnt`).
-If this is an issue, you can change the bind mount to a Docker volume instead.
-
-Regardless of filesystem, it is not recommended to use a network share for your database location due to performance and possible data loss issues.
-
 ## General
 
 | Variable                            | Description                                                                               |           Default            | Containers               | Workers            |
 | :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
-| `TZ`                                | Timezone                                                                                  |                              | server                   | microservices      |
+| `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media Location inside the container ⚠️**You probably shouldn't set this**<sup>\*1</sup>⚠️ |   `./upload`<sup>\*2</sup>   | server                   | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media Location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |   `./upload`<sup>\*3</sup>   | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
 | `CPU_CORES`                         | Amount of cores available to the immich server                                            | auto-detected cpu core count | server                   |                    |
@@ -52,16 +43,13 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies                                        |                              | server                   | api                |
 
-\*1: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
-
-\*2: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
-It only need to be set if the Immich deployment method is changing.
-
-:::tip
-`TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
-
+\*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
-:::
+
+\*2: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
+
+\*3: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
+It only need to be set if the Immich deployment method is changing.
 
 ## Workers
 

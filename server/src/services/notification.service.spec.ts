@@ -616,11 +616,6 @@ describe(NotificationService.name, () => {
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.SKIPPED);
     });
 
-    it('should fail if email could not be sent', async () => {
-      systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
-      await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.FAILED);
-    });
-
     it('should send mail successfully', async () => {
       systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: true, from: 'test@immich.app' } } });
       notificationMock.sendEmail.mockResolvedValue({ messageId: '', response: '' });

@@ -6,8 +6,8 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl, getKey, handlePromiseError } from '$lib/utils';
-  import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getServerConfig, type MapMarkerResponseDto } from '@immich/sdk';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -57,11 +57,13 @@
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
-  $: style = (() =>
-    getMapStyle({
-      theme: ($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT) as unknown as MapTheme,
-      key: getKey(),
-    }) as Promise<StyleSpecification>)();
+  $: style = (async () => {
+    const config = await getServerConfig();
+    const theme = $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT;
+    const styleUrl = theme === Theme.DARK ? config.mapDarkStyleUrl : config.mapLightStyleUrl;
+    const style = await fetch(styleUrl).then((response) => response.json());
+    return style as StyleSpecification;
+  })();
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
