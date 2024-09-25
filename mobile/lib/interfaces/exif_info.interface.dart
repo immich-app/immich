@@ -5,5 +5,7 @@ abstract interface class IExifInfoRepository {
 
   Future<ExifInfo> update(ExifInfo exifInfo);
 
+  Future<List<ExifInfo>> updateAll(List<ExifInfo> exifInfos);
+
   Future<void> delete(int id);
 }

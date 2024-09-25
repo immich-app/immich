@@ -244,7 +244,7 @@ class AlbumService {
     List<Asset> add = const [],
     List<Asset> remove = const [],
   }) async {
-    final album = await _albumRepository.getById(albumId);
+    final album = await _albumRepository.get(albumId);
     if (album == null) return;
     await _albumRepository.addAssets(album, add);
     await _albumRepository.removeAssets(album, remove);
@@ -285,20 +285,20 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final user = Store.get(StoreKey.currentUser);
-      if (album.owner.value?.isarId == user.isarId) {
+      final userId = Store.get(StoreKey.currentUser).isarId;
+      if (album.owner.value?.isarId == userId) {
         await _albumApiRepository.delete(album.remoteId!);
       }
       if (album.shared) {
         final foreignAssets =
-            await _assetRepository.getByAlbum(album, notOwnedBy: user);
+            await _assetRepository.getByAlbum(album, notOwnedBy: [userId]);
         await _albumRepository.delete(album.id);
 
         final List<Album> albums = await _albumRepository.getAll(shared: true);
         final List<Asset> existing = [];
         for (Album album in albums) {
           existing.addAll(
-            await _assetRepository.getByAlbum(album, notOwnedBy: user),
+            await _assetRepository.getByAlbum(album, notOwnedBy: [userId]),
           );
         }
         final List<int> idsToRemove =
@@ -357,7 +357,7 @@ class AlbumService {
 
       album.sharedUsers.remove(user);
       await _albumRepository.removeUsers(album, [user]);
-      final a = await _albumRepository.getById(album.id);
+      final a = await _albumRepository.get(album.id);
       // trigger watcher
       await _albumRepository.update(a!);
 
