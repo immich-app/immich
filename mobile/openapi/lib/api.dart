@@ -197,7 +197,6 @@ part 'model/ratings_update.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';
 part 'model/reverse_geocoding_state_response_dto.dart';
-part 'model/scan_library_dto.dart';
 part 'model/search_album_response_dto.dart';
 part 'model/search_asset_response_dto.dart';
 part 'model/search_explore_item.dart';
