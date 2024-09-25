@@ -28,7 +28,6 @@ from .schemas import (
     InferenceEntries,
     InferenceEntry,
     InferenceResponse,
-    LoadModelEntry,
     MessageResponse,
     ModelFormat,
     ModelIdentity,
@@ -125,17 +124,16 @@ def get_entries(entries: str = Form()) -> InferenceEntries:
         raise HTTPException(422, "Invalid request format.")
 
 
-def get_entry(entries: str = Form()) -> LoadModelEntry:
+def get_entry(entries: str = Form()) -> InferenceEntry:
     try:
         request: PipelineRequest = orjson.loads(entries)
         for task, types in request.items():
             for type, entry in types.items():
-                parsed: LoadModelEntry = {
+                parsed: InferenceEntry = {
                     "name": entry["modelName"],
                     "task": task,
                     "type": type,
                     "options": entry.get("options", {}),
-                    "ttl": entry["ttl"] if "ttl" in entry else settings.ttl,
                 }
         return parsed
     except (orjson.JSONDecodeError, ValidationError, KeyError, AttributeError) as e:
@@ -160,6 +158,13 @@ def ping() -> str:
 async def load_model(entry: InferenceEntry = Depends(get_entry)) -> None:
     model = await model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl)
     model = await load(model)
+    return Response(status_code=200)
+
+
+@app.post("/unload", response_model=TextResponse)
+async def unload_model(entry: InferenceEntry = Depends(get_entry)) -> None:
+    await model_cache.unload(entry["name"], entry["type"], entry["task"])
+    print("unload")
     return Response(status_code=200)
 
 

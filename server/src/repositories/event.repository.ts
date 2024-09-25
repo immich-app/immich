@@ -20,7 +20,7 @@ import {
   ServerEventMap,
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { IMachineLearningRepository, LoadTextModelActions } from 'src/interfaces/machine-learning.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { AuthService } from 'src/services/auth.service';
 import { Instrumentation } from 'src/utils/instrumentation';
@@ -79,7 +79,12 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
         const { machineLearning } = await this.configCore.getConfig({ withCache: true });
         if (machineLearning.clip.loadTextualModelOnConnection.enabled) {
           try {
-            this.machineLearningRepository.loadTextModel(machineLearning.url, machineLearning.clip);
+            console.log(this.server);
+            this.machineLearningRepository.prepareTextModel(
+              machineLearning.url,
+              machineLearning.clip,
+              LoadTextModelActions.LOAD,
+            );
           } catch (error) {
             this.logger.warn(error);
           }
@@ -100,6 +105,21 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
   async handleDisconnect(client: Socket) {
     this.logger.log(`Websocket Disconnect: ${client.id}`);
     await client.leave(client.nsp.name);
+    if ('background' in client.handshake.query && client.handshake.query.background === 'false') {
+      const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+      if (machineLearning.clip.loadTextualModelOnConnection.enabled && this.server?.engine.clientsCount == 0) {
+        try {
+          this.machineLearningRepository.prepareTextModel(
+            machineLearning.url,
+            machineLearning.clip,
+            LoadTextModelActions.UNLOAD,
+          );
+          this.logger.debug('sent request to unload text model');
+        } catch (error) {
+          this.logger.warn(error);
+        }
+      }
+    }
   }
 
   on<T extends EmitEvent>(event: T, handler: EmitHandler<T>): void {

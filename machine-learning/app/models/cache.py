@@ -58,3 +58,10 @@ class ModelCache:
     async def revalidate(self, key: str, ttl: int | None) -> None:
         if ttl is not None and key in self.cache._handlers:
             await self.cache.expire(key, ttl)
+
+    async def unload(self, model_name: str, model_type: ModelType, model_task: ModelTask) -> None:
+        key = f"{model_name}{model_type}{model_task}"
+        async with OptimisticLock(self.cache, key):
+            value = await self.cache.get(key)
+            if value is not None:
+                await self.cache.delete(key)

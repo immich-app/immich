@@ -24,17 +24,13 @@ export type ModelPayload = { imagePath: string } | { text: string };
 
 type ModelOptions = { modelName: string };
 
-export interface LoadModelOptions extends ModelOptions {
-  ttl: number;
-}
-
 export type FaceDetectionOptions = ModelOptions & { minScore: number };
 
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: number[] } & VisualResponse;
 
-export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions | LoadModelOptions } };
+export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions } };
 export type ClipTextualResponse = { [ModelTask.SEARCH]: number[] };
 
 export type FacialRecognitionRequest = {
@@ -50,6 +46,11 @@ export interface Face {
   score: number;
 }
 
+export enum LoadTextModelActions {
+  LOAD,
+  UNLOAD,
+}
+
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
@@ -58,5 +59,5 @@ export interface IMachineLearningRepository {
   encodeImage(url: string, imagePath: string, config: ModelOptions): Promise<number[]>;
   encodeText(url: string, text: string, config: ModelOptions): Promise<number[]>;
   detectFaces(url: string, imagePath: string, config: FaceDetectionOptions): Promise<DetectedFaces>;
-  loadTextModel(url: string, config: ModelOptions): Promise<void>;
+  prepareTextModel(url: string, config: ModelOptions, action: LoadTextModelActions): Promise<void>;
 }

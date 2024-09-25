@@ -14,12 +14,9 @@ export class ModelConfig extends TaskConfig {
   modelName!: string;
 }
 
-export class LoadTextualModelOnConnection extends TaskConfig {
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'int64' })
-  ttl!: number;
+export class LoadTextualModelOnConnection {
+  @ValidateBoolean()
+  enabled!: boolean;
 }
 
 export class CLIPConfig extends ModelConfig {

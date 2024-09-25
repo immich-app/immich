@@ -88,23 +88,6 @@
                 bind:checked={config.machineLearning.clip.loadTextualModelOnConnection.enabled}
                 disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
               />
-
-              <hr />
-
-              <SettingInputField
-                inputType={SettingInputFieldType.NUMBER}
-                label={$t('admin.machine_learning_preload_model_ttl')}
-                bind:value={config.machineLearning.clip.loadTextualModelOnConnection.ttl}
-                step="1"
-                min={0}
-                desc={$t('admin.machine_learning_max_detection_distance_description')}
-                disabled={disabled ||
-                  !config.machineLearning.enabled ||
-                  !config.machineLearning.clip.enabled ||
-                  !config.machineLearning.clip.loadTextualModelOnConnection.enabled}
-                isEdited={config.machineLearning.clip.loadTextualModelOnConnection.ttl !==
-                  savedConfig.machineLearning.clip.loadTextualModelOnConnection.ttl}
-              />
             </div>
           </SettingAccordion>
         </div>

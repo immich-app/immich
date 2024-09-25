@@ -122,7 +122,6 @@ export interface SystemConfig {
       modelName: string;
       loadTextualModelOnConnection: {
         enabled: boolean;
-        ttl: number;
       };
     };
     duplicateDetection: {
@@ -276,7 +275,6 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'ViT-B-32__openai',
       loadTextualModelOnConnection: {
         enabled: false,
-        ttl: 300,
       },
     },
     duplicateDetection: {

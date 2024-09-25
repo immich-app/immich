@@ -7,6 +7,7 @@ import {
   FaceDetectionOptions,
   FacialRecognitionResponse,
   IMachineLearningRepository,
+  LoadTextModelActions,
   MachineLearningRequest,
   ModelPayload,
   ModelTask,
@@ -38,11 +39,16 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return res;
   }
 
-  async loadTextModel(url: string, { modelName, loadTextualModelOnConnection: { ttl } }: CLIPConfig) {
+  private prepareTextModelUrl: Record<LoadTextModelActions, string> = {
+    [LoadTextModelActions.LOAD]: '/load',
+    [LoadTextModelActions.UNLOAD]: '/unload',
+  };
+
+  async prepareTextModel(url: string, { modelName }: CLIPConfig, actions: LoadTextModelActions) {
     try {
-      const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, ttl } } };
+      const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName } } };
       const formData = await this.getFormData(request);
-      const res = await this.fetchData(url, '/load', formData);
+      const res = await this.fetchData(url, this.prepareTextModelUrl[actions], formData);
       if (res.status >= 400) {
         throw new Error(`${errorPrefix} Loadings textual model failed with status ${res.status}: ${res.statusText}`);
       }

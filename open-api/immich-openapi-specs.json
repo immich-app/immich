@@ -5307,8 +5307,8 @@
             "name": "password",
             "required": false,
             "in": "query",
+            "example": "password",
             "schema": {
-              "example": "password",
               "type": "string"
             }
           },
@@ -9510,16 +9510,10 @@
         "properties": {
           "enabled": {
             "type": "boolean"
-          },
-          "ttl": {
-            "format": "int64",
-            "minimum": 0,
-            "type": "number"
           }
         },
         "required": [
-          "enabled",
-          "ttl"
+          "enabled"
         ],
         "type": "object"
       },
