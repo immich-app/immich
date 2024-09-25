@@ -31,7 +31,7 @@
   export let onShowSelectSharedUser: () => void;
   export let onRemove: (userId: string) => void;
 
-  let currentUser: UserResponseDto | null = null;  // Store the current user fetched from the API
+  let user: UserResponseDto | null = null;  // Store the current user fetched from the API
   let selectedRemoveUser: UserResponseDto | null = null;  // Keep track of the user selected for removal
 
   const options: Record<AssetOrder, RenderedOption> = {
@@ -44,7 +44,7 @@
   // Fetch the current user when the component mounts
   onMount(async () => {
     try {
-      currentUser = await getMyUser();
+      user = await getMyUser();
     } catch (error) {
       handleError(error, $t('errors.unable_to_refresh_user'));
     }
@@ -124,12 +124,12 @@ console.log(selectedRemoveUser,"selectedRemoveUser");
           </div>
           <div>{$t('invite_people')}</div>
         </button>
-       {#if currentUser}
+       {#if user}
        <div class="flex items-center gap-2 py-2 mt-2">
         <div>
-           <UserAvatar user={currentUser} size="md" />
+           <UserAvatar user={user} size="md" />
           </div>
-          <div class="w-full">{currentUser.name}</div>
+          <div class="w-full">{user.name}</div>
           <div>{$t('owner')}</div>
       </div>
       {/if}
