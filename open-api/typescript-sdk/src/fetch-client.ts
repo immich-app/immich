@@ -366,7 +366,6 @@ export type AssetMediaCreateDto = {
     fileModifiedAt: string;
     isArchived?: boolean;
     isFavorite?: boolean;
-    isOffline?: boolean;
     isVisible?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -578,10 +577,6 @@ export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     name?: string;
-};
-export type ScanLibraryDto = {
-    refreshAllFiles?: boolean;
-    refreshModifiedFiles?: boolean;
 };
 export type LibraryStatsResponseDto = {
     photos: number;
@@ -2066,23 +2061,13 @@ export function updateLibrary({ id, updateLibraryDto }: {
         body: updateLibraryDto
     })));
 }
-export function removeOfflineFiles({ id }: {
+export function scanLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/removeOffline`, {
+    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, {
         ...opts,
         method: "POST"
     }));
-}
-export function scanLibrary({ id, scanLibraryDto }: {
-    id: string;
-    scanLibraryDto: ScanLibraryDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: scanLibraryDto
-    })));
 }
 export function getLibraryStatistics({ id }: {
     id: string;

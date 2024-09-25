@@ -2853,41 +2853,6 @@
         ]
       }
     },
-    "/libraries/{id}/removeOffline": {
-      "post": {
-        "operationId": "removeOfflineFiles",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Libraries"
-        ]
-      }
-    },
     "/libraries/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",
@@ -2902,16 +2867,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScanLibraryDto"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "204": {
             "description": ""
@@ -8287,9 +8242,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isOffline": {
-            "type": "boolean"
-          },
           "isVisible": {
             "type": "boolean"
           },
@@ -10626,17 +10578,6 @@
           "lastImportFileName",
           "lastUpdate"
         ],
-        "type": "object"
-      },
-      "ScanLibraryDto": {
-        "properties": {
-          "refreshAllFiles": {
-            "type": "boolean"
-          },
-          "refreshModifiedFiles": {
-            "type": "boolean"
-          }
-        },
         "type": "object"
       },
       "SearchAlbumResponseDto": {

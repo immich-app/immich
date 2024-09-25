@@ -164,7 +164,7 @@ export class JobService {
       }
 
       case QueueName.LIBRARY: {
-        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, data: { force } });
       }
 
       default: {
