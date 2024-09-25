@@ -3491,6 +3491,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestEmailResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -12346,6 +12353,17 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "TestEmailResponseDto": {
+        "properties": {
+          "messageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "messageId"
+        ],
         "type": "object"
       },
       "TimeBucketResponseDto": {

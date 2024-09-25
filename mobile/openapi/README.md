@@ -448,6 +448,7 @@ Class | Method | HTTP request | Description
  - [TagUpsertDto](doc//TagUpsertDto.md)
  - [TagsResponse](doc//TagsResponse.md)
  - [TagsUpdate](doc//TagsUpdate.md)
+ - [TestEmailResponseDto](doc//TestEmailResponseDto.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
  - [TimeBucketSize](doc//TimeBucketSize.md)
  - [ToneMapping](doc//ToneMapping.md)
