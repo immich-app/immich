@@ -1,7 +1,14 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { updateAlbumInfo, type AlbumResponseDto, type UserResponseDto, AssetOrder } from '@immich/sdk';
-  import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus } from '@mdi/js';
+  import {
+    getMyUser,  // Reintroduce the API to fetch the current user
+    updateAlbumInfo,
+    removeUserFromAlbum,
+    type AlbumResponseDto,
+    type UserResponseDto,
+    AssetOrder
+  } from '@immich/sdk';
+  import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus, mdiDotsVertical } from '@mdi/js';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -10,14 +17,22 @@
   import { handleError } from '$lib/utils/handle-error';
   import { findKey } from 'lodash-es';
   import { t } from 'svelte-i18n';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { onMount } from 'svelte';  // Import onMount to fetch the user when component mounts
 
   export let album: AlbumResponseDto;
   export let order: AssetOrder | undefined;
-  export let user: UserResponseDto;
   export let onChangeOrder: (order: AssetOrder) => void;
   export let onClose: () => void;
   export let onToggleEnabledActivity: () => void;
   export let onShowSelectSharedUser: () => void;
+  export let onRemove: (userId: string) => void;
+
+  let currentUser: UserResponseDto | null = null;  // Store the current user fetched from the API
+  let selectedRemoveUser: UserResponseDto | null = null;  // Keep track of the user selected for removal
 
   const options: Record<AssetOrder, RenderedOption> = {
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
@@ -25,6 +40,15 @@
   };
 
   $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
+
+  // Fetch the current user when the component mounts
+  onMount(async () => {
+    try {
+      currentUser = await getMyUser();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_refresh_user'));
+    }
+  });
 
   const handleToggle = async (returnedOption: RenderedOption) => {
     if (selectedOption === returnedOption) {
@@ -43,6 +67,29 @@
       onChangeOrder(order);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_album'));
+    }
+  };
+
+  const handleMenuRemove = (user: UserResponseDto) => {
+    selectedRemoveUser = user;
+  };
+
+  const handleRemoveUser = async () => {
+    if (!selectedRemoveUser) {
+      return;
+    }
+console.log(selectedRemoveUser,"selectedRemoveUser");
+    try {
+      await removeUserFromAlbum({ id: album.id, userId: selectedRemoveUser.id });
+      onRemove(selectedRemoveUser.id);
+      notificationController.show({
+        type: NotificationType.Info,
+        message: $t('album_user_removed', { values: { user: selectedRemoveUser.name } }),
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_remove_album_users'));
+    } finally {
+      selectedRemoveUser = null;
     }
   };
 </script>
@@ -77,22 +124,40 @@
           </div>
           <div>{$t('invite_people')}</div>
         </button>
-        <div class="flex items-center gap-2 py-2 mt-2">
-          <div>
-            <UserAvatar {user} size="md" />
+       {#if currentUser}
+       <div class="flex items-center gap-2 py-2 mt-2">
+        <div>
+           <UserAvatar user={currentUser} size="md" />
           </div>
-          <div class="w-full">{user.name}</div>
+          <div class="w-full">{currentUser.name}</div>
           <div>{$t('owner')}</div>
-        </div>
+      </div>
+      {/if}
+
         {#each album.albumUsers as { user } (user.id)}
           <div class="flex items-center gap-2 py-2">
             <div>
               <UserAvatar {user} size="md" />
             </div>
             <div class="w-full">{user.name}</div>
+            {#if user.id !== album.ownerId} <!-- Allow deletion for non-owners -->
+              <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
+                <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
+              </ButtonContextMenu>
+            {/if}
           </div>
         {/each}
       </div>
     </div>
   </div>
 </FullScreenModal>
+
+{#if selectedRemoveUser}
+  <ConfirmDialog
+    title={$t('album_remove_user')}
+    prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
+    confirmText={$t('remove_user')}
+    onConfirm={handleRemoveUser}
+    onCancel={() => (selectedRemoveUser = null)}
+  />
+{/if}
