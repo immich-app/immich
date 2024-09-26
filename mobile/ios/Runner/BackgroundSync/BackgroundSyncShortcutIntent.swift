@@ -11,7 +11,12 @@ import SwiftUI
 @available(iOS 16.0, *)
 struct BackgroundSyncShortcutIntent: AppIntent {
 
+    // TODO: localized title and description
     static var title: LocalizedStringResource = "Sync gallery"
+
+    static var openAppWhenRun: Bool = true
+
+    static var isDiscoverable: Bool = true
     
     func perform() async throws -> some IntentResult {
         

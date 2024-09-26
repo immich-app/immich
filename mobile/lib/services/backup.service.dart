@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -339,31 +340,29 @@ class BackupService {
             }
           }
 
-          final fileStream = file.openRead();
-          final assetRawUploadData = http.MultipartFile(
-            "assetData",
-            fileStream,
-            file.lengthSync(),
+          final fileLength = file.lengthSync();
+
+          final (baseDir, dir, _) = await Task.split(file: file);
+
+          final backgroundRequest = UploadTask(
             filename: originalFileName,
-          );
+            baseDirectory: baseDir,
+            directory: dir,
+            url: '$savedEndpoint/assets',
+            httpRequestMethod: 'POST',
+            priority: 10,
+          ); // Priority 10 for testing purposes; maybe we could change that to a lower value later
 
-          final baseRequest = MultipartRequest(
-            'POST',
-            Uri.parse('$savedEndpoint/assets'),
-            onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
-          );
-
-          baseRequest.headers.addAll(ApiService.getRequestHeaders());
-          baseRequest.headers["Transfer-Encoding"] = "chunked";
-          baseRequest.fields['deviceAssetId'] = asset.localId!;
-          baseRequest.fields['deviceId'] = deviceId;
-          baseRequest.fields['fileCreatedAt'] =
+          backgroundRequest.headers.addAll(ApiService.getRequestHeaders());
+          backgroundRequest.headers["Transfer-Encoding"] = "chunked";
+          backgroundRequest.fields['deviceAssetId'] = asset.localId!;
+          backgroundRequest.fields['deviceId'] = deviceId;
+          backgroundRequest.fields['fileCreatedAt'] =
               asset.fileCreatedAt.toUtc().toIso8601String();
-          baseRequest.fields['fileModifiedAt'] =
+          backgroundRequest.fields['fileModifiedAt'] =
               asset.fileModifiedAt.toUtc().toIso8601String();
-          baseRequest.fields['isFavorite'] = asset.isFavorite.toString();
-          baseRequest.fields['duration'] = asset.duration.toString();
-          baseRequest.files.add(assetRawUploadData);
+          backgroundRequest.fields['isFavorite'] = asset.isFavorite.toString();
+          backgroundRequest.fields['duration'] = asset.duration.toString();
 
           onCurrentAsset(
             CurrentUploadAsset(
@@ -383,29 +382,37 @@ class BackupService {
             livePhotoVideoId = await uploadLivePhotoVideo(
               originalFileName,
               livePhotoFile,
-              baseRequest,
+              backgroundRequest,
               cancelToken,
             );
           }
 
           if (livePhotoVideoId != null) {
-            baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
+            backgroundRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          final response = await httpClient.send(
-            baseRequest,
-            cancellationToken: cancelToken,
+          final response = await FileDownloader().upload(
+            backgroundRequest,
+            onProgress: (percentage) => {
+              // onProgress returns a double in [0.0;1.0] for percentage
+              if (percentage > 0)
+                onProgress(
+                  (percentage * fileLength).toInt(),
+                  fileLength,
+                ),
+            },
           );
 
-          final responseBody =
-              jsonDecode(await response.stream.bytesToString());
+          final responseBody = jsonDecode(response.responseBody ?? "{}");
 
-          if (![200, 201].contains(response.statusCode)) {
-            final error = responseBody;
-            final errorMessage = error['message'] ?? error['error'];
+          if (response.status == TaskStatus.failed ||
+              ![200, 201].contains(response.responseStatusCode)) {
+            final error = response.exception != null
+                ? response.exception!.description
+                : responseBody;
 
             debugPrint(
-              "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
+              "Error(${response.responseStatusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | $error",
             );
 
             onError(
@@ -415,11 +422,11 @@ class BackupService {
                 fileCreatedAt: asset.fileCreatedAt,
                 fileName: originalFileName,
                 fileType: _getAssetType(candidate.asset.type),
-                errorMessage: errorMessage,
+                errorMessage: error,
               ),
             );
 
-            if (errorMessage == "Quota has been exceeded!") {
+            if (error == "Quota has been exceeded!") {
               anyErrors = true;
               break;
             }
@@ -428,7 +435,7 @@ class BackupService {
           }
 
           bool isDuplicate = false;
-          if (response.statusCode == 200) {
+          if (response.responseStatusCode == 200) {
             isDuplicate = true;
             duplicatedAssetIds.add(asset.localId!);
           }
@@ -478,7 +485,7 @@ class BackupService {
   Future<String?> uploadLivePhotoVideo(
     String originalFileName,
     File? livePhotoVideoFile,
-    MultipartRequest baseRequest,
+    UploadTask baseRequest,
     http.CancellationToken cancelToken,
   ) async {
     if (livePhotoVideoFile == null) {
@@ -488,35 +495,33 @@ class BackupService {
       originalFileName,
       p.extension(livePhotoVideoFile.path),
     );
-    final fileStream = livePhotoVideoFile.openRead();
-    final livePhotoRawUploadData = http.MultipartFile(
-      "assetData",
-      fileStream,
-      livePhotoVideoFile.lengthSync(),
+
+    final (baseDir, dir, _) = await Task.split(file: livePhotoVideoFile);
+
+    final backgroundRequest = UploadTask(
       filename: livePhotoTitle,
-    );
-    final livePhotoReq = MultipartRequest(
-      baseRequest.method,
-      baseRequest.url,
-      onProgress: baseRequest.onProgress,
+      baseDirectory: baseDir,
+      directory: dir,
+      url: baseRequest.url,
+      httpRequestMethod: baseRequest.httpRequestMethod,
+      priority: baseRequest.priority,
     )
       ..headers.addAll(baseRequest.headers)
       ..fields.addAll(baseRequest.fields);
 
-    livePhotoReq.files.add(livePhotoRawUploadData);
+    final response = await FileDownloader()
+        .upload(backgroundRequest); //TODO: onProgress callback?
 
-    var response = await httpClient.send(
-      livePhotoReq,
-      cancellationToken: cancelToken,
-    );
+    var responseBody = jsonDecode(response.responseBody ?? "{}");
 
-    var responseBody = jsonDecode(await response.stream.bytesToString());
-
-    if (![200, 201].contains(response.statusCode)) {
-      var error = responseBody;
+    if (response.status == TaskStatus.failed ||
+        ![200, 201].contains(response.responseStatusCode)) {
+      final error = response.exception != null
+          ? response.exception!.description
+          : responseBody;
 
       debugPrint(
-        "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | ${error['error']}",
+        "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | $error",
       );
     }
 

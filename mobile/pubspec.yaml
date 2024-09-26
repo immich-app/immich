@@ -32,7 +32,7 @@ dependencies:
   flutter_svg: ^2.0.9
   package_info_plus: ^8.0.1
   url_launcher: ^6.2.4
-  http: ^0.13.6
+  http: ^1.1.0
   cancellation_token_http: ^2.0.0
   easy_localization: ^3.0.3
   share_plus: ^10.0.0
@@ -56,6 +56,7 @@ dependencies:
   thumbhash: 0.1.0+1
   async: ^2.11.0
   dynamic_color: ^1.7.0 #package to apply system theme
+  background_downloader: ^8.5.5
 
   #image editing packages
   crop_image: ^1.0.13
