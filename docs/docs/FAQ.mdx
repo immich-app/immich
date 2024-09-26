@@ -333,7 +333,12 @@ You may need to add mount points or docker volumes for the following internal co
 - `immich-machine-learning:/.cache`
 - `redis:/data`
 
-The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
+The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION` and `/cache` for machine-learning.
+
+:::note Docker Compose Volumes
+The Docker Compose top level volume element does not support non-root access, all of the above volumes must be local volume mounts.
+:::
+
 
 For a further hardened system, you can add the following block to every container except for `immich_postgres`.
 
