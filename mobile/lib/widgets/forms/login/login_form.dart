@@ -186,6 +186,8 @@ class LoginForm extends HookConsumerWidget {
 
       // This will remove current cache asset state of previous user login.
       ref.read(assetProvider.notifier).clearAllAsset();
+
+      // Invalidate all api repository provider instance to take into account new access token
       invalidateAllApiRepositoryProviders(ref);
 
       try {
