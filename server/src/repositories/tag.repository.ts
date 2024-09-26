@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { TagEntity } from 'src/entities/tag.entity';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Repository, TreeRepository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -12,7 +13,11 @@ export class TagRepository implements ITagRepository {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(TagEntity) private repository: Repository<TagEntity>,
-  ) {}
+    @InjectRepository(TagEntity) private tree: TreeRepository<TagEntity>,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
+    this.logger.setContext(TagRepository.name);
+  }
 
   get(id: string): Promise<TagEntity | null> {
     return this.repository.findOne({ where: { id } });
@@ -171,6 +176,34 @@ export class TagRepository implements ITagRepository {
         .into('tag_asset', ['tagsId', 'assetsId'])
         .values(tagIds.map((tagId) => ({ tagsId: tagId, assetsId: assetId })))
         .execute();
+    });
+  }
+
+  async deleteEmptyTags() {
+    await this.dataSource.transaction(async (manager) => {
+      const ids = new Set<string>();
+      const tags = await manager.find(TagEntity);
+      for (const tag of tags) {
+        const count = await manager
+          .createQueryBuilder('assets', 'asset')
+          .innerJoin(
+            'asset.tags',
+            'asset_tags',
+            'asset_tags.id IN (SELECT id_descendant FROM tags_closure WHERE id_ancestor = :tagId)',
+            { tagId: tag.id },
+          )
+          .getCount();
+
+        if (count === 0) {
+          this.logger.debug(`Found empty tag: ${tag.id} - ${tag.value}`);
+          ids.add(tag.id);
+        }
+      }
+
+      if (ids.size > 0) {
+        await manager.delete(TagEntity, { id: In([...ids]) });
+        this.logger.log(`Deleted ${ids.size} empty tags`);
+      }
     });
   }
 

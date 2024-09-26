@@ -71,9 +71,8 @@ export const dateFormats = {
 
 export enum QueryParameter {
   ACTION = 'action',
-  ASSET_INDEX = 'assetIndex',
+  ID = 'id',
   IS_OPEN = 'isOpen',
-  MEMORY_INDEX = 'memoryIndex',
   ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
@@ -94,7 +93,7 @@ export enum ActionQueryParameterValue {
   MERGE = 'merge',
 }
 
-export const maximumLengthSearchPeople: number = 20;
+export const maximumLengthSearchPeople = 1000;
 
 // time to load the map before displaying the loading spinner
 export const timeToLoadTheMap: number = 100;
@@ -284,6 +283,7 @@ export const langs = [
   { name: 'Lithuanian', code: 'lt', loader: () => import('$lib/i18n/lt.json') },
   { name: 'Latvian', code: 'lv', loader: () => import('$lib/i18n/lv.json') },
   { name: 'Mongolian', code: 'mn', loader: () => import('$lib/i18n/mn.json') },
+  { name: 'Malay', code: 'ms', loader: () => import('$lib/i18n/ms.json') },
   { name: 'Norwegian Bokmål', code: 'nb-NO', weblateCode: 'nb_NO', loader: () => import('$lib/i18n/nb_NO.json') },
   { name: 'Dutch', code: 'nl', loader: () => import('$lib/i18n/nl.json') },
   { name: 'Polish', code: 'pl', loader: () => import('$lib/i18n/pl.json') },

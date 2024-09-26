@@ -9,7 +9,7 @@ export class AddAutoStackId1703035138085 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_auto_stack_id"`);
+        await queryRunner.query(`DROP INDEX "IDX_auto_stack_id"`);
         await queryRunner.query(`ALTER TABLE "exif" DROP COLUMN "autoStackId"`);
     }
 

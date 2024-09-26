@@ -835,10 +835,10 @@
   "refreshed": "",
   "refreshes_every_file": "",
   "remove": "Pašalinti",
+  "remove_deleted_assets": "",
   "remove_from_album": "Pašalinti iš albumo",
   "remove_from_favorites": "Pašalinti iš mėgstamiausių",
   "remove_from_shared_link": "",
-  "remove_offline_files": "",
   "remove_user": "Pašalinti vartotoją",
   "removed_api_key": "Pašalintas API Raktas: {name}",
   "rename": "Pervadinti",
@@ -1026,5 +1026,5 @@
   "welcome_to_immich": "",
   "year": "Metai",
   "yes": "Taip",
-  "zoom_image": ""
+  "zoom_image": "Priartinti vaizdą"
 }

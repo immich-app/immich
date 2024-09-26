@@ -296,10 +296,12 @@ class SystemConfigMapDto {
   @ValidateBoolean()
   enabled!: boolean;
 
-  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
   lightStyle!: string;
 
-  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
   darkStyle!: string;
 }
 
@@ -373,6 +375,18 @@ class SystemConfigPasswordLoginDto {
 class SystemConfigReverseGeocodingDto {
   @ValidateBoolean()
   enabled!: boolean;
+}
+
+class SystemConfigFacesDto {
+  @IsBoolean()
+  import!: boolean;
+}
+
+class SystemConfigMetadataDto {
+  @Type(() => SystemConfigFacesDto)
+  @ValidateNested()
+  @IsObject()
+  faces!: SystemConfigFacesDto;
 }
 
 class SystemConfigServerDto {
@@ -554,6 +568,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   reverseGeocoding!: SystemConfigReverseGeocodingDto;
+
+  @Type(() => SystemConfigMetadataDto)
+  @ValidateNested()
+  @IsObject()
+  metadata!: SystemConfigMetadataDto;
 
   @Type(() => SystemConfigStorageTemplateDto)
   @ValidateNested()

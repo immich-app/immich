@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -27,7 +28,7 @@ import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 final manualUploadProvider =
     StateNotifierProvider<ManualUploadNotifier, ManualUploadState>((ref) {
@@ -193,17 +194,10 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.manualInProgress);
 
       if (ref.read(galleryPermissionNotifier.notifier).hasPermission) {
-        await PhotoManager.clearFileCache();
+        await ref.read(fileMediaRepositoryProvider).clearFileCache();
 
-        // We do not have 1:1 mapping of all AssetEntity fields to Asset. This results in cases
-        // where platform specific fields such as `subtype` used to detect platform specific assets such as
-        // LivePhoto in iOS is lost when we directly fetch the local asset from Asset using Asset.local
-        List<AssetEntity?> allAssetsFromDevice = await Future.wait(
-          allManualUploads
-              // Filter local only assets
-              .where((e) => e.isLocal && !e.isRemote)
-              .map((e) => e.local!.obtainForNewProperties()),
-        );
+        final allAssetsFromDevice =
+            allManualUploads.where((e) => e.isLocal && !e.isRemote).toList();
 
         if (allAssetsFromDevice.length != allManualUploads.length) {
           _log.warning(
@@ -221,11 +215,17 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             await _backupService.buildUploadCandidates(
           selectedBackupAlbums,
           excludedBackupAlbums,
+          useTimeFilter: false,
         );
 
-        // Extrack candidate from allAssetsFromDevice.nonNulls
-        final uploadAssets = candidates
-            .where((e) => allAssetsFromDevice.nonNulls.contains(e.asset));
+        // Extrack candidate from allAssetsFromDevice
+        final uploadAssets = candidates.where(
+          (candidate) =>
+              allAssetsFromDevice.firstWhereOrNull(
+                (asset) => asset.localId == candidate.asset.localId,
+              ) !=
+              null,
+        );
 
         if (uploadAssets.isEmpty) {
           debugPrint("[_startUpload] No Assets to upload - Abort Process");

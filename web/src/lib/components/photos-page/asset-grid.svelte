@@ -28,7 +28,7 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { throttle } from 'lodash-es';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
@@ -64,6 +64,8 @@
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
+  export let onSelect: (asset: AssetResponseDto) => void = () => {};
+  export let onEscape: () => void = () => {};
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
@@ -126,8 +128,6 @@
       INTERSECTION_ROOT_BOTTOM: THUMBNAIL_INTERSECTION_ROOT_BOTTOM,
     },
   } = TUNABLES;
-
-  const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
   const isViewportOrigin = () => {
     return viewport.height === 0 && viewport.width === 0;
@@ -447,7 +447,7 @@
     const ids = await stackAssets(Array.from($selectedAssets));
     if (ids) {
       $assetStore.removeAssets(ids);
-      dispatch('escape');
+      onEscape();
     }
   };
 
@@ -471,7 +471,7 @@
     }
 
     const shortcuts: ShortcutOptions[] = [
-      { shortcut: { key: 'Escape' }, onShortcut: () => dispatch('escape') },
+      { shortcut: { key: 'Escape' }, onShortcut: onEscape },
       { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
       { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
       { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
@@ -539,7 +539,7 @@
     return !!nextAsset;
   };
 
-  const handleClose = async ({ detail: { asset } }: { detail: { asset: AssetResponseDto } }) => {
+  const handleClose = async ({ asset }: { asset: AssetResponseDto }) => {
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
     $gridScrollTarget = { at: asset.id };
@@ -554,7 +554,7 @@
       case AssetAction.DELETE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await handleNext()) || (await handlePrevious()) || (await handleClose({ detail: { asset: action.asset } }));
+        (await handleNext()) || (await handlePrevious()) || (await handleClose({ asset: action.asset }));
 
         // delete after find the next one
         assetStore.removeAssets([action.asset.id]);
@@ -649,7 +649,7 @@
       return;
     }
 
-    dispatch('select', asset);
+    onSelect(asset);
 
     if (singleSelect) {
       element.scrollTop = 0;
@@ -754,28 +754,29 @@
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
     size={idsSelectedAssets.length}
-    on:cancel={() => (isShowDeleteConfirmation = false)}
-    on:confirm={() => handlePromiseError(trashOrDelete(true))}
+    onCancel={() => (isShowDeleteConfirmation = false)}
+    onConfirm={() => handlePromiseError(trashOrDelete(true))}
   />
 {/if}
 
 {#if showShortcuts}
-  <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
+  <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
 {/if}
-
-<Scrubber
-  invisible={showSkeleton}
-  {assetStore}
-  height={safeViewport.height}
-  timelineTopOffset={topSectionHeight}
-  timelineBottomOffset={bottomSectionHeight}
-  {leadout}
-  {scrubOverallPercent}
-  {scrubBucketPercent}
-  {scrubBucket}
-  {onScrub}
-  {stopScrub}
-/>
+{#if assetStore.buckets.length > 0}
+  <Scrubber
+    invisible={showSkeleton}
+    {assetStore}
+    height={safeViewport.height}
+    timelineTopOffset={topSectionHeight}
+    timelineBottomOffset={bottomSectionHeight}
+    {leadout}
+    {scrubOverallPercent}
+    {scrubBucketPercent}
+    {scrubBucket}
+    {onScrub}
+    {stopScrub}
+  />
+{/if}
 
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
@@ -803,12 +804,13 @@
     class:invisible={showSkeleton}
     style:height={$assetStore.timelineHeight + 'px'}
   >
-    {#each $assetStore.buckets as bucket (bucket.bucketDate)}
+    {#each $assetStore.buckets as bucket (bucket.viewId)}
       {@const isPremeasure = preMeasure.includes(bucket)}
       {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
       <div
         id="bucket"
         use:intersectionObserver={{
+          key: bucket.viewId,
           onIntersect: () => handleIntersect(bucket),
           onSeparate: () => handleSeparate(bucket),
           top: BUCKET_INTERSECTION_ROOT_TOP,
@@ -845,9 +847,9 @@
             {onAssetInGrid}
             {bucket}
             viewport={safeViewport}
-            on:select={({ detail: group }) => handleGroupSelect(group.title, group.assets)}
-            on:selectAssetCandidates={({ detail: asset }) => handleSelectAssetCandidates(asset)}
-            on:selectAssets={({ detail: asset }) => handleSelectAssets(asset)}
+            onSelect={({ title, assets }) => handleGroupSelect(title, assets)}
+            onSelectAssetCandidates={handleSelectAssetCandidates}
+            onSelectAssets={handleSelectAssets}
           />
         {/if}
       </div>
@@ -867,9 +869,9 @@
         {isShared}
         {album}
         onAction={handleAction}
-        on:previous={handlePrevious}
-        on:next={handleNext}
-        on:close={handleClose}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onClose={handleClose}
       />
     {/await}
   {/if}

@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SourceType } from 'src/enum';
 import {
   AssetFaceId,
+  DeleteAllFacesOptions,
   IPersonRepository,
   PeopleStatistics,
+  PersonNameResponse,
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
@@ -17,12 +20,13 @@ import {
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class PersonRepository implements IPersonRepository {
   constructor(
+    @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
@@ -49,8 +53,21 @@ export class PersonRepository implements IPersonRepository {
     await this.personRepository.clear();
   }
 
-  async deleteAllFaces(): Promise<void> {
-    await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
+  async deleteAllFaces({ sourceType }: DeleteAllFacesOptions): Promise<void> {
+    if (!sourceType) {
+      return this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
+    }
+
+    await this.assetFaceRepository
+      .createQueryBuilder('asset_faces')
+      .delete()
+      .andWhere('sourceType = :sourceType', { sourceType })
+      .execute();
+
+    await this.assetFaceRepository.query('VACUUM ANALYZE asset_faces, face_search');
+    if (sourceType === SourceType.MACHINE_LEARNING) {
+      await this.assetFaceRepository.query('REINDEX INDEX face_index');
+    }
   }
 
   getAllFaces(
@@ -167,18 +184,30 @@ export class PersonRepository implements IPersonRepository {
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
       .where(
         'person.ownerId = :userId AND (LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere)',
         { userId, nameStart: `${personName.toLowerCase()}%`, nameAnywhere: `% ${personName.toLowerCase()}%` },
       )
-      .groupBy('person.id')
-      .orderBy('COUNT(face.assetId)', 'DESC')
-      .limit(20);
+      .limit(1000);
 
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
+    return queryBuilder.getMany();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { withHidden: true }] })
+  getDistinctNames(userId: string, { withHidden }: PersonNameSearchOptions): Promise<PersonNameResponse[]> {
+    const queryBuilder = this.personRepository
+      .createQueryBuilder('person')
+      .select(['person.id', 'person.name'])
+      .distinctOn(['lower(person.name)'])
+      .where(`person.ownerId = :userId AND person.name != ''`, { userId });
+
+    if (!withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+
     return queryBuilder.getMany();
   }
 
@@ -248,8 +277,13 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
-  create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    return this.personRepository.save(entity);
+  create(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    return this.save(person);
+  }
+
+  async createAll(people: Partial<PersonEntity>[]): Promise<string[]> {
+    const results = await this.personRepository.save(people);
+    return results.map((person) => person.id);
   }
 
   async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
@@ -257,9 +291,20 @@ export class PersonRepository implements IPersonRepository {
     return res.map((row) => row.id);
   }
 
-  async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    const { id } = await this.personRepository.save(entity);
-    return this.personRepository.findOneByOrFail({ id });
+  async replaceFaces(assetId: string, entities: AssetFaceEntity[], sourceType: string): Promise<string[]> {
+    return this.dataSource.transaction(async (manager) => {
+      await manager.delete(AssetFaceEntity, { assetId, sourceType });
+      const assetFaces = await manager.save(AssetFaceEntity, entities);
+      return assetFaces.map(({ id }) => id);
+    });
+  }
+
+  async update(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    return this.save(person);
+  }
+
+  async updateAll(people: Partial<PersonEntity>[]): Promise<void> {
+    await this.personRepository.save(people);
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
@@ -280,5 +325,10 @@ export class PersonRepository implements IPersonRepository {
       .select('MAX(jobStatus.facesRecognizedAt)::text', 'latestDate')
       .getRawOne();
     return result?.latestDate;
+  }
+
+  private async save(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    const { id } = await this.personRepository.save(person);
+    return this.personRepository.findOneByOrFail({ id });
   }
 }

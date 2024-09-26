@@ -31,6 +31,19 @@ export class DatabaseRepository implements IDatabaseRepository {
     this.logger.setContext(DatabaseRepository.name);
   }
 
+  async reconnect() {
+    try {
+      if (this.dataSource.isInitialized) {
+        await this.dataSource.destroy();
+      }
+      const { isInitialized } = await this.dataSource.initialize();
+      return isInitialized;
+    } catch (error) {
+      this.logger.error(`Database connection failed: ${error}`);
+      return false;
+    }
+  }
+
   async getExtensionVersion(extension: DatabaseExtension): Promise<ExtensionVersion> {
     const [res]: ExtensionVersion[] = await this.dataSource.query(
       `SELECT default_version as "availableVersion", installed_version as "installedVersion"

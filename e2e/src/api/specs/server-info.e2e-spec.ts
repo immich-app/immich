@@ -102,6 +102,7 @@ describe('/server-info', () => {
         configFile: false,
         duplicateDetection: false,
         facialRecognition: false,
+        importFaces: false,
         map: true,
         reverseGeocoding: true,
         oauth: false,
@@ -127,6 +128,8 @@ describe('/server-info', () => {
         isInitialized: true,
         externalDomain: '',
         isOnboarded: false,
+        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
     });
   });

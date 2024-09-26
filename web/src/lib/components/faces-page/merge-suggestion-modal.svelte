@@ -4,7 +4,6 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
   import { mdiArrowLeft, mdiMerge } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -13,25 +12,22 @@
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
   export let potentialMergePeople: PersonResponseDto[];
+  export let onReject: () => void;
+  export let onConfirm: ([personMerge1, personMerge2]: [PersonResponseDto, PersonResponseDto]) => void;
+  export let onClose: () => void;
 
   let choosePersonToMerge = false;
 
   const title = personMerge2.name;
 
-  const dispatch = createEventDispatcher<{
-    reject: void;
-    confirm: [PersonResponseDto, PersonResponseDto];
-    close: void;
-  }>();
-
-  const changePersonToMerge = (newperson: PersonResponseDto) => {
-    const index = potentialMergePeople.indexOf(newperson);
+  const changePersonToMerge = (newPerson: PersonResponseDto) => {
+    const index = potentialMergePeople.indexOf(newPerson);
     [potentialMergePeople[index], personMerge2] = [personMerge2, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
 </script>
 
-<FullScreenModal title="{$t('merge_people')} - {title}" onClose={() => dispatch('close')}>
+<FullScreenModal title="{$t('merge_people')} - {title}" {onClose}>
   <div class="flex items-center justify-center py-4 md:h-36 md:py-4">
     {#if !choosePersonToMerge}
       <div class="flex h-20 w-20 items-center px-1 md:h-24 md:w-24 md:px-2">
@@ -105,7 +101,7 @@
     <p class="text-sm text-gray-500 dark:text-gray-300">{$t('they_will_be_merged_together')}</p>
   </div>
   <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth color="gray" on:click={() => dispatch('reject')}>{$t('no')}</Button>
-    <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>{$t('yes')}</Button>
+    <Button fullwidth color="gray" on:click={onReject}>{$t('no')}</Button>
+    <Button fullwidth on:click={() => onConfirm([personMerge1, personMerge2])}>{$t('yes')}</Button>
   </svelte:fragment>
 </FullScreenModal>

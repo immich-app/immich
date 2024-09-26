@@ -124,7 +124,6 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            local_dir_use_symlinks=False,
             ignore_patterns=["*.armnn"],
         )
 
@@ -136,7 +135,6 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            local_dir_use_symlinks=False,
             ignore_patterns=[],
         )
 

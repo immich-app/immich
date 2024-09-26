@@ -1,14 +1,14 @@
-import { BinaryField } from 'exiftool-vendored';
+import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType } from 'src/enum';
+import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
@@ -24,6 +24,8 @@ import { MetadataService, Orientation } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
+import { metadataStub } from 'test/fixtures/metadata.stub';
+import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
@@ -218,11 +220,10 @@ describe(MetadataService.name, () => {
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
         JobStatus.SUCCESS,
       );
-      expect(eventMock.clientSend).toHaveBeenCalledWith(
-        ClientEvent.ASSET_HIDDEN,
-        assetStub.livePhotoMotionAsset.ownerId,
-        assetStub.livePhotoMotionAsset.id,
-      );
+      expect(eventMock.emit).toHaveBeenCalledWith('asset.hide', {
+        userId: assetStub.livePhotoMotionAsset.ownerId,
+        assetId: assetStub.livePhotoMotionAsset.id,
+      });
     });
 
     it('should search by libraryId', async () => {
@@ -434,13 +435,83 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should ignore Keywords when TagsList is present', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Keywords: 'Child', TagsList: ['Parent/Child'] });
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
+    });
+
+    it('should extract hierarchy from HierarchicalSubject', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Parent|Child', 'TagA'] });
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(3, { userId: 'user-id', value: 'TagA', parent: undefined });
+    });
+
+    it('should extract ignore / characters in a HierarchicalSubject tag', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Mom/Dad'] });
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.upsertValue).toHaveBeenCalledWith({
+        userId: 'user-id',
+        value: 'Mom|Dad',
+        parent: undefined,
+      });
+    });
+
+    it('should ignore HierarchicalSubject when TagsList is present', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Parent2|Child2'], TagsList: ['Parent/Child'] });
+      tagMock.upsertValue.mockResolvedValue(tagStub.parent);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, { userId: 'user-id', value: 'Parent', parent: undefined });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
+        userId: 'user-id',
+        value: 'Parent/Child',
+        parent: tagStub.parent,
+      });
+    });
+
+    it('should remove existing tags', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({});
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(tagMock.upsertAssetTags).toHaveBeenCalledWith({ assetId: 'asset-id', tagIds: [] });
+    });
+
     it('should not apply motion photos if asset is video', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true }]);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id]);
-      expect(storageMock.writeFile).not.toHaveBeenCalled();
+      expect(storageMock.createOrOverwriteFile).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalledWith(
@@ -448,16 +519,26 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should handle an invalid Directory Item', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({
+        MotionPhoto: 1,
+        ContainerDirectory: [{ Foo: 100 }],
+      });
+
+      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
+    });
+
     it('should extract the correct video orientation', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
-      metadataMock.readTags.mockResolvedValue(null);
+      metadataMock.readTags.mockResolvedValue({});
 
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({ orientation: Orientation.Rotate270CW }),
+        expect.objectContaining({ orientation: Orientation.Rotate270CW.toString() }),
       );
     });
 
@@ -500,7 +581,7 @@ describe(MetadataService.name, () => {
         type: AssetType.VIDEO,
       });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
-      expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
+      expect(storageMock.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
@@ -543,7 +624,7 @@ describe(MetadataService.name, () => {
         type: AssetType.VIDEO,
       });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
-      expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
+      expect(storageMock.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
@@ -587,7 +668,7 @@ describe(MetadataService.name, () => {
         type: AssetType.VIDEO,
       });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
-      expect(storageMock.writeFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
+      expect(storageMock.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
       expect(assetMock.update).toHaveBeenNthCalledWith(1, {
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
@@ -635,7 +716,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
       expect(assetMock.create).toHaveBeenCalledTimes(0);
-      expect(storageMock.writeFile).toHaveBeenCalledTimes(0);
+      expect(storageMock.createOrOverwriteFile).toHaveBeenCalledTimes(0);
       // The still asset gets saved by handleMetadataExtraction, but not the video
       expect(assetMock.update).toHaveBeenCalledTimes(1);
       expect(jobMock.queue).toHaveBeenCalledTimes(0);
@@ -686,6 +767,8 @@ describe(MetadataService.name, () => {
     });
 
     it('should save all metadata', async () => {
+      const dateForTest = new Date('1970-01-01T00:00:00.000-11:30');
+
       const tags: ImmichTags = {
         BitsPerSample: 1,
         ComponentBitDepth: 1,
@@ -693,7 +776,7 @@ describe(MetadataService.name, () => {
         BitDepth: 1,
         ColorBitDepth: 1,
         ColorSpace: '1',
-        DateTimeOriginal: new Date('1970-01-01').toISOString(),
+        DateTimeOriginal: ExifDateTime.fromISO(dateForTest.toISOString()),
         ExposureTime: '100ms',
         FocalLength: 20,
         ImageDescription: 'test description',
@@ -702,11 +785,11 @@ describe(MetadataService.name, () => {
         MediaGroupUUID: 'livePhoto',
         Make: 'test-factory',
         Model: "'mockel'",
-        ModifyDate: new Date('1970-01-01').toISOString(),
+        ModifyDate: ExifDateTime.fromISO(dateForTest.toISOString()),
         Orientation: 0,
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
-        tz: '+02:00',
+        tz: 'UTC-11:30',
         Rating: 3,
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
@@ -719,7 +802,7 @@ describe(MetadataService.name, () => {
         bitsPerSample: expect.any(Number),
         autoStackId: null,
         colorspace: tags.ColorSpace,
-        dateTimeOriginal: new Date('1970-01-01'),
+        dateTimeOriginal: dateForTest,
         description: tags.ImageDescription,
         exifImageHeight: null,
         exifImageWidth: null,
@@ -741,13 +824,42 @@ describe(MetadataService.name, () => {
         projectionType: 'EQUIRECTANGULAR',
         timeZone: tags.tz,
         rating: tags.Rating,
+        country: null,
+        state: null,
+        city: null,
       });
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         duration: null,
-        fileCreatedAt: new Date('1970-01-01'),
-        localDateTime: new Date('1970-01-01'),
+        fileCreatedAt: dateForTest,
+        localDateTime: dateForTest,
       });
+    });
+
+    it('should extract +00:00 timezone from raw value', async () => {
+      // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
+      // https://github.com/photostructure/exiftool-vendored.js/issues/203
+
+      // this only tests our assumptions of exiftool-vendored, demonstrating the issue
+      const someDate = '2024-09-01T00:00:00.000';
+      expect(ExifDateTime.fromISO(someDate + 'Z')?.zone).toBe('UTC');
+      expect(ExifDateTime.fromISO(someDate + '+00:00')?.zone).toBe('UTC'); // this is the issue, should be UTC+0
+      expect(ExifDateTime.fromISO(someDate + '+04:00')?.zone).toBe('UTC+4');
+
+      const tags: ImmichTags = {
+        DateTimeOriginal: ExifDateTime.fromISO(someDate + '+00:00'),
+        tz: undefined,
+      };
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue(tags);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timeZone: 'UTC+0',
+        }),
+      );
     });
 
     it('should extract duration', async () => {
@@ -865,6 +977,157 @@ describe(MetadataService.name, () => {
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           description: '1000',
+        }),
+      );
+    });
+
+    it('should skip importing metadata when the feature is disabled', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: false } } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.getDistinctNames).not.toHaveBeenCalled();
+    });
+
+    it('should skip importing metadata face for assets without tags.RegionInfo', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.empty);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.getDistinctNames).not.toHaveBeenCalled();
+    });
+
+    it('should skip importing faces without name', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFaceNoName);
+      personMock.getDistinctNames.mockResolvedValue([]);
+      personMock.createAll.mockResolvedValue([]);
+      personMock.replaceFaces.mockResolvedValue([]);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.createAll).toHaveBeenCalledWith([]);
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
+      expect(personMock.updateAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should skip importing faces with empty name', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFaceEmptyName);
+      personMock.getDistinctNames.mockResolvedValue([]);
+      personMock.createAll.mockResolvedValue([]);
+      personMock.replaceFaces.mockResolvedValue([]);
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(personMock.createAll).toHaveBeenCalledWith([]);
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
+      expect(personMock.updateAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should apply metadata face tags creating new persons', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      personMock.getDistinctNames.mockResolvedValue([]);
+      personMock.createAll.mockResolvedValue([personStub.withName.id]);
+      personMock.replaceFaces.mockResolvedValue(['face-asset-uuid']);
+      personMock.update.mockResolvedValue(personStub.withName);
+      await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
+      expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
+      expect(personMock.createAll).toHaveBeenCalledWith([expect.objectContaining({ name: personStub.withName.name })]);
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(
+        assetStub.primaryImage.id,
+        [
+          {
+            id: 'random-uuid',
+            assetId: assetStub.primaryImage.id,
+            personId: 'random-uuid',
+            imageHeight: 100,
+            imageWidth: 100,
+            boundingBoxX1: 0,
+            boundingBoxX2: 10,
+            boundingBoxY1: 0,
+            boundingBoxY2: 10,
+            sourceType: SourceType.EXIF,
+          },
+        ],
+        SourceType.EXIF,
+      );
+      expect(personMock.updateAll).toHaveBeenCalledWith([{ id: 'random-uuid', faceAssetId: 'random-uuid' }]);
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: { id: personStub.withName.id },
+        },
+      ]);
+    });
+
+    it('should assign metadata face tags to existing persons', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
+      systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      personMock.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
+      personMock.createAll.mockResolvedValue([]);
+      personMock.replaceFaces.mockResolvedValue(['face-asset-uuid']);
+      personMock.update.mockResolvedValue(personStub.withName);
+      await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
+      expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
+      expect(personMock.createAll).toHaveBeenCalledWith([]);
+      expect(personMock.replaceFaces).toHaveBeenCalledWith(
+        assetStub.primaryImage.id,
+        [
+          {
+            id: 'random-uuid',
+            assetId: assetStub.primaryImage.id,
+            personId: personStub.withName.id,
+            imageHeight: 100,
+            imageWidth: 100,
+            boundingBoxX1: 0,
+            boundingBoxX2: 10,
+            boundingBoxY1: 0,
+            boundingBoxY2: 10,
+            sourceType: SourceType.EXIF,
+          },
+        ],
+        SourceType.EXIF,
+      );
+      expect(personMock.updateAll).toHaveBeenCalledWith([]);
+      expect(jobMock.queueAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should handle invalid modify date', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ ModifyDate: '00:00:00.000' });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          modifyDate: expect.any(Date),
+        }),
+      );
+    });
+
+    it('should handle invalid rating value', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Rating: 6 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: null,
+        }),
+      );
+    });
+
+    it('should handle valid rating value', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.readTags.mockResolvedValue({ Rating: 5 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: 5,
         }),
       );
     });

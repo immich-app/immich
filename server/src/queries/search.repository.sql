@@ -13,6 +13,7 @@ FROM
       "asset"."libraryId" AS "asset_libraryId",
       "asset"."deviceId" AS "asset_deviceId",
       "asset"."type" AS "asset_type",
+      "asset"."status" AS "asset_status",
       "asset"."originalPath" AS "asset_originalPath",
       "asset"."thumbhash" AS "asset_thumbhash",
       "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
@@ -43,6 +44,7 @@ FROM
       "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
       "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
       "stackedAssets"."type" AS "stackedAssets_type",
+      "stackedAssets"."status" AS "stackedAssets_status",
       "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
       "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
       "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
@@ -106,6 +108,7 @@ SELECT
   "asset"."libraryId" AS "asset_libraryId",
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
+  "asset"."status" AS "asset_status",
   "asset"."originalPath" AS "asset_originalPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
@@ -136,6 +139,7 @@ SELECT
   "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
   "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
   "stackedAssets"."type" AS "stackedAssets_type",
+  "stackedAssets"."status" AS "stackedAssets_status",
   "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
   "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
   "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
@@ -235,6 +239,7 @@ WITH
       "faces"."boundingBoxY1" AS "boundingBoxY1",
       "faces"."boundingBoxX2" AS "boundingBoxX2",
       "faces"."boundingBoxY2" AS "boundingBoxY2",
+      "faces"."sourceType" AS "sourceType",
       "search"."embedding" <= > $1 AS "distance"
     FROM
       "asset_faces" "faces"
@@ -344,6 +349,7 @@ SELECT
   "asset"."libraryId" AS "asset_libraryId",
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
+  "asset"."status" AS "asset_status",
   "asset"."originalPath" AS "asset_originalPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
@@ -400,3 +406,58 @@ FROM
   INNER JOIN cte ON asset.id = cte."assetId"
 ORDER BY
   exif.city
+
+-- SearchRepository.getCountries
+SELECT DISTINCT
+  ON ("exif"."country") "exif"."country" AS "country"
+FROM
+  "exif" "exif"
+  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+
+-- SearchRepository.getStates
+SELECT DISTINCT
+  ON ("exif"."state") "exif"."state" AS "state"
+FROM
+  "exif" "exif"
+  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."country" = $2
+
+-- SearchRepository.getCities
+SELECT DISTINCT
+  ON ("exif"."city") "exif"."city" AS "city"
+FROM
+  "exif" "exif"
+  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."country" = $2
+  AND "exif"."state" = $3
+
+-- SearchRepository.getCameraMakes
+SELECT DISTINCT
+  ON ("exif"."make") "exif"."make" AS "make"
+FROM
+  "exif" "exif"
+  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."model" = $2
+
+-- SearchRepository.getCameraModels
+SELECT DISTINCT
+  ON ("exif"."model") "exif"."model" AS "model"
+FROM
+  "exif" "exif"
+  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."make" = $2

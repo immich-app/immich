@@ -141,6 +141,11 @@ export interface SystemConfig {
   reverseGeocoding: {
     enabled: boolean;
   };
+  metadata: {
+    faces: {
+      import: boolean;
+    };
+  };
   oauth: {
     autoLaunch: boolean;
     autoRegister: boolean;
@@ -280,11 +285,16 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    lightStyle: '',
-    darkStyle: '',
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
   },
   reverseGeocoding: {
     enabled: true,
+  },
+  metadata: {
+    faces: {
+      import: false,
+    },
   },
   oauth: {
     autoLaunch: false,

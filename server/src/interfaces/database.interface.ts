@@ -15,6 +15,7 @@ export enum VectorIndex {
 export enum DatabaseLock {
   GeodataImport = 100,
   Migrations = 200,
+  SystemFileMounts = 300,
   StorageTemplateMigration = 420,
   CLIPDimSize = 512,
   LibraryWatch = 1337,
@@ -40,6 +41,7 @@ export interface VectorUpdateResult {
 export const IDatabaseRepository = 'IDatabaseRepository';
 
 export interface IDatabaseRepository {
+  reconnect(): Promise<boolean>;
   getExtensionVersion(extension: DatabaseExtension): Promise<ExtensionVersion>;
   getExtensionVersionRange(extension: VectorExtension): string;
   getPostgresVersion(): Promise<string>;

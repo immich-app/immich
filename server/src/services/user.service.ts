@@ -7,7 +7,7 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
-import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
+import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -93,13 +93,23 @@ export class UserService {
     return mapUser(user);
   }
 
-  async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
+  async createProfileImage(auth: AuthDto, file: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
     const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
-    const updatedUser = await this.userRepository.update(auth.user.id, { profileImagePath: fileInfo.path });
+
+    const user = await this.userRepository.update(auth.user.id, {
+      profileImagePath: file.path,
+      profileChangedAt: new Date(),
+    });
+
     if (oldpath !== '') {
       await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldpath] } });
     }
-    return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
+
+    return {
+      userId: user.id,
+      profileImagePath: user.profileImagePath,
+      profileChangedAt: user.profileChangedAt,
+    };
   }
 
   async deleteProfileImage(auth: AuthDto): Promise<void> {
@@ -107,7 +117,7 @@ export class UserService {
     if (user.profileImagePath === '') {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
-    await this.userRepository.update(auth.user.id, { profileImagePath: '' });
+    await this.userRepository.update(auth.user.id, { profileImagePath: '', profileChangedAt: new Date() });
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 

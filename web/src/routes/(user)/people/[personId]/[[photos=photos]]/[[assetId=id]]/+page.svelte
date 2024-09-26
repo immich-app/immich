@@ -76,13 +76,20 @@
     isArchived: false,
     personId: data.person.id,
   });
+
+  $: person = data.person;
+  $: thumbnailData = getPeopleThumbnailUrl(person);
+  $: if (person) {
+    handlePromiseError(updateAssetCount());
+    handlePromiseError(assetStore.updateOptions({ personId: person.id }));
+  }
+
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
 
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
-  let previousPersonId: string = data.person.id;
   let people: PersonResponseDto[] = [];
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
@@ -91,9 +98,6 @@
   let refreshAssetGrid = false;
 
   let personName = '';
-  $: thumbnailData = getPeopleThumbnailUrl(data.person);
-
-  let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
 
   /**
@@ -120,8 +124,8 @@
     }
 
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
-      if (data.person.id === personId) {
-        thumbnailData = getPeopleThumbnailUrl(data.person, Date.now().toString());
+      if (person.id === personId) {
+        thumbnailData = getPeopleThumbnailUrl(person, Date.now().toString());
       }
     });
   });
@@ -141,7 +145,7 @@
 
   const updateAssetCount = async () => {
     try {
-      const { assets } = await getPersonStatistics({ id: data.person.id });
+      const { assets } = await getPersonStatistics({ id: person.id });
       numberOfAssets = assets;
     } catch (error) {
       handleError(error, "Can't update the asset count");
@@ -150,19 +154,8 @@
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
-    if (from && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== $page.route.id) {
       previousRoute = from.url.href;
-    }
-    if (previousPersonId !== data.person.id) {
-      handlePromiseError(updateAssetCount());
-      assetStore.destroy();
-      assetStore = new AssetStore({
-        isArchived: false,
-        personId: data.person.id,
-      });
-      previousPersonId = data.person.id;
-      name = data.person.name;
-      refreshAssetGrid = !refreshAssetGrid;
     }
   });
 
@@ -179,8 +172,8 @@
   const toggleHidePerson = async () => {
     try {
       await updatePerson({
-        id: data.person.id,
-        personUpdateDto: { isHidden: !data.person.isHidden },
+        id: person.id,
+        personUpdateDto: { isHidden: !person.isHidden },
       });
 
       notificationController.show({
@@ -208,7 +201,7 @@
       return;
     }
     try {
-      await updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
+      await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
       notificationController.show({ message: $t('feature_photo_updated'), type: NotificationType.Info });
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_feature_photo'));
@@ -233,7 +226,7 @@
         type: NotificationType.Info,
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-      if (personToBeMergedIn.name != personName && data.person.id === personToBeMergedIn.id) {
+      if (personToBeMergedIn.name != personName && person.id === personToBeMergedIn.id) {
         await updateAssetCount();
         refreshAssetGrid = !refreshAssetGrid;
         return;
@@ -244,22 +237,22 @@
     }
   };
 
-  const handleSuggestPeople = (person: PersonResponseDto) => {
+  const handleSuggestPeople = (person2: PersonResponseDto) => {
     isEditingName = false;
     potentialMergePeople = [];
     personName = person.name;
-    personMerge1 = data.person;
-    personMerge2 = person;
+    personMerge1 = person;
+    personMerge2 = person2;
     viewMode = ViewMode.SUGGEST_MERGE;
   };
 
   const changeName = async () => {
     viewMode = ViewMode.VIEW_ASSETS;
-    data.person.name = personName;
+    person.name = personName;
     try {
       isEditingName = false;
 
-      await updatePerson({ id: data.person.id, personUpdateDto: { name: personName } });
+      await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
         message: $t('change_name_successfully'),
@@ -283,7 +276,7 @@
     potentialMergePeople = [];
     personName = name;
 
-    if (data.person.name === personName) {
+    if (person.name === personName) {
       return;
     }
     if (name === '') {
@@ -294,12 +287,11 @@
     const result = await searchPerson({ name: personName, withHidden: true });
 
     const existingPerson = result.find(
-      (person: PersonResponseDto) =>
-        person.name.toLowerCase() === personName.toLowerCase() && person.id !== data.person.id && person.name,
+      ({ name, id }: PersonResponseDto) => name.toLowerCase() === personName.toLowerCase() && id !== person.id && name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
-      personMerge1 = data.person;
+      personMerge1 = person;
       potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
@@ -318,10 +310,10 @@
   const handleSetBirthDate = async (birthDate: string) => {
     try {
       viewMode = ViewMode.VIEW_ASSETS;
-      data.person.birthDate = birthDate;
+      person.birthDate = birthDate;
 
       const updatedPerson = await updatePerson({
-        id: data.person.id,
+        id: person.id,
         personUpdateDto: { birthDate: birthDate.length > 0 ? birthDate : null },
       });
 
@@ -354,9 +346,9 @@
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
     assetIds={[...$selectedAssets].map((a) => a.id)}
-    personAssets={data.person}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:confirm={handleUnmerge}
+    personAssets={person}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onConfirm={handleUnmerge}
   />
 {/if}
 
@@ -365,22 +357,22 @@
     {personMerge1}
     {personMerge2}
     {potentialMergePeople}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:reject={() => changeName()}
-    on:confirm={(event) => handleMergeSamePerson(event.detail)}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onReject={changeName}
+    onConfirm={handleMergeSamePerson}
   />
 {/if}
 
 {#if viewMode === ViewMode.BIRTH_DATE}
   <SetBirthDateModal
-    birthDate={data.person.birthDate ?? ''}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:updated={(event) => handleSetBirthDate(event.detail)}
+    birthDate={person.birthDate ?? ''}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onUpdate={handleSetBirthDate}
   />
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={({ detail }) => handleMerge(detail)} />
+  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
 
 <header>
@@ -394,7 +386,7 @@
       </ButtonContextMenu>
       <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
-        <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
+        <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}
           text={$t('fix_incorrect_match')}
@@ -408,7 +400,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
             <MenuOption
@@ -417,8 +409,8 @@
               onClick={() => (viewMode = ViewMode.SELECT_PERSON)}
             />
             <MenuOption
-              text={data.person.isHidden ? $t('unhide_person') : $t('hide_person')}
-              icon={data.person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
+              text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
+              icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
               onClick={() => toggleHidePerson()}
             />
             <MenuOption
@@ -437,7 +429,7 @@
     {/if}
 
     {#if viewMode === ViewMode.SELECT_PERSON}
-      <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+      <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}>
         <svelte:fragment slot="leading">{$t('select_featured_photo')}</svelte:fragment>
       </ControlAppBar>
     {/if}
@@ -445,15 +437,15 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  {#key refreshAssetGrid}
+  {#key person.id}
     <AssetGrid
       enableRouting={true}
       {assetStore}
       {assetInteractionStore}
       isSelectionMode={viewMode === ViewMode.SELECT_PERSON}
       singleSelect={viewMode === ViewMode.SELECT_PERSON}
-      on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
-      on:escape={handleEscape}
+      onSelect={handleSelectFeaturePhoto}
+      onEscape={handleEscape}
     >
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Person information block -->
@@ -468,11 +460,11 @@
           <section class="flex w-64 sm:w-96 place-items-center border-black">
             {#if isEditingName}
               <EditNameInput
-                person={data.person}
+                {person}
                 bind:suggestedPeople
-                bind:name
+                name={person.name}
                 bind:isSearchingPeople
-                on:change={(event) => handleNameChange(event.detail)}
+                onChange={handleNameChange}
                 {thumbnailData}
               />
             {:else}
@@ -487,24 +479,17 @@
                     circle
                     shadow
                     url={thumbnailData}
-                    altText={data.person.name}
+                    altText={person.name}
                     widthStyle="3.375rem"
                     heightStyle="3.375rem"
                   />
                   <div
                     class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
                   >
-                    {#if data.person.name}
-                      <p class="w-40 sm:w-72 font-medium truncate">{data.person.name}</p>
-                      <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
-                        {$t('assets_count', { values: { count: numberOfAssets } })}
-                      </p>
-                    {:else}
-                      <p class="font-medium">{$t('add_a_name')}</p>
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">
-                        {$t('find_them_fast')}
-                      </p>
-                    {/if}
+                    <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
+                    <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                      {$t('assets_count', { values: { count: numberOfAssets } })}
+                    </p>
                   </div>
                 </button>
               </div>

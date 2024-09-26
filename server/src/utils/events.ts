@@ -12,6 +12,9 @@ type Item<T extends EmitEvent> = {
   label: string;
 };
 
+export class ImmichStartupError extends Error {}
+export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
+
 export const setupEventHandlers = (moduleRef: ModuleRef) => {
   const reflector = moduleRef.get(Reflector, { strict: false });
   const repository = moduleRef.get<IEventRepository>(IEventRepository);

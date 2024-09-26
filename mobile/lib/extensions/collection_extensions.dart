@@ -72,13 +72,14 @@ extension AssetListExtension on Iterable<Asset> {
   }
 
   /// Filters out offline assets and returns those that are still accessible by the Immich server
+  /// TODO: isOffline is removed from Immich, so this method is not useful anymore
   Iterable<Asset> nonOfflineOnly({
     void Function()? errorCallback,
   }) {
-    final bool onlyLive = every((e) => !e.isOffline);
+    final bool onlyLive = every((e) => false);
     if (!onlyLive) {
       if (errorCallback != null) errorCallback();
-      return where((a) => !a.isOffline);
+      return where((a) => false);
     }
     return this;
   }

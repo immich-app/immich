@@ -1,11 +1,14 @@
 <script lang="ts">
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { getAssetOriginalUrl, getKey } from '$lib/utils';
+  import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { AssetMediaSize, AssetTypeEnum, viewAsset, type AssetResponseDto } from '@immich/sdk';
   import type { AdapterConstructor, PluginConstructor } from '@photo-sphere-viewer/core';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { t } from 'svelte-i18n';
-  export let asset: Pick<AssetResponseDto, 'id' | 'type'>;
+
+  export let asset: { id: string; type: AssetTypeEnum.Video } | AssetResponseDto;
 
   const photoSphereConfigs =
     asset.type === AssetTypeEnum.Video
@@ -19,9 +22,15 @@
         ] as [PromiseLike<AdapterConstructor>, Promise<PluginConstructor[]>, true, unknown])
       : ([undefined, [], false] as [undefined, [], false]);
 
+  const originalImageUrl =
+    asset.type === AssetTypeEnum.Image && isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : null;
+
   const loadAssetData = async () => {
     if (asset.type === AssetTypeEnum.Video) {
       return { source: getAssetOriginalUrl(asset.id) };
+    }
+    if (originalImageUrl && $alwaysLoadOriginalFile) {
+      return getAssetOriginalUrl(asset.id);
     }
     const data = await viewAsset({ id: asset.id, size: AssetMediaSize.Preview, key: getKey() });
     const url = URL.createObjectURL(data);
@@ -34,7 +43,14 @@
   {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs])}
     <LoadingSpinner />
   {:then [data, module, adapter, plugins, navbar]}
-    <svelte:component this={module.default} panorama={data} plugins={plugins ?? undefined} {navbar} {adapter} />
+    <svelte:component
+      this={module.default}
+      panorama={data}
+      plugins={plugins ?? undefined}
+      {navbar}
+      {adapter}
+      {originalImageUrl}
+    />
   {:catch}
     {$t('errors.failed_to_load_asset')}
   {/await}

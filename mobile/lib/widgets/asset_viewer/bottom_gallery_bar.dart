@@ -172,29 +172,12 @@ class BottomGalleryBar extends ConsumerWidget {
     }
 
     shareAsset() {
-      if (asset.isOffline) {
-        ImmichToast.show(
-          durationInSecond: 1,
-          context: context,
-          msg: 'asset_action_share_err_offline'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
-        return;
-      }
       ref.read(imageViewerStateProvider.notifier).shareAsset(asset, context);
     }
 
     void handleEdit() async {
       final image = Image(image: ImmichImage.imageProvider(asset: asset));
-      if (asset.isOffline) {
-        ImmichToast.show(
-          durationInSecond: 1,
-          context: context,
-          msg: 'asset_action_edit_err_offline'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
-        return;
-      }
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => EditImagePage(
@@ -219,16 +202,6 @@ class BottomGalleryBar extends ConsumerWidget {
       if (asset.isLocal) {
         return;
       }
-      if (asset.isOffline) {
-        ImmichToast.show(
-          durationInSecond: 1,
-          context: context,
-          msg: 'asset_action_share_err_offline'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
-        return;
-      }
-
       ref.read(imageViewerStateProvider.notifier).downloadAsset(
             asset,
             context,

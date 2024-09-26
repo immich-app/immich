@@ -160,6 +160,7 @@ describe(ServerService.name, () => {
         smartSearch: true,
         duplicateDetection: true,
         facialRecognition: true,
+        importFaces: false,
         map: true,
         reverseGeocoding: true,
         oauth: false,
@@ -185,6 +186,8 @@ describe(ServerService.name, () => {
         isInitialized: undefined,
         isOnboarded: false,
         externalDomain: '',
+        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
       expect(systemMock.get).toHaveBeenCalled();
     });

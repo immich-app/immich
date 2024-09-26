@@ -67,4 +67,7 @@ export class UserEntity {
 
   @OneToMany(() => UserMetadataEntity, (metadata) => metadata.user)
   metadata!: UserMetadataEntity[];
+
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  profileChangedAt!: Date;
 }

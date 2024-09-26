@@ -118,7 +118,9 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     // called when the system has to stop this worker because constraints are
     // no longer met or the system needs resources for more important tasks
     Handler(Looper.getMainLooper()).postAtFrontOfQueue {
-      backgroundChannel.invokeMethod("systemStop", null)
+      if (::backgroundChannel.isInitialized) {
+        backgroundChannel.invokeMethod("systemStop", null)
+      }
     }
     waitOnSetForegroundAsync()
     // cannot await/get(block) on resolvableFuture as its already cancelled (would throw CancellationException)

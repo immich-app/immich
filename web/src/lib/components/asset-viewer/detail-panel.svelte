@@ -1,5 +1,9 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
+  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
@@ -9,6 +13,9 @@
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
+  import { getByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
+  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
   import {
     AssetMediaSize,
     getAssetInfo,
@@ -18,6 +25,7 @@
     type ExifResponseDto,
   } from '@immich/sdk';
   import {
+    mdiAccountOff,
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
@@ -26,28 +34,22 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
-    mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
-  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
-  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
-  import { t } from 'svelte-i18n';
-  import { goto } from '$app/navigation';
-  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
   export let currentAlbum: AlbumResponseDto | null = null;
+  export let onClose: () => void;
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -99,9 +101,11 @@
 
   $: unassignedFaces = asset.unassignedFaces || [];
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  $: timeZone = asset.exifInfo?.timeZone;
+  $: dateTime =
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromLocalDateTime(asset.localDateTime);
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -137,18 +141,27 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={() => dispatch('close')} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
   {#if asset.isOffline}
     <section class="px-4 py-4">
       <div role="alert">
-        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">{$t('asset_offline')}</div>
-        <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
+        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">
+          {$t('asset_offline')}
+        </div>
+        <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            {$t('asset_offline_description')}
+            {#if $user?.isAdmin}
+              <p>{$t('admin.asset_offline_description')}</p>
+            {:else}
+              {$t('asset_offline_description')}
+            {/if}
           </p>
+        </div>
+        <div class="rounded-b bg-red-500 px-4 py-2 text-white text-sm">
+          <p>{asset.originalPath}</p>
         </div>
       </div>
     </section>
@@ -219,9 +232,9 @@
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
               {#if person.birthDate}
                 {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const age = Math.floor(DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'years').years)}
                 {@const ageInMonths = Math.floor(
-                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'months').months,
                 )}
                 {#if age >= 0}
                   <p
@@ -261,10 +274,7 @@
       <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
+    {#if dateTime}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
@@ -280,7 +290,7 @@
 
           <div>
             <p>
-              {assetDateTimeOriginal.toLocaleString(
+              {dateTime.toLocaleString(
                 {
                   month: 'short',
                   day: 'numeric',
@@ -291,12 +301,12 @@
             </p>
             <div class="flex gap-2 text-sm">
               <p>
-                {assetDateTimeOriginal.toLocaleString(
+                {dateTime.toLocaleString(
                   {
                     weekday: 'short',
                     hour: 'numeric',
                     minute: '2-digit',
-                    timeZoneName: 'longOffset',
+                    timeZoneName: timeZone ? 'longOffset' : undefined,
                   },
                   { locale: $locale },
                 )}
@@ -311,7 +321,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
+    {:else if !dateTime && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -325,17 +335,14 @@
     {/if}
 
     {#if isShowChangeDate}
-      {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
-        ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-            zone: asset.exifInfo.timeZone ?? undefined,
-            locale: $locale,
-          })
-        : DateTime.now()}
-      <ChangeDate
-        initialDate={assetDateTimeOriginal}
-        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
-        on:cancel={() => (isShowChangeDate = false)}
-      />
+      <Portal>
+        <ChangeDate
+          initialDate={dateTime}
+          initialTimeZone={timeZone ?? ''}
+          onConfirm={handleConfirmChangeDate}
+          onCancel={() => (isShowChangeDate = false)}
+        />
+      </Portal>
     {/if}
 
     {#if asset.exifInfo?.fileSizeInByte}
@@ -476,7 +483,7 @@
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
-      <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
+      <a href="{AppRoute.ALBUMS}/{album.id}">
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
@@ -512,9 +519,7 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    on:close={() => {
-      showEditFaces = false;
-    }}
-    on:refresh={handleRefreshPeople}
+    onClose={() => (showEditFaces = false)}
+    onRefresh={handleRefreshPeople}
   />
 {/if}

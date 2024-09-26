@@ -25,7 +25,7 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, Permission, SystemMetadataKey } from 'src/enum';
+import { AssetType, Permission, SourceType, SystemMetadataKey } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -53,7 +53,7 @@ import { checkAccess, requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { CacheControl, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled } from 'src/utils/misc';
+import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 
@@ -173,10 +173,7 @@ export class PersonService {
       const assetFace = await this.repository.getRandomFace(personId);
 
       if (assetFace !== null) {
-        await this.repository.update({
-          id: personId,
-          faceAssetId: assetFace.id,
-        });
+        await this.repository.update({ id: personId, faceAssetId: assetFace.id });
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
     }
@@ -296,8 +293,8 @@ export class PersonService {
     }
 
     if (force) {
-      await this.deleteAllPeople();
-      await this.repository.deleteAllFaces();
+      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.handlePersonCleanup();
     }
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
@@ -339,11 +336,7 @@ export class PersonService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.isVisible) {
-      return JobStatus.SKIPPED;
-    }
-
-    if (!asset.isVisible) {
+    if (!asset.isVisible || asset.faces.length > 0) {
       return JobStatus.SKIPPED;
     }
 
@@ -408,7 +401,8 @@ export class PersonService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
-      await this.deleteAllPeople();
+      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.handlePersonCleanup();
     } else if (waiting) {
       this.logger.debug(
         `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,
@@ -418,7 +412,9 @@ export class PersonService {
 
     const lastRun = new Date().toISOString();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
+      this.repository.getAllFaces(pagination, {
+        where: force ? undefined : { personId: IsNull(), sourceType: IsNull() },
+      }),
     );
 
     for await (const page of facePagination) {
@@ -441,11 +437,16 @@ export class PersonService {
     const face = await this.repository.getFaceByIdWithAssets(
       id,
       { person: true, asset: true, faceSearch: true },
-      { id: true, personId: true, faceSearch: { embedding: true } },
+      { id: true, personId: true, sourceType: true, faceSearch: { embedding: true } },
     );
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return JobStatus.FAILED;
+    }
+
+    if (face.sourceType !== SourceType.MACHINE_LEARNING) {
+      this.logger.warn(`Skipping face ${id} due to source ${face.sourceType}`);
+      return JobStatus.SKIPPED;
     }
 
     if (!face.faceSearch?.embedding) {
@@ -522,8 +523,8 @@ export class PersonService {
   }
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
-    const { machineLearning, image } = await this.configCore.getConfig({ withCache: true });
-    if (!isFacialRecognitionEnabled(machineLearning)) {
+    const { machineLearning, metadata, image } = await this.configCore.getConfig({ withCache: true });
+    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.SKIPPED;
     }
 

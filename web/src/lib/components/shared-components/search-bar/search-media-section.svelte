@@ -1,6 +1,6 @@
 <script lang="ts">
   import RadioButton from '$lib/components/elements/radio-button.svelte';
-  import { MediaType } from './search-filter-box.svelte';
+  import { MediaType } from './search-filter-modal.svelte';
   import { t } from 'svelte-i18n';
 
   export let filteredMedia: MediaType;

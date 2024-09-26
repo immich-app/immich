@@ -121,6 +121,8 @@ export class ServerConfigDto {
   isInitialized!: boolean;
   isOnboarded!: boolean;
   externalDomain!: string;
+  mapDarkStyleUrl!: string;
+  mapLightStyleUrl!: string;
 }
 
 export class ServerFeaturesDto {
@@ -131,6 +133,7 @@ export class ServerFeaturesDto {
   map!: boolean;
   trash!: boolean;
   reverseGeocoding!: boolean;
+  importFaces!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;
   passwordLogin!: boolean;

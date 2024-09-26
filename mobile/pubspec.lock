@@ -836,6 +836,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  immich_mobile_immich_lint:
+    dependency: "direct dev"
+    description:
+      path: immich_lint
+      relative: true
+    source: path
+    version: "0.0.0"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -1737,10 +1744,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: f652077d0bdf60abe4c1f6377448e8655008eef28f128bc023f7b5e8dfeb48fc
+      sha256: "5c5f338a667b4c644744b661f309fb8080bb94b18a7e91ef1dbd343bed00ed6d"
       url: "https://pub.dev"
     source: hosted
-    version: "14.2.4"
+    version: "14.2.5"
   wakelock_plus:
     dependency: "direct main"
     description:
@@ -1847,4 +1854,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.4.0 <4.0.0"
-  flutter: ">=3.24.0"
+  flutter: ">=3.24.3"

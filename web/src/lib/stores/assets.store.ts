@@ -2,6 +2,7 @@ import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { getAssetRatio } from '$lib/utils/asset-utils';
+import { generateId } from '$lib/utils/generate-id';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
@@ -12,7 +13,6 @@ import { t } from 'svelte-i18n';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
-
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
@@ -70,7 +70,10 @@ export class AssetBucket {
     Object.assign(this, props);
     this.init();
   }
-
+  /** The svelte key for this view model object */
+  get viewId() {
+    return this.store.viewId + '-' + this.bucketDate;
+  }
   private init() {
     // create a promise, and store its resolve/reject callbacks. The loadedSignal callback
     // will be incoked when a bucket is loaded, fulfilling the promise. The canceledSignal
@@ -205,21 +208,23 @@ export class AssetStore {
   private assetToBucket: Record<string, AssetLookup> = {};
   private pendingChanges: PendingChange[] = [];
   private unsubscribers: Unsubscriber[] = [];
-  private options: AssetApiGetTimeBucketsRequest;
+  private options!: AssetApiGetTimeBucketsRequest;
   private viewport: Viewport = {
     height: 0,
     width: 0,
   };
   private initializedSignal!: () => void;
   private store$ = writable(this);
+  /** The svelte key for this view model object */
+  viewId = generateId();
 
   lastScrollTime: number = 0;
   subscribe = this.store$.subscribe;
   /**
    * A promise that resolves once the store is initialized.
    */
-  taskManager = new AssetGridTaskManager(this);
   complete!: Promise<void>;
+  taskManager = new AssetGridTaskManager(this);
   initialized = false;
   timelineHeight = 0;
   buckets: AssetBucket[] = [];
@@ -234,13 +239,23 @@ export class AssetStore {
     options: AssetStoreOptions,
     private albumId?: string,
   ) {
+    this.setOptions(options);
+    this.createInitializationSignal();
+    this.store$.set(this);
+  }
+
+  private setOptions(options: AssetStoreOptions) {
     this.options = { ...options, size: TimeBucketSize.Month };
+  }
+
+  private createInitializationSignal() {
     // create a promise, and store its resolve callbacks. The initializedSignal callback
     // will be invoked when a the assetstore is initialized.
     this.complete = new Promise((resolve) => {
       this.initializedSignal = resolve;
     });
-    this.store$.set(this);
+    //  uncaught rejection go away
+    this.complete.catch(() => void 0);
   }
 
   private addPendingChanges(...changes: PendingChange[]) {
@@ -273,6 +288,7 @@ export class AssetStore {
     for (const unsubscribe of this.unsubscribers) {
       unsubscribe();
     }
+    this.unsubscribers = [];
   }
 
   private getPendingChangeBatches() {
@@ -360,8 +376,10 @@ export class AssetStore {
     if (bucketListener) {
       this.addListener(bucketListener);
     }
-    //  uncaught rejection go away
-    this.complete.catch(() => void 0);
+    await this.initialiazeTimeBuckets();
+  }
+
+  async initialiazeTimeBuckets() {
     this.timelineHeight = 0;
     this.buckets = [];
     this.assets = [];
@@ -379,6 +397,27 @@ export class AssetStore {
     this.initialized = true;
   }
 
+  async updateOptions(options: AssetStoreOptions) {
+    if (!this.initialized) {
+      this.setOptions(options);
+      return;
+    }
+    // TODO: don't call updateObjects frequently after
+    // init - cancelation of the initialize tasks isn't
+    // performed right now, and will cause issues if
+    // multiple updateOptions() calls are interleved.
+    await this.complete;
+    this.taskManager.destroy();
+    this.taskManager = new AssetGridTaskManager(this);
+    this.initialized = false;
+    this.viewId = generateId();
+    this.createInitializationSignal();
+    this.setOptions(options);
+    await this.initialiazeTimeBuckets();
+    this.emit(true);
+    await this.initialLayout(true);
+  }
+
   public destroy() {
     this.taskManager.destroy();
     this.listeners = [];
@@ -386,22 +425,21 @@ export class AssetStore {
   }
 
   async updateViewport(viewport: Viewport, force?: boolean) {
-    if (!this.initialized) {
-      return;
-    }
     if (viewport.height === 0 && viewport.width === 0) {
       return;
     }
-
     if (!force && this.viewport.height === viewport.height && this.viewport.width === viewport.width) {
       return;
     }
-
+    await this.complete;
     // changing width invalidates the actual height, and needs to be remeasured, since width changes causes
     // layout reflows.
     const changedWidth = this.viewport.width != viewport.width;
     this.viewport = { ...viewport };
+    await this.initialLayout(changedWidth);
+  }
 
+  private async initialLayout(changedWidth: boolean) {
     for (const bucket of this.buckets) {
       this.updateGeometry(bucket, changedWidth);
     }
@@ -410,7 +448,7 @@ export class AssetStore {
     const loaders = [];
     let height = 0;
     for (const bucket of this.buckets) {
-      if (height >= viewport.height) {
+      if (height >= this.viewport.height) {
         break;
       }
       height += bucket.bucketHeight;
@@ -600,9 +638,7 @@ export class AssetStore {
         this.options.userId ||
         this.options.personId ||
         this.options.albumId ||
-        isMismatched(this.options.isArchived, asset.isArchived) ||
-        isMismatched(this.options.isFavorite, asset.isFavorite) ||
-        isMismatched(this.options.isTrashed, asset.isTrashed)
+        this.isExcluded(asset)
       ) {
         // If asset is already in the bucket we don't need to recalculate
         // asset store containers
@@ -623,7 +659,7 @@ export class AssetStore {
     const updatedBuckets = new Set<AssetBucket>();
 
     for (const asset of assets) {
-      const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+      const timeBucket = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month').toString();
       let bucket = this.getBucketByDate(timeBucket);
 
       if (!bucket) {
@@ -661,24 +697,20 @@ export class AssetStore {
 
   async findAndLoadBucketAsPending(id: string) {
     const bucketInfo = this.assetToBucket[id];
-    if (bucketInfo) {
-      const bucket = bucketInfo.bucket;
+    let bucket: AssetBucket | null = bucketInfo?.bucket ?? null;
+    if (!bucket) {
+      const asset = await getAssetInfo({ id });
+      if (!asset || this.isExcluded(asset)) {
+        return;
+      }
+
+      bucket = await this.loadBucketAtTime(asset.localDateTime, { preventCancel: true, pending: true });
+    }
+
+    if (bucket && bucket.assets.some((a) => a.id === id)) {
       this.pendingScrollBucket = bucket;
       this.pendingScrollAssetId = id;
       this.emit(false);
-      return bucket;
-    }
-    const asset = await getAssetInfo({ id });
-    if (asset) {
-      if (this.options.isArchived !== asset.isArchived) {
-        return;
-      }
-      const bucket = await this.loadBucketAtTime(asset.localDateTime, { preventCancel: true, pending: true });
-      if (bucket) {
-        this.pendingScrollBucket = bucket;
-        this.pendingScrollAssetId = asset.id;
-        this.emit(false);
-      }
       return bucket;
     }
   }
@@ -753,7 +785,7 @@ export class AssetStore {
     if (assets.length === 0) {
       return;
     }
-    const assetsToReculculate: AssetResponseDto[] = [];
+    const assetsToRecalculate: AssetResponseDto[] = [];
 
     for (const _asset of assets) {
       const asset = this.assets.find((asset) => asset.id === _asset.id);
@@ -761,17 +793,17 @@ export class AssetStore {
         continue;
       }
 
-      const recalculate = asset.fileCreatedAt !== _asset.fileCreatedAt;
+      const recalculate = asset.localDateTime !== _asset.localDateTime;
       Object.assign(asset, _asset);
 
       if (recalculate) {
-        assetsToReculculate.push(asset);
+        assetsToRecalculate.push(asset);
       }
     }
 
-    this.removeAssets(assetsToReculculate.map((asset) => asset.id));
-    this.addAssetsToBuckets(assetsToReculculate);
-    this.emit(assetsToReculculate.length > 0);
+    this.removeAssets(assetsToRecalculate.map((asset) => asset.id));
+    this.addAssetsToBuckets(assetsToRecalculate);
+    this.emit(assetsToRecalculate.length > 0);
   }
 
   removeAssets(ids: string[]) {
@@ -866,6 +898,14 @@ export class AssetStore {
       this.assetToBucket = assetToBucket;
     }
     this.store$.set(this);
+  }
+
+  private isExcluded(asset: AssetResponseDto) {
+    return (
+      isMismatched(this.options.isArchived ?? false, asset.isArchived) ||
+      isMismatched(this.options.isFavorite, asset.isFavorite) ||
+      isMismatched(this.options.isTrashed ?? false, asset.isTrashed)
+    );
   }
 }
 

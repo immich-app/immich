@@ -16,7 +16,7 @@
     // re-visit with svelte 5. runes will make this better.
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     newContent;
-    if (textarea) {
+    if (textarea && newContent.length > 0) {
       void tick().then(() => autoGrowHeight(textarea));
     }
   }

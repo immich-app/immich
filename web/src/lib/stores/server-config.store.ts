@@ -8,6 +8,7 @@ export const featureFlags = writable<FeatureFlags>({
   smartSearch: true,
   duplicateDetection: false,
   facialRecognition: true,
+  importFaces: false,
   sidecar: true,
   map: true,
   reverseGeocoding: true,
@@ -31,6 +32,8 @@ export const serverConfig = writable<ServerConfig>({
   isInitialized: false,
   isOnboarded: false,
   externalDomain: '',
+  mapDarkStyleUrl: '',
+  mapLightStyleUrl: '',
 });
 
 export const retrieveServerConfig = async () => {

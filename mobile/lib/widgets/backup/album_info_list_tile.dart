@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -24,18 +23,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
         ref.watch(backupProvider).selectedBackupAlbums.contains(album);
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(album);
-    final assetCount = useState(0);
     final syncAlbum = ref
         .watch(appSettingsServiceProvider)
         .getSetting(AppSettingsEnum.syncAlbums);
-
-    useEffect(
-      () {
-        album.assetCount.then((value) => assetCount.value = value);
-        return null;
-      },
-      [album],
-    );
 
     buildTileColor() {
       if (isSelected) {
@@ -117,11 +107,11 @@ class AlbumInfoListTile extends HookConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        subtitle: Text(assetCount.value.toString()),
+        subtitle: Text(album.assetCount.toString()),
         trailing: IconButton(
           onPressed: () {
             context.pushRoute(
-              AlbumPreviewRoute(album: album.albumEntity),
+              AlbumPreviewRoute(album: album.album),
             );
           },
           icon: Icon(

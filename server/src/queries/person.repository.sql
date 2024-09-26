@@ -74,6 +74,7 @@ SELECT
   "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
   "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
   "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+  "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
   "AssetFaceEntity__AssetFaceEntity_person"."id" AS "AssetFaceEntity__AssetFaceEntity_person_id",
   "AssetFaceEntity__AssetFaceEntity_person"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_person_createdAt",
   "AssetFaceEntity__AssetFaceEntity_person"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_person_updatedAt",
@@ -106,6 +107,7 @@ FROM
       "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
       "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
       "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+      "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
       "AssetFaceEntity__AssetFaceEntity_person"."id" AS "AssetFaceEntity__AssetFaceEntity_person_id",
       "AssetFaceEntity__AssetFaceEntity_person"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_person_createdAt",
       "AssetFaceEntity__AssetFaceEntity_person"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_person_updatedAt",
@@ -141,6 +143,7 @@ FROM
       "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
       "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
       "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+      "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
       "AssetFaceEntity__AssetFaceEntity_person"."id" AS "AssetFaceEntity__AssetFaceEntity_person_id",
       "AssetFaceEntity__AssetFaceEntity_person"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_person_createdAt",
       "AssetFaceEntity__AssetFaceEntity_person"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_person_updatedAt",
@@ -156,6 +159,7 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."libraryId" AS "AssetFaceEntity__AssetFaceEntity_asset_libraryId",
       "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
       "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
+      "AssetFaceEntity__AssetFaceEntity_asset"."status" AS "AssetFaceEntity__AssetFaceEntity_asset_status",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
       "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
       "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
@@ -212,19 +216,24 @@ SELECT
   "person"."isHidden" AS "person_isHidden"
 FROM
   "person" "person"
-  LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
 WHERE
   "person"."ownerId" = $1
   AND (
     LOWER("person"."name") LIKE $2
     OR LOWER("person"."name") LIKE $3
   )
-GROUP BY
-  "person"."id"
-ORDER BY
-  COUNT("face"."assetId") DESC
 LIMIT
-  20
+  1000
+
+-- PersonRepository.getDistinctNames
+SELECT DISTINCT
+  ON (lower("person"."name")) "person"."id" AS "person_id",
+  "person"."name" AS "person_name"
+FROM
+  "person" "person"
+WHERE
+  "person"."ownerId" = $1
+  AND "person"."name" != ''
 
 -- PersonRepository.getStatistics
 SELECT
@@ -252,6 +261,7 @@ FROM
       "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
       "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
       "AssetEntity"."type" AS "AssetEntity_type",
+      "AssetEntity"."status" AS "AssetEntity_status",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
       "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
       "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
@@ -282,6 +292,7 @@ FROM
       "AssetEntity__AssetEntity_faces"."boundingBoxY1" AS "AssetEntity__AssetEntity_faces_boundingBoxY1",
       "AssetEntity__AssetEntity_faces"."boundingBoxX2" AS "AssetEntity__AssetEntity_faces_boundingBoxX2",
       "AssetEntity__AssetEntity_faces"."boundingBoxY2" AS "AssetEntity__AssetEntity_faces_boundingBoxY2",
+      "AssetEntity__AssetEntity_faces"."sourceType" AS "AssetEntity__AssetEntity_faces_sourceType",
       "8258e303a73a72cf6abb13d73fb592dde0d68280"."id" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_id",
       "8258e303a73a72cf6abb13d73fb592dde0d68280"."createdAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_createdAt",
       "8258e303a73a72cf6abb13d73fb592dde0d68280"."updatedAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_updatedAt",
@@ -375,12 +386,14 @@ SELECT
   "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
   "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
   "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+  "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType",
   "AssetFaceEntity__AssetFaceEntity_asset"."id" AS "AssetFaceEntity__AssetFaceEntity_asset_id",
   "AssetFaceEntity__AssetFaceEntity_asset"."deviceAssetId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceAssetId",
   "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" AS "AssetFaceEntity__AssetFaceEntity_asset_ownerId",
   "AssetFaceEntity__AssetFaceEntity_asset"."libraryId" AS "AssetFaceEntity__AssetFaceEntity_asset_libraryId",
   "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
   "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
+  "AssetFaceEntity__AssetFaceEntity_asset"."status" AS "AssetFaceEntity__AssetFaceEntity_asset_status",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
   "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
   "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
@@ -425,7 +438,8 @@ SELECT
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
   "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
   "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
-  "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2"
+  "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
+  "AssetFaceEntity"."sourceType" AS "AssetFaceEntity_sourceType"
 FROM
   "asset_faces" "AssetFaceEntity"
 WHERE

@@ -97,8 +97,8 @@ String parameterToString(dynamic value) {
   if (value is LogLevel) {
     return LogLevelTypeTransformer().encode(value).toString();
   }
-  if (value is MapTheme) {
-    return MapThemeTypeTransformer().encode(value).toString();
+  if (value is ManualJobName) {
+    return ManualJobNameTypeTransformer().encode(value).toString();
   }
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
@@ -126,6 +126,9 @@ String parameterToString(dynamic value) {
   }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is SourceType) {
+    return SourceTypeTypeTransformer().encode(value).toString();
   }
   if (value is TimeBucketSize) {
     return TimeBucketSizeTypeTransformer().encode(value).toString();

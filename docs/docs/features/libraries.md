@@ -1,40 +1,20 @@
-# Libraries
+# External Libraries
 
-## Overview
+External libraries track assets stored in the filesystem outside of Immich. When the external library is scanned, Immich will load videos and photos from disk and create the corresponding assets. These assets will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc. Later, if a file is modified outside of Immich, you need to scan the library for the changes to show up.
 
-Immich supports the creation of libraries which is a top-level asset container. Currently, there are two types of libraries: traditional upload libraries that can sync with a mobile device, and external libraries, that keeps up to date with files on disk. Libraries are different from albums in that an asset can belong to multiple albums but only one library, and deleting a library deletes all assets contained within. As of August 2023, this is a new feature and libraries have a lot of potential for future development beyond what is documented here. This document attempts to describe the current state of libraries.
+If an external asset is deleted from disk, Immich will move it to trash on rescan. To restore the asset, you need to restore the original file. After 30 days the file will be removed from trash, and any changes to metadata within Immich will be lost.
 
-## External Libraries
+:::caution
 
-External libraries tracks assets stored outside of Immich, i.e. in the file system. When the external library is scanned, Immich will read the metadata from the file and create an asset in the library for each image or video file. These items will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc.
+If you add metadata to an external asset in any way (i.e. add it to an album or edit the description), that metadata is only stored inside Immich and will not be persisted to the external asset file. If you move an asset to another location within the library all such metadata will be lost upon rescan. This is because the asset is considered a new asset after the move. This is a known issue and will be fixed in a future release.
 
-If a file is modified outside of Immich, the changes will not be reflected in immich until the library is scanned again. There are different ways to scan a library depending on the use case:
-
-- Scan Library Files: This is the default scan method and also the quickest. It will scan all files in the library and add new files to the library. It will notice if any files are missing (see below) but not check existing assets
-- Scan All Library Files: Same as above, but will check each existing asset to see if the modification time has changed. If it has, the asset will be updated. Since it has to check each asset, this is slower than Scan Library Files.
-- Force Scan All Library Files: Same as above, but will read each asset from disk no matter the modification time. This is useful in some cases where an asset has been modified externally but the modification time has not changed. This is the slowest way to scan because it reads each asset from disk.
+:::
 
 :::caution
 
 Due to aggressive caching it can take some time for a refreshed asset to appear correctly in the web view. You need to clear the cache in your browser to see the changes. This is a known issue and will be fixed in a future release. In Chrome, you need to open the developer console with F12, then reload the page with F5, and finally right click on the reload button and select "Empty Cache and Hard Reload".
 
 :::
-
-In external libraries, the file path is used for duplicate detection. This means that if a file is moved to a different location, it will be added as a new asset. If the file is moved back to its original location, it will be added as a new asset. In contrast to upload libraries, two identical files can be uploaded if they are in different locations. This is a deliberate design choice to make Immich reflect the file system as closely as possible. Remember that duplication detection is only done within the same library, so if you have multiple external libraries, the same file can be added to multiple libraries.
-
-:::caution
-
-If you add assets from an external library to an album and then move the asset to another location within the library, the asset will be removed from the album upon rescan. This is because the asset is considered a new asset after the move. This is a known issue and will be fixed in a future release.
-
-:::
-
-### Deleted External Assets
-
-Note: Either a manual or scheduled library scan must have been performed to identify offline assets before this process will work.
-
-In all above scan methods, Immich will check if any files are missing. This can happen if files are deleted, or if they are on a storage location that is currently unavailable, like a network drive that is not mounted, or a USB drive that has been unplugged. In order to prevent accidental deletion of assets, Immich will not immediately delete an asset from the library if the file is missing. Instead, the asset will be internally marked as offline and will still be visible in the main timeline. If the file is moved back to its original location and the library is scanned again, the asset will be restored.
-
-Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under Administration > Libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
 
 ### Import Paths
 
@@ -66,9 +46,13 @@ Some basic examples:
 - `**/Raw/**` will exclude all files in any directory named `Raw`
 - `**/*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
 
+Special characters such as @ should be escaped, for instance:
+
+- `**/\@eadir/**` will exclude all files in any directory named `@eadir`
+
 ### Automatic watching (EXPERIMENTAL)
 
-This feature - currently hidden in the config file - is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan. Deleted assets are, as always, marked as offline and can be removed with the "Remove offline files" button.
+This feature - currently hidden in the config file - is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
 
 If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a periodic library refresh to pull in your changes.
 
@@ -84,7 +68,7 @@ In rare cases, the library watcher can hang, preventing Immich from starting up.
 
 ### Nightly job
 
-There is an automatic job that's run once a day and refreshes all modified files in all libraries as well as cleans up any libraries stuck in deletion.
+There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion.
 
 ## Usage
 
@@ -104,8 +88,8 @@ The `immich-server` container will need access to the gallery. Modify your docke
   immich-server:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - /mnt/nas/christmas-trip:/mnt/nas/christmas-trip:ro
-+     - /home/user/old-pics:/home/user/old-pics:ro
++     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
++     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
 +     - /mnt/media/videos2:/mnt/media/videos2 # the files in this folder can be deleted, as it does not end with :ro
 +     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
@@ -120,7 +104,7 @@ This will disallow the images from being deleted in the web UI, or adding metada
 _Remember to run `docker compose up -d` to register the changes. Make sure you can see the mounted path in the container._
 :::
 
-### Create External Libraries
+### Create A New Library
 
 These actions must be performed by the Immich administrator.
 
@@ -144,7 +128,7 @@ Next, we'll add an exclusion pattern to filter out raw files.
 - Enter `**/Raw/**` and click save.
 - Click save
 - Click the drop-down menu on the newly created library
-- Click on Scan Library Files
+- Click on Scan
 
 The christmas trip library will now be scanned in the background. In the meantime, let's add the videos and old photos to another library.
 
@@ -161,7 +145,7 @@ If you get an error here, please rename the other external library to something 
 - Click on Add Path
 - Enter `/mnt/media/videos` then click Add
 - Click Save
-- Click on Scan Library Files
+- Click on Scan
 
 Within seconds, the assets from the old-pics and videos folders should show up in the main timeline.
 

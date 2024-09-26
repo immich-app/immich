@@ -153,6 +153,7 @@ export enum SystemMetadataKey {
   FACIAL_RECOGNITION_STATE = 'facial-recognition-state',
   ADMIN_ONBOARDING = 'admin-onboarding',
   SYSTEM_CONFIG = 'system-config',
+  SYSTEM_FLAGS = 'system-flags',
   VERSION_CHECK_STATE = 'version-check-state',
   LICENSE = 'license',
 }
@@ -179,4 +180,21 @@ export enum UserStatus {
   ACTIVE = 'active',
   REMOVING = 'removing',
   DELETED = 'deleted',
+}
+
+export enum AssetStatus {
+  ACTIVE = 'active',
+  TRASHED = 'trashed',
+  DELETED = 'deleted',
+}
+
+export enum SourceType {
+  MACHINE_LEARNING = 'machine-learning',
+  EXIF = 'exif',
+}
+
+export enum ManualJobName {
+  PERSON_CLEANUP = 'person-cleanup',
+  TAG_CLEANUP = 'tag-cleanup',
+  USER_CLEANUP = 'user-cleanup',
 }

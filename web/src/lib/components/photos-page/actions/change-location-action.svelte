@@ -35,8 +35,5 @@
   />
 {/if}
 {#if isShowChangeLocation}
-  <ChangeLocation
-    on:confirm={({ detail: point }) => handleConfirm(point)}
-    on:cancel={() => (isShowChangeLocation = false)}
-  />
+  <ChangeLocation onConfirm={handleConfirm} onCancel={() => (isShowChangeLocation = false)} />
 {/if}

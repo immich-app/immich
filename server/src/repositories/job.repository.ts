@@ -41,6 +41,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.GENERATE_THUMBHASH]: QueueName.THUMBNAIL_GENERATION,
   [JobName.GENERATE_PERSON_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
 
+  // tags
+  [JobName.TAG_CLEANUP]: QueueName.BACKGROUND_TASK,
+
   // metadata
   [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
   [JobName.METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
@@ -76,12 +79,12 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.SIDECAR_WRITE]: QueueName.SIDECAR,
 
   // Library management
-  [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
-  [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SYNC_FILE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_FILES]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_ASSETS]: QueueName.LIBRARY,
   [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_CHECK_OFFLINE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SYNC_ASSET]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 
   // Notification
@@ -92,6 +95,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Version check
   [JobName.VERSION_CHECK]: QueueName.BACKGROUND_TASK,
+
+  // Trash
+  [JobName.QUEUE_TRASH_EMPTY]: QueueName.BACKGROUND_TASK,
 };
 
 @Instrumentation()
@@ -148,10 +154,6 @@ export class JobRepository implements IJobRepository {
         job.stop();
       }
     }
-  }
-
-  deleteCronJob(name: string): void {
-    this.schedulerReqistry.deleteCronJob(name);
   }
 
   setConcurrency(queueName: QueueName, concurrency: number) {

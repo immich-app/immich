@@ -1646,6 +1646,8 @@
     },
     "/assets/random": {
       "get": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.116.0",
         "operationId": "getRandom",
         "parameters": [
           {
@@ -1685,8 +1687,12 @@
           }
         ],
         "tags": [
-          "Assets"
-        ]
+          "Assets",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.116.0"
+        }
       }
     },
     "/assets/statistics": {
@@ -2561,6 +2567,39 @@
         "tags": [
           "Jobs"
         ]
+      },
+      "post": {
+        "operationId": "createJob",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Jobs"
+        ]
       }
     },
     "/jobs/{id}": {
@@ -2814,41 +2853,6 @@
         ]
       }
     },
-    "/libraries/{id}/removeOffline": {
-      "post": {
-        "operationId": "removeOfflineFiles",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Libraries"
-        ]
-      }
-    },
     "/libraries/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",
@@ -2863,16 +2867,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScanLibraryDto"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "204": {
             "description": ""
@@ -3106,55 +3100,6 @@
                     "$ref": "#/components/schemas/MapReverseGeocodeResponseDto"
                   },
                   "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Map"
-        ]
-      }
-    },
-    "/map/style.json": {
-      "get": {
-        "operationId": "getMapStyle",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "theme",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/MapTheme"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
                 }
               }
             },
@@ -3501,6 +3446,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestEmailResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -4644,6 +4596,48 @@
         ]
       }
     },
+    "/search/random": {
+      "post": {
+        "operationId": "searchRandom",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RandomSearchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ]
+      }
+    },
     "/search/smart": {
       "post": {
         "operationId": "searchSmart",
@@ -5275,8 +5269,8 @@
             "name": "password",
             "required": false,
             "in": "query",
-            "example": "password",
             "schema": {
+              "example": "password",
               "type": "string"
             }
           },
@@ -6806,7 +6800,14 @@
         "operationId": "emptyTrash",
         "parameters": [],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -6831,7 +6832,14 @@
         "operationId": "restoreTrash",
         "parameters": [],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -6866,7 +6874,14 @@
           "required": true
         },
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -7394,7 +7409,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.113.0",
+    "version": "1.116.0",
     "contact": {}
   },
   "tags": [],
@@ -7928,6 +7943,9 @@
           "id": {
             "type": "string"
           },
+          "isTrashed": {
+            "type": "boolean"
+          },
           "reason": {
             "enum": [
               "duplicate",
@@ -8018,6 +8036,9 @@
               }
             ],
             "nullable": true
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -8086,6 +8107,9 @@
           },
           "imageWidth": {
             "type": "integer"
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/SourceType"
           }
         },
         "required": [
@@ -8216,9 +8240,6 @@
             "type": "boolean"
           },
           "isFavorite": {
-            "type": "boolean"
-          },
-          "isOffline": {
             "type": "boolean"
           },
           "isVisible": {
@@ -8737,6 +8758,10 @@
       },
       "CreateProfileImageResponseDto": {
         "properties": {
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -8745,6 +8770,7 @@
           }
         },
         "required": [
+          "profileChangedAt",
           "profileImagePath",
           "userId"
         ],
@@ -9052,7 +9078,7 @@
           "maxDistance": {
             "format": "double",
             "maximum": 2,
-            "minimum": 0,
+            "minimum": 0.1,
             "type": "number"
           },
           "minFaces": {
@@ -9062,7 +9088,7 @@
           "minScore": {
             "format": "double",
             "maximum": 1,
-            "minimum": 0,
+            "minimum": 0.1,
             "type": "number"
           },
           "modelName": {
@@ -9257,6 +9283,17 @@
           "failed",
           "paused",
           "waiting"
+        ],
+        "type": "object"
+      },
+      "JobCreateDto": {
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/ManualJobName"
+          }
+        },
+        "required": [
+          "name"
         ],
         "type": "object"
       },
@@ -9502,6 +9539,14 @@
         ],
         "type": "object"
       },
+      "ManualJobName": {
+        "enum": [
+          "person-cleanup",
+          "tag-cleanup",
+          "user-cleanup"
+        ],
+        "type": "string"
+      },
       "MapMarkerResponseDto": {
         "properties": {
           "city": {
@@ -9559,13 +9604,6 @@
           "state"
         ],
         "type": "object"
-      },
-      "MapTheme": {
-        "enum": [
-          "light",
-          "dark"
-        ],
-        "type": "string"
       },
       "MemoriesResponse": {
         "properties": {
@@ -9954,6 +9992,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -9963,6 +10005,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"
@@ -10362,6 +10405,130 @@
         ],
         "type": "object"
       },
+      "RandomSearchDto": {
+        "properties": {
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isEncoded": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isMotion": {
+            "type": "boolean"
+          },
+          "isNotInAlbum": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "lensModel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "libraryId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "make": {
+            "type": "string"
+          },
+          "model": {
+            "nullable": true,
+            "type": "string"
+          },
+          "page": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "personIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "size": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "number"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          },
+          "takenAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "takenBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trashedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "updatedAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedBefore": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "withArchived": {
+            "default": false,
+            "type": "boolean"
+          },
+          "withDeleted": {
+            "type": "boolean"
+          },
+          "withExif": {
+            "type": "boolean"
+          },
+          "withPeople": {
+            "type": "boolean"
+          },
+          "withStacked": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "RatingsResponse": {
         "properties": {
           "enabled": {
@@ -10411,17 +10578,6 @@
           "lastImportFileName",
           "lastUpdate"
         ],
-        "type": "object"
-      },
-      "ScanLibraryDto": {
-        "properties": {
-          "refreshAllFiles": {
-            "type": "boolean"
-          },
-          "refreshModifiedFiles": {
-            "type": "boolean"
-          }
-        },
         "type": "object"
       },
       "SearchAlbumResponseDto": {
@@ -10653,6 +10809,12 @@
           "loginPageMessage": {
             "type": "string"
           },
+          "mapDarkStyleUrl": {
+            "type": "string"
+          },
+          "mapLightStyleUrl": {
+            "type": "string"
+          },
           "oauthButtonText": {
             "type": "string"
           },
@@ -10668,6 +10830,8 @@
           "isInitialized",
           "isOnboarded",
           "loginPageMessage",
+          "mapDarkStyleUrl",
+          "mapLightStyleUrl",
           "oauthButtonText",
           "trashDays",
           "userDeleteDelay"
@@ -10686,6 +10850,9 @@
             "type": "boolean"
           },
           "facialRecognition": {
+            "type": "boolean"
+          },
+          "importFaces": {
             "type": "boolean"
           },
           "map": {
@@ -10721,6 +10888,7 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "importFaces",
           "map",
           "oauth",
           "oauthAutoLaunch",
@@ -11229,6 +11397,13 @@
         ],
         "type": "object"
       },
+      "SourceType": {
+        "enum": [
+          "machine-learning",
+          "exif"
+        ],
+        "type": "string"
+      },
       "StackCreateDto": {
         "properties": {
           "assetIds": {
@@ -11299,6 +11474,9 @@
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
+          "metadata": {
+            "$ref": "#/components/schemas/SystemConfigMetadataDto"
+          },
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
@@ -11338,6 +11516,7 @@
           "logging",
           "machineLearning",
           "map",
+          "metadata",
           "newVersionCheck",
           "notifications",
           "oauth",
@@ -11461,6 +11640,17 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigFacesDto": {
+        "properties": {
+          "import": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "import"
         ],
         "type": "object"
       },
@@ -11653,6 +11843,17 @@
           "darkStyle",
           "enabled",
           "lightStyle"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMetadataDto": {
+        "properties": {
+          "faces": {
+            "$ref": "#/components/schemas/SystemConfigFacesDto"
+          }
+        },
+        "required": [
+          "faces"
         ],
         "type": "object"
       },
@@ -12095,6 +12296,17 @@
         },
         "type": "object"
       },
+      "TestEmailResponseDto": {
+        "properties": {
+          "messageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "messageId"
+        ],
+        "type": "object"
+      },
       "TimeBucketResponseDto": {
         "properties": {
           "count": {
@@ -12146,6 +12358,17 @@
         ],
         "type": "string"
       },
+      "TrashResponseDto": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "type": "object"
+      },
       "UpdateAlbumDto": {
         "properties": {
           "albumName": {
@@ -12194,6 +12417,11 @@
           },
           "latitude": {
             "type": "number"
+          },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
           },
           "longitude": {
             "type": "number"
@@ -12351,6 +12579,10 @@
           "oauthId": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -12389,6 +12621,7 @@
           "license",
           "name",
           "oauthId",
+          "profileChangedAt",
           "profileImagePath",
           "quotaSizeInBytes",
           "quotaUsageInBytes",
@@ -12550,6 +12783,10 @@
           "name": {
             "type": "string"
           },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           }
@@ -12559,6 +12796,7 @@
           "email",
           "id",
           "name",
+          "profileChangedAt",
           "profileImagePath"
         ],
         "type": "object"
