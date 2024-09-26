@@ -67,6 +67,8 @@ class DownloadTaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final progressPercent = (progress * 100).round();
+
     return SizedBox(
       key: const ValueKey('download_progress'),
       width: MediaQuery.of(context).size.width - 32,
@@ -101,14 +103,14 @@ class DownloadTaskTile extends StatelessWidget {
                   Expanded(
                     child: LinearProgressIndicator(
                       minHeight: 8.0,
-                      value: progress * 100,
+                      value: progress,
                       borderRadius:
                           const BorderRadius.all(Radius.circular(10.0)),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${(progress * 100).toInt()}%',
+                    '$progressPercent%',
                     style: context.textTheme.labelSmall,
                   ),
                 ],

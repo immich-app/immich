@@ -128,11 +128,11 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   void _onDownloadComplete(String id) {
     Future.delayed(const Duration(seconds: 1), () {
       state = state.copyWith(
-          // showProgress: false,
-          // taskProgress: <String, DownloadInfo>{}
-          //   ..addAll(state.taskProgress)
-          //   ..remove(id),
-          );
+        showProgress: false,
+        taskProgress: <String, DownloadInfo>{}
+          ..addAll(state.taskProgress)
+          ..remove(id),
+      );
     });
   }
 
