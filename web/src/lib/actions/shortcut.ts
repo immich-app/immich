@@ -10,11 +10,16 @@ export type Shortcut = {
 
 export type ShortcutOptions<T = HTMLElement> = {
   shortcut: Shortcut;
+  /** If true, the event handler will not execute if the event comes from an input field */
   ignoreInputFields?: boolean;
   onShortcut: (event: KeyboardEvent & { currentTarget: T }) => unknown;
   preventDefault?: boolean;
 };
 
+/** Determines whether an event should be ignored. The event will be ignored if:
+ *  - The element dispatching the event is not the same as the element which the event listener is attached to
+ *  - The element dispatching the event is an input field
+ */
 export const shouldIgnoreEvent = (event: KeyboardEvent | ClipboardEvent): boolean => {
   if (event.target === event.currentTarget) {
     return false;
@@ -33,10 +38,12 @@ export const matchesShortcut = (event: KeyboardEvent, shortcut: Shortcut) => {
   );
 };
 
+/** Bind a single keyboard shortcut to node. */
 export const shortcut = <T extends HTMLElement>(
   node: T,
   option: ShortcutOptions<T>,
 ): ActionReturn<ShortcutOptions<T>> => {
+  //just call shortcuts by passing option into array
   const { update: shortcutsUpdate, destroy } = shortcuts(node, [option]);
 
   return {
@@ -47,6 +54,7 @@ export const shortcut = <T extends HTMLElement>(
   };
 };
 
+/** Binds multiple keyboard shortcuts to node */
 export const shortcuts = <T extends HTMLElement>(
   node: T,
   options: ShortcutOptions<T>[],
