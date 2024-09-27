@@ -43,7 +43,6 @@ export const shortcut = <T extends HTMLElement>(
   node: T,
   option: ShortcutOptions<T>,
 ): ActionReturn<ShortcutOptions<T>> => {
-  //just call shortcuts by passing option into array
   const { update: shortcutsUpdate, destroy } = shortcuts(node, [option]);
 
   return {
