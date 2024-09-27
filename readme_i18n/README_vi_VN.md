@@ -37,7 +37,7 @@
 
 </p>
 
-## Disclaimer
+## Tuyên bố miễn trừ trách nhiệm
 
 - ⚠️ Dự án đang được phát triển **rất tích cực**.
 - ⚠️ Dự kiến ​​sẽ có lỗi và thay đổi đột ngột.
@@ -78,44 +78,44 @@ Truy cập bản demo [tại đây](https://demo.immich.app). Bản demo đang c
 | Tự động sao lưu khi ứng dụng được mở         | Có     | N/A |
 | Ngăn chặn sự trùng lặp nội dung              | Có     | Có |
 | Album được chọn để sao lưu                   | Có     | N/A |
-| Download photos and videos to local device   | Có     | Có |
-| Multi-user support                           | Có     | Có |
-| Album and Shared albums                      | Có     | Có |
-| Scrubbable/draggable scrollbar               | Có     | Có |
-| Support raw formats                          | Có     | Có |
-| Metadata view (EXIF, map)                    | Có     | Có |
-| Search by metadata, objects, faces, and CLIP | Có     | Có |
-| Administrative functions (user management)   | Không  | Có |
-| Background backup                            | Có     | N/A |
-| Virtual scroll                               | Có     | Có |
-| OAuth support                                | Có     | Có |
+| Tải ảnh và video xuống thiết bị cục bộ       | Có     | Có |
+| Hỗ trợ nhiều người dùng                      | Có     | Có |
+| Album và Album được chia sẻ                  | Có     | Có |
+| Thanh cuộn có thể chà / kéo                  | Có     | Có |
+| Hỗ trợ định dạng raw                         | Có     | Có |
+| Xem metadata (EXIF, bản đồ)                  | Có     | Có |
+| Tìm kiếm theo metadata, đối tượng, khuôn mặt và CLIP | Có     | Có |
+| Chức năng quản trị (quản lý người dùng)      | Không  | Có |
+| Sao lưu trong nền                            | Có     | N/A |
+| Cuộn ảo                                      | Có     | Có |
+| Hỗ trợ OAuth                                 | Có     | Có |
 | API Keys                                     | N/A    | Có |
-| LivePhoto/MotionPhoto backup and playback    | Có     | Có |
-| Support 360 degree image display             | Không  | Có |
-| User-defined storage structure               | Có     | Có |
-| Public Sharing                               | Có     | Có |
-| Archive and Favorites                        | Có     | Có |
-| Global Map                                   | Có     | Có |
-| Partner Sharing                              | Có     | Có |
-| Facial recognition and clustering            | Có     | Có |
-| Memories (x years ago)                       | Có     | Có |
-| Offline support                              | Có     | Không |
-| Read-only gallery                            | Có     | Có |
-| Stacked Photos                               | Có     | Có |
+| Sao lưu và phát lại Live Photo/Motion Photo  | Có     | Có |
+| Hỗ trợ hiển thị hình ảnh 360 độ              | Không  | Có |
+| Cấu trúc lưu trữ do người dùng xác định      | Có     | Có |
+| Chia sẻ công khai                            | Có     | Có |
+| Lưu trữ và Yêu thích                         | Có     | Có |
+| Bản đồ toàn cầu                              | Có     | Có |
+| Chia sẻ đối tác                              | Có     | Có |
+| Nhận dạng khuôn mặt và phân cụm              | Có     | Có |
+| Kỷ niệm (x năm trước)                        | Có     | Có |
+| Hỗ trợ ngoại tuyến                           | Có     | Không |
+| Thư viện chỉ đọc                             | Có     | Có |
+| Ảnh xếp chồng                                | Có     | Có |
 
-## Translations
+## Dịch thuật
 
-Read more about translations [here](https://immich.app/docs/developer/translations).
+Đọc thêm về dịch thuật [tại đây](https://immich.app/docs/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
 </a>
 
-## Repository activity
+## Hoạt động của repository
 
 ![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
-## Star history
+## Lịch sử Đánh dấu sao
 
 <a href="https://star-history.com/#immich-app/immich&Date">
  <picture>
@@ -125,7 +125,7 @@ Read more about translations [here](https://immich.app/docs/developer/translatio
  </picture>
 </a>
 
-## Contributors
+## Người đóng góp
 
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
