@@ -96,10 +96,10 @@ export class MediaRepository implements IMediaRepository {
           width: stream.width || 0,
           codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
           codecType: stream.codec_type,
-          frameCount: Number.parseInt((options?.countFrames ? stream.nb_read_packets : stream.nb_frames) ?? '0') || 0,
-          rotation: Number.parseInt(`${stream.rotation ?? 0}`) || 0,
+          frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
+          rotation: this.parseInt(stream.rotation),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
-          bitrate: Number.parseInt(stream.bit_rate ?? '0') || 0,
+          bitrate: this.parseInt(stream.bit_rate),
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
@@ -107,7 +107,7 @@ export class MediaRepository implements IMediaRepository {
           index: stream.index,
           codecType: stream.codec_type,
           codecName: stream.codec_name,
-          frameCount: Number.parseInt((options?.countFrames ? stream.nb_read_packets : stream.nb_frames) ?? '0') || 0,
+          frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
         })),
     };
   }
@@ -169,18 +169,19 @@ export class MediaRepository implements IMediaRepository {
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
-    let lastProgressFrame: number = 0;
-    const { frameCount, percentInterval } = options.progress;
-    const frameInterval = Math.ceil(frameCount / (100 / percentInterval));
-    const isDebug = this.logger.isLevelEnabled(LogLevel.DEBUG);
-    return ffmpeg(input, { niceness: 10 })
+    const ffmpegCall = ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
       .on('start', (command: string) => this.logger.debug(command))
-      .on('error', (error, _, stderr) => this.logger.error(stderr || error))
-      .on('progress', (progress: ProgressEvent) => {
-        if (!isDebug || !frameCount || !frameInterval || progress.frames - lastProgressFrame < frameInterval) {
+      .on('error', (error, _, stderr) => this.logger.error(stderr || error));
+
+    const { frameCount, percentInterval } = options.progress;
+    const frameInterval = Math.ceil(frameCount / (100 / percentInterval));
+    if (this.logger.isLevelEnabled(LogLevel.DEBUG) && frameCount && frameInterval) {
+      let lastProgressFrame: number = 0;
+      ffmpegCall.on('progress', (progress: ProgressEvent) => {
+        if (progress.frames - lastProgressFrame < frameInterval) {
           return;
         }
 
@@ -193,5 +194,12 @@ export class MediaRepository implements IMediaRepository {
           `Transcoding ${percent}% done${duration ? `, estimated ${duration} remaining` : ''} for output ${outputText}`,
         );
       });
+    }
+
+    return ffmpegCall;
+  }
+
+  private parseInt(value: string | number | undefined): number {
+    return Number.parseInt(value as string) || 0;
   }
 }
