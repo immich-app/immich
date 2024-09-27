@@ -7,19 +7,24 @@ import 'package:collection/collection.dart';
 class DownloadInfo {
   final String fileName;
   final double progress;
+  // enum
+  final TaskStatus status;
 
   DownloadInfo({
     required this.fileName,
     required this.progress,
+    required this.status,
   });
 
   DownloadInfo copyWith({
     String? fileName,
     double? progress,
+    TaskStatus? status,
   }) {
     return DownloadInfo(
       fileName: fileName ?? this.fileName,
       progress: progress ?? this.progress,
+      status: status ?? this.status,
     );
   }
 
@@ -27,6 +32,7 @@ class DownloadInfo {
     return <String, dynamic>{
       'fileName': fileName,
       'progress': progress,
+      'status': status.index,
     };
   }
 
@@ -34,6 +40,7 @@ class DownloadInfo {
     return DownloadInfo(
       fileName: map['fileName'] as String,
       progress: map['progress'] as double,
+      status: TaskStatus.values[map['status'] as int],
     );
   }
 
@@ -44,17 +51,19 @@ class DownloadInfo {
 
   @override
   String toString() =>
-      'DownloadProgress(fileName: $fileName, progress: $progress)';
+      'DownloadInfo(fileName: $fileName, progress: $progress, status: $status)';
 
   @override
   bool operator ==(covariant DownloadInfo other) {
     if (identical(this, other)) return true;
 
-    return other.fileName == fileName && other.progress == progress;
+    return other.fileName == fileName &&
+        other.progress == progress &&
+        other.status == status;
   }
 
   @override
-  int get hashCode => fileName.hashCode ^ progress.hashCode;
+  int get hashCode => fileName.hashCode ^ progress.hashCode ^ status.hashCode;
 }
 
 class DownloadState {

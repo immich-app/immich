@@ -1,3 +1,4 @@
+import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -42,6 +43,7 @@ class DownloadPanel extends ConsumerWidget {
                     return DownloadTaskTile(
                       progress: task.value.progress,
                       fileName: task.value.fileName,
+                      status: task.value.status,
                       onCancelDownload: () => onCancelDownload(task.key),
                     );
                   },
@@ -56,18 +58,41 @@ class DownloadPanel extends ConsumerWidget {
 class DownloadTaskTile extends StatelessWidget {
   final double progress;
   final String fileName;
+  final TaskStatus status;
   final VoidCallback onCancelDownload;
 
   const DownloadTaskTile({
     super.key,
     required this.progress,
     required this.fileName,
+    required this.status,
     required this.onCancelDownload,
   });
 
   @override
   Widget build(BuildContext context) {
     final progressPercent = (progress * 100).round();
+
+    getStatusText() {
+      switch (status) {
+        case TaskStatus.running:
+          return 'Downloading...';
+        case TaskStatus.complete:
+          return 'Download complete';
+        case TaskStatus.failed:
+          return 'Download failed';
+        case TaskStatus.canceled:
+          return 'Download canceled';
+        case TaskStatus.paused:
+          return 'Download paused';
+        case TaskStatus.enqueued:
+          return 'Download enqueued';
+        case TaskStatus.notFound:
+          return 'Download not found';
+        case TaskStatus.waitingToRetry:
+          return 'Download waiting to retry';
+      }
+    }
 
     return SizedBox(
       key: const ValueKey('download_progress'),
@@ -81,7 +106,7 @@ class DownloadTaskTile extends StatelessWidget {
           minVerticalPadding: 18,
           leading: const Icon(Icons.video_file_outlined),
           title: Text(
-            'Downloading...',
+            getStatusText(),
             style: context.textTheme.labelLarge,
           ),
           trailing: IconButton(

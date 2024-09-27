@@ -34,13 +34,23 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
     _imageViewerService.onTaskProgress = _taskProgressCallback;
   }
 
-  void _updateDownloadStatus(TaskStatus status) {
-    state = state.copyWith(downloadStatus: status);
+  void _updateDownloadStatus(String taskId, TaskStatus status) {
+    state = state.copyWith(
+      taskProgress: <String, DownloadInfo>{}
+        ..addAll(state.taskProgress)
+        ..addAll({
+          taskId: DownloadInfo(
+            progress: state.taskProgress[taskId]?.progress ?? 0,
+            fileName: state.taskProgress[taskId]?.fileName ?? '',
+            status: status,
+          ),
+        }),
+    );
   }
 
   // Download live photo callback
   void _downloadLivePhotoCallback(TaskStatusUpdate update) {
-    _updateDownloadStatus(update.status);
+    _updateDownloadStatus(update.task.taskId, update.status);
 
     switch (update.status) {
       case TaskStatus.complete:
@@ -62,7 +72,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
   // Download image callback
   void _downloadImageCallback(TaskStatusUpdate update) {
-    _updateDownloadStatus(update.status);
+    _updateDownloadStatus(update.task.taskId, update.status);
 
     switch (update.status) {
       case TaskStatus.complete:
@@ -84,7 +94,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
   // Download video callback
   void _downloadVideoCallback(TaskStatusUpdate update) {
-    _updateDownloadStatus(update.status);
+    _updateDownloadStatus(update.task.taskId, update.status);
 
     switch (update.status) {
       case TaskStatus.complete:
@@ -118,11 +128,10 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
           update.task.taskId: DownloadInfo(
             progress: update.progress,
             fileName: update.task.filename,
+            status: TaskStatus.running,
           ),
         }),
     );
-
-    print("task progress: ${state.taskProgress}");
   }
 
   void _onDownloadComplete(String id) {
