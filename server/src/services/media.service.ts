@@ -10,7 +10,6 @@ import {
   AssetType,
   AudioCodec,
   Colorspace,
-  ImageFormat,
   LogLevel,
   StorageFolder,
   TranscodeHWAccel,
@@ -175,18 +174,15 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
-    await this.storageCore.moveAssetImage(asset, AssetPathType.PREVIEW, image.previewFormat);
-    await this.storageCore.moveAssetImage(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
+    await this.storageCore.moveAssetImage(asset, AssetPathType.PREVIEW, image.preview.format);
+    await this.storageCore.moveAssetImage(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     await this.storageCore.moveAssetVideo(asset);
 
     return JobStatus.SUCCESS;
   }
 
   async handleGeneratePreview({ id }: IEntityJob): Promise<JobStatus> {
-    const [{ image }, [asset]] = await Promise.all([
-      this.configCore.getConfig({ withCache: true }),
-      this.assetRepository.getByIds([id], { exifInfo: true, files: true }),
-    ]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true, files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -195,7 +191,7 @@ export class MediaService {
       return JobStatus.SKIPPED;
     }
 
-    const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW, image.previewFormat);
+    const previewPath = await this.generateThumbnail(asset, AssetPathType.PREVIEW);
     if (!previewPath) {
       return JobStatus.SKIPPED;
     }
@@ -213,9 +209,9 @@ export class MediaService {
     return JobStatus.SUCCESS;
   }
 
-  private async generateThumbnail(asset: AssetEntity, type: GeneratedImageType, format: ImageFormat) {
+  private async generateThumbnail(asset: AssetEntity, type: GeneratedImageType) {
     const { image, ffmpeg } = await this.configCore.getConfig({ withCache: true });
-    const size = type === AssetPathType.PREVIEW ? image.previewSize : image.thumbnailSize;
+    const { size, format, quality } = image[type];
     const path = StorageCore.getImagePath(asset, type, format);
     this.storageCore.ensureFolders(path);
 
@@ -226,13 +222,13 @@ export class MediaService {
         const didExtract = shouldExtract && (await this.mediaRepository.extract(asset.originalPath, extractedPath));
 
         try {
-          const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.previewSize));
+          const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));
           const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
           const imageOptions = {
             format,
             size,
             colorspace,
-            quality: image.quality,
+            quality,
             processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
           };
 
@@ -274,10 +270,7 @@ export class MediaService {
   }
 
   async handleGenerateThumbnail({ id }: IEntityJob): Promise<JobStatus> {
-    const [{ image }, [asset]] = await Promise.all([
-      this.configCore.getConfig({ withCache: true }),
-      this.assetRepository.getByIds([id], { exifInfo: true, files: true }),
-    ]);
+    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true, files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -286,7 +279,7 @@ export class MediaService {
       return JobStatus.SKIPPED;
     }
 
-    const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL, image.thumbnailFormat);
+    const thumbnailPath = await this.generateThumbnail(asset, AssetPathType.THUMBNAIL);
     if (!thumbnailPath) {
       return JobStatus.SKIPPED;
     }

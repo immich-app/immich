@@ -20,6 +20,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
+import { ImageOutputConfig } from 'src/interfaces/media.interface';
 
 export interface SystemConfig {
   ffmpeg: {
@@ -109,11 +110,8 @@ export interface SystemConfig {
     template: string;
   };
   image: {
-    thumbnailFormat: ImageFormat;
-    thumbnailSize: number;
-    previewFormat: ImageFormat;
-    previewSize: number;
-    quality: number;
+    thumbnail: ImageOutputConfig;
+    preview: ImageOutputConfig;
     colorspace: Colorspace;
     extractEmbedded: boolean;
   };
@@ -259,11 +257,16 @@ export const defaults = Object.freeze<SystemConfig>({
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {
-    thumbnailFormat: ImageFormat.WEBP,
-    thumbnailSize: 250,
-    previewFormat: ImageFormat.JPEG,
-    previewSize: 1440,
-    quality: 80,
+    thumbnail: {
+      format: ImageFormat.WEBP,
+      size: 250,
+      quality: 80,
+    },
+    preview: {
+      format: ImageFormat.JPEG,
+      size: 1440,
+      quality: 80,
+    },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },
