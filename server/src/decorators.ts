@@ -4,8 +4,8 @@ import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
+import { MetadataKey } from 'src/enum';
 import { EmitEvent, ServerEvent } from 'src/interfaces/event.interface';
-import { Metadata } from 'src/middleware/auth.guard';
 import { setUnion } from 'src/utils/set';
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
@@ -141,7 +141,7 @@ export type EmitConfig = {
   /** lower value has higher priority, defaults to 0 */
   priority?: number;
 };
-export const OnEmit = (config: EmitConfig) => SetMetadata(Metadata.ON_EMIT_CONFIG, config);
+export const OnEmit = (config: EmitConfig) => SetMetadata(MetadataKey.ON_EMIT_CONFIG, config);
 
 type LifecycleRelease = 'NEXT_RELEASE' | string;
 type LifecycleMetadata = {

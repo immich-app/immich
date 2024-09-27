@@ -14,13 +14,13 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
+import { RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { Route } from 'src/middleware/file-upload.interceptor';
 import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Assets')
-@Controller(Route.ASSET)
+@Controller(RouteKey.ASSET)
 export class AssetController {
   constructor(private service: AssetService) {}
 

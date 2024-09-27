@@ -18,20 +18,20 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { SystemConfig } from 'src/config';
+import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
   Colorspace,
   ImageFormat,
   LogLevel,
-  SystemConfig,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
-} from 'src/config';
-import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
+} from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ValidateBoolean, validateCronExpression } from 'src/validation';
 

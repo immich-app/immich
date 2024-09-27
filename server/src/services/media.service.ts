@@ -1,21 +1,23 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import { dirname } from 'node:path';
+import { GeneratedImageType, StorageCore } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import { AssetEntity } from 'src/entities/asset.entity';
 import {
+  AssetFileType,
+  AssetPathType,
+  AssetType,
   AudioCodec,
   Colorspace,
   ImageFormat,
+  StorageFolder,
   TranscodeHWAccel,
   TranscodePolicy,
   TranscodeTarget,
   VideoCodec,
   VideoContainer,
-} from 'src/config';
-import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType } from 'src/entities/move.entity';
-import { AssetFileType, AssetType } from 'src/enum';
+} from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {

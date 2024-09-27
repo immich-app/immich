@@ -1,5 +1,8 @@
 import { Stats } from 'node:fs';
+import { ExifEntity } from 'src/entities/exif.entity';
 import {
+  AssetFileType,
+  AssetType,
   AudioCodec,
   Colorspace,
   ImageFormat,
@@ -7,9 +10,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from 'src/config';
-import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetFileType, AssetType } from 'src/enum';
+} from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
