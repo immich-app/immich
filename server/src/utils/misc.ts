@@ -13,8 +13,8 @@ import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, isDev, serverVersion } from 'src/constants';
 import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
+import { MetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { Metadata } from 'src/middleware/auth.guard';
 
 /**
  * @returns a list of strings representing the keys of the object in dot notation
@@ -210,7 +210,7 @@ export const useSwagger = (app: INestApplication, force = false) => {
         in: 'header',
         name: ImmichHeader.API_KEY,
       },
-      Metadata.API_KEY_SECURITY,
+      MetadataKey.API_KEY_SECURITY,
     )
     .addServer('/api')
     .build();

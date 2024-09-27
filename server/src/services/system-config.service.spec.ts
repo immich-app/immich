@@ -1,19 +1,18 @@
 import { BadRequestException } from '@nestjs/common';
+import { defaults, SystemConfig } from 'src/config';
 import {
   AudioCodec,
-  CQMode,
   Colorspace,
+  CQMode,
   ImageFormat,
   LogLevel,
-  SystemConfig,
+  SystemMetadataKey,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
-  defaults,
-} from 'src/config';
-import { SystemMetadataKey } from 'src/enum';
+} from 'src/enum';
 import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';

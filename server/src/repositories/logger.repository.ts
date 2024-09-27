@@ -1,7 +1,7 @@
 import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
-import { LogLevel } from 'src/config';
+import { LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { LogColor } from 'src/utils/logger';
 

@@ -1,4 +1,4 @@
-import { LogLevel } from 'src/config';
+import { LogLevel } from 'src/enum';
 
 export const ILoggerRepository = 'ILoggerRepository';
 
