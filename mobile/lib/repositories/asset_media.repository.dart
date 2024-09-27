@@ -52,6 +52,8 @@ class AssetMediaRepository implements IAssetMediaRepository {
       return null;
     }
 
+    // titleAsync gets the correct original filename for some assets on iOS
+    // otherwise using the `entity.title` would return a random GUID
     return await entity.titleAsync;
   }
 }
