@@ -335,7 +335,7 @@ class BackupService {
 
         if (file != null) {
           String? originalFileName =
-              await _assetMediaRepository.getOriginalFilename(asset.local!.id);
+              await _assetMediaRepository.getOriginalFilename(asset.localId!);
           originalFileName ??= asset.fileName;
 
           if (asset.local!.isLivePhoto) {
