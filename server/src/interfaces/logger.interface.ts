@@ -6,6 +6,7 @@ export interface ILoggerRepository {
   setAppName(name: string): void;
   setContext(message: string): void;
   setLogLevel(level: LogLevel): void;
+  isLevelEnabled(level: LogLevel): boolean;
 
   verbose(message: any, ...args: any): void;
   debug(message: any, ...args: any): void;
