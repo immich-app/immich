@@ -38,6 +38,7 @@ function createSlideshowStore() {
 
   const showProgressBar = persisted<boolean>('slideshow-show-progressbar', true);
   const slideshowDelay = persisted<number>('slideshow-delay', 5, {});
+  const slideshowTransition = persisted<boolean>('slideshow-transition', true);
 
   return {
     restartProgress: {
@@ -67,6 +68,7 @@ function createSlideshowStore() {
     slideshowState,
     slideshowDelay,
     showProgressBar,
+    slideshowTransition,
   };
 }
 
