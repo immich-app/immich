@@ -116,6 +116,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 ok: "app_bar_signout_dialog_ok",
                 onOk: () async {
                   await ref.read(authenticationProvider.notifier).logout();
+
                   ref.read(manualUploadProvider.notifier).cancelBackup();
                   ref.read(backupProvider.notifier).cancelBackup();
                   ref.read(assetProvider.notifier).clearAllAsset();

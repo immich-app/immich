@@ -5269,8 +5269,8 @@
             "name": "password",
             "required": false,
             "in": "query",
-            "example": "password",
             "schema": {
+              "example": "password",
               "type": "string"
             }
           },
