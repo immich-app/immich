@@ -4,13 +4,19 @@ import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.d
 
 export const IEventRepository = 'IEventRepository';
 
-type EmitEventMap = {
+type EventMap = {
   // app events
   'app.bootstrap': ['api' | 'microservices'];
   'app.shutdown': [];
 
   // config events
-  'config.update': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+  'config.update': [
+    {
+      newConfig: SystemConfig;
+      /** When the server starts, `oldConfig` is `undefined` */
+      oldConfig?: SystemConfig;
+    },
+  ];
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
@@ -43,12 +49,18 @@ type EmitEventMap = {
 
   // user events
   'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];
+
+  // websocket events
+  'websocket.connect': [{ userId: string }];
 };
 
-export type EmitEvent = keyof EmitEventMap;
+export type ServerEvents = 'config.update';
+export const serverEvents = ['config.update'] as const;
+
+export type EmitEvent = keyof EventMap;
 export type EmitHandler<T extends EmitEvent> = (...args: ArgsOf<T>) => Promise<void> | void;
-export type ArgOf<T extends EmitEvent> = EmitEventMap[T][0];
-export type ArgsOf<T extends EmitEvent> = EmitEventMap[T];
+export type ArgOf<T extends EmitEvent> = EventMap[T][0];
+export type ArgsOf<T extends EmitEvent> = EventMap[T];
 
 export enum ClientEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
@@ -82,19 +94,15 @@ export interface ClientEventMap {
   [ClientEvent.SESSION_DELETE]: string;
 }
 
-export enum ServerEvent {
-  CONFIG_UPDATE = 'config.update',
-  WEBSOCKET_CONNECT = 'websocket.connect',
-}
-
-export interface ServerEventMap {
-  [ServerEvent.CONFIG_UPDATE]: null;
-  [ServerEvent.WEBSOCKET_CONNECT]: { userId: string };
-}
+export type EventItem<T extends EmitEvent> = {
+  event: T;
+  handler: EmitHandler<T>;
+  server: boolean;
+};
 
 export interface IEventRepository {
-  on<T extends keyof EmitEventMap>(event: T, handler: EmitHandler<T>): void;
-  emit<T extends keyof EmitEventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
+  on<T extends keyof EventMap>(item: EventItem<T>): void;
+  emit<T extends keyof EventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
 
   /**
    * Send to connected clients for a specific user
@@ -105,7 +113,7 @@ export interface IEventRepository {
    */
   clientBroadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]): void;
   /**
-   * Notify listeners in this and connected processes. Subscribe to an event with `@OnServerEvent`
+   * Send to all connected servers
    */
-  serverSend<E extends keyof ServerEventMap>(event: E, data: ServerEventMap[E]): boolean;
+  serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void;
 }

@@ -6,14 +6,13 @@ import {
   CQMode,
   ImageFormat,
   LogLevel,
-  SystemMetadataKey,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -376,14 +375,13 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('updateConfig', () => {
-    it('should update the config and emit client and server events', async () => {
+    it('should update the config and emit an event', async () => {
       systemMock.get.mockResolvedValue(partialConfig);
-
       await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
-
-      expect(eventMock.clientBroadcast).toHaveBeenCalled();
-      expect(eventMock.serverSend).toHaveBeenCalledWith(ServerEvent.CONFIG_UPDATE, null);
-      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_CONFIG, partialConfig);
+      expect(eventMock.emit).toHaveBeenCalledWith(
+        'config.update',
+        expect.objectContaining({ oldConfig: expect.any(Object), newConfig: updatedConfig }),
+      );
     });
 
     it('should throw an error if a config file is in use', async () => {

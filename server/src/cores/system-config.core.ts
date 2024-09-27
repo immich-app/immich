@@ -4,7 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
-import { Subject } from 'rxjs';
 import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { SystemMetadataKey } from 'src/enum';
@@ -24,8 +23,6 @@ export class SystemConfigCore {
   private config: SystemConfig | null = null;
   private lastUpdated: number | null = null;
 
-  config$ = new Subject<SystemConfig>();
-
   private constructor(
     private repository: ISystemMetadataRepository,
     private logger: ILoggerRepository,
@@ -40,6 +37,11 @@ export class SystemConfigCore {
 
   static reset() {
     instance = null;
+  }
+
+  invalidateCache() {
+    this.config = null;
+    this.lastUpdated = null;
   }
 
   async getConfig({ withCache }: { withCache: boolean }): Promise<SystemConfig> {
@@ -74,14 +76,7 @@ export class SystemConfigCore {
 
     await this.repository.set(SystemMetadataKey.SYSTEM_CONFIG, partialConfig);
 
-    const config = await this.getConfig({ withCache: false });
-    this.config$.next(config);
-    return config;
-  }
-
-  async refreshConfig() {
-    const newConfig = await this.getConfig({ withCache: false });
-    this.config$.next(newConfig);
+    return this.getConfig({ withCache: false });
   }
 
   isUsingConfigFile() {

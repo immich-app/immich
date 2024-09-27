@@ -6,7 +6,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
@@ -98,6 +98,15 @@ describe(NotificationService.name, () => {
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should emit client and server events', () => {
+      const update = { newConfig: defaults };
+      expect(sut.onConfigUpdate(update)).toBeUndefined();
+      expect(eventMock.clientBroadcast).toHaveBeenCalledWith(ClientEvent.CONFIG_UPDATE, {});
+      expect(eventMock.serverSend).toHaveBeenCalledWith('config.update', update);
+    });
   });
 
   describe('onConfigValidateEvent', () => {

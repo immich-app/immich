@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
-import { SystemConfig } from 'src/config';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { defaults, SystemConfig } from 'src/config';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetType } from 'src/enum';
@@ -81,22 +80,26 @@ describe(LibraryService.name, () => {
   });
 
   describe('onBootstrapEvent', () => {
-    it('should init cron job and subscribe to config changes', async () => {
+    it('should init cron job and handle config changes', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.libraryScan);
 
       await sut.onBootstrap();
-      expect(systemMock.get).toHaveBeenCalled();
-      expect(jobMock.addCronJob).toHaveBeenCalled();
 
-      SystemConfigCore.create(newSystemMetadataRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
-        library: {
-          scan: {
-            enabled: true,
-            cronExpression: '0 1 * * *',
+      expect(jobMock.addCronJob).toHaveBeenCalled();
+      expect(systemMock.get).toHaveBeenCalled();
+
+      await sut.onConfigUpdate({
+        oldConfig: defaults,
+        newConfig: {
+          library: {
+            scan: {
+              enabled: true,
+              cronExpression: '0 1 * * *',
+            },
+            watch: { enabled: false },
           },
-          watch: { enabled: true },
-        },
-      } as SystemConfig);
+        } as SystemConfig,
+      });
 
       expect(jobMock.updateCronJob).toHaveBeenCalledWith('libraryScan', '0 1 * * *', true);
     });

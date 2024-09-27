@@ -3,7 +3,6 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { SystemConfig } from 'src/config';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -15,7 +14,7 @@ import {
 } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, AssetType, StorageFolder } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -76,7 +75,6 @@ export class StorageTemplateService {
   ) {
     this.logger.setContext(StorageTemplateService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-    this.configCore.config$.subscribe((config) => this.onConfig(config));
     this.storageCore = StorageCore.create(
       assetRepository,
       cryptoRepository,
@@ -88,7 +86,16 @@ export class StorageTemplateService {
     );
   }
 
-  @OnEmit({ event: 'config.validate' })
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    const template = newConfig.storageTemplate.template;
+    if (!this._template || template !== this.template.raw) {
+      this.logger.debug(`Compiling new storage template: ${template}`);
+      this._template = this.compile(template);
+    }
+  }
+
+  @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
@@ -279,14 +286,6 @@ export class StorageTemplateService {
     } catch (error: any) {
       this.logger.error(`Unable to get template path for ${filename}`, error);
       return asset.originalPath;
-    }
-  }
-
-  private onConfig(config: SystemConfig) {
-    const template = config.storageTemplate.template;
-    if (!this._template || template !== this.template.raw) {
-      this.logger.debug(`Compiling new storage template: ${template}`);
-      this._template = this.compile(template);
     }
   }
 

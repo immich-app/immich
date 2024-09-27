@@ -2,7 +2,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@nestjs/core';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import _ from 'lodash';
@@ -42,7 +41,6 @@ const imports = [
   BullModule.registerQueue(...bullQueues),
   ClsModule.forRoot(clsConfig),
   ConfigModule.forRoot(immichAppConfig),
-  EventEmitterModule.forRoot(),
   OpenTelemetryModule.forRoot(otelConfig),
   TypeOrmModule.forRootAsync({
     inject: [ModuleRef],
@@ -114,16 +112,3 @@ export class MicroservicesModule implements OnModuleInit, OnModuleDestroy {
   providers: [...common, ...commands, SchedulerRegistry],
 })
 export class ImmichAdminModule {}
-
-@Module({
-  imports: [
-    ConfigModule.forRoot(immichAppConfig),
-    EventEmitterModule.forRoot(),
-    TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature(entities),
-    OpenTelemetryModule.forRoot(otelConfig),
-  ],
-  controllers: [...controllers],
-  providers: [...common, ...middleware, SchedulerRegistry],
-})
-export class AppTestModule {}

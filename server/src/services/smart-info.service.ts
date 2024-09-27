@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
@@ -39,7 +39,7 @@ export class SmartInfoService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
@@ -49,7 +49,12 @@ export class SmartInfoService {
     await this.init(config);
   }
 
-  @OnEmit({ event: 'config.validate' })
+  @OnEvent({ name: 'config.update' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
+    await this.init(newConfig, oldConfig);
+  }
+
+  @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
@@ -58,11 +63,6 @@ export class SmartInfoService {
         `Unknown CLIP model: ${newConfig.machineLearning.clip.modelName}. Please check the model name for typos and confirm this is a supported model.`,
       );
     }
-  }
-
-  @OnEmit({ event: 'config.update' })
-  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
-    await this.init(newConfig, oldConfig);
   }
 
   private async init(newConfig: SystemConfig, oldConfig?: SystemConfig) {

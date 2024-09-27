@@ -1,11 +1,12 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { snakeCase } from 'lodash';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType, ManualJobName } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   ConcurrentQueueName,
   IJobRepository,
@@ -45,6 +46,7 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 @Injectable()
 export class JobService {
   private configCore: SystemConfigCore;
+  private isMicroservices = false;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -57,6 +59,28 @@ export class JobService {
   ) {
     this.logger.setContext(JobService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
+  }
+
+  @OnEvent({ name: 'app.bootstrap' })
+  onBootstrap(app: ArgOf<'app.bootstrap'>) {
+    this.isMicroservices = app === 'microservices';
+  }
+
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig: config, oldConfig }: ArgOf<'config.update'>) {
+    if (!oldConfig || !this.isMicroservices) {
+      return;
+    }
+
+    this.logger.debug(`Updating queue concurrency settings`);
+    for (const queueName of Object.values(QueueName)) {
+      let concurrency = 1;
+      if (this.isConcurrentQueue(queueName)) {
+        concurrency = config.job[queueName].concurrency;
+      }
+      this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
+      this.jobRepository.setConcurrency(queueName, concurrency);
+    }
   }
 
   async create(dto: JobCreateDto): Promise<void> {
@@ -209,18 +233,6 @@ export class JobService {
         }
       });
     }
-
-    this.configCore.config$.subscribe((config) => {
-      this.logger.debug(`Updating queue concurrency settings`);
-      for (const queueName of Object.values(QueueName)) {
-        let concurrency = 1;
-        if (this.isConcurrentQueue(queueName)) {
-          concurrency = config.job[queueName].concurrency;
-        }
-        this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
-        this.jobRepository.setConcurrency(queueName, concurrency);
-      }
-    });
   }
 
   private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
