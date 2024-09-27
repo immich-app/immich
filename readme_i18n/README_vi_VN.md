@@ -1,6 +1,6 @@
 <p align="center"> 
   <br/>  
-  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
+  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="Giấy phép: AGPLv3"></a>
   <a href="https://discord.immich.app">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
   </a>
@@ -9,12 +9,12 @@
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
+<img src="../design/immich-logo-stacked-light.svg" width="300" title="Đăng nhập bằng URL Tuỳ chỉnh">
 </p>
 <h3 align="center">Giải pháp quản lý ảnh và video tự lưu trữ hiệu suất cao</h3>
 <br/>
 <a href="https://immich.app">
-<img src="../design/immich-screenshots.png" title="Main Screenshot">
+<img src="../design/immich-screenshots.png" title="Ảnh chụp màn hình chính">
 </a>
 <br/>
 <p align="center">
@@ -55,7 +55,7 @@
 - [Cài đặt](https://immich.app/docs/install/requirements)
 - [Lộ trình](https://immich.app/roadmap)
 - [Demo](#demo)
-- [Tính năng](#features)
+- [Tính năng](#Tính-năng)
 - [Dịch thuật](https://immich.app/docs/developer/translations)
 - [Đóng góp](https://immich.app/docs/overview/support-the-project)
 
@@ -73,48 +73,48 @@ Truy cập bản demo [tại đây](https://demo.immich.app). Bản demo đang c
 
 ## Tính năng
 
-| Tính năng                                    | Mobile | Web |
-| :------------------------------------------- | ------ | --- |
-| Tải lên và xem video, ảnh                    | Có     | Có |
-| Tự động sao lưu khi ứng dụng được mở         | Có     | N/A |
-| Ngăn chặn sự trùng lặp nội dung              | Có     | Có |
-| Album được chọn để sao lưu                   | Có     | N/A |
-| Tải ảnh và video xuống thiết bị cục bộ       | Có     | Có |
-| Hỗ trợ nhiều người dùng                      | Có     | Có |
-| Album và Album được chia sẻ                  | Có     | Có |
-| Thanh cuộn có thể chà / kéo                  | Có     | Có |
-| Hỗ trợ định dạng raw                         | Có     | Có |
-| Xem metadata (EXIF, bản đồ)                  | Có     | Có |
-| Tìm kiếm theo metadata, đối tượng, khuôn mặt và CLIP | Có     | Có |
-| Chức năng quản trị (quản lý người dùng)      | Không  | Có |
-| Sao lưu trong nền                            | Có     | N/A |
-| Cuộn ảo                                      | Có     | Có |
-| Hỗ trợ OAuth                                 | Có     | Có |
-| API Keys                                     | N/A    | Có |
-| Sao lưu và phát lại Live Photo/Motion Photo  | Có     | Có |
-| Hỗ trợ hiển thị hình ảnh 360 độ              | Không  | Có |
-| Cấu trúc lưu trữ do người dùng xác định      | Có     | Có |
-| Chia sẻ công khai                            | Có     | Có |
-| Lưu trữ và Yêu thích                         | Có     | Có |
-| Bản đồ toàn cầu                              | Có     | Có |
-| Chia sẻ đối tác                              | Có     | Có |
-| Nhận dạng khuôn mặt và phân cụm              | Có     | Có |
-| Kỷ niệm (x năm trước)                        | Có     | Có |
-| Hỗ trợ ngoại tuyến                           | Có     | Không |
-| Thư viện chỉ đọc                             | Có     | Có |
-| Ảnh xếp chồng                                | Có     | Có |
+| Tính năng                                            | Mobile | Web   |
+| :--------------------------------------------------- | ------ | ----- |
+| Tải lên và xem video, ảnh                            | Có     | Có    |
+| Tự động sao lưu khi ứng dụng được mở                 | Có     | N/A   |
+| Ngăn chặn sự trùng lặp nội dung                      | Có     | Có    |
+| Album được chọn để sao lưu                           | Có     | N/A   |
+| Tải ảnh và video xuống thiết bị cục bộ               | Có     | Có    |
+| Hỗ trợ nhiều người dùng                              | Có     | Có    |
+| Album và Album được chia sẻ                          | Có     | Có    |
+| Thanh cuộn có thể chà / kéo                          | Có     | Có    |
+| Hỗ trợ định dạng raw                                 | Có     | Có    |
+| Xem metadata (EXIF, bản đồ)                          | Có     | Có    |
+| Tìm kiếm theo metadata, đối tượng, khuôn mặt và CLIP | Có     | Có    |
+| Chức năng quản trị (quản lý người dùng)              | Không  | Có    |
+| Sao lưu trong nền                                    | Có     | N/A   |
+| Cuộn ảo                                              | Có     | Có    |
+| Hỗ trợ OAuth                                         | Có     | Có    |
+| API Keys                                             | N/A    | Có    |
+| Sao lưu và phát lại Live Photo/Motion Photo          | Có     | Có    |
+| Hỗ trợ hiển thị hình ảnh 360 độ                      | Không  | Có    |
+| Cấu trúc lưu trữ do người dùng xác định              | Có     | Có    |
+| Chia sẻ công khai                                    | Có     | Có    |
+| Lưu trữ và Yêu thích                                 | Có     | Có    |
+| Bản đồ toàn cầu                                      | Có     | Có    |
+| Chia sẻ đối tác                                      | Có     | Có    |
+| Nhận dạng khuôn mặt và phân cụm                      | Có     | Có    |
+| Kỷ niệm (x năm trước)                                | Có     | Có    |
+| Hỗ trợ ngoại tuyến                                   | Có     | Không |
+| Thư viện chỉ đọc                                     | Có     | Có    |
+| Ảnh xếp chồng                                        | Có     | Có    |
 
 ## Dịch thuật
 
 Đọc thêm về dịch thuật [tại đây](https://immich.app/docs/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
-<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Tình trạng dịch thuật" />
 </a>
 
 ## Hoạt động của repository
 
-![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
+![Hoạt động](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Hình ảnh phân tích Repobeats")
 
 ## Lịch sử Đánh dấu sao
 
@@ -122,7 +122,7 @@ Truy cập bản demo [tại đây](https://demo.immich.app). Bản demo đang c
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+   <img alt="Biểu đồ Lịch sử Đánh dấu" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
 </a>
 
