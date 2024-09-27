@@ -12,6 +12,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -21,6 +22,7 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -40,6 +42,7 @@ final backupServiceProvider = Provider(
     ref.watch(albumServiceProvider),
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
+    ref.watch(assetMediaRepositoryProvider),
   ),
 );
 
@@ -52,6 +55,7 @@ class BackupService {
   final AlbumService _albumService;
   final IAlbumMediaRepository _albumMediaRepository;
   final IFileMediaRepository _fileMediaRepository;
+  final IAssetMediaRepository _assetMediaRepository;
 
   BackupService(
     this._apiService,
@@ -60,6 +64,7 @@ class BackupService {
     this._albumService,
     this._albumMediaRepository,
     this._fileMediaRepository,
+    this._assetMediaRepository,
   );
 
   Future<List<String>?> getDeviceBackupAsset() async {
@@ -329,7 +334,9 @@ class BackupService {
         }
 
         if (file != null) {
-          String originalFileName = asset.fileName;
+          String? originalFileName =
+              await _assetMediaRepository.getOriginalFilename(asset.localId!);
+          originalFileName ??= asset.fileName;
 
           if (asset.local!.isLivePhoto) {
             if (livePhotoFile == null) {
