@@ -1,8 +1,9 @@
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/interfaces/database.interface.dart';
 
-abstract interface class IAlbumRepository {
+abstract interface class IAlbumRepository implements IDatabaseRepository {
   Future<Album> create(Album album);
 
   Future<Album?> get(int id);

@@ -1,8 +1,9 @@
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/device_asset.entity.dart';
+import 'package:immich_mobile/interfaces/database.interface.dart';
 
-abstract interface class IAssetRepository {
+abstract interface class IAssetRepository implements IDatabaseRepository {
   Future<Asset?> getByRemoteId(String id);
 
   Future<Asset?> getByOwnerIdChecksum(int ownerId, String checksum);

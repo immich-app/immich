@@ -9,7 +9,7 @@ import 'package:isar/isar.dart';
 final userRepositoryProvider =
     Provider((ref) => UserRepository(ref.watch(dbProvider)));
 
-class UserRepository extends DataBaseRepository implements IUserRepository {
+class UserRepository extends DatabaseRepository implements IUserRepository {
   UserRepository(super.db);
 
   @override
@@ -37,7 +37,7 @@ class UserRepository extends DataBaseRepository implements IUserRepository {
 
   @override
   Future<User> update(User user) async {
-    await db.writeTxn(() => db.users.put(user));
+    await txn(() => db.users.put(user));
     return user;
   }
 
@@ -45,12 +45,11 @@ class UserRepository extends DataBaseRepository implements IUserRepository {
   Future<User> me() => Future.value(Store.get(StoreKey.currentUser));
 
   @override
-  Future<void> deleteById(List<int> ids) =>
-      db.writeTxn(() => db.users.deleteAll(ids));
+  Future<void> deleteById(List<int> ids) => txn(() => db.users.deleteAll(ids));
 
   @override
   Future<List<User>> upsertAll(List<User> users) async {
-    await db.writeTxn(() => db.users.putAll(users));
+    await txn(() => db.users.putAll(users));
     return users;
   }
 

@@ -72,9 +72,10 @@ class BackupService {
     }
   }
 
-  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) {
-    return _assetRepository.upsertDuplicatedAssets(deviceAssetIds);
-  }
+  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) =>
+      _assetRepository.transaction(
+        () => _assetRepository.upsertDuplicatedAssets(deviceAssetIds),
+      );
 
   /// Get duplicated asset id from database
   Future<Set<String>> getDuplicatedAssetIds() async {

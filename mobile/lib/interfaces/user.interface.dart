@@ -1,6 +1,7 @@
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/interfaces/database.interface.dart';
 
-abstract interface class IUserRepository {
+abstract interface class IUserRepository implements IDatabaseRepository {
   Future<User?> get(String id);
 
   Future<List<User>> getByIds(List<String> ids);

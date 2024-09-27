@@ -106,6 +106,12 @@ void main() {
       when(() => assetRepository.deleteById(any())).thenAnswer((_) async {});
       when(() => exifInfoRepository.updateAll(any()))
           .thenAnswer((_) async => []);
+      when(() => assetRepository.transaction<void>(any())).thenAnswer(
+        (call) => (call.positionalArguments.first as Function).call(),
+      );
+      when(() => assetRepository.transaction<Null>(any())).thenAnswer(
+        (call) => (call.positionalArguments.first as Function).call(),
+      );
     });
     test('test inserting existing assets', () async {
       final List<Asset> remoteAssets = [

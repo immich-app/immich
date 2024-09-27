@@ -159,8 +159,10 @@ class SyncService {
       onlySecond: (User b) => toDelete.add(b.isarId),
     );
     if (changes) {
-      await _userRepository.deleteById(toDelete);
-      await _userRepository.upsertAll(toUpsert);
+      await _userRepository.transaction(() async {
+        await _userRepository.deleteById(toDelete);
+        await _userRepository.upsertAll(toUpsert);
+      });
     }
     return changes;
   }
@@ -221,21 +223,23 @@ class SyncService {
   }
 
   /// Deletes remote-only assets, updates merged assets to be local-only
-  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) async {
-    await _assetRepository.deleteAllByRemoteId(
-      idsToDelete,
-      state: AssetState.remote,
-    );
-    final merged = await _assetRepository.getAllByRemoteId(
-      idsToDelete,
-      state: AssetState.merged,
-    );
-    if (merged.isEmpty) return;
-    for (final Asset asset in merged) {
-      asset.remoteId = null;
-      asset.isTrashed = false;
-    }
-    await _assetRepository.updateAll(merged);
+  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
+    return _assetRepository.transaction(() async {
+      await _assetRepository.deleteAllByRemoteId(
+        idsToDelete,
+        state: AssetState.remote,
+      );
+      final merged = await _assetRepository.getAllByRemoteId(
+        idsToDelete,
+        state: AssetState.merged,
+      );
+      if (merged.isEmpty) return;
+      for (final Asset asset in merged) {
+        asset.remoteId = null;
+        asset.isTrashed = false;
+      }
+      await _assetRepository.updateAll(merged);
+    });
   }
 
   /// Syncs assets by loading and comparing all assets from the server.
@@ -415,13 +419,15 @@ class SyncService {
 
     // write & commit all changes to DB
     try {
-      await _assetRepository.updateAll(toUpdate);
-      await _albumRepository.addUsers(album, usersToLink);
-      await _albumRepository.removeUsers(album, usersToUnlink);
-      await _albumRepository.addAssets(album, assetsToLink);
-      await _albumRepository.removeAssets(album, toUnlink);
-      await _albumRepository.recalculateMetadata(album);
-      await _albumRepository.update(album);
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(toUpdate);
+        await _albumRepository.addUsers(album, usersToLink);
+        await _albumRepository.removeUsers(album, usersToUnlink);
+        await _albumRepository.addAssets(album, assetsToLink);
+        await _albumRepository.removeAssets(album, toUnlink);
+        await _albumRepository.recalculateMetadata(album);
+        await _albumRepository.update(album);
+      });
       _log.info("Synced changes of remote album ${album.name} to DB");
     } catch (e) {
       _log.severe("Failed to sync remote album to database", e);
@@ -530,8 +536,10 @@ class SyncService {
       "${toDelete.length} assets to delete, ${toUpdate.length} to update",
     );
     if (toDelete.isNotEmpty || toUpdate.isNotEmpty) {
-      await _assetRepository.deleteById(toDelete);
-      await _assetRepository.updateAll(toUpdate);
+      await _assetRepository.transaction(() async {
+        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.updateAll(toUpdate);
+      });
       _log.info(
         "Removed ${toDelete.length} and updated ${toUpdate.length} local assets from DB",
       );
@@ -615,14 +623,19 @@ class SyncService {
       dbAlbum.thumbnail.value = null;
     }
     try {
-      await _assetRepository.updateAll(updated + toUpdate);
-      await _albumRepository.addAssets(dbAlbum, existingInDb + updated);
-      await _albumRepository.removeAssets(dbAlbum, toDelete);
-      await _albumRepository.recalculateMetadata(dbAlbum);
-      await _albumRepository.update(dbAlbum);
-      await _eTagRepository.upsertAll([
-        ETag(id: deviceAlbum.eTagKeyAssetCount, assetCount: assetCountOnDevice),
-      ]);
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(updated + toUpdate);
+        await _albumRepository.addAssets(dbAlbum, existingInDb + updated);
+        await _albumRepository.removeAssets(dbAlbum, toDelete);
+        await _albumRepository.recalculateMetadata(dbAlbum);
+        await _albumRepository.update(dbAlbum);
+        await _eTagRepository.upsertAll([
+          ETag(
+            id: deviceAlbum.eTagKeyAssetCount,
+            assetCount: assetCountOnDevice,
+          ),
+        ]);
+      });
       _log.info("Synced changes of local album ${deviceAlbum.name} to DB");
     } catch (e) {
       _log.severe("Failed to update synced album ${deviceAlbum.name} in DB", e);
@@ -659,13 +672,15 @@ class SyncService {
     _removeDuplicates(newAssets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(newAssets);
     try {
-      await _assetRepository.updateAll(updated);
-      await _albumRepository.addAssets(dbAlbum, existingInDb + updated);
-      await _albumRepository.recalculateMetadata(dbAlbum);
-      await _albumRepository.update(dbAlbum);
-      await _eTagRepository.upsertAll(
-        [ETag(id: deviceAlbum.eTagKeyAssetCount, assetCount: totalOnDevice)],
-      );
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(updated);
+        await _albumRepository.addAssets(dbAlbum, existingInDb + updated);
+        await _albumRepository.recalculateMetadata(dbAlbum);
+        await _albumRepository.update(dbAlbum);
+        await _eTagRepository.upsertAll(
+          [ETag(id: deviceAlbum.eTagKeyAssetCount, assetCount: totalOnDevice)],
+        );
+      });
       _log.info("Fast synced local album ${deviceAlbum.name} to DB");
     } catch (e) {
       _log.severe(
@@ -744,11 +759,13 @@ class SyncService {
     if (assets.isEmpty) return;
     final exifInfos = assets.map((e) => e.exifInfo).nonNulls.toList();
     try {
-      await _assetRepository.updateAll(assets);
-      for (final Asset added in assets) {
-        added.exifInfo?.id = added.id;
-      }
-      await _exifInfoRepository.updateAll(exifInfos);
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(assets);
+        for (final Asset added in assets) {
+          added.exifInfo?.id = added.id;
+        }
+        await _exifInfoRepository.updateAll(exifInfos);
+      });
       _log.info("Upserted ${assets.length} assets into the DB");
     } catch (e) {
       _log.severe("Failed to upsert ${assets.length} assets into the DB", e);
@@ -815,9 +832,11 @@ class SyncService {
       final assets = await _assetRepository.getAllLocal();
       final (toDelete, toUpdate) =
           _handleAssetRemoval(assets, [], remote: false);
-      await _assetRepository.deleteById(toDelete);
-      await _assetRepository.updateAll(toUpdate);
-      await _albumRepository.deleteAllLocal();
+      await _assetRepository.transaction(() async {
+        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.updateAll(toUpdate);
+        await _albumRepository.deleteAllLocal();
+      });
       return true;
     } catch (e) {
       _log.severe("Failed to remove all local albums and assets", e);

@@ -194,7 +194,7 @@ class AssetService {
           a.exifInfo = newExif;
           if (newExif != a.exifInfo) {
             if (a.isInDb) {
-              _assetRepository.update(a);
+              _assetRepository.transaction(() => _assetRepository.update(a));
             } else {
               debugPrint("[loadExif] parameter Asset is not from DB!");
             }

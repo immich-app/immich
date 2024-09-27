@@ -16,7 +16,7 @@ import 'package:isar/isar.dart';
 final assetRepositoryProvider =
     Provider((ref) => AssetRepository(ref.watch(dbProvider)));
 
-class AssetRepository extends DataBaseRepository implements IAssetRepository {
+class AssetRepository extends DatabaseRepository implements IAssetRepository {
   AssetRepository(super.db);
 
   @override
@@ -64,7 +64,7 @@ class AssetRepository extends DataBaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<void> deleteById(List<int> ids) => db.writeTxn(() async {
+  Future<void> deleteById(List<int> ids) => txn(() async {
         await db.assets.deleteAll(ids);
         await db.exifInfos.deleteAll(ids);
       });
@@ -143,7 +143,7 @@ class AssetRepository extends DataBaseRepository implements IAssetRepository {
 
   @override
   Future<List<Asset>> updateAll(List<Asset> assets) async {
-    await db.writeTxn(() => db.assets.putAll(assets));
+    await txn(() => db.assets.putAll(assets));
     return assets;
   }
 
@@ -176,8 +176,7 @@ class AssetRepository extends DataBaseRepository implements IAssetRepository {
           : db.iOSDeviceAssets.getAllById(ids.cast());
 
   @override
-  Future<void> upsertDeviceAssets(List<DeviceAsset> deviceAssets) =>
-      db.writeTxn(
+  Future<void> upsertDeviceAssets(List<DeviceAsset> deviceAssets) => txn(
         () => Platform.isAndroid
             ? db.androidDeviceAssets.putAll(deviceAssets.cast())
             : db.iOSDeviceAssets.putAll(deviceAssets.cast()),
@@ -185,13 +184,12 @@ class AssetRepository extends DataBaseRepository implements IAssetRepository {
 
   @override
   Future<Asset> update(Asset asset) async {
-    await asset.put(db);
+    await txn(() => asset.put(db));
     return asset;
   }
 
   @override
-  Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets) =>
-      db.writeTxn(
+  Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets) => txn(
         () => db.duplicatedAssets
             .putAll(duplicatedAssets.map(DuplicatedAsset.new).toList()),
       );
@@ -217,7 +215,7 @@ class AssetRepository extends DataBaseRepository implements IAssetRepository {
 
   @override
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state}) =>
-      _getAllByRemoteIdImpl(ids, state).deleteAll();
+      txn(() => _getAllByRemoteIdImpl(ids, state).deleteAll());
 }
 
 Future<List<Asset>> _getMatchesImpl(

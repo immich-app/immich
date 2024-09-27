@@ -8,7 +8,7 @@ import 'package:isar/isar.dart';
 final etagRepositoryProvider =
     Provider((ref) => ETagRepository(ref.watch(dbProvider)));
 
-class ETagRepository extends DataBaseRepository implements IETagRepository {
+class ETagRepository extends DatabaseRepository implements IETagRepository {
   ETagRepository(super.db);
 
   @override
@@ -18,12 +18,11 @@ class ETagRepository extends DataBaseRepository implements IETagRepository {
   Future<ETag?> get(int id) => db.eTags.get(id);
 
   @override
-  Future<void> upsertAll(List<ETag> etags) =>
-      db.writeTxn(() => db.eTags.putAll(etags));
+  Future<void> upsertAll(List<ETag> etags) => txn(() => db.eTags.putAll(etags));
 
   @override
   Future<void> deleteByIds(List<String> ids) =>
-      db.writeTxn(() => db.eTags.deleteAllById(ids));
+      txn(() => db.eTags.deleteAllById(ids));
 
   @override
   Future<ETag?> getById(String id) => db.eTags.getById(id);

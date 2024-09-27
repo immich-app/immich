@@ -10,7 +10,7 @@ import 'package:isar/isar.dart';
 final albumRepositoryProvider =
     Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
 
-class AlbumRepository extends DataBaseRepository implements IAlbumRepository {
+class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   AlbumRepository(super.db);
 
   @override
@@ -29,8 +29,7 @@ class AlbumRepository extends DataBaseRepository implements IAlbumRepository {
   }
 
   @override
-  Future<Album> create(Album album) =>
-      db.writeTxn(() => db.albums.store(album));
+  Future<Album> create(Album album) => txn(() => db.albums.store(album));
 
   @override
   Future<Album?> getByName(String name, {bool? shared, bool? remote}) {
@@ -47,12 +46,10 @@ class AlbumRepository extends DataBaseRepository implements IAlbumRepository {
   }
 
   @override
-  Future<Album> update(Album album) =>
-      db.writeTxn(() => db.albums.store(album));
+  Future<Album> update(Album album) => txn(() => db.albums.store(album));
 
   @override
-  Future<void> delete(int albumId) =>
-      db.writeTxn(() => db.albums.delete(albumId));
+  Future<void> delete(int albumId) => txn(() => db.albums.delete(albumId));
 
   @override
   Future<List<Album>> getAll({
@@ -95,15 +92,15 @@ class AlbumRepository extends DataBaseRepository implements IAlbumRepository {
 
   @override
   Future<void> removeUsers(Album album, List<User> users) =>
-      db.writeTxn(() => album.sharedUsers.update(unlink: users));
+      txn(() => album.sharedUsers.update(unlink: users));
 
   @override
   Future<void> addAssets(Album album, List<Asset> assets) =>
-      db.writeTxn(() => album.assets.update(link: assets));
+      txn(() => album.assets.update(link: assets));
 
   @override
   Future<void> removeAssets(Album album, List<Asset> assets) =>
-      db.writeTxn(() => album.assets.update(unlink: assets));
+      txn(() => album.assets.update(unlink: assets));
 
   @override
   Future<Album> recalculateMetadata(Album album) async {
@@ -116,9 +113,9 @@ class AlbumRepository extends DataBaseRepository implements IAlbumRepository {
 
   @override
   Future<void> addUsers(Album album, List<User> users) =>
-      db.writeTxn(() => album.sharedUsers.update(link: users));
+      txn(() => album.sharedUsers.update(link: users));
 
   @override
   Future<void> deleteAllLocal() =>
-      db.albums.where().localIdIsNotNull().deleteAll();
+      txn(() => db.albums.where().localIdIsNotNull().deleteAll());
 }

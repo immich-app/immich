@@ -8,7 +8,7 @@ import 'package:isar/isar.dart';
 final backupRepositoryProvider =
     Provider((ref) => BackupRepository(ref.watch(dbProvider)));
 
-class BackupRepository extends DataBaseRepository implements IBackupRepository {
+class BackupRepository extends DatabaseRepository implements IBackupRepository {
   BackupRepository(super.db);
 
   @override
@@ -33,9 +33,10 @@ class BackupRepository extends DataBaseRepository implements IBackupRepository {
       db.backupAlbums.filter().selectionEqualTo(backup).findAll();
 
   @override
-  Future<void> deleteAll(List<int> ids) => db.backupAlbums.deleteAll(ids);
+  Future<void> deleteAll(List<int> ids) =>
+      txn(() => db.backupAlbums.deleteAll(ids));
 
   @override
   Future<void> updateAll(List<BackupAlbum> backupAlbums) =>
-      db.backupAlbums.putAll(backupAlbums);
+      txn(() => db.backupAlbums.putAll(backupAlbums));
 }

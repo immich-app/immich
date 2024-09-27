@@ -29,6 +29,13 @@ void main() {
     albumMediaRepository = MockAlbumMediaRepository();
     albumApiRepository = MockAlbumApiRepository();
 
+    when(() => albumRepository.transaction<void>(any())).thenAnswer(
+      (call) => (call.positionalArguments.first as Function).call(),
+    );
+    when(() => assetRepository.transaction<Null>(any())).thenAnswer(
+      (call) => (call.positionalArguments.first as Function).call(),
+    );
+
     sut = AlbumService(
       userService,
       syncService,

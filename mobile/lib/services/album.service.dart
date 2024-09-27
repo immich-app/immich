@@ -243,14 +243,15 @@ class AlbumService {
     int albumId, {
     List<Asset> add = const [],
     List<Asset> remove = const [],
-  }) async {
-    final album = await _albumRepository.get(albumId);
-    if (album == null) return;
-    await _albumRepository.addAssets(album, add);
-    await _albumRepository.removeAssets(album, remove);
-    await _albumRepository.recalculateMetadata(album);
-    await _albumRepository.update(album);
-  }
+  }) =>
+      _albumRepository.transaction(() async {
+        final album = await _albumRepository.get(albumId);
+        if (album == null) return;
+        await _albumRepository.addAssets(album, add);
+        await _albumRepository.removeAssets(album, remove);
+        await _albumRepository.recalculateMetadata(album);
+        await _albumRepository.update(album);
+      });
 
   Future<bool> addAdditionalUserToAlbum(
     List<String> sharedUserIds,
