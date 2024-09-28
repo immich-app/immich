@@ -1,15 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
-import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { Colorspace } from 'src/config';
+import { Colorspace, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   IMediaRepository,
   ImageDimensions,
+  ProbeOptions,
   ThumbnailOptions,
   TranscodeCommand,
   VideoInfo,
@@ -17,9 +18,21 @@ import {
 import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 
-const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
+const probe = (input: string, options: string[]): Promise<FfprobeData> =>
+  new Promise((resolve, reject) =>
+    ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
+  );
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
+
+type ProgressEvent = {
+  frames: number;
+  currentFps: number;
+  currentKbps: number;
+  targetSize: number;
+  timemark: string;
+  percent?: number;
+};
 
 @Instrumentation()
 @Injectable()
@@ -65,8 +78,8 @@ export class MediaRepository implements IMediaRepository {
       .toFile(output);
   }
 
-  async probe(input: string): Promise<VideoInfo> {
-    const results = await probe(input);
+  async probe(input: string, options?: ProbeOptions): Promise<VideoInfo> {
+    const results = await probe(input, options?.countFrames ? ['-count_packets'] : []); // gets frame count quickly: https://stackoverflow.com/a/28376817
     return {
       format: {
         formatName: results.format.format_name,
@@ -83,10 +96,10 @@ export class MediaRepository implements IMediaRepository {
           width: stream.width || 0,
           codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
           codecType: stream.codec_type,
-          frameCount: Number.parseInt(stream.nb_frames ?? '0'),
-          rotation: Number.parseInt(`${stream.rotation ?? 0}`),
+          frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
+          rotation: this.parseInt(stream.rotation),
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
-          bitrate: Number.parseInt(stream.bit_rate ?? '0'),
+          bitrate: this.parseInt(stream.bit_rate),
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
@@ -94,7 +107,7 @@ export class MediaRepository implements IMediaRepository {
           index: stream.index,
           codecType: stream.codec_type,
           codecName: stream.codec_name,
-          frameCount: Number.parseInt(stream.nb_frames ?? '0'),
+          frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
         })),
     };
   }
@@ -156,10 +169,37 @@ export class MediaRepository implements IMediaRepository {
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
-    return ffmpeg(input, { niceness: 10 })
+    const ffmpegCall = ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
-      .on('error', (error, stdout, stderr) => this.logger.error(stderr || error));
+      .on('start', (command: string) => this.logger.debug(command))
+      .on('error', (error, _, stderr) => this.logger.error(stderr || error));
+
+    const { frameCount, percentInterval } = options.progress;
+    const frameInterval = Math.ceil(frameCount / (100 / percentInterval));
+    if (this.logger.isLevelEnabled(LogLevel.DEBUG) && frameCount && frameInterval) {
+      let lastProgressFrame: number = 0;
+      ffmpegCall.on('progress', (progress: ProgressEvent) => {
+        if (progress.frames - lastProgressFrame < frameInterval) {
+          return;
+        }
+
+        lastProgressFrame = progress.frames;
+        const percent = ((progress.frames / frameCount) * 100).toFixed(2);
+        const ms = Math.floor((frameCount - progress.frames) / progress.currentFps) * 1000;
+        const duration = ms ? Duration.fromMillis(ms).rescale().toHuman({ unitDisplay: 'narrow' }) : '';
+        const outputText = output instanceof Writable ? 'stream' : output.split('/').pop();
+        this.logger.debug(
+          `Transcoding ${percent}% done${duration ? `, estimated ${duration} remaining` : ''} for output ${outputText}`,
+        );
+      });
+    }
+
+    return ffmpegCall;
+  }
+
+  private parseInt(value: string | number | undefined): number {
+    return Number.parseInt(value as string) || 0;
   }
 }

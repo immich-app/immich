@@ -7,7 +7,18 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-type TagsWithWrongTypes = 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription' | 'RegionInfo';
+type StringOrNumber = string | number;
+
+type TagsWithWrongTypes =
+  | 'FocalLength'
+  | 'Duration'
+  | 'Description'
+  | 'ImageDescription'
+  | 'RegionInfo'
+  | 'TagsList'
+  | 'Keywords'
+  | 'HierarchicalSubject'
+  | 'ISO';
 export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
@@ -20,10 +31,14 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   EmbeddedVideoType?: string;
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
+  TagsList?: StringOrNumber[];
+  HierarchicalSubject?: StringOrNumber[];
+  Keywords?: StringOrNumber | StringOrNumber[];
+  ISO?: number | number[];
 
   // Type is wrong, can also be number.
-  Description?: string | number;
-  ImageDescription?: string | number;
+  Description?: StringOrNumber;
+  ImageDescription?: StringOrNumber;
 
   // Extended properties for image regions, such as faces
   RegionInfo?: {

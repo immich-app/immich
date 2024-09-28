@@ -7409,7 +7409,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.115.0",
+    "version": "1.116.2",
     "contact": {}
   },
   "tags": [],
@@ -11654,6 +11654,28 @@
         ],
         "type": "object"
       },
+      "SystemConfigGeneratedImageDto": {
+        "properties": {
+          "format": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "quality": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "size": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "format",
+          "quality",
+          "size"
+        ],
+        "type": "object"
+      },
       "SystemConfigImageDto": {
         "properties": {
           "colorspace": {
@@ -11662,34 +11684,18 @@
           "extractEmbedded": {
             "type": "boolean"
           },
-          "previewFormat": {
-            "$ref": "#/components/schemas/ImageFormat"
+          "preview": {
+            "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
           },
-          "previewSize": {
-            "minimum": 1,
-            "type": "integer"
-          },
-          "quality": {
-            "maximum": 100,
-            "minimum": 1,
-            "type": "integer"
-          },
-          "thumbnailFormat": {
-            "$ref": "#/components/schemas/ImageFormat"
-          },
-          "thumbnailSize": {
-            "minimum": 1,
-            "type": "integer"
+          "thumbnail": {
+            "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
           }
         },
         "required": [
           "colorspace",
           "extractEmbedded",
-          "previewFormat",
-          "previewSize",
-          "quality",
-          "thumbnailFormat",
-          "thumbnailSize"
+          "preview",
+          "thumbnail"
         ],
         "type": "object"
       },

@@ -54,11 +54,6 @@ export const resourcePaths = {
 export const MOBILE_REDIRECT = 'app.immich:///oauth-callback';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
 
-export enum AuthType {
-  PASSWORD = 'password',
-  OAUTH = 'oauth',
-}
-
 export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico'];
 
 export const FACE_THUMBNAIL_SIZE = 250;

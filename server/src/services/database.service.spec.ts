@@ -1,12 +1,20 @@
-import { DatabaseExtension, EXTENSION_NAMES, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import {
+  DatabaseExtension,
+  EXTENSION_NAMES,
+  IDatabaseRepository,
+  VectorExtension,
+} from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;
+  let configMock: Mocked<IConfigRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let extensionRange: string;
@@ -16,9 +24,11 @@ describe(DatabaseService.name, () => {
   let versionAboveRange: string;
 
   beforeEach(() => {
+    configMock = newConfigRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new DatabaseService(databaseMock, loggerMock);
+
+    sut = new DatabaseService(configMock, databaseMock, loggerMock);
 
     extensionRange = '0.2.x';
     databaseMock.getExtensionVersionRange.mockReturnValue(extensionRange);
@@ -33,11 +43,6 @@ describe(DatabaseService.name, () => {
     });
   });
 
-  afterEach(() => {
-    delete process.env.DB_SKIP_MIGRATIONS;
-    delete process.env.DB_VECTOR_EXTENSION;
-  });
-
   it('should work', () => {
     expect(sut).toBeDefined();
   });
@@ -50,12 +55,12 @@ describe(DatabaseService.name, () => {
     expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
   });
 
-  describe.each([
+  describe.each(<Array<{ extension: VectorExtension; extensionName: string }>>[
     { extension: DatabaseExtension.VECTOR, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTOR] },
     { extension: DatabaseExtension.VECTORS, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORS] },
   ])('should work with $extensionName', ({ extension, extensionName }) => {
     beforeEach(() => {
-      process.env.DB_VECTOR_EXTENSION = extensionName;
+      configMock.getEnv.mockReturnValue({ database: { skipMigrations: false, vectorExtension: extension } });
     });
 
     it(`should start up successfully with ${extension}`, async () => {
@@ -236,18 +241,28 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
       expect(loggerMock.fatal).not.toHaveBeenCalled();
     });
+  });
 
-    it('should skip migrations if DB_SKIP_MIGRATIONS=true', async () => {
-      process.env.DB_SKIP_MIGRATIONS = 'true';
-
-      await expect(sut.onBootstrap()).resolves.toBeUndefined();
-
-      expect(databaseMock.runMigrations).not.toHaveBeenCalled();
+  it('should skip migrations if DB_SKIP_MIGRATIONS=true', async () => {
+    configMock.getEnv.mockReturnValue({
+      database: {
+        skipMigrations: true,
+        vectorExtension: DatabaseExtension.VECTORS,
+      },
     });
+
+    await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+    expect(databaseMock.runMigrations).not.toHaveBeenCalled();
   });
 
   it(`should throw error if pgvector extension could not be created`, async () => {
-    process.env.DB_VECTOR_EXTENSION = 'pgvector';
+    configMock.getEnv.mockReturnValue({
+      database: {
+        skipMigrations: true,
+        vectorExtension: DatabaseExtension.VECTOR,
+      },
+    });
     databaseMock.getExtensionVersion.mockResolvedValue({
       installedVersion: null,
       availableVersion: minVersionInRange,
