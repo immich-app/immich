@@ -481,101 +481,95 @@ describe(MediaService.name, () => {
       );
     });
 
-    it.each(Object.values(ImageFormat))(
-      'should generate an image preview in %s format',
-      async (format) => {
-        systemMock.get.mockResolvedValue({ image: { preview: { format } } });
-        assetMock.getById.mockResolvedValue(assetStub.image);
-        const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
-        mediaMock.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-        const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
-        const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
+    it.each(Object.values(ImageFormat))('should generate an image preview in %s format', async (format) => {
+      systemMock.get.mockResolvedValue({ image: { preview: { format } } });
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mediaMock.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+      const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
+      const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
 
-        await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-        expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-        expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-        expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
+        colorspace: Colorspace.SRGB,
+        processInvalidImages: false,
+        size: 1440,
+      });
+
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
           colorspace: Colorspace.SRGB,
-          processInvalidImages: false,
+          format,
           size: 1440,
-        });
-
-        expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
-        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-          rawBuffer,
-          {
-            colorspace: Colorspace.SRGB,
-            format,
-            size: 1440,
-            quality: 80,
-            processInvalidImages: false,
-            raw: rawInfo,
-          },
-          previewPath,
-        );
-        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-          rawBuffer,
-          {
-            colorspace: Colorspace.SRGB,
-            format: ImageFormat.WEBP,
-            size: 250,
-            quality: 80,
-            processInvalidImages: false,
-            raw: rawInfo,
-          },
-          thumbnailPath,
-        );
-      },
-    );
-
-    it.each(Object.values(ImageFormat))(
-      'should generate an image thumbnail in %s format',
-      async (format) => {
-        systemMock.get.mockResolvedValue({ image: { thumbnail: { format } } });
-        assetMock.getById.mockResolvedValue(assetStub.image);
-        const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
-        mediaMock.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-        const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.jpeg`;
-        const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
-
-        await sut.handleGenerateThumbnails({ id: assetStub.image.id });
-
-        expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
-        expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-        expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        previewPath,
+      );
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
           colorspace: Colorspace.SRGB,
+          format: ImageFormat.WEBP,
+          size: 250,
+          quality: 80,
           processInvalidImages: false,
-          size: 1440,
-        });
+          raw: rawInfo,
+        },
+        thumbnailPath,
+      );
+    });
 
-        expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
-        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-          rawBuffer,
-          {
-            colorspace: Colorspace.SRGB,
-            format: ImageFormat.JPEG,
-            size: 1440,
-            quality: 80,
-            processInvalidImages: false,
-            raw: rawInfo,
-          },
-          previewPath,
-        );
-        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
-          rawBuffer,
-          {
-            colorspace: Colorspace.SRGB,
-            format,
-            size: 250,
-            quality: 80,
-            processInvalidImages: false,
-            raw: rawInfo,
-          },
-          thumbnailPath,
-        );
-      },
-    );
+    it.each(Object.values(ImageFormat))('should generate an image thumbnail in %s format', async (format) => {
+      systemMock.get.mockResolvedValue({ image: { thumbnail: { format } } });
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mediaMock.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+      const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.jpeg`;
+      const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
+        colorspace: Colorspace.SRGB,
+        processInvalidImages: false,
+        size: 1440,
+      });
+
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.SRGB,
+          format: ImageFormat.JPEG,
+          size: 1440,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        previewPath,
+      );
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.SRGB,
+          format,
+          size: 250,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        thumbnailPath,
+      );
+    });
 
     it('should delete previous thumbnail if different path', async () => {
       systemMock.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.WEBP } } });
