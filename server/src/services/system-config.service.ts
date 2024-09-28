@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
-import { LogLevel, SystemConfig, defaults } from 'src/config';
+import { SystemConfig, defaults } from 'src/config';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -15,6 +15,7 @@ import {
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit, OnServerEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
+import { LogLevel } from 'src/enum';
 import { ArgOf, ClientEvent, IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';

@@ -1,8 +1,8 @@
 import { ModuleRef, Reflector } from '@nestjs/core';
 import _ from 'lodash';
 import { EmitConfig } from 'src/decorators';
+import { MetadataKey } from 'src/enum';
 import { EmitEvent, EmitHandler, IEventRepository } from 'src/interfaces/event.interface';
-import { Metadata } from 'src/middleware/auth.guard';
 import { services } from 'src/services';
 
 type Item<T extends EmitEvent> = {
@@ -35,7 +35,7 @@ export const setupEventHandlers = (moduleRef: ModuleRef) => {
         continue;
       }
 
-      const options = reflector.get<EmitConfig>(Metadata.ON_EMIT_CONFIG, handler);
+      const options = reflector.get<EmitConfig>(MetadataKey.ON_EMIT_CONFIG, handler);
       if (!options) {
         continue;
       }

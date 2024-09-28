@@ -11,6 +11,7 @@ import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -236,7 +237,7 @@ export class MetadataService {
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
 
-    const exifData = {
+    const exifData: Partial<ExifEntity> = {
       assetId: asset.id,
 
       // dates
@@ -264,7 +265,7 @@ export class MetadataService {
       make: exifTags.Make ?? null,
       model: exifTags.Model ?? null,
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
-      iso: validate(exifTags.ISO),
+      iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: exifTags.LensModel ?? null,
       fNumber: validate(exifTags.FNumber),
@@ -395,13 +396,13 @@ export class MetadataService {
   }
 
   private async applyTagList(asset: AssetEntity, exifTags: ImmichTags) {
-    const tags: Array<string | number> = [];
+    const tags: string[] = [];
     if (exifTags.TagsList) {
-      tags.push(...exifTags.TagsList);
+      tags.push(...exifTags.TagsList.map(String));
     } else if (exifTags.HierarchicalSubject) {
       tags.push(
         ...exifTags.HierarchicalSubject.map((tag) =>
-          tag
+          String(tag)
             // convert | to /
             .replaceAll('/', '<PLACEHOLDER>')
             .replaceAll('|', '/')
@@ -413,10 +414,10 @@ export class MetadataService {
       if (!Array.isArray(keywords)) {
         keywords = [keywords];
       }
-      tags.push(...keywords);
+      tags.push(...keywords.map(String));
     }
 
-    const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags: tags.map(String) });
+    const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
     await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds: results.map((tag) => tag.id) });
   }
 

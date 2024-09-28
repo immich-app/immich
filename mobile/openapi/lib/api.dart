@@ -229,6 +229,7 @@ part 'model/stack_update_dto.dart';
 part 'model/system_config_dto.dart';
 part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_faces_dto.dart';
+part 'model/system_config_generated_image_dto.dart';
 part 'model/system_config_image_dto.dart';
 part 'model/system_config_job_dto.dart';
 part 'model/system_config_library_dto.dart';
