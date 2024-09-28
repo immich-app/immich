@@ -101,12 +101,6 @@ class BaseSearchDto {
 
   @IsInt()
   @Min(1)
-  @Type(() => Number)
-  @Optional()
-  page?: number;
-
-  @IsInt()
-  @Min(1)
   @Max(1000)
   @Type(() => Number)
   @Optional()
@@ -170,12 +164,24 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order?: AssetOrder;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  page?: number;
 }
 
 export class SmartSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   query!: string;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  page?: number;
 }
 
 export class SearchPlacesDto {
