@@ -18,10 +18,11 @@ server {
     client_max_body_size 50000M;
 
     # Set headers
-    proxy_set_header Host              $http_host;
-    proxy_set_header X-Real-IP         $remote_addr;
-    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host                      $http_host;
+    proxy_set_header X-Real-IP                 $remote_addr;
+    proxy_set_header X-Forwarded-For           $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto         $scheme;
+    add_header       'Content-Security-Policy' 'upgrade-insecure-requests';
 
     # enable websockets: http://nginx.org/en/docs/http/websocket.html
     proxy_http_version 1.1;
