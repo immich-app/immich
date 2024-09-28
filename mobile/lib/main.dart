@@ -140,8 +140,6 @@ class ImmichApp extends ConsumerStatefulWidget {
 
 class ImmichAppState extends ConsumerState<ImmichApp>
     with WidgetsBindingObserver {
-  int progress = 0;
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
