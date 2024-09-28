@@ -86,11 +86,7 @@ class DownloadService {
   Future<bool> saveLivePhoto(
     Task task,
   ) async {
-    final records = await FileDownloader().database.allRecordsWithStatus(
-          TaskStatus.complete,
-          group: downloadGroupLivePhoto,
-        );
-
+    final records = await _downloadRepository.getLiveVideoTasks();
     if (records.length != 2) {
       return false;
     }
