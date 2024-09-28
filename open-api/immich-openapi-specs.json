@@ -4615,7 +4615,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SearchResponseDto"
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -10462,10 +10465,6 @@
           "model": {
             "nullable": true,
             "type": "string"
-          },
-          "page": {
-            "minimum": 1,
-            "type": "number"
           },
           "personIds": {
             "items": {
