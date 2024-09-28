@@ -294,7 +294,7 @@ export class MediaService {
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
     });
 
-    return { previewPath, thumbnailPath, thumbhash: thumbhash as Buffer };
+    return { previewPath, thumbnailPath, thumbhash };
   }
 
   async handleQueueVideoConversion(job: IBaseJob): Promise<JobStatus> {

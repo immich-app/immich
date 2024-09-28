@@ -482,18 +482,15 @@ describe(MediaService.name, () => {
       );
     });
 
-    it.each(cartesian(Object.values(ImageFormat) as string[], Object.values(AssetFileType) as string[]))(
-      'should generate a %s %s for an image when specified',
-      async ([format, type]) => {
-        systemMock.get.mockResolvedValue({ image: { [type]: { format: format as ImageFormat } } });
+    it.each(Object.values(ImageFormat))(
+      'should generate an image preview in %s format',
+      async (format) => {
+        systemMock.get.mockResolvedValue({ image: { preview: { format } } });
         assetMock.getById.mockResolvedValue(assetStub.image);
         const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
         mediaMock.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-
-        const previewFormat = type === AssetFileType.PREVIEW ? format : ImageFormat.JPEG;
-        const thumbnailFormat = type === AssetFileType.THUMBNAIL ? format : ImageFormat.WEBP;
-        const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${previewFormat}`;
-        const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${thumbnailFormat}`;
+        const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
+        const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
 
         await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -510,7 +507,7 @@ describe(MediaService.name, () => {
           rawBuffer,
           {
             colorspace: Colorspace.SRGB,
-            format: type === AssetFileType.PREVIEW ? (format as ImageFormat) : ImageFormat.JPEG,
+            format,
             size: 1440,
             quality: 80,
             processInvalidImages: false,
@@ -522,7 +519,7 @@ describe(MediaService.name, () => {
           rawBuffer,
           {
             colorspace: Colorspace.SRGB,
-            format: thumbnailFormat,
+            format: ImageFormat.WEBP,
             size: 250,
             quality: 80,
             processInvalidImages: false,
@@ -530,27 +527,54 @@ describe(MediaService.name, () => {
           },
           thumbnailPath,
         );
+      },
+    );
 
-        expect(mediaMock.generateThumbhash).toHaveBeenCalledOnce();
-        expect(mediaMock.generateThumbhash).toHaveBeenCalledWith(rawBuffer, {
+    it.each(Object.values(ImageFormat))(
+      'should generate an image thumbnail in %s format',
+      async (format) => {
+        systemMock.get.mockResolvedValue({ image: { thumbnail: { format } } });
+        assetMock.getById.mockResolvedValue(assetStub.image);
+        const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+        mediaMock.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+        const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.jpeg`;
+        const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
+
+        await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+        expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+        expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
+        expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
           colorspace: Colorspace.SRGB,
           processInvalidImages: false,
-          raw: rawInfo,
+          size: 1440,
         });
 
-        expect(assetMock.upsertFiles).toHaveBeenCalledWith([
+        expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
+        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+          rawBuffer,
           {
-            assetId: 'asset-id',
-            type: AssetFileType.PREVIEW,
-            path: previewPath,
+            colorspace: Colorspace.SRGB,
+            format: ImageFormat.JPEG,
+            size: 1440,
+            quality: 80,
+            processInvalidImages: false,
+            raw: rawInfo,
           },
+          previewPath,
+        );
+        expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+          rawBuffer,
           {
-            assetId: 'asset-id',
-            type: AssetFileType.THUMBNAIL,
-            path: thumbnailPath,
+            colorspace: Colorspace.SRGB,
+            format,
+            size: 250,
+            quality: 80,
+            processInvalidImages: false,
+            raw: rawInfo,
           },
-        ]);
-        expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
+          thumbnailPath,
+        );
       },
     );
 

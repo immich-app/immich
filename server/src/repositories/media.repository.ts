@@ -59,7 +59,7 @@ export class MediaRepository implements IMediaRepository {
     return true;
   }
 
-  async decodeImage(input: string, options: DecodeToBufferOptions) {
+  decodeImage(input: string, options: DecodeToBufferOptions) {
     return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }
 
