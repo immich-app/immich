@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/models/asset_viewer/download_state.model.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -15,12 +14,10 @@ import 'package:immich_mobile/widgets/common/share_dialog.dart';
 class DownloadStateNotifier extends StateNotifier<DownloadState> {
   final DownloadService _downloadService;
   final ShareService _shareService;
-  final AlbumService _albumService;
 
   DownloadStateNotifier(
     this._downloadService,
     this._shareService,
-    this._albumService,
   ) : super(
           DownloadState(
             downloadStatus: TaskStatus.complete,
@@ -135,7 +132,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
   void downloadAsset(Asset asset, BuildContext context) async {
     await _downloadService.download(asset);
-    // await _albumService.refreshDeviceAlbums();
   }
 
   void cancelDownload(String id) async {
@@ -185,6 +181,5 @@ final downloadStateProvider =
   ((ref) => DownloadStateNotifier(
         ref.watch(downloadServiceProvider),
         ref.watch(shareServiceProvider),
-        ref.watch(albumServiceProvider),
       )),
 );
