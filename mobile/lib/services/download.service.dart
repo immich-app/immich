@@ -4,21 +4,23 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/interfaces/download.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
+import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/download.dart';
-import 'package:logging/logging.dart';
 
 final downloadServiceProvider = Provider(
   (ref) => DownloadService(
     ref.watch(fileMediaRepositoryProvider),
+    ref.watch(downloadRepositoryProvider),
   ),
 );
 
 class DownloadService {
+  final IDownloadRepository _downloadRepository;
   final IFileMediaRepository _fileMediaRepository;
-  final Logger _log = Logger("ImageViewerService");
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
   void Function(TaskStatusUpdate)? onVideoDownloadStatus;
   void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
@@ -26,40 +28,29 @@ class DownloadService {
 
   DownloadService(
     this._fileMediaRepository,
+    this._downloadRepository,
   ) {
-    FileDownloader().registerCallbacks(
-      group: downloadGroupImage,
-      taskStatusCallback: _downloadImageCallback,
-      taskProgressCallback: _taskProgressCallback,
-    );
-
-    FileDownloader().registerCallbacks(
-      group: downloadGroupVideo,
-      taskStatusCallback: _downloadVideoCallback,
-      taskProgressCallback: _taskProgressCallback,
-    );
-
-    FileDownloader().registerCallbacks(
-      group: downloadGroupLivePhoto,
-      taskStatusCallback: _downloadLivePhotoCallback,
-      taskProgressCallback: _taskProgressCallback,
-    );
+    _downloadRepository.onImageDownloadStatus = _onImageDownloadCallback;
+    _downloadRepository.onVideoDownloadStatus = _onVideoDownloadCallback;
+    _downloadRepository.onLivePhotoDownloadStatus =
+        _onLivePhotoDownloadCallback;
+    _downloadRepository.onTaskProgress = _onTaskProgressCallback;
   }
 
-  void _downloadImageCallback(TaskStatusUpdate update) {
+  void _onTaskProgressCallback(TaskProgressUpdate update) {
+    onTaskProgress?.call(update);
+  }
+
+  void _onImageDownloadCallback(TaskStatusUpdate update) {
     onImageDownloadStatus?.call(update);
   }
 
-  void _downloadVideoCallback(TaskStatusUpdate update) {
+  void _onVideoDownloadCallback(TaskStatusUpdate update) {
     onVideoDownloadStatus?.call(update);
   }
 
-  void _downloadLivePhotoCallback(TaskStatusUpdate update) {
+  void _onLivePhotoDownloadCallback(TaskStatusUpdate update) {
     onLivePhotoDownloadStatus?.call(update);
-  }
-
-  void _taskProgressCallback(TaskProgressUpdate update) {
-    onTaskProgress?.call(update);
   }
 
   Future<bool> saveImage(Task task) async {
@@ -130,9 +121,9 @@ class DownloadService {
   Future<void> download(Asset asset) async {
     if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
       // Remove all track records for saveLivePhoto to track when to start the linking process
-      await FileDownloader().database.deleteAllRecords();
+      await _downloadRepository.deleteAllTrackingRecords();
 
-      await FileDownloader().enqueue(
+      await _downloadRepository.download(
         _buildDownloadTask(
           asset.remoteId!,
           asset.fileName,
@@ -141,7 +132,7 @@ class DownloadService {
         ),
       );
 
-      await FileDownloader().enqueue(
+      await _downloadRepository.download(
         _buildDownloadTask(
           asset.livePhotoVideoId!,
           asset.fileName.toUpperCase().replaceAll(".HEIC", '.MOV'),
@@ -150,7 +141,7 @@ class DownloadService {
         ),
       );
     } else {
-      await FileDownloader().enqueue(
+      await _downloadRepository.download(
         _buildDownloadTask(
           asset.remoteId!,
           asset.fileName,
