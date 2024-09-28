@@ -20,7 +20,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-import { ImageOutputConfig } from 'src/interfaces/media.interface';
+import { ImageOptions } from 'src/interfaces/media.interface';
 
 export interface SystemConfig {
   ffmpeg: {
@@ -110,8 +110,8 @@ export interface SystemConfig {
     template: string;
   };
   image: {
-    thumbnail: ImageOutputConfig;
-    preview: ImageOutputConfig;
+    thumbnail: ImageOptions;
+    preview: ImageOptions;
     colorspace: Colorspace;
     extractEmbedded: boolean;
   };

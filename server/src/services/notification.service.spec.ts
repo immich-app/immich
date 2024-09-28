@@ -155,7 +155,7 @@ describe(NotificationService.name, () => {
     it('should queue the generate thumbnail job', async () => {
       await sut.onAssetShow({ assetId: 'asset-id', userId: 'user-id' });
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_THUMBNAIL,
+        name: JobName.GENERATE_THUMBNAILS,
         data: { id: 'asset-id', notify: true },
       });
     });

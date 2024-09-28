@@ -288,7 +288,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GENERATE_PREVIEW],
+        jobs: [JobName.GENERATE_THUMBNAILS],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
@@ -299,28 +299,16 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_THUMBNAIL, JobName.GENERATE_THUMBHASH],
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } },
+        jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [
-          JobName.GENERATE_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH,
-          JobName.SMART_SEARCH,
-          JobName.FACE_DETECTION,
-          JobName.VIDEO_CONVERSION,
-        ],
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1', source: 'upload' } },
+        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
       },
       {
-        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-live-image', source: 'upload' } },
-        jobs: [
-          JobName.GENERATE_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH,
-          JobName.SMART_SEARCH,
-          JobName.FACE_DETECTION,
-          JobName.VIDEO_CONVERSION,
-        ],
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-live-image', source: 'upload' } },
+        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
       },
       {
         item: { name: JobName.SMART_SEARCH, data: { id: 'asset-1' } },
@@ -338,11 +326,11 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_PREVIEW && item.data.source === 'upload') {
+        if (item.name === JobName.GENERATE_THUMBNAILS && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
-            assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
+            assetMock.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoStillAsset]);
           } else {
-            assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+            assetMock.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoMotionAsset]);
           }
         }
 
@@ -361,7 +349,7 @@ describe(JobService.name, () => {
         }
       });
 
-      it(`should not queue any jobs when ${item.name} finishes with 'false'`, async () => {
+      it(`should not queue any jobs when ${item.name} fails`, async () => {
         await sut.init(makeMockHandlers(JobStatus.FAILED));
         await jobMock.addHandler.mock.calls[0][2](item);
 

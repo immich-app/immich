@@ -571,15 +571,15 @@ export class PersonService {
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions = {
+      colorspace: image.colorspace,
       format: ImageFormat.JPEG,
       size: FACE_THUMBNAIL_SIZE,
-      colorspace: image.colorspace,
       quality: image.thumbnail.quality,
       crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-    } as const;
+    };
 
-    await this.mediaRepository.generateThumbnail(inputPath, thumbnailPath, thumbnailOptions);
+    await this.mediaRepository.generateThumbnail(inputPath, thumbnailOptions, thumbnailPath);
     await this.repository.update({ id: person.id, thumbnailPath });
 
     return JobStatus.SUCCESS;
