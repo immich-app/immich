@@ -74,7 +74,6 @@ Future<void> initApp() async {
   var log = Logger("ImmichErrorLogger");
 
   FlutterError.onError = (details) {
-    debugPrint("FlutterError - Catch all: $details");
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
@@ -84,6 +83,7 @@ Future<void> initApp() async {
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint("FlutterError - Catch all: $error");
     log.severe('PlatformDispatcher - Catch all', error, stack);
     return true;
   };
@@ -91,8 +91,14 @@ Future<void> initApp() async {
   initializeTimeZones();
 
   FileDownloader().configureNotification(
-    running: const TaskNotification('Downloading media', 'file: {filename}'),
-    complete: const TaskNotification('Download finished', 'file: {filename}'),
+    running: TaskNotification(
+      'downloading_media'.tr(),
+      'file: {filename}',
+    ),
+    complete: TaskNotification(
+      'download_finished'.tr(),
+      'file: {filename}',
+    ),
     progressBar: true,
   );
 

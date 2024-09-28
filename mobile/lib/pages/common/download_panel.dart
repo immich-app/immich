@@ -1,4 +1,5 @@
 import 'package:background_downloader/background_downloader.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -76,21 +77,21 @@ class DownloadTaskTile extends StatelessWidget {
     getStatusText() {
       switch (status) {
         case TaskStatus.running:
-          return 'Downloading...';
+          return 'downloading'.tr();
         case TaskStatus.complete:
-          return 'Download complete';
+          return 'download_complete'.tr();
         case TaskStatus.failed:
-          return 'Download failed';
+          return 'download_failed'.tr();
         case TaskStatus.canceled:
-          return 'Download canceled';
+          return 'download_canceled'.tr();
         case TaskStatus.paused:
-          return 'Download paused';
+          return 'download_paused'.tr();
         case TaskStatus.enqueued:
-          return 'Download enqueued';
+          return 'download_enqueue'.tr();
         case TaskStatus.notFound:
-          return 'Download not found';
+          return 'download_notfound'.tr();
         case TaskStatus.waitingToRetry:
-          return 'Download waiting to retry';
+          return 'download_waiting_to_retry'.tr();
       }
     }
 

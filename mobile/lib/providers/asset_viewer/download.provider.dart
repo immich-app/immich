@@ -13,12 +13,12 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/share_dialog.dart';
 
 class DownloadStateNotifier extends StateNotifier<DownloadState> {
-  final DownloadService _imageViewerService;
+  final DownloadService _downloadService;
   final ShareService _shareService;
   final AlbumService _albumService;
 
   DownloadStateNotifier(
-    this._imageViewerService,
+    this._downloadService,
     this._shareService,
     this._albumService,
   ) : super(
@@ -28,13 +28,17 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
             taskProgress: <String, DownloadInfo>{},
           ),
         ) {
-    _imageViewerService.onImageDownloadStatus = _downloadImageCallback;
-    _imageViewerService.onVideoDownloadStatus = _downloadVideoCallback;
-    _imageViewerService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
-    _imageViewerService.onTaskProgress = _taskProgressCallback;
+    _downloadService.onImageDownloadStatus = _downloadImageCallback;
+    _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
+    _downloadService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
+    _downloadService.onTaskProgress = _taskProgressCallback;
   }
 
   void _updateDownloadStatus(String taskId, TaskStatus status) {
+    if (status == TaskStatus.canceled) {
+      return;
+    }
+
     state = state.copyWith(
       taskProgress: <String, DownloadInfo>{}
         ..addAll(state.taskProgress)
@@ -54,16 +58,9 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
     switch (update.status) {
       case TaskStatus.complete:
-        _imageViewerService.saveLivePhoto(update.task);
+        _downloadService.saveLivePhoto(update.task);
         _onDownloadComplete(update.task.taskId);
         break;
-
-      case TaskStatus.failed:
-        print("task failed");
-        break;
-
-      case TaskStatus.running:
-        print("running");
 
       default:
         break;
@@ -76,16 +73,9 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
     switch (update.status) {
       case TaskStatus.complete:
-        _imageViewerService.saveImage(update.task);
+        _downloadService.saveImage(update.task);
         _onDownloadComplete(update.task.taskId);
         break;
-
-      case TaskStatus.failed:
-        print("task failed");
-        break;
-
-      case TaskStatus.running:
-        print("running");
 
       default:
         break;
@@ -98,16 +88,9 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
     switch (update.status) {
       case TaskStatus.complete:
-        _imageViewerService.saveVideo(update.task);
+        _downloadService.saveVideo(update.task);
         _onDownloadComplete(update.task.taskId);
         break;
-
-      case TaskStatus.failed:
-        print("task failed");
-        break;
-
-      case TaskStatus.running:
-        print("running");
 
       default:
         break;
@@ -135,25 +118,38 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   void _onDownloadComplete(String id) {
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 2), () {
       state = state.copyWith(
-        showProgress: false,
         taskProgress: <String, DownloadInfo>{}
           ..addAll(state.taskProgress)
           ..remove(id),
       );
+
+      if (state.taskProgress.isEmpty) {
+        state = state.copyWith(
+          showProgress: false,
+        );
+      }
     });
   }
 
   void downloadAsset(Asset asset, BuildContext context) async {
-    await _imageViewerService.download(asset);
+    await _downloadService.download(asset);
     // await _albumService.refreshDeviceAlbums();
   }
 
   void cancelDownload(String id) async {
-    final isCanceled = await _imageViewerService.cancelDownload(id);
+    final isCanceled = await _downloadService.cancelDownload(id);
 
     if (isCanceled) {
+      state = state.copyWith(
+        taskProgress: <String, DownloadInfo>{}
+          ..addAll(state.taskProgress)
+          ..remove(id),
+      );
+    }
+
+    if (state.taskProgress.isEmpty) {
       state = state.copyWith(
         showProgress: false,
       );
