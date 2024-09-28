@@ -1132,3 +1132,27 @@ RETURNING
   "id",
   "createdAt",
   "updatedAt"
+
+-- AssetRepository.upsertFiles
+INSERT INTO
+  "asset_files" (
+    "id",
+    "assetId",
+    "createdAt",
+    "updatedAt",
+    "type",
+    "path"
+  )
+VALUES
+  (DEFAULT, $1, DEFAULT, DEFAULT, $2, $3)
+ON CONFLICT ("assetId", "type") DO
+UPDATE
+SET
+  "assetId" = EXCLUDED."assetId",
+  "type" = EXCLUDED."type",
+  "path" = EXCLUDED."path",
+  "updatedAt" = DEFAULT
+RETURNING
+  "id",
+  "createdAt",
+  "updatedAt"
