@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import {
-    getMyUser,  // Reintroduce the API to fetch the current user
+    getMyUser,
     updateAlbumInfo,
     removeUserFromAlbum,
     type AlbumResponseDto,
@@ -21,7 +21,7 @@
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { onMount } from 'svelte';  // Import onMount to fetch the user when component mounts
+  import { onMount } from 'svelte';
 
   export let album: AlbumResponseDto;
   export let order: AssetOrder | undefined;
@@ -31,8 +31,8 @@
   export let onShowSelectSharedUser: () => void;
   export let onRemove: (userId: string) => void;
 
-  let currentUser: UserResponseDto | null = null;  // Store the current user fetched from the API
-  let selectedRemoveUser: UserResponseDto | null = null;  // Keep track of the user selected for removal
+  let currentUser: UserResponseDto | null = null;
+  let selectedRemoveUser: UserResponseDto | null = null;
 
   const options: Record<AssetOrder, RenderedOption> = {
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
@@ -42,7 +42,7 @@
   $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
 
   // Fetch the current user when the component mounts
-  onMount(async () => {
+  onMount(async (): Promise<void> => {
     try {
       currentUser = await getMyUser();
     } catch (error) {
@@ -50,11 +50,11 @@
     }
   });
 
-  const handleToggle = async (returnedOption: RenderedOption) => {
+  const handleToggle = async (returnedOption: RenderedOption): Promise<void> => {
     if (selectedOption === returnedOption) {
       return;
     }
-    let order = AssetOrder.Desc;
+    let order: AssetOrder = AssetOrder.Desc;
     order = findKey(options, (option) => option === returnedOption) as AssetOrder;
 
     try {
@@ -70,15 +70,14 @@
     }
   };
 
-  const handleMenuRemove = (user: UserResponseDto) => {
+  const handleMenuRemove = (user: UserResponseDto): void => {
     selectedRemoveUser = user;
   };
 
-  const handleRemoveUser = async () => {
+  const handleRemoveUser = async (): Promise<void> => {
     if (!selectedRemoveUser) {
       return;
     }
-console.log(selectedRemoveUser,"selectedRemoveUser");
     try {
       await removeUserFromAlbum({ id: album.id, userId: selectedRemoveUser.id });
       onRemove(selectedRemoveUser.id);
@@ -124,15 +123,15 @@ console.log(selectedRemoveUser,"selectedRemoveUser");
           </div>
           <div>{$t('invite_people')}</div>
         </button>
-       {#if currentUser}
-       <div class="flex items-center gap-2 py-2 mt-2">
-        <div>
-           <UserAvatar user={currentUser} size="md" />
+        {#if currentUser}
+        <div class="flex items-center gap-2 py-2 mt-2">
+          <div>
+            <UserAvatar user={currentUser} size="md" />
           </div>
           <div class="w-full">{currentUser.name}</div>
           <div>{$t('owner')}</div>
-      </div>
-      {/if}
+        </div>
+        {/if}
 
         {#each album.albumUsers as { user } (user.id)}
           <div class="flex items-center gap-2 py-2">
