@@ -2,7 +2,7 @@ import { CommandFactory } from 'nest-commander';
 import { fork } from 'node:child_process';
 import { Worker } from 'node:worker_threads';
 import { ImmichAdminModule } from 'src/app.module';
-import { LogLevel } from 'src/config';
+import { LogLevel } from 'src/enum';
 import { getWorkers } from 'src/utils/workers';
 const immichApp = process.argv[2] || process.env.IMMICH_APP;
 

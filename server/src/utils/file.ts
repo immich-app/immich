@@ -3,6 +3,7 @@ import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname, isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
+import { CacheControl } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ImmichReadStream } from 'src/interfaces/storage.interface';
 import { isConnectionAborted } from 'src/utils/misc';
@@ -17,12 +18,6 @@ export function getFilenameExtension(path: string): string {
 
 export function getLivePhotoMotionFilename(stillName: string, motionName: string) {
   return getFileNameWithoutExtension(stillName) + extname(motionName);
-}
-
-export enum CacheControl {
-  PRIVATE_WITH_CACHE = 'private_with_cache',
-  PRIVATE_WITHOUT_CACHE = 'private_without_cache',
-  NONE = 'none',
 }
 
 export class ImmichFileResponse {
