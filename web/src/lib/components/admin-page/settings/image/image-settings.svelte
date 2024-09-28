@@ -11,7 +11,6 @@
     SettingInputFieldType,
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -25,96 +24,73 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <SettingAccordion
-          key="thumbnail-settings"
-          title={$t('admin.image_thumbnail_title')}
-          subtitle={$t('admin.image_thumbnail_description')}
-          isOpen={true}
-        >
-          <SettingSelect
-            label={$t('admin.image_format')}
-            desc={$t('admin.image_format_description')}
-            bind:value={config.image.thumbnail.format}
-            options={[
-              { value: ImageFormat.Jpeg, text: 'JPEG' },
-              { value: ImageFormat.Webp, text: 'WebP' },
-            ]}
-            name="format"
-            isEdited={config.image.thumbnail.format !== savedConfig.image.thumbnail.format}
-            {disabled}
-          />
+        <SettingSelect
+          label={$t('admin.image_thumbnail_format')}
+          desc={$t('admin.image_format_description')}
+          bind:value={config.image.thumbnailFormat}
+          options={[
+            { value: ImageFormat.Jpeg, text: 'JPEG' },
+            { value: ImageFormat.Webp, text: 'WebP' },
+          ]}
+          name="format"
+          isEdited={config.image.thumbnailFormat !== savedConfig.image.thumbnailFormat}
+          {disabled}
+        />
 
-          <SettingSelect
-            label={$t('admin.image_resolution')}
-            desc={$t('admin.image_resolution_description')}
-            number
-            bind:value={config.image.thumbnail.size}
-            options={[
-              { value: 1080, text: '1080p' },
-              { value: 720, text: '720p' },
-              { value: 480, text: '480p' },
-              { value: 250, text: '250p' },
-              { value: 200, text: '200p' },
-            ]}
-            name="resolution"
-            isEdited={config.image.thumbnail.size !== savedConfig.image.thumbnail.size}
-            {disabled}
-          />
+        <SettingSelect
+          label={$t('admin.image_thumbnail_resolution')}
+          desc={$t('admin.image_thumbnail_resolution_description')}
+          number
+          bind:value={config.image.thumbnailSize}
+          options={[
+            { value: 1080, text: '1080p' },
+            { value: 720, text: '720p' },
+            { value: 480, text: '480p' },
+            { value: 250, text: '250p' },
+            { value: 200, text: '200p' },
+          ]}
+          name="resolution"
+          isEdited={config.image.thumbnailSize !== savedConfig.image.thumbnailSize}
+          {disabled}
+        />
 
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
-            label={$t('admin.image_quality')}
-            desc={$t('admin.image_thumbnail_quality_description')}
-            bind:value={config.image.thumbnail.quality}
-            isEdited={config.image.thumbnail.quality !== savedConfig.image.thumbnail.quality}
-            {disabled}
-          />
-        </SettingAccordion>
+        <SettingSelect
+          label={$t('admin.image_preview_format')}
+          desc={$t('admin.image_format_description')}
+          bind:value={config.image.previewFormat}
+          options={[
+            { value: ImageFormat.Jpeg, text: 'JPEG' },
+            { value: ImageFormat.Webp, text: 'WebP' },
+          ]}
+          name="format"
+          isEdited={config.image.previewFormat !== savedConfig.image.previewFormat}
+          {disabled}
+        />
 
-        <SettingAccordion
-          key="preview-settings"
-          title={$t('admin.image_preview_title')}
-          subtitle={$t('admin.image_preview_description')}
-          isOpen={true}
-        >
-          <SettingSelect
-            label={$t('admin.image_format')}
-            desc={$t('admin.image_format_description')}
-            bind:value={config.image.preview.format}
-            options={[
-              { value: ImageFormat.Jpeg, text: 'JPEG' },
-              { value: ImageFormat.Webp, text: 'WebP' },
-            ]}
-            name="format"
-            isEdited={config.image.preview.format !== savedConfig.image.preview.format}
-            {disabled}
-          />
+        <SettingSelect
+          label={$t('admin.image_preview_resolution')}
+          desc={$t('admin.image_preview_resolution_description')}
+          number
+          bind:value={config.image.previewSize}
+          options={[
+            { value: 2160, text: '4K' },
+            { value: 1440, text: '1440p' },
+            { value: 1080, text: '1080p' },
+            { value: 720, text: '720p' },
+          ]}
+          name="resolution"
+          isEdited={config.image.previewSize !== savedConfig.image.previewSize}
+          {disabled}
+        />
 
-          <SettingSelect
-            label={$t('admin.image_resolution')}
-            desc={$t('admin.image_resolution_description')}
-            number
-            bind:value={config.image.preview.size}
-            options={[
-              { value: 2160, text: '4K' },
-              { value: 1440, text: '1440p' },
-              { value: 1080, text: '1080p' },
-              { value: 720, text: '720p' },
-            ]}
-            name="resolution"
-            isEdited={config.image.preview.size !== savedConfig.image.preview.size}
-            {disabled}
-          />
-
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
-            label={$t('admin.image_quality')}
-            desc={$t('admin.image_preview_quality_description')}
-            bind:value={config.image.preview.quality}
-            isEdited={config.image.preview.quality !== savedConfig.image.preview.quality}
-            {disabled}
-          />
-        </SettingAccordion>
+        <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          label={$t('admin.image_quality')}
+          desc={$t('admin.image_quality_description')}
+          bind:value={config.image.quality}
+          isEdited={config.image.quality !== savedConfig.image.quality}
+          {disabled}
+        />
 
         <SettingSwitch
           title={$t('admin.image_prefer_wide_gamut')}

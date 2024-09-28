@@ -10,14 +10,11 @@ export interface CropOptions {
   height: number;
 }
 
-export interface ImageOutputConfig {
-  format: ImageFormat;
-  quality: number;
+export interface ThumbnailOptions {
   size: number;
-}
-
-export interface ThumbnailOptions extends ImageOutputConfig {
+  format: ImageFormat;
   colorspace: string;
+  quality: number;
   crop?: CropOptions;
   processInvalidImages: boolean;
 }

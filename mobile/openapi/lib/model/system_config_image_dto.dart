@@ -15,42 +15,64 @@ class SystemConfigImageDto {
   SystemConfigImageDto({
     required this.colorspace,
     required this.extractEmbedded,
-    required this.preview,
-    required this.thumbnail,
+    required this.previewFormat,
+    required this.previewSize,
+    required this.quality,
+    required this.thumbnailFormat,
+    required this.thumbnailSize,
   });
 
   Colorspace colorspace;
 
   bool extractEmbedded;
 
-  SystemConfigGeneratedImageDto preview;
+  ImageFormat previewFormat;
 
-  SystemConfigGeneratedImageDto thumbnail;
+  /// Minimum value: 1
+  int previewSize;
+
+  /// Minimum value: 1
+  /// Maximum value: 100
+  int quality;
+
+  ImageFormat thumbnailFormat;
+
+  /// Minimum value: 1
+  int thumbnailSize;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigImageDto &&
     other.colorspace == colorspace &&
     other.extractEmbedded == extractEmbedded &&
-    other.preview == preview &&
-    other.thumbnail == thumbnail;
+    other.previewFormat == previewFormat &&
+    other.previewSize == previewSize &&
+    other.quality == quality &&
+    other.thumbnailFormat == thumbnailFormat &&
+    other.thumbnailSize == thumbnailSize;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (colorspace.hashCode) +
     (extractEmbedded.hashCode) +
-    (preview.hashCode) +
-    (thumbnail.hashCode);
+    (previewFormat.hashCode) +
+    (previewSize.hashCode) +
+    (quality.hashCode) +
+    (thumbnailFormat.hashCode) +
+    (thumbnailSize.hashCode);
 
   @override
-  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, preview=$preview, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, previewFormat=$previewFormat, previewSize=$previewSize, quality=$quality, thumbnailFormat=$thumbnailFormat, thumbnailSize=$thumbnailSize]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'colorspace'] = this.colorspace;
       json[r'extractEmbedded'] = this.extractEmbedded;
-      json[r'preview'] = this.preview;
-      json[r'thumbnail'] = this.thumbnail;
+      json[r'previewFormat'] = this.previewFormat;
+      json[r'previewSize'] = this.previewSize;
+      json[r'quality'] = this.quality;
+      json[r'thumbnailFormat'] = this.thumbnailFormat;
+      json[r'thumbnailSize'] = this.thumbnailSize;
     return json;
   }
 
@@ -65,8 +87,11 @@ class SystemConfigImageDto {
       return SystemConfigImageDto(
         colorspace: Colorspace.fromJson(json[r'colorspace'])!,
         extractEmbedded: mapValueOfType<bool>(json, r'extractEmbedded')!,
-        preview: SystemConfigGeneratedImageDto.fromJson(json[r'preview'])!,
-        thumbnail: SystemConfigGeneratedImageDto.fromJson(json[r'thumbnail'])!,
+        previewFormat: ImageFormat.fromJson(json[r'previewFormat'])!,
+        previewSize: mapValueOfType<int>(json, r'previewSize')!,
+        quality: mapValueOfType<int>(json, r'quality')!,
+        thumbnailFormat: ImageFormat.fromJson(json[r'thumbnailFormat'])!,
+        thumbnailSize: mapValueOfType<int>(json, r'thumbnailSize')!,
       );
     }
     return null;
@@ -116,8 +141,11 @@ class SystemConfigImageDto {
   static const requiredKeys = <String>{
     'colorspace',
     'extractEmbedded',
-    'preview',
-    'thumbnail',
+    'previewFormat',
+    'previewSize',
+    'quality',
+    'thumbnailFormat',
+    'thumbnailSize',
   };
 }
 

@@ -285,7 +285,7 @@ describe(MediaService.name, () => {
     });
 
     it.each(Object.values(ImageFormat))('should generate a %s preview for an image when specified', async (format) => {
-      systemMock.get.mockResolvedValue({ image: { preview: { format } } });
+      systemMock.get.mockResolvedValue({ image: { previewFormat: format } });
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
 
@@ -307,7 +307,7 @@ describe(MediaService.name, () => {
     });
 
     it('should delete previous preview if different path', async () => {
-      systemMock.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.WEBP } } });
+      systemMock.get.mockResolvedValue({ image: { thumbnailFormat: ImageFormat.WEBP } });
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
 
       await sut.handleGeneratePreview({ id: assetStub.image.id });
@@ -464,7 +464,7 @@ describe(MediaService.name, () => {
     it.each(Object.values(ImageFormat))(
       'should generate a %s thumbnail for an image when specified',
       async (format) => {
-        systemMock.get.mockResolvedValue({ image: { thumbnail: { format } } });
+        systemMock.get.mockResolvedValue({ image: { thumbnailFormat: format } });
         assetMock.getByIds.mockResolvedValue([assetStub.image]);
         const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
 
@@ -487,7 +487,7 @@ describe(MediaService.name, () => {
     );
 
     it('should delete previous thumbnail if different path', async () => {
-      systemMock.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.WEBP } } });
+      systemMock.get.mockResolvedValue({ image: { thumbnailFormat: ImageFormat.WEBP } });
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
 
       await sut.handleGenerateThumbnail({ id: assetStub.image.id });

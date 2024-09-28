@@ -1100,16 +1100,14 @@ export type SystemConfigFFmpegDto = {
     transcode: TranscodePolicy;
     twoPass: boolean;
 };
-export type SystemConfigGeneratedImageDto = {
-    format: ImageFormat;
-    quality: number;
-    size: number;
-};
 export type SystemConfigImageDto = {
     colorspace: Colorspace;
     extractEmbedded: boolean;
-    preview: SystemConfigGeneratedImageDto;
-    thumbnail: SystemConfigGeneratedImageDto;
+    previewFormat: ImageFormat;
+    previewSize: number;
+    quality: number;
+    thumbnailFormat: ImageFormat;
+    thumbnailSize: number;
 };
 export type JobSettingsDto = {
     concurrency: number;
