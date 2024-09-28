@@ -7,82 +7,19 @@ import { RedisOptions } from 'ioredis';
 import Joi, { Root } from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { ImmichHeader } from 'src/dtos/auth.dto';
+import {
+  AudioCodec,
+  Colorspace,
+  CQMode,
+  ImageFormat,
+  LogLevel,
+  ToneMapping,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+  VideoContainer,
+} from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-
-export enum TranscodePolicy {
-  ALL = 'all',
-  OPTIMAL = 'optimal',
-  BITRATE = 'bitrate',
-  REQUIRED = 'required',
-  DISABLED = 'disabled',
-}
-
-export enum TranscodeTarget {
-  NONE,
-  AUDIO,
-  VIDEO,
-  ALL,
-}
-
-export enum VideoCodec {
-  H264 = 'h264',
-  HEVC = 'hevc',
-  VP9 = 'vp9',
-  AV1 = 'av1',
-}
-
-export enum AudioCodec {
-  MP3 = 'mp3',
-  AAC = 'aac',
-  LIBOPUS = 'libopus',
-}
-
-export enum VideoContainer {
-  MOV = 'mov',
-  MP4 = 'mp4',
-  OGG = 'ogg',
-  WEBM = 'webm',
-}
-
-export enum TranscodeHWAccel {
-  NVENC = 'nvenc',
-  QSV = 'qsv',
-  VAAPI = 'vaapi',
-  RKMPP = 'rkmpp',
-  DISABLED = 'disabled',
-}
-
-export enum ToneMapping {
-  HABLE = 'hable',
-  MOBIUS = 'mobius',
-  REINHARD = 'reinhard',
-  DISABLED = 'disabled',
-}
-
-export enum CQMode {
-  AUTO = 'auto',
-  CQP = 'cqp',
-  ICQ = 'icq',
-}
-
-export enum Colorspace {
-  SRGB = 'srgb',
-  P3 = 'p3',
-}
-
-export enum ImageFormat {
-  JPEG = 'jpeg',
-  WEBP = 'webp',
-}
-
-export enum LogLevel {
-  VERBOSE = 'verbose',
-  DEBUG = 'debug',
-  LOG = 'log',
-  WARN = 'warn',
-  ERROR = 'error',
-  FATAL = 'fatal',
-}
 
 export interface SystemConfig {
   ffmpeg: {

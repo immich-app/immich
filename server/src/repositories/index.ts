@@ -5,6 +5,7 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -39,6 +40,7 @@ import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
@@ -74,6 +76,7 @@ export const repositories = [
   { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
   { provide: IAuditRepository, useClass: AuditRepository },
+  { provide: IConfigRepository, useClass: ConfigRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IEventRepository, useClass: EventRepository },

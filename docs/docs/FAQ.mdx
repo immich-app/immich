@@ -187,7 +187,7 @@ However, when the trash is emptied, the files will re-appear in the main timelin
 
 ### How does smart search work?
 
-Immich uses CLIP models. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
+Immich uses CLIP models. An ML model converts each image to an "embedding", which is essentially a string of numbers that semantically encodes what is in the image. The same is done for the text that you enter when you do a search, and that text embedding is then compared with those of the images to find similar ones. As such, there are no "tags", "labels", or "descriptions" generated that you can look at. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 

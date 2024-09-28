@@ -1,12 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
-import { ImageFormat } from 'src/config';
 import { APP_MEDIA_LOCATION } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -15,14 +13,6 @@ import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { getAssetFiles } from 'src/utils/asset.util';
-
-export enum StorageFolder {
-  ENCODED_VIDEO = 'encoded-video',
-  LIBRARY = 'library',
-  UPLOAD = 'upload',
-  PROFILE = 'profile',
-  THUMBNAILS = 'thumbs',
-}
 
 export const THUMBNAIL_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.THUMBNAILS));
 export const ENCODED_VIDEO_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.ENCODED_VIDEO));

@@ -6,7 +6,7 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { SourceType } from 'src/enum';
+import { PaginationMode, SourceType } from 'src/enum';
 import {
   AssetFaceId,
   DeleteAllFacesOptions,
@@ -19,7 +19,7 @@ import {
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
+import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()

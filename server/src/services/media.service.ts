@@ -1,21 +1,24 @@
 import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import { dirname } from 'node:path';
+import { GeneratedImageType, StorageCore } from 'src/cores/storage.core';
+import { SystemConfigCore } from 'src/cores/system-config.core';
+import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import { AssetEntity } from 'src/entities/asset.entity';
 import {
+  AssetFileType,
+  AssetPathType,
+  AssetType,
   AudioCodec,
   Colorspace,
   ImageFormat,
+  LogLevel,
+  StorageFolder,
   TranscodeHWAccel,
   TranscodePolicy,
   TranscodeTarget,
   VideoCodec,
   VideoContainer,
-} from 'src/config';
-import { GeneratedImageType, StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType } from 'src/entities/move.entity';
-import { AssetFileType, AssetType } from 'src/enum';
+} from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
@@ -29,7 +32,13 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AudioStreamInfo, IMediaRepository, VideoFormat, VideoStreamInfo } from 'src/interfaces/media.interface';
+import {
+  AudioStreamInfo,
+  IMediaRepository,
+  TranscodeCommand,
+  VideoFormat,
+  VideoStreamInfo,
+} from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -344,7 +353,9 @@ export class MediaService {
     const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
 
-    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
+    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
+      countFrames: this.logger.isLevelEnabled(LogLevel.DEBUG), // makes frame count more reliable for progress logs
+    });
     const mainVideoStream = this.getMainStream(videoStreams);
     const mainAudioStream = this.getMainStream(audioStreams);
     if (!mainVideoStream || !format.formatName) {
@@ -363,12 +374,14 @@ export class MediaService {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
         await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
         await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
+      } else {
+        this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
       }
 
       return JobStatus.SKIPPED;
     }
 
-    let command;
+    let command: TranscodeCommand;
     try {
       const config = BaseConfig.create(ffmpeg, await this.getDevices(), await this.hasMaliOpenCL());
       command = config.getCommand(target, mainVideoStream, mainAudioStream);
@@ -377,16 +390,20 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
-    this.logger.log(`Started encoding video ${asset.id} ${JSON.stringify(command)}`);
+    if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
+      this.logger.log(`Encoding video ${asset.id} without hardware acceleration`);
+    } else {
+      this.logger.log(`Encoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()} acceleration`);
+    }
+
     try {
       await this.mediaRepository.transcode(input, output, command);
-    } catch (error) {
-      this.logger.error(error);
-      if (ffmpeg.accel !== TranscodeHWAccel.DISABLED) {
-        this.logger.error(
-          `Error occurred during transcoding. Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled.`,
-        );
+    } catch (error: any) {
+      this.logger.error(`Error occurred during transcoding: ${error.message}`);
+      if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
+        return JobStatus.FAILED;
       }
+      this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
       const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
       command = config.getCommand(target, mainVideoStream, mainAudioStream);
       await this.mediaRepository.transcode(input, output, command);
@@ -553,7 +570,7 @@ export class MediaService {
         const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
         this.maliOpenCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
       } catch {
-        this.logger.debug('OpenCL not available for transcoding, using CPU decoding instead.');
+        this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU decoding');
         this.maliOpenCL = false;
       }
     }

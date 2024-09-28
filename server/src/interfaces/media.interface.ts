@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream';
-import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/config';
+import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
 
 export const IMediaRepository = 'IMediaRepository';
 
@@ -62,6 +62,10 @@ export interface TranscodeCommand {
   inputOptions: string[];
   outputOptions: string[];
   twoPass: boolean;
+  progress: {
+    frameCount: number;
+    percentInterval: number;
+  };
 }
 
 export interface BitrateDistribution {
@@ -79,6 +83,10 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
   getSupportedCodecs(): Array<VideoCodec>;
 }
 
+export interface ProbeOptions {
+  countFrames: boolean;
+}
+
 export interface IMediaRepository {
   // image
   extract(input: string, output: string): Promise<boolean>;
@@ -87,6 +95,6 @@ export interface IMediaRepository {
   getImageDimensions(input: string): Promise<ImageDimensions>;
 
   // video
-  probe(input: string): Promise<VideoInfo>;
+  probe(input: string, options?: ProbeOptions): Promise<VideoInfo>;
   transcode(input: string, output: string | Writable, command: TranscodeCommand): Promise<void>;
 }
