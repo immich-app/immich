@@ -135,11 +135,16 @@ const updatedConfig = Object.freeze<SystemConfig>({
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {
-    thumbnailFormat: ImageFormat.WEBP,
-    thumbnailSize: 250,
-    previewFormat: ImageFormat.JPEG,
-    previewSize: 1440,
-    quality: 80,
+    thumbnail: {
+      size: 250,
+      format: ImageFormat.WEBP,
+      quality: 80,
+    },
+    preview: {
+      size: 1440,
+      format: ImageFormat.JPEG,
+      quality: 80,
+    },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },

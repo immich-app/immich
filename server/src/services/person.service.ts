@@ -574,7 +574,7 @@ export class PersonService {
       format: ImageFormat.JPEG,
       size: FACE_THUMBNAIL_SIZE,
       colorspace: image.colorspace,
-      quality: image.quality,
+      quality: image.thumbnail.quality,
       crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
     } as const;

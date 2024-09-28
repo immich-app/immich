@@ -473,26 +473,10 @@ export class SystemConfigThemeDto {
   customCss!: string;
 }
 
-class SystemConfigImageDto {
+class SystemConfigGeneratedImageDto {
   @IsEnum(ImageFormat)
   @ApiProperty({ enumName: 'ImageFormat', enum: ImageFormat })
-  thumbnailFormat!: ImageFormat;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  thumbnailSize!: number;
-
-  @IsEnum(ImageFormat)
-  @ApiProperty({ enumName: 'ImageFormat', enum: ImageFormat })
-  previewFormat!: ImageFormat;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  previewSize!: number;
+  format!: ImageFormat;
 
   @IsInt()
   @Min(1)
@@ -500,6 +484,24 @@ class SystemConfigImageDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   quality!: number;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  size!: number;
+}
+
+class SystemConfigImageDto {
+  @Type(() => SystemConfigGeneratedImageDto)
+  @ValidateNested()
+  @IsObject()
+  thumbnail!: SystemConfigGeneratedImageDto;
+
+  @Type(() => SystemConfigGeneratedImageDto)
+  @ValidateNested()
+  @IsObject()
+  preview!: SystemConfigGeneratedImageDto;
 
   @IsEnum(Colorspace)
   @ApiProperty({ enumName: 'Colorspace', enum: Colorspace })
