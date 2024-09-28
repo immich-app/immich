@@ -12,11 +12,8 @@ import {
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   IMediaRepository,
-  ImageBuffer,
   ImageDimensions,
-  ImageOptions,
   ProbeOptions,
-  RawImageInfo,
   TranscodeCommand,
   VideoInfo,
 } from 'src/interfaces/media.interface';

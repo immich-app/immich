@@ -236,3 +236,7 @@ export const useSwagger = (app: INestApplication, force = false) => {
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
   }
 };
+
+export const cartesian = <T>(...sets: T[][]) =>
+  // eslint-disable-next-line unicorn/no-array-reduce
+  sets.reduce<T[][]>((accSets, set) => accSets.flatMap((accSet) => set.map((value) => [...accSet, value])), [[]]);

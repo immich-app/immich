@@ -3,7 +3,9 @@ import { Mocked, vitest } from 'vitest';
 
 export const newMediaRepositoryMock = (): Mocked<IMediaRepository> => {
   return {
-    generateThumbnails: vitest.fn(),
+    generateThumbnail: vitest.fn().mockImplementation(() => Promise.resolve()),
+    generateThumbhash: vitest.fn().mockImplementation(() => Promise.resolve()),
+    decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
     extract: vitest.fn().mockResolvedValue(false),
     probe: vitest.fn(),
     transcode: vitest.fn(),
