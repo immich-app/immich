@@ -136,9 +136,6 @@ class DownloadService {
 
   Future<void> download(Asset asset) async {
     if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
-      // Remove all track records for saveLivePhoto to track when to start the linking process
-      await _downloadRepository.deleteAllTrackingRecords();
-
       await _downloadRepository.download(
         _buildDownloadTask(
           asset.remoteId!,
