@@ -54,8 +54,8 @@ type EventMap = {
   'websocket.connect': [{ userId: string }];
 };
 
-export type ServerEvents = 'config.update';
 export const serverEvents = ['config.update'] as const;
+export type ServerEvents = (typeof serverEvents)[number];
 
 export type EmitEvent = keyof EventMap;
 export type EmitHandler<T extends EmitEvent> = (...args: ArgsOf<T>) => Promise<void> | void;
