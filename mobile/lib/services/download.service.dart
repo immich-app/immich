@@ -124,9 +124,6 @@ class DownloadService {
         videoRecord.task.taskId,
       ]);
 
-      final a = await _downloadRepository.getLiveVideoTasks();
-      debugPrint("Live photo tasks: $a");
-
       return resultAsset != null;
     } catch (error) {
       debugPrint("Error saving live photo: $error");
