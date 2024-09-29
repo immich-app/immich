@@ -60,4 +60,9 @@ class DownloadRepository implements IDownloadRepository {
           group: downloadGroupLivePhoto,
         );
   }
+
+  @override
+  Future<void> deleteRecordsWithIds(List<String> ids) {
+    return FileDownloader().database.deleteRecordsWithIds(ids);
+  }
 }

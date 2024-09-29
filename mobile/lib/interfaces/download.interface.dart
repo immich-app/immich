@@ -10,4 +10,5 @@ abstract interface class IDownloadRepository {
   Future<bool> download(DownloadTask task);
   Future<bool> cancel(String id);
   Future<void> deleteAllTrackingRecords();
+  Future<void> deleteRecordsWithIds(List<String> id);
 }

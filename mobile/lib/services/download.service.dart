@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/download.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
+import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -83,31 +86,52 @@ class DownloadService {
     return resultAsset != null;
   }
 
-  Future<bool> saveLivePhoto(
+  Future<bool> saveLivePhotos(
     Task task,
+    String livePhotosId,
   ) async {
-    final records = await _downloadRepository.getLiveVideoTasks();
-    if (records.length != 2) {
+    try {
+      final records = await _downloadRepository.getLiveVideoTasks();
+      if (records.length < 2) {
+        return false;
+      }
+
+      final imageRecord = records.firstWhere(
+        (record) {
+          final metadata = LivePhotosMetadata.fromJson(record.task.metaData);
+          return metadata.id == livePhotosId &&
+              metadata.part == LivePhotosPart.image;
+        },
+      );
+
+      final videoRecord = records.firstWhere((record) {
+        final metadata = LivePhotosMetadata.fromJson(record.task.metaData);
+        return metadata.id == livePhotosId &&
+            metadata.part == LivePhotosPart.video;
+      });
+
+      final imageFilePath = await imageRecord.task.filePath();
+      final videoFilePath = await videoRecord.task.filePath();
+
+      final resultAsset = await _fileMediaRepository.saveLivePhoto(
+        image: File(imageFilePath),
+        video: File(videoFilePath),
+        title: task.filename,
+      );
+
+      await _downloadRepository.deleteRecordsWithIds([
+        imageRecord.task.taskId,
+        videoRecord.task.taskId,
+      ]);
+
+      final a = await _downloadRepository.getLiveVideoTasks();
+      debugPrint("Live photo tasks: $a");
+
+      return resultAsset != null;
+    } catch (error) {
+      debugPrint("Error saving live photo: $error");
       return false;
     }
-
-    final imageRecord = records.firstWhere(
-      (element) => element.task.metaData == 'image_part',
-    );
-    final videoRecord = records.firstWhere(
-      (element) => element.task.metaData == 'video_part',
-    );
-
-    final imageFilePath = await imageRecord.task.filePath();
-    final videoFilePath = await videoRecord.task.filePath();
-
-    final resultAsset = await _fileMediaRepository.saveLivePhoto(
-      image: File(imageFilePath),
-      video: File(videoFilePath),
-      title: task.filename,
-    );
-
-    return resultAsset != null;
   }
 
   Future<bool> cancelDownload(String id) async {
@@ -124,7 +148,10 @@ class DownloadService {
           asset.remoteId!,
           asset.fileName,
           group: downloadGroupLivePhoto,
-          metadata: 'image_part',
+          metadata: LivePhotosMetadata(
+            part: LivePhotosPart.image,
+            id: asset.remoteId!,
+          ).toJson(),
         ),
       );
 
@@ -133,7 +160,10 @@ class DownloadService {
           asset.livePhotoVideoId!,
           asset.fileName.toUpperCase().replaceAll(".HEIC", '.MOV'),
           group: downloadGroupLivePhoto,
-          metadata: 'video_part',
+          metadata: LivePhotosMetadata(
+            part: LivePhotosPart.video,
+            id: asset.remoteId!,
+          ).toJson(),
         ),
       );
     } else {
