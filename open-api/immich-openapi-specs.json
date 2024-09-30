@@ -10780,6 +10780,18 @@
           "sourceUrl": {
             "type": "string"
           },
+          "thirdPartyBugFeatureUrl": {
+            "type": "string"
+          },
+          "thirdPartyDocumentationUrl": {
+            "type": "string"
+          },
+          "thirdPartySourceUrl": {
+            "type": "string"
+          },
+          "thirdPartySupportUrl": {
+            "type": "string"
+          },
           "version": {
             "type": "string"
           },

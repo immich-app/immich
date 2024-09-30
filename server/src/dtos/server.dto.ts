@@ -30,6 +30,11 @@ export class ServerAboutResponseDto {
   exiftool?: string;
 
   licensed!: boolean;
+
+  thirdPartySourceUrl?: string;
+  thirdPartyBugFeatureUrl?: string;
+  thirdPartyDocumentationUrl?: string;
+  thirdPartySupportUrl?: string;
 }
 
 export class ServerStorageResponseDto {
