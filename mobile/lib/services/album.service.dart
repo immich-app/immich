@@ -186,8 +186,8 @@ class AlbumService {
     bool changes = false;
     try {
       final albumList = await Future.wait([
-        _apiService.albumsApi.getAllAlbums(shared: true),
-        _apiService.albumsApi.getAllAlbums(shared: false),
+        // _apiService.albumsApi.getAllAlbums(shared: true),
+        // _apiService.albumsApi.getAllAlbums(shared: false),
       ]);
 
       // for (int i = 0; i < albumList.length; i++) {
