@@ -58,7 +58,7 @@ export class ServerController {
 
   @Get('config')
   getServerConfig(): Promise<ServerConfigDto> {
-    return this.service.getConfig();
+    return this.service.getSystemConfig();
   }
 
   @Get('statistics')

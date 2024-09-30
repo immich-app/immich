@@ -12,36 +12,35 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
 import { LogLevel } from 'src/enum';
 import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
+import { clearConfigCache, isUsingConfigFile } from 'src/utils/config';
 import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
-export class SystemConfigService {
-  private core: SystemConfigCore;
-
+export class SystemConfigService extends BaseService {
   constructor(
-    @Inject(ISystemMetadataRepository) repository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(SystemConfigService.name);
-    this.core = SystemConfigCore.create(repository, this.logger);
   }
 
   @OnEvent({ name: 'app.bootstrap', priority: -100 })
   async onBootstrap() {
-    const config = await this.core.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.eventRepository.emit('config.update', { newConfig: config });
   }
 
-  async getConfig(): Promise<SystemConfigDto> {
-    const config = await this.core.getConfig({ withCache: false });
+  async getSystemConfig(): Promise<SystemConfigDto> {
+    const config = await this.getConfig({ withCache: false });
     return mapConfig(config);
   }
 
@@ -57,7 +56,7 @@ export class SystemConfigService {
     this.logger.setLogLevel(level);
     this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);
     // TODO only do this if the event is a socket.io event
-    this.core.invalidateCache();
+    clearConfigCache();
   }
 
   @OnEvent({ name: 'config.validate' })
@@ -67,12 +66,12 @@ export class SystemConfigService {
     }
   }
 
-  async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
-    if (this.core.isUsingConfigFile()) {
+  async updateSystemConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
+    if (isUsingConfigFile()) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
 
-    const oldConfig = await this.core.getConfig({ withCache: false });
+    const oldConfig = await this.getConfig({ withCache: false });
 
     try {
       await this.eventRepository.emit('config.validate', { newConfig: toPlainObject(dto), oldConfig });
@@ -81,7 +80,7 @@ export class SystemConfigService {
       throw new BadRequestException(error instanceof Error ? error.message : error);
     }
 
-    const newConfig = await this.core.updateConfig(dto);
+    const newConfig = await this.updateConfig(dto);
 
     await this.eventRepository.emit('config.update', { newConfig, oldConfig });
 
@@ -104,7 +103,7 @@ export class SystemConfigService {
   }
 
   async getCustomCss(): Promise<string> {
-    const { theme } = await this.core.getConfig({ withCache: false });
+    const { theme } = await this.getConfig({ withCache: false });
     return theme.customCss;
   }
 

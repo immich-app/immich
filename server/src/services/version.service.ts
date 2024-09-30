@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
 import { isDev, serverVersion } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
@@ -12,6 +11,7 @@ import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
   return {
@@ -23,18 +23,16 @@ const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): Re
 };
 
 @Injectable()
-export class VersionService {
-  private configCore: SystemConfigCore;
-
+export class VersionService extends BaseService {
   constructor(
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
-    @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(VersionService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   @OnEvent({ name: 'app.bootstrap' })
@@ -58,7 +56,7 @@ export class VersionService {
         return JobStatus.SKIPPED;
       }
 
-      const { newVersionCheck } = await this.configCore.getConfig({ withCache: true });
+      const { newVersionCheck } = await this.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {
         return JobStatus.SKIPPED;
       }

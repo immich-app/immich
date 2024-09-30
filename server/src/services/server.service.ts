@@ -2,7 +2,6 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
@@ -22,24 +21,24 @@ import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { asHumanReadable } from 'src/utils/bytes';
+import { isUsingConfigFile } from 'src/utils/config';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class ServerService {
-  private configCore: SystemConfigCore;
-
+export class ServerService extends BaseService {
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IServerInfoRepository) private serverInfoRepository: IServerInfoRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(ServerService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   @OnEvent({ name: 'app.bootstrap' })
@@ -91,7 +90,7 @@ export class ServerService {
 
   async getFeatures(): Promise<ServerFeaturesDto> {
     const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications } =
-      await this.configCore.getConfig({ withCache: false });
+      await this.getConfig({ withCache: false });
 
     return {
       smartSearch: isSmartSearchEnabled(machineLearning),
@@ -106,18 +105,18 @@ export class ServerService {
       oauth: oauth.enabled,
       oauthAutoLaunch: oauth.autoLaunch,
       passwordLogin: passwordLogin.enabled,
-      configFile: this.configCore.isUsingConfigFile(),
+      configFile: isUsingConfigFile(),
       email: notifications.smtp.enabled,
     };
   }
 
   async getTheme() {
-    const { theme } = await this.configCore.getConfig({ withCache: false });
+    const { theme } = await this.getConfig({ withCache: false });
     return theme;
   }
 
-  async getConfig(): Promise<ServerConfigDto> {
-    const config = await this.configCore.getConfig({ withCache: false });
+  async getSystemConfig(): Promise<ServerConfigDto> {
+    const config = await this.getConfig({ withCache: false });
     const isInitialized = await this.userRepository.hasAdmin();
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.ADMIN_ONBOARDING);
 

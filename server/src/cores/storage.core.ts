@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
@@ -13,6 +12,7 @@ import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { getAssetFiles } from 'src/utils/asset.util';
+import { getConfig } from 'src/utils/config';
 
 export const THUMBNAIL_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.THUMBNAILS));
 export const ENCODED_VIDEO_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.ENCODED_VIDEO));
@@ -34,18 +34,15 @@ export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDE
 let instance: StorageCore | null;
 
 export class StorageCore {
-  private configCore;
   private constructor(
     private assetRepository: IAssetRepository,
     private cryptoRepository: ICryptoRepository,
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
     private storageRepository: IStorageRepository,
-    systemMetadataRepository: ISystemMetadataRepository,
+    private systemMetadataRepository: ISystemMetadataRepository,
     private logger: ILoggerRepository,
-  ) {
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-  }
+  ) {}
 
   static create(
     assetRepository: IAssetRepository,
@@ -248,7 +245,8 @@ export class StorageCore {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
     }
-    const config = await this.configCore.getConfig({ withCache: true });
+    const repos = { metadataRepo: this.systemMetadataRepository, logger: this.logger };
+    const config = await getConfig(repos, { withCache: true });
     if (assetInfo && config.storageTemplate.hashVerificationEnabled) {
       const { checksum } = assetInfo;
       const newChecksum = await this.cryptoRepository.hashFile(newPath);

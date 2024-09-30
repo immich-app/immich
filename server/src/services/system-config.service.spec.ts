@@ -216,7 +216,7 @@ describe(SystemConfigService.name, () => {
     it('should return the default config', async () => {
       systemMock.get.mockResolvedValue({});
 
-      await expect(sut.getConfig()).resolves.toEqual(defaults);
+      await expect(sut.getSystemConfig()).resolves.toEqual(defaults);
     });
 
     it('should merge the overrides', async () => {
@@ -227,7 +227,7 @@ describe(SystemConfigService.name, () => {
         user: { deleteDelay: 15 },
       });
 
-      await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
+      await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
     });
 
     it('should load the config from a json file', async () => {
@@ -235,7 +235,7 @@ describe(SystemConfigService.name, () => {
 
       systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
-      await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
+      await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
 
       expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
@@ -245,7 +245,7 @@ describe(SystemConfigService.name, () => {
 
       systemMock.readFile.mockResolvedValue(`{ "ffmpeg2": true, "ffmpeg2": true }`);
 
-      await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+      await expect(sut.getSystemConfig()).rejects.toBeInstanceOf(Error);
 
       expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
       expect(loggerMock.error).toHaveBeenCalledTimes(2);
@@ -269,7 +269,7 @@ describe(SystemConfigService.name, () => {
       `;
       systemMock.readFile.mockResolvedValue(partialConfig);
 
-      await expect(sut.getConfig()).resolves.toEqual(updatedConfig);
+      await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
 
       expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.yaml');
     });
@@ -278,7 +278,7 @@ describe(SystemConfigService.name, () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
       systemMock.readFile.mockResolvedValue(JSON.stringify({}));
 
-      await expect(sut.getConfig()).resolves.toEqual(defaults);
+      await expect(sut.getSystemConfig()).resolves.toEqual(defaults);
 
       expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
@@ -288,7 +288,7 @@ describe(SystemConfigService.name, () => {
       const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
       systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
-      const config = await sut.getConfig();
+      const config = await sut.getSystemConfig();
       expect(config.machineLearning.url).toEqual('immich_machine_learning');
     });
 
@@ -304,7 +304,7 @@ describe(SystemConfigService.name, () => {
         const partialConfig = { server: { externalDomain } };
         systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
-        const config = await sut.getConfig();
+        const config = await sut.getSystemConfig();
         expect(config.server.externalDomain).toEqual(result ?? 'https://demo.immich.app');
       });
     }
@@ -316,7 +316,7 @@ describe(SystemConfigService.name, () => {
       `;
       systemMock.readFile.mockResolvedValue(partialConfig);
 
-      await sut.getConfig();
+      await sut.getSystemConfig();
       expect(loggerMock.warn).toHaveBeenCalled();
     });
 
@@ -335,10 +335,10 @@ describe(SystemConfigService.name, () => {
         systemMock.readFile.mockResolvedValue(JSON.stringify(test.config));
 
         if (test.warn) {
-          await sut.getConfig();
+          await sut.getSystemConfig();
           expect(loggerMock.warn).toHaveBeenCalled();
         } else {
-          await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+          await expect(sut.getSystemConfig()).rejects.toBeInstanceOf(Error);
         }
       });
     }
@@ -382,7 +382,7 @@ describe(SystemConfigService.name, () => {
   describe('updateConfig', () => {
     it('should update the config and emit an event', async () => {
       systemMock.get.mockResolvedValue(partialConfig);
-      await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
+      await expect(sut.updateSystemConfig(updatedConfig)).resolves.toEqual(updatedConfig);
       expect(eventMock.emit).toHaveBeenCalledWith(
         'config.update',
         expect.objectContaining({ oldConfig: expect.any(Object), newConfig: updatedConfig }),
@@ -392,7 +392,7 @@ describe(SystemConfigService.name, () => {
     it('should throw an error if a config file is in use', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
       systemMock.readFile.mockResolvedValue(JSON.stringify({}));
-      await expect(sut.updateConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.updateSystemConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
       expect(systemMock.set).not.toHaveBeenCalled();
     });
   });
