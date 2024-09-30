@@ -1,6 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { SALT_ROUNDS } from 'src/constants';
-import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
@@ -19,11 +18,10 @@ import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
+import { createUser } from 'src/utils/user';
 
 @Injectable()
 export class UserAdminService {
-  private userCore: UserCore;
-
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
@@ -32,7 +30,6 @@ export class UserAdminService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
-    this.userCore = UserCore.create(cryptoRepository, userRepository);
     this.logger.setContext(UserAdminService.name);
   }
 
@@ -43,7 +40,7 @@ export class UserAdminService {
 
   async create(dto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
     const { notify, ...rest } = dto;
-    const user = await this.userCore.createUser(rest);
+    const user = await createUser({ userRepo: this.userRepository, cryptoRepo: this.cryptoRepository }, rest);
 
     await this.eventRepository.emit('user.signup', {
       notify: !!notify,

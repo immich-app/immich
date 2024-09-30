@@ -14,7 +14,6 @@ import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { UserCore } from 'src/cores/user.core';
 import {
   AuthDto,
   ChangePasswordDto,
@@ -42,6 +41,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
+import { createUser } from 'src/utils/user';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -72,7 +72,6 @@ export type ValidateRequest = {
 @Injectable()
 export class AuthService {
   private configCore: SystemConfigCore;
-  private userCore: UserCore;
 
   constructor(
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
@@ -86,7 +85,6 @@ export class AuthService {
   ) {
     this.logger.setContext(AuthService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
-    this.userCore = UserCore.create(cryptoRepository, userRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
@@ -150,13 +148,16 @@ export class AuthService {
       throw new BadRequestException('The server already has an admin');
     }
 
-    const admin = await this.userCore.createUser({
-      isAdmin: true,
-      email: dto.email,
-      name: dto.name,
-      password: dto.password,
-      storageLabel: 'admin',
-    });
+    const admin = await createUser(
+      { userRepo: this.userRepository, cryptoRepo: this.cryptoRepository },
+      {
+        isAdmin: true,
+        email: dto.email,
+        name: dto.name,
+        password: dto.password,
+        storageLabel: 'admin',
+      },
+    );
 
     return mapUserAdmin(admin);
   }
@@ -271,13 +272,16 @@ export class AuthService {
       });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
-      user = await this.userCore.createUser({
-        name: userName,
-        email: profile.email,
-        oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
-        storageLabel: storageLabel || null,
-      });
+      user = await createUser(
+        { userRepo: this.userRepository, cryptoRepo: this.cryptoRepository },
+        {
+          name: userName,
+          email: profile.email,
+          oauthId: profile.sub,
+          quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
+          storageLabel: storageLabel || null,
+        },
+      );
     }
 
     return this.createLoginResponse(user, loginDetails);
