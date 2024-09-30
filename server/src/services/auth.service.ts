@@ -13,7 +13,6 @@ import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AuthDto,
   ChangePasswordDto,
@@ -39,6 +38,7 @@ import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { createUser } from 'src/utils/user';
@@ -70,27 +70,25 @@ export type ValidateRequest = {
 };
 
 @Injectable()
-export class AuthService {
-  private configCore: SystemConfigCore;
-
+export class AuthService extends BaseService {
   constructor(
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(AuthService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails) {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
     }
@@ -212,7 +210,7 @@ export class AuthService {
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     if (!config.oauth.enabled) {
       throw new BadRequestException('OAuth is not enabled');
     }
@@ -228,7 +226,7 @@ export class AuthService {
   }
 
   async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const profile = await this.getOAuthProfile(config, dto.url);
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
@@ -288,7 +286,7 @@ export class AuthService {
   }
 
   async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
@@ -310,7 +308,7 @@ export class AuthService {
       return LOGIN_URL;
     }
 
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     if (!config.oauth.enabled) {
       return LOGIN_URL;
     }

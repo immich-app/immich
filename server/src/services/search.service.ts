@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
@@ -24,13 +23,12 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class SearchService {
-  private configCore: SystemConfigCore;
-
+export class SearchService extends BaseService {
   constructor(
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
@@ -38,10 +36,10 @@ export class SearchService {
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(SearchService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
@@ -101,7 +99,7 @@ export class SearchService {
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       throw new BadRequestException('Smart search is not enabled');
     }

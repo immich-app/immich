@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
@@ -20,27 +19,26 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
 import { isEqualObject } from 'src/utils/object';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class NotificationService {
-  private configCore: SystemConfigCore;
-
+export class NotificationService extends BaseService {
   constructor(
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(NotificationService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   @OnEvent({ name: 'config.update' })
@@ -149,7 +147,7 @@ export class NotificationService {
       throw new BadRequestException('Failed to verify SMTP configuration', { cause: error });
     }
 
-    const { server } = await this.configCore.getConfig({ withCache: false });
+    const { server } = await this.getConfig({ withCache: false });
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
@@ -177,7 +175,7 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
-    const { server } = await this.configCore.getConfig({ withCache: true });
+    const { server } = await this.getConfig({ withCache: true });
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
@@ -220,7 +218,7 @@ export class NotificationService {
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.configCore.getConfig({ withCache: false });
+    const { server } = await this.getConfig({ withCache: false });
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
@@ -262,7 +260,7 @@ export class NotificationService {
     const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) => user.id !== senderId);
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.configCore.getConfig({ withCache: false });
+    const { server } = await this.getConfig({ withCache: false });
 
     for (const recipient of recipients) {
       const user = await this.userRepository.get(recipient.id, { withDeleted: false });
@@ -303,7 +301,7 @@ export class NotificationService {
   }
 
   async handleSendEmail(data: IEmailJob): Promise<JobStatus> {
-    const { notifications } = await this.configCore.getConfig({ withCache: false });
+    const { notifications } = await this.getConfig({ withCache: false });
     if (!notifications.smtp.enabled) {
       return JobStatus.SKIPPED;
     }

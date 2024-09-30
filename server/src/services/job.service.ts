@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { snakeCase } from 'lodash';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
@@ -22,6 +21,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
@@ -44,8 +44,7 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 };
 
 @Injectable()
-export class JobService {
-  private configCore: SystemConfigCore;
+export class JobService extends BaseService {
   private isMicroservices = false;
 
   constructor(
@@ -55,10 +54,10 @@ export class JobService {
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IMetricRepository) private metricRepository: IMetricRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(JobService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   @OnEvent({ name: 'app.bootstrap' })
@@ -198,7 +197,7 @@ export class JobService {
   }
 
   async init(jobHandlers: Record<JobName, JobHandler>) {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     for (const queueName of Object.values(QueueName)) {
       let concurrency = 1;
 

@@ -13,7 +13,6 @@ import {
   supportedYearTokens,
 } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, AssetType, StorageFolder } from 'src/enum';
@@ -29,6 +28,7 @@ import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 import { usePagination } from 'src/utils/pagination';
 
@@ -45,8 +45,7 @@ interface RenderMetadata {
 }
 
 @Injectable()
-export class StorageTemplateService {
-  private configCore: SystemConfigCore;
+export class StorageTemplateService extends BaseService {
   private storageCore: StorageCore;
   private _template: {
     compiled: HandlebarsTemplateDelegate<any>;
@@ -71,10 +70,10 @@ export class StorageTemplateService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(StorageTemplateService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
       cryptoRepository,
@@ -117,7 +116,7 @@ export class StorageTemplateService {
   }
 
   async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: true });
+    const config = await this.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
       return JobStatus.SKIPPED;
@@ -147,7 +146,7 @@ export class StorageTemplateService {
 
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
-    const { storageTemplate } = await this.configCore.getConfig({ withCache: true });
+    const { storageTemplate } = await this.getConfig({ withCache: true });
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
