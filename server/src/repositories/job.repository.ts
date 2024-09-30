@@ -7,6 +7,7 @@ import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
 import { bullConfig } from 'src/config';
 import {
+  IEntityJob,
   IJobRepository,
   JobCounts,
   JobItem,
@@ -249,24 +250,42 @@ export class JobRepository implements IJobRepository {
   }
 
   private getJobOptions(item: JobItem): JobsOptions | null {
+    let opts = {};
     switch (item.name) {
+      case JobName.NOTIFY_ALBUM_UPDATE: {
+        opts = { jobId: item.data.id, delay: item.data?.delay };
+        break;
+      }
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
-        return { jobId: item.data.id };
+        opts = { jobId: item.data.id };
+        break;
       }
       case JobName.GENERATE_PERSON_THUMBNAIL: {
-        return { priority: 1 };
+        opts = { priority: 1 };
+        break;
       }
       case JobName.QUEUE_FACIAL_RECOGNITION: {
-        return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
-      }
-
-      default: {
-        return null;
+        opts = { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
+        break;
       }
     }
+    return opts;
   }
 
   private getQueue(queue: QueueName): Queue {
     return this.moduleReference.get<Queue>(getQueueToken(queue), { strict: false });
+  }
+
+  public async removeJob(jobId: string, name: JobName): Promise<IEntityJob | undefined> {
+    const existingJob = await this.getQueue(JOBS_TO_QUEUE[name]).getJob(jobId);
+    if (existingJob === undefined) {
+      return undefined;
+    }
+    try {
+      await existingJob.remove();
+    } catch {
+      return undefined;
+    }
+    return existingJob.data;
   }
 }

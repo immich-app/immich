@@ -527,7 +527,7 @@ describe(AlbumService.name, () => {
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
       expect(eventMock.emit).toHaveBeenCalledWith('album.update', {
         id: 'album-123',
-        updatedBy: authStub.admin.user.id,
+        recipientIds: [],
       });
     });
 
@@ -571,7 +571,7 @@ describe(AlbumService.name, () => {
       expect(albumMock.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
       expect(eventMock.emit).toHaveBeenCalledWith('album.update', {
         id: 'album-123',
-        updatedBy: authStub.user1.user.id,
+        recipientIds: ['admin_id'],
       });
     });
 
