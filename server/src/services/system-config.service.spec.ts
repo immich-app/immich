@@ -1,19 +1,18 @@
 import { BadRequestException } from '@nestjs/common';
+import { defaults, SystemConfig } from 'src/config';
 import {
   AudioCodec,
-  CQMode,
   Colorspace,
+  CQMode,
   ImageFormat,
   LogLevel,
-  SystemConfig,
+  SystemMetadataKey,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
-  defaults,
-} from 'src/config';
-import { SystemMetadataKey } from 'src/enum';
+} from 'src/enum';
 import { IEventRepository, ServerEvent } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -100,8 +99,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    lightStyle: '',
-    darkStyle: '',
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
   },
   reverseGeocoding: {
     enabled: true,
@@ -136,11 +135,16 @@ const updatedConfig = Object.freeze<SystemConfig>({
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {
-    thumbnailFormat: ImageFormat.WEBP,
-    thumbnailSize: 250,
-    previewFormat: ImageFormat.JPEG,
-    previewSize: 1440,
-    quality: 80,
+    thumbnail: {
+      size: 250,
+      format: ImageFormat.WEBP,
+      quality: 80,
+    },
+    preview: {
+      size: 1440,
+      format: ImageFormat.JPEG,
+      quality: 80,
+    },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },
@@ -288,6 +292,23 @@ describe(SystemConfigService.name, () => {
       const config = await sut.getConfig();
       expect(config.machineLearning.url).toEqual('immich_machine_learning');
     });
+
+    const externalDomainTests = [
+      { should: 'with a trailing slash', externalDomain: 'https://demo.immich.app/' },
+      { should: 'without a trailing slash', externalDomain: 'https://demo.immich.app' },
+      { should: 'with a port', externalDomain: 'https://demo.immich.app:42', result: 'https://demo.immich.app:42' },
+    ];
+
+    for (const { should, externalDomain, result } of externalDomainTests) {
+      it(`should normalize an external domain ${should}`, async () => {
+        process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+        const partialConfig = { server: { externalDomain } };
+        systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
+
+        const config = await sut.getConfig();
+        expect(config.server.externalDomain).toEqual(result ?? 'https://demo.immich.app');
+      });
+    }
 
     it('should warn for unknown options in yaml', async () => {
       process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';

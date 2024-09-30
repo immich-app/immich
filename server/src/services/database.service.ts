@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import semver from 'semver';
-import { getVectorExtension } from 'src/database.config';
 import { OnEmit } from 'src/decorators';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -67,6 +67,7 @@ export class DatabaseService {
   private reconnection?: NodeJS.Timeout;
 
   constructor(
+    @Inject(IConfigRepository) private configRepository: IConfigRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
@@ -85,7 +86,8 @@ export class DatabaseService {
     }
 
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
-      const extension = getVectorExtension();
+      const envData = this.configRepository.getEnv();
+      const extension = envData.database.vectorExtension;
       const name = EXTENSION_NAMES[extension];
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
@@ -116,7 +118,8 @@ export class DatabaseService {
 
       await this.checkReindexing();
 
-      if (process.env.DB_SKIP_MIGRATIONS !== 'true') {
+      const { database } = this.configRepository.getEnv();
+      if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
     });

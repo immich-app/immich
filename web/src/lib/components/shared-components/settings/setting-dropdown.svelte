@@ -43,7 +43,7 @@
           icon: option.icon,
         };
       }}
-      on:select={({ detail }) => onToggle(detail)}
+      onSelect={onToggle}
     />
   </div>
 </div>

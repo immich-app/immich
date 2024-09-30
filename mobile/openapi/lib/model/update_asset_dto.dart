@@ -63,12 +63,6 @@ class UpdateAssetDto {
   ///
   num? latitude;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? livePhotoVideoId;
 
   ///
@@ -164,6 +158,7 @@ class UpdateAssetDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UpdateAssetDto? fromJson(dynamic value) {
+    upgradeDto(value, "UpdateAssetDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

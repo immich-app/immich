@@ -80,7 +80,7 @@ export function searchAssetBuilder(
     });
   }
 
-  const status = _.pick(options, ['isFavorite', 'isOffline', 'isVisible', 'type']);
+  const status = _.pick(options, ['isFavorite', 'isVisible', 'type']);
   const {
     isArchived,
     isEncoded,

@@ -20,6 +20,7 @@ The default configuration looks like this:
     "acceptedVideoCodecs": ["h264"],
     "targetAudioCodec": "aac",
     "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
+    "acceptedContainers": ["mov", "ogg", "webm"],
     "targetResolution": "720",
     "maxBitrate": "0",
     "bframes": -1,
@@ -32,7 +33,8 @@ The default configuration looks like this:
     "preferredHwDevice": "auto",
     "transcode": "required",
     "tonemap": "hable",
-    "accel": "disabled"
+    "accel": "disabled",
+    "accelDecode": false
   },
   "job": {
     "backgroundTask": {
@@ -60,10 +62,13 @@ The default configuration looks like this:
       "concurrency": 5
     },
     "thumbnailGeneration": {
-      "concurrency": 5
+      "concurrency": 3
     },
     "videoConversion": {
       "concurrency": 1
+    },
+    "notifications": {
+      "concurrency": 5
     }
   },
   "logging": {
@@ -78,40 +83,46 @@ The default configuration looks like this:
       "modelName": "ViT-B-32__openai"
     },
     "duplicateDetection": {
-      "enabled": false,
-      "maxDistance": 0.03
+      "enabled": true,
+      "maxDistance": 0.01
     },
     "facialRecognition": {
       "enabled": true,
       "modelName": "buffalo_l",
       "minScore": 0.7,
-      "maxDistance": 0.6,
+      "maxDistance": 0.5,
       "minFaces": 3
     }
   },
   "map": {
     "enabled": true,
-    "lightStyle": "",
-    "darkStyle": ""
+    "lightStyle": "https://tiles.immich.cloud/v1/style/light.json",
+    "darkStyle": "https://tiles.immich.cloud/v1/style/dark.json"
   },
   "reverseGeocoding": {
     "enabled": true
   },
+  "metadata": {
+    "faces": {
+      "import": false
+    }
+  },
   "oauth": {
-    "enabled": false,
-    "issuerUrl": "",
+    "autoLaunch": false,
+    "autoRegister": true,
+    "buttonText": "Login with OAuth",
     "clientId": "",
     "clientSecret": "",
+    "defaultStorageQuota": 0,
+    "enabled": false,
+    "issuerUrl": "",
+    "mobileOverrideEnabled": false,
+    "mobileRedirectUri": "",
     "scope": "openid email profile",
     "signingAlgorithm": "RS256",
+    "profileSigningAlgorithm": "none",
     "storageLabelClaim": "preferred_username",
-    "storageQuotaClaim": "immich_quota",
-    "defaultStorageQuota": 0,
-    "buttonText": "Login with OAuth",
-    "autoRegister": true,
-    "autoLaunch": false,
-    "mobileOverrideEnabled": false,
-    "mobileRedirectUri": ""
+    "storageQuotaClaim": "immich_quota"
   },
   "passwordLogin": {
     "enabled": true
@@ -122,11 +133,16 @@ The default configuration looks like this:
     "template": "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
   },
   "image": {
-    "thumbnailFormat": "webp",
-    "thumbnailSize": 250,
-    "previewFormat": "jpeg",
-    "previewSize": 1440,
-    "quality": 80,
+    "thumbnail": {
+      "format": "webp",
+      "size": 250,
+      "quality": 80
+    },
+    "preview": {
+      "format": "jpeg",
+      "size": 1440,
+      "quality": 80
+    },
     "colorspace": "p3",
     "extractEmbedded": false
   },
@@ -140,23 +156,35 @@ The default configuration looks like this:
   "theme": {
     "customCss": ""
   },
-  "user": {
-    "deleteDelay": 7
-  },
   "library": {
     "scan": {
       "enabled": true,
       "cronExpression": "0 0 * * *"
     },
     "watch": {
-      "enabled": false,
-      "usePolling": false,
-      "interval": 10000
+      "enabled": false
     }
   },
   "server": {
     "externalDomain": "",
     "loginPageMessage": ""
+  },
+  "notifications": {
+    "smtp": {
+      "enabled": false,
+      "from": "",
+      "replyTo": "",
+      "transport": {
+        "ignoreCert": false,
+        "host": "",
+        "port": 587,
+        "username": "",
+        "password": ""
+      }
+    }
+  },
+  "user": {
+    "deleteDelay": 7
   }
 }
 ```

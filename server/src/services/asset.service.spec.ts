@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetType } from 'src/enum';
+import { AssetStatus, AssetType } from 'src/enum';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
@@ -269,10 +269,10 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: 'asset1', deleteOnDisk: true } },
-        { name: JobName.ASSET_DELETION, data: { id: 'asset2', deleteOnDisk: true } },
-      ]);
+      expect(eventMock.emit).toHaveBeenCalledWith('assets.delete', {
+        assetIds: ['asset1', 'asset2'],
+        userId: 'user-id',
+      });
     });
 
     it('should soft delete a batch of assets', async () => {
@@ -280,7 +280,10 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: false });
 
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['asset1', 'asset2']);
+      expect(assetMock.updateAll).toHaveBeenCalledWith(['asset1', 'asset2'], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.TRASHED,
+      });
       expect(jobMock.queue.mock.calls).toEqual([]);
     });
   });
@@ -392,7 +395,7 @@ describe(AssetService.name, () => {
     it('should run the refresh thumbnails job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL });
-      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } }]);
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } }]);
     });
 
     it('should run the transcode video', async () => {

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
@@ -60,8 +60,52 @@ export class NotificationService {
 
   @OnEmit({ event: 'asset.hide' })
   onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
-    // Notify clients to hide the linked live photo asset
     this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, userId, assetId);
+  }
+
+  @OnEmit({ event: 'asset.show' })
+  async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
+    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id: assetId, notify: true } });
+  }
+
+  @OnEmit({ event: 'asset.trash' })
+  onAssetTrash({ assetId, userId }: ArgOf<'asset.trash'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, [assetId]);
+  }
+
+  @OnEmit({ event: 'asset.delete' })
+  onAssetDelete({ assetId, userId }: ArgOf<'asset.delete'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, userId, assetId);
+  }
+
+  @OnEmit({ event: 'assets.trash' })
+  onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, assetIds);
+  }
+
+  @OnEmit({ event: 'assets.restore' })
+  onAssetsRestore({ assetIds, userId }: ArgOf<'assets.restore'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_RESTORE, userId, assetIds);
+  }
+
+  @OnEmit({ event: 'stack.create' })
+  onStackCreate({ userId }: ArgOf<'stack.create'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+  }
+
+  @OnEmit({ event: 'stack.update' })
+  onStackUpdate({ userId }: ArgOf<'stack.update'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+  }
+
+  @OnEmit({ event: 'stack.delete' })
+  onStackDelete({ userId }: ArgOf<'stack.delete'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+  }
+
+  @OnEmit({ event: 'stacks.delete' })
+  onStacksDelete({ userId }: ArgOf<'stacks.delete'>) {
+    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
   }
 
   @OnEmit({ event: 'user.signup' })
@@ -96,7 +140,7 @@ export class NotificationService {
     try {
       await this.notificationRepository.verifySmtp(dto.transport);
     } catch (error) {
-      throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST, { cause: error });
+      throw new BadRequestException('Failed to verify SMTP configuration', { cause: error });
     }
 
     const { server } = await this.configCore.getConfig({ withCache: false });
@@ -108,7 +152,7 @@ export class NotificationService {
       },
     });
 
-    await this.notificationRepository.sendEmail({
+    const { messageId } = await this.notificationRepository.sendEmail({
       to: user.email,
       subject: 'Test email from Immich',
       html,
@@ -117,6 +161,8 @@ export class NotificationService {
       replyTo: dto.replyTo || dto.from,
       smtp: dto.transport,
     });
+
+    return { messageId };
   }
 
   async handleUserSignup({ id, tempPassword }: INotifySignupJob) {
@@ -267,10 +313,6 @@ export class NotificationService {
       smtp: notifications.smtp.transport,
       imageAttachments: data.imageAttachments,
     });
-
-    if (!response) {
-      return JobStatus.FAILED;
-    }
 
     this.logger.log(`Sent mail with id: ${response.messageId} status: ${response.response}`);
 

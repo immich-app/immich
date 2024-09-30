@@ -12,7 +12,7 @@ import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
-import { AuthType, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
+import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { UserCore } from 'src/cores/user.core';
 import {
@@ -31,7 +31,7 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { Permission } from 'src/enum';
+import { AuthType, Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';

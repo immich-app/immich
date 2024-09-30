@@ -186,6 +186,8 @@ describe(ServerService.name, () => {
         isInitialized: undefined,
         isOnboarded: false,
         externalDomain: '',
+        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
       expect(systemMock.get).toHaveBeenCalled();
     });

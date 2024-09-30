@@ -78,6 +78,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.0.0"
+  background_downloader:
+    dependency: "direct main"
+    description:
+      name: background_downloader
+      sha256: "6a945db1a1c7727a4bc9c1d7c882cfb1a819f873b77e01d5e5dd6a3fb231cb28"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.5.5"
   boolean_selector:
     dependency: transitive
     description:
@@ -744,10 +752,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
+      sha256: b9c29a161230ee03d3ccf545097fccd9b87a5264228c5d348202e0f0c28f9010
       url: "https://pub.dev"
     source: hosted
-    version: "0.13.6"
+    version: "1.2.2"
   http_multi_server:
     dependency: transitive
     description:
@@ -836,6 +844,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  immich_mobile_immich_lint:
+    dependency: "direct dev"
+    description:
+      path: immich_lint
+      relative: true
+    source: path
+    version: "0.0.0"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -1847,4 +1862,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.4.0 <4.0.0"
-  flutter: ">=3.24.0"
+  flutter: ">=3.24.3"

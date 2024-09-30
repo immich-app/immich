@@ -2,8 +2,8 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { snakeCase } from 'lodash';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from 'src/dtos/job.dto';
-import { AssetType } from 'src/enum';
+import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
+import { AssetType, ManualJobName } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
@@ -22,6 +22,26 @@ import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
+const asJobItem = (dto: JobCreateDto): JobItem => {
+  switch (dto.name) {
+    case ManualJobName.TAG_CLEANUP: {
+      return { name: JobName.TAG_CLEANUP };
+    }
+
+    case ManualJobName.PERSON_CLEANUP: {
+      return { name: JobName.PERSON_CLEANUP };
+    }
+
+    case ManualJobName.USER_CLEANUP: {
+      return { name: JobName.USER_DELETE_CHECK };
+    }
+
+    default: {
+      throw new BadRequestException('Invalid job name');
+    }
+  }
+};
+
 @Injectable()
 export class JobService {
   private configCore: SystemConfigCore;
@@ -37,6 +57,10 @@ export class JobService {
   ) {
     this.logger.setContext(JobService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
+  }
+
+  async create(dto: JobCreateDto): Promise<void> {
+    await this.jobRepository.queue(asJobItem(dto));
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
@@ -140,7 +164,7 @@ export class JobService {
       }
 
       case QueueName.LIBRARY: {
-        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, data: { force } });
       }
 
       default: {
@@ -162,11 +186,16 @@ export class JobService {
       this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
         const { name, data } = item;
 
+        const handler = jobHandlers[name];
+        if (!handler) {
+          this.logger.warn(`Skipping unknown job: "${name}"`);
+          return;
+        }
+
         const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
         this.metricRepository.jobs.addToGauge(queueMetric, 1);
 
         try {
-          const handler = jobHandlers[name];
           const status = await handler(data);
           const jobMetric = `immich.jobs.${name.replaceAll('-', '_')}.${status}`;
           this.metricRepository.jobs.addToCounter(jobMetric, 1);
@@ -231,6 +260,7 @@ export class JobService {
           name: JobName.METADATA_EXTRACTION,
           data: { id: item.data.id, source: 'sidecar-write' },
         });
+        break;
       }
 
       case JobName.METADATA_EXTRACTION: {
@@ -251,7 +281,7 @@ export class JobService {
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
-          await this.jobRepository.queue({ name: JobName.GENERATE_PREVIEW, data: item.data });
+          await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: item.data });
         }
         break;
       }
@@ -265,40 +295,33 @@ export class JobService {
         break;
       }
 
-      case JobName.GENERATE_PREVIEW: {
-        const jobs: JobItem[] = [
-          { name: JobName.GENERATE_THUMBNAIL, data: item.data },
-          { name: JobName.GENERATE_THUMBHASH, data: item.data },
-        ];
-
-        if (item.data.source === 'upload') {
-          jobs.push({ name: JobName.SMART_SEARCH, data: item.data }, { name: JobName.FACE_DETECTION, data: item.data });
-
-          const [asset] = await this.assetRepository.getByIds([item.data.id]);
-          if (asset) {
-            if (asset.type === AssetType.VIDEO) {
-              jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
-            } else if (asset.livePhotoVideoId) {
-              jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
-            }
-          }
-        }
-
-        await this.jobRepository.queueAll(jobs);
-        break;
-      }
-
-      case JobName.GENERATE_THUMBNAIL: {
-        if (item.data.source !== 'upload') {
+      case JobName.GENERATE_THUMBNAILS: {
+        if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
 
         const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
+        if (!asset) {
+          this.logger.warn(`Could not find asset ${item.data.id} after generating thumbnails`);
+          break;
+        }
 
-        // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
-        if (asset && asset.isVisible) {
+        const jobs: JobItem[] = [
+          { name: JobName.SMART_SEARCH, data: item.data },
+          { name: JobName.FACE_DETECTION, data: item.data },
+        ];
+
+        if (asset.type === AssetType.VIDEO) {
+          jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
+        } else if (asset.livePhotoVideoId) {
+          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
+        }
+
+        await this.jobRepository.queueAll(jobs);
+        if (asset.isVisible) {
           this.eventRepository.clientSend(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
+
         break;
       }
 

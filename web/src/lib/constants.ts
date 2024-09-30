@@ -71,9 +71,8 @@ export const dateFormats = {
 
 export enum QueryParameter {
   ACTION = 'action',
-  ASSET_INDEX = 'assetIndex',
+  ID = 'id',
   IS_OPEN = 'isOpen',
-  MEMORY_INDEX = 'memoryIndex',
   ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
@@ -94,7 +93,7 @@ export enum ActionQueryParameterValue {
   MERGE = 'merge',
 }
 
-export const maximumLengthSearchPeople: number = 20;
+export const maximumLengthSearchPeople = 1000;
 
 // time to load the map before displaying the loading spinner
 export const timeToLoadTheMap: number = 100;

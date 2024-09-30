@@ -6,7 +6,7 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { SourceType } from 'src/enum';
+import { PaginationMode, SourceType } from 'src/enum';
 import {
   AssetFaceId,
   DeleteAllFacesOptions,
@@ -19,7 +19,7 @@ import {
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
+import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
 @Instrumentation()
@@ -184,14 +184,11 @@ export class PersonRepository implements IPersonRepository {
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
       .where(
         'person.ownerId = :userId AND (LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere)',
         { userId, nameStart: `${personName.toLowerCase()}%`, nameAnywhere: `% ${personName.toLowerCase()}%` },
       )
-      .groupBy('person.id')
-      .orderBy('COUNT(face.assetId)', 'DESC')
-      .limit(20);
+      .limit(1000);
 
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import FullScreenModal from './full-screen-modal.svelte';
   import { mdiInformationOutline } from '@mdi/js';
-  import Icon from '../elements/icon.svelte';
   import { t } from 'svelte-i18n';
+  import Icon from '../elements/icon.svelte';
+  import FullScreenModal from './full-screen-modal.svelte';
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -15,6 +14,8 @@
     action: string;
     info?: string;
   }
+
+  export let onClose: () => void;
 
   export let shortcuts: Shortcuts = {
     general: [
@@ -33,12 +34,9 @@
       { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
     ],
   };
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
 </script>
 
-<FullScreenModal title={$t('keyboard_shortcuts')} width="auto" onClose={() => dispatch('close')}>
+<FullScreenModal title={$t('keyboard_shortcuts')} width="auto" {onClose}>
   <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
     {#if shortcuts.general.length > 0}
       <div class="p-4">

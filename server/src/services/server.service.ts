@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
 import { serverVersion } from 'src/constants';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
@@ -15,7 +15,7 @@ import {
   ServerStorageResponseDto,
   UsageByUserDto,
 } from 'src/dtos/server.dto';
-import { SystemMetadataKey } from 'src/enum';
+import { StorageFolder, SystemMetadataKey } from 'src/enum';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
@@ -129,6 +129,8 @@ export class ServerService {
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
+      mapDarkStyleUrl: config.map.darkStyle,
+      mapLightStyleUrl: config.map.lightStyle,
     };
   }
 

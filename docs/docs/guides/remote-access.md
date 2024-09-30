@@ -27,7 +27,7 @@ You may use a VPN service to open an encrypted connection to your Immich instanc
 
 If you are unable to open a port on your router for Wireguard or OpenVPN to your server, [Tailscale](https://tailscale.com/) is a good option. Tailscale mediates a peer-to-peer wireguard tunnel between your server and remote device, even if one or both of them are behind a [NAT firewall](https://en.wikipedia.org/wiki/Network_address_translation).
 
-:::tip Video toturial
+:::tip Video tutorial
 You can learn how to set up Tailscale together with Immich with the [tutorial video](https://www.youtube.com/watch?v=Vt4PDUXB_fg) they created.
 :::
 

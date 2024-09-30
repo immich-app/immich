@@ -1,7 +1,7 @@
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetFileType, AssetOrder, AssetType } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
@@ -36,8 +36,6 @@ export enum WithoutProperty {
 
 export enum WithProperty {
   SIDECAR = 'sidecar',
-  IS_ONLINE = 'isOnline',
-  IS_OFFLINE = 'isOffline',
 }
 
 export enum TimeBucketSize {
@@ -56,6 +54,7 @@ export interface AssetBuilderOptions {
   userIds?: string[];
   withStacked?: boolean;
   exifInfo?: boolean;
+  status?: AssetStatus;
   assetType?: AssetType;
 }
 
@@ -142,13 +141,17 @@ export interface AssetUpdateDuplicateOptions {
   duplicateIds: string[];
 }
 
+export interface UpsertFileOptions {
+  assetId: string;
+  type: AssetFileType;
+  path: string;
+}
+
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
-  getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]>;
-  getUniqueOriginalPaths(userId: string): Promise<string[]>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByIds(
     ids: string[],
@@ -175,10 +178,8 @@ export interface IAssetRepository {
     libraryId?: string,
     withDeleted?: boolean,
   ): Paginated<AssetEntity>;
-  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
-  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
+  getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
-  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
@@ -188,8 +189,6 @@ export interface IAssetRepository {
   updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
-  softDeleteAll(ids: string[]): Promise<void>;
-  restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
@@ -201,5 +200,6 @@ export interface IAssetRepository {
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
-  upsertFile(options: { assetId: string; type: AssetFileType; path: string }): Promise<void>;
+  upsertFile(file: UpsertFileOptions): Promise<void>;
+  upsertFiles(files: UpsertFileOptions[]): Promise<void>;
 }

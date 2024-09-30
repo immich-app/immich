@@ -577,6 +577,16 @@ describe('/asset', () => {
       expect(body).toMatchObject({ id: user1Assets[0].id, livePhotoVideoId: asset.id });
     });
 
+    it('should unlink a motion photo', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ livePhotoVideoId: null });
+
+      expect(status).toEqual(200);
+      expect(body).toMatchObject({ id: user1Assets[0].id, livePhotoVideoId: null });
+    });
+
     it('should update date time original when sidecar file contains DateTimeOriginal', async () => {
       const sidecarData = `<?xpacket begin='?' id='W5M0MpCehiHzreSzNTczkc9d'?>
 <x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Image::ExifTool 12.40'>

@@ -22,7 +22,6 @@ services:
       - IMMICH_METRICS=true
       - IMMICH_ENV=testing
     volumes:
-      - upload:/usr/src/app/upload
       - ./test-assets:/test-assets
     extra_hosts:
       - 'auth-server:host-gateway'
@@ -44,7 +43,3 @@ services:
       POSTGRES_DB: immich
     ports:
       - 5435:5432
-
-volumes:
-  model-cache:
-  upload:

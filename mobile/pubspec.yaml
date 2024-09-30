@@ -2,11 +2,11 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.114.0+158
+version: 1.116.2+161
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.24.0
+  flutter: 3.24.3
 
 dependencies:
   flutter:
@@ -32,7 +32,7 @@ dependencies:
   flutter_svg: ^2.0.9
   package_info_plus: ^8.0.1
   url_launcher: ^6.2.4
-  http: ^0.13.6
+  http: ^1.1.0
   cancellation_token_http: ^2.0.0
   easy_localization: ^3.0.3
   share_plus: ^10.0.0
@@ -56,6 +56,7 @@ dependencies:
   thumbhash: 0.1.0+1
   async: ^2.11.0
   dynamic_color: ^1.7.0 #package to apply system theme
+  background_downloader: ^8.5.5
 
   #image editing packages
   crop_image: ^1.0.13
@@ -94,10 +95,12 @@ dev_dependencies:
   isar_generator: ^3.1.0+1
   integration_test:
     sdk: flutter
-  custom_lint: ^0.6.0
+  custom_lint: ^0.6.4
   riverpod_lint: ^2.3.7
   riverpod_generator: ^2.3.9
   mocktail: ^1.0.3
+  immich_mobile_immich_lint:
+    path: './immich_lint'
 
 flutter:
   uses-material-design: true

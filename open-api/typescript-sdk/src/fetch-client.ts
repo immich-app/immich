@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.114.0
+ * 1.116.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -19,6 +19,7 @@ export type UserResponseDto = {
     email: string;
     id: string;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type ActivityResponseDto = {
@@ -53,6 +54,7 @@ export type UserAdminResponseDto = {
     license: (UserLicense) | null;
     name: string;
     oauthId: string;
+    profileChangedAt: string;
     profileImagePath: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number | null;
@@ -364,7 +366,6 @@ export type AssetMediaCreateDto = {
     fileModifiedAt: string;
     isArchived?: boolean;
     isFavorite?: boolean;
-    isOffline?: boolean;
     isVisible?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -427,7 +428,7 @@ export type UpdateAssetDto = {
     isArchived?: boolean;
     isFavorite?: boolean;
     latitude?: number;
-    livePhotoVideoId?: string;
+    livePhotoVideoId?: string | null;
     longitude?: number;
     rating?: number;
 };
@@ -548,6 +549,9 @@ export type AllJobStatusResponseDto = {
     thumbnailGeneration: JobStatusDto;
     videoConversion: JobStatusDto;
 };
+export type JobCreateDto = {
+    name: ManualJobName;
+};
 export type JobCommandDto = {
     command: JobCommand;
     force: boolean;
@@ -573,10 +577,6 @@ export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     name?: string;
-};
-export type ScanLibraryDto = {
-    refreshAllFiles?: boolean;
-    refreshModifiedFiles?: boolean;
 };
 export type LibraryStatsResponseDto = {
     photos: number;
@@ -651,6 +651,9 @@ export type SystemConfigSmtpDto = {
     replyTo: string;
     transport: SystemConfigSmtpTransportDto;
 };
+export type TestEmailResponseDto = {
+    messageId: string;
+};
 export type OAuthConfigDto = {
     redirectUri: string;
 };
@@ -666,6 +669,7 @@ export type PartnerResponseDto = {
     id: string;
     inTimeline?: boolean;
     name: string;
+    profileChangedAt: string;
     profileImagePath: string;
 };
 export type UpdatePartnerDto = {
@@ -831,6 +835,40 @@ export type PlacesResponseDto = {
     longitude: number;
     name: string;
 };
+export type RandomSearchDto = {
+    city?: string | null;
+    country?: string | null;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceId?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    isVisible?: boolean;
+    lensModel?: string | null;
+    libraryId?: string | null;
+    make?: string;
+    model?: string | null;
+    page?: number;
+    personIds?: string[];
+    size?: number;
+    state?: string | null;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    "type"?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+    withPeople?: boolean;
+    withStacked?: boolean;
+};
 export type SmartSearchDto = {
     city?: string | null;
     country?: string | null;
@@ -888,6 +926,8 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    mapDarkStyleUrl: string;
+    mapLightStyleUrl: string;
     oauthButtonText: string;
     trashDays: number;
     userDeleteDelay: number;
@@ -1060,14 +1100,16 @@ export type SystemConfigFFmpegDto = {
     transcode: TranscodePolicy;
     twoPass: boolean;
 };
+export type SystemConfigGeneratedImageDto = {
+    format: ImageFormat;
+    quality: number;
+    size: number;
+};
 export type SystemConfigImageDto = {
     colorspace: Colorspace;
     extractEmbedded: boolean;
-    previewFormat: ImageFormat;
-    previewSize: number;
-    quality: number;
-    thumbnailFormat: ImageFormat;
-    thumbnailSize: number;
+    preview: SystemConfigGeneratedImageDto;
+    thumbnail: SystemConfigGeneratedImageDto;
 };
 export type JobSettingsDto = {
     concurrency: number;
@@ -1240,6 +1282,9 @@ export type TimeBucketResponseDto = {
     count: number;
     timeBucket: string;
 };
+export type TrashResponseDto = {
+    count: number;
+};
 export type UserUpdateMeDto = {
     email?: string;
     name?: string;
@@ -1249,6 +1294,7 @@ export type CreateProfileImageDto = {
     file: Blob;
 };
 export type CreateProfileImageResponseDto = {
+    profileChangedAt: string;
     profileImagePath: string;
     userId: string;
 };
@@ -1686,6 +1732,9 @@ export function getMemoryLane({ day, month }: {
         ...opts
     }));
 }
+/**
+ * This property was deprecated in v1.116.0
+ */
 export function getRandom({ count }: {
     count?: number;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1941,6 +1990,15 @@ export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function createJob({ jobCreateDto }: {
+    jobCreateDto: JobCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/jobs", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: jobCreateDto
+    })));
+}
 export function sendJobCommand({ id, jobCommandDto }: {
     id: JobName;
     jobCommandDto: JobCommandDto;
@@ -2005,23 +2063,13 @@ export function updateLibrary({ id, updateLibraryDto }: {
         body: updateLibraryDto
     })));
 }
-export function removeOfflineFiles({ id }: {
+export function scanLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/removeOffline`, {
+    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, {
         ...opts,
         method: "POST"
     }));
-}
-export function scanLibrary({ id, scanLibraryDto }: {
-    id: string;
-    scanLibraryDto: ScanLibraryDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: scanLibraryDto
-    })));
 }
 export function getLibraryStatistics({ id }: {
     id: string;
@@ -2078,20 +2126,6 @@ export function reverseGeocode({ lat, lon }: {
     }>(`/map/reverse-geocode${QS.query(QS.explode({
         lat,
         lon
-    }))}`, {
-        ...opts
-    }));
-}
-export function getMapStyle({ key, theme }: {
-    key?: string;
-    theme: MapTheme;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: object;
-    }>(`/map/style.json${QS.query(QS.explode({
-        key,
-        theme
     }))}`, {
         ...opts
     }));
@@ -2176,7 +2210,10 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
 export function sendTestEmail({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/notifications/test-email", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TestEmailResponseDto;
+    }>("/notifications/test-email", oazapfts.json({
         ...opts,
         method: "POST",
         body: systemConfigSmtpDto
@@ -2480,6 +2517,18 @@ export function searchPlaces({ name }: {
     }))}`, {
         ...opts
     }));
+}
+export function searchRandom({ randomSearchDto }: {
+    randomSearchDto: RandomSearchDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SearchResponseDto;
+    }>("/search/random", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: randomSearchDto
+    })));
 }
 export function searchSmart({ smartSearchDto }: {
     smartSearchDto: SmartSearchDto;
@@ -3057,13 +3106,19 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
     }));
 }
 export function emptyTrash(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/empty", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/empty", {
         ...opts,
         method: "POST"
     }));
 }
 export function restoreTrash(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/restore", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/restore", {
         ...opts,
         method: "POST"
     }));
@@ -3071,7 +3126,10 @@ export function restoreTrash(opts?: Oazapfts.RequestOpts) {
 export function restoreAssets({ bulkIdsDto }: {
     bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/trash/restore/assets", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TrashResponseDto;
+    }>("/trash/restore/assets", oazapfts.json({
         ...opts,
         method: "POST",
         body: bulkIdsDto
@@ -3364,6 +3422,11 @@ export enum EntityType {
     Asset = "ASSET",
     Album = "ALBUM"
 }
+export enum ManualJobName {
+    PersonCleanup = "person-cleanup",
+    TagCleanup = "tag-cleanup",
+    UserCleanup = "user-cleanup"
+}
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
@@ -3386,10 +3449,6 @@ export enum JobCommand {
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
-}
-export enum MapTheme {
-    Light = "light",
-    Dark = "dark"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"

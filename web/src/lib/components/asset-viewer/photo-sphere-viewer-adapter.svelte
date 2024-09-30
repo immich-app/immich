@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import {
+    EquirectangularAdapter,
     Viewer,
     events,
-    EquirectangularAdapter,
-    type PluginConstructor,
     type AdapterConstructor,
+    type PluginConstructor,
   } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
   import { onDestroy, onMount } from 'svelte';
@@ -31,7 +32,7 @@
       fisheye: true,
     });
 
-    if (originalImageUrl) {
+    if (originalImageUrl && !$alwaysLoadOriginalFile) {
       const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
         // zoomLevel range: [0, 100]
         if (Math.round(zoomLevel) >= 75) {

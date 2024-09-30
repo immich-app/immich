@@ -4,7 +4,7 @@ import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos
 import { AssetMediaCreateDto, AssetMediaReplaceDto, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
-import { AssetType } from 'src/enum';
+import { AssetStatus, AssetType, CacheControl } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
@@ -12,7 +12,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetMediaService } from 'src/services/asset-media.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
@@ -478,7 +478,10 @@ describe(AssetMediaService.name, () => {
         }),
       );
 
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith([copiedAsset.id]);
+      expect(assetMock.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.TRASHED,
+      });
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -506,7 +509,10 @@ describe(AssetMediaService.name, () => {
         id: 'copied-asset',
       });
 
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['copied-asset']);
+      expect(assetMock.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.TRASHED,
+      });
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -532,7 +538,10 @@ describe(AssetMediaService.name, () => {
         id: 'copied-asset',
       });
 
-      expect(assetMock.softDeleteAll).toHaveBeenCalledWith(['copied-asset']);
+      expect(assetMock.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.TRASHED,
+      });
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(storageMock.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -561,7 +570,7 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(assetMock.create).not.toHaveBeenCalled();
-      expect(assetMock.softDeleteAll).not.toHaveBeenCalled();
+      expect(assetMock.updateAll).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
         data: { files: [updatedFile.originalPath, undefined] },

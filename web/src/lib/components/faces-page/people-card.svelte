@@ -9,7 +9,6 @@
     mdiDotsVertical,
     mdiEyeOffOutline,
   } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { t } from 'svelte-i18n';
@@ -18,19 +17,12 @@
 
   export let person: PersonResponseDto;
   export let preload = false;
-
-  type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-people' | 'hide-person';
-  let dispatch = createEventDispatcher<{
-    'change-name': void;
-    'set-birth-date': void;
-    'merge-people': void;
-    'hide-person': void;
-  }>();
+  export let onChangeName: () => void;
+  export let onSetBirthDate: () => void;
+  export let onMergePeople: () => void;
+  export let onHidePerson: () => void;
 
   let showVerticalDots = false;
-  const onMenuClick = (event: MenuItemEvent) => {
-    dispatch(event);
-  };
 </script>
 
 <div
@@ -76,18 +68,10 @@
         icon={mdiDotsVertical}
         title={$t('show_person_options')}
       >
-        <MenuOption onClick={() => onMenuClick('hide-person')} icon={mdiEyeOffOutline} text={$t('hide_person')} />
-        <MenuOption onClick={() => onMenuClick('change-name')} icon={mdiAccountEditOutline} text={$t('change_name')} />
-        <MenuOption
-          onClick={() => onMenuClick('set-birth-date')}
-          icon={mdiCalendarEditOutline}
-          text={$t('set_date_of_birth')}
-        />
-        <MenuOption
-          onClick={() => onMenuClick('merge-people')}
-          icon={mdiAccountMultipleCheckOutline}
-          text={$t('merge_people')}
-        />
+        <MenuOption onClick={onHidePerson} icon={mdiEyeOffOutline} text={$t('hide_person')} />
+        <MenuOption onClick={onChangeName} icon={mdiAccountEditOutline} text={$t('change_name')} />
+        <MenuOption onClick={onSetBirthDate} icon={mdiCalendarEditOutline} text={$t('set_date_of_birth')} />
+        <MenuOption onClick={onMergePeople} icon={mdiAccountMultipleCheckOutline} text={$t('merge_people')} />
       </ButtonContextMenu>
     </div>
   {/if}
