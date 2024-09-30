@@ -64,19 +64,19 @@ custom_lint:
       allowed:
         # required / wanted
         - lib/entities/*.entity.dart
-        - lib/repositories/{album,asset,backup,exif_info,user}.repository.dart
-        # acceptable exceptions for the time being
+        - lib/repositories/{album,asset,backup,database,etag,exif_info,user}.repository.dart
+        # acceptable exceptions for the time being (until Isar is fully replaced)
         - integration_test/test_utils/general_helper.dart
         - lib/main.dart
-        - lib/routing/router.dart
-        - lib/utils/{db,migration,renderlist_generator}.dart
-        - test/**.dart
-        # refactor to make the providers and services testable
         - lib/pages/common/album_asset_selection.page.dart
-        - lib/providers/{archive,asset,authentication,db,favorite,partner,trash,user}.provider.dart
-        - lib/providers/{album/album,album/shared_album,asset_viewer/asset_stack,asset_viewer/render_list,backup/backup,backup/manual_upload,search/all_motion_photos,search/recently_added_asset}.provider.dart
-        - lib/services/{asset,background,backup,immich_logger,sync}.service.dart
+        - lib/routing/router.dart
+        - lib/services/immich_logger.service.dart # not really a service... more a util
+        - lib/utils/{db,migration,renderlist_generator}.dart
         - lib/widgets/asset_grid/asset_grid_data_structure.dart
+        - test/**.dart
+        # refactor the remaining providers
+        - lib/providers/{archive,asset,authentication,db,favorite,partner,trash,user}.provider.dart
+        - lib/providers/{album/album,album/shared_album,asset_viewer/asset_stack,asset_viewer/render_list,backup/backup,search/all_motion_photos,search/recently_added_asset}.provider.dart
 
     - import_rule_openapi:
       message: openapi must only be used through ApiRepositories

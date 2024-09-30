@@ -29,6 +29,13 @@ void main() {
     albumMediaRepository = MockAlbumMediaRepository();
     albumApiRepository = MockAlbumApiRepository();
 
+    when(() => albumRepository.transaction<void>(any())).thenAnswer(
+      (call) => (call.positionalArguments.first as Function).call(),
+    );
+    when(() => assetRepository.transaction<Null>(any())).thenAnswer(
+      (call) => (call.positionalArguments.first as Function).call(),
+    );
+
     sut = AlbumService(
       userService,
       syncService,
@@ -144,7 +151,7 @@ void main() {
         ),
       );
       when(
-        () => albumRepository.getById(AlbumStub.oneAsset.id),
+        () => albumRepository.get(AlbumStub.oneAsset.id),
       ).thenAnswer((_) async => AlbumStub.oneAsset);
       when(
         () => albumRepository.addAssets(AlbumStub.oneAsset, [AssetStub.image2]),

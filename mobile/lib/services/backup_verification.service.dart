@@ -34,19 +34,19 @@ class BackupVerificationService {
     final owner = Store.get(StoreKey.currentUser).isarId;
     final List<Asset> onlyLocal = await _assetRepository.getAll(
       ownerId: owner,
-      remote: false,
+      state: AssetState.local,
       limit: limit,
     );
     final List<Asset> remoteMatches = await _assetRepository.getMatches(
       assets: onlyLocal,
       ownerId: owner,
-      remote: true,
+      state: AssetState.remote,
       limit: limit,
     );
     final List<Asset> localMatches = await _assetRepository.getMatches(
       assets: remoteMatches,
       ownerId: owner,
-      remote: false,
+      state: AssetState.local,
       limit: limit,
     );
 
