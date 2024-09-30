@@ -5,6 +5,7 @@ import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -91,7 +92,8 @@ void main() {
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
       when(() => userRepository.me()).thenAnswer((_) async => owner);
-      when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
+      when(() => userRepository.getAll(sortBy: UserSort.id))
+          .thenAnswer((_) async => [owner]);
       when(() => userRepository.getAllAccessible())
           .thenAnswer((_) async => [owner]);
       when(

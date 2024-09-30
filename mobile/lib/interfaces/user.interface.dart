@@ -6,7 +6,7 @@ abstract interface class IUserRepository implements IDatabaseRepository {
 
   Future<List<User>> getByIds(List<String> ids);
 
-  Future<List<User>> getAll({bool self = true, UserSort? sort});
+  Future<List<User>> getAll({bool self = true, UserSort? sortBy});
 
   /// Returns all users whose assets can be accessed (self+partners)
   Future<List<User>> getAllAccessible();

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:immich_mobile/interfaces/database.interface.dart';
 import 'package:isar/isar.dart';
 
+/// copied from Isar; needed to check if an async transaction is already active
 const Symbol _zoneTxn = #zoneTxn;
 
 abstract class DatabaseRepository implements IDatabaseRepository {

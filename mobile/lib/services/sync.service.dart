@@ -137,7 +137,7 @@ class SyncService {
   /// Returns `true`if there were any changes
   Future<bool> _syncUsersFromServer(List<User> users) async {
     users.sortBy((u) => u.id);
-    final dbUsers = await _userRepository.getAll();
+    final dbUsers = await _userRepository.getAll(sortBy: UserSort.id);
     assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
     final List<int> toDelete = [];
     final List<User> toUpsert = [];

@@ -20,13 +20,13 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
   Future<User?> get(String id) => db.users.getById(id);
 
   @override
-  Future<List<User>> getAll({bool self = true, UserSort? sort}) {
+  Future<List<User>> getAll({bool self = true, UserSort? sortBy}) {
     final baseQuery = db.users.where();
     final int userId = Store.get(StoreKey.currentUser).isarId;
     final QueryBuilder<User, User, QAfterWhereClause> afterWhere =
         self ? baseQuery.noOp() : baseQuery.isarIdNotEqualTo(userId);
     final QueryBuilder<User, User, QAfterSortBy> query;
-    switch (sort) {
+    switch (sortBy) {
       case null:
         query = afterWhere.noOp();
       case UserSort.id:
