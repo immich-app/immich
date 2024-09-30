@@ -120,7 +120,7 @@ export function searchAssetBuilder(
   }
 
   if (withPeople) {
-    builder.leftJoinAndSelect(`${builder.alias}.person`, 'person');
+    builder.leftJoinAndSelect('faces.person', 'person');
   }
 
   if (withSmartInfo) {

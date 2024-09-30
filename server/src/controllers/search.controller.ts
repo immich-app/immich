@@ -32,7 +32,7 @@ export class SearchController {
   @Post('random')
   @HttpCode(HttpStatus.OK)
   @Authenticated()
-  searchRandom(@Auth() auth: AuthDto, @Body() dto: RandomSearchDto): Promise<SearchResponseDto> {
+  searchRandom(@Auth() auth: AuthDto, @Body() dto: RandomSearchDto): Promise<AssetResponseDto[]> {
     return this.service.searchRandom(auth, dto);
   }
 
