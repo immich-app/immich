@@ -7,7 +7,7 @@ import { OnEvent } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { SystemMetadataKey } from 'src/enum';
-import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
@@ -80,7 +80,7 @@ export class VersionService {
 
       if (semver.gt(releaseVersion, serverVersion)) {
         this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
-        this.eventRepository.clientBroadcast(ClientEvent.NEW_RELEASE, asNotification(metadata));
+        this.eventRepository.clientBroadcast('on_new_release', asNotification(metadata));
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
@@ -92,10 +92,10 @@ export class VersionService {
 
   @OnEvent({ name: 'websocket.connect' })
   async onWebsocketConnection({ userId }: ArgOf<'websocket.connect'>) {
-    this.eventRepository.clientSend(ClientEvent.SERVER_VERSION, userId, serverVersion);
+    this.eventRepository.clientSend('on_server_version', userId, serverVersion);
     const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VERSION_CHECK_STATE);
     if (metadata) {
-      this.eventRepository.clientSend(ClientEvent.NEW_RELEASE, userId, asNotification(metadata));
+      this.eventRepository.clientSend('on_new_release', userId, asNotification(metadata));
     }
   }
 }

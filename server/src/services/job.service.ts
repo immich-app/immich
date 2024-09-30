@@ -6,7 +6,7 @@ import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType, ManualJobName } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import {
   ConcurrentQueueName,
   IJobRepository,
@@ -279,7 +279,7 @@ export class JobService {
         if (item.data.source === 'sidecar-write') {
           const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
           if (asset) {
-            this.eventRepository.clientSend(ClientEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
+            this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
           }
         }
         await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
@@ -302,7 +302,7 @@ export class JobService {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
-          this.eventRepository.clientSend(ClientEvent.PERSON_THUMBNAIL, person.ownerId, person.id);
+          this.eventRepository.clientSend('on_person_thumbnail', person.ownerId, person.id);
         }
         break;
       }
@@ -331,7 +331,7 @@ export class JobService {
 
         await this.jobRepository.queueAll(jobs);
         if (asset.isVisible) {
-          this.eventRepository.clientSend(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+          this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
         }
 
         break;
@@ -345,7 +345,7 @@ export class JobService {
       }
 
       case JobName.USER_DELETION: {
-        this.eventRepository.clientBroadcast(ClientEvent.USER_DELETE, item.data.id);
+        this.eventRepository.clientBroadcast('on_user_delete', item.data.id);
         break;
       }
     }
