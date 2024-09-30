@@ -1,6 +1,7 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SourceType } from 'src/enum';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 
@@ -40,9 +41,11 @@ export interface PeopleStatistics {
   hidden: number;
 }
 
-export interface DeleteAllFacesOptions {
-  sourceType?: string;
+export interface DeleteFacesOptions {
+  sourceType: SourceType;
 }
+
+export type UnassignFacesOptions = DeleteFacesOptions;
 
 export interface IPersonRepository {
   getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
@@ -59,7 +62,7 @@ export interface IPersonRepository {
   createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
-  deleteAllFaces(options: DeleteAllFacesOptions): Promise<void>;
+  deleteFaces(options: DeleteFacesOptions): Promise<void>;
   replaceFaces(assetId: string, entities: Partial<AssetFaceEntity>[], sourceType?: string): Promise<string[]>;
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;
@@ -75,6 +78,7 @@ export interface IPersonRepository {
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
+  unassignFaces(options: UnassignFacesOptions): Promise<void>;
   update(person: Partial<PersonEntity>): Promise<PersonEntity>;
   updateAll(people: Partial<PersonEntity>[]): Promise<void>;
   getLatestFaceDate(): Promise<string | undefined>;

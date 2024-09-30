@@ -660,7 +660,7 @@ describe(PersonService.name, () => {
       expect(systemMock.set).not.toHaveBeenCalled();
     });
 
-    it('should delete existing people and faces if forced', async () => {
+    it('should delete existing people if forced', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
       personMock.getAll.mockResolvedValue({
         items: [faceStub.face1.person, personStub.randomPerson],
@@ -675,7 +675,8 @@ describe(PersonService.name, () => {
 
       await sut.handleQueueRecognizeFaces({ force: true });
 
-      expect(personMock.deleteAllFaces).toHaveBeenCalledWith({ sourceType: SourceType.MACHINE_LEARNING });
+      expect(personMock.deleteFaces).not.toHaveBeenCalled();
+      expect(personMock.unassignFaces).toHaveBeenCalledWith({ sourceType: SourceType.MACHINE_LEARNING });
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
