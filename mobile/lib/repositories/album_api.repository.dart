@@ -4,15 +4,14 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/base_api.repository.dart';
+import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
 final albumApiRepositoryProvider = Provider(
   (ref) => AlbumApiRepository(ref.watch(apiServiceProvider).albumsApi),
 );
 
-class AlbumApiRepository extends BaseApiRepository
-    implements IAlbumApiRepository {
+class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
   final AlbumsApi _api;
 
   AlbumApiRepository(this._api);
@@ -26,7 +25,7 @@ class AlbumApiRepository extends BaseApiRepository
   @override
   Future<List<Album>> getAll({bool? shared}) async {
     final dtos = await checkNull(_api.getAllAlbums(shared: shared));
-    return dtos.map(_toAlbum).toList().cast();
+    return dtos.map(_toAlbum).toList();
   }
 
   @override

@@ -94,20 +94,10 @@ export class SearchService {
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
-  async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<SearchResponseDto> {
+  async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
     const userIds = await this.getUserIdsToSearch(auth);
-    const page = dto.page ?? 1;
-    const size = dto.size || 250;
-    const { hasNextPage, items } = await this.searchRepository.searchMetadata(
-      { page, size },
-      {
-        ...dto,
-        userIds,
-        random: true,
-      },
-    );
-
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    return items.map((item) => mapAsset(item, { auth }));
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {

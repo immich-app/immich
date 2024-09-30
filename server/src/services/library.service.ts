@@ -4,7 +4,7 @@ import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -61,7 +61,7 @@ export class LibraryService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap() {
     const config = await this.configCore.getConfig({ withCache: false });
 
@@ -83,19 +83,24 @@ export class LibraryService {
     if (this.watchLibraries) {
       await this.watchAll();
     }
-
-    this.configCore.config$.subscribe(({ library }) => {
-      this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
-
-      if (library.watch.enabled !== this.watchLibraries) {
-        // Watch configuration changed, update accordingly
-        this.watchLibraries = library.watch.enabled;
-        handlePromiseError(this.watchLibraries ? this.watchAll() : this.unwatchAll(), this.logger);
-      }
-    });
   }
 
-  @OnEmit({ event: 'config.validate' })
+  @OnEvent({ name: 'config.update', server: true })
+  async onConfigUpdate({ newConfig: { library }, oldConfig }: ArgOf<'config.update'>) {
+    if (!oldConfig || !this.watchLock) {
+      return;
+    }
+
+    this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
+
+    if (library.watch.enabled !== this.watchLibraries) {
+      // Watch configuration changed, update accordingly
+      this.watchLibraries = library.watch.enabled;
+      await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+    }
+  }
+
+  @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
@@ -185,7 +190,7 @@ export class LibraryService {
     }
   }
 
-  @OnEmit({ event: 'app.shutdown' })
+  @OnEvent({ name: 'app.shutdown' })
   async onShutdown() {
     await this.unwatchAll();
   }

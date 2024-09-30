@@ -588,5 +588,16 @@
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "viewer_remove_from_stack": "Remove from Stack",
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
-  "viewer_unstack": "Un-Stack"
+  "viewer_unstack": "Un-Stack",
+  "downloading_media": "Downloading media",
+  "download_finished": "Download finished",
+  "download_filename": "file: {}",
+  "downloading": "Downloading...",
+  "download_complete": "Download complete",
+  "download_failed": "Download failed",
+  "download_canceled": "Download canceled",
+  "download_paused": "Download paused",
+  "download_enqueue": "Download enqueued",
+  "download_notfound": "Download not found",
+  "download_waiting_to_retry": "Waiting to retry"
 }

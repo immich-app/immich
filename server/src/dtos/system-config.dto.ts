@@ -492,7 +492,7 @@ class SystemConfigGeneratedImageDto {
   size!: number;
 }
 
-class SystemConfigImageDto {
+export class SystemConfigImageDto {
   @Type(() => SystemConfigGeneratedImageDto)
   @ValidateNested()
   @IsObject()

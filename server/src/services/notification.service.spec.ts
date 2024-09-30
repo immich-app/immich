@@ -6,7 +6,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
+import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
@@ -100,6 +100,15 @@ describe(NotificationService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('onConfigUpdate', () => {
+    it('should emit client and server events', () => {
+      const update = { newConfig: defaults };
+      expect(sut.onConfigUpdate(update)).toBeUndefined();
+      expect(eventMock.clientBroadcast).toHaveBeenCalledWith(ClientEvent.CONFIG_UPDATE, {});
+      expect(eventMock.serverSend).toHaveBeenCalledWith('config.update', update);
+    });
+  });
+
   describe('onConfigValidateEvent', () => {
     it('validates smtp config when enabling smtp', async () => {
       const oldConfig = configs.smtpDisabled;
@@ -155,7 +164,7 @@ describe(NotificationService.name, () => {
     it('should queue the generate thumbnail job', async () => {
       await sut.onAssetShow({ assetId: 'asset-id', userId: 'user-id' });
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_THUMBNAIL,
+        name: JobName.GENERATE_THUMBNAILS,
         data: { id: 'asset-id', notify: true },
       });
     });

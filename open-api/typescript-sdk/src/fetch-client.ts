@@ -852,7 +852,6 @@ export type RandomSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
-    page?: number;
     personIds?: string[];
     size?: number;
     state?: string | null;
@@ -2523,7 +2522,7 @@ export function searchRandom({ randomSearchDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: SearchResponseDto;
+        data: AssetResponseDto[];
     }>("/search/random", oazapfts.json({
         ...opts,
         method: "POST",

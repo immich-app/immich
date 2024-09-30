@@ -3,7 +3,7 @@ import { Mocked, vitest } from 'vitest';
 
 export const newEventRepositoryMock = (): Mocked<IEventRepository> => {
   return {
-    on: vitest.fn(),
+    on: vitest.fn() as any,
     emit: vitest.fn() as any,
     clientSend: vitest.fn(),
     clientBroadcast: vitest.fn(),

@@ -5,7 +5,7 @@ import 'package:http/http.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/base_api.repository.dart';
+import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
 final userApiRepositoryProvider = Provider(
@@ -14,8 +14,7 @@ final userApiRepositoryProvider = Provider(
   ),
 );
 
-class UserApiRepository extends BaseApiRepository
-    implements IUserApiRepository {
+class UserApiRepository extends ApiRepository implements IUserApiRepository {
   final UsersApi _api;
 
   UserApiRepository(this._api);
