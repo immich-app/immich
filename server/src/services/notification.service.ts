@@ -6,7 +6,7 @@ import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
   IJobRepository,
@@ -45,7 +45,7 @@ export class NotificationService {
 
   @OnEvent({ name: 'config.update' })
   onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
-    this.eventRepository.clientBroadcast(ClientEvent.CONFIG_UPDATE, {});
+    this.eventRepository.clientBroadcast('on_config_update');
     this.eventRepository.serverSend('config.update', { oldConfig, newConfig });
   }
 
@@ -66,7 +66,7 @@ export class NotificationService {
 
   @OnEvent({ name: 'asset.hide' })
   onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, userId, assetId);
+    this.eventRepository.clientSend('on_asset_hidden', userId, assetId);
   }
 
   @OnEvent({ name: 'asset.show' })
@@ -76,42 +76,42 @@ export class NotificationService {
 
   @OnEvent({ name: 'asset.trash' })
   onAssetTrash({ assetId, userId }: ArgOf<'asset.trash'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, [assetId]);
+    this.eventRepository.clientSend('on_asset_trash', userId, [assetId]);
   }
 
   @OnEvent({ name: 'asset.delete' })
   onAssetDelete({ assetId, userId }: ArgOf<'asset.delete'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, userId, assetId);
+    this.eventRepository.clientSend('on_asset_delete', userId, assetId);
   }
 
   @OnEvent({ name: 'assets.trash' })
   onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, assetIds);
+    this.eventRepository.clientSend('on_asset_trash', userId, assetIds);
   }
 
   @OnEvent({ name: 'assets.restore' })
   onAssetsRestore({ assetIds, userId }: ArgOf<'assets.restore'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_RESTORE, userId, assetIds);
+    this.eventRepository.clientSend('on_asset_restore', userId, assetIds);
   }
 
   @OnEvent({ name: 'stack.create' })
   onStackCreate({ userId }: ArgOf<'stack.create'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'stack.update' })
   onStackUpdate({ userId }: ArgOf<'stack.update'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'stack.delete' })
   onStackDelete({ userId }: ArgOf<'stack.delete'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'stacks.delete' })
   onStacksDelete({ userId }: ArgOf<'stacks.delete'>) {
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'user.signup' })
@@ -134,7 +134,7 @@ export class NotificationService {
   @OnEvent({ name: 'session.delete' })
   onSessionDelete({ sessionId }: ArgOf<'session.delete'>) {
     // after the response is sent
-    setTimeout(() => this.eventRepository.clientSend(ClientEvent.SESSION_DELETE, sessionId, sessionId), 500);
+    setTimeout(() => this.eventRepository.clientSend('on_session_delete', sessionId, sessionId), 500);
   }
 
   async sendTestEmail(id: string, dto: SystemConfigSmtpDto) {

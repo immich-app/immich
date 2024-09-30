@@ -6,7 +6,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
@@ -104,7 +104,7 @@ describe(NotificationService.name, () => {
     it('should emit client and server events', () => {
       const update = { newConfig: defaults };
       expect(sut.onConfigUpdate(update)).toBeUndefined();
-      expect(eventMock.clientBroadcast).toHaveBeenCalledWith(ClientEvent.CONFIG_UPDATE, {});
+      expect(eventMock.clientBroadcast).toHaveBeenCalledWith('on_config_update');
       expect(eventMock.serverSend).toHaveBeenCalledWith('config.update', update);
     });
   });
@@ -236,28 +236,28 @@ describe(NotificationService.name, () => {
   describe('onStackCreate', () => {
     it('should send connected clients an event', () => {
       sut.onStackCreate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackUpdate', () => {
     it('should send connected clients an event', () => {
       sut.onStackUpdate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStackDelete({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStacksDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStacksDelete({ stackIds: ['stack-id'], userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
