@@ -9,28 +9,15 @@ from PIL import Image
 
 byte_image = BytesIO()
 
-
 @events.init_command_line_parser.add_listener
 def _(parser: ArgumentParser) -> None:
     parser.add_argument("--clip-model", type=str, default="ViT-B-32::openai")
     parser.add_argument("--face-model", type=str, default="buffalo_l")
-    parser.add_argument(
-        "--tag-min-score",
-        type=int,
-        default=0.0,
-        help="Returns all tags at or above this score. The default returns all tags.",
-    )
-    parser.add_argument(
-        "--face-min-score",
-        type=int,
-        default=0.034,
-        help=(
-            "Returns all faces at or above this score. The default returns 1 face per request; "
-            "setting this to 0 blows up the number of faces to the thousands."
-        ),
-    )
+    parser.add_argument("--tag-min-score", type=float, default=0.0, 
+                        help="Returns all tags at or above this score.")
+    parser.add_argument("--face-min-score", type=float, default=0.034, 
+                        help="Returns faces at or above this score.")
     parser.add_argument("--image-size", type=int, default=1000)
-
 
 @events.test_start.add_listener
 def on_test_start(environment: Environment, **kwargs: Any) -> None:
@@ -39,24 +26,28 @@ def on_test_start(environment: Environment, **kwargs: Any) -> None:
     image = Image.new("RGB", (environment.parsed_options.image_size, environment.parsed_options.image_size))
     image.save(byte_image, format="jpeg")
 
+@events.request_failure.add_listener
+def on_request_failure(request_type, name, response_time, response_length, exception, **kwargs):
+    print(f"Request failed: {request_type} {name}, Exception: {exception}")
 
 class InferenceLoadTest(HttpUser):
     abstract: bool = True
     host = "http://127.0.0.1:3003"
     data: bytes
 
-    # re-use the image across all instances in a process
     def on_start(self) -> None:
         self.data = byte_image.getvalue()
-
 
 class CLIPTextFormDataLoadTest(InferenceLoadTest):
     @task
     def encode_text(self) -> None:
         request = {"clip": {"textual": {"modelName": self.environment.parsed_options.clip_model}}}
         data = [("entries", json.dumps(request)), ("text", "test search query")]
-        self.client.post("/predict", data=data)
-
+        try:
+            response = self.client.post("/predict", data=data)
+            response.raise_for_status()
+        except Exception as e:
+            print(f"Error in encode_text: {e}")
 
 class CLIPVisionFormDataLoadTest(InferenceLoadTest):
     @task
@@ -64,8 +55,11 @@ class CLIPVisionFormDataLoadTest(InferenceLoadTest):
         request = {"clip": {"visual": {"modelName": self.environment.parsed_options.clip_model, "options": {}}}}
         data = [("entries", json.dumps(request))]
         files = {"image": self.data}
-        self.client.post("/predict", data=data, files=files)
-
+        try:
+            response = self.client.post("/predict", data=data, files=files)
+            response.raise_for_status()
+        except Exception as e:
+            print(f"Error in encode_image: {e}")
 
 class RecognitionFormDataLoadTest(InferenceLoadTest):
     @task
@@ -83,5 +77,8 @@ class RecognitionFormDataLoadTest(InferenceLoadTest):
         }
         data = [("entries", json.dumps(request))]
         files = {"image": self.data}
-
-        self.client.post("/predict", data=data, files=files)
+        try:
+            response = self.client.post("/predict", data=data, files=files)
+            response.raise_for_status()
+        except Exception as e:
+            print(f"Error in recognize: {e}")
