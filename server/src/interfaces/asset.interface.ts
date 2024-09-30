@@ -36,8 +36,6 @@ export enum WithoutProperty {
 
 export enum WithProperty {
   SIDECAR = 'sidecar',
-  IS_ONLINE = 'isOnline',
-  IS_OFFLINE = 'isOffline',
 }
 
 export enum TimeBucketSize {
@@ -143,6 +141,12 @@ export interface AssetUpdateDuplicateOptions {
   duplicateIds: string[];
 }
 
+export interface UpsertFileOptions {
+  assetId: string;
+  type: AssetFileType;
+  path: string;
+}
+
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export const IAssetRepository = 'IAssetRepository';
@@ -176,7 +180,6 @@ export interface IAssetRepository {
   ): Paginated<AssetEntity>;
   getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
-  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
@@ -197,5 +200,6 @@ export interface IAssetRepository {
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
-  upsertFile(options: { assetId: string; type: AssetFileType; path: string }): Promise<void>;
+  upsertFile(file: UpsertFileOptions): Promise<void>;
+  upsertFiles(files: UpsertFileOptions[]): Promise<void>;
 }

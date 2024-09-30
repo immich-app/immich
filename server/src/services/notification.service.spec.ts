@@ -155,7 +155,7 @@ describe(NotificationService.name, () => {
     it('should queue the generate thumbnail job', async () => {
       await sut.onAssetShow({ assetId: 'asset-id', userId: 'user-id' });
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_THUMBNAIL,
+        name: JobName.GENERATE_THUMBNAILS,
         data: { id: 'asset-id', notify: true },
       });
     });
@@ -614,11 +614,6 @@ describe(NotificationService.name, () => {
     it('should skip if smtp notifications are disabled', async () => {
       systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: false } } });
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.SKIPPED);
-    });
-
-    it('should fail if email could not be sent', async () => {
-      systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
-      await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.FAILED);
     });
 
     it('should send mail successfully', async () => {

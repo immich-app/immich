@@ -2853,41 +2853,6 @@
         ]
       }
     },
-    "/libraries/{id}/removeOffline": {
-      "post": {
-        "operationId": "removeOfflineFiles",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Libraries"
-        ]
-      }
-    },
     "/libraries/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",
@@ -2902,16 +2867,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScanLibraryDto"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "204": {
             "description": ""
@@ -3491,6 +3446,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestEmailResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -4653,7 +4615,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SearchResponseDto"
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -7447,7 +7412,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.115.0",
+    "version": "1.116.2",
     "contact": {}
   },
   "tags": [],
@@ -8278,9 +8243,6 @@
             "type": "boolean"
           },
           "isFavorite": {
-            "type": "boolean"
-          },
-          "isOffline": {
             "type": "boolean"
           },
           "isVisible": {
@@ -10504,10 +10466,6 @@
             "nullable": true,
             "type": "string"
           },
-          "page": {
-            "minimum": 1,
-            "type": "number"
-          },
           "personIds": {
             "items": {
               "format": "uuid",
@@ -10619,17 +10577,6 @@
           "lastImportFileName",
           "lastUpdate"
         ],
-        "type": "object"
-      },
-      "ScanLibraryDto": {
-        "properties": {
-          "refreshAllFiles": {
-            "type": "boolean"
-          },
-          "refreshModifiedFiles": {
-            "type": "boolean"
-          }
-        },
         "type": "object"
       },
       "SearchAlbumResponseDto": {
@@ -11706,6 +11653,28 @@
         ],
         "type": "object"
       },
+      "SystemConfigGeneratedImageDto": {
+        "properties": {
+          "format": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "quality": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "size": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "format",
+          "quality",
+          "size"
+        ],
+        "type": "object"
+      },
       "SystemConfigImageDto": {
         "properties": {
           "colorspace": {
@@ -11714,34 +11683,18 @@
           "extractEmbedded": {
             "type": "boolean"
           },
-          "previewFormat": {
-            "$ref": "#/components/schemas/ImageFormat"
+          "preview": {
+            "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
           },
-          "previewSize": {
-            "minimum": 1,
-            "type": "integer"
-          },
-          "quality": {
-            "maximum": 100,
-            "minimum": 1,
-            "type": "integer"
-          },
-          "thumbnailFormat": {
-            "$ref": "#/components/schemas/ImageFormat"
-          },
-          "thumbnailSize": {
-            "minimum": 1,
-            "type": "integer"
+          "thumbnail": {
+            "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
           }
         },
         "required": [
           "colorspace",
           "extractEmbedded",
-          "previewFormat",
-          "previewSize",
-          "quality",
-          "thumbnailFormat",
-          "thumbnailSize"
+          "preview",
+          "thumbnail"
         ],
         "type": "object"
       },
@@ -12346,6 +12299,17 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "TestEmailResponseDto": {
+        "properties": {
+          "messageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "messageId"
+        ],
         "type": "object"
       },
       "TimeBucketResponseDto": {

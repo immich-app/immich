@@ -16,6 +16,7 @@ import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
@@ -372,6 +373,7 @@ class BackgroundService {
     ETagRepository eTagRepository = ETagRepository(db);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
     FileMediaRepository fileMediaRepository = FileMediaRepository();
+    AssetMediaRepository assetMediaRepository = AssetMediaRepository();
     UserRepository userRepository = UserRepository(db);
     UserApiRepository userApiRepository =
         UserApiRepository(apiService.usersApi);
@@ -417,6 +419,7 @@ class BackgroundService {
       albumMediaRepository,
       fileMediaRepository,
       assetRepository,
+      assetMediaRepository,
     );
 
     final selectedAlbums =

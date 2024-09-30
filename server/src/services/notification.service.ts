@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEmit } from 'src/decorators';
@@ -65,7 +65,7 @@ export class NotificationService {
 
   @OnEmit({ event: 'asset.show' })
   async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
-    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAIL, data: { id: assetId, notify: true } });
+    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id: assetId, notify: true } });
   }
 
   @OnEmit({ event: 'asset.trash' })
@@ -140,7 +140,7 @@ export class NotificationService {
     try {
       await this.notificationRepository.verifySmtp(dto.transport);
     } catch (error) {
-      throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST, { cause: error });
+      throw new BadRequestException('Failed to verify SMTP configuration', { cause: error });
     }
 
     const { server } = await this.configCore.getConfig({ withCache: false });
@@ -152,7 +152,7 @@ export class NotificationService {
       },
     });
 
-    await this.notificationRepository.sendEmail({
+    const { messageId } = await this.notificationRepository.sendEmail({
       to: user.email,
       subject: 'Test email from Immich',
       html,
@@ -161,6 +161,8 @@ export class NotificationService {
       replyTo: dto.replyTo || dto.from,
       smtp: dto.transport,
     });
+
+    return { messageId };
   }
 
   async handleUserSignup({ id, tempPassword }: INotifySignupJob) {
@@ -311,10 +313,6 @@ export class NotificationService {
       smtp: notifications.smtp.transport,
       imageAttachments: data.imageAttachments,
     });
-
-    if (!response) {
-      return JobStatus.FAILED;
-    }
 
     this.logger.log(`Sent mail with id: ${response.messageId} status: ${response.response}`);
 

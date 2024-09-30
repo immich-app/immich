@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -27,7 +27,7 @@ import {
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, AssetType, Permission } from 'src/enum';
+import { AssetStatus, AssetType, CacheControl, Permission, StorageFolder } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -37,7 +37,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { requireAccess, requireUploadAccess } from 'src/utils/access';
 import { getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
 import { QueryFailedError } from 'typeorm';
@@ -427,7 +427,6 @@ export class AssetMediaService {
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: file.originalName,
       sidecarPath: sidecarFile?.originalPath,
-      isOffline: dto.isOffline ?? false,
     });
 
     if (sidecarFile) {

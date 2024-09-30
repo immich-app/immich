@@ -36,9 +36,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // thumbnails
   [JobName.QUEUE_GENERATE_THUMBNAILS]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_PREVIEW]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_THUMBHASH]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_THUMBNAILS]: QueueName.THUMBNAIL_GENERATION,
   [JobName.GENERATE_PERSON_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
 
   // tags
@@ -79,12 +77,12 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.SIDECAR_WRITE]: QueueName.SIDECAR,
 
   // Library management
-  [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
-  [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SYNC_FILE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_FILES]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_ASSETS]: QueueName.LIBRARY,
   [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_CHECK_OFFLINE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SYNC_ASSET]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 
   // Notification

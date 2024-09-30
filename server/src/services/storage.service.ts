@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { join } from 'node:path';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core';
 import { OnEmit } from 'src/decorators';
-import { SystemMetadataKey } from 'src/enum';
+import { StorageFolder, SystemMetadataKey } from 'src/enum';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
