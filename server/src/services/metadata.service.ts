@@ -8,7 +8,7 @@ import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -132,7 +132,7 @@ export class MetadataService {
     );
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
@@ -141,7 +141,12 @@ export class MetadataService {
     await this.init(config);
   }
 
-  @OnEmit({ event: 'config.update' })
+  @OnEvent({ name: 'app.shutdown' })
+  async onShutdown() {
+    await this.repository.teardown();
+  }
+
+  @OnEvent({ name: 'config.update' })
   async onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig);
   }
@@ -162,11 +167,6 @@ export class MetadataService {
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
-  }
-
-  @OnEmit({ event: 'app.shutdown' })
-  async onShutdown() {
-    await this.repository.teardown();
   }
 
   async handleLivePhotoLinking(job: IEntityJob): Promise<JobStatus> {
@@ -333,12 +333,12 @@ export class MetadataService {
     return this.processSidecar(id, false);
   }
 
-  @OnEmit({ event: 'asset.tag' })
+  @OnEvent({ name: 'asset.tag' })
   async handleTagAsset({ assetId }: ArgOf<'asset.tag'>) {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }
 
-  @OnEmit({ event: 'asset.untag' })
+  @OnEvent({ name: 'asset.untag' })
   async handleUntagAsset({ assetId }: ArgOf<'asset.untag'>) {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import semver from 'semver';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
@@ -74,7 +74,7 @@ export class DatabaseService {
     this.logger.setContext(DatabaseService.name);
   }
 
-  @OnEmit({ event: 'app.bootstrap', priority: -200 })
+  @OnEvent({ name: 'app.bootstrap', priority: -200 })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);

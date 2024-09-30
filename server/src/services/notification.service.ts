@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -43,7 +43,13 @@ export class NotificationService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
-  @OnEmit({ event: 'config.validate', priority: -100 })
+  @OnEvent({ name: 'config.update' })
+  onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
+    this.eventRepository.clientBroadcast(ClientEvent.CONFIG_UPDATE, {});
+    this.eventRepository.serverSend('config.update', { oldConfig, newConfig });
+  }
+
+  @OnEvent({ name: 'config.validate', priority: -100 })
   async onConfigValidate({ oldConfig, newConfig }: ArgOf<'config.validate'>) {
     try {
       if (
@@ -58,74 +64,74 @@ export class NotificationService {
     }
   }
 
-  @OnEmit({ event: 'asset.hide' })
+  @OnEvent({ name: 'asset.hide' })
   onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_HIDDEN, userId, assetId);
   }
 
-  @OnEmit({ event: 'asset.show' })
+  @OnEvent({ name: 'asset.show' })
   async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
     await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id: assetId, notify: true } });
   }
 
-  @OnEmit({ event: 'asset.trash' })
+  @OnEvent({ name: 'asset.trash' })
   onAssetTrash({ assetId, userId }: ArgOf<'asset.trash'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, [assetId]);
   }
 
-  @OnEmit({ event: 'asset.delete' })
+  @OnEvent({ name: 'asset.delete' })
   onAssetDelete({ assetId, userId }: ArgOf<'asset.delete'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, userId, assetId);
   }
 
-  @OnEmit({ event: 'assets.trash' })
+  @OnEvent({ name: 'assets.trash' })
   onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, userId, assetIds);
   }
 
-  @OnEmit({ event: 'assets.restore' })
+  @OnEvent({ name: 'assets.restore' })
   onAssetsRestore({ assetIds, userId }: ArgOf<'assets.restore'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_RESTORE, userId, assetIds);
   }
 
-  @OnEmit({ event: 'stack.create' })
+  @OnEvent({ name: 'stack.create' })
   onStackCreate({ userId }: ArgOf<'stack.create'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
   }
 
-  @OnEmit({ event: 'stack.update' })
+  @OnEvent({ name: 'stack.update' })
   onStackUpdate({ userId }: ArgOf<'stack.update'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
   }
 
-  @OnEmit({ event: 'stack.delete' })
+  @OnEvent({ name: 'stack.delete' })
   onStackDelete({ userId }: ArgOf<'stack.delete'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
   }
 
-  @OnEmit({ event: 'stacks.delete' })
+  @OnEvent({ name: 'stacks.delete' })
   onStacksDelete({ userId }: ArgOf<'stacks.delete'>) {
     this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, userId, []);
   }
 
-  @OnEmit({ event: 'user.signup' })
+  @OnEvent({ name: 'user.signup' })
   async onUserSignup({ notify, id, tempPassword }: ArgOf<'user.signup'>) {
     if (notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id, tempPassword } });
     }
   }
 
-  @OnEmit({ event: 'album.update' })
+  @OnEvent({ name: 'album.update' })
   async onAlbumUpdate({ id, updatedBy }: ArgOf<'album.update'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_UPDATE, data: { id, senderId: updatedBy } });
   }
 
-  @OnEmit({ event: 'album.invite' })
+  @OnEvent({ name: 'album.invite' })
   async onAlbumInvite({ id, userId }: ArgOf<'album.invite'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id, recipientId: userId } });
   }
 
-  @OnEmit({ event: 'session.delete' })
+  @OnEvent({ name: 'session.delete' })
   onSessionDelete({ sessionId }: ArgOf<'session.delete'>) {
     // after the response is sent
     setTimeout(() => this.eventRepository.clientSend(ClientEvent.SESSION_DELETE, sessionId, sessionId), 500);
