@@ -54,7 +54,7 @@ export class PersonRepository implements IPersonRepository {
       .where({ sourceType })
       .execute();
 
-      await this.vacuum({ reindexVectors: false });
+    await this.vacuum({ reindexVectors: false });
   }
 
   async delete(entities: PersonEntity[]): Promise<void> {
@@ -72,7 +72,7 @@ export class PersonRepository implements IPersonRepository {
       .andWhere('sourceType = :sourceType', { sourceType })
       .execute();
 
-      await this.vacuum({ reindexVectors: sourceType === SourceType.MACHINE_LEARNING });
+    await this.vacuum({ reindexVectors: sourceType === SourceType.MACHINE_LEARNING });
   }
 
   getAllFaces(
