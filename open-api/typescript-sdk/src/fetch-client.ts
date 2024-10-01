@@ -917,6 +917,10 @@ export type ServerAboutResponseDto = {
     sourceCommit?: string;
     sourceRef?: string;
     sourceUrl?: string;
+    thirdPartyBugFeatureUrl?: string;
+    thirdPartyDocumentationUrl?: string;
+    thirdPartySourceUrl?: string;
+    thirdPartySupportUrl?: string;
     version: string;
     versionUrl: string;
 };
