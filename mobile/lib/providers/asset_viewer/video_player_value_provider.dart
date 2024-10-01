@@ -33,8 +33,14 @@ class VideoPlaybackValue {
   factory VideoPlaybackValue.fromNativeController(
     NativeVideoPlayerController controller,
   ) {
-    final playbackInfo = controller.playbackInfo;
-    final videoInfo = controller.videoInfo;
+    PlaybackInfo? playbackInfo;
+    VideoInfo? videoInfo;
+    try {
+      playbackInfo = controller.playbackInfo;
+      videoInfo = controller.videoInfo;
+    } catch (_) {
+      // Consume error from the controller
+    }
     late VideoPlaybackState s;
     if (playbackInfo?.status == null) {
       s = VideoPlaybackState.initializing;
