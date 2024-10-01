@@ -34,7 +34,7 @@ function HomepageHeader() {
           <p className="max-w-1/4 m-auto mt-4 px-4">
             Easily back up, organize, and manage your photos on your own server. Immich helps you
             <span className="sm:block"></span> browse, search and organize your photos and videos with ease, without
-            sacrifice your privacy.
+            sacrificing your privacy.
           </p>
         </div>
 
@@ -50,7 +50,7 @@ function HomepageHeader() {
             className="flex place-items-center place-content-center py-3 px-8 border bg-immich-primary/10 dark:bg-gray-300  rounded-xl hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
             to="https://demo.immich.app/"
           >
-            Live Demo
+            Demo
           </Link>
         </div>
         <img
