@@ -415,6 +415,10 @@ export const getBuildMetadata = () => ({
   sourceRef: process.env.IMMICH_SOURCE_REF,
   sourceCommit: process.env.IMMICH_SOURCE_COMMIT,
   sourceUrl: process.env.IMMICH_SOURCE_URL,
+  thirdPartySourceUrl: process.env.IMMICH_THIRD_PARTY_SOURCE_URL,
+  thirdPartyBugFeatureUrl: process.env.IMMICH_THIRD_PARTY_BUG_FEATURE_URL,
+  thirdPartyDocumentationUrl: process.env.IMMICH_THIRD_PARTY_DOCUMENTATION_URL,
+  thirdPartySupportUrl: process.env.IMMICH_THIRD_PARTY_SUPPORT_URL,
 });
 
 const clientLicensePublicKeyProd =

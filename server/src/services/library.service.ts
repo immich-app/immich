@@ -3,7 +3,6 @@ import { R_OK } from 'node:constants';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -35,14 +34,14 @@ import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { validateCronExpression } from 'src/validation';
 
 @Injectable()
-export class LibraryService {
-  private configCore: SystemConfigCore;
+export class LibraryService extends BaseService {
   private watchLibraries = false;
   private watchLock = false;
   private watchers: Record<string, () => Promise<void>> = {};
@@ -55,15 +54,15 @@ export class LibraryService {
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(LibraryService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap() {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
 
@@ -142,7 +141,13 @@ export class LibraryService {
           const handler = async () => {
             this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
             if (matcher(path)) {
-              await this.syncFiles(library, [path]);
+              const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+              if (asset) {
+                await this.syncAssets(library, [asset.id]);
+              }
+              if (matcher(path)) {
+                await this.syncFiles(library, [path]);
+              }
             }
           };
           return handlePromiseError(handler(), this.logger);
@@ -605,7 +610,7 @@ export class LibraryService {
     this.logger.log(`Scanning library ${library.id} for removed assets`);
 
     const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId: job.id }),
+      this.assetRepository.getAll(pagination, { libraryId: job.id, withDeleted: true }),
     );
 
     let assetCount = 0;

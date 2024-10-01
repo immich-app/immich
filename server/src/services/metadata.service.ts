@@ -7,7 +7,6 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -39,6 +38,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
@@ -97,9 +97,8 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 };
 
 @Injectable()
-export class MetadataService {
+export class MetadataService extends BaseService {
   private storageCore: StorageCore;
-  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -117,10 +116,10 @@ export class MetadataService {
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) private tagRepository: ITagRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(MetadataService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
       cryptoRepository,
@@ -137,7 +136,7 @@ export class MetadataService {
     if (app !== 'microservices') {
       return;
     }
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.init(config);
   }
 
@@ -222,7 +221,7 @@ export class MetadataService {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
-    const { metadata, reverseGeocoding } = await this.configCore.getConfig({ withCache: true });
+    const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;

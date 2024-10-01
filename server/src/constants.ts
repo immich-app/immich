@@ -23,7 +23,6 @@ export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 export const envName = (process.env.IMMICH_ENV || 'production').toUpperCase();
 export const isDev = () => process.env.IMMICH_ENV === 'development';
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
 export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 

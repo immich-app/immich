@@ -8,31 +8,44 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { handleLogout } from '$lib/utils/auth';
-  import { logout } from '@immich/sdk';
-  import { mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
+  import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
+  import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { AppRoute } from '../../../constants';
-  import ImmichLogo from '../immich-logo.svelte';
-  import SearchBar from '../search-bar/search-bar.svelte';
+  import { AppRoute } from '$lib/constants';
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
+  import { onMount } from 'svelte';
 
   export let showUploadButton = true;
   export let onUploadClick: () => void;
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
+  let shouldShowHelpPanel = false;
   let innerWidth: number;
 
   const onLogout = async () => {
     const { redirectUri } = await logout();
     await handleLogout(redirectUri);
   };
+
+  let aboutInfo: ServerAboutResponseDto;
+
+  onMount(async () => {
+    aboutInfo = await getAboutInfo();
+  });
 </script>
 
 <svelte:window bind:innerWidth />
+
+{#if shouldShowHelpPanel}
+  <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} info={aboutInfo} />
+{/if}
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <SkipLink text={$t('skip_to_content')} />
@@ -49,7 +62,7 @@
         {/if}
       </div>
 
-      <section class="flex place-items-center justify-end gap-2 md:gap-4 w-full sm:w-auto">
+      <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
         {#if $featureFlags.search}
           <CircleIconButton
             href={AppRoute.SEARCH}
@@ -62,6 +75,20 @@
         {/if}
 
         <ThemeButton padding="2" />
+
+        <div
+          use:clickOutside={{
+            onEscape: () => (shouldShowHelpPanel = false),
+          }}
+        >
+          <CircleIconButton
+            id="support-feedback-button"
+            title={$t('support_and_feedback')}
+            icon={mdiHelpCircleOutline}
+            on:click={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            padding="1"
+          />
+        </div>
 
         {#if !$page.url.pathname.includes('/admin') && showUploadButton}
           <LinkButton on:click={onUploadClick} class="hidden lg:block">
@@ -87,7 +114,7 @@
         >
           <button
             type="button"
-            class="flex"
+            class="flex pl-2"
             on:mouseover={() => (shouldShowAccountInfo = true)}
             on:focus={() => (shouldShowAccountInfo = true)}
             on:blur={() => (shouldShowAccountInfo = false)}

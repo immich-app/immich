@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   path_provider_ios:
-  photo_manager: ^3.2.3
+  photo_manager: ^3.5.0
   photo_manager_image_provider: ^2.1.1
   flutter_hooks: ^0.20.4
   hooks_riverpod: ^2.4.9
@@ -87,7 +87,7 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   build_runner: ^2.4.8
   auto_route_generator: ^9.0.0
   flutter_launcher_icons: ^0.13.1

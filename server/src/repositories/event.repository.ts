@@ -106,12 +106,12 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     }
   }
 
-  clientSend<E extends keyof ClientEventMap>(event: E, room: string, data: ClientEventMap[E]) {
-    this.server?.to(room).emit(event, data);
+  clientSend<T extends keyof ClientEventMap>(event: T, room: string, ...data: ClientEventMap[T]) {
+    this.server?.to(room).emit(event, ...data);
   }
 
-  clientBroadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]) {
-    this.server?.emit(event, data);
+  clientBroadcast<T extends keyof ClientEventMap>(event: T, ...data: ClientEventMap[T]) {
+    this.server?.emit(event, ...data);
   }
 
   serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {

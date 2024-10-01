@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { OnEvent } from 'src/decorators';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
@@ -18,14 +17,13 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class SmartInfoService {
-  private configCore: SystemConfigCore;
-
+export class SmartInfoService extends BaseService {
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
@@ -33,10 +31,10 @@ export class SmartInfoService {
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private repository: ISearchRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(SmartInfoService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   @OnEvent({ name: 'app.bootstrap' })
@@ -45,7 +43,7 @@ export class SmartInfoService {
       return;
     }
 
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.init(config);
   }
 
@@ -106,7 +104,7 @@ export class SmartInfoService {
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -131,7 +129,7 @@ export class SmartInfoService {
   }
 
   async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }

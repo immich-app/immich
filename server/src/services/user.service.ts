@@ -3,7 +3,6 @@ import { DateTime } from 'luxon';
 import { getClientLicensePublicKey, getServerLicensePublicKey } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
@@ -19,13 +18,12 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class UserService {
-  private configCore: SystemConfigCore;
-
+export class UserService extends BaseService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
@@ -33,10 +31,10 @@ export class UserService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(systemMetadataRepository, logger);
     this.logger.setContext(UserService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async search(): Promise<UserResponseDto[]> {
@@ -189,7 +187,7 @@ export class UserService {
 
   async handleUserDeleteCheck(): Promise<JobStatus> {
     const users = await this.userRepository.getDeletedUsers();
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.jobRepository.queueAll(
       users.flatMap((user) =>
         this.isReadyForDeletion(user, config.user.deleteDelay)
@@ -201,7 +199,7 @@ export class UserService {
   }
 
   async handleUserDelete({ id, force }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
       return JobStatus.FAILED;
