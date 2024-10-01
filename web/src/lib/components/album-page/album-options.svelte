@@ -1,7 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import {
-    getMyUser,
     updateAlbumInfo,
     removeUserFromAlbum,
     type AlbumResponseDto,
@@ -21,17 +20,16 @@
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { onMount } from 'svelte';
 
   export let album: AlbumResponseDto;
   export let order: AssetOrder | undefined;
+  export let user: UserResponseDto; // Declare user as a prop
   export let onChangeOrder: (order: AssetOrder) => void;
   export let onClose: () => void;
   export let onToggleEnabledActivity: () => void;
   export let onShowSelectSharedUser: () => void;
   export let onRemove: (userId: string) => void;
 
-  let currentUser: UserResponseDto | null = null;
   let selectedRemoveUser: UserResponseDto | null = null;
 
   const options: Record<AssetOrder, RenderedOption> = {
@@ -40,15 +38,6 @@
   };
 
   $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
-
-  // Fetch the current user when the component mounts
-  onMount(async (): Promise<void> => {
-    try {
-      currentUser = await getMyUser();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_refresh_user'));
-    }
-  });
 
   const handleToggle = async (returnedOption: RenderedOption): Promise<void> => {
     if (selectedOption === returnedOption) {
@@ -93,6 +82,7 @@
   };
 </script>
 
+{#if !selectedRemoveUser}
 <FullScreenModal title={$t('options')} {onClose}>
   <div class="items-center justify-center">
     <div class="py-2">
@@ -123,12 +113,13 @@
           </div>
           <div>{$t('invite_people')}</div>
         </button>
-        {#if currentUser}
+        
+        {#if user} <!-- Use user prop instead of $user -->
         <div class="flex items-center gap-2 py-2 mt-2">
           <div>
-            <UserAvatar user={currentUser} size="md" />
+            <UserAvatar user={user} size="md" />
           </div>
-          <div class="w-full">{currentUser.name}</div>
+          <div class="w-full">{user.name}</div>
           <div>{$t('owner')}</div>
         </div>
         {/if}
@@ -150,6 +141,7 @@
     </div>
   </div>
 </FullScreenModal>
+{/if}
 
 {#if selectedRemoveUser}
   <ConfirmDialog
