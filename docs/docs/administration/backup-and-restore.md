@@ -65,13 +65,13 @@ The location and name of the original backup should be:
 
 1. docker compose down -v # CAUTION! Deletes all Immich data to start from scratch
 2. rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
-4. docker compose pull # Update to latest version of Immich (if desired)
-5. docker compose create # Create Docker containers for Immich apps without running them
-6. docker start immich_postgres # Start Postgres server
-7. sleep 10 # Wait for Postgres server to start up
-8. [Download](https://github.com/immich-app/immich/tree/main/docs/docs/administration/files/immich-windows-restore-script.ps1) the restore script
-9. Right click and click on Edit
-10. Run the script from the windows PowerShell ISE
+3. docker compose pull # Update to latest version of Immich (if desired)
+4. docker compose create # Create Docker containers for Immich apps without running them
+5. docker start immich_postgres # Start Postgres server
+6. sleep 10 # Wait for Postgres server to start up
+7. [Download](https://github.com/immich-app/immich/tree/main/docs/docs/administration/files/immich-windows-restore-script.ps1) the restore script
+8. Right click and click on Edit
+9. Run the script from the windows PowerShell ISE
 
 </TabItem>
 </Tabs>
