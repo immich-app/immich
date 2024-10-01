@@ -43,8 +43,15 @@ img {
   --ifm-color-primary-lightest: #ffffff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --ifm-background-color: #070a14;
+
+  div[class^='announcementBar_'] {
+    background-color: #f9fafe;
+    color: black;
+  }
 }
 
 div[class^='announcementBar_'] {
   min-height: 2rem;
+  background-color: #2b3336;
+  color: white;
 }
