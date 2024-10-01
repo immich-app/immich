@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240924@sha256:fff4358d435065a626c64a4c015cbfce6ee714b05fabe39aa0d83d8cff3951f2 AS dev
+FROM ghcr.io/immich-app/base-server-dev:20241001@sha256:bb10832c2567f5625df68bb790523e85a358031ddcb3d7ac98b669f62ed8de27 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -41,7 +41,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240924@sha256:af3089fe48d7ff162594bd7edfffa56ba4e7014ad10ad69c4ebfd428e39b06ff
+FROM ghcr.io/immich-app/base-server-prod:20241001@sha256:a9a0745a486e9cbd73fa06b49168e985f8f2c1be0fca9fb0a8e06916246c7087
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
