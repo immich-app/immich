@@ -47,21 +47,31 @@ docker compose up -d    # Start remainder of Immich apps
 </TabItem>
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
-```powershell title='Backup'
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | Set-Content -Encoding utf8 "C:\path\to\backup\dump.sql"
-```
+### Backup
 
-```powershell title='Restore'
-docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
-## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
-# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
-docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them
-docker start immich_postgres    # Start Postgres server
-sleep 10    # Wait for Postgres server to start up
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres   # Restore Backup
-docker compose up -d    # Start remainder of Immich apps
-```
+1. [Download](https://github.com/immich-app/immich/tree/main/docs/docs/administration/files/immich-windows-backup-script.ps1) the backup script
+2. Make sure Immich is running
+3. Right click and click on Edit
+4. Run the script from the Windows PowerShell ISE.
+
+### Restore
+
+:::caution
+if you have changed the original backup location or the original file name, you must return it to the original location and name in order for the restore process to succeed.
+
+The location and name of the original backup should be:
+`C:\Users\yourusername\Desktop\Immich DB backups\immich_dump.sql.gz`
+:::
+
+1. docker compose down -v # CAUTION! Deletes all Immich data to start from scratch
+2. rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
+4. docker compose pull # Update to latest version of Immich (if desired)
+5. docker compose create # Create Docker containers for Immich apps without running them
+6. docker start immich_postgres # Start Postgres server
+7. sleep 10 # Wait for Postgres server to start up
+8. [Download](https://github.com/immich-app/immich/tree/main/docs/docs/administration/files/immich-windows-restore-script.ps1) the restore script
+9. Right click and click on Edit
+10. Run the script from the windows PowerShell ISE
 
 </TabItem>
 </Tabs>
