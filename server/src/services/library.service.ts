@@ -141,7 +141,13 @@ export class LibraryService extends BaseService {
           const handler = async () => {
             this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
             if (matcher(path)) {
-              await this.syncFiles(library, [path]);
+              const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+              if (asset) {
+                await this.syncAssets(library, [asset.id]);
+              }
+              if (matcher(path)) {
+                await this.syncFiles(library, [path]);
+              }
             }
           };
           return handlePromiseError(handler(), this.logger);
@@ -604,7 +610,7 @@ export class LibraryService extends BaseService {
     this.logger.log(`Scanning library ${library.id} for removed assets`);
 
     const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId: job.id }),
+      this.assetRepository.getAll(pagination, { libraryId: job.id, withDeleted: true }),
     );
 
     let assetCount = 0;
