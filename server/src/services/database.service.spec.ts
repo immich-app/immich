@@ -7,7 +7,7 @@ import {
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
-import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
+import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { Mocked } from 'vitest';
@@ -60,7 +60,9 @@ describe(DatabaseService.name, () => {
     { extension: DatabaseExtension.VECTORS, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORS] },
   ])('should work with $extensionName', ({ extension, extensionName }) => {
     beforeEach(() => {
-      configMock.getEnv.mockReturnValue({ database: { skipMigrations: false, vectorExtension: extension } });
+      configMock.getEnv.mockReturnValue(
+        mockEnvData({ database: { skipMigrations: false, vectorExtension: extension } }),
+      );
     });
 
     it(`should start up successfully with ${extension}`, async () => {
@@ -244,12 +246,14 @@ describe(DatabaseService.name, () => {
   });
 
   it('should skip migrations if DB_SKIP_MIGRATIONS=true', async () => {
-    configMock.getEnv.mockReturnValue({
-      database: {
-        skipMigrations: true,
-        vectorExtension: DatabaseExtension.VECTORS,
-      },
-    });
+    configMock.getEnv.mockReturnValue(
+      mockEnvData({
+        database: {
+          skipMigrations: true,
+          vectorExtension: DatabaseExtension.VECTORS,
+        },
+      }),
+    );
 
     await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
@@ -257,12 +261,14 @@ describe(DatabaseService.name, () => {
   });
 
   it(`should throw error if pgvector extension could not be created`, async () => {
-    configMock.getEnv.mockReturnValue({
-      database: {
-        skipMigrations: true,
-        vectorExtension: DatabaseExtension.VECTOR,
-      },
-    });
+    configMock.getEnv.mockReturnValue(
+      mockEnvData({
+        database: {
+          skipMigrations: true,
+          vectorExtension: DatabaseExtension.VECTOR,
+        },
+      }),
+    );
     databaseMock.getExtensionVersion.mockResolvedValue({
       installedVersion: null,
       availableVersion: minVersionInRange,
