@@ -25,12 +25,38 @@
 }
 
 @font-face {
-  font-family: 'Overpass';
-  src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
-  font-weight: 1 999;
+  font-family: 'BeVietnamPro';
+  src: url('$lib/assets/fonts/BeVietnamPro/BeVietnamPro-Regular.ttf') format('truetype');
+  font-weight: 400;
   font-style: normal;
-  ascent-override: 106.25%;
-  size-adjust: 106.25%;
+}
+
+@font-face {
+  font-family: 'BeVietnamPro';
+  src: url('$lib/assets/fonts/BeVietnamPro/BeVietnamPro-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'BeVietnamPro';
+  src: url('$lib/assets/fonts/BeVietnamPro/BeVietnamPro-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'BeVietnamPro';
+  src: url('$lib/assets/fonts/BeVietnamPro/BeVietnamPro-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'BeVietnamPro';
+  src: url('$lib/assets/fonts/BeVietnamPro/BeVietnamPro-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
 }
 
 @font-face {
@@ -43,7 +69,7 @@
 }
 
 :root {
-  font-family: 'Overpass', sans-serif;
+  font-family: 'BeVietnamPro', sans-serif;
   /* Used by layouts to ensure proper spacing between navbar and content */
   --navbar-height: calc(theme(spacing.18) + 4px);
 }
