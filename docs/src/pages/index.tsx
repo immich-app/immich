@@ -7,17 +7,17 @@ function HomepageHeader() {
 
   return (
     <header>
-      <div className="left-0 top-[calc(45%)] w-screen h-screen absolute -z-10">
+      <div className="top-[calc(30%)] h-full w-full absolute -z-10">
         <img
-          src={isDarkTheme ? 'img/logomark-dark.png' : 'img/logomark-light.png'}
+          src={isDarkTheme ? 'img/logomark-dark.svg' : 'img/logomark-light.svg'}
           className="h-full w-full mb-2 antialiased -z-10"
           alt="Immich logo"
         />
-        <div className="w-screen h-screen absolute left-0 top-0 backdrop-blur-3xl bg-immich-bg/40 dark:bg-transparent"></div>
+        <div className="w-full h-full absolute left-0 top-0 backdrop-blur-3xl bg-immich-bg/40 dark:bg-transparent"></div>
       </div>
       <section className="text-center pt-12 sm:pt-24 bg-immich-bg/50 dark:bg-immich-dark-bg/80">
         <img
-          src={isDarkTheme ? 'img/logomark-dark.png' : 'img/logomark-light.png'}
+          src={isDarkTheme ? 'img/logomark-dark.svg' : 'img/logomark-light.svg'}
           className="h-[115px] w-[115px] mb-2 antialiased rounded-none"
           alt="Immich logo"
         />
@@ -64,7 +64,7 @@ function HomepageHeader() {
         </div>
 
         <img
-          src={isDarkTheme ? 'img/logomark-dark.png' : 'img/logomark-light.png'}
+          src={isDarkTheme ? 'img/logomark-dark.svg' : 'img/logomark-light.svg'}
           className="h-[115px] w-[115px] mb-2 antialiased rounded-none"
           alt="Immich logo"
         />
@@ -92,7 +92,7 @@ function HomepageHeader() {
           src={isDarkTheme ? '/img/app-qrcode-dark.svg' : '/img/app-qrcode-light.svg'}
           alt="app qr code"
           width={'150px'}
-          className="shadow-lg p-3 my-8"
+          className="shadow-lg p-3 my-8 dark:bg-immich-dark-bg"
         />
       </section>
     </header>
