@@ -103,7 +103,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout title="Home" description="Self-hosted photo and video management solution" noFooter={true}>
       <HomepageHeader />
-      <div className="flex flex-col place-items-center place-content-center dark:bg-immich-dark-bg py-8">
+      <div className="flex flex-col place-items-center text-center place-content-center dark:bg-immich-dark-bg py-8">
         <p>This project is available under GNU AGPL v3 license.</p>
         <p className="text-xs">Privacy should not be a luxury</p>
       </div>
