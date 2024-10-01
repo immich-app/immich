@@ -68,6 +68,12 @@ export class ServerVersionResponseDto {
   }
 }
 
+export class ServerVersionHistoryResponseDto {
+  id!: string;
+  createdAt!: Date;
+  version!: string;
+}
+
 export class UsageByUserDto {
   @ApiProperty({ type: 'string' })
   userId!: string;

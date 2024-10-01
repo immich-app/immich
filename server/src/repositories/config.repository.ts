@@ -10,6 +10,9 @@ export class ConfigRepository implements IConfigRepository {
         skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
         vectorExtension: getVectorExtension(),
       },
+      storage: {
+        ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',
+      },
     };
   }
 }

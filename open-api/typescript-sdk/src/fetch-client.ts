@@ -1000,6 +1000,11 @@ export type ServerVersionResponseDto = {
     minor: number;
     patch: number;
 };
+export type ServerVersionHistoryResponseDto = {
+    createdAt: string;
+    id: string;
+    version: string;
+};
 export type SessionResponseDto = {
     createdAt: string;
     current: boolean;
@@ -2664,6 +2669,14 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerVersionResponseDto;
     }>("/server/version", {
+        ...opts
+    }));
+}
+export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerVersionHistoryResponseDto[];
+    }>("/server/version-history", {
         ...opts
     }));
 }

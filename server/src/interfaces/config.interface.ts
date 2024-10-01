@@ -7,6 +7,9 @@ export interface EnvData {
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
   };
+  storage: {
+    ignoreMountCheckErrors: boolean;
+  };
 }
 
 export interface IConfigRepository {

@@ -183,6 +183,7 @@ Class | Method | HTTP request | Description
 *ServerApi* | [**getStorage**](doc//ServerApi.md#getstorage) | **GET** /server/storage | 
 *ServerApi* | [**getSupportedMediaTypes**](doc//ServerApi.md#getsupportedmediatypes) | **GET** /server/media-types | 
 *ServerApi* | [**getTheme**](doc//ServerApi.md#gettheme) | **GET** /server/theme | 
+*ServerApi* | [**getVersionHistory**](doc//ServerApi.md#getversionhistory) | **GET** /server/version-history | 
 *ServerApi* | [**pingServer**](doc//ServerApi.md#pingserver) | **GET** /server/ping | 
 *ServerApi* | [**setServerLicense**](doc//ServerApi.md#setserverlicense) | **PUT** /server/license | 
 *SessionsApi* | [**deleteAllSessions**](doc//SessionsApi.md#deleteallsessions) | **DELETE** /sessions | 
@@ -400,6 +401,7 @@ Class | Method | HTTP request | Description
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerStorageResponseDto](doc//ServerStorageResponseDto.md)
  - [ServerThemeDto](doc//ServerThemeDto.md)
+ - [ServerVersionHistoryResponseDto](doc//ServerVersionHistoryResponseDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
  - [SessionResponseDto](doc//SessionResponseDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
