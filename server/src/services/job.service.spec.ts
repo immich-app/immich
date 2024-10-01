@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults } from 'src/config';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IJobRepository,
@@ -18,6 +19,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { JobService } from 'src/services/job.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -37,6 +39,7 @@ const makeMockHandlers = (status: JobStatus) => {
 describe(JobService.name, () => {
   let sut: JobService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let personMock: Mocked<IPersonRepository>;
@@ -46,13 +49,14 @@ describe(JobService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     personMock = newPersonRepositoryMock();
     metricMock = newMetricRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, systemMock, personMock, metricMock, loggerMock);
+    sut = new JobService(assetMock, configMock, eventMock, jobMock, systemMock, personMock, metricMock, loggerMock);
   });
 
   it('should work', () => {

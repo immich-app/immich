@@ -31,6 +31,7 @@ import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -72,6 +73,7 @@ export type ValidateRequest = {
 @Injectable()
 export class AuthService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
@@ -81,7 +83,7 @@ export class AuthService extends BaseService {
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(AuthService.name);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });

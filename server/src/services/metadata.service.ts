@@ -15,6 +15,7 @@ import { PersonEntity } from 'src/entities/person.entity';
 import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
@@ -103,9 +104,10 @@ export class MetadataService extends BaseService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMapRepository) private mapRepository: IMapRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
@@ -118,10 +120,11 @@ export class MetadataService extends BaseService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(MetadataService.name);
     this.storageCore = StorageCore.create(
       assetRepository,
+      configRepository,
       cryptoRepository,
       moveRepository,
       personRepository,

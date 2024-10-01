@@ -5,6 +5,7 @@ import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
@@ -28,6 +29,7 @@ import { getPreferences } from 'src/utils/preferences';
 @Injectable()
 export class NotificationService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
@@ -37,7 +39,7 @@ export class NotificationService extends BaseService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(NotificationService.name);
   }
 

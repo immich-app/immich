@@ -33,6 +33,7 @@ import {
 } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
@@ -70,6 +71,7 @@ export class PersonService extends BaseService {
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
@@ -81,10 +83,11 @@ export class PersonService extends BaseService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(PersonService.name);
     this.storageCore = StorageCore.create(
       assetRepository,
+      configRepository,
       cryptoRepository,
       moveRepository,
       repository,

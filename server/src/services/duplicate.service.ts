@@ -4,6 +4,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto, mapDuplicateResponse } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
@@ -24,6 +25,7 @@ import { usePagination } from 'src/utils/pagination';
 @Injectable()
 export class DuplicateService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -31,7 +33,7 @@ export class DuplicateService extends BaseService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(DuplicateService.name);
   }
 

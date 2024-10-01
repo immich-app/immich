@@ -6,6 +6,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -18,6 +19,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -66,6 +68,7 @@ const configs = {
 describe(NotificationService.name, () => {
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
@@ -77,6 +80,7 @@ describe(NotificationService.name, () => {
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
@@ -85,6 +89,7 @@ describe(NotificationService.name, () => {
     userMock = newUserRepositoryMock();
 
     sut = new NotificationService(
+      configMock,
       eventMock,
       systemMock,
       notificationMock,

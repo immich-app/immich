@@ -4,6 +4,7 @@ import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { CacheControl, Colorspace, ImageFormat, SourceType, SystemMetadataKey } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -23,6 +24,7 @@ import { personStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -67,6 +69,7 @@ const detectFaceMock: DetectedFaces = {
 describe(PersonService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let jobMock: Mocked<IJobRepository>;
   let machineLearningMock: Mocked<IMachineLearningRepository>;
@@ -82,6 +85,7 @@ describe(PersonService.name, () => {
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineLearningMock = newMachineLearningRepositoryMock();
@@ -92,9 +96,11 @@ describe(PersonService.name, () => {
     searchMock = newSearchRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
+
     sut = new PersonService(
       accessMock,
       assetMock,
+      configMock,
       machineLearningMock,
       moveMock,
       mediaMock,

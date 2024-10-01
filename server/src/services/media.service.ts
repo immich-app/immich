@@ -18,6 +18,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { IAssetRepository, UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
@@ -55,6 +56,7 @@ export class MediaService extends BaseService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
@@ -64,10 +66,11 @@ export class MediaService extends BaseService {
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(MediaService.name);
     this.storageCore = StorageCore.create(
       assetRepository,
+      configRepository,
       cryptoRepository,
       moveRepository,
       personRepository,

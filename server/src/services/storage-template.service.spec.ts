@@ -4,6 +4,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { JobStatus } from 'src/interfaces/job.interface';
@@ -19,6 +20,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -33,6 +35,7 @@ describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let moveMock: Mocked<IMoveRepository>;
@@ -49,6 +52,7 @@ describe(StorageTemplateService.name, () => {
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
     albumMock = newAlbumRepositoryMock();
+    configMock = newConfigRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
     moveMock = newMoveRepositoryMock();
@@ -63,6 +67,7 @@ describe(StorageTemplateService.name, () => {
     sut = new StorageTemplateService(
       albumMock,
       assetMock,
+      configMock,
       systemMock,
       moveMock,
       personMock,

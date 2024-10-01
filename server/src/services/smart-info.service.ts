@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
@@ -26,6 +27,7 @@ import { usePagination } from 'src/utils/pagination';
 export class SmartInfoService extends BaseService {
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
@@ -33,7 +35,7 @@ export class SmartInfoService extends BaseService {
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(SmartInfoService.name);
   }
 

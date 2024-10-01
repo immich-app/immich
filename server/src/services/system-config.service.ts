@@ -15,21 +15,23 @@ import {
 import { OnEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
 import { LogLevel } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { BaseService } from 'src/services/base.service';
-import { clearConfigCache, isUsingConfigFile } from 'src/utils/config';
+import { clearConfigCache } from 'src/utils/config';
 import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService extends BaseService {
   constructor(
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(SystemConfigService.name);
   }
 
@@ -67,7 +69,8 @@ export class SystemConfigService extends BaseService {
   }
 
   async updateSystemConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
-    if (isUsingConfigFile()) {
+    const { configFile } = this.configRepository.getEnv();
+    if (configFile) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
 

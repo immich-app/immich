@@ -22,6 +22,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeleteJob,
@@ -46,6 +47,7 @@ export class AssetService extends BaseService {
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -54,7 +56,7 @@ export class AssetService extends BaseService {
     @Inject(IStackRepository) private stackRepository: IStackRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(AssetService.name);
   }
 
