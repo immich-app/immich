@@ -3,7 +3,7 @@ import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
@@ -42,7 +42,7 @@ export class ServerService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {

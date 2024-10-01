@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TrashResponseDto } from 'src/dtos/trash.dto';
@@ -54,7 +54,7 @@ export class TrashService {
     return { count };
   }
 
-  @OnEmit({ event: 'assets.delete' })
+  @OnEvent({ name: 'assets.delete' })
   async onAssetsDelete() {
     await this.jobRepository.queue({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
   }

@@ -8,10 +8,12 @@ import sharp from 'sharp';
 import { Colorspace, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
+  DecodeToBufferOptions,
+  GenerateThumbhashOptions,
+  GenerateThumbnailOptions,
   IMediaRepository,
   ImageDimensions,
   ProbeOptions,
-  ThumbnailOptions,
   TranscodeCommand,
   VideoInfo,
 } from 'src/interfaces/media.interface';
@@ -57,25 +59,52 @@ export class MediaRepository implements IMediaRepository {
     return true;
   }
 
-  async generateThumbnail(input: string | Buffer, output: string, options: ThumbnailOptions): Promise<void> {
-    // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
-    const pipeline = sharp(input, { failOn: options.processInvalidImages ? 'none' : 'error', limitInputPixels: false })
-      .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
-      .rotate();
+  decodeImage(input: string, options: DecodeToBufferOptions) {
+    return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+  }
 
-    if (options.crop) {
-      pipeline.extract(options.crop);
-    }
-
-    await pipeline
-      .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-      .withIccProfile(options.colorspace)
+  async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    await this.getImageDecodingPipeline(input, options)
       .toFormat(options.format, {
         quality: options.quality,
         // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
         chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
       })
       .toFile(output);
+  }
+
+  private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
+    let pipeline = sharp(input, {
+      // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
+      failOn: options.processInvalidImages ? 'none' : 'error',
+      limitInputPixels: false,
+      raw: options.raw,
+    });
+
+    if (!options.raw) {
+      pipeline = pipeline
+        .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+        .withIccProfile(options.colorspace)
+        .rotate();
+    }
+
+    if (options.crop) {
+      pipeline = pipeline.extract(options.crop);
+    }
+
+    return pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
+  }
+
+  async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
+    const [{ rgbaToThumbHash }, { data, info }] = await Promise.all([
+      import('thumbhash'),
+      sharp(input, options)
+        .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
+        .raw()
+        .ensureAlpha()
+        .toBuffer({ resolveWithObject: true }),
+    ]);
+    return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
   }
 
   async probe(input: string, options?: ProbeOptions): Promise<VideoInfo> {
@@ -148,19 +177,6 @@ export class MediaRepository implements IMediaRepository {
         })
         .run();
     });
-  }
-
-  async generateThumbhash(imagePath: string): Promise<Buffer> {
-    const maxSize = 100;
-
-    const { data, info } = await sharp(imagePath)
-      .resize(maxSize, maxSize, { fit: 'inside', withoutEnlargement: true })
-      .raw()
-      .ensureAlpha()
-      .toBuffer({ resolveWithObject: true });
-
-    const thumbhash = await import('thumbhash');
-    return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
   }
 
   async getImageDimensions(input: string): Promise<ImageDimensions> {

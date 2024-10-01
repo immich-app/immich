@@ -3,11 +3,11 @@ import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
 import { isDev, serverVersion } from 'src/constants';
 import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit, OnServerEvent } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { SystemMetadataKey } from 'src/enum';
-import { ClientEvent, IEventRepository, ServerEvent, ServerEventMap } from 'src/interfaces/event.interface';
+import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
@@ -37,7 +37,7 @@ export class VersionService {
     this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
   }
@@ -90,8 +90,8 @@ export class VersionService {
     return JobStatus.SUCCESS;
   }
 
-  @OnServerEvent(ServerEvent.WEBSOCKET_CONNECT)
-  async onWebsocketConnection({ userId }: ServerEventMap[ServerEvent.WEBSOCKET_CONNECT]) {
+  @OnEvent({ name: 'websocket.connect' })
+  async onWebsocketConnection({ userId }: ArgOf<'websocket.connect'>) {
     this.eventRepository.clientSend(ClientEvent.SERVER_VERSION, userId, serverVersion);
     const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VERSION_CHECK_STATE);
     if (metadata) {

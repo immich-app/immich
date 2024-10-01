@@ -1,11 +1,12 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { snakeCase } from 'lodash';
 import { SystemConfigCore } from 'src/cores/system-config.core';
+import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType, ManualJobName } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf, ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
 import {
   ConcurrentQueueName,
   IJobRepository,
@@ -45,6 +46,7 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 @Injectable()
 export class JobService {
   private configCore: SystemConfigCore;
+  private isMicroservices = false;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -57,6 +59,28 @@ export class JobService {
   ) {
     this.logger.setContext(JobService.name);
     this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
+  }
+
+  @OnEvent({ name: 'app.bootstrap' })
+  onBootstrap(app: ArgOf<'app.bootstrap'>) {
+    this.isMicroservices = app === 'microservices';
+  }
+
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig: config, oldConfig }: ArgOf<'config.update'>) {
+    if (!oldConfig || !this.isMicroservices) {
+      return;
+    }
+
+    this.logger.debug(`Updating queue concurrency settings`);
+    for (const queueName of Object.values(QueueName)) {
+      let concurrency = 1;
+      if (this.isConcurrentQueue(queueName)) {
+        concurrency = config.job[queueName].concurrency;
+      }
+      this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
+      this.jobRepository.setConcurrency(queueName, concurrency);
+    }
   }
 
   async create(dto: JobCreateDto): Promise<void> {
@@ -209,18 +233,6 @@ export class JobService {
         }
       });
     }
-
-    this.configCore.config$.subscribe((config) => {
-      this.logger.debug(`Updating queue concurrency settings`);
-      for (const queueName of Object.values(QueueName)) {
-        let concurrency = 1;
-        if (this.isConcurrentQueue(queueName)) {
-          concurrency = config.job[queueName].concurrency;
-        }
-        this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
-        this.jobRepository.setConcurrency(queueName, concurrency);
-      }
-    });
   }
 
   private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
@@ -281,7 +293,7 @@ export class JobService {
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
-          await this.jobRepository.queue({ name: JobName.GENERATE_PREVIEW, data: item.data });
+          await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: item.data });
         }
         break;
       }
@@ -295,40 +307,33 @@ export class JobService {
         break;
       }
 
-      case JobName.GENERATE_PREVIEW: {
-        const jobs: JobItem[] = [
-          { name: JobName.GENERATE_THUMBNAIL, data: item.data },
-          { name: JobName.GENERATE_THUMBHASH, data: item.data },
-        ];
-
-        if (item.data.source === 'upload') {
-          jobs.push({ name: JobName.SMART_SEARCH, data: item.data }, { name: JobName.FACE_DETECTION, data: item.data });
-
-          const [asset] = await this.assetRepository.getByIds([item.data.id]);
-          if (asset) {
-            if (asset.type === AssetType.VIDEO) {
-              jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
-            } else if (asset.livePhotoVideoId) {
-              jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
-            }
-          }
-        }
-
-        await this.jobRepository.queueAll(jobs);
-        break;
-      }
-
-      case JobName.GENERATE_THUMBNAIL: {
-        if (!(item.data.notify || item.data.source === 'upload')) {
+      case JobName.GENERATE_THUMBNAILS: {
+        if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
 
         const [asset] = await this.assetRepository.getByIdsWithAllRelations([item.data.id]);
+        if (!asset) {
+          this.logger.warn(`Could not find asset ${item.data.id} after generating thumbnails`);
+          break;
+        }
 
-        // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
-        if (asset && asset.isVisible) {
+        const jobs: JobItem[] = [
+          { name: JobName.SMART_SEARCH, data: item.data },
+          { name: JobName.FACE_DETECTION, data: item.data },
+        ];
+
+        if (asset.type === AssetType.VIDEO) {
+          jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
+        } else if (asset.livePhotoVideoId) {
+          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
+        }
+
+        await this.jobRepository.queueAll(jobs);
+        if (asset.isVisible) {
           this.eventRepository.clientSend(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
+
         break;
       }
 

@@ -801,7 +801,12 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
-  async upsertFile({ assetId, type, path }: { assetId: string; type: AssetFileType; path: string }): Promise<void> {
-    await this.fileRepository.upsert({ assetId, type, path }, { conflictPaths: ['assetId', 'type'] });
+  async upsertFile(file: { assetId: string; type: AssetFileType; path: string }): Promise<void> {
+    await this.fileRepository.upsert(file, { conflictPaths: ['assetId', 'type'] });
+  }
+
+  @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
+  async upsertFiles(files: { assetId: string; type: AssetFileType; path: string }[]): Promise<void> {
+    await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
   }
 }

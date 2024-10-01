@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
@@ -21,7 +21,7 @@ export class StorageService {
     this.logger.setContext(StorageService.name);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap() {
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
       const flags = (await this.systemMetadata.get(SystemMetadataKey.SYSTEM_FLAGS)) || { mountFiles: false };

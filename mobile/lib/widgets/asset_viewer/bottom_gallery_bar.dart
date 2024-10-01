@@ -9,7 +9,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
@@ -172,7 +172,16 @@ class BottomGalleryBar extends ConsumerWidget {
     }
 
     shareAsset() {
-      ref.read(imageViewerStateProvider.notifier).shareAsset(asset, context);
+      if (asset.isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+      ref.read(downloadStateProvider.notifier).shareAsset(asset, context);
     }
 
     void handleEdit() async {
@@ -202,7 +211,17 @@ class BottomGalleryBar extends ConsumerWidget {
       if (asset.isLocal) {
         return;
       }
-      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+      if (asset.isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+
+      ref.read(downloadStateProvider.notifier).downloadAsset(
             asset,
             context,
           );

@@ -9,6 +9,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
@@ -18,6 +19,8 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/etag.repository.dart';
+import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
@@ -38,7 +41,6 @@ import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
-import 'package:isar/isar.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
@@ -357,7 +359,7 @@ class BackgroundService {
   }
 
   Future<bool> _onAssetsChanged() async {
-    final Isar db = await loadDb();
+    final db = await loadDb();
 
     HttpOverrides.global = HttpSSLCertOverride();
     ApiService apiService = ApiService();
@@ -366,7 +368,9 @@ class BackgroundService {
     AppSettingsService settingsService = AppSettingsService();
     AlbumRepository albumRepository = AlbumRepository(db);
     AssetRepository assetRepository = AssetRepository(db);
-    BackupRepository backupAlbumRepository = BackupRepository(db);
+    BackupRepository backupRepository = BackupRepository(db);
+    ExifInfoRepository exifInfoRepository = ExifInfoRepository(db);
+    ETagRepository eTagRepository = ETagRepository(db);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
     FileMediaRepository fileMediaRepository = FileMediaRepository();
     AssetMediaRepository assetMediaRepository = AssetMediaRepository();
@@ -382,11 +386,15 @@ class BackgroundService {
     EntityService entityService =
         EntityService(assetRepository, userRepository);
     SyncService syncSerive = SyncService(
-      db,
       hashService,
       entityService,
       albumMediaRepository,
       albumApiRepository,
+      albumRepository,
+      assetRepository,
+      exifInfoRepository,
+      userRepository,
+      eTagRepository,
     );
     UserService userService = UserService(
       partnerApiRepository,
@@ -400,22 +408,24 @@ class BackgroundService {
       entityService,
       albumRepository,
       assetRepository,
-      backupAlbumRepository,
+      backupRepository,
       albumMediaRepository,
       albumApiRepository,
     );
     BackupService backupService = BackupService(
       apiService,
-      db,
       settingService,
       albumService,
       albumMediaRepository,
       fileMediaRepository,
+      assetRepository,
       assetMediaRepository,
     );
 
-    final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
-    final excludedAlbums = backupService.excludedAlbumsQuery().findAllSync();
+    final selectedAlbums =
+        await backupRepository.getAllBySelection(BackupSelection.select);
+    final excludedAlbums =
+        await backupRepository.getAllBySelection(BackupSelection.exclude);
     if (selectedAlbums.isEmpty) {
       return true;
     }
@@ -433,28 +443,28 @@ class BackgroundService {
         await Store.delete(StoreKey.backupFailedSince);
         final backupAlbums = [...selectedAlbums, ...excludedAlbums];
         backupAlbums.sortBy((e) => e.id);
-        db.writeTxnSync(() {
-          final dbAlbums = db.backupAlbums.where().sortById().findAllSync();
-          final List<int> toDelete = [];
-          final List<BackupAlbum> toUpsert = [];
-          // stores the most recent `lastBackup` per album but always keeps the `selection` from the most recent DB state
-          diffSortedListsSync(
-            dbAlbums,
-            backupAlbums,
-            compare: (BackupAlbum a, BackupAlbum b) => a.id.compareTo(b.id),
-            both: (BackupAlbum a, BackupAlbum b) {
-              a.lastBackup = a.lastBackup.isAfter(b.lastBackup)
-                  ? a.lastBackup
-                  : b.lastBackup;
-              toUpsert.add(a);
-              return true;
-            },
-            onlyFirst: (BackupAlbum a) => toUpsert.add(a),
-            onlySecond: (BackupAlbum b) => toDelete.add(b.isarId),
-          );
-          db.backupAlbums.deleteAllSync(toDelete);
-          db.backupAlbums.putAllSync(toUpsert);
-        });
+
+        final dbAlbums =
+            await backupRepository.getAll(sort: BackupAlbumSort.id);
+        final List<int> toDelete = [];
+        final List<BackupAlbum> toUpsert = [];
+        // stores the most recent `lastBackup` per album but always keeps the `selection` from the most recent DB state
+        diffSortedListsSync(
+          dbAlbums,
+          backupAlbums,
+          compare: (BackupAlbum a, BackupAlbum b) => a.id.compareTo(b.id),
+          both: (BackupAlbum a, BackupAlbum b) {
+            a.lastBackup = a.lastBackup.isAfter(b.lastBackup)
+                ? a.lastBackup
+                : b.lastBackup;
+            toUpsert.add(a);
+            return true;
+          },
+          onlyFirst: (BackupAlbum a) => toUpsert.add(a),
+          onlySecond: (BackupAlbum b) => toDelete.add(b.isarId),
+        );
+        await backupRepository.deleteAll(toDelete);
+        await backupRepository.updateAll(toUpsert);
       } else if (Store.tryGet(StoreKey.backupFailedSince) == null) {
         Store.put(StoreKey.backupFailedSince, DateTime.now());
         return false;

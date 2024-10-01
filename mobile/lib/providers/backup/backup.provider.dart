@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
@@ -45,6 +47,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._db,
     this._albumMediaRepository,
     this._fileMediaRepository,
+    this._backupRepository,
     this.ref,
   ) : super(
           BackUpState(
@@ -95,6 +98,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final Isar _db;
   final IAlbumMediaRepository _albumMediaRepository;
   final IFileMediaRepository _fileMediaRepository;
+  final IBackupRepository _backupRepository;
   final Ref ref;
 
   ///
@@ -255,9 +259,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(availableAlbums: availableAlbums);
 
     final List<BackupAlbum> excludedBackupAlbums =
-        await _backupService.excludedAlbumsQuery().findAll();
+        await _backupRepository.getAllBySelection(BackupSelection.exclude);
     final List<BackupAlbum> selectedBackupAlbums =
-        await _backupService.selectedAlbumsQuery().findAll();
+        await _backupRepository.getAllBySelection(BackupSelection.select);
 
     final Set<AvailableAlbum> selectedAlbums = {};
     for (final BackupAlbum ba in selectedBackupAlbums) {
@@ -767,6 +771,7 @@ final backupProvider =
     ref.watch(dbProvider),
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
+    ref.watch(backupRepositoryProvider),
     ref,
   );
 });
