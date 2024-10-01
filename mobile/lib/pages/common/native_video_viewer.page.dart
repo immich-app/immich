@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:immich_mobile/widgets/common/delayed_loading_indicator.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -76,6 +77,16 @@ class NativeVideoViewerPage extends HookConsumerWidget {
           type: VideoSourceType.file,
         );
       } else {
+        final assetWithExif =
+            await ref.read(assetServiceProvider).loadExif(asset);
+        final shouldFlip = assetWithExif.exifInfo?.isFlipped ?? false;
+        width.value = (shouldFlip ? assetWithExif.height : assetWithExif.width)
+                ?.toDouble() ??
+            width.value;
+        height.value = (shouldFlip ? assetWithExif.width : assetWithExif.height)
+                ?.toDouble() ??
+            height.value;
+
         // Use a network URL for the video player controller
         final serverEndpoint = Store.get(StoreKey.serverEndpoint);
         final String videoUrl = asset.livePhotoVideoId != null
@@ -93,10 +104,14 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     // When the volume changes, set the volume
     ref.listen(videoPlayerControlsProvider.select((value) => value.mute),
         (_, mute) {
-      if (mute) {
-        controller.value?.setVolume(0.0);
-      } else {
-        controller.value?.setVolume(0.7);
+      try {
+        if (mute) {
+          controller.value?.setVolume(0.0);
+        } else {
+          controller.value?.setVolume(0.7);
+        }
+      } catch (_) {
+        // Consume error from the controller
       }
     });
 
@@ -110,16 +125,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       // Find the position to seek to
       final Duration seek = asset.duration * (position / 100.0);
-      controller.value?.seekTo(seek.inSeconds);
+      try {
+        controller.value?.seekTo(seek.inSeconds);
+      } catch (_) {
+        // Consume error from the controller
+      }
     });
 
     // When the custom video controls paus or plays
     ref.listen(videoPlayerControlsProvider.select((value) => value.pause),
         (_, pause) {
-      if (pause) {
-        controller.value?.pause();
-      } else {
-        controller.value?.play();
+      try {
+        if (pause) {
+          controller.value?.pause();
+        } else {
+          controller.value?.play();
+        }
+      } catch (_) {
+        // Consume error from the controller
       }
     });
 
@@ -153,8 +176,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     }
 
     void onPlaybackReady() {
-      controller.value?.play();
-      controller.value?.setVolume(0.9);
+      try {
+        controller.value?.play();
+        controller.value?.setVolume(0.9);
+      } catch (_) {
+        // Consume error from the controller
+      }
     }
 
     void onPlaybackPositionChanged() {
@@ -162,8 +189,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     }
 
     void onPlaybackEnded() {
-      if (loopVideo) {
-        controller.value?.play();
+      try {
+        if (loopVideo) {
+          controller.value?.play();
+        }
+      } catch (_) {
+        // Consume error from the controller
       }
     }
 
@@ -199,12 +230,17 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
         return () {
           bufferingTimer.value.cancel();
-          controller.value?.onPlaybackPositionChanged
-              .removeListener(onPlaybackPositionChanged);
-          controller.value?.onPlaybackStatusChanged
-              .removeListener(onPlaybackPositionChanged);
-          controller.value?.onPlaybackReady.removeListener(onPlaybackReady);
-          controller.value?.onPlaybackEnded.removeListener(onPlaybackEnded);
+          try {
+            controller.value?.onPlaybackPositionChanged
+                .removeListener(onPlaybackPositionChanged);
+            controller.value?.onPlaybackStatusChanged
+                .removeListener(onPlaybackPositionChanged);
+            controller.value?.onPlaybackReady.removeListener(onPlaybackReady);
+            controller.value?.onPlaybackEnded.removeListener(onPlaybackEnded);
+            controller.value?.stop();
+          } catch (_) {
+            // Consume error from the controller
+          }
         };
       },
       [],
