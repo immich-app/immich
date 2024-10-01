@@ -1,19 +1,19 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { type ServerAboutResponseDto } from '@immich/sdk';
+  import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   export let onClose: () => void;
 
   export let info: ServerAboutResponseDto;
+  export let versions: ServerVersionHistoryResponseDto[];
 </script>
 
 <Portal>
   <FullScreenModal title={$t('about')} {onClose}>
-    <div
-      class="immich-scrollbar max-h-[500px] overflow-y-auto flex flex-col sm:grid sm:grid-cols-2 gap-1 text-immich-primary dark:text-immich-dark-primary"
-    >
+    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-1 text-immich-primary dark:text-immich-dark-primary">
       <div>
         <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-desc"
           >Immich</label
@@ -151,6 +151,35 @@
           </div>
         </div>
       {/if}
+
+      <div class="col-span-full">
+        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-history"
+          >{$t('version_history')}</label
+        >
+        <ul id="version-history" class="list-none">
+          {#each versions.slice(0, 5) as item (item.id)}
+            {@const createdAt = DateTime.fromISO(item.createdAt)}
+            <li>
+              <span
+                class="immich-form-label pb-2 text-xs"
+                id="version-history"
+                title={createdAt.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS)}
+              >
+                {$t('version_history_item', {
+                  values: {
+                    version: item.version,
+                    date: createdAt.toLocaleString({
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }),
+                  },
+                })}
+              </span>
+            </li>
+          {/each}
+        </ul>
+      </div>
     </div>
   </FullScreenModal>
 </Portal>

@@ -25,6 +25,7 @@ import { SystemMetadataEntity } from 'src/entities/system-metadata.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { VersionHistoryEntity } from 'src/entities/version-history.entity';
 
 export const entities = [
   ActivityEntity,
@@ -54,4 +55,5 @@ export const entities = [
   UserMetadataEntity,
   SessionEntity,
   LibraryEntity,
+  VersionHistoryEntity,
 ];

@@ -5088,6 +5088,30 @@
         ]
       }
     },
+    "/server/version-history": {
+      "get": {
+        "operationId": "getVersionHistory",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ServerVersionHistoryResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
     "/sessions": {
       "delete": {
         "operationId": "deleteAllSessions",
@@ -11039,6 +11063,26 @@
         },
         "required": [
           "customCss"
+        ],
+        "type": "object"
+      },
+      "ServerVersionHistoryResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "version"
         ],
         "type": "object"
       },

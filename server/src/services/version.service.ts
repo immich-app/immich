@@ -6,11 +6,13 @@ import { OnEvent } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { SystemMetadataKey } from 'src/enum';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { BaseService } from 'src/services/base.service';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
@@ -25,10 +27,12 @@ const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): Re
 @Injectable()
 export class VersionService extends BaseService {
   constructor(
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(IVersionHistoryRepository) private versionRepository: IVersionHistoryRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
     super(systemMetadataRepository, logger);
@@ -38,10 +42,23 @@ export class VersionService extends BaseService {
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
+
+    await this.databaseRepository.withLock(DatabaseLock.VersionHistory, async () => {
+      const latest = await this.versionRepository.getLatest();
+      const current = serverVersion.toString();
+      if (!latest || latest.version !== current) {
+        this.logger.log(`Version has changed, adding ${current} to history`);
+        await this.versionRepository.create({ version: current });
+      }
+    });
   }
 
   getVersion() {
     return ServerVersionResponseDto.fromSemVer(serverVersion);
+  }
+
+  getVersionHistory() {
+    return this.versionRepository.getAll();
   }
 
   async handleQueueVersionCheck() {

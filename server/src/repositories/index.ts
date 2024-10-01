@@ -32,6 +32,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { IViewRepository } from 'src/interfaces/view.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -67,6 +68,7 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 
 export const repositories = [
@@ -104,5 +106,6 @@ export const repositories = [
   { provide: ITagRepository, useClass: TagRepository },
   { provide: ITrashRepository, useClass: TrashRepository },
   { provide: IUserRepository, useClass: UserRepository },
+  { provide: IVersionHistoryRepository, useClass: VersionHistoryRepository },
   { provide: IViewRepository, useClass: ViewRepository },
 ];
