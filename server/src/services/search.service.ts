@@ -17,6 +17,7 @@ import {
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetOrder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -30,6 +31,7 @@ import { isSmartSearchEnabled } from 'src/utils/misc';
 @Injectable()
 export class SearchService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
@@ -38,7 +40,7 @@ export class SearchService extends BaseService {
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(SearchService.name);
   }
 

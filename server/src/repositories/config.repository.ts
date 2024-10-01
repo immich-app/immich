@@ -6,6 +6,7 @@ import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 export class ConfigRepository implements IConfigRepository {
   getEnv(): EnvData {
     return {
+      configFile: process.env.IMMICH_CONFIG_FILE,
       database: {
         skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
         vectorExtension: getVectorExtension(),

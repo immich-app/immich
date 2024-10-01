@@ -15,6 +15,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -27,12 +28,13 @@ import { OpenGraphTags } from 'src/utils/misc';
 export class SharedLinkService extends BaseService {
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(SharedLinkService.name);
   }
 

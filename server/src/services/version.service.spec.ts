@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { serverVersion } from 'src/constants';
 import { SystemMetadataKey } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -9,6 +10,7 @@ import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { VersionService } from 'src/services/version.service';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
@@ -30,6 +32,7 @@ const mockRelease = (version: string) => ({
 
 describe(VersionService.name, () => {
   let sut: VersionService;
+  let configMock: Mocked<IConfigRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
@@ -39,6 +42,7 @@ describe(VersionService.name, () => {
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
+    configMock = newConfigRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
@@ -47,7 +51,16 @@ describe(VersionService.name, () => {
     versionMock = newVersionHistoryRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new VersionService(databaseMock, eventMock, jobMock, serverMock, systemMock, versionMock, loggerMock);
+    sut = new VersionService(
+      configMock,
+      databaseMock,
+      eventMock,
+      jobMock,
+      serverMock,
+      systemMock,
+      versionMock,
+      loggerMock,
+    );
   });
 
   it('should work', () => {

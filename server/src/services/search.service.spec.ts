@@ -1,6 +1,7 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -12,6 +13,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
@@ -25,6 +27,7 @@ vitest.useFakeTimers();
 describe(SearchService.name, () => {
   let sut: SearchService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let machineMock: Mocked<IMachineLearningRepository>;
   let personMock: Mocked<IPersonRepository>;
@@ -34,6 +37,7 @@ describe(SearchService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     personMock = newPersonRepositoryMock();
@@ -41,7 +45,16 @@ describe(SearchService.name, () => {
     partnerMock = newPartnerRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new SearchService(systemMock, machineMock, personMock, searchMock, assetMock, partnerMock, loggerMock);
+    sut = new SearchService(
+      configMock,
+      systemMock,
+      machineMock,
+      personMock,
+      searchMock,
+      assetMock,
+      partnerMock,
+      loggerMock,
+    );
   });
 
   it('should work', () => {

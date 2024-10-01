@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -10,12 +11,13 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class CliService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
-    super(systemMetadataRepository, logger);
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(CliService.name);
   }
 

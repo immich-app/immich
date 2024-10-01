@@ -12,11 +12,13 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
+import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
@@ -187,16 +189,18 @@ const updatedConfig = Object.freeze<SystemConfig>({
 
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
+  let configMock: Mocked<IConfigRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let eventMock: Mocked<IEventRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    delete process.env.IMMICH_CONFIG_FILE;
-    systemMock = newSystemMetadataRepositoryMock();
+    configMock = newConfigRepositoryMock();
     eventMock = newEventRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new SystemConfigService(systemMock, eventMock, loggerMock);
+
+    sut = new SystemConfigService(configMock, eventMock, systemMock, loggerMock);
   });
 
   it('should work', () => {
@@ -231,8 +235,7 @@ describe(SystemConfigService.name, () => {
     });
 
     it('should load the config from a json file', async () => {
-      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
-
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
@@ -241,7 +244,7 @@ describe(SystemConfigService.name, () => {
     });
 
     it('should log errors with the config file', async () => {
-      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
 
       systemMock.readFile.mockResolvedValue(`{ "ffmpeg2": true, "ffmpeg2": true }`);
 
@@ -256,7 +259,7 @@ describe(SystemConfigService.name, () => {
     });
 
     it('should load the config from a yaml file', async () => {
-      process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.yaml' }));
       const partialConfig = `
         ffmpeg:
           crf: 30
@@ -275,7 +278,7 @@ describe(SystemConfigService.name, () => {
     });
 
     it('should accept an empty configuration file', async () => {
-      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       systemMock.readFile.mockResolvedValue(JSON.stringify({}));
 
       await expect(sut.getSystemConfig()).resolves.toEqual(defaults);
@@ -284,7 +287,7 @@ describe(SystemConfigService.name, () => {
     });
 
     it('should allow underscores in the machine learning url', async () => {
-      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
       systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
@@ -300,7 +303,7 @@ describe(SystemConfigService.name, () => {
 
     for (const { should, externalDomain, result } of externalDomainTests) {
       it(`should normalize an external domain ${should}`, async () => {
-        process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+        configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
         const partialConfig = { server: { externalDomain } };
         systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
@@ -310,7 +313,7 @@ describe(SystemConfigService.name, () => {
     }
 
     it('should warn for unknown options in yaml', async () => {
-      process.env.IMMICH_CONFIG_FILE = 'immich-config.yaml';
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.yaml' }));
       const partialConfig = `
         unknownOption: true
       `;
@@ -331,7 +334,7 @@ describe(SystemConfigService.name, () => {
 
     for (const test of tests) {
       it(`should ${test.should}`, async () => {
-        process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+        configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
         systemMock.readFile.mockResolvedValue(JSON.stringify(test.config));
 
         if (test.warn) {
@@ -390,7 +393,7 @@ describe(SystemConfigService.name, () => {
     });
 
     it('should throw an error if a config file is in use', async () => {
-      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       systemMock.readFile.mockResolvedValue(JSON.stringify({}));
       await expect(sut.updateSystemConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
       expect(systemMock.set).not.toHaveBeenCalled();
