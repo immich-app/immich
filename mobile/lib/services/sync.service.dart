@@ -507,7 +507,7 @@ class SyncService {
     List<Album> onDevice, [
     Set<String>? excludedAssets,
   ]) async {
-    onDevice.sort((a, b) => a.id.compareTo(b.id));
+    onDevice.sort((a, b) => a.localId!.compareTo(b.localId!));
     final inDb =
         await _albumRepository.getAll(remote: false, sortBy: AlbumSort.localId);
     final List<Asset> deleteCandidates = [];
