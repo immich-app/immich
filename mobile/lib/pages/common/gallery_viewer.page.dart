@@ -8,8 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/pages/common/download_panel.dart';
 import 'package:immich_mobile/pages/common/video_viewer.page.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
@@ -30,7 +32,6 @@ import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_computed_scale.dart';
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_scale_state.dart';
 import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attributes.dart';
-import 'package:isar/isar.dart';
 
 @RoutePage()
 // ignore: must_be_immutable
@@ -73,7 +74,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
-    final isFromDto = currentAsset.id == Isar.autoIncrement;
+    final isFromDto = currentAsset.id == noDbId;
 
     Asset asset = stackIndex.value == -1
         ? currentAsset
@@ -421,6 +422,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 ],
               ),
             ),
+            const DownloadPanel(),
           ],
         ),
       ),

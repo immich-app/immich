@@ -81,10 +81,6 @@
 
 {#if isShowChangeLocation}
   <Portal>
-    <ChangeLocation
-      {asset}
-      on:confirm={({ detail: gps }) => handleConfirmChangeLocation(gps)}
-      on:cancel={() => (isShowChangeLocation = false)}
-    />
+    <ChangeLocation {asset} onConfirm={handleConfirmChangeLocation} onCancel={() => (isShowChangeLocation = false)} />
   </Portal>
 {/if}

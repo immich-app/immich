@@ -17,6 +17,7 @@ class UserResponseDto {
     required this.email,
     required this.id,
     required this.name,
+    required this.profileChangedAt,
     required this.profileImagePath,
   });
 
@@ -28,6 +29,8 @@ class UserResponseDto {
 
   String name;
 
+  DateTime profileChangedAt;
+
   String profileImagePath;
 
   @override
@@ -36,6 +39,7 @@ class UserResponseDto {
     other.email == email &&
     other.id == id &&
     other.name == name &&
+    other.profileChangedAt == profileChangedAt &&
     other.profileImagePath == profileImagePath;
 
   @override
@@ -45,10 +49,11 @@ class UserResponseDto {
     (email.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
+    (profileChangedAt.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileImagePath=$profileImagePath]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -56,6 +61,7 @@ class UserResponseDto {
       json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'name'] = this.name;
+      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
   }
@@ -64,6 +70,7 @@ class UserResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UserResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "UserResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -72,6 +79,7 @@ class UserResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
     }
@@ -124,6 +132,7 @@ class UserResponseDto {
     'email',
     'id',
     'name',
+    'profileChangedAt',
     'profileImagePath',
   };
 }

@@ -32,14 +32,7 @@
     <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
   </div>
   <div class="flex items-center">
-    <Combobox
-      label={title}
-      hideLabel={true}
-      {selectedOption}
-      {options}
-      placeholder={comboboxPlaceholder}
-      on:select={({ detail }) => onSelect(detail)}
-    />
+    <Combobox label={title} hideLabel={true} {selectedOption} {options} placeholder={comboboxPlaceholder} {onSelect} />
     <slot />
   </div>
 </div>

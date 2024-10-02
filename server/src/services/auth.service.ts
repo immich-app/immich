@@ -12,9 +12,7 @@ import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
-import { AuthType, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { UserCore } from 'src/cores/user.core';
+import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import {
   AuthDto,
   ChangePasswordDto,
@@ -31,16 +29,20 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { Permission } from 'src/enum';
+import { AuthType, Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
+import { createUser } from 'src/utils/user';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -69,28 +71,26 @@ export type ValidateRequest = {
 };
 
 @Injectable()
-export class AuthService {
-  private configCore: SystemConfigCore;
-  private userCore: UserCore;
-
+export class AuthService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(AuthService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
-    this.userCore = UserCore.create(cryptoRepository, userRepository);
 
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails) {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
     }
@@ -114,6 +114,7 @@ export class AuthService {
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (auth.session) {
       await this.sessionRepository.delete(auth.session.id);
+      await this.eventRepository.emit('session.delete', { sessionId: auth.session.id });
     }
 
     return {
@@ -147,13 +148,16 @@ export class AuthService {
       throw new BadRequestException('The server already has an admin');
     }
 
-    const admin = await this.userCore.createUser({
-      isAdmin: true,
-      email: dto.email,
-      name: dto.name,
-      password: dto.password,
-      storageLabel: 'admin',
-    });
+    const admin = await createUser(
+      { userRepo: this.userRepository, cryptoRepo: this.cryptoRepository },
+      {
+        isAdmin: true,
+        email: dto.email,
+        name: dto.name,
+        password: dto.password,
+        storageLabel: 'admin',
+      },
+    );
 
     return mapUserAdmin(admin);
   }
@@ -208,7 +212,7 @@ export class AuthService {
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     if (!config.oauth.enabled) {
       throw new BadRequestException('OAuth is not enabled');
     }
@@ -224,7 +228,7 @@ export class AuthService {
   }
 
   async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const profile = await this.getOAuthProfile(config, dto.url);
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
@@ -268,20 +272,23 @@ export class AuthService {
       });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
-      user = await this.userCore.createUser({
-        name: userName,
-        email: profile.email,
-        oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
-        storageLabel: storageLabel || null,
-      });
+      user = await createUser(
+        { userRepo: this.userRepository, cryptoRepo: this.cryptoRepository },
+        {
+          name: userName,
+          email: profile.email,
+          oauthId: profile.sub,
+          quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
+          storageLabel: storageLabel || null,
+        },
+      );
     }
 
     return this.createLoginResponse(user, loginDetails);
   }
 
   async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
@@ -303,7 +310,7 @@ export class AuthService {
       return LOGIN_URL;
     }
 
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     if (!config.oauth.enabled) {
       return LOGIN_URL;
     }

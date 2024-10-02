@@ -85,6 +85,7 @@ class PersonResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PersonResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "PersonResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

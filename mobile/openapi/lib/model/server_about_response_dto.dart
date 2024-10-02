@@ -28,6 +28,10 @@ class ServerAboutResponseDto {
     this.sourceCommit,
     this.sourceRef,
     this.sourceUrl,
+    this.thirdPartyBugFeatureUrl,
+    this.thirdPartyDocumentationUrl,
+    this.thirdPartySourceUrl,
+    this.thirdPartySupportUrl,
     required this.version,
     required this.versionUrl,
   });
@@ -146,6 +150,38 @@ class ServerAboutResponseDto {
   ///
   String? sourceUrl;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? thirdPartyBugFeatureUrl;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? thirdPartyDocumentationUrl;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? thirdPartySourceUrl;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? thirdPartySupportUrl;
+
   String version;
 
   String versionUrl;
@@ -167,6 +203,10 @@ class ServerAboutResponseDto {
     other.sourceCommit == sourceCommit &&
     other.sourceRef == sourceRef &&
     other.sourceUrl == sourceUrl &&
+    other.thirdPartyBugFeatureUrl == thirdPartyBugFeatureUrl &&
+    other.thirdPartyDocumentationUrl == thirdPartyDocumentationUrl &&
+    other.thirdPartySourceUrl == thirdPartySourceUrl &&
+    other.thirdPartySupportUrl == thirdPartySupportUrl &&
     other.version == version &&
     other.versionUrl == versionUrl;
 
@@ -188,11 +228,15 @@ class ServerAboutResponseDto {
     (sourceCommit == null ? 0 : sourceCommit!.hashCode) +
     (sourceRef == null ? 0 : sourceRef!.hashCode) +
     (sourceUrl == null ? 0 : sourceUrl!.hashCode) +
+    (thirdPartyBugFeatureUrl == null ? 0 : thirdPartyBugFeatureUrl!.hashCode) +
+    (thirdPartyDocumentationUrl == null ? 0 : thirdPartyDocumentationUrl!.hashCode) +
+    (thirdPartySourceUrl == null ? 0 : thirdPartySourceUrl!.hashCode) +
+    (thirdPartySupportUrl == null ? 0 : thirdPartySupportUrl!.hashCode) +
     (version.hashCode) +
     (versionUrl.hashCode);
 
   @override
-  String toString() => 'ServerAboutResponseDto[build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, licensed=$licensed, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, version=$version, versionUrl=$versionUrl]';
+  String toString() => 'ServerAboutResponseDto[build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, licensed=$licensed, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, thirdPartyBugFeatureUrl=$thirdPartyBugFeatureUrl, thirdPartyDocumentationUrl=$thirdPartyDocumentationUrl, thirdPartySourceUrl=$thirdPartySourceUrl, thirdPartySupportUrl=$thirdPartySupportUrl, version=$version, versionUrl=$versionUrl]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -267,6 +311,26 @@ class ServerAboutResponseDto {
     } else {
     //  json[r'sourceUrl'] = null;
     }
+    if (this.thirdPartyBugFeatureUrl != null) {
+      json[r'thirdPartyBugFeatureUrl'] = this.thirdPartyBugFeatureUrl;
+    } else {
+    //  json[r'thirdPartyBugFeatureUrl'] = null;
+    }
+    if (this.thirdPartyDocumentationUrl != null) {
+      json[r'thirdPartyDocumentationUrl'] = this.thirdPartyDocumentationUrl;
+    } else {
+    //  json[r'thirdPartyDocumentationUrl'] = null;
+    }
+    if (this.thirdPartySourceUrl != null) {
+      json[r'thirdPartySourceUrl'] = this.thirdPartySourceUrl;
+    } else {
+    //  json[r'thirdPartySourceUrl'] = null;
+    }
+    if (this.thirdPartySupportUrl != null) {
+      json[r'thirdPartySupportUrl'] = this.thirdPartySupportUrl;
+    } else {
+    //  json[r'thirdPartySupportUrl'] = null;
+    }
       json[r'version'] = this.version;
       json[r'versionUrl'] = this.versionUrl;
     return json;
@@ -276,6 +340,7 @@ class ServerAboutResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerAboutResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "ServerAboutResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -295,6 +360,10 @@ class ServerAboutResponseDto {
         sourceCommit: mapValueOfType<String>(json, r'sourceCommit'),
         sourceRef: mapValueOfType<String>(json, r'sourceRef'),
         sourceUrl: mapValueOfType<String>(json, r'sourceUrl'),
+        thirdPartyBugFeatureUrl: mapValueOfType<String>(json, r'thirdPartyBugFeatureUrl'),
+        thirdPartyDocumentationUrl: mapValueOfType<String>(json, r'thirdPartyDocumentationUrl'),
+        thirdPartySourceUrl: mapValueOfType<String>(json, r'thirdPartySourceUrl'),
+        thirdPartySupportUrl: mapValueOfType<String>(json, r'thirdPartySupportUrl'),
         version: mapValueOfType<String>(json, r'version')!,
         versionUrl: mapValueOfType<String>(json, r'versionUrl')!,
       );

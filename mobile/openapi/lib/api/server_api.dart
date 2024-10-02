@@ -418,6 +418,50 @@ class ServerApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /server/version-history' operation and returns the [Response].
+  Future<Response> getVersionHistoryWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/server/version-history';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<List<ServerVersionHistoryResponseDto>?> getVersionHistory() async {
+    final response = await getVersionHistoryWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<ServerVersionHistoryResponseDto>') as List)
+        .cast<ServerVersionHistoryResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /server/ping' operation and returns the [Response].
   Future<Response> pingServerWithHttpInfo() async {
     // ignore: prefer_const_declarations

@@ -264,7 +264,6 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
 
     final child = (useDragScrolling && ModalRoute.of(context) != null)
         ? DraggableScrollbar.semicircle(
-            viewPortHeight: context.height,
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,

@@ -17,4 +17,5 @@ export interface ITagRepository extends IBulkAsset {
 
   upsertAssetTags({ assetId, tagIds }: { assetId: string; tagIds: string[] }): Promise<void>;
   upsertAssetIds(items: AssetTagItem[]): Promise<AssetTagItem[]>;
+  deleteEmptyTags(): Promise<void>;
 }

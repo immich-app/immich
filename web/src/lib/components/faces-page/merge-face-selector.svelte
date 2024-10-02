@@ -6,7 +6,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -20,14 +20,12 @@
   import { t } from 'svelte-i18n';
 
   export let person: PersonResponseDto;
+  export let onBack: () => void;
+  export let onMerge: (mergedPerson: PersonResponseDto) => void;
+
   let people: PersonResponseDto[] = [];
   let selectedPeople: PersonResponseDto[] = [];
   let screenHeight: number;
-
-  let dispatch = createEventDispatcher<{
-    back: void;
-    merge: PersonResponseDto;
-  }>();
 
   $: hasSelection = selectedPeople.length > 0;
   $: peopleToNotShow = [...selectedPeople, person];
@@ -37,17 +35,13 @@
     people = data.people;
   });
 
-  const onClose = () => {
-    dispatch('back');
-  };
-
   const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     $page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
     await goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 
-  const onSelect = (selected: PersonResponseDto) => {
+  const onSelect = async (selected: PersonResponseDto) => {
     if (selectedPeople.includes(selected)) {
       selectedPeople = selectedPeople.filter((person) => person.id !== selected.id);
       return;
@@ -62,6 +56,10 @@
     }
 
     selectedPeople = [selected, ...selectedPeople];
+
+    if (selectedPeople.length === 1 && !person.name && selected.name) {
+      await handleSwapPeople();
+    }
   };
 
   const handleMerge = async () => {
@@ -84,7 +82,7 @@
         message: $t('merged_people_count', { values: { count } }),
         type: NotificationType.Info,
       });
-      dispatch('merge', mergedPerson);
+      onMerge(mergedPerson);
     } catch (error) {
       handleError(error, $t('cannot_merge_people'));
     }
@@ -97,7 +95,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close={onClose}>
+  <ControlAppBar onClose={onBack}>
     <svelte:fragment slot="leading">
       {#if hasSelection}
         {$t('selected_count', { values: { count: selectedPeople.length } })}
@@ -121,7 +119,7 @@
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
           {#each selectedPeople as person (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
-              <FaceThumbnail border circle {person} selectable thumbnailSize={120} on:click={() => onSelect(person)} />
+              <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
             </div>
           {/each}
 
@@ -148,7 +146,7 @@
         </div>
       </div>
 
-      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => onSelect(detail)} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} />
     </section>
   </section>
 </section>

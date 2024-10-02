@@ -163,7 +163,7 @@
       {allowForceCommand}
       {jobCounts}
       {queueStatus}
-      on:command={({ detail }) => (handleCommandOverride || handleCommand)(jobName, detail)}
+      onCommand={(command) => (handleCommandOverride || handleCommand)(jobName, command)}
     />
   {/each}
 </div>

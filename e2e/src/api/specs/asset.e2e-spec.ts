@@ -76,7 +76,6 @@ describe('/asset', () => {
   let user2Assets: AssetMediaResponseDto[];
   let locationAsset: AssetMediaResponseDto;
   let ratingAsset: AssetMediaResponseDto;
-  let facesAsset: AssetMediaResponseDto;
 
   const setupTests = async () => {
     await utils.resetDatabase();
@@ -236,7 +235,7 @@ describe('/asset', () => {
       await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
 
       // asset faces
-      facesAsset = await utils.createAsset(admin.accessToken, {
+      const facesAsset = await utils.createAsset(admin.accessToken, {
         assetData: {
           filename: 'portrait.jpg',
           bytes: await readFile(facesAssetFilepath),
@@ -543,6 +542,48 @@ describe('/asset', () => {
         }),
       });
       expect(status).toEqual(200);
+    });
+
+    it('should not allow linking two photos', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ livePhotoVideoId: user1Assets[1].id });
+
+      expect(body).toEqual(errorDto.badRequest('Live photo video must be a video'));
+      expect(status).toEqual(400);
+    });
+
+    it('should not allow linking a video owned by another user', async () => {
+      const asset = await utils.createAsset(user2.accessToken, { assetData: { filename: 'example.mp4' } });
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ livePhotoVideoId: asset.id });
+
+      expect(body).toEqual(errorDto.badRequest('Live photo video does not belong to the user'));
+      expect(status).toEqual(400);
+    });
+
+    it('should link a motion photo', async () => {
+      const asset = await utils.createAsset(user1.accessToken, { assetData: { filename: 'example.mp4' } });
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ livePhotoVideoId: asset.id });
+
+      expect(status).toEqual(200);
+      expect(body).toMatchObject({ id: user1Assets[0].id, livePhotoVideoId: asset.id });
+    });
+
+    it('should unlink a motion photo', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ livePhotoVideoId: null });
+
+      expect(status).toEqual(200);
+      expect(body).toMatchObject({ id: user1Assets[0].id, livePhotoVideoId: null });
     });
 
     it('should update date time original when sidecar file contains DateTimeOriginal', async () => {

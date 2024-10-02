@@ -1,7 +1,6 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
   import Slider from '$lib/components/elements/slider.svelte';
   import { generateId } from '$lib/utils/generate-id';
   import { t } from 'svelte-i18n';
@@ -11,14 +10,12 @@
   export let checked = false;
   export let disabled = false;
   export let isEdited = false;
+  export let onToggle: (isChecked: boolean) => void = () => {};
 
   let id: string = generateId();
 
   $: sliderId = `${id}-slider`;
   $: subtitleId = subtitle ? `${id}-subtitle` : undefined;
-
-  const dispatch = createEventDispatcher<{ toggle: boolean }>();
-  const onToggle = (isChecked: boolean) => dispatch('toggle', isChecked);
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -43,11 +40,5 @@
     <slot />
   </div>
 
-  <Slider
-    id={sliderId}
-    bind:checked
-    {disabled}
-    on:toggle={({ detail }) => onToggle(detail)}
-    ariaDescribedBy={subtitleId}
-  />
+  <Slider id={sliderId} bind:checked {disabled} {onToggle} ariaDescribedBy={subtitleId} />
 </div>

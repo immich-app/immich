@@ -1,12 +1,7 @@
-import { UserCore } from 'src/cores/user.core';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { Mocked, vitest } from 'vitest';
 
-export const newUserRepositoryMock = (reset = true): Mocked<IUserRepository> => {
-  if (reset) {
-    UserCore.reset();
-  }
-
+export const newUserRepositoryMock = (): Mocked<IUserRepository> => {
   return {
     get: vitest.fn(),
     getAdmin: vitest.fn(),

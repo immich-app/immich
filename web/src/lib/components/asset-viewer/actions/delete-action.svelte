@@ -82,6 +82,6 @@
 
 {#if showConfirmModal}
   <Portal target="body">
-    <DeleteAssetDialog size={1} on:cancel={() => (showConfirmModal = false)} on:confirm={() => deleteAsset()} />
+    <DeleteAssetDialog size={1} onCancel={() => (showConfirmModal = false)} onConfirm={deleteAsset} />
   </Portal>
 {/if}

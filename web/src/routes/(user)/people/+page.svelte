@@ -302,9 +302,9 @@
     {personMerge1}
     {personMerge2}
     {potentialMergePeople}
-    on:close={() => (showMergeModal = false)}
-    on:reject={() => changeName()}
-    on:confirm={(event) => handleMergeSamePerson(event.detail)}
+    onClose={() => (showMergeModal = false)}
+    onReject={changeName}
+    onConfirm={handleMergeSamePerson}
   />
 {/if}
 
@@ -349,10 +349,10 @@
       <PeopleCard
         {person}
         preload={index < 20}
-        on:change-name={() => handleChangeName(person)}
-        on:set-birth-date={() => handleSetBirthDate(person)}
-        on:merge-people={() => handleMergePeople(person)}
-        on:hide-person={() => handleHidePerson(person)}
+        onChangeName={() => handleChangeName(person)}
+        onSetBirthDate={() => handleSetBirthDate(person)}
+        onMergePeople={() => handleMergePeople(person)}
+        onHidePerson={() => handleHidePerson(person)}
       />
     </PeopleInfiniteScroll>
   {:else}
@@ -397,8 +397,8 @@
   {#if showSetBirthDateModal}
     <SetBirthDateModal
       birthDate={edittingPerson?.birthDate ?? ''}
-      on:close={() => (showSetBirthDateModal = false)}
-      on:updated={(event) => submitBirthDateChange(event.detail)}
+      onClose={() => (showSetBirthDateModal = false)}
+      onUpdate={submitBirthDateChange}
     />
   {/if}
 </UserPageLayout>

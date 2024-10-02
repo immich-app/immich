@@ -16,6 +16,45 @@ class JobsApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'POST /jobs' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [JobCreateDto] jobCreateDto (required):
+  Future<Response> createJobWithHttpInfo(JobCreateDto jobCreateDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/jobs';
+
+    // ignore: prefer_final_locals
+    Object? postBody = jobCreateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [JobCreateDto] jobCreateDto (required):
+  Future<void> createJob(JobCreateDto jobCreateDto,) async {
+    final response = await createJobWithHttpInfo(jobCreateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /jobs' operation and returns the [Response].
   Future<Response> getAllJobsStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations

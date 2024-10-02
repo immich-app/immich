@@ -68,7 +68,7 @@
         {$t('other_devices').toUpperCase()}
       </h3>
       {#each otherDevices as device, index}
-        <DeviceCard {device} on:delete={() => handleDelete(device)} />
+        <DeviceCard {device} onDelete={() => handleDelete(device)} />
         {#if index !== otherDevices.length - 1}
           <hr class="my-3" />
         {/if}

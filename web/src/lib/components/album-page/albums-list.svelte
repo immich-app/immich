@@ -394,13 +394,13 @@
       <CreateSharedLinkModal
         albumId={albumToShare.id}
         onClose={() => closeShareModal()}
-        on:created={() => albumToShare && handleSharedLinkCreated(albumToShare)}
+        onCreated={() => albumToShare && handleSharedLinkCreated(albumToShare)}
       />
     {:else}
       <UserSelectionModal
         album={albumToShare}
-        on:select={({ detail: users }) => handleAddUsers(users)}
-        on:share={() => (showShareByURLModal = true)}
+        onSelect={handleAddUsers}
+        onShare={() => (showShareByURLModal = true)}
         onClose={() => closeShareModal()}
       />
     {/if}

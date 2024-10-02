@@ -6,6 +6,8 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
@@ -17,6 +19,8 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
+import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
@@ -64,6 +68,8 @@ const configs = {
 describe(NotificationService.name, () => {
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
+  let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let notificationMock: Mocked<INotificationRepository>;
@@ -74,17 +80,38 @@ describe(NotificationService.name, () => {
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
+    eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     notificationMock = newNotificationRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new NotificationService(systemMock, notificationMock, userMock, jobMock, loggerMock, assetMock, albumMock);
+    sut = new NotificationService(
+      configMock,
+      eventMock,
+      systemMock,
+      notificationMock,
+      userMock,
+      jobMock,
+      loggerMock,
+      assetMock,
+      albumMock,
+    );
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should emit client and server events', () => {
+      const update = { newConfig: defaults };
+      expect(sut.onConfigUpdate(update)).toBeUndefined();
+      expect(eventMock.clientBroadcast).toHaveBeenCalledWith('on_config_update');
+      expect(eventMock.serverSend).toHaveBeenCalledWith('config.update', update);
+    });
   });
 
   describe('onConfigValidateEvent', () => {
@@ -131,6 +158,23 @@ describe(NotificationService.name, () => {
     });
   });
 
+  describe('onAssetHide', () => {
+    it('should send connected clients an event', () => {
+      sut.onAssetHide({ assetId: 'asset-id', userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_hidden', 'user-id', 'asset-id');
+    });
+  });
+
+  describe('onAssetShow', () => {
+    it('should queue the generate thumbnail job', async () => {
+      await sut.onAssetShow({ assetId: 'asset-id', userId: 'user-id' });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_THUMBNAILS,
+        data: { id: 'asset-id', notify: true },
+      });
+    });
+  });
+
   describe('onUserSignupEvent', () => {
     it('skips when notify is false', async () => {
       await sut.onUserSignup({ id: '', notify: false });
@@ -163,6 +207,62 @@ describe(NotificationService.name, () => {
         name: JobName.NOTIFY_ALBUM_INVITE,
         data: { id: '', recipientId: '42' },
       });
+    });
+  });
+
+  describe('onAssetTrash', () => {
+    it('should send connected clients an event', () => {
+      sut.onAssetTrash({ assetId: 'asset-id', userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_trash', 'user-id', ['asset-id']);
+    });
+  });
+
+  describe('onAssetDelete', () => {
+    it('should send connected clients an event', () => {
+      sut.onAssetDelete({ assetId: 'asset-id', userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_delete', 'user-id', 'asset-id');
+    });
+  });
+
+  describe('onAssetsTrash', () => {
+    it('should send connected clients an event', () => {
+      sut.onAssetsTrash({ assetIds: ['asset-id'], userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_trash', 'user-id', ['asset-id']);
+    });
+  });
+
+  describe('onAssetsRestore', () => {
+    it('should send connected clients an event', () => {
+      sut.onAssetsRestore({ assetIds: ['asset-id'], userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_restore', 'user-id', ['asset-id']);
+    });
+  });
+
+  describe('onStackCreate', () => {
+    it('should send connected clients an event', () => {
+      sut.onStackCreate({ stackId: 'stack-id', userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
+    });
+  });
+
+  describe('onStackUpdate', () => {
+    it('should send connected clients an event', () => {
+      sut.onStackUpdate({ stackId: 'stack-id', userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
+    });
+  });
+
+  describe('onStackDelete', () => {
+    it('should send connected clients an event', () => {
+      sut.onStackDelete({ stackId: 'stack-id', userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
+    });
+  });
+
+  describe('onStacksDelete', () => {
+    it('should send connected clients an event', () => {
+      sut.onStacksDelete({ stackIds: ['stack-id'], userId: 'user-id' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
@@ -528,11 +628,6 @@ describe(NotificationService.name, () => {
     it('should skip if smtp notifications are disabled', async () => {
       systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: false } } });
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.SKIPPED);
-    });
-
-    it('should fail if email could not be sent', async () => {
-      systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
-      await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.FAILED);
     });
 
     it('should send mail successfully', async () => {

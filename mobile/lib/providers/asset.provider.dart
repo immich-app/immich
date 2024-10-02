@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -15,7 +16,6 @@ import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<bool> {
   final AssetService _assetService;
@@ -257,7 +257,7 @@ class AssetNotifier extends StateNotifier<bool> {
     // Delete asset from device
     if (local.isNotEmpty) {
       try {
-        return await PhotoManager.editor.deleteWithIds(local);
+        return await _ref.read(assetMediaRepositoryProvider).deleteAll(local);
       } catch (e, stack) {
         log.severe("Failed to delete asset from device", e, stack);
       }
@@ -275,28 +275,14 @@ class AssetNotifier extends StateNotifier<bool> {
     return isSuccess ? remote.toList() : [];
   }
 
-  Future<void> toggleFavorite(List<Asset> assets, [bool? status]) async {
+  Future<void> toggleFavorite(List<Asset> assets, [bool? status]) {
     status ??= !assets.every((a) => a.isFavorite);
-    final newAssets = await _assetService.changeFavoriteStatus(assets, status);
-    for (Asset? newAsset in newAssets) {
-      if (newAsset == null) {
-        log.severe("Change favorite status failed for asset");
-        continue;
-      }
-    }
+    return _assetService.changeFavoriteStatus(assets, status);
   }
 
-  Future<void> toggleArchive(List<Asset> assets, [bool? status]) async {
+  Future<void> toggleArchive(List<Asset> assets, [bool? status]) {
     status ??= !assets.every((a) => a.isArchived);
-    final newAssets = await _assetService.changeArchiveStatus(assets, status);
-    int i = 0;
-    for (Asset oldAsset in assets) {
-      final newAsset = newAssets[i++];
-      if (newAsset == null) {
-        log.severe("Change archive status failed for asset ${oldAsset.id}");
-        continue;
-      }
-    }
+    return _assetService.changeArchiveStatus(assets, status);
   }
 }
 

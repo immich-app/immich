@@ -140,6 +140,23 @@ describe(TagService.name, () => {
         parent: expect.objectContaining({ id: 'tag-parent' }),
       });
     });
+
+    it('should upsert a tag and ignore leading and trailing slashes', async () => {
+      tagMock.getByValue.mockResolvedValueOnce(null);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
+      await expect(sut.upsert(authStub.admin, { tags: ['/Parent/Child/'] })).resolves.toBeDefined();
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, {
+        value: 'Parent',
+        userId: 'admin_id',
+        parent: undefined,
+      });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
+        value: 'Parent/Child',
+        userId: 'admin_id',
+        parent: expect.objectContaining({ id: 'tag-parent' }),
+      });
+    });
   });
 
   describe('remove', () => {

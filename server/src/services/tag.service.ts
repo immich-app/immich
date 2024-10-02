@@ -14,6 +14,7 @@ import { TagEntity } from 'src/entities/tag.entity';
 import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
+import { JobStatus } from 'src/interfaces/job.interface';
 import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
@@ -136,6 +137,11 @@ export class TagService {
     }
 
     return results;
+  }
+
+  async handleTagCleanup() {
+    await this.repository.deleteEmptyTags();
+    return JobStatus.SUCCESS;
   }
 
   private async findOrFail(id: string) {

@@ -53,8 +53,10 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'docker compose up --build -V --remove-orphans',
+    command: 'docker compose up --build --renew-anon-volumes --force-recreate --remove-orphans',
     url: 'http://127.0.0.1:2285',
+    stdout: 'pipe',
+    stderr: 'pipe',
     reuseExistingServer: true,
   },
 });

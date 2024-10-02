@@ -56,7 +56,7 @@
     <div class="w-full">
       <Combobox
         label={$t('make')}
-        on:select={({ detail }) => (filters.make = detail?.value)}
+        onSelect={(option) => (filters.make = option?.value)}
         options={asComboboxOptions(makes)}
         placeholder={$t('search_camera_make')}
         selectedOption={asSelectedOption(makeFilter)}
@@ -66,7 +66,7 @@
     <div class="w-full">
       <Combobox
         label={$t('model')}
-        on:select={({ detail }) => (filters.model = detail?.value)}
+        onSelect={(option) => (filters.model = option?.value)}
         options={asComboboxOptions(models)}
         placeholder={$t('search_camera_model')}
         selectedOption={asSelectedOption(modelFilter)}

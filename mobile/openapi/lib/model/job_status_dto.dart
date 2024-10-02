@@ -46,6 +46,7 @@ class JobStatusDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static JobStatusDto? fromJson(dynamic value) {
+    upgradeDto(value, "JobStatusDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

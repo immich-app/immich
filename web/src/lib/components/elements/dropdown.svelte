@@ -19,15 +19,9 @@
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/actions/click-outside';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
 
   let className = '';
   export { className as class };
-
-  const dispatch = createEventDispatcher<{
-    select: T;
-    'click-outside': void;
-  }>();
 
   export let options: T[];
   export let selectedOption = options[0];
@@ -35,6 +29,8 @@
   export let controlable = false;
   export let hideTextOnSmallScreen = true;
   export let title: string | undefined = undefined;
+  export let onSelect: (option: T) => void;
+  export let onClickOutside: () => void = () => {};
 
   export let render: (item: T) => string | RenderedOption = String;
 
@@ -43,11 +39,11 @@
       showMenu = false;
     }
 
-    dispatch('click-outside');
+    onClickOutside();
   };
 
   const handleSelectOption = (option: T) => {
-    dispatch('select', option);
+    onSelect(option);
     selectedOption = option;
 
     showMenu = false;

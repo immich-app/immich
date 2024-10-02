@@ -1,6 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -16,26 +15,27 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
-export class SharedLinkService {
-  private configCore: SystemConfigCore;
-
+export class SharedLinkService extends BaseService {
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(SharedLinkService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
@@ -195,7 +195,7 @@ export class SharedLinkService {
       return null;
     }
 
-    const config = await this.configCore.getConfig({ withCache: true });
+    const config = await this.getConfig({ withCache: true });
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;

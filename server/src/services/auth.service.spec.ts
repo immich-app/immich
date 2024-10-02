@@ -1,11 +1,13 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Issuer, generators } from 'openid-client';
-import { AuthType } from 'src/constants';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AuthType } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -19,7 +21,9 @@ import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSessionRepositoryMock } from 'test/repositories/session.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
@@ -55,7 +59,9 @@ const oauthUserWithDefaultQuota = {
 
 describe('AuthService', () => {
   let sut: AuthService;
+  let configMock: Mocked<IConfigRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
+  let eventMock: Mocked<IEventRepository>;
   let userMock: Mocked<IUserRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
@@ -86,7 +92,9 @@ describe('AuthService', () => {
       }),
     } as any);
 
+    configMock = newConfigRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    eventMock = newEventRepositoryMock();
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
@@ -94,7 +102,17 @@ describe('AuthService', () => {
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(cryptoMock, systemMock, loggerMock, userMock, sessionMock, shareMock, keyMock);
+    sut = new AuthService(
+      configMock,
+      cryptoMock,
+      eventMock,
+      systemMock,
+      loggerMock,
+      userMock,
+      sessionMock,
+      shareMock,
+      keyMock,
+    );
   });
 
   it('should be defined', () => {
@@ -208,6 +226,7 @@ describe('AuthService', () => {
       });
 
       expect(sessionMock.delete).toHaveBeenCalledWith('token123');
+      expect(eventMock.emit).toHaveBeenCalledWith('session.delete', { sessionId: 'token123' });
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {

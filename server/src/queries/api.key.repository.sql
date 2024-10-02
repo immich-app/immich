@@ -24,6 +24,7 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."updatedAt" AS "APIKeyEntity__APIKeyEntity_user_updatedAt",
       "APIKeyEntity__APIKeyEntity_user"."quotaSizeInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaSizeInBytes",
       "APIKeyEntity__APIKeyEntity_user"."quotaUsageInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaUsageInBytes",
+      "APIKeyEntity__APIKeyEntity_user"."profileChangedAt" AS "APIKeyEntity__APIKeyEntity_user_profileChangedAt",
       "7f5f7a38bf327bfbbf826778460704c9a50fe6f4"."userId" AS "7f5f7a38bf327bfbbf826778460704c9a50fe6f4_userId",
       "7f5f7a38bf327bfbbf826778460704c9a50fe6f4"."key" AS "7f5f7a38bf327bfbbf826778460704c9a50fe6f4_key",
       "7f5f7a38bf327bfbbf826778460704c9a50fe6f4"."value" AS "7f5f7a38bf327bfbbf826778460704c9a50fe6f4_value"

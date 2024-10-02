@@ -46,6 +46,7 @@ class TimeBucketResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TimeBucketResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "TimeBucketResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ServerAboutModal from '$lib/components/shared-components/server-about-modal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
@@ -8,17 +7,13 @@
   import { t } from 'svelte-i18n';
   import { getByteUnitString } from '../../../utils/byte-units';
   import LoadingSpinner from '../loading-spinner.svelte';
-  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
 
   let usageClasses = '';
-  let isOpen = false;
 
   $: hasQuota = $user?.quotaSizeInBytes !== null;
   $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0;
   $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0;
-  $: usedPercentage = Math.round((usedBytes / availableBytes) * 100);
-
-  let aboutInfo: ServerAboutResponseDto;
+  $: usedPercentage = Math.min(Math.round((usedBytes / availableBytes) * 100), 100);
 
   const onUpdate = () => {
     usageClasses = getUsageClass();
@@ -42,13 +37,8 @@
 
   onMount(async () => {
     await requestServerInfo();
-    aboutInfo = await getAboutInfo();
   });
 </script>
-
-{#if isOpen}
-  <ServerAboutModal onClose={() => (isOpen = false)} info={aboutInfo} />
-{/if}
 
 <div
   class="hidden md:block storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg text-sm"

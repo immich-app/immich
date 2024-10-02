@@ -18,7 +18,7 @@
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
   import { t } from 'svelte-i18n';
 
-  const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook } = slideshowStore;
+  const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
   export let onClose = () => {};
 
@@ -65,6 +65,7 @@
       }}
     />
     <SettingSwitch title={$t('show_progress_bar')} bind:checked={$showProgressBar} />
+    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={$slideshowTransition} />
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label={$t('duration')}

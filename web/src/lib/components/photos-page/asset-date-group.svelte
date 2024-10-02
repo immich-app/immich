@@ -8,7 +8,7 @@
   import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -30,6 +30,9 @@
 
   export let onScrollTarget: ScrollTargetListener | undefined = undefined;
   export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onSelect: ({ title, assets }: { title: string; assets: AssetResponseDto[] }) => void;
+  export let onSelectAssets: (asset: AssetResponseDto) => void;
+  export let onSelectAssetCandidates: (asset: AssetResponseDto | null) => void;
 
   const componentId = generateId();
   $: bucketDate = bucket.bucketDate;
@@ -42,11 +45,6 @@
   const TITLE_HEIGHT = 51;
 
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
-  const dispatch = createEventDispatcher<{
-    select: { title: string; assets: AssetResponseDto[] };
-    selectAssets: AssetResponseDto;
-    selectAssetCandidates: AssetResponseDto | null;
-  }>();
 
   let isMouseOverGroup = false;
   let hoveredDateGroup = '';
@@ -66,10 +64,10 @@
     }
   };
 
-  const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
+  const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => onSelect({ title, assets });
 
   const assetSelectHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
-    dispatch('selectAssets', asset);
+    onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
     let selectedAssetsInGroupCount = assetsInDateGroup.filter((asset) => $selectedAssets.has(asset)).length;
@@ -87,7 +85,7 @@
     hoveredDateGroup = groupTitle;
 
     if ($isMultiSelectState) {
-      dispatch('selectAssetCandidates', asset);
+      onSelectAssetCandidates(asset);
     }
   };
 

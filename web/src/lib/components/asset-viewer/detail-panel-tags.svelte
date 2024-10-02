@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute } from '$lib/constants';
   import { isSharedLink } from '$lib/utils';
   import { removeTag, tagAssets } from '$lib/utils/asset-utils';
@@ -76,5 +77,7 @@
 {/if}
 
 {#if isOpen}
-  <TagAssetForm onTag={(tagsIds) => handleTag(tagsIds)} onCancel={handleCancel} />
+  <Portal>
+    <TagAssetForm onTag={(tagsIds) => handleTag(tagsIds)} onCancel={handleCancel} />
+  </Portal>
 {/if}

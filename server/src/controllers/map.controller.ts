@@ -7,7 +7,6 @@ import {
   MapReverseGeocodeDto,
   MapReverseGeocodeResponseDto,
 } from 'src/dtos/map.dto';
-import { MapThemeDto } from 'src/dtos/system-config.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MapService } from 'src/services/map.service';
 
@@ -20,12 +19,6 @@ export class MapController {
   @Authenticated()
   getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     return this.service.getMapMarkers(auth, options);
-  }
-
-  @Authenticated({ sharedLink: true })
-  @Get('style.json')
-  getMapStyle(@Query() dto: MapThemeDto) {
-    return this.service.getMapStyle(dto.theme);
   }
 
   @Authenticated()

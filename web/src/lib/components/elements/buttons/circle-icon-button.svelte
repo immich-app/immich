@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
   import type { HTMLButtonAttributes, HTMLLinkAttributes } from 'svelte/elements';
 
-  export type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque';
+  export type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque' | 'alert';
   export type Padding = '1' | '2' | '3';
 
   type BaseProps = {
@@ -65,6 +65,7 @@
     opaque: 'bg-transparent hover:bg-immich-bg/30 text-white hover:dark:text-white',
     light: 'bg-white hover:bg-[#d3d3d3]',
     dark: 'bg-[#202123] hover:bg-[#d3d3d3]',
+    alert: 'text-[#ff0000] hover:text-white',
     gray: 'bg-[#d3d3d3] hover:bg-[#e2e7e9] text-immich-dark-gray hover:text-black',
     primary:
       'bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 hover:dark:bg-immich-dark-primary/80 text-white dark:text-immich-dark-gray',

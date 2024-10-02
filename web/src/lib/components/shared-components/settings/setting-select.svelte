@@ -1,7 +1,6 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiChevronDown } from '@mdi/js';
@@ -14,15 +13,14 @@
   export let isEdited = false;
   export let number = false;
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<{ select: string | number }>();
+  export let onSelect: (setting: string | number) => void = () => {};
 
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
     if (number) {
       value = Number.parseInt(value);
     }
-    dispatch('select', value);
+    onSelect(value);
   };
 </script>
 

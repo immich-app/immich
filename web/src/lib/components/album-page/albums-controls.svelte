@@ -154,7 +154,7 @@
   title={$t('sort_albums_by')}
   options={Object.values(sortOptionsMetadata)}
   selectedOption={selectedSortOption}
-  on:select={({ detail }) => handleChangeSortBy(detail)}
+  onSelect={handleChangeSortBy}
   render={({ id }) => ({
     title: albumSortByNames[id],
     icon: sortIcon,
@@ -166,7 +166,7 @@
   title={$t('group_albums_by')}
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
-  on:select={({ detail }) => handleChangeGroupBy(detail)}
+  onSelect={handleChangeGroupBy}
   render={({ id, isDisabled }) => ({
     title: albumGroupByNames[id],
     icon: groupIcon,

@@ -1,12 +1,12 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
   IJobRepository,
@@ -20,29 +20,36 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
 import { isEqualObject } from 'src/utils/object';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class NotificationService {
-  private configCore: SystemConfigCore;
-
+export class NotificationService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(NotificationService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
-  @OnEmit({ event: 'config.validate', priority: -100 })
+  @OnEvent({ name: 'config.update' })
+  onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
+    this.eventRepository.clientBroadcast('on_config_update');
+    this.eventRepository.serverSend('config.update', { oldConfig, newConfig });
+  }
+
+  @OnEvent({ name: 'config.validate', priority: -100 })
   async onConfigValidate({ oldConfig, newConfig }: ArgOf<'config.validate'>) {
     try {
       if (
@@ -57,21 +64,77 @@ export class NotificationService {
     }
   }
 
-  @OnEmit({ event: 'user.signup' })
+  @OnEvent({ name: 'asset.hide' })
+  onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
+    this.eventRepository.clientSend('on_asset_hidden', userId, assetId);
+  }
+
+  @OnEvent({ name: 'asset.show' })
+  async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
+    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id: assetId, notify: true } });
+  }
+
+  @OnEvent({ name: 'asset.trash' })
+  onAssetTrash({ assetId, userId }: ArgOf<'asset.trash'>) {
+    this.eventRepository.clientSend('on_asset_trash', userId, [assetId]);
+  }
+
+  @OnEvent({ name: 'asset.delete' })
+  onAssetDelete({ assetId, userId }: ArgOf<'asset.delete'>) {
+    this.eventRepository.clientSend('on_asset_delete', userId, assetId);
+  }
+
+  @OnEvent({ name: 'assets.trash' })
+  onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
+    this.eventRepository.clientSend('on_asset_trash', userId, assetIds);
+  }
+
+  @OnEvent({ name: 'assets.restore' })
+  onAssetsRestore({ assetIds, userId }: ArgOf<'assets.restore'>) {
+    this.eventRepository.clientSend('on_asset_restore', userId, assetIds);
+  }
+
+  @OnEvent({ name: 'stack.create' })
+  onStackCreate({ userId }: ArgOf<'stack.create'>) {
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
+  }
+
+  @OnEvent({ name: 'stack.update' })
+  onStackUpdate({ userId }: ArgOf<'stack.update'>) {
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
+  }
+
+  @OnEvent({ name: 'stack.delete' })
+  onStackDelete({ userId }: ArgOf<'stack.delete'>) {
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
+  }
+
+  @OnEvent({ name: 'stacks.delete' })
+  onStacksDelete({ userId }: ArgOf<'stacks.delete'>) {
+    this.eventRepository.clientSend('on_asset_stack_update', userId);
+  }
+
+  @OnEvent({ name: 'user.signup' })
   async onUserSignup({ notify, id, tempPassword }: ArgOf<'user.signup'>) {
     if (notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id, tempPassword } });
     }
   }
 
-  @OnEmit({ event: 'album.update' })
+  @OnEvent({ name: 'album.update' })
   async onAlbumUpdate({ id, updatedBy }: ArgOf<'album.update'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_UPDATE, data: { id, senderId: updatedBy } });
   }
 
-  @OnEmit({ event: 'album.invite' })
+  @OnEvent({ name: 'album.invite' })
   async onAlbumInvite({ id, userId }: ArgOf<'album.invite'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id, recipientId: userId } });
+  }
+
+  @OnEvent({ name: 'session.delete' })
+  onSessionDelete({ sessionId }: ArgOf<'session.delete'>) {
+    // after the response is sent
+    setTimeout(() => this.eventRepository.clientSend('on_session_delete', sessionId, sessionId), 500);
   }
 
   async sendTestEmail(id: string, dto: SystemConfigSmtpDto) {
@@ -83,10 +146,10 @@ export class NotificationService {
     try {
       await this.notificationRepository.verifySmtp(dto.transport);
     } catch (error) {
-      throw new HttpException('Failed to verify SMTP configuration', HttpStatus.BAD_REQUEST, { cause: error });
+      throw new BadRequestException('Failed to verify SMTP configuration', { cause: error });
     }
 
-    const { server } = await this.configCore.getConfig({ withCache: false });
+    const { server } = await this.getConfig({ withCache: false });
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
@@ -95,7 +158,7 @@ export class NotificationService {
       },
     });
 
-    await this.notificationRepository.sendEmail({
+    const { messageId } = await this.notificationRepository.sendEmail({
       to: user.email,
       subject: 'Test email from Immich',
       html,
@@ -104,6 +167,8 @@ export class NotificationService {
       replyTo: dto.replyTo || dto.from,
       smtp: dto.transport,
     });
+
+    return { messageId };
   }
 
   async handleUserSignup({ id, tempPassword }: INotifySignupJob) {
@@ -112,7 +177,7 @@ export class NotificationService {
       return JobStatus.SKIPPED;
     }
 
-    const { server } = await this.configCore.getConfig({ withCache: true });
+    const { server } = await this.getConfig({ withCache: true });
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
@@ -155,7 +220,7 @@ export class NotificationService {
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.configCore.getConfig({ withCache: false });
+    const { server } = await this.getConfig({ withCache: false });
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
@@ -197,7 +262,7 @@ export class NotificationService {
     const recipients = [...album.albumUsers.map((user) => user.user), owner].filter((user) => user.id !== senderId);
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.configCore.getConfig({ withCache: false });
+    const { server } = await this.getConfig({ withCache: false });
 
     for (const recipient of recipients) {
       const user = await this.userRepository.get(recipient.id, { withDeleted: false });
@@ -238,7 +303,7 @@ export class NotificationService {
   }
 
   async handleSendEmail(data: IEmailJob): Promise<JobStatus> {
-    const { notifications } = await this.configCore.getConfig({ withCache: false });
+    const { notifications } = await this.getConfig({ withCache: false });
     if (!notifications.smtp.enabled) {
       return JobStatus.SKIPPED;
     }
@@ -254,10 +319,6 @@ export class NotificationService {
       smtp: notifications.smtp.transport,
       imageAttachments: data.imageAttachments,
     });
-
-    if (!response) {
-      return JobStatus.FAILED;
-    }
 
     this.logger.log(`Sent mail with id: ${response.messageId} status: ${response.response}`);
 

@@ -19,6 +19,7 @@ import {
   type AssetResponseDto,
   type PersonResponseDto,
   type SharedLinkResponseDto,
+  type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { sortBy } from 'lodash-es';
@@ -204,7 +205,8 @@ export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: s
   return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: checksum });
 };
 
-export const getProfileImageUrl = (userId: string) => createUrl(getUserProfileImagePath(userId));
+export const getProfileImageUrl = (user: UserResponseDto) =>
+  createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });
 
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
@@ -255,11 +257,7 @@ export const copyToClipboard = async (secret: string) => {
 };
 
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  let url = externalDomain || window.location.origin;
-  if (!url.endsWith('/')) {
-    url += '/';
-  }
-  return `${url}share/${key}`;
+  return new URL(`share/${key}`, externalDomain || window.location.origin).href;
 };
 
 export const oauth = {

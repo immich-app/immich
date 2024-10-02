@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240903@sha256:ca18e2805ec8ddcf0ac7734a6eaf6d9a08bd3a14218bf0dbdbe865d83117190f AS dev
+FROM ghcr.io/immich-app/base-server-dev:20241001@sha256:bb10832c2567f5625df68bb790523e85a358031ddcb3d7ac98b669f62ed8de27 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -25,7 +25,7 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
 
 # web build
-FROM node:20.17.0-alpine3.20@sha256:1a526b97cace6b4006256570efa1a29cd1fe4b96a5301f8d48e87c5139438a45 AS web
+FROM node:20.17.0-alpine3.20@sha256:2d07db07a2df6830718ae2a47db6fedce6745f5bcd174c398f2acdda90a11c03 AS web
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -41,7 +41,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240903@sha256:d0d170ceeee7ef6c7b62b5d927820d74c14a9893f3e6285c1b9df45b33951b09
+FROM ghcr.io/immich-app/base-server-prod:20241001@sha256:a9a0745a486e9cbd73fa06b49168e985f8f2c1be0fca9fb0a8e06916246c7087
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

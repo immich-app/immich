@@ -52,6 +52,7 @@ class SystemConfigStorageTemplateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigStorageTemplateDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigStorageTemplateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

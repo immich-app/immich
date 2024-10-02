@@ -56,9 +56,6 @@ export class AssetMediaCreateDto extends AssetMediaBase {
   @ValidateBoolean({ optional: true })
   isVisible?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  isOffline?: boolean;
-
   @ValidateUUID({ optional: true })
   livePhotoVideoId?: string;
 

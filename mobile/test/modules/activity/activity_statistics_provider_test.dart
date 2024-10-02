@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:mocktail/mocktail.dart';
@@ -25,7 +26,7 @@ void main() {
   test('Returns the proper count family', () async {
     when(
       () => activityMock.getStatistics('test-album', assetId: 'test-asset'),
-    ).thenAnswer((_) async => 5);
+    ).thenAnswer((_) async => const ActivityStats(comments: 5));
 
     // Read here to make the getStatistics call
     container.read(activityStatisticsProvider('test-album', 'test-asset'));
@@ -50,7 +51,7 @@ void main() {
   test('Adds activity', () async {
     when(
       () => activityMock.getStatistics('test-album'),
-    ).thenAnswer((_) async => 10);
+    ).thenAnswer((_) async => const ActivityStats(comments: 10));
 
     final provider = activityStatisticsProvider('test-album');
     container.listen(
@@ -71,7 +72,7 @@ void main() {
   test('Removes activity', () async {
     when(
       () => activityMock.getStatistics('new-album', assetId: 'test-asset'),
-    ).thenAnswer((_) async => 10);
+    ).thenAnswer((_) async => const ActivityStats(comments: 10));
 
     final provider = activityStatisticsProvider('new-album', 'test-asset');
     container.listen(

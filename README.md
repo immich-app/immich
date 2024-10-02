@@ -33,6 +33,7 @@
 <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
 <a href="readme_i18n/README_sv_SE.md">Svenska</a>
 <a href="readme_i18n/README_ar_JO.md">العربية</a>
+<a href="readme_i18n/README_vi_VN.md">Tiếng Việt</a>
 
 </p>
 
@@ -92,7 +93,7 @@ For the mobile app, you can use `https://demo.immich.app/api` for the `Server En
 | LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |
 | Support 360 degree image display             | No     | Yes |
 | User-defined storage structure               | Yes    | Yes |
-| Public Sharing                               | No     | Yes |
+| Public Sharing                               | Yes    | Yes |
 | Archive and Favorites                        | Yes    | Yes |
 | Global Map                                   | Yes    | Yes |
 | Partner Sharing                              | Yes    | Yes |

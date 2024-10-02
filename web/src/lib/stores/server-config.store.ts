@@ -32,6 +32,8 @@ export const serverConfig = writable<ServerConfig>({
   isInitialized: false,
   isOnboarded: false,
   externalDomain: '',
+  mapDarkStyleUrl: '',
+  mapLightStyleUrl: '',
 });
 
 export const retrieveServerConfig = async () => {

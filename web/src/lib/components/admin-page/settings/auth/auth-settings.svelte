@@ -71,7 +71,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ml-4 mt-4 flex flex-col">
         <SettingAccordion
           key="oauth"
           title={$t('admin.oauth_settings')}

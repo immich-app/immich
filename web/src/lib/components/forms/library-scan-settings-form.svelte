@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type LibraryResponseDto } from '@immich/sdk';
   import { mdiPencilOutline } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
@@ -9,6 +9,8 @@
   import { t } from 'svelte-i18n';
 
   export let library: Partial<LibraryResponseDto>;
+  export let onCancel: () => void;
+  export let onSubmit: (library: Partial<LibraryResponseDto>) => void;
 
   let addExclusionPattern = false;
   let editExclusionPattern: number | null = null;
@@ -25,18 +27,6 @@
       library.exclusionPatterns = [];
     }
   });
-
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    submit: Partial<LibraryResponseDto>;
-  }>();
-  const handleCancel = () => {
-    dispatch('cancel');
-  };
-
-  const handleSubmit = () => {
-    dispatch('submit', library);
-  };
 
   const handleAddExclusionPattern = () => {
     if (!addExclusionPattern) {
@@ -106,10 +96,8 @@
     submitText={$t('add')}
     bind:exclusionPattern={exclusionPatternToAdd}
     {exclusionPatterns}
-    on:submit={handleAddExclusionPattern}
-    on:cancel={() => {
-      addExclusionPattern = false;
-    }}
+    onSubmit={handleAddExclusionPattern}
+    onCancel={() => (addExclusionPattern = false)}
   />
 {/if}
 
@@ -119,15 +107,13 @@
     isEditing={true}
     bind:exclusionPattern={editedExclusionPattern}
     {exclusionPatterns}
-    on:submit={handleEditExclusionPattern}
-    on:delete={handleDeleteExclusionPattern}
-    on:cancel={() => {
-      editExclusionPattern = null;
-    }}
+    onSubmit={handleEditExclusionPattern}
+    onDelete={handleDeleteExclusionPattern}
+    onCancel={() => (editExclusionPattern = null)}
   />
 {/if}
 
-<form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" class="m-4 flex flex-col gap-4">
+<form on:submit|preventDefault={() => onSubmit(library)} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="w-full text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as exclusionPattern, listIndex}
@@ -178,7 +164,7 @@
   </table>
 
   <div class="flex w-full justify-end gap-4">
-    <Button size="sm" color="gray" on:click={() => handleCancel()}>{$t('cancel')}</Button>
+    <Button size="sm" color="gray" on:click={onCancel}>{$t('cancel')}</Button>
     <Button size="sm" type="submit">{$t('save')}</Button>
   </div>
 </form>

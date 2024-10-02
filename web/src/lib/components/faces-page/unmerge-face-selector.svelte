@@ -10,7 +10,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiMerge, mdiPlus } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -23,6 +23,8 @@
 
   export let assetIds: string[];
   export let personAssets: PersonResponseDto;
+  export let onConfirm: () => void;
+  export let onClose: () => void;
 
   let people: PersonResponseDto[] = [];
   let selectedPerson: PersonResponseDto | null = null;
@@ -34,11 +36,6 @@
 
   $: peopleToNotShow = selectedPerson ? [personAssets, selectedPerson] : [personAssets];
 
-  let dispatch = createEventDispatcher<{
-    confirm: void;
-    close: void;
-  }>();
-
   const selectedPeople: AssetFaceUpdateItem[] = [];
 
   for (const assetId of assetIds) {
@@ -49,10 +46,6 @@
     const data = await getAllPeople({ withHidden: false });
     people = data.people;
   });
-
-  const onClose = () => {
-    dispatch('close');
-  };
 
   const handleSelectedPerson = (person: PersonResponseDto) => {
     if (selectedPerson && selectedPerson.id === person.id) {
@@ -87,7 +80,7 @@
     }
 
     showLoadingSpinnerCreate = false;
-    dispatch('confirm');
+    onConfirm();
   };
 
   const handleReassign = async () => {
@@ -113,7 +106,7 @@
     }
 
     showLoadingSpinnerReassign = false;
-    dispatch('confirm');
+    onConfirm();
   };
 </script>
 
@@ -123,7 +116,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close={onClose}>
+  <ControlAppBar {onClose}>
     <svelte:fragment slot="leading">
       <slot name="header" />
       <div />
@@ -175,12 +168,12 @@
               circle
               selectable
               thumbnailSize={180}
-              on:click={handleRemoveSelectedPerson}
+              onClick={handleRemoveSelectedPerson}
             />
           </div>
         </div>
       {/if}
-      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => handleSelectedPerson(detail)} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} onSelect={handleSelectedPerson} />
     </section>
   </section>
 </section>

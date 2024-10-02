@@ -18,6 +18,7 @@ class PartnerResponseDto {
     required this.id,
     this.inTimeline,
     required this.name,
+    required this.profileChangedAt,
     required this.profileImagePath,
   });
 
@@ -37,6 +38,8 @@ class PartnerResponseDto {
 
   String name;
 
+  DateTime profileChangedAt;
+
   String profileImagePath;
 
   @override
@@ -46,6 +49,7 @@ class PartnerResponseDto {
     other.id == id &&
     other.inTimeline == inTimeline &&
     other.name == name &&
+    other.profileChangedAt == profileChangedAt &&
     other.profileImagePath == profileImagePath;
 
   @override
@@ -56,10 +60,11 @@ class PartnerResponseDto {
     (id.hashCode) +
     (inTimeline == null ? 0 : inTimeline!.hashCode) +
     (name.hashCode) +
+    (profileChangedAt.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, email=$email, id=$id, inTimeline=$inTimeline, name=$name, profileImagePath=$profileImagePath]';
+  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, email=$email, id=$id, inTimeline=$inTimeline, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -72,6 +77,7 @@ class PartnerResponseDto {
     //  json[r'inTimeline'] = null;
     }
       json[r'name'] = this.name;
+      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
   }
@@ -80,6 +86,7 @@ class PartnerResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PartnerResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "PartnerResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -89,6 +96,7 @@ class PartnerResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         inTimeline: mapValueOfType<bool>(json, r'inTimeline'),
         name: mapValueOfType<String>(json, r'name')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
     }
@@ -141,6 +149,7 @@ class PartnerResponseDto {
     'email',
     'id',
     'name',
+    'profileChangedAt',
     'profileImagePath',
   };
 }

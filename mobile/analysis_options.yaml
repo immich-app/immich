@@ -36,8 +36,73 @@ analyzer:
     - openapi/**
     - lib/generated_plugin_registrant.dart
 
-plugins:
-  - custom_lint
+  plugins:
+    - custom_lint
+
+custom_lint:
+  debug: true
+  rules:
+    - avoid_build_context_in_providers: false
+    - avoid_public_notifier_properties: false
+    - avoid_manual_providers_as_generated_provider_dependency: false
+    - unsupported_provider_value: false
+    - import_rule_photo_manager:
+      message: photo_manager must only be used in MediaRepositories
+      restrict: package:photo_manager
+      allowed:
+        # required / wanted
+        - 'lib/repositories/{album,asset,file}_media.repository.dart'
+        # acceptable exceptions for the time being
+        - lib/entities/asset.entity.dart # to provide local AssetEntity for now
+        - lib/providers/image/immich_local_{image,thumbnail}_provider.dart # accesses thumbnails via PhotoManager
+        # refactor to make the providers and services testable
+        - lib/providers/backup/{backup,manual_upload}.provider.dart # uses only PMProgressHandler
+        - lib/services/{background,backup}.service.dart # uses only PMProgressHandler
+    - import_rule_isar:
+      message: isar must only be used in entities and repositories
+      restrict: package:isar
+      allowed:
+        # required / wanted
+        - lib/entities/*.entity.dart
+        - lib/repositories/{album,asset,backup,database,etag,exif_info,user}.repository.dart
+        # acceptable exceptions for the time being (until Isar is fully replaced)
+        - integration_test/test_utils/general_helper.dart
+        - lib/main.dart
+        - lib/pages/common/album_asset_selection.page.dart
+        - lib/routing/router.dart
+        - lib/services/immich_logger.service.dart # not really a service... more a util
+        - lib/utils/{db,migration,renderlist_generator}.dart
+        - lib/widgets/asset_grid/asset_grid_data_structure.dart
+        - test/**.dart
+        # refactor the remaining providers
+        - lib/providers/{archive,asset,authentication,db,favorite,partner,trash,user}.provider.dart
+        - lib/providers/{album/album,album/shared_album,asset_viewer/asset_stack,asset_viewer/render_list,backup/backup,search/all_motion_photos,search/recently_added_asset}.provider.dart
+
+    - import_rule_openapi:
+      message: openapi must only be used through ApiRepositories
+      restrict: package:openapi
+      allowed:
+        # requried / wanted
+        - lib/repositories/*_api.repository.dart
+        # acceptable exceptions for the time being
+        - lib/entities/{album,asset,exif_info,user}.entity.dart # to convert DTOs to entities
+        - lib/utils/{image_url_builder,openapi_patching}.dart # utils are fine
+        - test/modules/utils/openapi_patching_test.dart # filename is self-explanatory...
+        # refactor
+        - lib/models/map/map_marker.model.dart
+        - lib/models/server_info/server_{config,disk_info,features,version}.model.dart
+        - lib/models/shared_link/shared_link.model.dart
+        - lib/providers/asset_viewer/asset_people.provider.dart
+        - lib/providers/authentication.provider.dart
+        - lib/providers/image/immich_remote_{image,thumbnail}_provider.dart
+        - lib/providers/map/map_state.provider.dart
+        - lib/providers/search/{search,search_filter}.provider.dart
+        - lib/providers/websocket.provider.dart
+        - lib/routing/auth_guard.dart
+        - lib/services/{api,asset,backup,memory,oauth,search,shared_link,stack,trash}.service.dart
+        - lib/widgets/album/album_thumbnail_listtile.dart
+        - lib/widgets/forms/login/login_form.dart
+        - lib/widgets/search/search_filter/{camera_picker,location_picker,people_picker}.dart
 
 dart_code_metrics:
   metrics:

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
-import 'package:isar/isar.dart';
 
 class ThumbnailImage extends ConsumerWidget {
   /// The asset to show the thumbnail image for
@@ -46,7 +46,7 @@ class ThumbnailImage extends ConsumerWidget {
         ? context.primaryColor.darken(amount: 0.6)
         : context.primaryColor.lighten(amount: 0.8);
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
-    final isFromDto = asset.id == Isar.autoIncrement;
+    final isFromDto = asset.id == noDbId;
 
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {

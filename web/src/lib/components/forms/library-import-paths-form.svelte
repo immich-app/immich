@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import LibraryImportPathForm from './library-import-path-form.svelte';
@@ -12,6 +12,8 @@
   import { t } from 'svelte-i18n';
 
   export let library: LibraryResponseDto;
+  export let onCancel: () => void;
+  export let onSubmit: (library: LibraryResponseDto) => void;
 
   let addImportPath = false;
   let editImportPath: number | null = null;
@@ -63,19 +65,6 @@
         type: NotificationType.Warning,
       });
     }
-  };
-
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    submit: Partial<LibraryResponseDto>;
-  }>();
-
-  const handleCancel = () => {
-    dispatch('cancel');
-  };
-
-  const handleSubmit = () => {
-    dispatch('submit', { ...library });
   };
 
   const handleAddImportPath = async () => {
@@ -153,8 +142,8 @@
     submitText={$t('add')}
     bind:importPath={importPathToAdd}
     {importPaths}
-    on:submit={handleAddImportPath}
-    on:cancel={() => {
+    onSubmit={handleAddImportPath}
+    onCancel={() => {
       addImportPath = false;
       importPathToAdd = null;
     }}
@@ -168,15 +157,13 @@
     isEditing={true}
     bind:importPath={editedImportPath}
     {importPaths}
-    on:submit={handleEditImportPath}
-    on:delete={handleDeleteImportPath}
-    on:cancel={() => {
-      editImportPath = null;
-    }}
+    onSubmit={handleEditImportPath}
+    onDelete={handleDeleteImportPath}
+    onCancel={() => (editImportPath = null)}
   />
 {/if}
 
-<form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" class="m-4 flex flex-col gap-4">
+<form on:submit|preventDefault={() => onSubmit({ ...library })} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each validatedPaths as validatedPath, listIndex}
@@ -251,7 +238,7 @@
       >
     </div>
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button size="sm" color="gray" on:click={onCancel}>{$t('cancel')}</Button>
       <Button size="sm" type="submit">{$t('save')}</Button>
     </div>
   </div>

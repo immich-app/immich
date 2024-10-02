@@ -7,7 +7,6 @@
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
@@ -21,6 +20,7 @@
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
   export let editingLink: SharedLinkResponseDto | undefined = undefined;
+  export let onCreated: () => void = () => {};
 
   let sharedLink: string | null = null;
   let description = '';
@@ -31,10 +31,6 @@
   let password = '';
   let shouldChangeExpirationTime = false;
   let enablePassword = false;
-
-  const dispatch = createEventDispatcher<{
-    created: void;
-  }>();
 
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
     [30, 'minutes'],
@@ -97,7 +93,7 @@
         },
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
-      dispatch('created');
+      onCreated();
     } catch (error) {
       handleError(error, $t('errors.failed_to_create_shared_link'));
     }

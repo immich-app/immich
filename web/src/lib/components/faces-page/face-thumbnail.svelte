@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
   export let person: PersonResponseDto;
@@ -10,20 +9,13 @@
   export let thumbnailSize: number | null = null;
   export let circle = false;
   export let border = false;
-
-  let dispatch = createEventDispatcher<{
-    click: PersonResponseDto;
-  }>();
-
-  const handleOnClicked = () => {
-    dispatch('click', person);
-  };
+  export let onClick: (person: PersonResponseDto) => void = () => {};
 </script>
 
 <button
   type="button"
   class="relative rounded-lg transition-all"
-  on:click={handleOnClicked}
+  on:click={() => onClick(person)}
   disabled={!selectable}
   style:width={thumbnailSize ? thumbnailSize + 'px' : '100%'}
   style:height={thumbnailSize ? thumbnailSize + 'px' : '100%'}

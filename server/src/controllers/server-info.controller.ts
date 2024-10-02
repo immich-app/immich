@@ -66,7 +66,7 @@ export class ServerInfoController {
   @Get('config')
   @EndpointLifecycle({ deprecatedAt: 'v1.107.0' })
   getServerConfig(): Promise<ServerConfigDto> {
-    return this.service.getConfig();
+    return this.service.getSystemConfig();
   }
 
   @Get('statistics')

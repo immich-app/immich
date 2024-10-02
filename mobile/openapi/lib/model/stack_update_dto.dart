@@ -50,6 +50,7 @@ class StackUpdateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static StackUpdateDto? fromJson(dynamic value) {
+    upgradeDto(value, "StackUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

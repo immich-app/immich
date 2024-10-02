@@ -52,6 +52,7 @@ class ServerVersionResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerVersionResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "ServerVersionResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

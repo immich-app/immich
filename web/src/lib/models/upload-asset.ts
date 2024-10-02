@@ -10,6 +10,7 @@ export type UploadAsset = {
   id: string;
   file: File;
   assetId?: string;
+  isTrashed?: boolean;
   albumId?: string;
   progress?: number;
   state?: UploadState;

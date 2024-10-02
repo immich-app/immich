@@ -10,7 +10,7 @@ import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { AssetType } from 'src/enum';
+import { AssetStatus, AssetType } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -69,6 +69,9 @@ export class AssetEntity {
 
   @Column()
   type!: AssetType;
+
+  @Column({ type: 'enum', enum: AssetStatus, default: AssetStatus.ACTIVE })
+  status!: AssetStatus;
 
   @Column()
   originalPath!: string;

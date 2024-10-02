@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final searchServiceProvider = Provider(
   (ref) => SearchService(
     ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
+    ref.watch(assetRepositoryProvider),
   ),
 );
 
 class SearchService {
   final ApiService _apiService;
-  final Isar _db;
+  final IAssetRepository _assetRepository;
 
   final _log = Logger("SearchService");
-  SearchService(this._apiService, this._db);
+  SearchService(this._apiService, this._assetRepository);
 
   Future<List<String>?> getSearchSuggestions(
     SearchSuggestionType type, {
@@ -103,7 +103,7 @@ class SearchService {
         return null;
       }
 
-      return _db.assets
+      return _assetRepository
           .getAllByRemoteId(response.assets.items.map((e) => e.id));
     } catch (error, stackTrace) {
       _log.severe("Failed to search for assets", error, stackTrace);

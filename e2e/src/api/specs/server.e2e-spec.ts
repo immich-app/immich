@@ -134,6 +134,8 @@ describe('/server', () => {
         isInitialized: true,
         externalDomain: '',
         isOnboarded: false,
+        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
     });
   });

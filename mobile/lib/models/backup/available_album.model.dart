@@ -1,45 +1,47 @@
 import 'dart:typed_data';
 
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 
 class AvailableAlbum {
-  final AssetPathEntity albumEntity;
+  final Album album;
+  final int assetCount;
   final DateTime? lastBackup;
   AvailableAlbum({
-    required this.albumEntity,
+    required this.album,
+    required this.assetCount,
     this.lastBackup,
   });
 
   AvailableAlbum copyWith({
-    AssetPathEntity? albumEntity,
+    Album? album,
+    int? assetCount,
     DateTime? lastBackup,
     Uint8List? thumbnailData,
   }) {
     return AvailableAlbum(
-      albumEntity: albumEntity ?? this.albumEntity,
+      album: album ?? this.album,
+      assetCount: assetCount ?? this.assetCount,
       lastBackup: lastBackup ?? this.lastBackup,
     );
   }
 
-  String get name => albumEntity.name;
+  String get name => album.name;
 
-  Future<int> get assetCount => albumEntity.assetCountAsync;
+  String get id => album.localId!;
 
-  String get id => albumEntity.id;
-
-  bool get isAll => albumEntity.isAll;
+  bool get isAll => album.isAll;
 
   @override
   String toString() =>
-      'AvailableAlbum(albumEntity: $albumEntity, lastBackup: $lastBackup)';
+      'AvailableAlbum(albumEntity: $album, lastBackup: $lastBackup)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is AvailableAlbum && other.albumEntity == albumEntity;
+    return other is AvailableAlbum && other.album == album;
   }
 
   @override
-  int get hashCode => albumEntity.hashCode;
+  int get hashCode => album.hashCode;
 }

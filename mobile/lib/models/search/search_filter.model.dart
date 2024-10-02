@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/interfaces/person_api.interface.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -235,7 +235,7 @@ class SearchDisplayFilters {
 class SearchFilter {
   String? context;
   String? filename;
-  Set<PersonResponseDto> people;
+  Set<Person> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -258,7 +258,7 @@ class SearchFilter {
   SearchFilter copyWith({
     String? context,
     String? filename,
-    Set<PersonResponseDto>? people,
+    Set<Person>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
     SearchDateFilter? date,

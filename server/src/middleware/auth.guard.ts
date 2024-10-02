@@ -11,18 +11,10 @@ import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthDto, ImmichQuery } from 'src/dtos/auth.dto';
-import { Permission } from 'src/enum';
+import { MetadataKey, Permission } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { UAParser } from 'ua-parser-js';
-
-export enum Metadata {
-  AUTH_ROUTE = 'auth_route',
-  ADMIN_ROUTE = 'admin_route',
-  SHARED_ROUTE = 'shared_route',
-  API_KEY_SECURITY = 'api_key',
-  ON_EMIT_CONFIG = 'on_emit_config',
-}
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };
@@ -32,8 +24,8 @@ export const Authenticated = (options?: AuthenticatedOptions): MethodDecorator =
   const decorators: MethodDecorator[] = [
     ApiBearerAuth(),
     ApiCookieAuth(),
-    ApiSecurity(Metadata.API_KEY_SECURITY),
-    SetMetadata(Metadata.AUTH_ROUTE, options || {}),
+    ApiSecurity(MetadataKey.API_KEY_SECURITY),
+    SetMetadata(MetadataKey.AUTH_ROUTE, options || {}),
   ];
 
   if ((options as SharedLinkRoute)?.sharedLink) {
@@ -85,7 +77,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler()];
 
-    const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(Metadata.AUTH_ROUTE, targets);
+    const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AUTH_ROUTE, targets);
     if (!options) {
       return true;
     }

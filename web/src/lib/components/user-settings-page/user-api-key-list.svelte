@@ -102,7 +102,7 @@
 {/if}
 
 {#if secret}
-  <APIKeySecret {secret} on:done={() => (secret = '')} />
+  <APIKeySecret {secret} onDone={() => (secret = '')} />
 {/if}
 
 {#if editKey}

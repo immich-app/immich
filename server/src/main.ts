@@ -2,7 +2,7 @@ import { CommandFactory } from 'nest-commander';
 import { fork } from 'node:child_process';
 import { Worker } from 'node:worker_threads';
 import { ImmichAdminModule } from 'src/app.module';
-import { LogLevel } from 'src/config';
+import { LogLevel } from 'src/enum';
 import { getWorkers } from 'src/utils/workers';
 const immichApp = process.argv[2] || process.env.IMMICH_APP;
 
@@ -17,7 +17,15 @@ async function bootstrapImmichAdmin() {
 
 function bootstrapWorker(name: string) {
   console.log(`Starting ${name} worker`);
-  const worker = name === 'api' ? fork(`./dist/workers/${name}.js`) : new Worker(`./dist/workers/${name}.js`);
+
+  const execArgv = process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg));
+  const worker =
+    name === 'api' ? fork(`./dist/workers/${name}.js`, [], { execArgv }) : new Worker(`./dist/workers/${name}.js`);
+
+  worker.on('error', (error) => {
+    console.error(`${name} worker error: ${error}`);
+  });
+
   worker.on('exit', (exitCode) => {
     if (exitCode !== 0) {
       console.error(`${name} worker exited with code ${exitCode}`);

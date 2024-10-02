@@ -100,7 +100,7 @@
           title={$t('theme_selection')}
           subtitle={$t('theme_selection_description')}
           bind:checked={$colorTheme.system}
-          on:toggle={handleToggleColorTheme}
+          onToggle={handleToggleColorTheme}
         />
       </div>
 
@@ -120,7 +120,7 @@
           title={$t('default_locale')}
           subtitle={$t('default_locale_description')}
           checked={$locale == undefined}
-          on:toggle={handleToggleLocaleBrowser}
+          onToggle={handleToggleLocaleBrowser}
         >
           <p class="mt-2 dark:text-gray-400">{selectedDate}</p>
         </SettingSwitch>
@@ -143,7 +143,7 @@
           title={$t('display_original_photos')}
           subtitle={$t('display_original_photos_setting_description')}
           bind:checked={$alwaysLoadOriginalFile}
-          on:toggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
+          onToggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
       </div>
       <div class="ml-4">
@@ -151,7 +151,7 @@
           title={$t('video_hover_setting')}
           subtitle={$t('video_hover_setting_description')}
           bind:checked={$playVideoThumbnailOnHover}
-          on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
+          onToggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
         />
       </div>
       <div class="ml-4">
@@ -159,7 +159,7 @@
           title={$t('loop_videos')}
           subtitle={$t('loop_videos_description')}
           bind:checked={$loopVideo}
-          on:toggle={() => ($loopVideo = !$loopVideo)}
+          onToggle={() => ($loopVideo = !$loopVideo)}
         />
       </div>
 

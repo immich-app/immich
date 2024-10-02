@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -85,7 +84,6 @@ class SqlGenerator {
           logger: this.sqlLogger,
         }),
         TypeOrmModule.forFeature(entities),
-        EventEmitterModule.forRoot(),
         OpenTelemetryModule.forRoot(otelConfig),
       ],
       providers: [...repositories, AuthService, SchedulerRegistry],

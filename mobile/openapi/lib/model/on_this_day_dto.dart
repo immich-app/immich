@@ -41,6 +41,7 @@ class OnThisDayDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static OnThisDayDto? fromJson(dynamic value) {
+    upgradeDto(value, "OnThisDayDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

@@ -16,6 +16,7 @@ class AssetBulkUploadCheckResult {
     required this.action,
     this.assetId,
     required this.id,
+    this.isTrashed,
     this.reason,
   });
 
@@ -31,6 +32,14 @@ class AssetBulkUploadCheckResult {
 
   String id;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isTrashed;
+
   AssetBulkUploadCheckResultReasonEnum? reason;
 
   @override
@@ -38,6 +47,7 @@ class AssetBulkUploadCheckResult {
     other.action == action &&
     other.assetId == assetId &&
     other.id == id &&
+    other.isTrashed == isTrashed &&
     other.reason == reason;
 
   @override
@@ -46,10 +56,11 @@ class AssetBulkUploadCheckResult {
     (action.hashCode) +
     (assetId == null ? 0 : assetId!.hashCode) +
     (id.hashCode) +
+    (isTrashed == null ? 0 : isTrashed!.hashCode) +
     (reason == null ? 0 : reason!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUploadCheckResult[action=$action, assetId=$assetId, id=$id, reason=$reason]';
+  String toString() => 'AssetBulkUploadCheckResult[action=$action, assetId=$assetId, id=$id, isTrashed=$isTrashed, reason=$reason]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -60,6 +71,11 @@ class AssetBulkUploadCheckResult {
     //  json[r'assetId'] = null;
     }
       json[r'id'] = this.id;
+    if (this.isTrashed != null) {
+      json[r'isTrashed'] = this.isTrashed;
+    } else {
+    //  json[r'isTrashed'] = null;
+    }
     if (this.reason != null) {
       json[r'reason'] = this.reason;
     } else {
@@ -72,6 +88,7 @@ class AssetBulkUploadCheckResult {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetBulkUploadCheckResult? fromJson(dynamic value) {
+    upgradeDto(value, "AssetBulkUploadCheckResult");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -79,6 +96,7 @@ class AssetBulkUploadCheckResult {
         action: AssetBulkUploadCheckResultActionEnum.fromJson(json[r'action'])!,
         assetId: mapValueOfType<String>(json, r'assetId'),
         id: mapValueOfType<String>(json, r'id')!,
+        isTrashed: mapValueOfType<bool>(json, r'isTrashed'),
         reason: AssetBulkUploadCheckResultReasonEnum.fromJson(json[r'reason']),
       );
     }

@@ -13,9 +13,12 @@ part of openapi.api;
 class CreateProfileImageResponseDto {
   /// Returns a new [CreateProfileImageResponseDto] instance.
   CreateProfileImageResponseDto({
+    required this.profileChangedAt,
     required this.profileImagePath,
     required this.userId,
   });
+
+  DateTime profileChangedAt;
 
   String profileImagePath;
 
@@ -23,20 +26,23 @@ class CreateProfileImageResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateProfileImageResponseDto &&
+    other.profileChangedAt == profileChangedAt &&
     other.profileImagePath == profileImagePath &&
     other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (profileChangedAt.hashCode) +
     (profileImagePath.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'CreateProfileImageResponseDto[profileImagePath=$profileImagePath, userId=$userId]';
+  String toString() => 'CreateProfileImageResponseDto[profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'userId'] = this.userId;
     return json;
@@ -46,10 +52,12 @@ class CreateProfileImageResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static CreateProfileImageResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "CreateProfileImageResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return CreateProfileImageResponseDto(
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
@@ -99,6 +107,7 @@ class CreateProfileImageResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'profileChangedAt',
     'profileImagePath',
     'userId',
   };

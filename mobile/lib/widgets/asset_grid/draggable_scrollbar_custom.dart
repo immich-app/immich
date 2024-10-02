@@ -59,8 +59,6 @@ class DraggableScrollbar extends StatefulWidget {
 
   final Function(bool scrolling) scrollStateListener;
 
-  final double viewPortHeight;
-
   DraggableScrollbar.semicircle({
     super.key,
     Key? scrollThumbKey,
@@ -69,7 +67,6 @@ class DraggableScrollbar extends StatefulWidget {
     required this.controller,
     required this.itemPositionsListener,
     required this.scrollStateListener,
-    required this.viewPortHeight,
     this.heightScrollThumb = 48.0,
     this.backgroundColor = Colors.white,
     this.padding,
@@ -254,7 +251,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
   }
 
   double get barMaxScrollExtent =>
-      widget.viewPortHeight -
+      (context.size?.height ?? 0) -
       widget.heightScrollThumb -
       (widget.heightOffset ?? 0);
 
@@ -340,8 +337,8 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
             _thumbAnimationController.forward();
           }
 
-          if (itemPos < maxItemCount) {
-            _currentItem = itemPos;
+          if (itemPosition < maxItemCount) {
+            _currentItem = itemPosition;
           }
 
           _fadeoutTimer?.cancel();
@@ -365,25 +362,35 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     widget.scrollStateListener(true);
   }
 
-  int get itemPos {
+  int get itemPosition {
     int numberOfItems = widget.child.itemCount;
     return ((_barOffset / barMaxScrollExtent) * numberOfItems).toInt();
   }
 
-  void _jumpToBarPos() {
-    if (itemPos > maxItemCount - 1) {
+  void _jumpToBarPosition() {
+    if (itemPosition > maxItemCount - 1) {
       return;
     }
 
-    _currentItem = itemPos;
+    _currentItem = itemPosition;
+
+    /// If the bar is at the bottom but the item position is still smaller than the max item count (due to rounding error)
+    /// jump to the end of the list
+    if (barMaxScrollExtent - _barOffset < 10 && itemPosition < maxItemCount) {
+      widget.controller.jumpTo(
+        index: maxItemCount,
+      );
+
+      return;
+    }
 
     widget.controller.jumpTo(
-      index: itemPos,
+      index: itemPosition,
     );
   }
 
   Timer? dragHaltTimer;
-  int lastTimerPos = 0;
+  int lastTimerPosition = 0;
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     setState(() {
@@ -400,8 +407,8 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           _barOffset = barMaxScrollExtent;
         }
 
-        if (itemPos != lastTimerPos) {
-          lastTimerPos = itemPos;
+        if (itemPosition != lastTimerPosition) {
+          lastTimerPosition = itemPosition;
           dragHaltTimer?.cancel();
           widget.scrollStateListener(true);
 
@@ -413,7 +420,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           );
         }
 
-        _jumpToBarPos();
+        _jumpToBarPosition();
       }
     });
   }
@@ -426,7 +433,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     });
 
     setState(() {
-      _jumpToBarPos();
+      _jumpToBarPosition();
       _isDragInProcess = false;
     });
 

@@ -159,6 +159,7 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."libraryId" AS "AssetFaceEntity__AssetFaceEntity_asset_libraryId",
       "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
       "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
+      "AssetFaceEntity__AssetFaceEntity_asset"."status" AS "AssetFaceEntity__AssetFaceEntity_asset_status",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
       "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
       "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
@@ -215,19 +216,14 @@ SELECT
   "person"."isHidden" AS "person_isHidden"
 FROM
   "person" "person"
-  LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
 WHERE
   "person"."ownerId" = $1
   AND (
     LOWER("person"."name") LIKE $2
     OR LOWER("person"."name") LIKE $3
   )
-GROUP BY
-  "person"."id"
-ORDER BY
-  COUNT("face"."assetId") DESC
 LIMIT
-  20
+  1000
 
 -- PersonRepository.getDistinctNames
 SELECT DISTINCT
@@ -265,6 +261,7 @@ FROM
       "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
       "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
       "AssetEntity"."type" AS "AssetEntity_type",
+      "AssetEntity"."status" AS "AssetEntity_status",
       "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
       "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
       "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
@@ -396,6 +393,7 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."libraryId" AS "AssetFaceEntity__AssetFaceEntity_asset_libraryId",
   "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
   "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
+  "AssetFaceEntity__AssetFaceEntity_asset"."status" AS "AssetFaceEntity__AssetFaceEntity_asset_status",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
   "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
   "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",

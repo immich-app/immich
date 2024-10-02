@@ -5,7 +5,6 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { mdiAccountEditOutline } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
@@ -15,6 +14,8 @@
   export let canResetPassword = true;
   export let newPassword: string;
   export let onClose: () => void;
+  export let onResetPasswordSuccess: () => void;
+  export let onEditSuccess: () => void;
 
   let error: string;
   let success: string;
@@ -26,12 +27,6 @@
     previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
     !!quotaSize &&
     convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw;
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-    resetPasswordSuccess: void;
-    editSuccess: void;
-  }>();
 
   const editUser = async () => {
     try {
@@ -46,7 +41,7 @@
         },
       });
 
-      dispatch('editSuccess');
+      onEditSuccess();
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_user'));
     }
@@ -72,7 +67,7 @@
         },
       });
 
-      dispatch('resetPasswordSuccess');
+      onResetPasswordSuccess();
     } catch (error) {
       handleError(error, $t('errors.unable_to_reset_password'));
     }

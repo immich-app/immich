@@ -4,7 +4,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
 import { Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { requireAccess } from 'src/utils/access';
 
@@ -30,7 +30,7 @@ export class StackService {
 
     const stack = await this.stackRepository.create({ ownerId: auth.user.id, assetIds: dto.assetIds });
 
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
+    await this.eventRepository.emit('stack.create', { stackId: stack.id, userId: auth.user.id });
 
     return mapStack(stack, { auth });
   }
@@ -50,7 +50,7 @@ export class StackService {
 
     const updatedStack = await this.stackRepository.update({ id, primaryAssetId: dto.primaryAssetId });
 
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
+    await this.eventRepository.emit('stack.update', { stackId: id, userId: auth.user.id });
 
     return mapStack(updatedStack, { auth });
   }
@@ -58,15 +58,13 @@ export class StackService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await requireAccess(this.access, { auth, permission: Permission.STACK_DELETE, ids: [id] });
     await this.stackRepository.delete(id);
-
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
+    await this.eventRepository.emit('stack.delete', { stackId: id, userId: auth.user.id });
   }
 
   async deleteAll(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
     await requireAccess(this.access, { auth, permission: Permission.STACK_DELETE, ids: dto.ids });
     await this.stackRepository.deleteAll(dto.ids);
-
-    this.eventRepository.clientSend(ClientEvent.ASSET_STACK_UPDATE, auth.user.id, []);
+    await this.eventRepository.emit('stacks.delete', { stackIds: dto.ids, userId: auth.user.id });
   }
 
   private async findOrFail(id: string) {

@@ -46,6 +46,7 @@ class MemoryLaneResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MemoryLaneResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "MemoryLaneResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

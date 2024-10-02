@@ -124,7 +124,7 @@ export class MapRepository implements IMapRepository {
     }
   }
 
-  async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult | null> {
+  async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
     const response = await this.geodataPlacesRepository
@@ -159,7 +159,7 @@ export class MapRepository implements IMapRepository {
         `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
       );
 
-      return null;
+      return { country: null, state: null, city: null };
     }
 
     this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);

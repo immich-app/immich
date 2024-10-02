@@ -1,6 +1,5 @@
 <script lang="ts">
   import { type PersonResponseDto } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { t } from 'svelte-i18n';
@@ -8,14 +7,12 @@
   export let screenHeight: number;
   export let people: PersonResponseDto[];
   export let peopleToNotShow: PersonResponseDto[];
+  export let onSelect: (person: PersonResponseDto) => void;
+
   let searchedPeopleLocal: PersonResponseDto[] = [];
 
   let name = '';
   let showPeople: PersonResponseDto[];
-
-  let dispatch = createEventDispatcher<{
-    select: PersonResponseDto;
-  }>();
 
   $: {
     showPeople = name ? searchedPeopleLocal : people;
@@ -35,15 +32,7 @@
 >
   <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
     {#each showPeople as person (person.id)}
-      <FaceThumbnail
-        {person}
-        on:click={() => {
-          dispatch('select', person);
-        }}
-        circle
-        border
-        selectable
-      />
+      <FaceThumbnail {person} onClick={() => onSelect(person)} circle border selectable />
     {/each}
   </div>
 </div>

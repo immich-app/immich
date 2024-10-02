@@ -26,6 +26,7 @@ export class AssetBulkUploadCheckResult {
   action!: AssetUploadAction;
   reason?: AssetRejectReason;
   assetId?: string;
+  isTrashed?: boolean;
 }
 
 export class AssetBulkUploadCheckResponseDto {

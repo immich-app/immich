@@ -80,7 +80,7 @@ export function searchAssetBuilder(
     });
   }
 
-  const status = _.pick(options, ['isFavorite', 'isOffline', 'isVisible', 'type']);
+  const status = _.pick(options, ['isFavorite', 'isVisible', 'type']);
   const {
     isArchived,
     isEncoded,
@@ -120,7 +120,7 @@ export function searchAssetBuilder(
   }
 
   if (withPeople) {
-    builder.leftJoinAndSelect(`${builder.alias}.person`, 'person');
+    builder.leftJoinAndSelect('faces.person', 'person');
   }
 
   if (withSmartInfo) {

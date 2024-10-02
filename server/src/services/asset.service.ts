@@ -1,7 +1,6 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
   MemoryLaneResponseDto,
@@ -20,10 +19,11 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { Permission } from 'src/enum';
+import { AssetStatus, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ClientEvent, IEventRepository } from 'src/interfaces/event.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeleteJob,
   IJobRepository,
@@ -38,26 +38,26 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { requireAccess } from 'src/utils/access';
-import { getAssetFiles, getMyPartnerIds } from 'src/utils/asset.util';
+import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
-export class AssetService {
-  private configCore: SystemConfigCore;
-
+export class AssetService extends BaseService {
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IStackRepository) private stackRepository: IStackRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(AssetService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
@@ -98,7 +98,12 @@ export class AssetService {
   }
 
   async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.getRandom(auth.user.id, count);
+    const partnerIds = await getMyPartnerIds({
+      userId: auth.user.id,
+      repository: this.partnerRepository,
+      timelineEnabled: true,
+    });
+    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
     return assets.map((a) => mapAsset(a, { auth }));
   }
 
@@ -159,9 +164,26 @@ export class AssetService {
     await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
+    const repos = { asset: this.assetRepository, event: this.eventRepository };
+
+    let previousMotion: AssetEntity | null = null;
+    if (rest.livePhotoVideoId) {
+      await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
+    } else if (rest.livePhotoVideoId === null) {
+      const asset = await this.findOrFail(id);
+      if (asset.livePhotoVideoId) {
+        previousMotion = await onBeforeUnlink(repos, { livePhotoVideoId: asset.livePhotoVideoId });
+      }
+    }
+
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     await this.assetRepository.update({ id, ...rest });
+
+    if (previousMotion) {
+      await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
+    }
+
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
@@ -172,9 +194,11 @@ export class AssetService {
       },
       files: true,
     });
+
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
+
     return mapAsset(asset, { auth });
   }
 
@@ -190,7 +214,7 @@ export class AssetService {
   }
 
   async handleAssetDeletionCheck(): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
     const trashedBefore = DateTime.now()
       .minus(Duration.fromObject({ days: trashedDays }))
@@ -249,7 +273,8 @@ export class AssetService {
     if (!asset.libraryId) {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
-    this.eventRepository.clientSend(ClientEvent.ASSET_DELETE, asset.ownerId, id);
+
+    await this.eventRepository.emit('asset.delete', { assetId: id, userId: asset.ownerId });
 
     // delete the motion if it is not used by another asset
     if (asset.livePhotoVideoId) {
@@ -277,18 +302,11 @@ export class AssetService {
     const { ids, force } = dto;
 
     await requireAccess(this.access, { auth, permission: Permission.ASSET_DELETE, ids });
-
-    if (force) {
-      await this.jobRepository.queueAll(
-        ids.map((id) => ({
-          name: JobName.ASSET_DELETION,
-          data: { id, deleteOnDisk: true },
-        })),
-      );
-    } else {
-      await this.assetRepository.softDeleteAll(ids);
-      this.eventRepository.clientSend(ClientEvent.ASSET_TRASH, auth.user.id, ids);
-    }
+    await this.assetRepository.updateAll(ids, {
+      deletedAt: new Date(),
+      status: force ? AssetStatus.DELETED : AssetStatus.TRASHED,
+    });
+    await this.eventRepository.emit(force ? 'assets.delete' : 'assets.trash', { assetIds: ids, userId: auth.user.id });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
@@ -304,7 +322,7 @@ export class AssetService {
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id } });
+          jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id } });
           break;
         }
 
@@ -316,6 +334,14 @@ export class AssetService {
     }
 
     await this.jobRepository.queueAll(jobs);
+  }
+
+  private async findOrFail(id: string) {
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+    return asset;
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {

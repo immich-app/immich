@@ -36,6 +36,9 @@ export type ScrollTargetListener = ({
 export const fromLocalDateTime = (localDateTime: string) =>
   DateTime.fromISO(localDateTime, { zone: 'UTC', locale: get(locale) });
 
+export const fromDateTimeOriginal = (dateTimeOriginal: string, timeZone: string) =>
+  DateTime.fromISO(dateTimeOriginal, { zone: timeZone });
+
 export const groupDateFormat: Intl.DateTimeFormatOptions = {
   weekday: 'short',
   month: 'short',

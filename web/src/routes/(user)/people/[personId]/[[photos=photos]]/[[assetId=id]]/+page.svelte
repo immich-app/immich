@@ -347,8 +347,8 @@
   <UnMergeFaceSelector
     assetIds={[...$selectedAssets].map((a) => a.id)}
     personAssets={person}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:confirm={handleUnmerge}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onConfirm={handleUnmerge}
   />
 {/if}
 
@@ -357,22 +357,22 @@
     {personMerge1}
     {personMerge2}
     {potentialMergePeople}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:reject={() => changeName()}
-    on:confirm={(event) => handleMergeSamePerson(event.detail)}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onReject={changeName}
+    onConfirm={handleMergeSamePerson}
   />
 {/if}
 
 {#if viewMode === ViewMode.BIRTH_DATE}
   <SetBirthDateModal
     birthDate={person.birthDate ?? ''}
-    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
-    on:updated={(event) => handleSetBirthDate(event.detail)}
+    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onUpdate={handleSetBirthDate}
   />
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector {person} on:back={handleGoBack} on:merge={({ detail }) => handleMerge(detail)} />
+  <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
 
 <header>
@@ -400,7 +400,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
             <MenuOption
@@ -429,7 +429,7 @@
     {/if}
 
     {#if viewMode === ViewMode.SELECT_PERSON}
-      <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+      <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}>
         <svelte:fragment slot="leading">{$t('select_featured_photo')}</svelte:fragment>
       </ControlAppBar>
     {/if}
@@ -444,8 +444,8 @@
       {assetInteractionStore}
       isSelectionMode={viewMode === ViewMode.SELECT_PERSON}
       singleSelect={viewMode === ViewMode.SELECT_PERSON}
-      on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
-      on:escape={handleEscape}
+      onSelect={handleSelectFeaturePhoto}
+      onEscape={handleEscape}
     >
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Person information block -->
@@ -464,7 +464,7 @@
                 bind:suggestedPeople
                 name={person.name}
                 bind:isSearchingPeople
-                on:change={(event) => handleNameChange(event.detail)}
+                onChange={handleNameChange}
                 {thumbnailData}
               />
             {:else}
@@ -486,17 +486,10 @@
                   <div
                     class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
                   >
-                    {#if person.name}
-                      <p class="w-40 sm:w-72 font-medium truncate">{person.name}</p>
-                      <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
-                        {$t('assets_count', { values: { count: numberOfAssets } })}
-                      </p>
-                    {:else}
-                      <p class="font-medium">{$t('add_a_name')}</p>
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">
-                        {$t('find_them_fast')}
-                      </p>
-                    {/if}
+                    <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
+                    <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                      {$t('assets_count', { values: { count: numberOfAssets } })}
+                    </p>
                   </div>
                 </button>
               </div>

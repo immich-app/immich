@@ -8,7 +8,7 @@
     AlbumUserRole,
   } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -20,11 +20,8 @@
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
-
-  const dispatch = createEventDispatcher<{
-    remove: string;
-    refreshAlbum: void;
-  }>();
+  export let onRemove: (userId: string) => void;
+  export let onRefreshAlbum: () => void;
 
   let currentUser: UserResponseDto;
   let selectedRemoveUser: UserResponseDto | null = null;
@@ -52,7 +49,7 @@
 
     try {
       await removeUserFromAlbum({ id: album.id, userId });
-      dispatch('remove', userId);
+      onRemove(userId);
       const message =
         userId === 'me'
           ? $t('album_user_left', { values: { album: album.albumName } })
@@ -71,7 +68,7 @@
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
-      dispatch('refreshAlbum');
+      onRefreshAlbum();
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));

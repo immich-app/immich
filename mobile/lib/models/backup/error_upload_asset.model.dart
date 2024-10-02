@@ -1,11 +1,11 @@
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 
 class ErrorUploadAsset {
   final String id;
   final DateTime fileCreatedAt;
   final String fileName;
   final String fileType;
-  final AssetEntity asset;
+  final Asset asset;
   final String errorMessage;
 
   const ErrorUploadAsset({
@@ -22,7 +22,7 @@ class ErrorUploadAsset {
     DateTime? fileCreatedAt,
     String? fileName,
     String? fileType,
-    AssetEntity? asset,
+    Asset? asset,
     String? errorMessage,
   }) {
     return ErrorUploadAsset(

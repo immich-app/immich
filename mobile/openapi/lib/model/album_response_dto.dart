@@ -186,6 +186,7 @@ class AlbumResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AlbumResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AlbumResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

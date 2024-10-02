@@ -185,7 +185,7 @@ class AlbumOptionsRouteArgs {
 class AlbumPreviewRoute extends PageRouteInfo<AlbumPreviewRouteArgs> {
   AlbumPreviewRoute({
     Key? key,
-    required AssetPathEntity album,
+    required Album album,
     List<PageRouteInfo>? children,
   }) : super(
           AlbumPreviewRoute.name,
@@ -218,7 +218,7 @@ class AlbumPreviewRouteArgs {
 
   final Key? key;
 
-  final AssetPathEntity album;
+  final Album album;
 
   @override
   String toString() {

@@ -2,7 +2,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { updateAlbumInfo, type AlbumResponseDto, type UserResponseDto, AssetOrder } from '@immich/sdk';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -16,6 +15,9 @@
   export let order: AssetOrder | undefined;
   export let user: UserResponseDto;
   export let onChangeOrder: (order: AssetOrder) => void;
+  export let onClose: () => void;
+  export let onToggleEnabledActivity: () => void;
+  export let onShowSelectSharedUser: () => void;
 
   const options: Record<AssetOrder, RenderedOption> = {
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
@@ -23,12 +25,6 @@
   };
 
   $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-    toggleEnableActivity: void;
-    showSelectSharedUser: void;
-  }>();
 
   const handleToggle = async (returnedOption: RenderedOption) => {
     if (selectedOption === returnedOption) {
@@ -51,7 +47,7 @@
   };
 </script>
 
-<FullScreenModal title={$t('options')} onClose={() => dispatch('close')}>
+<FullScreenModal title={$t('options')} {onClose}>
   <div class="items-center justify-center">
     <div class="py-2">
       <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
@@ -68,14 +64,14 @@
           title={$t('comments_and_likes')}
           subtitle={$t('let_others_respond')}
           checked={album.isActivityEnabled}
-          on:toggle={() => dispatch('toggleEnableActivity')}
+          onToggle={onToggleEnabledActivity}
         />
       </div>
     </div>
     <div class="py-2">
       <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
       <div class="p-2">
-        <button type="button" class="flex items-center gap-2" on:click={() => dispatch('showSelectSharedUser')}>
+        <button type="button" class="flex items-center gap-2" on:click={onShowSelectSharedUser}>
           <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
             <div><Icon path={mdiPlus} size="25" /></div>
           </div>

@@ -156,8 +156,7 @@ export const utils = {
 
       for (const table of tables) {
         if (table === 'system_metadata') {
-          // prevent reverse geocoder from being re-initialized
-          sql.push(`DELETE FROM "system_metadata" where "key" != 'reverse-geocoding-state';`);
+          sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
         } else {
           sql.push(`DELETE FROM ${table} CASCADE;`);
         }
@@ -373,7 +372,21 @@ export const utils = {
     writeFileSync(path, makeRandomImage());
   },
 
+  createDirectory: (path: string) => {
+    if (!existsSync(dirname(path))) {
+      mkdirSync(dirname(path), { recursive: true });
+    }
+  },
+
   removeImageFile: (path: string) => {
+    if (!existsSync(path)) {
+      return;
+    }
+
+    rmSync(path);
+  },
+
+  removeDirectory: (path: string) => {
     if (!existsSync(path)) {
       return;
     }

@@ -1,41 +1,31 @@
-import 'package:immich_mobile/constants/errors.dart';
+import 'package:immich_mobile/interfaces/activity_api.interface.dart';
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 class ActivityService with ErrorLoggerMixin {
-  final ApiService _apiService;
+  final IActivityApiRepository _activityApiRepository;
 
   @override
   final Logger logger = Logger("ActivityService");
 
-  ActivityService(this._apiService);
+  ActivityService(this._activityApiRepository);
 
   Future<List<Activity>> getAllActivities(
     String albumId, {
     String? assetId,
   }) async {
     return logError(
-      () async {
-        final list = await _apiService.activitiesApi
-            .getActivities(albumId, assetId: assetId);
-        return list != null ? list.map(Activity.fromDto).toList() : [];
-      },
+      () => _activityApiRepository.getAll(albumId, assetId: assetId),
       defaultValue: [],
       errorMessage: "Failed to get all activities for album $albumId",
     );
   }
 
-  Future<int> getStatistics(String albumId, {String? assetId}) async {
+  Future<ActivityStats> getStatistics(String albumId, {String? assetId}) async {
     return logError(
-      () async {
-        final dto = await _apiService.activitiesApi
-            .getActivityStatistics(albumId, assetId: assetId);
-        return dto?.comments ?? 0;
-      },
-      defaultValue: 0,
+      () => _activityApiRepository.getStats(albumId, assetId: assetId),
+      defaultValue: const ActivityStats(comments: 0),
       errorMessage: "Failed to statistics for album $albumId",
     );
   }
@@ -43,7 +33,7 @@ class ActivityService with ErrorLoggerMixin {
   Future<bool> removeActivity(String id) async {
     return logError(
       () async {
-        await _apiService.activitiesApi.deleteActivity(id);
+        await _activityApiRepository.delete(id);
         return true;
       },
       defaultValue: false,
@@ -58,22 +48,12 @@ class ActivityService with ErrorLoggerMixin {
     String? comment,
   }) async {
     return guardError(
-      () async {
-        final dto = await _apiService.activitiesApi.createActivity(
-          ActivityCreateDto(
-            albumId: albumId,
-            type: type == ActivityType.comment
-                ? ReactionType.comment
-                : ReactionType.like,
-            assetId: assetId,
-            comment: comment,
-          ),
-        );
-        if (dto != null) {
-          return Activity.fromDto(dto);
-        }
-        throw NoResponseDtoError();
-      },
+      () => _activityApiRepository.create(
+        albumId,
+        type,
+        assetId: assetId,
+        comment: comment,
+      ),
       errorMessage: "Failed to create $type for album $albumId",
     );
   }

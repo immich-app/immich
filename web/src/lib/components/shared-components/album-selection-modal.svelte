@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { mdiPlus } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -11,16 +11,14 @@
   import { sortAlbums } from '$lib/utils/album-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
 
+  export let onNewAlbum: (search: string) => void;
+  export let onAlbumClick: (album: AlbumResponseDto) => void;
+
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
   let filteredAlbums: AlbumResponseDto[] = [];
   let loading = true;
   let search = '';
-
-  const dispatch = createEventDispatcher<{
-    newAlbum: string;
-    album: AlbumResponseDto;
-  }>();
 
   export let shared: boolean;
   export let onClose: () => void;
@@ -39,14 +37,6 @@
       : albums,
     { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
   );
-
-  const handleSelect = (album: AlbumResponseDto) => {
-    dispatch('album', album);
-  };
-
-  const handleNew = () => {
-    dispatch('newAlbum', search.length > 0 ? search : '');
-  };
 
   const getTitle = () => {
     if (shared) {
@@ -81,7 +71,7 @@
       <div class="immich-scrollbar overflow-y-auto">
         <button
           type="button"
-          on:click={handleNew}
+          on:click={() => onNewAlbum(search)}
           class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >
           <div class="flex h-12 w-12 items-center justify-center">
@@ -96,7 +86,7 @@
           {#if !shared && search.length === 0}
             <p class="px-5 py-3 text-xs">{$t('recent').toUpperCase()}</p>
             {#each recentAlbums as album (album.id)}
-              <AlbumListItem {album} on:album={() => handleSelect(album)} />
+              <AlbumListItem {album} onAlbumClick={() => onAlbumClick(album)} />
             {/each}
           {/if}
 
@@ -106,7 +96,7 @@
             </p>
           {/if}
           {#each filteredAlbums as album (album.id)}
-            <AlbumListItem {album} searchQuery={search} on:album={() => handleSelect(album)} />
+            <AlbumListItem {album} searchQuery={search} onAlbumClick={() => onAlbumClick(album)} />
           {/each}
         {:else if albums.length > 0}
           <p class="px-5 py-1 text-sm">{$t('no_albums_with_name_yet')}</p>

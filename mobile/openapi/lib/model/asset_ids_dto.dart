@@ -40,6 +40,7 @@ class AssetIdsDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetIdsDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetIdsDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

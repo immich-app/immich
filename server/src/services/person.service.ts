@@ -1,8 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ImageFormat } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -23,11 +21,19 @@ import {
 } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, Permission, SourceType, SystemMetadataKey } from 'src/enum';
+import {
+  AssetType,
+  CacheControl,
+  ImageFormat,
+  Permission,
+  PersonPathType,
+  SourceType,
+  SystemMetadataKey,
+} from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
@@ -49,37 +55,39 @@ import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interf
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 
 @Injectable()
-export class PersonService {
-  private configCore: SystemConfigCore;
+export class PersonService extends BaseService {
   private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
-    @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(PersonService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      configRepository,
       cryptoRepository,
       moveRepository,
       repository,
@@ -96,7 +104,7 @@ export class PersonService {
       skip: (page - 1) * size,
     };
 
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     const { items, hasNextPage } = await this.repository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
@@ -173,7 +181,7 @@ export class PersonService {
       const assetFace = await this.repository.getRandomFace(personId);
 
       if (assetFace !== null) {
-        await this.repository.update([{ id: personId, faceAssetId: assetFace.id }]);
+        await this.repository.update({ id: personId, faceAssetId: assetFace.id });
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
     }
@@ -211,16 +219,13 @@ export class PersonService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
-    const [created] = await this.repository.create([
-      {
-        ownerId: auth.user.id,
-        name: dto.name,
-        birthDate: dto.birthDate,
-        isHidden: dto.isHidden,
-      },
-    ]);
-    return created;
+  create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
+    return this.repository.create({
+      ownerId: auth.user.id,
+      name: dto.name,
+      birthDate: dto.birthDate,
+      isHidden: dto.isHidden,
+    });
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
@@ -239,7 +244,7 @@ export class PersonService {
       faceId = face.id;
     }
 
-    const [person] = await this.repository.update([{ id, faceAssetId: faceId, name, birthDate, isHidden }]);
+    const person = await this.repository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
 
     if (assetId) {
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
@@ -273,16 +278,6 @@ export class PersonService {
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
-  private async deleteAllPeople() {
-    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAll({ ...pagination, skip: 0 }),
-    );
-
-    for await (const people of personPagination) {
-      await this.delete(people); // deletes thumbnails too
-    }
-  }
-
   async handlePersonCleanup(): Promise<JobStatus> {
     const people = await this.repository.getAllWithoutFaces();
     await this.delete(people);
@@ -290,13 +285,13 @@ export class PersonService {
   }
 
   async handleQueueDetectFaces({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
     if (force) {
-      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.repository.deleteFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     }
 
@@ -321,7 +316,7 @@ export class PersonService {
   }
 
   async handleDetectFaces({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -382,7 +377,7 @@ export class PersonService {
   }
 
   async handleQueueRecognizeFaces({ force, nightly }: INightlyJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -404,7 +399,7 @@ export class PersonService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
-      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.repository.unassignFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     } else if (waiting) {
       this.logger.debug(
@@ -432,7 +427,7 @@ export class PersonService {
   }
 
   async handleRecognizeFaces({ id, deferred }: IDeferrableJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -501,7 +496,7 @@ export class PersonService {
 
     if (isCore && !personId) {
       this.logger.log(`Creating new person for face ${id}`);
-      const [newPerson] = await this.repository.create([{ ownerId: face.asset.ownerId, faceAssetId: face.id }]);
+      const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
       personId = newPerson.id;
     }
@@ -526,7 +521,7 @@ export class PersonService {
   }
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.SKIPPED;
     }
@@ -568,16 +563,16 @@ export class PersonService {
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions = {
+      colorspace: image.colorspace,
       format: ImageFormat.JPEG,
       size: FACE_THUMBNAIL_SIZE,
-      colorspace: image.colorspace,
-      quality: image.quality,
+      quality: image.thumbnail.quality,
       crop: this.getCrop({ old: { width: oldWidth, height: oldHeight }, new: { width, height } }, { x1, y1, x2, y2 }),
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-    } as const;
+    };
 
-    await this.mediaRepository.generateThumbnail(inputPath, thumbnailPath, thumbnailOptions);
-    await this.repository.update([{ id: person.id, thumbnailPath }]);
+    await this.mediaRepository.generateThumbnail(inputPath, thumbnailOptions, thumbnailPath);
+    await this.repository.update({ id: person.id, thumbnailPath });
 
     return JobStatus.SUCCESS;
   }
@@ -624,7 +619,7 @@ export class PersonService {
         }
 
         if (Object.keys(update).length > 0) {
-          [primaryPerson] = await this.repository.update([{ id: primaryPerson.id, ...update }]);
+          primaryPerson = await this.repository.update({ id: primaryPerson.id, ...update });
         }
 
         const mergeName = mergePerson.name || mergePerson.id;

@@ -2,41 +2,41 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { DateTime } from 'luxon';
 import { getClientLicensePublicKey, getServerLicensePublicKey } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { StorageCore } from 'src/cores/storage.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
-import { CreateProfileImageResponseDto, mapCreateProfileImageResponse } from 'src/dtos/user-profile.dto';
+import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { UserMetadataKey } from 'src/enum';
+import { CacheControl, StorageFolder, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { BaseService } from 'src/services/base.service';
+import { ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class UserService {
-  private configCore: SystemConfigCore;
-
+export class UserService extends BaseService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(UserService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async search(): Promise<UserResponseDto[]> {
@@ -93,13 +93,23 @@ export class UserService {
     return mapUser(user);
   }
 
-  async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
+  async createProfileImage(auth: AuthDto, file: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
     const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
-    const updatedUser = await this.userRepository.update(auth.user.id, { profileImagePath: fileInfo.path });
+
+    const user = await this.userRepository.update(auth.user.id, {
+      profileImagePath: file.path,
+      profileChangedAt: new Date(),
+    });
+
     if (oldpath !== '') {
       await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldpath] } });
     }
-    return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
+
+    return {
+      userId: user.id,
+      profileImagePath: user.profileImagePath,
+      profileChangedAt: user.profileChangedAt,
+    };
   }
 
   async deleteProfileImage(auth: AuthDto): Promise<void> {
@@ -107,7 +117,7 @@ export class UserService {
     if (user.profileImagePath === '') {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
-    await this.userRepository.update(auth.user.id, { profileImagePath: '' });
+    await this.userRepository.update(auth.user.id, { profileImagePath: '', profileChangedAt: new Date() });
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
@@ -179,7 +189,7 @@ export class UserService {
 
   async handleUserDeleteCheck(): Promise<JobStatus> {
     const users = await this.userRepository.getDeletedUsers();
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.jobRepository.queueAll(
       users.flatMap((user) =>
         this.isReadyForDeletion(user, config.user.deleteDelay)
@@ -191,7 +201,7 @@ export class UserService {
   }
 
   async handleUserDelete({ id, force }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
       return JobStatus.FAILED;

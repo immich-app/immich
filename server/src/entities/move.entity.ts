@@ -1,3 +1,4 @@
+import { PathType } from 'src/enum';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity('move_history')
@@ -21,21 +22,3 @@ export class MoveEntity {
   @Column({ type: 'varchar' })
   newPath!: string;
 }
-
-export enum AssetPathType {
-  ORIGINAL = 'original',
-  PREVIEW = 'preview',
-  THUMBNAIL = 'thumbnail',
-  ENCODED_VIDEO = 'encoded_video',
-  SIDECAR = 'sidecar',
-}
-
-export enum PersonPathType {
-  FACE = 'face',
-}
-
-export enum UserPathType {
-  PROFILE = 'profile',
-}
-
-export type PathType = AssetPathType | PersonPathType | UserPathType;

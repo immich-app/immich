@@ -35,7 +35,9 @@ export interface IStorageRepository {
   createZipStream(): ImmichZipStream;
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
   readFile(filepath: string, options?: FileReadOptions<Buffer>): Promise<Buffer>;
-  writeFile(filepath: string, buffer: Buffer): Promise<void>;
+  createFile(filepath: string, buffer: Buffer): Promise<void>;
+  createOrOverwriteFile(filepath: string, buffer: Buffer): Promise<void>;
+  overwriteFile(filepath: string, buffer: Buffer): Promise<void>;
   realpath(filepath: string): Promise<string>;
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;

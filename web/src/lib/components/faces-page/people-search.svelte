@@ -83,8 +83,8 @@
     bind:name={searchName}
     {showLoadingSpinner}
     {placeholder}
-    on:reset={handleReset}
-    on:search={({ detail }) => handleSearch(detail.force ?? false)}
+    onReset={handleReset}
+    onSearch={({ force }) => handleSearch(force ?? false)}
   />
 {:else}
   <input

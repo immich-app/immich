@@ -27,14 +27,14 @@ export class DuplicateDetectionConfig extends TaskConfig {
 
 export class FacialRecognitionConfig extends ModelConfig {
   @IsNumber()
-  @Min(0)
+  @Min(0.1)
   @Max(1)
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   minScore!: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(0.1)
   @Max(2)
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })

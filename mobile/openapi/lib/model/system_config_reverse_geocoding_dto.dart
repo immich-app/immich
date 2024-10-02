@@ -40,6 +40,7 @@ class SystemConfigReverseGeocodingDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigReverseGeocodingDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigReverseGeocodingDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

@@ -7,7 +7,7 @@ import { useSwagger } from 'src/utils/misc';
 
 const sync = async () => {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { preview: true });
-  useSwagger(app, true);
+  useSwagger(app, { write: true });
   await app.close();
 };
 

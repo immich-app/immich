@@ -3,23 +3,23 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
 class PeoplePicker extends HookConsumerWidget {
   const PeoplePicker({super.key, required this.onSelect, this.filter});
 
-  final Function(Set<PersonResponseDto>) onSelect;
-  final Set<PersonResponseDto>? filter;
+  final Function(Set<Person>) onSelect;
+  final Set<Person>? filter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var imageSize = 45.0;
     final people = ref.watch(getAllPeopleProvider);
     final headers = ApiService.getRequestHeaders();
-    final selectedPeople = useState<Set<PersonResponseDto>>(filter ?? {});
+    final selectedPeople = useState<Set<Person>>(filter ?? {});
 
     return people.widgetWhen(
       onData: (people) {

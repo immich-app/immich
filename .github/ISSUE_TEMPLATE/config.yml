@@ -1,11 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: I have a question or need support
+  - name: ✋ I have a question or need support
     url: https://discord.immich.app
     about: We use GitHub for tracking bugs, please check out our Discord channel for freaky fast support.
-  - name: Feature Request
+  - name: 📷 My photo or video has a date, time, or timezone problem
+    url: https://github.com/immich-app/immich/discussions/12650
+    about: Upload a sample file to this discussion and we will take a look
+  - name: 🌟 Feature request
     url: https://github.com/immich-app/immich/discussions/new?category=feature-request
     about: Please use our GitHub Discussion for making feature requests.
-  - name: I'm unsure where to go
+  - name: 🫣 I'm unsure where to go
     url: https://discord.immich.app
     about: If you are unsure where to go, then joining our Discord is recommended; Just ask!

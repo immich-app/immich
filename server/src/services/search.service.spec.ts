@@ -1,9 +1,9 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
@@ -13,9 +13,9 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
-import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
@@ -27,32 +27,32 @@ vitest.useFakeTimers();
 describe(SearchService.name, () => {
   let sut: SearchService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let machineMock: Mocked<IMachineLearningRepository>;
   let personMock: Mocked<IPersonRepository>;
   let searchMock: Mocked<ISearchRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
-  let metadataMock: Mocked<IMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
-    metadataMock = newMetadataRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
     sut = new SearchService(
+      configMock,
       systemMock,
       machineMock,
       personMock,
       searchMock,
       assetMock,
       partnerMock,
-      metadataMock,
       loggerMock,
     );
   });
@@ -99,19 +99,19 @@ describe(SearchService.name, () => {
 
   describe('getSearchSuggestions', () => {
     it('should return search suggestions (including null)', async () => {
-      metadataMock.getCountries.mockResolvedValue(['USA', null]);
+      searchMock.getCountries.mockResolvedValue(['USA', null]);
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA', null]);
-      expect(metadataMock.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(searchMock.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
     });
 
     it('should return search suggestions (without null)', async () => {
-      metadataMock.getCountries.mockResolvedValue(['USA', null]);
+      searchMock.getCountries.mockResolvedValue(['USA', null]);
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: false, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA']);
-      expect(metadataMock.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(searchMock.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
     });
   });
 });

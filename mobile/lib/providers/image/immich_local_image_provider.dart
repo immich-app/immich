@@ -9,7 +9,7 @@ import 'package:flutter/painting.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager/photo_manager.dart' show ThumbnailSize;
 
 /// The local image provider for an asset
 class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {

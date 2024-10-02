@@ -1,43 +1,33 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/interfaces/partner_api.interface.dart';
+import 'package:immich_mobile/interfaces/user.interface.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
+import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 final partnerServiceProvider = Provider(
   (ref) => PartnerService(
-    ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
+    ref.watch(partnerApiRepositoryProvider),
+    ref.watch(userRepositoryProvider),
   ),
 );
 
 class PartnerService {
-  final ApiService _apiService;
-  final Isar _db;
+  final IPartnerApiRepository _partnerApiRepository;
+  final IUserRepository _userRepository;
   final Logger _log = Logger("PartnerService");
 
-  PartnerService(this._apiService, this._db);
-
-  Future<List<User>?> getPartners(PartnerDirection direction) async {
-    try {
-      final userDtos = await _apiService.partnersApi.getPartners(direction);
-      if (userDtos != null) {
-        return userDtos.map((u) => User.fromPartnerDto(u)).toList();
-      }
-    } catch (e) {
-      _log.warning("Failed to get partners for direction $direction", e);
-    }
-    return null;
-  }
+  PartnerService(
+    this._partnerApiRepository,
+    this._userRepository,
+  );
 
   Future<bool> removePartner(User partner) async {
     try {
-      await _apiService.partnersApi.removePartner(partner.id);
+      await _partnerApiRepository.delete(partner.id);
       partner.isPartnerSharedBy = false;
-      await _db.writeTxn(() => _db.users.put(partner));
+      await _userRepository.update(partner);
     } catch (e) {
       _log.warning("Failed to remove partner ${partner.id}", e);
       return false;
@@ -47,12 +37,10 @@ class PartnerService {
 
   Future<bool> addPartner(User partner) async {
     try {
-      final dto = await _apiService.partnersApi.createPartner(partner.id);
-      if (dto != null) {
-        partner.isPartnerSharedBy = true;
-        await _db.writeTxn(() => _db.users.put(partner));
-        return true;
-      }
+      await _partnerApiRepository.create(partner.id);
+      partner.isPartnerSharedBy = true;
+      await _userRepository.update(partner);
+      return true;
     } catch (e) {
       _log.warning("Failed to add partner ${partner.id}", e);
     }
@@ -61,13 +49,13 @@ class PartnerService {
 
   Future<bool> updatePartner(User partner, {required bool inTimeline}) async {
     try {
-      final dto = await _apiService.partnersApi
-          .updatePartner(partner.id, UpdatePartnerDto(inTimeline: inTimeline));
-      if (dto != null) {
-        partner.inTimeline = dto.inTimeline ?? partner.inTimeline;
-        await _db.writeTxn(() => _db.users.put(partner));
-        return true;
-      }
+      final dto = await _partnerApiRepository.update(
+        partner.id,
+        inTimeline: inTimeline,
+      );
+      partner.inTimeline = dto.inTimeline;
+      await _userRepository.update(partner);
+      return true;
     } catch (e) {
       _log.warning("Failed to update partner ${partner.id}", e);
     }

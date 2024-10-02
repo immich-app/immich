@@ -17,7 +17,7 @@
   } from '@immich/sdk';
   import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend, mdiDeleteOutline } from '@mdi/js';
   import * as luxon from 'luxon';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -55,6 +55,10 @@
   export let albumOwnerId: string;
   export let disabled: boolean;
   export let isLiked: ActivityResponseDto | null;
+  export let onDeleteComment: () => void;
+  export let onDeleteLike: () => void;
+  export let onAddComment: () => void;
+  export let onClose: () => void;
 
   let textArea: HTMLTextAreaElement;
   let innerHeight: number;
@@ -64,13 +68,6 @@
   let previousAssetId: string | undefined = assetId;
   let message = '';
   let isSendingMessage = false;
-
-  const dispatch = createEventDispatcher<{
-    deleteComment: void;
-    deleteLike: void;
-    addComment: void;
-    close: void;
-  }>();
 
   $: {
     if (innerHeight && activityHeight) {
@@ -111,9 +108,9 @@
       reactions.splice(index, 1);
       reactions = reactions;
       if (isLiked && reaction.type === ReactionType.Like && reaction.id == isLiked.id) {
-        dispatch('deleteLike');
+        onDeleteLike();
       } else {
-        dispatch('deleteComment');
+        onDeleteComment();
       }
 
       const deleteMessages: Record<ReactionType, string> = {
@@ -141,7 +138,7 @@
       reactions.push(data);
       textArea.style.height = '18px';
       message = '';
-      dispatch('addComment');
+      onAddComment();
       // Re-render the activity feed
       reactions = reactions;
     } catch (error) {
@@ -160,7 +157,7 @@
       bind:clientHeight={activityHeight}
     >
       <div class="flex place-items-center gap-2">
-        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} title={$t('close')} />
+        <CircleIconButton on:click={onClose} icon={mdiClose} title={$t('close')} />
 
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('activity')}</p>
       </div>

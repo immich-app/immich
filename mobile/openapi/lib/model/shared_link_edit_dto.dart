@@ -141,6 +141,7 @@ class SharedLinkEditDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SharedLinkEditDto? fromJson(dynamic value) {
+    upgradeDto(value, "SharedLinkEditDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

@@ -13,13 +13,16 @@
     type UserResponseDto,
   } from '@immich/sdk';
   import { mdiCheck, mdiEye, mdiLink, mdiPencil, mdiShareCircle } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
+  export let onSelect: (selectedUsers: AlbumUserAddDto[]) => void;
+  export let onShare: () => void;
+
   let users: UserResponseDto[] = [];
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = {};
 
@@ -29,10 +32,6 @@
     { title: $t('remove_user'), value: 'none' },
   ];
 
-  const dispatch = createEventDispatcher<{
-    select: AlbumUserAddDto[];
-    share: void;
-  }>();
   let sharedLinks: SharedLinkResponseDto[] = [];
   onMount(async () => {
     await getSharedLinks();
@@ -99,7 +98,7 @@
                 title={$t('role')}
                 options={roleOptions}
                 render={({ title, icon }) => ({ title, icon })}
-                on:select={({ detail: { value } }) => handleChangeRole(user, value)}
+                onSelect={({ value }) => handleChangeRole(user, value)}
               />
             </div>
           {/key}
@@ -152,10 +151,8 @@
         rounded="full"
         disabled={Object.keys(selectedUsers).length === 0}
         on:click={() =>
-          dispatch(
-            'select',
-            Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
-          )}>{$t('add')}</Button
+          onSelect(Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })))}
+        >{$t('add')}</Button
       >
     </div>
   {/if}
@@ -166,7 +163,7 @@
     <button
       type="button"
       class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
-      on:click={() => dispatch('share')}
+      on:click={onShare}
     >
       <Icon path={mdiLink} size={24} />
       <p class="text-sm">{$t('create_link')}</p>

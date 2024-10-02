@@ -1,6 +1,5 @@
 <script lang="ts">
   import { type PersonResponseDto } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
@@ -11,10 +10,7 @@
   export let suggestedPeople: PersonResponseDto[];
   export let thumbnailData: string;
   export let isSearchingPeople: boolean;
-
-  const dispatch = createEventDispatcher<{
-    change: string;
-  }>();
+  export let onChange: (name: string) => void;
 </script>
 
 <div
@@ -26,7 +22,7 @@
   <form
     class="ml-4 flex w-full justify-between gap-16"
     autocomplete="off"
-    on:submit|preventDefault={() => dispatch('change', name)}
+    on:submit|preventDefault={() => onChange(name)}
   >
     <SearchPeople
       bind:searchName={name}

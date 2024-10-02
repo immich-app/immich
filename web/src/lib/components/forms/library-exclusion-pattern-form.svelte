@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderRemove } from '@mdi/js';
@@ -10,6 +9,9 @@
   export let exclusionPatterns: string[] = [];
   export let isEditing = false;
   export let submitText = $t('submit');
+  export let onCancel: () => void;
+  export let onSubmit: (exclusionPattern: string) => void;
+  export let onDelete: () => void = () => {};
 
   onMount(() => {
     if (isEditing) {
@@ -19,18 +21,10 @@
 
   $: isDuplicate = exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern);
   $: canSubmit = exclusionPattern && !exclusionPatterns.includes(exclusionPattern);
-
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    submit: { excludePattern: string };
-    delete: void;
-  }>();
-  const handleCancel = () => dispatch('cancel');
-  const handleSubmit = () => dispatch('submit', { excludePattern: exclusionPattern });
 </script>
 
-<FullScreenModal title={$t('add_exclusion_pattern')} icon={mdiFolderRemove} onClose={handleCancel}>
-  <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="add-exclusion-pattern-form">
+<FullScreenModal title={$t('add_exclusion_pattern')} icon={mdiFolderRemove} onClose={onCancel}>
+  <form on:submit|preventDefault={() => onSubmit(exclusionPattern)} autocomplete="off" id="add-exclusion-pattern-form">
     <p class="py-5 text-sm">
       {$t('admin.exclusion_pattern_description')}
       <br /><br />
@@ -53,9 +47,9 @@
     </div>
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
+    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
     {#if isEditing}
-      <Button color="red" fullwidth on:click={() => dispatch('delete')}>{$t('delete')}</Button>
+      <Button color="red" fullwidth on:click={onDelete}>{$t('delete')}</Button>
     {/if}
     <Button type="submit" disabled={!canSubmit} fullwidth form="add-exclusion-pattern-form">{submitText}</Button>
   </svelte:fragment>

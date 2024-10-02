@@ -1,14 +1,10 @@
 import _ from 'lodash';
+import { PaginationMode } from 'src/enum';
 import { FindManyOptions, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 
 export interface PaginationOptions {
   take: number;
   skip?: number;
-}
-
-export enum PaginationMode {
-  LIMIT_OFFSET = 'limit-offset',
-  SKIP_TAKE = 'skip-take',
 }
 
 export interface PaginatedBuilderOptions {

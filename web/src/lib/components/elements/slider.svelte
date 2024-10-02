@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-
   /**
    * Unique identifier for the checkbox element, used to associate labels with the input element.
    */
@@ -11,9 +9,9 @@
   export let ariaDescribedBy: string | undefined = undefined;
   export let checked = false;
   export let disabled = false;
+  export let onToggle: ((checked: boolean) => void) | undefined = undefined;
 
-  const dispatch = createEventDispatcher<{ toggle: boolean }>();
-  const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
+  const handleToggle = (event: Event) => onToggle?.((event.target as HTMLInputElement).checked);
 </script>
 
 <label class="relative inline-block h-[10px] w-[36px] flex-none">
@@ -22,7 +20,7 @@
     class="disabled::cursor-not-allowed h-0 w-0 opacity-0 peer"
     type="checkbox"
     bind:checked
-    on:click={onToggle}
+    on:click={handleToggle}
     {disabled}
     aria-describedby={ariaDescribedBy}
   />

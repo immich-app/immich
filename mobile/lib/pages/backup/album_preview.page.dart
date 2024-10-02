@@ -1,28 +1,27 @@
-import 'dart:typed_data';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 @RoutePage()
 class AlbumPreviewPage extends HookConsumerWidget {
-  final AssetPathEntity album;
+  final Album album;
   const AlbumPreviewPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assets = useState<List<AssetEntity>>([]);
+    final assets = useState<List<Asset>>([]);
 
     getAssetsInAlbum() async {
-      assets.value = await album.getAssetListRange(
-        start: 0,
-        end: await album.assetCountAsync,
-      );
+      assets.value = await ref
+          .read(albumMediaRepositoryProvider)
+          .getAssets(album.localId!);
     }
 
     useEffect(
@@ -68,30 +67,10 @@ class AlbumPreviewPage extends HookConsumerWidget {
         ),
         itemCount: assets.value.length,
         itemBuilder: (context, index) {
-          Future<Uint8List?> thumbData =
-              assets.value[index].thumbnailDataWithSize(
-            const ThumbnailSize(200, 200),
-            quality: 50,
-          );
-
-          return FutureBuilder<Uint8List?>(
-            future: thumbData,
-            builder: ((context, snapshot) {
-              if (snapshot.hasData && snapshot.data != null) {
-                return Image.memory(
-                  snapshot.data!,
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                );
-              }
-
-              return const SizedBox(
-                width: 100,
-                height: 100,
-                child: ImmichLoadingIndicator(),
-              );
-            }),
+          return ImmichThumbnail(
+            asset: assets.value[index],
+            width: 100,
+            height: 100,
           );
         },
       ),

@@ -99,7 +99,7 @@
           ]}
           name="vcodec"
           isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
-          on:select={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
+          onSelect={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
         />
 
         <SettingSelect
@@ -114,7 +114,7 @@
           ]}
           name="acodec"
           isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
-          on:select={() =>
+          onSelect={() =>
             config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
               ? null
               : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
