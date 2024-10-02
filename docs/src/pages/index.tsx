@@ -7,13 +7,13 @@ function HomepageHeader() {
 
   return (
     <header>
-      <div className="top-[calc(30%)] h-full w-full absolute -z-10">
+      <div className="top-[calc(12%)]  md:top-[calc(30%)] h-screen w-full absolute -z-10">
         <img
           src={isDarkTheme ? 'img/logomark-dark.svg' : 'img/logomark-light.svg'}
-          className="h-full w-full mb-2 antialiased -z-10"
+          className="h-[110%] w-[110%] mb-2 antialiased -z-10"
           alt="Immich logo"
         />
-        <div className="w-full h-full absolute left-0 top-0 backdrop-blur-3xl bg-immich-bg/40 dark:bg-transparent"></div>
+        <div className="w-full h-[120vh] absolute left-0 top-0 backdrop-blur-3xl bg-immich-bg/40 dark:bg-transparent"></div>
       </div>
       <section className="text-center pt-12 sm:pt-24 bg-immich-bg/50 dark:bg-immich-dark-bg/80">
         <img
@@ -56,7 +56,7 @@ function HomepageHeader() {
         <img
           src={isDarkTheme ? '/img/screenshot-dark.webp' : '/img/screenshot-light.webp'}
           alt="screenshots"
-          className="w-[95%] lg:w-[85%] xl:w-[70%] 2xl:w-[50%] "
+          className="w-[95%] lg:w-[85%] xl:w-[70%] 2xl:w-[60%] "
         />
 
         <div className="mx-[25%] m-auto my-14 md:my-28">
