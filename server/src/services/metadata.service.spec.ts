@@ -7,14 +7,11 @@ import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -27,79 +24,43 @@ import { probeStub } from 'test/fixtures/media.stub';
 import { metadataStub } from 'test/fixtures/metadata.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
-import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
-import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
-import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
-import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(MetadataService.name, () => {
-  let albumMock: Mocked<IAlbumRepository>;
-  let assetMock: Mocked<IAssetRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
-  let cryptoRepository: Mocked<ICryptoRepository>;
-  let jobMock: Mocked<IJobRepository>;
-  let mapMock: Mocked<IMapRepository>;
-  let metadataMock: Mocked<IMetadataRepository>;
-  let moveMock: Mocked<IMoveRepository>;
-  let mediaMock: Mocked<IMediaRepository>;
-  let personMock: Mocked<IPersonRepository>;
-  let storageMock: Mocked<IStorageRepository>;
-  let eventMock: Mocked<IEventRepository>;
-  let databaseMock: Mocked<IDatabaseRepository>;
-  let userMock: Mocked<IUserRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let tagMock: Mocked<ITagRepository>;
   let sut: MetadataService;
 
-  beforeEach(() => {
-    albumMock = newAlbumRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    cryptoRepository = newCryptoRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    mapMock = newMapRepositoryMock();
-    metadataMock = newMetadataRepositoryMock();
-    moveMock = newMoveRepositoryMock();
-    personMock = newPersonRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    mediaMock = newMediaRepositoryMock();
-    databaseMock = newDatabaseRepositoryMock();
-    userMock = newUserRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    tagMock = newTagRepositoryMock();
+  let albumMock: Mocked<IAlbumRepository>;
+  let assetMock: Mocked<IAssetRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
+  let eventMock: Mocked<IEventRepository>;
+  let jobMock: Mocked<IJobRepository>;
+  let mapMock: Mocked<IMapRepository>;
+  let mediaMock: Mocked<IMediaRepository>;
+  let metadataMock: Mocked<IMetadataRepository>;
+  let personMock: Mocked<IPersonRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
+  let tagMock: Mocked<ITagRepository>;
+  let userMock: Mocked<IUserRepository>;
 
-    sut = new MetadataService(
+  beforeEach(() => {
+    ({
+      sut,
       albumMock,
       assetMock,
+      cryptoMock,
       eventMock,
-      cryptoRepository,
-      databaseMock,
       jobMock,
       mapMock,
       mediaMock,
       metadataMock,
-      moveMock,
       personMock,
       storageMock,
       systemMock,
       tagMock,
       userMock,
-      loggerMock,
-    );
+    } = newTestService(MetadataService));
   });
 
   afterEach(async () => {
@@ -563,10 +524,10 @@ describe(MetadataService.name, () => {
         EmbeddedVideoFile: new BinaryField(0, ''),
         EmbeddedVideoType: 'MotionPhoto_Data',
       });
-      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
-      cryptoRepository.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
+      cryptoMock.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
       const video = randomBytes(512);
       metadataMock.extractBinaryTag.mockResolvedValue(video);
 
@@ -606,10 +567,10 @@ describe(MetadataService.name, () => {
         EmbeddedVideoFile: new BinaryField(0, ''),
         EmbeddedVideoType: 'MotionPhoto_Data',
       });
-      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
-      cryptoRepository.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
+      cryptoMock.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
       const video = randomBytes(512);
       metadataMock.extractBinaryTag.mockResolvedValue(video);
 
@@ -650,10 +611,10 @@ describe(MetadataService.name, () => {
         MicroVideo: 1,
         MicroVideoOffset: 1,
       });
-      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
-      cryptoRepository.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
+      cryptoMock.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
 
@@ -694,7 +655,7 @@ describe(MetadataService.name, () => {
         MicroVideo: 1,
         MicroVideoOffset: 1,
       });
-      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockImplementation((asset) => Promise.resolve({ ...assetStub.livePhotoMotionAsset, ...asset }));
       const video = randomBytes(512);
@@ -719,7 +680,7 @@ describe(MetadataService.name, () => {
         MicroVideo: 1,
         MicroVideoOffset: 1,
       });
-      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(assetStub.livePhotoMotionAsset);
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
@@ -741,7 +702,7 @@ describe(MetadataService.name, () => {
         MicroVideo: 1,
         MicroVideoOffset: 1,
       });
-      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue({ ...assetStub.livePhotoMotionAsset, isVisible: true });
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
@@ -767,7 +728,7 @@ describe(MetadataService.name, () => {
         MicroVideo: 1,
         MicroVideoOffset: 1,
       });
-      cryptoRepository.hashSha1.mockReturnValue(randomBytes(512));
+      cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
       const video = randomBytes(512);

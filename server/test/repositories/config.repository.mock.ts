@@ -1,12 +1,16 @@
+import { ImmichEnvironment } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { Mocked, vitest } from 'vitest';
 
 const envData: EnvData = {
+  environment: ImmichEnvironment.PRODUCTION,
+
   database: {
     skipMigrations: false,
     vectorExtension: DatabaseExtension.VECTORS,
   },
+
   storage: {
     ignoreMountCheckErrors: false,
   },

@@ -201,7 +201,7 @@ const config = {
         darkTheme: prism.themes.dracula,
         additionalLanguages: ['sql', 'diff', 'bash', 'powershell', 'nginx'],
       },
-      image: 'overview/img/feature-panel.png',
+      image: 'img/feature-panel.png',
     }),
 };
 

@@ -76,7 +76,7 @@
   >
     <div class="immich-scrollbar overflow-y-auto pt-1" class:pb-4={isStickyBottom}>
       <ModalHeader id={titleId} {title} {showLogo} {icon} {onClose} />
-      <div class="px-5 pt-0">
+      <div class="px-5 pt-0 mb-5">
         <slot />
       </div>
     </div>

@@ -8,7 +8,6 @@ import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -16,14 +15,7 @@ import { NotificationService } from 'src/services/notification.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 const configs = {
@@ -64,36 +56,19 @@ const configs = {
 };
 
 describe(NotificationService.name, () => {
+  let sut: NotificationService;
+
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
   let notificationMock: Mocked<INotificationRepository>;
-  let sut: NotificationService;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
-    albumMock = newAlbumRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    notificationMock = newNotificationRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    userMock = newUserRepositoryMock();
-
-    sut = new NotificationService(
-      eventMock,
-      systemMock,
-      notificationMock,
-      userMock,
-      jobMock,
-      loggerMock,
-      assetMock,
-      albumMock,
-    );
+    ({ sut, albumMock, assetMock, eventMock, jobMock, notificationMock, systemMock, userMock } =
+      newTestService(NotificationService));
   });
 
   it('should work', () => {

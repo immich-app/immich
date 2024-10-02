@@ -1,33 +1,21 @@
 import { SystemMetadataKey } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
-import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { StorageService } from 'src/services/storage.service';
-import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(StorageService.name, () => {
   let sut: StorageService;
+
   let configMock: Mocked<IConfigRepository>;
-  let databaseMock: Mocked<IDatabaseRepository>;
   let storageMock: Mocked<IStorageRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    configMock = newConfigRepositoryMock();
-    databaseMock = newDatabaseRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-
-    sut = new StorageService(configMock, databaseMock, storageMock, loggerMock, systemMock);
+    ({ sut, configMock, storageMock, systemMock } = newTestService(StorageService));
   });
 
   it('should work', () => {

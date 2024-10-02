@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
@@ -13,31 +13,20 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetType, SourceType } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
+import { WithoutProperty } from 'src/interfaces/asset.interface';
+import { DatabaseLock } from 'src/interfaces/database.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
-  IJobRepository,
   ISidecarWriteJob,
   JobName,
   JOBS_ASSET_PAGINATION_SIZE,
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMapRepository, ReverseGeocodeResult } from 'src/interfaces/map.interface';
-import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { ITagRepository } from 'src/interfaces/tag.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { ReverseGeocodeResult } from 'src/interfaces/map.interface';
+import { ImmichTags } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -98,39 +87,6 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 
 @Injectable()
 export class MetadataService extends BaseService {
-  private storageCore: StorageCore;
-
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IMapRepository) private mapRepository: IMapRepository,
-    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
-    @Inject(IMetadataRepository) private repository: IMetadataRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ITagRepository) private tagRepository: ITagRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(systemMetadataRepository, logger);
-    this.logger.setContext(MetadataService.name);
-    this.storageCore = StorageCore.create(
-      assetRepository,
-      cryptoRepository,
-      moveRepository,
-      personRepository,
-      storageRepository,
-      systemMetadataRepository,
-      this.logger,
-    );
-  }
-
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
@@ -142,7 +98,7 @@ export class MetadataService extends BaseService {
 
   @OnEvent({ name: 'app.shutdown' })
   async onShutdown() {
-    await this.repository.teardown();
+    await this.metadataRepository.teardown();
   }
 
   @OnEvent({ name: 'config.update' })
@@ -369,7 +325,7 @@ export class MetadataService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    await this.repository.writeTags(sidecarPath, exif);
+    await this.metadataRepository.writeTags(sidecarPath, exif);
 
     if (!asset.sidecarPath) {
       await this.assetRepository.update({ id, sidecarPath });
@@ -379,8 +335,8 @@ export class MetadataService extends BaseService {
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
-    const mediaTags = await this.repository.readTags(asset.originalPath);
-    const sidecarTags = asset.sidecarPath ? await this.repository.readTags(asset.sidecarPath) : {};
+    const mediaTags = await this.metadataRepository.readTags(asset.originalPath);
+    const sidecarTags = asset.sidecarPath ? await this.metadataRepository.readTags(asset.sidecarPath) : {};
     const videoTags = asset.type === AssetType.VIDEO ? await this.getVideoTags(asset.originalPath) : {};
 
     // make sure dates comes from sidecar
@@ -464,11 +420,11 @@ export class MetadataService extends BaseService {
       // Samsung MotionPhoto video extraction
       //     HEIC-encoded
       if (hasMotionPhotoVideo) {
-        video = await this.repository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
+        video = await this.metadataRepository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
       }
       //     JPEG-encoded; HEIC also contains these tags, so this conditional must come second
       else if (hasEmbeddedVideoFile) {
-        video = await this.repository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
+        video = await this.metadataRepository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
       }
       // Default video extraction
       else {

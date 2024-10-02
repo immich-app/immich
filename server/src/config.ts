@@ -12,6 +12,7 @@ import {
   Colorspace,
   CQMode,
   ImageFormat,
+  ImmichEnvironment,
   LogLevel,
   ToneMapping,
   TranscodeHWAccel,
@@ -322,7 +323,10 @@ export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
-    IMMICH_ENV: Joi.string().optional().valid('development', 'testing', 'production').default('production'),
+    IMMICH_ENV: Joi.string()
+      .optional()
+      .valid(...Object.values(ImmichEnvironment))
+      .default(ImmichEnvironment.PRODUCTION),
     IMMICH_LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),

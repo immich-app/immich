@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
@@ -14,25 +14,13 @@ import {
 } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
-import { LogLevel } from 'src/enum';
-import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { BaseService } from 'src/services/base.service';
-import { clearConfigCache, isUsingConfigFile } from 'src/utils/config';
+import { clearConfigCache } from 'src/utils/config';
 import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService extends BaseService {
-  constructor(
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(systemMetadataRepository, logger);
-    this.logger.setContext(SystemConfigService.name);
-  }
-
   @OnEvent({ name: 'app.bootstrap', priority: -100 })
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
@@ -50,7 +38,7 @@ export class SystemConfigService extends BaseService {
 
   @OnEvent({ name: 'config.update', server: true })
   onConfigUpdate({ newConfig: { logging } }: ArgOf<'config.update'>) {
-    const envLevel = this.getEnvLogLevel();
+    const { logLevel: envLevel } = this.configRepository.getEnv();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
     this.logger.setLogLevel(level);
@@ -61,13 +49,15 @@ export class SystemConfigService extends BaseService {
 
   @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig, oldConfig }: ArgOf<'config.validate'>) {
-    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
+    const { logLevel } = this.configRepository.getEnv();
+    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && logLevel) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }
 
   async updateSystemConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
-    if (isUsingConfigFile()) {
+    const { configFile } = this.configRepository.getEnv();
+    if (configFile) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
 
@@ -105,9 +95,5 @@ export class SystemConfigService extends BaseService {
   async getCustomCss(): Promise<string> {
     const { theme } = await this.getConfig({ withCache: false });
     return theme.customCss;
-  }
-
-  private getEnvLogLevel() {
-    return process.env.IMMICH_LOG_LEVEL as LogLevel;
   }
 }
