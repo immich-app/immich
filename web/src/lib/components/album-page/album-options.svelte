@@ -114,7 +114,6 @@
           <div>{$t('invite_people')}</div>
         </button>
         
-        {#if user} <!-- Use user prop instead of $user -->
         <div class="flex items-center gap-2 py-2 mt-2">
           <div>
             <UserAvatar user={user} size="md" />
@@ -122,7 +121,6 @@
           <div class="w-full">{user.name}</div>
           <div>{$t('owner')}</div>
         </div>
-        {/if}
 
         {#each album.albumUsers as { user } (user.id)}
           <div class="flex items-center gap-2 py-2">
