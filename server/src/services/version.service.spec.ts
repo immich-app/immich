@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import { serverVersion } from 'src/constants';
-import { SystemMetadataKey } from 'src/enum';
+import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -10,7 +10,7 @@ import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { VersionService } from 'src/services/version.service';
-import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
+import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
@@ -111,11 +111,11 @@ describe(VersionService.name, () => {
 
   describe('handVersionCheck', () => {
     beforeEach(() => {
-      process.env.IMMICH_ENV = 'production';
+      configMock.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.PRODUCTION }));
     });
 
     it('should not run in dev mode', async () => {
-      process.env.IMMICH_ENV = 'development';
+      configMock.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.DEVELOPMENT }));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
     });
 

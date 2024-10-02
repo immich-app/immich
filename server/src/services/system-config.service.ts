@@ -14,7 +14,6 @@ import {
 } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
-import { LogLevel } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -52,7 +51,7 @@ export class SystemConfigService extends BaseService {
 
   @OnEvent({ name: 'config.update', server: true })
   onConfigUpdate({ newConfig: { logging } }: ArgOf<'config.update'>) {
-    const envLevel = this.getEnvLogLevel();
+    const { logLevel: envLevel } = this.configRepository.getEnv();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
     this.logger.setLogLevel(level);
@@ -63,7 +62,8 @@ export class SystemConfigService extends BaseService {
 
   @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig, oldConfig }: ArgOf<'config.validate'>) {
-    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
+    const { logLevel } = this.configRepository.getEnv();
+    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && logLevel) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }
@@ -108,9 +108,5 @@ export class SystemConfigService extends BaseService {
   async getCustomCss(): Promise<string> {
     const { theme } = await this.getConfig({ withCache: false });
     return theme.customCss;
-  }
-
-  private getEnvLogLevel() {
-    return process.env.IMMICH_LOG_LEVEL as LogLevel;
   }
 }
