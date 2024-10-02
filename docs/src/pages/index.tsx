@@ -2,6 +2,8 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
 import { useColorMode } from '@docusaurus/theme-common';
+import { discordPath } from '@site/src/components/svg-paths';
+import Icon from '@mdi/react';
 function HomepageHeader() {
   const { isDarkTheme } = useColorMode();
 
@@ -38,7 +40,7 @@ function HomepageHeader() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 mb-16 gap-4 ">
+        <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 gap-4 ">
           <Link
             className="flex place-items-center place-content-center py-3 px-8 border bg-immich-primary dark:bg-immich-dark-primary rounded-xl no-underline hover:no-underline text-white hover:text-gray-50 dark:text-immich-dark-bg font-bold uppercase"
             to="docs/overview/introduction"
@@ -52,6 +54,11 @@ function HomepageHeader() {
           >
             Demo
           </Link>
+        </div>
+
+        <div className="my-12 flex gap-1 font-medium place-items-center place-content-center text-immich-primary dark:text-immich-dark-primary">
+          <Icon path={discordPath} size={1} />
+          <Link to="https://discord.immich.app/">Join our Discord</Link>
         </div>
         <img
           src={isDarkTheme ? '/img/screenshot-dark.webp' : '/img/screenshot-light.webp'}
