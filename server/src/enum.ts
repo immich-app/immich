@@ -328,3 +328,9 @@ export enum PaginationMode {
   LIMIT_OFFSET = 'limit-offset',
   SKIP_TAKE = 'skip-take',
 }
+
+export enum ImmichEnvironment {
+  DEVELOPMENT = 'development',
+  TESTING = 'testing',
+  PRODUCTION = 'production',
+}
