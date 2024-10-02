@@ -62,6 +62,7 @@
   export let withStacked = false;
   export let showArchiveIcon = false;
   export let isShared = false;
+  export let showUserThumbnailsinViewer = true;
   export let album: AlbumResponseDto | null = null;
   export let isShowDeleteConfirmation = false;
   export let onSelect: (asset: AssetResponseDto) => void = () => {};
@@ -839,6 +840,7 @@
             renderThumbsAtBottomMargin={THUMBNAIL_INTERSECTION_ROOT_BOTTOM}
             {withStacked}
             {showArchiveIcon}
+            {showUserThumbnailsinViewer}
             {assetStore}
             {assetInteractionStore}
             {isSelectionMode}
@@ -864,6 +866,7 @@
       <AssetViewer
         {withStacked}
         {assetStore}
+        {showUserThumbnailsinViewer}
         asset={$viewingAsset}
         preloadAssets={$preloadAssets}
         {isShared}

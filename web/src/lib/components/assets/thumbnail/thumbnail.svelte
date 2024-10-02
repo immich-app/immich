@@ -2,11 +2,14 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { getAssetThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
-  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { user } from '$lib/stores/user.store';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { locale, playVideoThumbnailOnHover, showUserThumbnails } from '$lib/stores/preferences.store';
+  import { getUserAndCacheResult } from '$lib/utils/users';
   import { getAssetPlaybackUrl } from '$lib/utils';
   import {
     mdiArchiveArrowDownOutline,
@@ -19,6 +22,7 @@
   } from '@mdi/js';
 
   import { fade } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
@@ -30,6 +34,7 @@
   import { onDestroy } from 'svelte';
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let dateGroup: DateGroup | undefined = undefined;
@@ -44,6 +49,7 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
+  export let showUserThumbnailsinViewer = true;
   export let intersectionConfig: {
     root?: HTMLElement;
     bottom?: string;
@@ -63,7 +69,6 @@
 
   let className = '';
   export { className as class };
-
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
@@ -74,6 +79,7 @@
   let intersecting = false;
   let lastRetrievedElement: HTMLElement | undefined;
   let loaded = false;
+  let shareUser: UserResponseDto | undefined;
 
   $: if (!retrieveElement) {
     lastRetrievedElement = undefined;
@@ -81,6 +87,9 @@
   $: if (retrieveElement && element && lastRetrievedElement !== element) {
     lastRetrievedElement = element;
     onRetrieveElement?.(element);
+  }
+  $: if ($showUserThumbnails && showUserThumbnailsinViewer && (isSharedLink() || asset.ownerId != $user.id)) {
+    handlePromiseError(getShareUser());
   }
 
   $: width = thumbnailSize || thumbnailWidth || 235;
@@ -156,6 +165,14 @@
       assetStore.taskManager.separatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
     } else {
       intersecting = false;
+    }
+  };
+
+  const getShareUser = async () => {
+    try {
+      shareUser = await getUserAndCacheResult(asset.ownerId);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_load_liked_status'));
     }
   };
 
@@ -265,6 +282,12 @@
         {#if !isSharedLink() && asset.isFavorite}
           <div class="absolute bottom-2 left-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
+          </div>
+        {/if}
+
+        {#if shareUser && showUserThumbnailsinViewer}
+          <div class="absolute bottom-2 left-2 z-10">
+            <UserAvatar user={shareUser} size="sm" />
           </div>
         {/if}
 

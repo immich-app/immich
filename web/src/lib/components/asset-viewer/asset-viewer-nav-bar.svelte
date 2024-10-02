@@ -43,6 +43,7 @@
   } from '@mdi/js';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
@@ -82,6 +83,11 @@
     class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
     data-testid="asset-viewer-navbar-actions"
   >
+    {#if asset.owner && asset.owner.id != $user.id}
+      <div class="p-3 margin:auto">
+        <UserAvatar user={asset.owner} size="xs"></UserAvatar>
+      </div>
+    {/if}
     {#if !asset.isTrashed && $user}
       <ShareAction {asset} />
     {/if}
@@ -124,7 +130,6 @@
         title={$t('editor')}
       />
     {/if} -->
-
     {#if isOwner}
       <DeleteAction {asset} {onAction} />
 
