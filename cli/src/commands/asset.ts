@@ -66,7 +66,14 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
   const { newFiles, duplicates } = await checkForDuplicates(scanFiles, options);
   const newAssets = await uploadFiles(newFiles, options);
   await updateAlbums([...newAssets, ...duplicates], options);
-  await deleteFiles(newFiles, options);
+
+  // if there were new files found in this run, then delete them if requested, leaving duplicates on disk
+  // otherwise if there were no new files, and everything is a duplicate, delete the files that are duplicates
+  if (!options.deleteDuplicates) {
+    await deleteFiles(newFiles, options);
+  } else {
+    await deleteFiles([...newFiles, ...duplicates], options);
+  }
 };
 
 const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
