@@ -1,15 +1,12 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { snakeCase } from 'lodash';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType, ManualJobName } from 'src/enum';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   ConcurrentQueueName,
-  IJobRepository,
   JobCommand,
   JobHandler,
   JobItem,
@@ -18,10 +15,6 @@ import {
   QueueCleanType,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMetricRepository } from 'src/interfaces/metric.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { BaseService } from 'src/services/base.service';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
@@ -47,20 +40,6 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 @Injectable()
 export class JobService extends BaseService {
   private isMicroservices = false;
-
-  constructor(
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(IMetricRepository) private metricRepository: IMetricRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(JobService.name);
-  }
 
   @OnEvent({ name: 'app.bootstrap' })
   onBootstrap(app: ArgOf<'app.bootstrap'>) {

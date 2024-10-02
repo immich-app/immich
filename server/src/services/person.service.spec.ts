@@ -4,13 +4,10 @@ import { PersonResponseDto, mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { CacheControl, Colorspace, ImageFormat, SourceType, SystemMetadataKey } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DetectedFaces, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { FaceSearchResult, ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -22,19 +19,8 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
-import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
-import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
-import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
-import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { IsNull } from 'typeorm';
 import { Mocked } from 'vitest';
 
@@ -67,51 +53,33 @@ const detectFaceMock: DetectedFaces = {
 };
 
 describe(PersonService.name, () => {
+  let sut: PersonService;
+
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<IConfigRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
+  let cryptoMock: Mocked<ICryptoRepository>;
   let jobMock: Mocked<IJobRepository>;
   let machineLearningMock: Mocked<IMachineLearningRepository>;
   let mediaMock: Mocked<IMediaRepository>;
-  let moveMock: Mocked<IMoveRepository>;
   let personMock: Mocked<IPersonRepository>;
-  let storageMock: Mocked<IStorageRepository>;
   let searchMock: Mocked<ISearchRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let sut: PersonService;
+  let storageMock: Mocked<IStorageRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    configMock = newConfigRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    machineLearningMock = newMachineLearningRepositoryMock();
-    moveMock = newMoveRepositoryMock();
-    mediaMock = newMediaRepositoryMock();
-    personMock = newPersonRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    searchMock = newSearchRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new PersonService(
+    ({
+      sut,
       accessMock,
       assetMock,
-      configMock,
+      cryptoMock,
+      jobMock,
       machineLearningMock,
-      moveMock,
       mediaMock,
       personMock,
-      systemMock,
-      storageMock,
-      jobMock,
       searchMock,
-      cryptoMock,
-      loggerMock,
-    );
+      storageMock,
+      systemMock,
+    } = newTestService(PersonService));
   });
 
   it('should be defined', () => {

@@ -18,10 +18,8 @@ import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
-import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
+import { newTestService } from 'test/utils';
 import { DeepPartial } from 'typeorm';
 import { Mocked } from 'vitest';
 
@@ -189,18 +187,14 @@ const updatedConfig = Object.freeze<SystemConfig>({
 
 describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
+
   let configMock: Mocked<IConfigRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
   let eventMock: Mocked<IEventRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    configMock = newConfigRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new SystemConfigService(configMock, eventMock, systemMock, loggerMock);
+    ({ sut, configMock, eventMock, loggerMock, systemMock } = newTestService(SystemConfigService));
   });
 
   it('should work', () => {
