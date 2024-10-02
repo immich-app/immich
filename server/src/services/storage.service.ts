@@ -1,36 +1,23 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { DatabaseLock } from 'src/interfaces/database.interface';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { ImmichStartupError } from 'src/utils/events';
 
 const docsMessage = `Please see https://immich.app/docs/administration/system-integrity#folder-checks for more information.`;
 
 @Injectable()
-export class StorageService {
-  constructor(
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(ISystemMetadataRepository) private systemMetadata: ISystemMetadataRepository,
-  ) {
-    this.logger.setContext(StorageService.name);
-  }
-
+export class StorageService extends BaseService {
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap() {
     const envData = this.configRepository.getEnv();
 
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
-      const flags = (await this.systemMetadata.get(SystemMetadataKey.SYSTEM_FLAGS)) || { mountFiles: false };
+      const flags = (await this.systemMetadataRepository.get(SystemMetadataKey.SYSTEM_FLAGS)) || { mountFiles: false };
       const enabled = flags.mountFiles ?? false;
 
       this.logger.log(`Verifying system mount folder checks (enabled=${enabled})`);
@@ -49,7 +36,7 @@ export class StorageService {
 
         if (!flags.mountFiles) {
           flags.mountFiles = true;
-          await this.systemMetadata.set(SystemMetadataKey.SYSTEM_FLAGS, flags);
+          await this.systemMetadataRepository.set(SystemMetadataKey.SYSTEM_FLAGS, flags);
           this.logger.log('Successfully enabled system mount folders checks');
         }
 

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
@@ -16,19 +16,9 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, AssetType, StorageFolder } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { BaseService } from 'src/services/base.service';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 import { usePagination } from 'src/utils/pagination';
@@ -47,7 +37,6 @@ interface RenderMetadata {
 
 @Injectable()
 export class StorageTemplateService extends BaseService {
-  private storageCore: StorageCore;
   private _template: {
     compiled: HandlebarsTemplateDelegate<any>;
     raw: string;
@@ -59,33 +48,6 @@ export class StorageTemplateService extends BaseService {
       throw new Error('Template not initialized');
     }
     return this._template;
-  }
-
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(StorageTemplateService.name);
-    this.storageCore = StorageCore.create(
-      assetRepository,
-      configRepository,
-      cryptoRepository,
-      moveRepository,
-      personRepository,
-      storageRepository,
-      systemMetadataRepository,
-      this.logger,
-    );
   }
 
   @OnEvent({ name: 'config.update', server: true })

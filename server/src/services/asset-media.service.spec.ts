@@ -6,9 +6,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType, CacheControl } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetMediaService } from 'src/services/asset-media.service';
@@ -16,13 +14,8 @@ import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { QueryFailedError } from 'typeorm';
 import { Mocked } from 'vitest';
 
@@ -189,24 +182,15 @@ const copiedAsset = Object.freeze({
 
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;
+
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
-  let eventMock: Mocked<IEventRepository>;
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    userMock = newUserRepositoryMock();
-    eventMock = newEventRepositoryMock();
-
-    sut = new AssetMediaService(accessMock, assetMock, jobMock, storageMock, userMock, eventMock, loggerMock);
+    ({ sut, accessMock, assetMock, jobMock, storageMock, userMock } = newTestService(AssetMediaService));
   });
 
   describe('getUploadAssetIdByChecksum', () => {

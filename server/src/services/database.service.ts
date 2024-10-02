@@ -1,17 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import semver from 'semver';
 import { OnEvent } from 'src/decorators';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
   DatabaseLock,
   EXTENSION_NAMES,
-  IDatabaseRepository,
   VectorExtension,
   VectorIndex,
 } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { BaseService } from 'src/services/base.service';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
@@ -63,16 +61,8 @@ const messages = {
 const RETRY_DURATION = Duration.fromObject({ seconds: 5 });
 
 @Injectable()
-export class DatabaseService {
+export class DatabaseService extends BaseService {
   private reconnection?: NodeJS.Timeout;
-
-  constructor(
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(DatabaseService.name);
-  }
 
   @OnEvent({ name: 'app.bootstrap', priority: -200 })
   async onBootstrap() {

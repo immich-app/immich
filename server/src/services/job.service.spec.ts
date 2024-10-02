@@ -1,8 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults } from 'src/config';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IJobRepository,
   JobCommand,
@@ -12,20 +10,10 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMetricRepository } from 'src/interfaces/metric.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { JobService } from 'src/services/job.service';
 import { assetStub } from 'test/fixtures/asset.stub';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
-import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, vitest } from 'vitest';
 
 const makeMockHandlers = (status: JobStatus) => {
@@ -39,24 +27,11 @@ const makeMockHandlers = (status: JobStatus) => {
 describe(JobService.name, () => {
   let sut: JobService;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<IConfigRepository>;
-  let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let personMock: Mocked<IPersonRepository>;
-  let metricMock: Mocked<IMetricRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    assetMock = newAssetRepositoryMock();
-    configMock = newConfigRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    personMock = newPersonRepositoryMock();
-    metricMock = newMetricRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    sut = new JobService(assetMock, configMock, eventMock, jobMock, systemMock, personMock, metricMock, loggerMock);
+    ({ sut, assetMock, jobMock, systemMock } = newTestService(JobService));
   });
 
   it('should work', () => {

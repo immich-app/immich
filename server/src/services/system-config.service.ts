@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
@@ -14,26 +14,13 @@ import {
 } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import { BaseService } from 'src/services/base.service';
 import { clearConfigCache } from 'src/utils/config';
 import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService extends BaseService {
-  constructor(
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(SystemConfigService.name);
-  }
-
   @OnEvent({ name: 'app.bootstrap', priority: -100 })
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
