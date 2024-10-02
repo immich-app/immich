@@ -15,7 +15,7 @@
 <Portal>
   <FullScreenModal title={$t('support_and_feedback')} {onClose}>
     <p>{$t('official_immich_resources')}</p>
-    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-2 mt-3">
+    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-2 mt-5">
       <div>
         <a href="https://{info.version}.archive.immich.app/docs/overview/introduction" target="_blank" rel="noreferrer">
           <Icon path={mdiInformationOutline} size="1.5em" class="inline-block" />
@@ -65,11 +65,11 @@
       </div>
     </div>
     {#if info.thirdPartyBugFeatureUrl || info.thirdPartySourceUrl || info.thirdPartyDocumentationUrl || info.thirdPartySupportUrl}
-      <p class="mt-3">{$t('third_party_resources')}</p>
-      <p class="text-xs mt-1">
+      <p class="mt-5">{$t('third_party_resources')}</p>
+      <p class="text-sm mt-1">
         {$t('support_third_party_description')}
       </p>
-      <div class="flex flex-col sm:grid sm:grid-cols-2 gap-2 mt-3">
+      <div class="flex flex-col sm:grid sm:grid-cols-2 gap-2 mt-5">
         {#if info.thirdPartyDocumentationUrl}
           <div>
             <a href={info.thirdPartyDocumentationUrl} target="_blank" rel="noreferrer">
