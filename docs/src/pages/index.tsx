@@ -96,10 +96,10 @@ function HomepageHeader() {
         </div>
 
         <img
-          src={isDarkTheme ? '/img/app-qrcode-dark.svg' : '/img/app-qrcode-light.svg'}
+          src={isDarkTheme ? '/img/app-qr-code-dark.svg' : '/img/app-qr-code-light.svg'}
           alt="app qr code"
           width={'150px'}
-          className="shadow-lg p-3 my-8 dark:bg-immich-dark-bg"
+          className="shadow-lg p-3 my-8 dark:bg-immich-dark-bg "
         />
       </section>
     </header>
