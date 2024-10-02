@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
@@ -18,30 +17,31 @@ import {
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetOrder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class SearchService {
-  private configCore: SystemConfigCore;
-
+export class SearchService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(SearchService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
   }
 
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
@@ -94,24 +94,14 @@ export class SearchService {
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
-  async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<SearchResponseDto> {
+  async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
     const userIds = await this.getUserIdsToSearch(auth);
-    const page = dto.page ?? 1;
-    const size = dto.size || 250;
-    const { hasNextPage, items } = await this.searchRepository.searchMetadata(
-      { page, size },
-      {
-        ...dto,
-        userIds,
-        random: true,
-      },
-    );
-
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    return items.map((item) => mapAsset(item, { auth }));
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       throw new BadRequestException('Smart search is not enabled');
     }

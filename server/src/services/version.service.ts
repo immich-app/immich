@@ -1,17 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
-import { isDev, serverVersion } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit, OnServerEvent } from 'src/decorators';
+import { serverVersion } from 'src/constants';
+import { OnEvent } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
-import { SystemMetadataKey } from 'src/enum';
-import { ClientEvent, IEventRepository, ServerEvent, ServerEventMap } from 'src/interfaces/event.interface';
+import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
+import { BaseService } from 'src/services/base.service';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
   return {
@@ -23,27 +26,41 @@ const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): Re
 };
 
 @Injectable()
-export class VersionService {
-  private configCore: SystemConfigCore;
-
+export class VersionService extends BaseService {
   constructor(
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
-    @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(IVersionHistoryRepository) private versionRepository: IVersionHistoryRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(VersionService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
+
+    await this.databaseRepository.withLock(DatabaseLock.VersionHistory, async () => {
+      const latest = await this.versionRepository.getLatest();
+      const current = serverVersion.toString();
+      if (!latest || latest.version !== current) {
+        this.logger.log(`Version has changed, adding ${current} to history`);
+        await this.versionRepository.create({ version: current });
+      }
+    });
   }
 
   getVersion() {
     return ServerVersionResponseDto.fromSemVer(serverVersion);
+  }
+
+  getVersionHistory() {
+    return this.versionRepository.getAll();
   }
 
   async handleQueueVersionCheck() {
@@ -54,11 +71,12 @@ export class VersionService {
     try {
       this.logger.debug('Running version check');
 
-      if (isDev()) {
+      const { environment } = this.configRepository.getEnv();
+      if (environment === ImmichEnvironment.DEVELOPMENT) {
         return JobStatus.SKIPPED;
       }
 
-      const { newVersionCheck } = await this.configCore.getConfig({ withCache: true });
+      const { newVersionCheck } = await this.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {
         return JobStatus.SKIPPED;
       }
@@ -80,7 +98,7 @@ export class VersionService {
 
       if (semver.gt(releaseVersion, serverVersion)) {
         this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
-        this.eventRepository.clientBroadcast(ClientEvent.NEW_RELEASE, asNotification(metadata));
+        this.eventRepository.clientBroadcast('on_new_release', asNotification(metadata));
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
@@ -90,12 +108,12 @@ export class VersionService {
     return JobStatus.SUCCESS;
   }
 
-  @OnServerEvent(ServerEvent.WEBSOCKET_CONNECT)
-  async onWebsocketConnection({ userId }: ServerEventMap[ServerEvent.WEBSOCKET_CONNECT]) {
-    this.eventRepository.clientSend(ClientEvent.SERVER_VERSION, userId, serverVersion);
+  @OnEvent({ name: 'websocket.connect' })
+  async onWebsocketConnection({ userId }: ArgOf<'websocket.connect'>) {
+    this.eventRepository.clientSend('on_server_version', userId, serverVersion);
     const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VERSION_CHECK_STATE);
     if (metadata) {
-      this.eventRepository.clientSend(ClientEvent.NEW_RELEASE, userId, asNotification(metadata));
+      this.eventRepository.clientSend('on_new_release', userId, asNotification(metadata));
     }
   }
 }

@@ -1,4 +1,5 @@
 import { SystemMetadataKey } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
@@ -6,6 +7,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerService } from 'src/services/server.service';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
@@ -16,6 +18,7 @@ import { Mocked } from 'vitest';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
+  let configMock: Mocked<IConfigRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let userMock: Mocked<IUserRepository>;
   let serverInfoMock: Mocked<IServerInfoRepository>;
@@ -24,6 +27,7 @@ describe(ServerService.name, () => {
   let cryptoMock: Mocked<ICryptoRepository>;
 
   beforeEach(() => {
+    configMock = newConfigRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     serverInfoMock = newServerInfoRepositoryMock();
@@ -31,7 +35,7 @@ describe(ServerService.name, () => {
     loggerMock = newLoggerRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
 
-    sut = new ServerService(userMock, storageMock, systemMock, serverInfoMock, loggerMock, cryptoMock);
+    sut = new ServerService(configMock, userMock, storageMock, systemMock, serverInfoMock, loggerMock, cryptoMock);
   });
 
   it('should work', () => {
@@ -176,9 +180,9 @@ describe(ServerService.name, () => {
     });
   });
 
-  describe('getConfig', () => {
+  describe('getSystemConfig', () => {
     it('should respond the server configuration', async () => {
-      await expect(sut.getConfig()).resolves.toEqual({
+      await expect(sut.getSystemConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,

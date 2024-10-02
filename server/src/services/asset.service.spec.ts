@@ -4,6 +4,7 @@ import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -19,6 +20,7 @@ import { partnerStub } from 'test/fixtures/partner.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -45,6 +47,7 @@ describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let jobMock: Mocked<IJobRepository>;
   let userMock: Mocked<IUserRepository>;
   let eventMock: Mocked<IEventRepository>;
@@ -66,6 +69,7 @@ describe(AssetService.name, () => {
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     userMock = newUserRepositoryMock();
@@ -77,6 +81,7 @@ describe(AssetService.name, () => {
     sut = new AssetService(
       accessMock,
       assetMock,
+      configMock,
       jobMock,
       systemMock,
       userMock,

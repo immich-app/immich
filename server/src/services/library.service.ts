@@ -3,8 +3,7 @@ import { R_OK } from 'node:constants';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -19,6 +18,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetType } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
@@ -35,35 +35,36 @@ import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { validateCronExpression } from 'src/validation';
 
 @Injectable()
-export class LibraryService {
-  private configCore: SystemConfigCore;
+export class LibraryService extends BaseService {
   private watchLibraries = false;
   private watchLock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(LibraryService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap() {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
 
@@ -83,19 +84,24 @@ export class LibraryService {
     if (this.watchLibraries) {
       await this.watchAll();
     }
-
-    this.configCore.config$.subscribe(({ library }) => {
-      this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
-
-      if (library.watch.enabled !== this.watchLibraries) {
-        // Watch configuration changed, update accordingly
-        this.watchLibraries = library.watch.enabled;
-        handlePromiseError(this.watchLibraries ? this.watchAll() : this.unwatchAll(), this.logger);
-      }
-    });
   }
 
-  @OnEmit({ event: 'config.validate' })
+  @OnEvent({ name: 'config.update', server: true })
+  async onConfigUpdate({ newConfig: { library }, oldConfig }: ArgOf<'config.update'>) {
+    if (!oldConfig || !this.watchLock) {
+      return;
+    }
+
+    this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
+
+    if (library.watch.enabled !== this.watchLibraries) {
+      // Watch configuration changed, update accordingly
+      this.watchLibraries = library.watch.enabled;
+      await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
+    }
+  }
+
+  @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     const { scan } = newConfig.library;
     if (!validateCronExpression(scan.cronExpression)) {
@@ -137,7 +143,13 @@ export class LibraryService {
           const handler = async () => {
             this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
             if (matcher(path)) {
-              await this.syncFiles(library, [path]);
+              const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+              if (asset) {
+                await this.syncAssets(library, [asset.id]);
+              }
+              if (matcher(path)) {
+                await this.syncFiles(library, [path]);
+              }
             }
           };
           return handlePromiseError(handler(), this.logger);
@@ -185,7 +197,7 @@ export class LibraryService {
     }
   }
 
-  @OnEmit({ event: 'app.shutdown' })
+  @OnEvent({ name: 'app.shutdown' })
   async onShutdown() {
     await this.unwatchAll();
   }
@@ -600,7 +612,7 @@ export class LibraryService {
     this.logger.log(`Scanning library ${library.id} for removed assets`);
 
     const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId: job.id }),
+      this.assetRepository.getAll(pagination, { libraryId: job.id, withDeleted: true }),
     );
 
     let assetCount = 0;

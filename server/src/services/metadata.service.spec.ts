@@ -6,6 +6,7 @@ import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -29,6 +30,7 @@ import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -46,10 +48,14 @@ import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(MetadataService.name, () => {
+  let sut: MetadataService;
+
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let cryptoRepository: Mocked<ICryptoRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
+  let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let mapMock: Mocked<IMapRepository>;
   let metadataMock: Mocked<IMetadataRepository>;
@@ -57,16 +63,15 @@ describe(MetadataService.name, () => {
   let mediaMock: Mocked<IMediaRepository>;
   let personMock: Mocked<IPersonRepository>;
   let storageMock: Mocked<IStorageRepository>;
-  let eventMock: Mocked<IEventRepository>;
-  let databaseMock: Mocked<IDatabaseRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
+  let tagMock: Mocked<ITagRepository>;
   let userMock: Mocked<IUserRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
-  let tagMock: Mocked<ITagRepository>;
-  let sut: MetadataService;
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     cryptoRepository = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     mapMock = newMapRepositoryMock();
@@ -85,9 +90,10 @@ describe(MetadataService.name, () => {
     sut = new MetadataService(
       albumMock,
       assetMock,
-      eventMock,
+      configMock,
       cryptoRepository,
       databaseMock,
+      eventMock,
       jobMock,
       mapMock,
       mediaMock,

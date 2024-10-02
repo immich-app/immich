@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -10,9 +11,12 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ImmichStartupError } from 'src/utils/events';
 
+const docsMessage = `Please see https://immich.app/docs/administration/system-integrity#folder-checks for more information.`;
+
 @Injectable()
 export class StorageService {
   constructor(
+    @Inject(IConfigRepository) private configRepository: IConfigRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
@@ -21,32 +25,43 @@ export class StorageService {
     this.logger.setContext(StorageService.name);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap() {
+    const envData = this.configRepository.getEnv();
+
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
       const flags = (await this.systemMetadata.get(SystemMetadataKey.SYSTEM_FLAGS)) || { mountFiles: false };
       const enabled = flags.mountFiles ?? false;
 
       this.logger.log(`Verifying system mount folder checks (enabled=${enabled})`);
 
-      // check each folder exists and is writable
-      for (const folder of Object.values(StorageFolder)) {
-        if (!enabled) {
-          this.logger.log(`Writing initial mount file for the ${folder} folder`);
-          await this.createMountFile(folder);
+      try {
+        // check each folder exists and is writable
+        for (const folder of Object.values(StorageFolder)) {
+          if (!enabled) {
+            this.logger.log(`Writing initial mount file for the ${folder} folder`);
+            await this.createMountFile(folder);
+          }
+
+          await this.verifyReadAccess(folder);
+          await this.verifyWriteAccess(folder);
         }
 
-        await this.verifyReadAccess(folder);
-        await this.verifyWriteAccess(folder);
-      }
+        if (!flags.mountFiles) {
+          flags.mountFiles = true;
+          await this.systemMetadata.set(SystemMetadataKey.SYSTEM_FLAGS, flags);
+          this.logger.log('Successfully enabled system mount folders checks');
+        }
 
-      if (!flags.mountFiles) {
-        flags.mountFiles = true;
-        await this.systemMetadata.set(SystemMetadataKey.SYSTEM_FLAGS, flags);
-        this.logger.log('Successfully enabled system mount folders checks');
+        this.logger.log('Successfully verified system mount folder checks');
+      } catch (error) {
+        if (envData.storage.ignoreMountCheckErrors) {
+          this.logger.error(error);
+          this.logger.warn('Ignoring mount folder errors');
+        } else {
+          throw error;
+        }
       }
-
-      this.logger.log('Successfully verified system mount folder checks');
     });
   }
 
@@ -70,49 +85,45 @@ export class StorageService {
   }
 
   private async verifyReadAccess(folder: StorageFolder) {
-    const { filePath } = this.getMountFilePaths(folder);
+    const { internalPath, externalPath } = this.getMountFilePaths(folder);
     try {
-      await this.storageRepository.readFile(filePath);
+      await this.storageRepository.readFile(internalPath);
     } catch (error) {
-      this.logger.error(`Failed to read ${filePath}: ${error}`);
-      this.logger.error(
-        `The "${folder}" folder appears to be offline/missing, please make sure the volume is mounted with the correct permissions`,
-      );
-      throw new ImmichStartupError(`Failed to validate folder mount (read from "<MEDIA_LOCATION>/${folder}")`);
+      this.logger.error(`Failed to read ${internalPath}: ${error}`);
+      throw new ImmichStartupError(`Failed to read "${externalPath} - ${docsMessage}"`);
     }
   }
 
   private async createMountFile(folder: StorageFolder) {
-    const { folderPath, filePath } = this.getMountFilePaths(folder);
+    const { folderPath, internalPath, externalPath } = this.getMountFilePaths(folder);
     try {
       this.storageRepository.mkdirSync(folderPath);
-      await this.storageRepository.createFile(filePath, Buffer.from(`${Date.now()}`));
+      await this.storageRepository.createFile(internalPath, Buffer.from(`${Date.now()}`));
     } catch (error) {
-      this.logger.error(`Failed to create ${filePath}: ${error}`);
-      this.logger.error(
-        `The "${folder}" folder cannot be written to, please make sure the volume is mounted with the correct permissions`,
-      );
-      throw new ImmichStartupError(`Failed to validate folder mount (write to "<UPLOAD_LOCATION>/${folder}")`);
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+        this.logger.warn('Found existing mount file, skipping creation');
+        return;
+      }
+      this.logger.error(`Failed to create ${internalPath}: ${error}`);
+      throw new ImmichStartupError(`Failed to create "${externalPath} - ${docsMessage}"`);
     }
   }
 
   private async verifyWriteAccess(folder: StorageFolder) {
-    const { filePath } = this.getMountFilePaths(folder);
+    const { internalPath, externalPath } = this.getMountFilePaths(folder);
     try {
-      await this.storageRepository.overwriteFile(filePath, Buffer.from(`${Date.now()}`));
+      await this.storageRepository.overwriteFile(internalPath, Buffer.from(`${Date.now()}`));
     } catch (error) {
-      this.logger.error(`Failed to write ${filePath}: ${error}`);
-      this.logger.error(
-        `The "${folder}" folder cannot be written to, please make sure the volume is mounted with the correct permissions`,
-      );
-      throw new ImmichStartupError(`Failed to validate folder mount (write to "<UPLOAD_LOCATION>/${folder}")`);
+      this.logger.error(`Failed to write ${internalPath}: ${error}`);
+      throw new ImmichStartupError(`Failed to write "${externalPath} - ${docsMessage}"`);
     }
   }
 
   private getMountFilePaths(folder: StorageFolder) {
     const folderPath = StorageCore.getBaseFolder(folder);
-    const filePath = join(folderPath, '.immich');
+    const internalPath = join(folderPath, '.immich');
+    const externalPath = `<UPLOAD_LOCATION>/${folder}/.immich`;
 
-    return { folderPath, filePath };
+    return { folderPath, internalPath, externalPath };
   }
 }

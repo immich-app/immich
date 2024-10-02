@@ -310,7 +310,7 @@ export enum MetadataKey {
   ADMIN_ROUTE = 'admin_route',
   SHARED_ROUTE = 'shared_route',
   API_KEY_SECURITY = 'api_key',
-  ON_EMIT_CONFIG = 'on_emit_config',
+  EVENT_CONFIG = 'event_config',
 }
 
 export enum RouteKey {
@@ -327,4 +327,10 @@ export enum CacheControl {
 export enum PaginationMode {
   LIMIT_OFFSET = 'limit-offset',
   SKIP_TAKE = 'skip-take',
+}
+
+export enum ImmichEnvironment {
+  DEVELOPMENT = 'development',
+  TESTING = 'testing',
+  PRODUCTION = 'production',
 }

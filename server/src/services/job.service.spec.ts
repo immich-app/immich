@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { defaults } from 'src/config';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IJobRepository,
@@ -19,6 +19,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { JobService } from 'src/services/job.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -38,6 +39,7 @@ const makeMockHandlers = (status: JobStatus) => {
 describe(JobService.name, () => {
   let sut: JobService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let personMock: Mocked<IPersonRepository>;
@@ -47,17 +49,31 @@ describe(JobService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     personMock = newPersonRepositoryMock();
     metricMock = newMetricRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, systemMock, personMock, metricMock, loggerMock);
+    sut = new JobService(assetMock, configMock, eventMock, jobMock, systemMock, personMock, metricMock, loggerMock);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should update concurrency', () => {
+      sut.onBootstrap('microservices');
+      sut.onConfigUpdate({ oldConfig: defaults, newConfig: defaults });
+
+      expect(jobMock.setConcurrency).toHaveBeenCalledTimes(14);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DUPLICATE_DETECTION, 1);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BACKGROUND_TASK, 5);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(9, QueueName.STORAGE_TEMPLATE_MIGRATION, 1);
+    });
   });
 
   describe('handleNightlyJobs', () => {
@@ -237,36 +253,6 @@ describe(JobService.name, () => {
       await sut.init(makeMockHandlers(JobStatus.SUCCESS));
       expect(systemMock.get).toHaveBeenCalled();
       expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
-    });
-
-    it('should subscribe to config changes', async () => {
-      await sut.init(makeMockHandlers(JobStatus.FAILED));
-
-      SystemConfigCore.create(newSystemMetadataRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
-        job: {
-          [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
-          [QueueName.SMART_SEARCH]: { concurrency: 10 },
-          [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
-          [QueueName.FACE_DETECTION]: { concurrency: 10 },
-          [QueueName.SEARCH]: { concurrency: 10 },
-          [QueueName.SIDECAR]: { concurrency: 10 },
-          [QueueName.LIBRARY]: { concurrency: 10 },
-          [QueueName.MIGRATION]: { concurrency: 10 },
-          [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
-          [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
-          [QueueName.NOTIFICATION]: { concurrency: 5 },
-        },
-      } as SystemConfig);
-
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.BACKGROUND_TASK, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.FACE_DETECTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MIGRATION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.THUMBNAIL_GENERATION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.VIDEO_CONVERSION, 10);
     });
 
     const tests: Array<{ item: JobItem; jobs: JobName[] }> = [

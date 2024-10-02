@@ -3,14 +3,14 @@ import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/activity_api.interface.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/base_api.repository.dart';
+import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
 final activityApiRepositoryProvider = Provider(
   (ref) => ActivityApiRepository(ref.watch(apiServiceProvider).activitiesApi),
 );
 
-class ActivityApiRepository extends BaseApiRepository
+class ActivityApiRepository extends ApiRepository
     implements IActivityApiRepository {
   final ActivitiesApi _api;
 

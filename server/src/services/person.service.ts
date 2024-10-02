@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -34,6 +33,7 @@ import {
 } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
@@ -55,6 +55,7 @@ import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interf
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -64,28 +65,29 @@ import { usePagination } from 'src/utils/pagination';
 import { IsNull } from 'typeorm';
 
 @Injectable()
-export class PersonService {
-  private configCore: SystemConfigCore;
+export class PersonService extends BaseService {
   private storageCore: StorageCore;
 
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
-    @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
+    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(PersonService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      configRepository,
       cryptoRepository,
       moveRepository,
       repository,
@@ -102,7 +104,7 @@ export class PersonService {
       skip: (page - 1) * size,
     };
 
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     const { items, hasNextPage } = await this.repository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
@@ -276,16 +278,6 @@ export class PersonService {
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
-  private async deleteAllPeople() {
-    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAll({ ...pagination, skip: 0 }),
-    );
-
-    for await (const people of personPagination) {
-      await this.delete(people); // deletes thumbnails too
-    }
-  }
-
   async handlePersonCleanup(): Promise<JobStatus> {
     const people = await this.repository.getAllWithoutFaces();
     await this.delete(people);
@@ -293,13 +285,13 @@ export class PersonService {
   }
 
   async handleQueueDetectFaces({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
     if (force) {
-      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.repository.deleteFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     }
 
@@ -324,7 +316,7 @@ export class PersonService {
   }
 
   async handleDetectFaces({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -385,7 +377,7 @@ export class PersonService {
   }
 
   async handleQueueRecognizeFaces({ force, nightly }: INightlyJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -407,7 +399,7 @@ export class PersonService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
-      await this.repository.deleteAllFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.repository.unassignFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     } else if (waiting) {
       this.logger.debug(
@@ -435,7 +427,7 @@ export class PersonService {
   }
 
   async handleRecognizeFaces({ id, deferred }: IDeferrableJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -529,7 +521,7 @@ export class PersonService {
   }
 
   async handleGeneratePersonThumbnail(data: IEntityJob): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.SKIPPED;
     }

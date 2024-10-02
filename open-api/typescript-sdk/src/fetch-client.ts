@@ -852,7 +852,6 @@ export type RandomSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
-    page?: number;
     personIds?: string[];
     size?: number;
     state?: string | null;
@@ -918,6 +917,10 @@ export type ServerAboutResponseDto = {
     sourceCommit?: string;
     sourceRef?: string;
     sourceUrl?: string;
+    thirdPartyBugFeatureUrl?: string;
+    thirdPartyDocumentationUrl?: string;
+    thirdPartySourceUrl?: string;
+    thirdPartySupportUrl?: string;
     version: string;
     versionUrl: string;
 };
@@ -996,6 +999,11 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
+};
+export type ServerVersionHistoryResponseDto = {
+    createdAt: string;
+    id: string;
+    version: string;
 };
 export type SessionResponseDto = {
     createdAt: string;
@@ -2523,7 +2531,7 @@ export function searchRandom({ randomSearchDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: SearchResponseDto;
+        data: AssetResponseDto[];
     }>("/search/random", oazapfts.json({
         ...opts,
         method: "POST",
@@ -2661,6 +2669,14 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerVersionResponseDto;
     }>("/server/version", {
+        ...opts
+    }));
+}
+export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerVersionHistoryResponseDto[];
+    }>("/server/version-history", {
         ...opts
     }));
 }

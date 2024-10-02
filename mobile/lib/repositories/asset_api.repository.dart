@@ -2,7 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/base_api.repository.dart';
+import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
 final assetApiRepositoryProvider = Provider(
@@ -12,8 +12,7 @@ final assetApiRepositoryProvider = Provider(
   ),
 );
 
-class AssetApiRepository extends BaseApiRepository
-    implements IAssetApiRepository {
+class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
   final AssetsApi _api;
   final SearchApi _searchApi;
 

@@ -1,4 +1,5 @@
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -8,6 +9,7 @@ import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -20,6 +22,7 @@ vitest.useFakeTimers();
 describe(SearchService.name, () => {
   let sut: DuplicateService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let searchMock: Mocked<ISearchRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
@@ -28,13 +31,14 @@ describe(SearchService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     searchMock = newSearchRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
 
-    sut = new DuplicateService(systemMock, searchMock, assetMock, loggerMock, cryptoMock, jobMock);
+    sut = new DuplicateService(configMock, systemMock, searchMock, assetMock, loggerMock, cryptoMock, jobMock);
   });
 
   it('should work', () => {

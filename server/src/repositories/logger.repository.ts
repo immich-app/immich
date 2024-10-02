@@ -25,8 +25,8 @@ export class LoggerRepository extends ConsoleLogger implements ILoggerRepository
     return isLogLevelEnabled(level, LoggerRepository.logLevels);
   }
 
-  setLogLevel(level: LogLevel): void {
-    LoggerRepository.logLevels = LOG_LEVELS.slice(LOG_LEVELS.indexOf(level));
+  setLogLevel(level: LogLevel | false): void {
+    LoggerRepository.logLevels = level ? LOG_LEVELS.slice(LOG_LEVELS.indexOf(level)) : [];
   }
 
   protected formatContext(context: string): string {

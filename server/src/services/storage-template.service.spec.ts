@@ -1,10 +1,10 @@
 import { Stats } from 'node:fs';
 import { SystemConfig, defaults } from 'src/config';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { JobStatus } from 'src/interfaces/job.interface';
@@ -20,6 +20,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -34,6 +35,7 @@ describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let moveMock: Mocked<IMoveRepository>;
@@ -50,6 +52,7 @@ describe(StorageTemplateService.name, () => {
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
     albumMock = newAlbumRepositoryMock();
+    configMock = newConfigRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
     moveMock = newMoveRepositoryMock();
@@ -64,6 +67,7 @@ describe(StorageTemplateService.name, () => {
     sut = new StorageTemplateService(
       albumMock,
       assetMock,
+      configMock,
       systemMock,
       moveMock,
       personMock,
@@ -74,7 +78,7 @@ describe(StorageTemplateService.name, () => {
       loggerMock,
     );
 
-    SystemConfigCore.create(systemMock, loggerMock).config$.next(defaults);
+    sut.onConfigUpdate({ newConfig: defaults });
   });
 
   describe('onConfigValidate', () => {
@@ -164,13 +168,15 @@ describe(StorageTemplateService.name, () => {
         originalPath: newMotionPicturePath,
       });
     });
-    it('Should use handlebar if condition for album', async () => {
+
+    it('should use handlebar if condition for album', async () => {
       const asset = assetStub.image;
       const user = userStub.user1;
       const album = albumStub.oneAsset;
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other/{{MM}}{{/if}}/{{filename}}';
-      SystemConfigCore.create(systemMock, loggerMock).config$.next(config);
+
+      sut.onConfigUpdate({ oldConfig: defaults, newConfig: config });
 
       userMock.get.mockResolvedValue(user);
       assetMock.getByIds.mockResolvedValueOnce([asset]);
@@ -185,12 +191,13 @@ describe(StorageTemplateService.name, () => {
         pathType: AssetPathType.ORIGINAL,
       });
     });
-    it('Should use handlebar else condition for album', async () => {
+
+    it('should use handlebar else condition for album', async () => {
       const asset = assetStub.image;
       const user = userStub.user1;
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other//{{MM}}{{/if}}/{{filename}}';
-      SystemConfigCore.create(systemMock, loggerMock).config$.next(config);
+      sut.onConfigUpdate({ oldConfig: defaults, newConfig: config });
 
       userMock.get.mockResolvedValue(user);
       assetMock.getByIds.mockResolvedValueOnce([asset]);
@@ -205,6 +212,7 @@ describe(StorageTemplateService.name, () => {
         pathType: AssetPathType.ORIGINAL,
       });
     });
+
     it('should migrate previously failed move from original path when it still exists', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
       const previousFailedNewPath = `upload/library/${userStub.user1.id}/2023/Feb/${assetStub.image.id}.jpg`;
@@ -242,6 +250,7 @@ describe(StorageTemplateService.name, () => {
         originalPath: newPath,
       });
     });
+
     it('should migrate previously failed move from previous new path when old path no longer exists, should validate file size still matches before moving', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
       const previousFailedNewPath = `upload/library/${userStub.user1.id}/2023/Feb/${assetStub.image.id}.jpg`;

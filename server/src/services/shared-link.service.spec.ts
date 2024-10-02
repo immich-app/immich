@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { SharedLinkType } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -13,6 +14,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
@@ -22,6 +24,7 @@ import { Mocked } from 'vitest';
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
   let accessMock: IAccessRepositoryMock;
+  let configMock: Mocked<IConfigRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let shareMock: Mocked<ISharedLinkRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
@@ -29,12 +32,13 @@ describe(SharedLinkService.name, () => {
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
+    configMock = newConfigRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     logMock = newLoggerRepositoryMock();
 
-    sut = new SharedLinkService(accessMock, cryptoMock, logMock, shareMock, systemMock);
+    sut = new SharedLinkService(accessMock, configMock, cryptoMock, logMock, shareMock, systemMock);
   });
 
   it('should work', () => {

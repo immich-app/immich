@@ -5,6 +5,7 @@ import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -20,6 +21,7 @@ import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -57,6 +59,7 @@ const oauthUserWithDefaultQuota = {
 
 describe('AuthService', () => {
   let sut: AuthService;
+  let configMock: Mocked<IConfigRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let eventMock: Mocked<IEventRepository>;
   let userMock: Mocked<IUserRepository>;
@@ -89,6 +92,7 @@ describe('AuthService', () => {
       }),
     } as any);
 
+    configMock = newConfigRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     eventMock = newEventRepositoryMock();
     userMock = newUserRepositoryMock();
@@ -98,7 +102,17 @@ describe('AuthService', () => {
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(cryptoMock, eventMock, systemMock, loggerMock, userMock, sessionMock, shareMock, keyMock);
+    sut = new AuthService(
+      configMock,
+      cryptoMock,
+      eventMock,
+      systemMock,
+      loggerMock,
+      userMock,
+      sessionMock,
+      shareMock,
+      keyMock,
+    );
   });
 
   it('should be defined', () => {

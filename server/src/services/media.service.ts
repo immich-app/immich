@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { dirname } from 'node:path';
-
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import {
@@ -20,6 +18,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { IAssetRepository, UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import {
   IBaseJob,
@@ -43,20 +42,21 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class MediaService {
-  private configCore: SystemConfigCore;
+export class MediaService extends BaseService {
   private storageCore: StorageCore;
   private maliOpenCL?: boolean;
   private devices?: string[];
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
@@ -64,12 +64,13 @@ export class MediaService {
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(MediaService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      configRepository,
       cryptoRepository,
       moveRepository,
       personRepository,
@@ -161,7 +162,7 @@ export class MediaService {
   }
 
   async handleAssetMigration({ id }: IEntityJob): Promise<JobStatus> {
-    const { image } = await this.configCore.getConfig({ withCache: true });
+    const { image } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
@@ -235,7 +236,7 @@ export class MediaService {
   }
 
   private async generateImageThumbnails(asset: AssetEntity) {
-    const { image } = await this.configCore.getConfig({ withCache: true });
+    const { image } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
@@ -269,7 +270,7 @@ export class MediaService {
   }
 
   private async generateVideoThumbnails(asset: AssetEntity) {
-    const { image, ffmpeg } = await this.configCore.getConfig({ withCache: true });
+    const { image, ffmpeg } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
@@ -339,7 +340,7 @@ export class MediaService {
       return JobStatus.FAILED;
     }
 
-    const { ffmpeg } = await this.configCore.getConfig({ withCache: true });
+    const { ffmpeg } = await this.getConfig({ withCache: true });
     const target = this.getTranscodeTarget(ffmpeg, mainVideoStream, mainAudioStream);
     if (target === TranscodeTarget.NONE && !this.isRemuxRequired(ffmpeg, format)) {
       if (asset.encodedVideoPath) {

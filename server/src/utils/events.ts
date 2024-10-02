@@ -1,6 +1,6 @@
 import { ModuleRef, Reflector } from '@nestjs/core';
 import _ from 'lodash';
-import { EmitConfig } from 'src/decorators';
+import { EventConfig } from 'src/decorators';
 import { MetadataKey } from 'src/enum';
 import { EmitEvent, EmitHandler, IEventRepository } from 'src/interfaces/event.interface';
 import { services } from 'src/services';
@@ -9,6 +9,7 @@ type Item<T extends EmitEvent> = {
   event: T;
   handler: EmitHandler<T>;
   priority: number;
+  server: boolean;
   label: string;
 };
 
@@ -35,14 +36,15 @@ export const setupEventHandlers = (moduleRef: ModuleRef) => {
         continue;
       }
 
-      const options = reflector.get<EmitConfig>(MetadataKey.ON_EMIT_CONFIG, handler);
-      if (!options) {
+      const event = reflector.get<EventConfig>(MetadataKey.EVENT_CONFIG, handler);
+      if (!event) {
         continue;
       }
 
       items.push({
-        event: options.event,
-        priority: options.priority || 0,
+        event: event.name,
+        priority: event.priority || 0,
+        server: event.server ?? false,
         handler: handler.bind(instance),
         label: `${Service.name}.${handler.name}`,
       });
@@ -52,8 +54,8 @@ export const setupEventHandlers = (moduleRef: ModuleRef) => {
   const handlers = _.orderBy(items, ['priority'], ['asc']);
 
   // register by priority
-  for (const { event, handler } of handlers) {
-    repository.on(event as EmitEvent, handler);
+  for (const handler of handlers) {
+    repository.on(handler);
   }
 
   return handlers;

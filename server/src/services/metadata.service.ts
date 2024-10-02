@@ -7,8 +7,7 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -16,6 +15,7 @@ import { PersonEntity } from 'src/entities/person.entity';
 import { AssetType, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
@@ -39,6 +39,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
@@ -97,16 +98,16 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 };
 
 @Injectable()
-export class MetadataService {
+export class MetadataService extends BaseService {
   private storageCore: StorageCore;
-  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
+    @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMapRepository) private mapRepository: IMapRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
@@ -117,12 +118,13 @@ export class MetadataService {
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) private tagRepository: ITagRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(MetadataService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
     this.storageCore = StorageCore.create(
       assetRepository,
+      configRepository,
       cryptoRepository,
       moveRepository,
       personRepository,
@@ -132,16 +134,21 @@ export class MetadataService {
     );
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.init(config);
   }
 
-  @OnEmit({ event: 'config.update' })
+  @OnEvent({ name: 'app.shutdown' })
+  async onShutdown() {
+    await this.repository.teardown();
+  }
+
+  @OnEvent({ name: 'config.update' })
   async onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig);
   }
@@ -162,11 +169,6 @@ export class MetadataService {
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
-  }
-
-  @OnEmit({ event: 'app.shutdown' })
-  async onShutdown() {
-    await this.repository.teardown();
   }
 
   async handleLivePhotoLinking(job: IEntityJob): Promise<JobStatus> {
@@ -222,7 +224,7 @@ export class MetadataService {
   }
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
-    const { metadata, reverseGeocoding } = await this.configCore.getConfig({ withCache: true });
+    const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return JobStatus.FAILED;
@@ -333,12 +335,12 @@ export class MetadataService {
     return this.processSidecar(id, false);
   }
 
-  @OnEmit({ event: 'asset.tag' })
+  @OnEvent({ name: 'asset.tag' })
   async handleTagAsset({ assetId }: ArgOf<'asset.tag'>) {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }
 
-  @OnEmit({ event: 'asset.untag' })
+  @OnEvent({ name: 'asset.untag' })
   async handleUntagAsset({ assetId }: ArgOf<'asset.untag'>) {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }

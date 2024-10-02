@@ -1,7 +1,6 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
   MemoryLaneResponseDto,
@@ -23,6 +22,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, Permission } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeleteJob,
@@ -38,26 +38,26 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { requireAccess } from 'src/utils/access';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
-export class AssetService {
-  private configCore: SystemConfigCore;
-
+export class AssetService extends BaseService {
   constructor(
     @Inject(IAccessRepository) private access: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IStackRepository) private stackRepository: IStackRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(AssetService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
@@ -214,7 +214,7 @@ export class AssetService {
   }
 
   async handleAssetDeletionCheck(): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
     const trashedBefore = DateTime.now()
       .minus(Duration.fromObject({ days: trashedDays }))

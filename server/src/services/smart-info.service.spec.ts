@@ -1,5 +1,6 @@
 import { SystemConfig } from 'src/config';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -11,6 +12,7 @@ import { getCLIPModelInfo } from 'src/utils/misc';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -22,6 +24,7 @@ import { Mocked } from 'vitest';
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let jobMock: Mocked<IJobRepository>;
   let searchMock: Mocked<ISearchRepository>;
@@ -31,13 +34,24 @@ describe(SmartInfoService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     searchMock = newSearchRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     databaseMock = newDatabaseRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
-    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, searchMock, systemMock, loggerMock);
+
+    sut = new SmartInfoService(
+      assetMock,
+      configMock,
+      databaseMock,
+      jobMock,
+      machineMock,
+      searchMock,
+      systemMock,
+      loggerMock,
+    );
 
     assetMock.getByIds.mockResolvedValue([assetStub.image]);
   });

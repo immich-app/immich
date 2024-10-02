@@ -12,6 +12,7 @@ import {
   VideoCodec,
 } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -26,6 +27,7 @@ import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -39,6 +41,7 @@ import { Mocked } from 'vitest';
 describe(MediaService.name, () => {
   let sut: MediaService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let jobMock: Mocked<IJobRepository>;
   let mediaMock: Mocked<IMediaRepository>;
   let moveMock: Mocked<IMoveRepository>;
@@ -50,6 +53,7 @@ describe(MediaService.name, () => {
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     systemMock = newSystemMetadataRepositoryMock();
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
@@ -61,6 +65,7 @@ describe(MediaService.name, () => {
 
     sut = new MediaService(
       assetMock,
+      configMock,
       personMock,
       jobMock,
       mediaMock,

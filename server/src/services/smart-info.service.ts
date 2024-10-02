@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
@@ -18,38 +18,43 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class SmartInfoService {
-  private configCore: SystemConfigCore;
-
+export class SmartInfoService extends BaseService {
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private repository: ISearchRepository,
     @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
   ) {
+    super(configRepository, systemMetadataRepository, logger);
     this.logger.setContext(SmartInfoService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
   }
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
       return;
     }
 
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.init(config);
   }
 
-  @OnEmit({ event: 'config.validate' })
+  @OnEvent({ name: 'config.update' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
+    await this.init(newConfig, oldConfig);
+  }
+
+  @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
@@ -58,11 +63,6 @@ export class SmartInfoService {
         `Unknown CLIP model: ${newConfig.machineLearning.clip.modelName}. Please check the model name for typos and confirm this is a supported model.`,
       );
     }
-  }
-
-  @OnEmit({ event: 'config.update' })
-  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
-    await this.init(newConfig, oldConfig);
   }
 
   private async init(newConfig: SystemConfig, oldConfig?: SystemConfig) {
@@ -106,7 +106,7 @@ export class SmartInfoService {
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -131,7 +131,7 @@ export class SmartInfoService {
   }
 
   async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }

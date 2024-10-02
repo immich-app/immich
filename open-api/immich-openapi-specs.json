@@ -4615,7 +4615,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SearchResponseDto"
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -5074,6 +5077,30 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ServerVersionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server"
+        ]
+      }
+    },
+    "/server/version-history": {
+      "get": {
+        "operationId": "getVersionHistory",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ServerVersionHistoryResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -10463,10 +10490,6 @@
             "nullable": true,
             "type": "string"
           },
-          "page": {
-            "minimum": 1,
-            "type": "number"
-          },
           "personIds": {
             "items": {
               "format": "uuid",
@@ -10781,6 +10804,18 @@
           "sourceUrl": {
             "type": "string"
           },
+          "thirdPartyBugFeatureUrl": {
+            "type": "string"
+          },
+          "thirdPartyDocumentationUrl": {
+            "type": "string"
+          },
+          "thirdPartySourceUrl": {
+            "type": "string"
+          },
+          "thirdPartySupportUrl": {
+            "type": "string"
+          },
           "version": {
             "type": "string"
           },
@@ -11028,6 +11063,26 @@
         },
         "required": [
           "customCss"
+        ],
+        "type": "object"
+      },
+      "ServerVersionHistoryResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "version"
         ],
         "type": "object"
       },

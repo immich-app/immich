@@ -6,6 +6,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -18,6 +19,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -66,6 +68,7 @@ const configs = {
 describe(NotificationService.name, () => {
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
@@ -77,6 +80,7 @@ describe(NotificationService.name, () => {
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newConfigRepositoryMock();
     eventMock = newEventRepositoryMock();
     jobMock = newJobRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
@@ -85,6 +89,7 @@ describe(NotificationService.name, () => {
     userMock = newUserRepositoryMock();
 
     sut = new NotificationService(
+      configMock,
       eventMock,
       systemMock,
       notificationMock,
@@ -98,6 +103,15 @@ describe(NotificationService.name, () => {
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should emit client and server events', () => {
+      const update = { newConfig: defaults };
+      expect(sut.onConfigUpdate(update)).toBeUndefined();
+      expect(eventMock.clientBroadcast).toHaveBeenCalledWith('on_config_update');
+      expect(eventMock.serverSend).toHaveBeenCalledWith('config.update', update);
+    });
   });
 
   describe('onConfigValidateEvent', () => {
@@ -227,28 +241,28 @@ describe(NotificationService.name, () => {
   describe('onStackCreate', () => {
     it('should send connected clients an event', () => {
       sut.onStackCreate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackUpdate', () => {
     it('should send connected clients an event', () => {
       sut.onStackUpdate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStackDelete({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStacksDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStacksDelete({ stackIds: ['stack-id'], userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 

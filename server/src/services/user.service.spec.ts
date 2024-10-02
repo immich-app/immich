@@ -2,6 +2,7 @@ import { BadRequestException, InternalServerErrorException, NotFoundException } 
 import { UserEntity } from 'src/entities/user.entity';
 import { CacheControl, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -14,6 +15,7 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
@@ -34,6 +36,7 @@ describe(UserService.name, () => {
   let cryptoRepositoryMock: Mocked<ICryptoRepository>;
 
   let albumMock: Mocked<IAlbumRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let jobMock: Mocked<IJobRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
@@ -41,14 +44,24 @@ describe(UserService.name, () => {
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
+    configMock = newConfigRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    systemMock = newSystemMetadataRepositoryMock();
     userMock = newUserRepositoryMock();
     loggerMock = newLoggerRepositoryMock();
 
-    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, storageMock, systemMock, userMock, loggerMock);
+    sut = new UserService(
+      albumMock,
+      configMock,
+      cryptoRepositoryMock,
+      jobMock,
+      storageMock,
+      systemMock,
+      userMock,
+      loggerMock,
+    );
 
     userMock.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),
