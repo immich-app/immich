@@ -351,7 +351,7 @@ export class PersonService extends BaseService {
     }
     const faceIdsToRemove = [...facesToRemove.values()].map((face) => face.id);
 
-    if (facesToAdd.length > 0 || faceIdsToRemove.length > 0) {
+    if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddingsToAdd.length > 0) {
       await this.personRepository.refreshFaces(facesToAdd, faceIdsToRemove, embeddingsToAdd);
     }
 
@@ -367,10 +367,11 @@ export class PersonService extends BaseService {
       ]);
     }
 
-    await this.assetRepository.upsertJobStatus({
-      assetId: asset.id,
-      facesRecognizedAt: new Date(),
-    });
+    if (embeddingsToAdd.length > 0) {
+      this.logger.log(`Added ${embeddingsToAdd.length} face embeddings for asset ${id}`);
+    }
+
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }

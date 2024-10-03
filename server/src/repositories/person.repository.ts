@@ -303,30 +303,26 @@ export class PersonRepository implements IPersonRepository {
     faceIdsToRemove: string[],
     embeddingsToAdd?: FaceSearchEntity[],
   ): Promise<void> {
-    const faceDeleteQuery = this.assetFaceRepository
-      .createQueryBuilder()
-      .delete()
-      .where('id = any(:faceIdsToRemove)', { faceIdsToRemove });
-
-    if (facesToAdd.length === 0) {
-      await faceDeleteQuery.execute();
-      return;
+    const query = this.faceSearchRepository.createQueryBuilder().select('1');
+    if (facesToAdd.length > 0) {
+      const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
+      query.addCommonTableExpression(insertCte, 'added');
     }
 
-    const faceInsertQuery = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
-    if (!embeddingsToAdd || embeddingsToAdd.length === 0) {
-      await faceInsertQuery.addCommonTableExpression(faceDeleteQuery, 'deleted').execute();
-      return;
+    if (faceIdsToRemove.length > 0) {
+      const deleteCte = this.assetFaceRepository
+        .createQueryBuilder()
+        .delete()
+        .where('id = any(:faceIdsToRemove)', { faceIdsToRemove });
+      query.addCommonTableExpression(deleteCte, 'deleted');
     }
 
-    await this.faceSearchRepository
-      .createQueryBuilder()
-      .addCommonTableExpression(faceDeleteQuery, 'deleted')
-      .addCommonTableExpression(faceInsertQuery, 'added')
-      .insert()
-      .values(embeddingsToAdd)
-      .orIgnore()
-      .execute();
+    if (embeddingsToAdd?.length) {
+      const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
+      query.addCommonTableExpression(embeddingCte, 'embeddings');
+    }
+
+    await query.execute();
   }
 
   async update(person: Partial<PersonEntity>): Promise<PersonEntity> {
