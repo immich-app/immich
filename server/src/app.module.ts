@@ -66,7 +66,9 @@ export class ApiModule implements OnModuleInit, OnModuleDestroy {
     private moduleRef: ModuleRef,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {}
+  ) {
+    logger.setAppName('Api');
+  }
 
   async onModuleInit() {
     const items = setupEventHandlers(this.moduleRef);
@@ -95,7 +97,10 @@ export class MicroservicesModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     private moduleRef: ModuleRef,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
-  ) {}
+    @Inject(ILoggerRepository) logger: ILoggerRepository,
+  ) {
+    logger.setAppName('Microservices');
+  }
 
   async onModuleInit() {
     setupEventHandlers(this.moduleRef);
