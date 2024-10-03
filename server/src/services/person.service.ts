@@ -310,11 +310,13 @@ export class PersonService extends BaseService {
     );
     this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
-    const facesToAdd: Partial<AssetFaceEntity>[] = [];
-    const embeddingsToAdd: FaceSearchEntity[] = [];
-    const facesToRemove = new Map<string, AssetFaceEntity>();
+    const facesToAdd: (Partial<AssetFaceEntity> & { id: string })[] = [];
+    const embeddings: FaceSearchEntity[] = [];
+    const mlFaceIds = new Set<string>();
     for (const face of asset.faces) {
-      facesToRemove.set(face.id, face);
+      if (face.sourceType === SourceType.MACHINE_LEARNING) {
+        mlFaceIds.add(face.id);
+      }
     }
 
     const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
@@ -328,12 +330,8 @@ export class PersonService extends BaseService {
       };
       const match = asset.faces.find((face) => this.iou(face, scaledBox) > 0.5);
 
-      if (match) {
-        const existing = facesToRemove.get(match.id)!;
-        facesToRemove.delete(existing.id);
-        if (existing.sourceType !== SourceType.MACHINE_LEARNING) {
-          embeddingsToAdd.push({ faceId: existing.id, embedding });
-        }
+      if (match && !mlFaceIds.delete(match.id)) {
+        embeddings.push({ faceId: match.id, embedding });
       } else {
         const faceId = this.cryptoRepository.randomUUID();
         facesToAdd.push({
@@ -346,13 +344,13 @@ export class PersonService extends BaseService {
           boundingBoxX2: boundingBox.x2,
           boundingBoxY2: boundingBox.y2,
         });
-        embeddingsToAdd.push({ faceId, embedding });
+        embeddings.push({ faceId, embedding });
       }
     }
-    const faceIdsToRemove = [...facesToRemove.values()].map((face) => face.id);
+    const faceIdsToRemove = [...mlFaceIds];
 
-    if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddingsToAdd.length > 0) {
-      await this.personRepository.refreshFaces(facesToAdd, faceIdsToRemove, embeddingsToAdd);
+    if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddings.length > 0) {
+      await this.personRepository.refreshFaces(facesToAdd, faceIdsToRemove, embeddings);
     }
 
     if (faceIdsToRemove.length > 0) {
@@ -361,14 +359,10 @@ export class PersonService extends BaseService {
 
     if (facesToAdd.length > 0) {
       this.logger.log(`Detected ${facesToAdd.length} new faces in asset ${id}`);
-      await this.jobRepository.queueAll([
-        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
-        ...facesToAdd.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id! } }) as const),
-      ]);
-    }
-
-    if (embeddingsToAdd.length > 0) {
-      this.logger.log(`Added ${embeddingsToAdd.length} face embeddings for asset ${id}`);
+      const jobs = facesToAdd.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id } }) as const);
+      await this.jobRepository.queueAll([{ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } }, ...jobs]);
+    } else if (embeddings.length > 0) {
+      this.logger.log(`Added ${embeddings.length} face embeddings for asset ${id}`);
     }
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
@@ -425,7 +419,7 @@ export class PersonService extends BaseService {
     const lastRun = new Date().toISOString();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.personRepository.getAllFaces(pagination, {
-        where: force ? undefined : { personId: IsNull(), sourceType: IsNull() },
+        where: force ? undefined : { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING },
       }),
     );
 

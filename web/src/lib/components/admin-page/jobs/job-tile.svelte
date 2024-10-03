@@ -149,19 +149,13 @@
 
     {#if !disabled && multipleButtons && isIdle}
       {#if allText}
-        <JobTileButton
-          color="dark-gray"
-          on:click={() => onCommand({ command: JobCommand.Start, force: true })}
-        >
+        <JobTileButton color="dark-gray" on:click={() => onCommand({ command: JobCommand.Start, force: true })}>
           <Icon path={mdiAllInclusive} size="24" />
           {allText}
         </JobTileButton>
       {/if}
       {#if refreshText}
-        <JobTileButton
-          color="gray"
-          on:click={() => onCommand({ command: JobCommand.Start, force: undefined })}
-        >
+        <JobTileButton color="gray" on:click={() => onCommand({ command: JobCommand.Start, force: undefined })}>
           <Icon path={mdiImageRefreshOutline} size="24" />
           {refreshText}
         </JobTileButton>
