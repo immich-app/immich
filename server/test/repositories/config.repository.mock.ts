@@ -12,6 +12,11 @@ const envData: EnvData = {
     vectorExtension: DatabaseExtension.VECTORS,
   },
 
+  licensePublicKey: {
+    client: 'client-public-key',
+    server: 'server-public-key',
+  },
+
   storage: {
     ignoreMountCheckErrors: false,
   },
