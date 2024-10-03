@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { getVectorExtension } from 'src/database.config';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
+import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { setDifference } from 'src/utils/set';
 
 // TODO replace src/config validation with class-validator, here
@@ -65,8 +65,16 @@ export class ConfigRepository implements IConfigRepository {
       },
 
       database: {
+        url: process.env.DB_URL,
+        host: process.env.DB_HOSTNAME || 'database',
+        port: Number(process.env.DB_PORT) || 5432,
+        username: process.env.DB_USERNAME || 'postgres',
+        password: process.env.DB_PASSWORD || 'postgres',
+        name: process.env.DB_DATABASE_NAME || 'immich',
+
         skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
-        vectorExtension: getVectorExtension(),
+        vectorExtension:
+          process.env.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
       },
 
       licensePublicKey: isProd ? productionKeys : stagingKeys,
