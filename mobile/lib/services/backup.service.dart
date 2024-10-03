@@ -18,6 +18,7 @@ import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/upload_request.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -340,29 +341,108 @@ class BackupService {
             }
           }
 
-          final fileLength = file.lengthSync();
+          Map<String, String> fields = {
+            "deviceAssetId": asset.localId!,
+            'deviceId': deviceId,
+            'fileCreatedAt': asset.fileCreatedAt.toUtc().toIso8601String(),
+            'fileModifiedAt': asset.fileModifiedAt.toUtc().toIso8601String(),
+            'isFavorite': asset.isFavorite.toString(),
+            'duration': asset.duration.toString(),
+          };
 
-          final (baseDir, dir, _) = await Task.split(file: file);
+          Map<String, String> headers = ApiService.getRequestHeaders();
 
-          final backgroundRequest = UploadTask(
-            filename: originalFileName,
-            baseDirectory: baseDir,
-            directory: dir,
+          UploadRequest baseRequest = UploadRequest(
+            method: 'POST',
             url: '$savedEndpoint/assets',
-            httpRequestMethod: 'POST',
-            priority: 10,
-          ); // Priority 10 for testing purposes; maybe we could change that to a lower value later
+            fields: fields,
+            headers: headers,
+            isBackground: isBackground,
+            onProgress: onProgress,
+          );
 
-          backgroundRequest.headers.addAll(ApiService.getRequestHeaders());
-          backgroundRequest.headers["Transfer-Encoding"] = "chunked";
-          backgroundRequest.fields['deviceAssetId'] = asset.localId!;
-          backgroundRequest.fields['deviceId'] = deviceId;
-          backgroundRequest.fields['fileCreatedAt'] =
-              asset.fileCreatedAt.toUtc().toIso8601String();
-          backgroundRequest.fields['fileModifiedAt'] =
-              asset.fileModifiedAt.toUtc().toIso8601String();
-          backgroundRequest.fields['isFavorite'] = asset.isFavorite.toString();
-          backgroundRequest.fields['duration'] = asset.duration.toString();
+          int statusCode;
+          final fileLength = file.lengthSync();
+          dynamic body;
+
+          String? livePhotoVideoId;
+          if (asset.local!.isLivePhoto && livePhotoFile != null) {
+            livePhotoVideoId = await uploadLivePhotoVideo(
+              originalFileName,
+              livePhotoFile,
+              baseRequest,
+              cancelToken,
+            );
+          }
+
+          if (livePhotoVideoId != null) {
+            baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
+          }
+
+          if (!isBackground) {
+            print("BACKGROUND SYNC");
+            final (baseDir, dir, filename) = await Task.split(file: file);
+
+            // Priority 10 for testing purposes; maybe we could change that to a lower value later
+            baseRequest.priority = 10;
+
+            final backgroundRequest = UploadTask(
+              filename: filename,
+              baseDirectory: baseDir,
+              directory: dir,
+              fileField: "assetData",
+              mimeType: "application/octet-stream",
+              url: baseRequest.url,
+              httpRequestMethod: baseRequest.method,
+              priority: baseRequest.priority,
+              fields: baseRequest.fields,
+              headers: baseRequest.headers,
+              updates: Updates.statusAndProgress,
+            );
+
+            final response = await FileDownloader().upload(
+              backgroundRequest,
+              onProgress: (percentage) => {
+                // onProgress returns a double in [0.0;1.0] for percentage
+                if (percentage > 0)
+                  baseRequest.onProgress(
+                    (percentage * fileLength).toInt(),
+                    fileLength,
+                  ),
+              },
+            );
+
+            body = jsonDecode(response.responseBody ?? "{}");
+            statusCode = response.responseStatusCode ?? 500;
+          } else {
+            print("FOREGROUND SYNC");
+            final fileStream = file.openRead();
+            final assetRawUploadData = http.MultipartFile(
+              "assetData",
+              fileStream,
+              fileLength,
+              filename: originalFileName,
+            );
+
+            final foregroundRequest = MultipartRequest(
+              baseRequest.method,
+              Uri.parse(baseRequest.url),
+              onProgress: ((bytes, totalBytes) =>
+                  baseRequest.onProgress(bytes, totalBytes)),
+            );
+            foregroundRequest.headers["Transfer-Encoding"] = "chunked";
+            foregroundRequest.headers.addAll(baseRequest.headers);
+            foregroundRequest.fields.addAll(baseRequest.fields);
+            foregroundRequest.files.add(assetRawUploadData);
+
+            final response = await httpClient.send(
+              foregroundRequest,
+              cancellationToken: cancelToken,
+            );
+
+            body = jsonDecode(await response.stream.bytesToString());
+            statusCode = response.statusCode;
+          }
 
           onCurrentAsset(
             CurrentUploadAsset(
@@ -377,43 +457,12 @@ class BackupService {
             ),
           );
 
-          String? livePhotoVideoId;
-          if (asset.local!.isLivePhoto && livePhotoFile != null) {
-            livePhotoVideoId = await uploadLivePhotoVideo(
-              originalFileName,
-              livePhotoFile,
-              backgroundRequest,
-              cancelToken,
-            );
-          }
+          if (![200, 201].contains(statusCode)) {
+            final error = body;
 
-          if (livePhotoVideoId != null) {
-            backgroundRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
-          }
-
-          final response = await FileDownloader().upload(
-            backgroundRequest,
-            onProgress: (percentage) => {
-              // onProgress returns a double in [0.0;1.0] for percentage
-              if (percentage > 0)
-                onProgress(
-                  (percentage * fileLength).toInt(),
-                  fileLength,
-                ),
-            },
-          );
-
-          final responseBody = jsonDecode(response.responseBody ?? "{}");
-
-          if (response.status == TaskStatus.failed ||
-              ![200, 201].contains(response.responseStatusCode)) {
-            final error = response.exception != null
-                ? response.exception!.description
-                : responseBody;
-
-            debugPrint(
-              "Error(${response.responseStatusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | $error",
-            );
+            // debugPrint(
+            //   "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
+            // );
 
             onError(
               ErrorUploadAsset(
@@ -422,7 +471,7 @@ class BackupService {
                 fileCreatedAt: asset.fileCreatedAt,
                 fileName: originalFileName,
                 fileType: _getAssetType(candidate.asset.type),
-                errorMessage: error,
+                errorMessage: error['error'],
               ),
             );
 
@@ -435,7 +484,7 @@ class BackupService {
           }
 
           bool isDuplicate = false;
-          if (response.responseStatusCode == 200) {
+          if (statusCode == 200) {
             isDuplicate = true;
             duplicatedAssetIds.add(asset.localId!);
           }
@@ -443,7 +492,7 @@ class BackupService {
           onSuccess(
             SuccessUploadAsset(
               candidate: candidate,
-              remoteAssetId: responseBody['id'] as String,
+              remoteAssetId: body['id'] as String,
               isDuplicate: isDuplicate,
             ),
           );
@@ -451,7 +500,7 @@ class BackupService {
           if (shouldSyncAlbums) {
             await _albumService.syncUploadAlbums(
               candidate.albumNames,
-              [responseBody['id'] as String],
+              [body['id'] as String],
             );
           }
         }
@@ -485,7 +534,7 @@ class BackupService {
   Future<String?> uploadLivePhotoVideo(
     String originalFileName,
     File? livePhotoVideoFile,
-    UploadTask baseRequest,
+    UploadRequest baseRequest,
     http.CancellationToken cancelToken,
   ) async {
     if (livePhotoVideoFile == null) {
@@ -503,7 +552,7 @@ class BackupService {
       baseDirectory: baseDir,
       directory: dir,
       url: baseRequest.url,
-      httpRequestMethod: baseRequest.httpRequestMethod,
+      httpRequestMethod: baseRequest.method,
       priority: baseRequest.priority,
     )
       ..headers.addAll(baseRequest.headers)
