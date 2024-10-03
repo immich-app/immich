@@ -15,7 +15,6 @@ export class MetadataRepository implements IMetadataRepository {
     defaultVideosToUTC: true,
     backfillTimezones: true,
     inferTimezoneFromDatestamps: true,
-    inferTimezoneFromTimeStamp: true,
     useMWG: true,
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
