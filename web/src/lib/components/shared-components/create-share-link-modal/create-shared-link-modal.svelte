@@ -97,7 +97,6 @@
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
       onCreated();
       showQRCode = true;
-
     } catch (error) {
       handleError(error, $t('errors.failed_to_create_shared_link'));
     }
