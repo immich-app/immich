@@ -32,12 +32,11 @@ async function bootstrap() {
 
   otelStart(otelPort);
 
-  const port = Number(process.env.IMMICH_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
   const configRepository = app.get<IConfigRepository>(IConfigRepository);
 
-  const { environment } = configRepository.getEnv();
+  const { environment, port } = configRepository.getEnv();
   const isDev = environment === ImmichEnvironment.DEVELOPMENT;
 
   logger.setAppName('Api');

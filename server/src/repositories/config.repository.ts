@@ -9,6 +9,7 @@ import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 export class ConfigRepository implements IConfigRepository {
   getEnv(): EnvData {
     return {
+      port: Number(process.env.IMMICH_PORT) || 3001,
       environment: process.env.IMMICH_ENV as ImmichEnvironment,
       configFile: process.env.IMMICH_CONFIG_FILE,
       logLevel: process.env.IMMICH_LOG_LEVEL as LogLevel,
