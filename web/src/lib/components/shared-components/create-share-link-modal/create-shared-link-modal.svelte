@@ -25,7 +25,7 @@
   export let onCreated: () => void = () => {};
 
   let sharedLink: string | null = null;
-  let showQRCode: boolean | null = false;
+  let showQRCode: boolean;
   let description = '';
   let allowDownload = true;
   let allowUpload = false;
