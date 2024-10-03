@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
@@ -6,14 +6,9 @@ import { OnEvent } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
+import { DatabaseLock } from 'src/interfaces/database.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
+import { JobName, JobStatus } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
@@ -27,20 +22,6 @@ const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): Re
 
 @Injectable()
 export class VersionService extends BaseService {
-  constructor(
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IVersionHistoryRepository) private versionRepository: IVersionHistoryRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(VersionService.name);
-  }
-
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
@@ -91,7 +72,8 @@ export class VersionService extends BaseService {
         }
       }
 
-      const { tag_name: releaseVersion, published_at: publishedAt } = await this.repository.getGitHubRelease();
+      const { tag_name: releaseVersion, published_at: publishedAt } =
+        await this.serverInfoRepository.getGitHubRelease();
       const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
       await this.systemMetadataRepository.set(SystemMetadataKey.VERSION_CHECK_STATE, metadata);

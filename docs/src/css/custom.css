@@ -7,11 +7,12 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 html,
 button {
-  font-family: 'Overpass', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-optical-sizing: auto;
 }
 
 img {
@@ -27,7 +28,6 @@ img {
   --ifm-color-primary-light: #4250af;
   --ifm-color-primary-lighter: #4250af;
   --ifm-color-primary-lightest: #4250af;
-  --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
@@ -40,10 +40,28 @@ img {
   --ifm-color-primary-light: #d5e4fc;
   --ifm-color-primary-lighter: #e9f1fe;
   --ifm-color-primary-lightest: #ffffff;
-  --ifm-background-color: #000000;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-background-color: #000000;
 }
 
 div[class^='announcementBar_'] {
   min-height: 2rem;
+  background-color: #2b3336;
+  color: white;
+}
+
+.menu__link {
+  padding: 10px;
+  padding-left: 16px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.menu__list-item-collapsible {
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+code {
+  font-weight: 600;
 }

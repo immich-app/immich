@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { getClientLicensePublicKey, getServerLicensePublicKey } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
@@ -11,34 +11,14 @@ import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUse
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { CacheControl, StorageFolder, UserMetadataKey } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
+import { IEntityJob, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { UserFindOptions } from 'src/interfaces/user.interface';
 import { BaseService } from 'src/services/base.service';
 import { ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class UserService extends BaseService {
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(UserService.name);
-  }
-
   async search(): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: false });
     return users.map((user) => mapUser(user));

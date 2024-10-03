@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -31,15 +31,11 @@ import {
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { WithoutProperty } from 'src/interfaces/asset.interface';
 import {
   IBaseJob,
   IDeferrableJob,
   IEntityJob,
-  IJobRepository,
   INightlyJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
@@ -47,14 +43,9 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { BoundingBox, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, IMediaRepository, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPersonRepository, UpdateFacesData } from 'src/interfaces/person.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { BoundingBox } from 'src/interfaces/machine-learning.interface';
+import { CropOptions, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
+import { UpdateFacesData } from 'src/interfaces/person.interface';
 import { BaseService } from 'src/services/base.service';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
@@ -66,37 +57,6 @@ import { IsNull } from 'typeorm';
 
 @Injectable()
 export class PersonService extends BaseService {
-  private storageCore: StorageCore;
-
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(IMachineLearningRepository) private machineLearningRepository: IMachineLearningRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
-    @Inject(IPersonRepository) private repository: IPersonRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(PersonService.name);
-    this.storageCore = StorageCore.create(
-      assetRepository,
-      configRepository,
-      cryptoRepository,
-      moveRepository,
-      repository,
-      storageRepository,
-      systemMetadataRepository,
-      this.logger,
-    );
-  }
-
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { withHidden = false, page, size } = dto;
     const pagination = {
@@ -105,11 +65,11 @@ export class PersonService extends BaseService {
     };
 
     const { machineLearning } = await this.getConfig({ withCache: false });
-    const { items, hasNextPage } = await this.repository.getAllForUser(pagination, auth.user.id, {
+    const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
     });
-    const { total, hidden } = await this.repository.getNumberOfPeople(auth.user.id);
+    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
 
     return {
       people: items.map((person) => mapPerson(person)),
@@ -120,15 +80,15 @@ export class PersonService extends BaseService {
   }
 
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
     for (const data of dto.data) {
-      const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
+      const faces = await this.personRepository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
-        await requireAccess(this.access, { auth, permission: Permission.PERSON_CREATE, ids: [face.id] });
+        await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_CREATE, ids: [face.id] });
         if (person.faceAssetId === null) {
           changeFeaturePhoto.push(person.id);
         }
@@ -136,7 +96,7 @@ export class PersonService extends BaseService {
           changeFeaturePhoto.push(face.person.id);
         }
 
-        await this.repository.reassignFace(face.id, personId);
+        await this.personRepository.reassignFace(face.id, personId);
       }
 
       result.push(person);
@@ -149,12 +109,12 @@ export class PersonService extends BaseService {
   }
 
   async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_CREATE, ids: [dto.id] });
-    const face = await this.repository.getFaceById(dto.id);
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_UPDATE, ids: [personId] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_CREATE, ids: [dto.id] });
+    const face = await this.personRepository.getFaceById(dto.id);
     const person = await this.findOrFail(personId);
 
-    await this.repository.reassignFace(face.id, personId);
+    await this.personRepository.reassignFace(face.id, personId);
     if (person.faceAssetId === null) {
       await this.createNewFeaturePhoto([person.id]);
     }
@@ -166,8 +126,8 @@ export class PersonService extends BaseService {
   }
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [dto.id] });
-    const faces = await this.repository.getFaces(dto.id);
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_READ, ids: [dto.id] });
+    const faces = await this.personRepository.getFaces(dto.id);
     return faces.map((asset) => mapFaces(asset, auth));
   }
 
@@ -178,10 +138,10 @@ export class PersonService extends BaseService {
 
     const jobs: JobItem[] = [];
     for (const personId of changeFeaturePhoto) {
-      const assetFace = await this.repository.getRandomFace(personId);
+      const assetFace = await this.personRepository.getRandomFace(personId);
 
       if (assetFace !== null) {
-        await this.repository.update({ id: personId, faceAssetId: assetFace.id });
+        await this.personRepository.update({ id: personId, faceAssetId: assetFace.id });
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
     }
@@ -190,18 +150,18 @@ export class PersonService extends BaseService {
   }
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_READ, ids: [id] });
     return this.findOrFail(id).then(mapPerson);
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
-    return this.repository.getStatistics(id);
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_READ, ids: [id] });
+    return this.personRepository.getStatistics(id);
   }
 
   async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
-    const person = await this.repository.getById(id);
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_READ, ids: [id] });
+    const person = await this.personRepository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
     }
@@ -214,13 +174,13 @@ export class PersonService extends BaseService {
   }
 
   async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_READ, ids: [id] });
-    const assets = await this.repository.getAssets(id);
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_READ, ids: [id] });
+    const assets = await this.personRepository.getAssets(id);
     return assets.map((asset) => mapAsset(asset));
   }
 
   create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
-    return this.repository.create({
+    return this.personRepository.create({
       ownerId: auth.user.id,
       name: dto.name,
       birthDate: dto.birthDate,
@@ -229,14 +189,14 @@ export class PersonService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
     // TODO: set by faceId directly
     let faceId: string | undefined = undefined;
     if (assetId) {
-      await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [assetId] });
-      const [face] = await this.repository.getFacesByIds([{ personId: id, assetId }]);
+      await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_READ, ids: [assetId] });
+      const [face] = await this.personRepository.getFacesByIds([{ personId: id, assetId }]);
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
       }
@@ -244,7 +204,7 @@ export class PersonService extends BaseService {
       faceId = face.id;
     }
 
-    const person = await this.repository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
+    const person = await this.personRepository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
 
     if (assetId) {
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
@@ -274,12 +234,12 @@ export class PersonService extends BaseService {
 
   private async delete(people: PersonEntity[]) {
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
-    await this.repository.delete(people);
+    await this.personRepository.delete(people);
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
   async handlePersonCleanup(): Promise<JobStatus> {
-    const people = await this.repository.getAllWithoutFaces();
+    const people = await this.personRepository.getAllWithoutFaces();
     await this.delete(people);
     return JobStatus.SUCCESS;
   }
@@ -291,7 +251,7 @@ export class PersonService extends BaseService {
     }
 
     if (force) {
-      await this.repository.deleteFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.personRepository.deleteFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     }
 
@@ -364,7 +324,7 @@ export class PersonService extends BaseService {
         });
       }
 
-      const faceIds = await this.repository.createFaces(mappedFaces);
+      const faceIds = await this.personRepository.createFaces(mappedFaces);
       await this.jobRepository.queueAll(faceIds.map((id) => ({ name: JobName.FACIAL_RECOGNITION, data: { id } })));
     }
 
@@ -387,7 +347,7 @@ export class PersonService extends BaseService {
     if (nightly) {
       const [state, latestFaceDate] = await Promise.all([
         this.systemMetadataRepository.get(SystemMetadataKey.FACIAL_RECOGNITION_STATE),
-        this.repository.getLatestFaceDate(),
+        this.personRepository.getLatestFaceDate(),
       ]);
 
       if (state?.lastRun && latestFaceDate && state.lastRun > latestFaceDate) {
@@ -399,7 +359,7 @@ export class PersonService extends BaseService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
-      await this.repository.unassignFaces({ sourceType: SourceType.MACHINE_LEARNING });
+      await this.personRepository.unassignFaces({ sourceType: SourceType.MACHINE_LEARNING });
       await this.handlePersonCleanup();
     } else if (waiting) {
       this.logger.debug(
@@ -410,7 +370,7 @@ export class PersonService extends BaseService {
 
     const lastRun = new Date().toISOString();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAllFaces(pagination, {
+      this.personRepository.getAllFaces(pagination, {
         where: force ? undefined : { personId: IsNull(), sourceType: IsNull() },
       }),
     );
@@ -432,7 +392,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const face = await this.repository.getFaceByIdWithAssets(
+    const face = await this.personRepository.getFaceByIdWithAssets(
       id,
       { person: true, asset: true, faceSearch: true },
       { id: true, personId: true, sourceType: true, faceSearch: { embedding: true } },
@@ -457,7 +417,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const matches = await this.smartInfoRepository.searchFaces({
+    const matches = await this.searchRepository.searchFaces({
       userIds: [face.asset.ownerId],
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
@@ -481,7 +441,7 @@ export class PersonService extends BaseService {
 
     let personId = matches.find((match) => match.face.personId)?.face.personId;
     if (!personId) {
-      const matchWithPerson = await this.smartInfoRepository.searchFaces({
+      const matchWithPerson = await this.searchRepository.searchFaces({
         userIds: [face.asset.ownerId],
         embedding: face.faceSearch.embedding,
         maxDistance: machineLearning.facialRecognition.maxDistance,
@@ -496,21 +456,21 @@ export class PersonService extends BaseService {
 
     if (isCore && !personId) {
       this.logger.log(`Creating new person for face ${id}`);
-      const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+      const newPerson = await this.personRepository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
       personId = newPerson.id;
     }
 
     if (personId) {
       this.logger.debug(`Assigning face ${id} to person ${personId}`);
-      await this.repository.reassignFaces({ faceIds: [id], newPersonId: personId });
+      await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: personId });
     }
 
     return JobStatus.SUCCESS;
   }
 
   async handlePersonMigration({ id }: IEntityJob): Promise<JobStatus> {
-    const person = await this.repository.getById(id);
+    const person = await this.personRepository.getById(id);
     if (!person) {
       return JobStatus.FAILED;
     }
@@ -526,13 +486,13 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const person = await this.repository.getById(data.id);
+    const person = await this.personRepository.getById(data.id);
     if (!person?.faceAssetId) {
       this.logger.error(`Could not generate person thumbnail: person ${person?.id} has no face asset`);
       return JobStatus.FAILED;
     }
 
-    const face = await this.repository.getFaceByIdWithAssets(person.faceAssetId);
+    const face = await this.personRepository.getFaceByIdWithAssets(person.faceAssetId);
     if (face === null) {
       this.logger.error(`Could not generate person thumbnail: face ${person.faceAssetId} not found`);
       return JobStatus.FAILED;
@@ -572,7 +532,7 @@ export class PersonService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(inputPath, thumbnailOptions, thumbnailPath);
-    await this.repository.update({ id: person.id, thumbnailPath });
+    await this.personRepository.update({ id: person.id, thumbnailPath });
 
     return JobStatus.SUCCESS;
   }
@@ -583,13 +543,13 @@ export class PersonService extends BaseService {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
-    await requireAccess(this.access, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_UPDATE, ids: [id] });
     let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
 
-    const allowedIds = await checkAccess(this.access, {
+    const allowedIds = await checkAccess(this.accessRepository, {
       auth,
       permission: Permission.PERSON_MERGE,
       ids: mergeIds,
@@ -603,7 +563,7 @@ export class PersonService extends BaseService {
       }
 
       try {
-        const mergePerson = await this.repository.getById(mergeId);
+        const mergePerson = await this.personRepository.getById(mergeId);
         if (!mergePerson) {
           results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
           continue;
@@ -619,14 +579,14 @@ export class PersonService extends BaseService {
         }
 
         if (Object.keys(update).length > 0) {
-          primaryPerson = await this.repository.update({ id: primaryPerson.id, ...update });
+          primaryPerson = await this.personRepository.update({ id: primaryPerson.id, ...update });
         }
 
         const mergeName = mergePerson.name || mergePerson.id;
         const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
 
-        await this.repository.reassignFaces(mergeData);
+        await this.personRepository.reassignFaces(mergeData);
         await this.delete([mergePerson]);
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);
@@ -640,7 +600,7 @@ export class PersonService extends BaseService {
   }
 
   private async findOrFail(id: string) {
-    const person = await this.repository.getById(id);
+    const person = await this.personRepository.getById(id);
     if (!person) {
       throw new BadRequestException('Person not found');
     }

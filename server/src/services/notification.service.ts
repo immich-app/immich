@@ -1,25 +1,18 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ArgOf, IEventRepository } from 'src/interfaces/event.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IEmailJob,
-  IJobRepository,
   INotifyAlbumInviteJob,
   INotifyAlbumUpdateJob,
   INotifySignupJob,
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { EmailImageAttachment, EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { EmailImageAttachment, EmailTemplate } from 'src/interfaces/notification.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
@@ -28,21 +21,6 @@ import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class NotificationService extends BaseService {
-  constructor(
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(INotificationRepository) private notificationRepository: INotificationRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(NotificationService.name);
-  }
-
   @OnEvent({ name: 'config.update' })
   onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
     this.eventRepository.clientBroadcast('on_config_update');

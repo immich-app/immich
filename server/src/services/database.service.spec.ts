@@ -7,13 +7,13 @@ import {
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
-import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;
+
   let configMock: Mocked<IConfigRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
@@ -24,11 +24,7 @@ describe(DatabaseService.name, () => {
   let versionAboveRange: string;
 
   beforeEach(() => {
-    configMock = newConfigRepositoryMock();
-    databaseMock = newDatabaseRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new DatabaseService(configMock, databaseMock, loggerMock);
+    ({ sut, configMock, databaseMock, loggerMock } = newTestService(DatabaseService));
 
     extensionRange = '0.2.x';
     databaseMock.getExtensionVersionRange.mockReturnValue(extensionRange);

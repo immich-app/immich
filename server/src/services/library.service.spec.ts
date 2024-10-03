@@ -5,8 +5,6 @@ import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetType } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
   IJobRepository,
@@ -17,7 +15,6 @@ import {
   JobStatus,
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { LibraryService } from 'src/services/library.service';
@@ -26,15 +23,8 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { libraryStub } from 'test/fixtures/library.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { makeMockWatcher, newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { makeMockWatcher } from 'test/repositories/storage.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, vitest } from 'vitest';
 
 async function* mockWalk() {
@@ -45,37 +35,14 @@ describe(LibraryService.name, () => {
   let sut: LibraryService;
 
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<IConfigRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let jobMock: Mocked<IJobRepository>;
   let libraryMock: Mocked<ILibraryRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    configMock = newConfigRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    libraryMock = newLibraryRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    databaseMock = newDatabaseRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new LibraryService(
-      assetMock,
-      configMock,
-      cryptoMock,
-      databaseMock,
-      jobMock,
-      libraryMock,
-      storageMock,
-      systemMock,
-      loggerMock,
-    );
+    ({ sut, assetMock, databaseMock, jobMock, libraryMock, storageMock, systemMock } = newTestService(LibraryService));
 
     databaseMock.tryLock.mockResolvedValue(true);
   });
