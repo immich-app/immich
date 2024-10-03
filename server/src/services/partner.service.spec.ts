@@ -1,20 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IPartnerRepository, PartnerDirection } from 'src/interfaces/partner.interface';
 import { PartnerService } from 'src/services/partner.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
-import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(PartnerService.name, () => {
   let sut: PartnerService;
   let partnerMock: Mocked<IPartnerRepository>;
-  let accessMock: Mocked<IAccessRepository>;
 
   beforeEach(() => {
-    partnerMock = newPartnerRepositoryMock();
-    sut = new PartnerService(partnerMock, accessMock);
+    ({ sut, partnerMock } = newTestService(PartnerService));
   });
 
   it('should work', () => {

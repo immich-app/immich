@@ -1,23 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { WithoutProperty } from 'src/interfaces/asset.interface';
+import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IBaseJob,
   IEntityJob,
-  IJobRepository,
   JOBS_ASSET_PAGINATION_SIZE,
   JobName,
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
@@ -25,20 +19,6 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SmartInfoService extends BaseService {
-  constructor(
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(ISearchRepository) private repository: ISearchRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(SmartInfoService.name);
-  }
-
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
     if (app !== 'microservices') {
@@ -72,7 +52,7 @@ export class SmartInfoService extends BaseService {
 
     await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, async () => {
       const { dimSize } = getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
-      const dbDimSize = await this.repository.getDimensionSize();
+      const dbDimSize = await this.searchRepository.getDimensionSize();
       this.logger.verbose(`Current database CLIP dimension size is ${dbDimSize}`);
 
       const modelChange =
@@ -93,10 +73,10 @@ export class SmartInfoService extends BaseService {
           `Dimension size of model ${newConfig.machineLearning.clip.modelName} is ${dimSize}, but database expects ${dbDimSize}.`,
         );
         this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
-        await this.repository.setDimensionSize(dimSize);
+        await this.searchRepository.setDimensionSize(dimSize);
         this.logger.log(`Successfully updated database CLIP dimension size from ${dbDimSize} to ${dimSize}.`);
       } else {
-        await this.repository.deleteAllSearchEmbeddings();
+        await this.searchRepository.deleteAllSearchEmbeddings();
       }
 
       if (!isPaused) {
@@ -112,7 +92,7 @@ export class SmartInfoService extends BaseService {
     }
 
     if (force) {
-      await this.repository.deleteAllSearchEmbeddings();
+      await this.searchRepository.deleteAllSearchEmbeddings();
     }
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
@@ -150,7 +130,7 @@ export class SmartInfoService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const embedding = await this.machineLearning.encodeImage(
+    const embedding = await this.machineLearningRepository.encodeImage(
       machineLearning.url,
       previewFile.path,
       machineLearning.clip,
@@ -161,7 +141,7 @@ export class SmartInfoService extends BaseService {
       await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
     }
 
-    await this.repository.upsert(asset.id, embedding);
+    await this.searchRepository.upsert(asset.id, embedding);
 
     return JobStatus.SUCCESS;
   }

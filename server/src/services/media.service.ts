@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { dirname } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -17,31 +17,17 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { IAssetRepository, UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
 import {
   IBaseJob,
   IEntityJob,
-  IJobRepository,
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
   JobName,
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import {
-  AudioStreamInfo,
-  IMediaRepository,
-  TranscodeCommand,
-  VideoFormat,
-  VideoStreamInfo,
-} from 'src/interfaces/media.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { AudioStreamInfo, TranscodeCommand, VideoFormat, VideoStreamInfo } from 'src/interfaces/media.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
@@ -50,35 +36,8 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class MediaService extends BaseService {
-  private storageCore: StorageCore;
   private maliOpenCL?: boolean;
   private devices?: string[];
-
-  constructor(
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(MediaService.name);
-    this.storageCore = StorageCore.create(
-      assetRepository,
-      configRepository,
-      cryptoRepository,
-      moveRepository,
-      personRepository,
-      storageRepository,
-      systemMetadataRepository,
-      this.logger,
-    );
-  }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {

@@ -1,6 +1,5 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -8,10 +7,7 @@ import { SyncService } from 'src/services/sync.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
-import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
-import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 const untilDate = new Date(2024);
@@ -19,17 +15,13 @@ const mapAssetOpts = { auth: authStub.user1, stripMetadata: false, withStack: tr
 
 describe(SyncService.name, () => {
   let sut: SyncService;
-  let accessMock: Mocked<IAccessRepository>;
+
   let assetMock: Mocked<IAssetRepository>;
-  let partnerMock: Mocked<IPartnerRepository>;
   let auditMock: Mocked<IAuditRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
 
   beforeEach(() => {
-    partnerMock = newPartnerRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    accessMock = newAccessRepositoryMock();
-    auditMock = newAuditRepositoryMock();
-    sut = new SyncService(accessMock, assetMock, partnerMock, auditMock);
+    ({ sut, assetMock, auditMock, partnerMock } = newTestService(SyncService));
   });
 
   it('should exist', () => {

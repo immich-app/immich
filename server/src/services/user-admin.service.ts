@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { SALT_ROUNDS } from 'src/constants';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
@@ -11,28 +11,14 @@ import {
   mapUserAdmin,
 } from 'src/dtos/user.dto';
 import { UserMetadataKey, UserStatus } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
+import { JobName } from 'src/interfaces/job.interface';
+import { UserFindOptions } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 import { createUser } from 'src/utils/user';
 
 @Injectable()
-export class UserAdminService {
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(UserAdminService.name);
-  }
-
+export class UserAdminService extends BaseService {
   async search(auth: AuthDto, dto: UserAdminSearchDto): Promise<UserAdminResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: dto.withDeleted });
     return users.map((user) => mapUserAdmin(user));

@@ -3,7 +3,7 @@ import { IViewRepository } from 'src/interfaces/view.interface';
 import { ViewService } from 'src/services/view.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { newViewRepositoryMock } from 'test/repositories/view.repository.mock';
+import { newTestService } from 'test/utils';
 
 import { Mocked } from 'vitest';
 
@@ -12,9 +12,7 @@ describe(ViewService.name, () => {
   let viewMock: Mocked<IViewRepository>;
 
   beforeEach(() => {
-    viewMock = newViewRepositoryMock();
-
-    sut = new ViewService(viewMock);
+    ({ sut, viewMock } = newTestService(ViewService));
   });
 
   it('should work', () => {

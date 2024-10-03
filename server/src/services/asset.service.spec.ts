@@ -4,13 +4,10 @@ import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -18,16 +15,8 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
-import { newStackRepositoryMock } from 'test/repositories/stack.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, vitest } from 'vitest';
 
 const stats: AssetStats = {
@@ -45,16 +34,14 @@ const statResponse: AssetStatsResponseDto = {
 
 describe(AssetService.name, () => {
   let sut: AssetService;
+
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
-  let configMock: Mocked<IConfigRepository>;
-  let jobMock: Mocked<IJobRepository>;
-  let userMock: Mocked<IUserRepository>;
   let eventMock: Mocked<IEventRepository>;
-  let stackMock: Mocked<IStackRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
+  let jobMock: Mocked<IJobRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let stackMock: Mocked<IStackRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -67,29 +54,8 @@ describe(AssetService.name, () => {
   };
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    configMock = newConfigRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    userMock = newUserRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    partnerMock = newPartnerRepositoryMock();
-    stackMock = newStackRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new AssetService(
-      accessMock,
-      assetMock,
-      configMock,
-      jobMock,
-      systemMock,
-      userMock,
-      eventMock,
-      partnerMock,
-      stackMock,
-      loggerMock,
-    );
+    ({ sut, accessMock, assetMock, eventMock, jobMock, userMock, partnerMock, stackMock } =
+      newTestService(AssetService));
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
   });

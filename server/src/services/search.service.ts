@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
@@ -16,34 +16,13 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetOrder } from 'src/enum';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { SearchExploreItem } from 'src/interfaces/search.interface';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class SearchService extends BaseService {
-  constructor(
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(configRepository, systemMetadataRepository, logger);
-    this.logger.setContext(SearchService.name);
-  }
-
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
     return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
   }
@@ -108,7 +87,11 @@ export class SearchService extends BaseService {
 
     const userIds = await this.getUserIdsToSearch(auth);
 
-    const embedding = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
+    const embedding = await this.machineLearningRepository.encodeText(
+      machineLearning.url,
+      dto.query,
+      machineLearning.clip,
+    );
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
