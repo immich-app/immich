@@ -4,6 +4,7 @@ import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { Mocked, vitest } from 'vitest';
 
 const envData: EnvData = {
+  port: 3001,
   environment: ImmichEnvironment.PRODUCTION,
 
   database: {

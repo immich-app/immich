@@ -4,6 +4,7 @@ import { VectorExtension } from 'src/interfaces/database.interface';
 export const IConfigRepository = 'IConfigRepository';
 
 export interface EnvData {
+  port: number;
   environment: ImmichEnvironment;
   configFile?: string;
   logLevel?: LogLevel;
