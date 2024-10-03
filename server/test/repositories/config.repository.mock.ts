@@ -10,6 +10,12 @@ const envData: EnvData = {
   buildMetadata: {},
 
   database: {
+    host: 'database',
+    port: 5432,
+    username: 'postgres',
+    password: 'postgres',
+    name: 'immich',
+
     skipMigrations: false,
     vectorExtension: DatabaseExtension.VECTORS,
   },

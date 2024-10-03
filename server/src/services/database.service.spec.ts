@@ -57,7 +57,17 @@ describe(DatabaseService.name, () => {
   ])('should work with $extensionName', ({ extension, extensionName }) => {
     beforeEach(() => {
       configMock.getEnv.mockReturnValue(
-        mockEnvData({ database: { skipMigrations: false, vectorExtension: extension } }),
+        mockEnvData({
+          database: {
+            host: 'database',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            name: 'immich',
+            skipMigrations: false,
+            vectorExtension: extension,
+          },
+        }),
       );
     });
 
@@ -245,6 +255,11 @@ describe(DatabaseService.name, () => {
     configMock.getEnv.mockReturnValue(
       mockEnvData({
         database: {
+          host: 'database',
+          port: 5432,
+          username: 'postgres',
+          password: 'postgres',
+          name: 'immich',
           skipMigrations: true,
           vectorExtension: DatabaseExtension.VECTORS,
         },
@@ -260,6 +275,11 @@ describe(DatabaseService.name, () => {
     configMock.getEnv.mockReturnValue(
       mockEnvData({
         database: {
+          host: 'database',
+          port: 5432,
+          username: 'postgres',
+          password: 'postgres',
+          name: 'immich',
           skipMigrations: true,
           vectorExtension: DatabaseExtension.VECTOR,
         },

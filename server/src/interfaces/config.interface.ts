@@ -26,6 +26,12 @@ export interface EnvData {
   };
 
   database: {
+    url?: string;
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    name: string;
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
   };
