@@ -14,6 +14,11 @@ export interface EnvData {
     vectorExtension: VectorExtension;
   };
 
+  licensePublicKey: {
+    client: string;
+    server: string;
+  };
+
   storage: {
     ignoreMountCheckErrors: boolean;
   };
