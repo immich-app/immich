@@ -306,6 +306,17 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).not.toHaveBeenCalled();
     });
 
+    it('should throw an error if the userId is the ownerId', async () => {
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
+      albumMock.getById.mockResolvedValue(albumStub.sharedWithAdmin);
+      await expect(
+        sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, {
+          albumUsers: [{ userId: userStub.user1.id }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
     it('should add valid shared users', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.sharedWithAdmin));
@@ -412,6 +423,19 @@ describe(AlbumService.name, () => {
       );
 
       expect(albumMock.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateUser', () => {
+    it('should update user role', async () => {
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
+      await sut.updateUser(authStub.user1, albumStub.sharedWithAdmin.id, userStub.admin.id, {
+        role: AlbumUserRole.EDITOR,
+      });
+      expect(albumUserMock.update).toHaveBeenCalledWith(
+        { albumId: albumStub.sharedWithAdmin.id, userId: userStub.admin.id },
+        { role: AlbumUserRole.EDITOR },
+      );
     });
   });
 

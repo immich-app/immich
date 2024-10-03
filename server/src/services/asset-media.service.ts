@@ -185,9 +185,6 @@ export class AssetMediaService extends BaseService {
     await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
 
     const asset = await this.findOrFail(id);
-    if (!asset) {
-      throw new NotFoundException('Asset does not exist');
-    }
 
     return new ImmichFileResponse({
       path: asset.originalPath,
@@ -223,9 +220,6 @@ export class AssetMediaService extends BaseService {
     await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
-    if (!asset) {
-      throw new NotFoundException('Asset does not exist');
-    }
 
     if (asset.type !== AssetType.VIDEO) {
       throw new BadRequestException('Asset is not a video');
