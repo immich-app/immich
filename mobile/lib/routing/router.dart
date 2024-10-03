@@ -13,11 +13,11 @@ import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
-import 'package:immich_mobile/pages/collections/albums/albums_collection.page.dart';
-import 'package:immich_mobile/pages/collections/albums/local_albums_collection.page.dart';
-import 'package:immich_mobile/pages/collections/people/people_collection.page.dart';
-import 'package:immich_mobile/pages/collections/places/places_collection.part.dart';
-import 'package:immich_mobile/pages/collections/collections.page.dart';
+import 'package:immich_mobile/pages/library/albums/albums_collection.page.dart';
+import 'package:immich_mobile/pages/library/albums/local_albums_collection.page.dart';
+import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
+import 'package:immich_mobile/pages/library/places/places_collection.part.dart';
+import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
 import 'package:immich_mobile/pages/common/album_asset_selection.page.dart';
@@ -36,7 +36,6 @@ import 'package:immich_mobile/pages/editing/edit.page.dart';
 import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/pages/library/archive.page.dart';
 import 'package:immich_mobile/pages/library/favorite.page.dart';
-import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/library/trash.page.dart';
 import 'package:immich_mobile/pages/login/change_password.page.dart';
 import 'package:immich_mobile/pages/login/login.page.dart';
@@ -116,10 +115,6 @@ class AppRouter extends RootStackRouter {
         ),
         AutoRoute(
           page: LibraryRoute.page,
-          guards: [_authGuard, _duplicateGuard],
-        ),
-        AutoRoute(
-          page: CollectionsRoute.page,
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(

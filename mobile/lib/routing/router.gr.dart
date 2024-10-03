@@ -603,25 +603,6 @@ class ChangePasswordRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [CollectionsPage]
-class CollectionsRoute extends PageRouteInfo<void> {
-  const CollectionsRoute({List<PageRouteInfo>? children})
-      : super(
-          CollectionsRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'CollectionsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const CollectionsPage();
-    },
-  );
-}
-
-/// generated route for
 /// [CreateAlbumPage]
 class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
   CreateAlbumRoute({

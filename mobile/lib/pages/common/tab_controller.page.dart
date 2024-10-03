@@ -78,6 +78,12 @@ class TabControllerPage extends HookConsumerWidget {
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.search_rounded),
+            selectedIcon: const Icon(Icons.search),
+            label: const Text('tab_controller_nav_search').tr(),
+          ),
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.photo_album_outlined),
             selectedIcon: const Icon(Icons.photo_album),
             label: const Text('albums').tr(),
@@ -86,26 +92,8 @@ class TabControllerPage extends HookConsumerWidget {
             padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.space_dashboard_outlined),
             selectedIcon: const Icon(Icons.space_dashboard_rounded),
-            label: const Text('collections').tr(),
+            label: const Text('library').tr(),
           ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.search_rounded),
-            selectedIcon: const Icon(Icons.search),
-            label: const Text('tab_controller_nav_search').tr(),
-          ),
-          // NavigationRailDestination(
-          //   padding: const EdgeInsets.all(4),
-          //   icon: const Icon(Icons.share_rounded),
-          //   selectedIcon: const Icon(Icons.share),
-          //   label: const Text('tab_controller_nav_sharing').tr(),
-          // ),
-          // NavigationRailDestination(
-          //   padding: const EdgeInsets.all(4),
-          //   icon: const Icon(Icons.photo_album_outlined),
-          //   selectedIcon: const Icon(Icons.photo_album),
-          //   label: const Text('tab_controller_nav_library').tr(),
-          // ),
         ],
       );
     }
@@ -137,6 +125,16 @@ class TabControllerPage extends HookConsumerWidget {
             ),
           ),
           NavigationDestination(
+            label: 'tab_controller_nav_search'.tr(),
+            icon: const Icon(
+              Icons.search_rounded,
+            ),
+            selectedIcon: Icon(
+              Icons.search,
+              color: context.primaryColor,
+            ),
+          ),
+          NavigationDestination(
             label: 'albums'.tr(),
             icon: const Icon(
               Icons.photo_album_outlined,
@@ -149,7 +147,7 @@ class TabControllerPage extends HookConsumerWidget {
             ),
           ),
           NavigationDestination(
-            label: 'collections'.tr(),
+            label: 'library'.tr(),
             icon: const Icon(
               Icons.space_dashboard_outlined,
             ),
@@ -160,38 +158,6 @@ class TabControllerPage extends HookConsumerWidget {
               ),
             ),
           ),
-          NavigationDestination(
-            label: 'tab_controller_nav_search'.tr(),
-            icon: const Icon(
-              Icons.search_rounded,
-            ),
-            selectedIcon: Icon(
-              Icons.search,
-              color: context.primaryColor,
-            ),
-          ),
-          // NavigationDestination(
-          //   label: 'tab_controller_nav_sharing'.tr(),
-          //   icon: const Icon(
-          //     Icons.group_outlined,
-          //   ),
-          //   selectedIcon: Icon(
-          //     Icons.group,
-          //     color: context.primaryColor,
-          //   ),
-          // ),
-          // NavigationDestination(
-          //   label: 'tab_controller_nav_library'.tr(),
-          //   icon: const Icon(
-          //     Icons.photo_album_outlined,
-          //   ),
-          //   selectedIcon: buildIcon(
-          //     Icon(
-          //       Icons.photo_album_rounded,
-          //       color: context.primaryColor,
-          //     ),
-          //   ),
-          // ),
         ],
       );
     }
@@ -200,11 +166,9 @@ class TabControllerPage extends HookConsumerWidget {
     return AutoTabsRouter(
       routes: [
         const PhotosRoute(),
-        AlbumsCollectionRoute(showImmichAppbar: true),
-        const CollectionsRoute(),
-        // SharingRoute(),
-        // LibraryRoute(),
         const SearchRoute(),
+        AlbumsCollectionRoute(showImmichAppbar: true),
+        const LibraryRoute(),
       ],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(

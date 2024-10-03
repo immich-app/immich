@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/pages/collections/albums/albums_collection.page.dart';
+import 'package:immich_mobile/pages/library/albums/albums_collection.page.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
