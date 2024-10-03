@@ -79,13 +79,12 @@ export class MediaRepository implements IMediaRepository {
       failOn: options.processInvalidImages ? 'none' : 'error',
       limitInputPixels: false,
       raw: options.raw,
-    });
+    })
+      .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+      .withIccProfile(options.colorspace);
 
     if (!options.raw) {
-      pipeline = pipeline
-        .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
-        .withIccProfile(options.colorspace)
-        .rotate();
+      pipeline = pipeline.rotate();
     }
 
     if (options.crop) {
