@@ -7,6 +7,8 @@ const envData: EnvData = {
   port: 3001,
   environment: ImmichEnvironment.PRODUCTION,
 
+  buildMetadata: {},
+
   database: {
     skipMigrations: false,
     vectorExtension: DatabaseExtension.VECTORS,

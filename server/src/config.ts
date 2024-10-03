@@ -408,19 +408,3 @@ export const clsConfig: ClsModuleOptions = {
     },
   },
 };
-
-export const getBuildMetadata = () => ({
-  build: process.env.IMMICH_BUILD,
-  buildUrl: process.env.IMMICH_BUILD_URL,
-  buildImage: process.env.IMMICH_BUILD_IMAGE,
-  buildImageUrl: process.env.IMMICH_BUILD_IMAGE_URL,
-  repository: process.env.IMMICH_REPOSITORY,
-  repositoryUrl: process.env.IMMICH_REPOSITORY_URL,
-  sourceRef: process.env.IMMICH_SOURCE_REF,
-  sourceCommit: process.env.IMMICH_SOURCE_COMMIT,
-  sourceUrl: process.env.IMMICH_SOURCE_URL,
-  thirdPartySourceUrl: process.env.IMMICH_THIRD_PARTY_SOURCE_URL,
-  thirdPartyBugFeatureUrl: process.env.IMMICH_THIRD_PARTY_BUG_FEATURE_URL,
-  thirdPartyDocumentationUrl: process.env.IMMICH_THIRD_PARTY_DOCUMENTATION_URL,
-  thirdPartySupportUrl: process.env.IMMICH_THIRD_PARTY_SUPPORT_URL,
-});

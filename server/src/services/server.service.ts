@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { getBuildMetadata } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
@@ -36,7 +35,7 @@ export class ServerService extends BaseService {
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {
     const version = `v${serverVersion.toString()}`;
-    const buildMetadata = getBuildMetadata();
+    const { buildMetadata } = this.configRepository.getEnv();
     const buildVersions = await this.serverInfoRepository.getBuildVersions();
     const licensed = await this.systemMetadataRepository.get(SystemMetadataKey.LICENSE);
 
