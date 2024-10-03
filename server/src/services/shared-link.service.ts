@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
@@ -14,30 +14,14 @@ import {
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService extends BaseService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-    @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-  ) {
-    super(systemMetadataRepository, logger);
-    this.logger.setContext(SharedLinkService.name);
-  }
-
   getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.repository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
+    return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
@@ -65,7 +49,7 @@ export class SharedLinkService extends BaseService {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
-        await requireAccess(this.access, { auth, permission: Permission.ALBUM_SHARE, ids: [dto.albumId] });
+        await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_SHARE, ids: [dto.albumId] });
         break;
       }
 
@@ -74,13 +58,13 @@ export class SharedLinkService extends BaseService {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        await requireAccess(this.access, { auth, permission: Permission.ASSET_SHARE, ids: dto.assetIds });
+        await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_SHARE, ids: dto.assetIds });
 
         break;
       }
     }
 
-    const sharedLink = await this.repository.create({
+    const sharedLink = await this.sharedLinkRepository.create({
       key: this.cryptoRepository.randomBytes(50),
       userId: auth.user.id,
       type: dto.type,
@@ -99,7 +83,7 @@ export class SharedLinkService extends BaseService {
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
     await this.findOrFail(auth.user.id, id);
-    const sharedLink = await this.repository.update({
+    const sharedLink = await this.sharedLinkRepository.update({
       id,
       userId: auth.user.id,
       description: dto.description,
@@ -114,12 +98,12 @@ export class SharedLinkService extends BaseService {
 
   async remove(auth: AuthDto, id: string): Promise<void> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    await this.repository.remove(sharedLink);
+    await this.sharedLinkRepository.remove(sharedLink);
   }
 
   // TODO: replace `userId` with permissions and access control checks
   private async findOrFail(userId: string, id: string) {
-    const sharedLink = await this.repository.get(userId, id);
+    const sharedLink = await this.sharedLinkRepository.get(userId, id);
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
     }
@@ -135,7 +119,7 @@ export class SharedLinkService extends BaseService {
 
     const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
     const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
-    const allowedAssetIds = await checkAccess(this.access, {
+    const allowedAssetIds = await checkAccess(this.accessRepository, {
       auth,
       permission: Permission.ASSET_SHARE,
       ids: notPresentAssetIds,
@@ -159,7 +143,7 @@ export class SharedLinkService extends BaseService {
       sharedLink.assets.push({ id: assetId } as AssetEntity);
     }
 
-    await this.repository.update(sharedLink);
+    await this.sharedLinkRepository.update(sharedLink);
 
     return results;
   }
@@ -183,7 +167,7 @@ export class SharedLinkService extends BaseService {
       sharedLink.assets = sharedLink.assets.filter((asset) => asset.id !== assetId);
     }
 
-    await this.repository.update(sharedLink);
+    await this.sharedLinkRepository.update(sharedLink);
 
     return results;
   }

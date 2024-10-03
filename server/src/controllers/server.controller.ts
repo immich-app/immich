@@ -10,6 +10,7 @@ import {
   ServerStatsResponseDto,
   ServerStorageResponseDto,
   ServerThemeDto,
+  ServerVersionHistoryResponseDto,
   ServerVersionResponseDto,
 } from 'src/dtos/server.dto';
 import { Authenticated } from 'src/middleware/auth.guard';
@@ -44,6 +45,11 @@ export class ServerController {
   @Get('version')
   getServerVersion(): ServerVersionResponseDto {
     return this.versionService.getVersion();
+  }
+
+  @Get('version-history')
+  getVersionHistory(): Promise<ServerVersionHistoryResponseDto[]> {
+    return this.versionService.getVersionHistory();
   }
 
   @Get('features')

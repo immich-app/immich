@@ -1,26 +1,19 @@
-import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { MapService } from 'src/services/map.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
-import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(MapService.name, () => {
   let sut: MapService;
-  let albumMock: Mocked<IAlbumRepository>;
-  let partnerMock: Mocked<IPartnerRepository>;
+
   let mapMock: Mocked<IMapRepository>;
+  let partnerMock: Mocked<IPartnerRepository>;
 
   beforeEach(() => {
-    albumMock = newAlbumRepositoryMock();
-    partnerMock = newPartnerRepositoryMock();
-    mapMock = newMapRepositoryMock();
-
-    sut = new MapService(albumMock, partnerMock, mapMock);
+    ({ sut, mapMock, partnerMock } = newTestService(MapService));
   });
 
   describe('getMapMarkers', () => {

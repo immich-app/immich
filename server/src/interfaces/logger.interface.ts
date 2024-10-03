@@ -5,7 +5,7 @@ export const ILoggerRepository = 'ILoggerRepository';
 export interface ILoggerRepository {
   setAppName(name: string): void;
   setContext(message: string): void;
-  setLogLevel(level: LogLevel): void;
+  setLogLevel(level: LogLevel | false): void;
   isLevelEnabled(level: LogLevel): boolean;
 
   verbose(message: any, ...args: any): void;

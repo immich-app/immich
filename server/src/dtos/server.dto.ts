@@ -30,6 +30,11 @@ export class ServerAboutResponseDto {
   exiftool?: string;
 
   licensed!: boolean;
+
+  thirdPartySourceUrl?: string;
+  thirdPartyBugFeatureUrl?: string;
+  thirdPartyDocumentationUrl?: string;
+  thirdPartySupportUrl?: string;
 }
 
 export class ServerStorageResponseDto {
@@ -61,6 +66,12 @@ export class ServerVersionResponseDto {
   static fromSemVer(value: SemVer) {
     return { major: value.major, minor: value.minor, patch: value.patch };
   }
+}
+
+export class ServerVersionHistoryResponseDto {
+  id!: string;
+  createdAt!: Date;
+  version!: string;
 }
 
 export class UsageByUserDto {

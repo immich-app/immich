@@ -1,25 +1,20 @@
 import { BadRequestException } from '@nestjs/common';
 import { IAssetRepository, TimeBucketSize } from 'src/interfaces/asset.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { TimelineService } from 'src/services/timeline.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(TimelineService.name, () => {
   let sut: TimelineService;
+
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
-  let partnerMock: Mocked<IPartnerRepository>;
-  beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    partnerMock = newPartnerRepositoryMock();
 
-    sut = new TimelineService(accessMock, assetMock, partnerMock);
+  beforeEach(() => {
+    ({ sut, accessMock, assetMock } = newTestService(TimelineService));
   });
 
   describe('getTimeBuckets', () => {

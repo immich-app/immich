@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
@@ -15,32 +15,14 @@ import {
   UsageByUserDto,
 } from 'src/dtos/server.dto';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
+import { UserStatsQueryResponse } from 'src/interfaces/user.interface';
 import { BaseService } from 'src/services/base.service';
 import { asHumanReadable } from 'src/utils/bytes';
-import { isUsingConfigFile } from 'src/utils/config';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class ServerService extends BaseService {
-  constructor(
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IServerInfoRepository) private serverInfoRepository: IServerInfoRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-  ) {
-    super(systemMetadataRepository, logger);
-    this.logger.setContext(ServerService.name);
-  }
-
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(): Promise<void> {
     const featureFlags = await this.getFeatures();
@@ -91,6 +73,7 @@ export class ServerService extends BaseService {
   async getFeatures(): Promise<ServerFeaturesDto> {
     const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications } =
       await this.getConfig({ withCache: false });
+    const { configFile } = this.configRepository.getEnv();
 
     return {
       smartSearch: isSmartSearchEnabled(machineLearning),
@@ -105,7 +88,7 @@ export class ServerService extends BaseService {
       oauth: oauth.enabled,
       oauthAutoLaunch: oauth.autoLaunch,
       passwordLogin: passwordLogin.enabled,
-      configFile: isUsingConfigFile(),
+      configFile: !!configFile,
       email: notifications.smtp.enabled,
     };
   }

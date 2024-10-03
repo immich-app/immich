@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
@@ -28,13 +22,8 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType, CacheControl, Permission, StorageFolder } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { JobName } from 'src/interfaces/job.interface';
+import { BaseService } from 'src/services/base.service';
 import { requireAccess, requireUploadAccess } from 'src/utils/access';
 import { getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -56,19 +45,7 @@ export interface UploadFile {
 }
 
 @Injectable()
-export class AssetMediaService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(AssetMediaService.name);
-  }
-
+export class AssetMediaService extends BaseService {
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
     if (!checksum) {
       return;
@@ -148,7 +125,7 @@ export class AssetMediaService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await requireAccess(this.access, {
+      await requireAccess(this.accessRepository, {
         auth,
         permission: Permission.ASSET_UPLOAD,
         // do not need an id here, but the interface requires it
@@ -182,7 +159,7 @@ export class AssetMediaService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+      await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
       const asset = (await this.assetRepository.getById(id)) as AssetEntity;
 
       this.requireQuota(auth, file.size);
@@ -205,7 +182,7 @@ export class AssetMediaService {
   }
 
   async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
 
     const asset = await this.findOrFail(id);
     if (!asset) {
@@ -220,7 +197,7 @@ export class AssetMediaService {
   }
 
   async viewThumbnail(auth: AuthDto, id: string, dto: AssetMediaOptionsDto): Promise<ImmichFileResponse> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
@@ -243,7 +220,7 @@ export class AssetMediaService {
   }
 
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
     if (!asset) {

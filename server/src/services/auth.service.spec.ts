@@ -7,7 +7,6 @@ import { AuthType } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -19,14 +18,7 @@ import { sessionStub } from 'test/fixtures/session.stub';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newSessionRepositoryMock } from 'test/repositories/session.repository.mock';
-import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mock, Mocked, vitest } from 'vitest';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
@@ -57,14 +49,14 @@ const oauthUserWithDefaultQuota = {
 
 describe('AuthService', () => {
   let sut: AuthService;
+
   let cryptoMock: Mocked<ICryptoRepository>;
   let eventMock: Mocked<IEventRepository>;
-  let userMock: Mocked<IUserRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
-  let sessionMock: Mocked<ISessionRepository>;
-  let shareMock: Mocked<ISharedLinkRepository>;
   let keyMock: Mocked<IKeyRepository>;
+  let sessionMock: Mocked<ISessionRepository>;
+  let sharedLinkMock: Mocked<ISharedLinkRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   let callbackMock: Mock;
   let userinfoMock: Mock;
@@ -89,16 +81,8 @@ describe('AuthService', () => {
       }),
     } as any);
 
-    cryptoMock = newCryptoRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    userMock = newUserRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    sessionMock = newSessionRepositoryMock();
-    shareMock = newSharedLinkRepositoryMock();
-    keyMock = newKeyRepositoryMock();
-
-    sut = new AuthService(cryptoMock, eventMock, systemMock, loggerMock, userMock, sessionMock, shareMock, keyMock);
+    ({ sut, cryptoMock, eventMock, keyMock, sessionMock, sharedLinkMock, systemMock, userMock } =
+      newTestService(AuthService));
   });
 
   it('should be defined', () => {
@@ -283,7 +267,7 @@ describe('AuthService', () => {
 
   describe('validate - shared key', () => {
     it('should not accept a non-existent key', async () => {
-      shareMock.getByKey.mockResolvedValue(null);
+      sharedLinkMock.getByKey.mockResolvedValue(null);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
@@ -294,7 +278,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept an expired key', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
@@ -305,7 +289,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept a key without a user', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
       userMock.get.mockResolvedValue(null);
       await expect(
         sut.authenticate({
@@ -317,7 +301,7 @@ describe('AuthService', () => {
     });
 
     it('should accept a base64url key', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
       userMock.get.mockResolvedValue(userStub.admin);
       await expect(
         sut.authenticate({
@@ -329,11 +313,11 @@ describe('AuthService', () => {
         user: userStub.admin,
         sharedLink: sharedLinkStub.valid,
       });
-      expect(shareMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
+      expect(sharedLinkMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
     });
 
     it('should accept a hex key', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
       userMock.get.mockResolvedValue(userStub.admin);
       await expect(
         sut.authenticate({
@@ -345,7 +329,7 @@ describe('AuthService', () => {
         user: userStub.admin,
         sharedLink: sharedLinkStub.valid,
       });
-      expect(shareMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
+      expect(sharedLinkMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
     });
   });
 

@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { SystemMetadataKey } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -15,6 +16,7 @@ import { DeepPartial } from 'typeorm';
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
 type RepoDeps = {
+  configRepo: IConfigRepository;
   metadataRepo: ISystemMetadataRepository;
   logger: ILoggerRepository;
 };
@@ -26,10 +28,6 @@ let lastUpdated: number | null = null;
 export const clearConfigCache = () => {
   config = null;
   lastUpdated = null;
-};
-
-export const isUsingConfigFile = () => {
-  return !!process.env.IMMICH_CONFIG_FILE;
 };
 
 export const getConfig = async (repos: RepoDeps, { withCache }: { withCache: boolean }): Promise<SystemConfig> => {
@@ -80,11 +78,12 @@ const loadFromFile = async ({ metadataRepo, logger }: RepoDeps, filepath: string
 };
 
 const buildConfig = async (repos: RepoDeps) => {
-  const { metadataRepo, logger } = repos;
+  const { configRepo, metadataRepo, logger } = repos;
+  const { configFile } = configRepo.getEnv();
 
   // load partial
-  const partial = isUsingConfigFile()
-    ? await loadFromFile(repos, process.env.IMMICH_CONFIG_FILE as string)
+  const partial = configFile
+    ? await loadFromFile(repos, configFile)
     : await metadataRepo.get(SystemMetadataKey.SYSTEM_CONFIG);
 
   // merge with defaults
@@ -106,7 +105,7 @@ const buildConfig = async (repos: RepoDeps) => {
   // validate full config
   const errors = await validate(plainToInstance(SystemConfigDto, config));
   if (errors.length > 0) {
-    if (isUsingConfigFile()) {
+    if (configFile) {
       throw new Error(`Invalid value(s) in file: ${errors}`);
     } else {
       logger.error('Validation error', errors);

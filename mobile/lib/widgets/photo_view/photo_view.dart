@@ -1,5 +1,3 @@
-library photo_view;
-
 import 'package:flutter/material.dart';
 
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';

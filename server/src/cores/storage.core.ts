@@ -5,6 +5,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -36,6 +37,7 @@ let instance: StorageCore | null;
 export class StorageCore {
   private constructor(
     private assetRepository: IAssetRepository,
+    private configRepository: IConfigRepository,
     private cryptoRepository: ICryptoRepository,
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
@@ -46,6 +48,7 @@ export class StorageCore {
 
   static create(
     assetRepository: IAssetRepository,
+    configRepository: IConfigRepository,
     cryptoRepository: ICryptoRepository,
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
@@ -56,6 +59,7 @@ export class StorageCore {
     if (!instance) {
       instance = new StorageCore(
         assetRepository,
+        configRepository,
         cryptoRepository,
         moveRepository,
         personRepository,
@@ -245,7 +249,11 @@ export class StorageCore {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
     }
-    const repos = { metadataRepo: this.systemMetadataRepository, logger: this.logger };
+    const repos = {
+      configRepo: this.configRepository,
+      metadataRepo: this.systemMetadataRepository,
+      logger: this.logger,
+    };
     const config = await getConfig(repos, { withCache: true });
     if (assetInfo && config.storageTemplate.hashVerificationEnabled) {
       const { checksum } = assetInfo;

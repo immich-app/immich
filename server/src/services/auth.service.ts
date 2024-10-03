@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -13,6 +12,7 @@ import { IncomingHttpHeaders } from 'node:http';
 import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
 import { SystemConfig } from 'src/config';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
+import { OnEvent } from 'src/decorators';
 import {
   AuthDto,
   ChangePasswordDto,
@@ -30,14 +30,6 @@ import {
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
@@ -71,19 +63,8 @@ export type ValidateRequest = {
 
 @Injectable()
 export class AuthService extends BaseService {
-  constructor(
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
-    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
-    @Inject(IKeyRepository) private keyRepository: IKeyRepository,
-  ) {
-    super(systemMetadataRepository, logger);
-    this.logger.setContext(AuthService.name);
-
+  @OnEvent({ name: 'app.bootstrap' })
+  onBootstrap() {
     custom.setHttpOptionsDefaults({ timeout: 30_000 });
   }
 

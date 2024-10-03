@@ -590,6 +590,7 @@
                 preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+              disableMouseOver
               readonly
               thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
               showStackedIcon={false}

@@ -1,18 +1,9 @@
-import { Inject } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IMapRepository } from 'src/interfaces/map.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 
-export class MapService {
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(IMapRepository) private mapRepository: IMapRepository,
-  ) {}
-
+export class MapService extends BaseService {
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     const userIds = [auth.user.id];
     if (options.withPartners) {

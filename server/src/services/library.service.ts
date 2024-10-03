@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import path, { basename, parse } from 'node:path';
 import picomatch from 'picomatch';
@@ -17,23 +17,16 @@ import {
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetType } from 'src/enum';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
   IEntityJob,
-  IJobRepository,
   ILibraryAssetJob,
   ILibraryFileJob,
   JobName,
   JOBS_LIBRARY_PAGINATION_SIZE,
   JobStatus,
 } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
@@ -45,20 +38,6 @@ export class LibraryService extends BaseService {
   private watchLibraries = false;
   private watchLock = false;
   private watchers: Record<string, () => Promise<void>> = {};
-
-  constructor(
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ILibraryRepository) private repository: ILibraryRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
-  ) {
-    super(systemMetadataRepository, logger);
-    this.logger.setContext(LibraryService.name);
-  }
 
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap() {
@@ -141,7 +120,13 @@ export class LibraryService extends BaseService {
           const handler = async () => {
             this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
             if (matcher(path)) {
-              await this.syncFiles(library, [path]);
+              const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+              if (asset) {
+                await this.syncAssets(library, [asset.id]);
+              }
+              if (matcher(path)) {
+                await this.syncFiles(library, [path]);
+              }
             }
           };
           return handlePromiseError(handler(), this.logger);
@@ -209,14 +194,14 @@ export class LibraryService extends BaseService {
       return false;
     }
 
-    const libraries = await this.repository.getAll(false);
+    const libraries = await this.libraryRepository.getAll(false);
     for (const library of libraries) {
       await this.watch(library.id);
     }
   }
 
   async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
-    const statistics = await this.repository.getStatistics(id);
+    const statistics = await this.libraryRepository.getStatistics(id);
     if (!statistics) {
       throw new BadRequestException(`Library ${id} not found`);
     }
@@ -229,13 +214,13 @@ export class LibraryService extends BaseService {
   }
 
   async getAll(): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAll(false);
+    const libraries = await this.libraryRepository.getAll(false);
     return libraries.map((library) => mapLibrary(library));
   }
 
   async handleQueueCleanup(): Promise<JobStatus> {
     this.logger.debug('Cleaning up any pending library deletions');
-    const pendingDeletion = await this.repository.getAllDeleted();
+    const pendingDeletion = await this.libraryRepository.getAllDeleted();
     await this.jobRepository.queueAll(
       pendingDeletion.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
     );
@@ -243,7 +228,7 @@ export class LibraryService extends BaseService {
   }
 
   async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    const library = await this.repository.create({
+    const library = await this.libraryRepository.create({
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
@@ -318,7 +303,7 @@ export class LibraryService extends BaseService {
 
   async update(id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.findOrFail(id);
-    const library = await this.repository.update({ id, ...dto });
+    const library = await this.libraryRepository.update({ id, ...dto });
 
     if (dto.importPaths) {
       const validation = await this.validate(id, { importPaths: dto.importPaths });
@@ -341,7 +326,7 @@ export class LibraryService extends BaseService {
       await this.unwatch(id);
     }
 
-    await this.repository.softDelete(id);
+    await this.libraryRepository.softDelete(id);
     await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });
   }
 
@@ -371,7 +356,7 @@ export class LibraryService extends BaseService {
 
     if (!assetsFound) {
       this.logger.log(`Deleting library ${libraryId}`);
-      await this.repository.delete(libraryId);
+      await this.libraryRepository.delete(libraryId);
     }
     return JobStatus.SUCCESS;
   }
@@ -399,7 +384,7 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Importing new library asset: ${assetPath}`);
 
-    const library = await this.repository.get(job.id, true);
+    const library = await this.libraryRepository.get(job.id, true);
     if (!library || library.deletedAt) {
       this.logger.error('Cannot import asset into deleted library');
       return JobStatus.FAILED;
@@ -469,7 +454,7 @@ export class LibraryService extends BaseService {
 
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
-    const libraries = await this.repository.getAll(true);
+    const libraries = await this.libraryRepository.getAll(true);
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
         name: JobName.LIBRARY_QUEUE_SYNC_FILES,
@@ -545,7 +530,7 @@ export class LibraryService extends BaseService {
   }
 
   async handleQueueSyncFiles(job: IEntityJob): Promise<JobStatus> {
-    const library = await this.repository.get(job.id);
+    const library = await this.libraryRepository.get(job.id);
     if (!library) {
       this.logger.debug(`Library ${job.id} not found, skipping refresh`);
       return JobStatus.SKIPPED;
@@ -590,13 +575,13 @@ export class LibraryService extends BaseService {
       this.logger.warn(`No valid import paths found for library ${library.id}`);
     }
 
-    await this.repository.update({ id: job.id, refreshedAt: new Date() });
+    await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }
 
   async handleQueueSyncAssets(job: IEntityJob): Promise<JobStatus> {
-    const library = await this.repository.get(job.id);
+    const library = await this.libraryRepository.get(job.id);
     if (!library) {
       return JobStatus.SKIPPED;
     }
@@ -604,7 +589,7 @@ export class LibraryService extends BaseService {
     this.logger.log(`Scanning library ${library.id} for removed assets`);
 
     const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId: job.id }),
+      this.assetRepository.getAll(pagination, { libraryId: job.id, withDeleted: true }),
     );
 
     let assetCount = 0;
@@ -628,7 +613,7 @@ export class LibraryService extends BaseService {
   }
 
   private async findOrFail(id: string) {
-    const library = await this.repository.get(id);
+    const library = await this.libraryRepository.get(id);
     if (!library) {
       throw new BadRequestException('Library not found');
     }
