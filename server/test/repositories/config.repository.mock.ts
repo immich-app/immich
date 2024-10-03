@@ -1,4 +1,4 @@
-import { ImmichEnvironment } from 'src/enum';
+import { ImmichEnvironment, ImmichWorker } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { Mocked, vitest } from 'vitest';
@@ -15,6 +15,8 @@ const envData: EnvData = {
   storage: {
     ignoreMountCheckErrors: false,
   },
+
+  workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES],
 };
 
 export const newConfigRepositoryMock = (): Mocked<IConfigRepository> => {

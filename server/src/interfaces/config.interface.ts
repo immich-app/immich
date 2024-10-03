@@ -1,4 +1,4 @@
-import { ImmichEnvironment, LogLevel } from 'src/enum';
+import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { VectorExtension } from 'src/interfaces/database.interface';
 
 export const IConfigRepository = 'IConfigRepository';
@@ -17,6 +17,8 @@ export interface EnvData {
   storage: {
     ignoreMountCheckErrors: boolean;
   };
+
+  workers: ImmichWorker[];
 
   nodeVersion?: string;
 }
