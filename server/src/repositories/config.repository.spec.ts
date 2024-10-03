@@ -1,4 +1,6 @@
-import { getWorkers } from 'src/utils/workers';
+import { ConfigRepository } from 'src/repositories/config.repository';
+
+const getWorkers = () => new ConfigRepository().getEnv().workers;
 
 describe('getWorkers', () => {
   beforeEach(() => {

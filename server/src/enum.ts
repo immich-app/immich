@@ -334,3 +334,8 @@ export enum ImmichEnvironment {
   TESTING = 'testing',
   PRODUCTION = 'production',
 }
+
+export enum ImmichWorker {
+  API = 'api',
+  MICROSERVICES = 'microservices',
+}
