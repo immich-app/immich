@@ -24,6 +24,8 @@ const envData: EnvData = {
   },
 
   workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES],
+
+  noColor: false,
 };
 
 export const newConfigRepositoryMock = (): Mocked<IConfigRepository> => {

@@ -41,6 +41,7 @@ export interface EnvData {
 
   workers: ImmichWorker[];
 
+  noColor: boolean;
   nodeVersion?: string;
 }
 
