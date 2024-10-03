@@ -241,7 +241,7 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
           isDark ? colorScheme.surfaceContainer : colorScheme.surface,
       labelTextStyle: const WidgetStatePropertyAll(
         TextStyle(
-          fontSize: 15,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
       ),
