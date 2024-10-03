@@ -9,6 +9,22 @@ export interface EnvData {
   configFile?: string;
   logLevel?: LogLevel;
 
+  buildMetadata: {
+    build?: string;
+    buildUrl?: string;
+    buildImage?: string;
+    buildImageUrl?: string;
+    repository?: string;
+    repositoryUrl?: string;
+    sourceRef?: string;
+    sourceCommit?: string;
+    sourceUrl?: string;
+    thirdPartySourceUrl?: string;
+    thirdPartyBugFeatureUrl?: string;
+    thirdPartyDocumentationUrl?: string;
+    thirdPartySupportUrl?: string;
+  };
+
   database: {
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
