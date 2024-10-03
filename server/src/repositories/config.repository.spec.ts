@@ -1,51 +1,76 @@
 import { ConfigRepository } from 'src/repositories/config.repository';
 
-const getWorkers = () => new ConfigRepository().getEnv().workers;
+const getEnv = () => new ConfigRepository().getEnv();
 
-describe('getWorkers', () => {
+describe('getEnv', () => {
   beforeEach(() => {
-    process.env.IMMICH_WORKERS_INCLUDE = '';
-    process.env.IMMICH_WORKERS_EXCLUDE = '';
+    delete process.env.IMMICH_WORKERS_INCLUDE;
+    delete process.env.IMMICH_WORKERS_EXCLUDE;
+    delete process.env.NO_COLOR;
   });
 
   it('should return default workers', () => {
-    expect(getWorkers()).toEqual(['api', 'microservices']);
+    const { workers } = getEnv();
+    expect(workers).toEqual(['api', 'microservices']);
   });
 
   it('should return included workers', () => {
     process.env.IMMICH_WORKERS_INCLUDE = 'api';
-    expect(getWorkers()).toEqual(['api']);
+    const { workers } = getEnv();
+    expect(workers).toEqual(['api']);
   });
 
   it('should excluded workers from defaults', () => {
     process.env.IMMICH_WORKERS_EXCLUDE = 'api';
-    expect(getWorkers()).toEqual(['microservices']);
+    const { workers } = getEnv();
+    expect(workers).toEqual(['microservices']);
   });
 
   it('should exclude workers from include list', () => {
     process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
     process.env.IMMICH_WORKERS_EXCLUDE = 'randomservice,microservices';
-    expect(getWorkers()).toEqual(['api']);
+    const { workers } = getEnv();
+    expect(workers).toEqual(['api']);
   });
 
   it('should remove whitespace from included workers before parsing', () => {
     process.env.IMMICH_WORKERS_INCLUDE = 'api, microservices';
-    expect(getWorkers()).toEqual(['api', 'microservices']);
+    const { workers } = getEnv();
+    expect(workers).toEqual(['api', 'microservices']);
   });
 
   it('should remove whitespace from excluded workers before parsing', () => {
     process.env.IMMICH_WORKERS_EXCLUDE = 'api, microservices';
-    expect(getWorkers()).toEqual([]);
+    const { workers } = getEnv();
+    expect(workers).toEqual([]);
   });
 
   it('should remove whitespace from included and excluded workers before parsing', () => {
     process.env.IMMICH_WORKERS_INCLUDE = 'api, microservices, randomservice,randomservice2';
     process.env.IMMICH_WORKERS_EXCLUDE = 'randomservice,microservices, randomservice2';
-    expect(getWorkers()).toEqual(['api']);
+    const { workers } = getEnv();
+    expect(workers).toEqual(['api']);
   });
 
   it('should throw error for invalid workers', () => {
     process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
-    expect(getWorkers).toThrowError('Invalid worker(s) found: api,microservices,randomservice');
+    expect(getEnv).toThrowError('Invalid worker(s) found: api,microservices,randomservice');
+  });
+
+  it('should default noColor to false', () => {
+    const { noColor } = getEnv();
+    expect(noColor).toBe(false);
+  });
+
+  it('should map NO_COLOR=1 to true', () => {
+    process.env.NO_COLOR = '1';
+    const { noColor } = getEnv();
+    expect(noColor).toBe(true);
+  });
+
+  it('should map NO_COLOR=true to true', () => {
+    process.env.NO_COLOR = 'true';
+    const { noColor } = getEnv();
+    expect(noColor).toBe(true);
   });
 });

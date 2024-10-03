@@ -68,11 +68,16 @@ export class ConfigRepository implements IConfigRepository {
         skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
         vectorExtension: getVectorExtension(),
       },
+
       licensePublicKey: isProd ? productionKeys : stagingKeys,
+
       storage: {
         ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',
       },
+
       workers,
+
+      noColor: !!process.env.NO_COLOR,
     };
   }
 }
