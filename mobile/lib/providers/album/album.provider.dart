@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/pages/albums/albums.page.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -13,9 +14,7 @@ import 'package:isar/isar.dart';
 
 class AlbumNotifier extends StateNotifier<List<Album>> {
   AlbumNotifier(this._albumService, this.db) : super([]) {
-    final query = db.albums
-        .filter()
-        .owner((q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId));
+    final query = db.albums.filter().remoteIdIsNotNull();
     query.findAll().then((value) {
       if (mounted) {
         state = value;
@@ -28,10 +27,10 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   final Isar db;
   late final StreamSubscription<List<Album>> _streamSub;
 
-  Future<void> getAllAlbums() => Future.wait([
-        _albumService.refreshDeviceAlbums(),
-        _albumService.refreshRemoteAlbums(isShared: false),
-      ]);
+  Future<void> getAllAlbums() async {
+    await _albumService.refreshRemoteAlbums(isShared: true);
+    await _albumService.refreshRemoteAlbums(isShared: false);
+  }
 
   Future<void> getDeviceAlbums() => _albumService.refreshDeviceAlbums();
 
@@ -75,6 +74,33 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     final albums = await query.findAll();
     state = albums;
   }
+
+  void filterAlbums(QuickFilterMode mode) async {
+    switch (mode) {
+      case QuickFilterMode.all:
+        state = await db.albums.filter().remoteIdIsNotNull().findAll();
+        return;
+      case QuickFilterMode.sharedWithMe:
+        state = await db.albums
+            .filter()
+            .remoteIdIsNotNull()
+            .owner(
+              (q) =>
+                  q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+            )
+            .findAll();
+        return;
+      case QuickFilterMode.myAlbums:
+        state = await db.albums
+            .filter()
+            .remoteIdIsNotNull()
+            .owner(
+              (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+            )
+            .findAll();
+        return;
+    }
+  }
 }
 
 final albumProvider =
@@ -104,4 +130,60 @@ final albumRenderlistProvider =
     return renderListGeneratorWithGroupBy(query, GroupAssetsBy.none);
   }
   return const Stream.empty();
+});
+
+class RemoteAlbumsNotifier extends StateNotifier<List<Album>> {
+  RemoteAlbumsNotifier(this.db) : super([]) {
+    final query = db.albums.filter().remoteIdIsNotNull();
+
+    query.findAll().then((value) {
+      if (mounted) {
+        state = value;
+      }
+    });
+
+    _streamSub = query.watch().listen((data) => state = data);
+  }
+
+  final Isar db;
+  late final StreamSubscription<List<Album>> _streamSub;
+
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
+  }
+}
+
+class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
+  LocalAlbumsNotifier(this.db) : super([]) {
+    final query = db.albums.filter().not().remoteIdIsNotNull();
+
+    query.findAll().then((value) {
+      if (mounted) {
+        state = value;
+      }
+    });
+
+    _streamSub = query.watch().listen((data) => state = data);
+  }
+
+  final Isar db;
+  late final StreamSubscription<List<Album>> _streamSub;
+
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
+  }
+}
+
+final localAlbumsProvider =
+    StateNotifierProvider.autoDispose<LocalAlbumsNotifier, List<Album>>((ref) {
+  return LocalAlbumsNotifier(ref.watch(dbProvider));
+});
+
+final remoteAlbumsProvider =
+    StateNotifierProvider.autoDispose<RemoteAlbumsNotifier, List<Album>>((ref) {
+  return RemoteAlbumsNotifier(ref.watch(dbProvider));
 });

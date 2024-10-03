@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/album/albumv2.provider.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -73,7 +73,7 @@ class LibraryPage extends ConsumerWidget {
               runSpacing: 16,
               children: [
                 PeopleCollectionCard(),
-                AlbumsCollectionCard(isLocal: true),
+                LocalAlbumsCollectionCard(),
                 PlacesCollectionCard(),
               ],
             ),
@@ -139,25 +139,19 @@ class PeopleCollectionCard extends ConsumerWidget {
   }
 }
 
-class AlbumsCollectionCard extends HookConsumerWidget {
-  final bool isLocal;
-
-  const AlbumsCollectionCard({super.key, this.isLocal = false});
+class LocalAlbumsCollectionCard extends HookConsumerWidget {
+  const LocalAlbumsCollectionCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums = isLocal
-        ? ref.watch(localAlbumsProvider)
-        : ref.watch(remoteAlbumsProvider);
+    final albums = ref.watch(localAlbumsProvider);
 
     final size = MediaQuery.of(context).size.width * 0.5 - 20;
 
     return GestureDetector(
-      onTap: () => isLocal
-          ? context.pushRoute(
-              const LocalAlbumsCollectionRoute(),
-            )
-          : context.pushRoute(AlbumsCollectionRoute()),
+      onTap: () => context.pushRoute(
+        const LocalAlbumsRoute(),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -185,7 +179,7 @@ class AlbumsCollectionCard extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              isLocal ? 'on_this_device'.tr() : 'albums'.tr(),
+              'on_this_device'.tr(),
               style: context.textTheme.titleSmall?.copyWith(
                 color: context.colorScheme.onSurface,
                 fontWeight: FontWeight.w500,

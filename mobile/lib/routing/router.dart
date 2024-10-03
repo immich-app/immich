@@ -13,8 +13,8 @@ import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
-import 'package:immich_mobile/pages/library/albums/albums_collection.page.dart';
-import 'package:immich_mobile/pages/library/albums/local_albums_collection.page.dart';
+import 'package:immich_mobile/pages/albums/albums.page.dart';
+import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
 import 'package:immich_mobile/pages/library/places/places_collection.part.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
@@ -118,7 +118,7 @@ class AppRouter extends RootStackRouter {
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(
-          page: AlbumsCollectionRoute.page,
+          page: AlbumsRoute.page,
           guards: [_authGuard, _duplicateGuard],
         ),
       ],
@@ -261,12 +261,12 @@ class AppRouter extends RootStackRouter {
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
     CustomRoute(
-      page: AlbumsCollectionRoute.page,
+      page: AlbumsRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
     CustomRoute(
-      page: LocalAlbumsCollectionRoute.page,
+      page: LocalAlbumsRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),

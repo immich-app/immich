@@ -3,13 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/album/albumv2.provider.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 @RoutePage()
-class LocalAlbumsCollectionPage extends HookConsumerWidget {
-  const LocalAlbumsCollectionPage({super.key});
+class LocalAlbumsPage extends HookConsumerWidget {
+  const LocalAlbumsPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(localAlbumsProvider);

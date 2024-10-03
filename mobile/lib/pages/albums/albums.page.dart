@@ -9,8 +9,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/providers/album/albumv2.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
@@ -24,15 +24,15 @@ enum QuickFilterMode {
 }
 
 @RoutePage()
-class AlbumsCollectionPage extends HookConsumerWidget {
-  const AlbumsCollectionPage({super.key, this.showImmichAppbar = false});
+class AlbumsPage extends HookConsumerWidget {
+  const AlbumsPage({super.key, this.showImmichAppbar = false});
 
   final bool showImmichAppbar;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums =
-        ref.watch(albumProviderV2).where((album) => album.isRemote).toList();
+        ref.watch(albumProvider).where((album) => album.isRemote).toList();
     final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
     final sorted = albumSortOption.sortFn(albums, albumSortIsReverse);
@@ -50,13 +50,13 @@ class AlbumsCollectionPage extends HookConsumerWidget {
       debounceTimer.value?.cancel();
       debounceTimer.value = Timer(const Duration(milliseconds: 300), () {
         filterMode.value = QuickFilterMode.all;
-        ref.read(albumProviderV2.notifier).searchAlbums(value);
+        ref.read(albumProvider.notifier).searchAlbums(value);
       });
     }
 
     changeFilter(QuickFilterMode mode) {
       filterMode.value = mode;
-      ref.read(albumProviderV2.notifier).filterAlbums(mode);
+      ref.read(albumProvider.notifier).filterAlbums(mode);
     }
 
     useEffect(

@@ -320,29 +320,29 @@ class AlbumViewerRouteArgs {
 }
 
 /// generated route for
-/// [AlbumsCollectionPage]
-class AlbumsCollectionRoute extends PageRouteInfo<AlbumsCollectionRouteArgs> {
-  AlbumsCollectionRoute({
+/// [AlbumsPage]
+class AlbumsRoute extends PageRouteInfo<AlbumsRouteArgs> {
+  AlbumsRoute({
     Key? key,
     bool showImmichAppbar = false,
     List<PageRouteInfo>? children,
   }) : super(
-          AlbumsCollectionRoute.name,
-          args: AlbumsCollectionRouteArgs(
+          AlbumsRoute.name,
+          args: AlbumsRouteArgs(
             key: key,
             showImmichAppbar: showImmichAppbar,
           ),
           initialChildren: children,
         );
 
-  static const String name = 'AlbumsCollectionRoute';
+  static const String name = 'AlbumsRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<AlbumsCollectionRouteArgs>(
-          orElse: () => const AlbumsCollectionRouteArgs());
-      return AlbumsCollectionPage(
+      final args =
+          data.argsAs<AlbumsRouteArgs>(orElse: () => const AlbumsRouteArgs());
+      return AlbumsPage(
         key: args.key,
         showImmichAppbar: args.showImmichAppbar,
       );
@@ -350,8 +350,8 @@ class AlbumsCollectionRoute extends PageRouteInfo<AlbumsCollectionRouteArgs> {
   );
 }
 
-class AlbumsCollectionRouteArgs {
-  const AlbumsCollectionRouteArgs({
+class AlbumsRouteArgs {
+  const AlbumsRouteArgs({
     this.key,
     this.showImmichAppbar = false,
   });
@@ -362,7 +362,7 @@ class AlbumsCollectionRouteArgs {
 
   @override
   String toString() {
-    return 'AlbumsCollectionRouteArgs{key: $key, showImmichAppbar: $showImmichAppbar}';
+    return 'AlbumsRouteArgs{key: $key, showImmichAppbar: $showImmichAppbar}';
   }
 }
 
@@ -905,20 +905,20 @@ class LibraryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [LocalAlbumsCollectionPage]
-class LocalAlbumsCollectionRoute extends PageRouteInfo<void> {
-  const LocalAlbumsCollectionRoute({List<PageRouteInfo>? children})
+/// [LocalAlbumsPage]
+class LocalAlbumsRoute extends PageRouteInfo<void> {
+  const LocalAlbumsRoute({List<PageRouteInfo>? children})
       : super(
-          LocalAlbumsCollectionRoute.name,
+          LocalAlbumsRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'LocalAlbumsCollectionRoute';
+  static const String name = 'LocalAlbumsRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const LocalAlbumsCollectionPage();
+      return const LocalAlbumsPage();
     },
   );
 }

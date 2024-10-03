@@ -167,7 +167,7 @@ class TabControllerPage extends HookConsumerWidget {
       routes: [
         const PhotosRoute(),
         const SearchRoute(),
-        AlbumsCollectionRoute(showImmichAppbar: true),
+        AlbumsRoute(showImmichAppbar: true),
         const LibraryRoute(),
       ],
       duration: const Duration(milliseconds: 600),
