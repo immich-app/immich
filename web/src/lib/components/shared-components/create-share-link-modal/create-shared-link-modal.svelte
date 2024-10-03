@@ -5,7 +5,6 @@
   import { serverConfig } from '$lib/stores/server-config.store';
   import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { QRC } from '$lib/utils/qrcode.js';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { NotificationType, notificationController } from '../notification/notification';
@@ -16,6 +15,8 @@
   import { locale } from '$lib/stores/preferences.store';
   import { DateTime, Duration } from 'luxon';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import QrCode from "svelte-qrcode"
+
 
   export let onClose: () => void;
   export let albumId: string | undefined = undefined;
@@ -24,6 +25,7 @@
   export let onCreated: () => void = () => {};
 
   let sharedLink: string | null = null;
+  let showQRCode: boolean | null = false;
   let description = '';
   let allowDownload = true;
   let allowUpload = false;
@@ -95,16 +97,8 @@
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
       onCreated();
+      showQRCode = true;
 
-      // generate QR code
-      var qrcode = new QRC(document.getElementById("qrcode"), {
-          text: sharedLink,
-          width: 376,
-          height: 376,
-          colorDark : "#000000",
-          colorLight : "#ffffff",
-          correctLevel : QRC.CorrectLevel.H
-        });
     } catch (error) {
       handleError(error, $t('errors.failed_to_create_shared_link'));
     }
@@ -229,7 +223,13 @@
             number={true}
           />
         </div>
-        <div class="mt-3" id="qrcode"></div>
+        <div class="mt-3" id="qrcode">
+        {#if showQRCode}
+          <div class="container">
+            <QrCode value="{sharedLink}" size="376"/>
+          </div>
+        {/if}
+        </div>
       </div>
     </div>
   </section>
