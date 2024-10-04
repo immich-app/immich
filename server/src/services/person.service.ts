@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceResponseDto,
@@ -172,12 +171,6 @@ export class PersonService extends BaseService {
       contentType: mimeTypes.lookup(person.thumbnailPath),
       cacheControl: CacheControl.PRIVATE_WITHOUT_CACHE,
     });
-  }
-
-  async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.PERSON_READ, ids: [id] });
-    const assets = await this.personRepository.getAssets(id);
-    return assets.map((asset) => mapAsset(asset));
   }
 
   create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
