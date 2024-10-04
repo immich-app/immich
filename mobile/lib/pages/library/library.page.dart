@@ -91,6 +91,7 @@ class LibraryPage extends ConsumerWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              onTap: () => context.pushRoute(const RecentlyAddedRoute()),
             ),
             Divider(),
             PartnerList(),
