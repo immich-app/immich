@@ -4,7 +4,6 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { resourcePaths } from 'src/constants';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GitHubRelease, IServerInfoRepository, ServerBuildVersions } from 'src/interfaces/server-info.interface';
@@ -60,7 +59,7 @@ export class ServerInfoRepository implements IServerInfoRepository {
   }
 
   async getBuildVersions(): Promise<ServerBuildVersions> {
-    const { nodeVersion } = this.configRepository.getEnv();
+    const { nodeVersion, resourcePaths } = this.configRepository.getEnv();
 
     const [nodejsOutput, ffmpegOutput, magickOutput] = await Promise.all([
       maybeFirstLine('node --version'),
