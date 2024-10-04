@@ -22,7 +22,11 @@ class PartnerDetailPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(assetProvider.notifier).getAllAsset();
+        Future.microtask(
+          () async => {
+            await ref.read(assetProvider.notifier).getAllAsset(),
+          },
+        );
         return null;
       },
       [],

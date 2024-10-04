@@ -32,24 +32,27 @@ class LibraryPage extends ConsumerWidget {
         actions: [CreateNewButton(), SharePartnerButton()],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ListView(
           shrinkWrap: true,
           children: [
-            Row(
-              children: [
-                ActionButton(
-                  onPressed: () => context.pushRoute(const FavoritesRoute()),
-                  icon: Icons.favorite_outline_rounded,
-                  label: 'favorites'.tr(),
-                ),
-                const SizedBox(width: 8),
-                ActionButton(
-                  onPressed: () => context.pushRoute(const ArchiveRoute()),
-                  icon: Icons.archive_outlined,
-                  label: 'archived'.tr(),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Row(
+                children: [
+                  ActionButton(
+                    onPressed: () => context.pushRoute(const FavoritesRoute()),
+                    icon: Icons.favorite_outline_rounded,
+                    label: 'favorites'.tr(),
+                  ),
+                  const SizedBox(width: 8),
+                  ActionButton(
+                    onPressed: () => context.pushRoute(const ArchiveRoute()),
+                    icon: Icons.archive_outlined,
+                    label: 'archived'.tr(),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 8),
             Row(
@@ -80,24 +83,62 @@ class LibraryPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ListTile(
-              leading: Icon(
-                Icons.schedule_rounded,
-                size: 26,
-              ),
-              title: Text(
-                'recently_added'.tr(),
-                style: context.textTheme.titleSmall?.copyWith(
-                  color: context.colorScheme.onSurface,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+            QuickAccessButtons(),
+            const SizedBox(
+              height: 32,
             ),
-            Divider(),
-            PartnerList(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class QuickAccessButtons extends ConsumerWidget {
+  const QuickAccessButtons({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: context.colorScheme.onSurface.withAlpha(10),
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            context.colorScheme.primary.withAlpha(10),
+            context.colorScheme.primary.withAlpha(15),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: ListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            leading: const Icon(
+              Icons.schedule_rounded,
+              size: 26,
+            ),
+            title: Text(
+              'recently_added'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+          ),
+          const PartnerList(),
+        ],
       ),
     );
   }
@@ -108,16 +149,20 @@ class PartnerList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final partners = ref.watch(partnerSharedWithProvider);
-    return ListView.separated(
+    return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
-      separatorBuilder: (context, index) {
-        return Divider();
-      },
       itemCount: partners.length,
       shrinkWrap: true,
       itemBuilder: (context, index) {
         final partner = partners[index];
+        final isLastItem = index == partners.length - 1;
         return ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(isLastItem ? 20 : 0),
+              bottomRight: Radius.circular(isLastItem ? 20 : 0),
+            ),
+          ),
           contentPadding: const EdgeInsets.only(
             left: 12.0,
             right: 18.0,
@@ -125,8 +170,7 @@ class PartnerList extends ConsumerWidget {
           leading: userAvatar(context, partner, radius: 16),
           title: Text(
             "partner_list_user_photos",
-            style: context.textTheme.titleSmall?.copyWith(
-              color: context.colorScheme.onSurface,
+            style: TextStyle(
               fontWeight: FontWeight.w500,
             ),
           ).tr(
@@ -159,8 +203,19 @@ class PeopleCollectionCard extends ConsumerWidget {
             height: size,
             width: size,
             decoration: BoxDecoration(
+              border: Border.all(
+                color: context.colorScheme.onSurface.withAlpha(10),
+                width: 1,
+              ),
               borderRadius: BorderRadius.circular(20),
-              color: context.colorScheme.secondaryContainer.withAlpha(100),
+              gradient: LinearGradient(
+                colors: [
+                  context.colorScheme.primary.withAlpha(30),
+                  context.colorScheme.primary.withAlpha(25),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
             child: people.widgetWhen(
               onData: (people) {
@@ -218,8 +273,19 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
             height: size,
             width: size,
             decoration: BoxDecoration(
+              border: Border.all(
+                color: context.colorScheme.onSurface.withAlpha(10),
+                width: 1,
+              ),
               borderRadius: BorderRadius.circular(20),
-              color: context.colorScheme.secondaryContainer.withAlpha(100),
+              gradient: LinearGradient(
+                colors: [
+                  context.colorScheme.primary.withAlpha(30),
+                  context.colorScheme.primary.withAlpha(25),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
             child: GridView.count(
               crossAxisCount: 2,
@@ -267,6 +333,10 @@ class PlacesCollectionCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: context.colorScheme.secondaryContainer.withAlpha(100),
+              border: Border.all(
+                color: context.colorScheme.onSurface.withAlpha(10),
+                width: 1,
+              ),
             ),
             child: IgnorePointer(
               child: MapThumbnail(
