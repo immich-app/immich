@@ -45,7 +45,6 @@ services:
         soft: 1048576
         hard: 1048576
     ports:
-      - 3001:3001
       - 9230:9230
       - 9231:9231
     depends_on:

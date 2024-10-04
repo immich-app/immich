@@ -89,16 +89,7 @@ immich-server:
   devices:
     - /dev/dri:/dev/dri
   volumes:
-    - ${UPLOAD_LOCATION}:/usr/src/app/upload
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  ports:
-    - 2283:3001
-  depends_on:
-    - redis
-    - database
-  restart: always
+  ...
 ```
 
 Once this is done, you can continue to step 3 of "Basic Setup".

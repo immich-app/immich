@@ -21,6 +21,7 @@ services:
       - IMMICH_MACHINE_LEARNING_ENABLED=false
       - IMMICH_METRICS=true
       - IMMICH_ENV=testing
+      - IMMICH_PORT=2285
     volumes:
       - ./test-assets:/test-assets
     extra_hosts:
@@ -29,7 +30,7 @@ services:
       - redis
       - database
     ports:
-      - 2285:3001
+      - 2285:2285
 
   redis:
     image: redis:6.2-alpine@sha256:2d1463258f2764328496376f5d965f20c6a67f66ea2b06dc42af351f75248792
