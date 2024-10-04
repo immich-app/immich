@@ -1,13 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName } from 'src/interfaces/job.interface';
+import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
+import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -41,6 +43,7 @@ describe(AssetService.name, () => {
   let jobMock: Mocked<IJobRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
   let stackMock: Mocked<IStackRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
   let userMock: Mocked<IUserRepository>;
 
   it('should work', () => {
@@ -54,7 +57,7 @@ describe(AssetService.name, () => {
   };
 
   beforeEach(() => {
-    ({ sut, accessMock, assetMock, eventMock, jobMock, userMock, partnerMock, stackMock } =
+    ({ sut, accessMock, assetMock, eventMock, jobMock, partnerMock, stackMock, systemMock, userMock } =
       newTestService(AssetService));
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
@@ -126,6 +129,28 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('getRandom', () => {
+    it('should get own random assets', async () => {
+      assetMock.getRandom.mockResolvedValue([assetStub.image]);
+      await sut.getRandom(authStub.admin, 1);
+      expect(assetMock.getRandom).toHaveBeenCalledWith([authStub.admin.user.id], 1);
+    });
+
+    it('should not include partner assets if not in timeline', async () => {
+      assetMock.getRandom.mockResolvedValue([assetStub.image]);
+      partnerMock.getAll.mockResolvedValue([{ ...partnerStub.user1ToAdmin1, inTimeline: false }]);
+      await sut.getRandom(authStub.admin, 1);
+      expect(assetMock.getRandom).toHaveBeenCalledWith([authStub.admin.user.id], 1);
+    });
+
+    it('should include partner assets if in timeline', async () => {
+      assetMock.getRandom.mockResolvedValue([assetStub.image]);
+      partnerMock.getAll.mockResolvedValue([partnerStub.user1ToAdmin1]);
+      await sut.getRandom(authStub.admin, 1);
+      expect(assetMock.getRandom).toHaveBeenCalledWith([userStub.admin.id, userStub.user1.id], 1);
+    });
+  });
+
   describe('get', () => {
     it('should allow owner access', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
@@ -141,6 +166,23 @@ describe(AssetService.name, () => {
       accessMock.asset.checkSharedLinkAccess.mockResolvedValue(new Set([assetStub.image.id]));
       assetMock.getById.mockResolvedValue(assetStub.image);
       await sut.get(authStub.adminSharedLink, assetStub.image.id);
+      expect(accessMock.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
+        authStub.adminSharedLink.sharedLink?.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should strip metadata for shared link if exif is disabled', async () => {
+      accessMock.asset.checkSharedLinkAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+
+      const result = await sut.get(
+        { ...authStub.adminSharedLink, sharedLink: { ...authStub.adminSharedLink.sharedLink!, showExif: false } },
+        assetStub.image.id,
+      );
+
+      expect(result).toEqual(expect.objectContaining({ hasMetadata: false }));
+      expect(result).not.toHaveProperty('exifInfo');
       expect(accessMock.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLink?.id,
         new Set([assetStub.image.id]),
@@ -177,6 +219,11 @@ describe(AssetService.name, () => {
       expect(accessMock.asset.checkOwnerAccess).not.toHaveBeenCalled();
       expect(assetMock.getById).not.toHaveBeenCalled();
     });
+
+    it('should throw an error if the asset could not be found', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      await expect(sut.get(authStub.admin, assetStub.image.id)).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe('update', () => {
@@ -206,6 +253,132 @@ describe(AssetService.name, () => {
       assetMock.getById.mockResolvedValue(assetStub.image);
       await sut.update(authStub.admin, 'asset-1', { rating: 3 });
       expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', rating: 3 });
+    });
+
+    it('should fail linking a live video if the motion part could not be found', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
+      assetMock.getById.mockResolvedValue(null);
+
+      await expect(
+        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
+          livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(assetMock.update).not.toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
+      expect(assetMock.update).not.toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(eventMock.emit).not.toHaveBeenCalledWith('asset.show', {
+        assetId: assetStub.livePhotoMotionAsset.id,
+        userId: userStub.admin.id,
+      });
+    });
+
+    it('should fail linking a live video if the motion part is not a video', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
+      assetMock.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+
+      await expect(
+        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
+          livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(assetMock.update).not.toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
+      expect(assetMock.update).not.toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(eventMock.emit).not.toHaveBeenCalledWith('asset.show', {
+        assetId: assetStub.livePhotoMotionAsset.id,
+        userId: userStub.admin.id,
+      });
+    });
+
+    it('should fail linking a live video if the motion part has a different owner', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
+      assetMock.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
+
+      await expect(
+        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
+          livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(assetMock.update).not.toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
+      expect(assetMock.update).not.toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(eventMock.emit).not.toHaveBeenCalledWith('asset.show', {
+        assetId: assetStub.livePhotoMotionAsset.id,
+        userId: userStub.admin.id,
+      });
+    });
+
+    it('should link a live video', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
+      assetMock.getById.mockResolvedValueOnce({
+        ...assetStub.livePhotoMotionAsset,
+        ownerId: authStub.admin.user.id,
+        isVisible: true,
+      });
+      assetMock.getById.mockResolvedValueOnce(assetStub.image);
+
+      await sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
+
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
+      expect(eventMock.emit).toHaveBeenCalledWith('asset.hide', {
+        assetId: assetStub.livePhotoMotionAsset.id,
+        userId: userStub.admin.id,
+      });
+      expect(assetMock.update).toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
+    });
+
+    it('should throw an error if asset could not be found after update', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      await expect(sut.update(authStub.admin, 'asset-1', { isFavorite: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should unlink a live video', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
+      assetMock.getById.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+      assetMock.getById.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
+      assetMock.getById.mockResolvedValueOnce(assetStub.image);
+
+      await sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null });
+
+      expect(assetMock.update).toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: null,
+      });
+      expect(assetMock.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
+      expect(eventMock.emit).toHaveBeenCalledWith('asset.show', {
+        assetId: assetStub.livePhotoMotionAsset.id,
+        userId: userStub.admin.id,
+      });
+    });
+
+    it('should fail unlinking a live video if the asset could not be found', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
+      assetMock.getById.mockResolvedValue(null);
+
+      await expect(
+        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(assetMock.update).not.toHaveBeenCalled();
+      expect(assetMock.update).not.toHaveBeenCalledWith();
+      expect(eventMock.emit).not.toHaveBeenCalledWith();
     });
   });
 
@@ -259,6 +432,42 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('handleAssetDeletionCheck', () => {
+    beforeAll(() => {
+      vi.useFakeTimers();
+    });
+
+    afterAll(() => {
+      vi.useRealTimers();
+    });
+
+    it('should immediately queue assets for deletion if trash is disabled', async () => {
+      assetMock.getAll.mockResolvedValue({ hasNextPage: false, items: [assetStub.image] });
+      systemMock.get.mockResolvedValue({ trash: { enabled: false } });
+
+      await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.getAll).toHaveBeenCalledWith(expect.anything(), { trashedBefore: new Date() });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION, data: { id: assetStub.image.id, deleteOnDisk: true } },
+      ]);
+    });
+
+    it('should queue assets for deletion after trash duration', async () => {
+      assetMock.getAll.mockResolvedValue({ hasNextPage: false, items: [assetStub.image] });
+      systemMock.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
+
+      await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.getAll).toHaveBeenCalledWith(expect.anything(), {
+        trashedBefore: DateTime.now().minus({ days: 7 }).toJSDate(),
+      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION, data: { id: assetStub.image.id, deleteOnDisk: true } },
+      ]);
+    });
+  });
+
   describe('handleAssetDeletion', () => {
     it('should remove faces', async () => {
       const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
@@ -296,6 +505,17 @@ describe(AssetService.name, () => {
         id: 'stack-1',
         primaryAssetId: 'stack-child-asset-1',
       });
+    });
+
+    it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
+      assetMock.getById.mockResolvedValue({
+        ...assetStub.primaryImage,
+        stack: { ...assetStub.primaryImage.stack, assets: assetStub.primaryImage.stack!.assets.slice(0, 2) },
+      } as AssetEntity);
+
+      await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
+
+      expect(stackMock.delete).toHaveBeenCalledWith('stack-1');
     });
 
     it('should delete a live photo', async () => {
@@ -353,6 +573,12 @@ describe(AssetService.name, () => {
       assetMock.getById.mockResolvedValue(assetStub.image);
       await sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true });
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
+    });
+
+    it('should fail if asset could not be found', async () => {
+      await expect(sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true })).resolves.toBe(
+        JobStatus.FAILED,
+      );
     });
   });
 
