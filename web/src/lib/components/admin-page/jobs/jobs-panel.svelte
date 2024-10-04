@@ -36,7 +36,6 @@
     missingText: string;
     disabled?: boolean;
     icon: string;
-    allowForceCommand?: boolean;
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
@@ -166,7 +165,7 @@
 </script>
 
 <div class="flex flex-col gap-7">
-  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, allowForceCommand, icon, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}
