@@ -480,6 +480,8 @@ class ApiClient {
           return ServerStorageResponseDto.fromJson(value);
         case 'ServerThemeDto':
           return ServerThemeDto.fromJson(value);
+        case 'ServerVersionHistoryResponseDto':
+          return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
         case 'SessionResponseDto':
@@ -512,6 +514,8 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigFacesDto':
           return SystemConfigFacesDto.fromJson(value);
+        case 'SystemConfigGeneratedImageDto':
+          return SystemConfigGeneratedImageDto.fromJson(value);
         case 'SystemConfigImageDto':
           return SystemConfigImageDto.fromJson(value);
         case 'SystemConfigJobDto':

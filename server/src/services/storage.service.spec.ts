@@ -1,29 +1,21 @@
 import { SystemMetadataKey } from 'src/enum';
-import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { StorageService } from 'src/services/storage.service';
-import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(StorageService.name, () => {
   let sut: StorageService;
-  let databaseMock: Mocked<IDatabaseRepository>;
+
+  let configMock: Mocked<IConfigRepository>;
   let storageMock: Mocked<IStorageRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    databaseMock = newDatabaseRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-
-    sut = new StorageService(databaseMock, storageMock, loggerMock, systemMock);
+    ({ sut, configMock, storageMock, systemMock } = newTestService(StorageService));
   });
 
   it('should work', () => {
@@ -52,7 +44,7 @@ describe(StorageService.name, () => {
       systemMock.get.mockResolvedValue({ mountFiles: true });
       storageMock.readFile.mockRejectedValue(new Error("ENOENT: no such file or directory, open '/app/.immich'"));
 
-      await expect(sut.onBootstrap()).rejects.toThrow('Failed to validate folder mount');
+      await expect(sut.onBootstrap()).rejects.toThrow('Failed to read');
 
       expect(storageMock.createOrOverwriteFile).not.toHaveBeenCalled();
       expect(systemMock.set).not.toHaveBeenCalled();
@@ -62,7 +54,21 @@ describe(StorageService.name, () => {
       systemMock.get.mockResolvedValue({ mountFiles: true });
       storageMock.overwriteFile.mockRejectedValue(new Error("ENOENT: no such file or directory, open '/app/.immich'"));
 
-      await expect(sut.onBootstrap()).rejects.toThrow('Failed to validate folder mount');
+      await expect(sut.onBootstrap()).rejects.toThrow('Failed to write');
+
+      expect(systemMock.set).not.toHaveBeenCalled();
+    });
+
+    it('should startup if checks are disabled', async () => {
+      systemMock.get.mockResolvedValue({ mountFiles: true });
+      configMock.getEnv.mockReturnValue(
+        mockEnvData({
+          storage: { ignoreMountCheckErrors: true },
+        }),
+      );
+      storageMock.overwriteFile.mockRejectedValue(new Error("ENOENT: no such file or directory, open '/app/.immich'"));
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(systemMock.set).not.toHaveBeenCalled();
     });

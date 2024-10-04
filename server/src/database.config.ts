@@ -1,16 +1,17 @@
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
-const url = process.env.DB_URL;
+const { database } = new ConfigRepository().getEnv();
+const { url, host, port, username, password, name } = database;
 const urlOrParts = url
   ? { url }
   : {
-      host: process.env.DB_HOSTNAME || 'database',
-      port: Number.parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_DATABASE_NAME || 'immich',
+      host,
+      port,
+      username,
+      password,
+      database: name,
     };
 
 /* eslint unicorn/prefer-module: "off" -- We can fix this when migrating to ESM*/
@@ -32,6 +33,3 @@ export const databaseConfig: PostgresConnectionOptions = {
  * this export is ONLY to be used for TypeORM commands in package.json#scripts
  */
 export const dataSource = new DataSource({ ...databaseConfig, host: 'localhost' });
-
-export const getVectorExtension = () =>
-  process.env.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;

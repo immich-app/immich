@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { MoveEntity, PathType } from 'src/entities/move.entity';
+import { MoveEntity } from 'src/entities/move.entity';
+import { PathType } from 'src/enum';
 import { IMoveRepository, MoveCreate } from 'src/interfaces/move.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';

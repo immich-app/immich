@@ -1,17 +1,16 @@
 import { DateTime } from 'luxon';
 import { serverVersion } from 'src/constants';
-import { SystemMetadataKey } from 'src/enum';
+import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { VersionService } from 'src/services/version.service';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 const mockRelease = (version: string) => ({
@@ -26,24 +25,39 @@ const mockRelease = (version: string) => ({
 
 describe(VersionService.name, () => {
   let sut: VersionService;
+
+  let configMock: Mocked<IConfigRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let serverMock: Mocked<IServerInfoRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
+  let serverInfoMock: Mocked<IServerInfoRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
+  let versionHistoryMock: Mocked<IVersionHistoryRepository>;
 
   beforeEach(() => {
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    serverMock = newServerInfoRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new VersionService(eventMock, jobMock, serverMock, systemMock, loggerMock);
+    ({ sut, configMock, eventMock, jobMock, loggerMock, serverInfoMock, systemMock, versionHistoryMock } =
+      newTestService(VersionService));
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('onBootstrap', () => {
+    it('should record a new version', async () => {
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+      expect(versionHistoryMock.create).toHaveBeenCalledWith({ version: expect.any(String) });
+    });
+
+    it('should skip a duplicate version', async () => {
+      versionHistoryMock.getLatest.mockResolvedValue({
+        id: 'version-1',
+        createdAt: new Date(),
+        version: serverVersion.toString(),
+      });
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+      expect(versionHistoryMock.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('getVersion', () => {
@@ -56,6 +70,14 @@ describe(VersionService.name, () => {
     });
   });
 
+  describe('getVersionHistory', () => {
+    it('should respond the server version history', async () => {
+      const upgrade = { id: 'upgrade-1', createdAt: new Date(), version: '1.0.0' };
+      versionHistoryMock.getAll.mockResolvedValue([upgrade]);
+      await expect(sut.getVersionHistory()).resolves.toEqual([upgrade]);
+    });
+  });
+
   describe('handQueueVersionCheck', () => {
     it('should queue a version check job', async () => {
       await expect(sut.handleQueueVersionCheck()).resolves.toBeUndefined();
@@ -65,11 +87,11 @@ describe(VersionService.name, () => {
 
   describe('handVersionCheck', () => {
     beforeEach(() => {
-      process.env.IMMICH_ENV = 'production';
+      configMock.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.PRODUCTION }));
     });
 
     it('should not run in dev mode', async () => {
-      process.env.IMMICH_ENV = 'development';
+      configMock.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.DEVELOPMENT }));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
     });
 
@@ -82,7 +104,7 @@ describe(VersionService.name, () => {
     });
 
     it('should run if it has been > 60 minutes', async () => {
-      serverMock.getGitHubRelease.mockResolvedValue(mockRelease('v100.0.0'));
+      serverInfoMock.getGitHubRelease.mockResolvedValue(mockRelease('v100.0.0'));
       systemMock.get.mockResolvedValue({
         checkedAt: DateTime.utc().minus({ minutes: 65 }).toISO(),
         releaseVersion: '1.0.0',
@@ -94,7 +116,7 @@ describe(VersionService.name, () => {
     });
 
     it('should not notify if the version is equal', async () => {
-      serverMock.getGitHubRelease.mockResolvedValue(mockRelease(serverVersion.toString()));
+      serverInfoMock.getGitHubRelease.mockResolvedValue(mockRelease(serverVersion.toString()));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SUCCESS);
       expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.VERSION_CHECK_STATE, {
         checkedAt: expect.any(String),
@@ -104,7 +126,7 @@ describe(VersionService.name, () => {
     });
 
     it('should handle a github error', async () => {
-      serverMock.getGitHubRelease.mockRejectedValue(new Error('GitHub is down'));
+      serverInfoMock.getGitHubRelease.mockRejectedValue(new Error('GitHub is down'));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.FAILED);
       expect(systemMock.set).not.toHaveBeenCalled();
       expect(eventMock.clientBroadcast).not.toHaveBeenCalled();

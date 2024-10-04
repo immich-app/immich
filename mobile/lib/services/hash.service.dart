@@ -130,7 +130,9 @@ class HashService {
     final validHashes = anyNull
         ? toAdd.where((e) => e.hash.length == 20).toList(growable: false)
         : toAdd;
-    await _assetRepository.upsertDeviceAssets(validHashes);
+
+    await _assetRepository
+        .transaction(() => _assetRepository.upsertDeviceAssets(validHashes));
     _log.fine("Hashed ${validHashes.length}/${toHash.length} assets");
   }
 

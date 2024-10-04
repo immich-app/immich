@@ -1,9 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { SystemConfig } from 'src/config';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -13,24 +12,14 @@ import {
   supportedWeekTokens,
   supportedYearTokens,
 } from 'src/constants';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { StorageCore } from 'src/cores/storage.core';
+import { OnEvent } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType } from 'src/entities/move.entity';
-import { AssetType } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { AssetPathType, AssetType, StorageFolder } from 'src/enum';
+import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 import { usePagination } from 'src/utils/pagination';
 
@@ -47,9 +36,7 @@ interface RenderMetadata {
 }
 
 @Injectable()
-export class StorageTemplateService {
-  private configCore: SystemConfigCore;
-  private storageCore: StorageCore;
+export class StorageTemplateService extends BaseService {
   private _template: {
     compiled: HandlebarsTemplateDelegate<any>;
     raw: string;
@@ -63,33 +50,16 @@ export class StorageTemplateService {
     return this._template;
   }
 
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(StorageTemplateService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-    this.configCore.config$.subscribe((config) => this.onConfig(config));
-    this.storageCore = StorageCore.create(
-      assetRepository,
-      cryptoRepository,
-      moveRepository,
-      personRepository,
-      storageRepository,
-      systemMetadataRepository,
-      this.logger,
-    );
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    const template = newConfig.storageTemplate.template;
+    if (!this._template || template !== this.template.raw) {
+      this.logger.debug(`Compiling new storage template: ${template}`);
+      this._template = this.compile(template);
+    }
   }
 
-  @OnEmit({ event: 'config.validate' })
+  @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
@@ -111,7 +81,7 @@ export class StorageTemplateService {
   }
 
   async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: true });
+    const config = await this.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
       return JobStatus.SKIPPED;
@@ -141,7 +111,7 @@ export class StorageTemplateService {
 
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
-    const { storageTemplate } = await this.configCore.getConfig({ withCache: true });
+    const { storageTemplate } = await this.getConfig({ withCache: true });
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
@@ -280,14 +250,6 @@ export class StorageTemplateService {
     } catch (error: any) {
       this.logger.error(`Unable to get template path for ${filename}`, error);
       return asset.originalPath;
-    }
-  }
-
-  private onConfig(config: SystemConfig) {
-    const template = config.storageTemplate.template;
-    if (!this._template || template !== this.template.raw) {
-      this.logger.debug(`Compiling new storage template: ${template}`);
-      this._template = this.compile(template);
     }
   }
 

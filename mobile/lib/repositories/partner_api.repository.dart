@@ -2,7 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/base_api.repository.dart';
+import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
 final partnerApiRepositoryProvider = Provider(
@@ -11,7 +11,7 @@ final partnerApiRepositoryProvider = Provider(
   ),
 );
 
-class PartnerApiRepository extends BaseApiRepository
+class PartnerApiRepository extends ApiRepository
     implements IPartnerApiRepository {
   final PartnersApi _api;
 

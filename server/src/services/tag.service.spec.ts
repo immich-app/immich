@@ -1,26 +1,21 @@
 import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { TagService } from 'src/services/tag.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(TagService.name, () => {
   let sut: TagService;
+
   let accessMock: IAccessRepositoryMock;
-  let eventMock: Mocked<IEventRepository>;
   let tagMock: Mocked<ITagRepository>;
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    tagMock = newTagRepositoryMock();
-    sut = new TagService(accessMock, eventMock, tagMock);
+    ({ sut, accessMock, tagMock } = newTestService(TagService));
 
     accessMock.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
   });

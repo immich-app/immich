@@ -4,32 +4,36 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:isar/isar.dart';
 
 final albumRepositoryProvider =
     Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
 
-class AlbumRepository implements IAlbumRepository {
-  final Isar _db;
-
-  AlbumRepository(
-    this._db,
-  );
+class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
+  AlbumRepository(super.db);
 
   @override
   Future<int> count({bool? local}) {
-    if (local == true) return _db.albums.where().localIdIsNotNull().count();
-    if (local == false) return _db.albums.where().remoteIdIsNotNull().count();
-    return _db.albums.count();
+    final baseQuery = db.albums.where();
+    final QueryBuilder<Album, Album, QAfterWhereClause> query;
+    switch (local) {
+      case null:
+        query = baseQuery.noOp();
+      case true:
+        query = baseQuery.localIdIsNotNull();
+      case false:
+        query = baseQuery.remoteIdIsNotNull();
+    }
+    return query.count();
   }
 
   @override
-  Future<Album> create(Album album) =>
-      _db.writeTxn(() => _db.albums.store(album));
+  Future<Album> create(Album album) => txn(() => db.albums.store(album));
 
   @override
   Future<Album?> getByName(String name, {bool? shared, bool? remote}) {
-    var query = _db.albums.filter().nameEqualTo(name);
+    var query = db.albums.filter().nameEqualTo(name);
     if (shared != null) {
       query = query.sharedEqualTo(shared);
     }
@@ -42,37 +46,61 @@ class AlbumRepository implements IAlbumRepository {
   }
 
   @override
-  Future<Album> update(Album album) =>
-      _db.writeTxn(() => _db.albums.store(album));
+  Future<Album> update(Album album) => txn(() => db.albums.store(album));
 
   @override
-  Future<void> delete(int albumId) =>
-      _db.writeTxn(() => _db.albums.delete(albumId));
+  Future<void> delete(int albumId) => txn(() => db.albums.delete(albumId));
 
   @override
-  Future<List<Album>> getAll({bool? shared}) {
-    final baseQuery = _db.albums.filter();
-    QueryBuilder<Album, Album, QAfterFilterCondition>? query;
-    if (shared != null) {
-      query = baseQuery.sharedEqualTo(true);
+  Future<List<Album>> getAll({
+    bool? shared,
+    bool? remote,
+    int? ownerId,
+    AlbumSort? sortBy,
+  }) {
+    final baseQuery = db.albums.where();
+    final QueryBuilder<Album, Album, QAfterWhereClause> afterWhere;
+    if (remote == null) {
+      afterWhere = baseQuery.noOp();
+    } else if (remote) {
+      afterWhere = baseQuery.remoteIdIsNotNull();
+    } else {
+      afterWhere = baseQuery.localIdIsNotNull();
     }
-    return query?.findAll() ?? _db.albums.where().findAll();
+    QueryBuilder<Album, Album, QAfterFilterCondition> filterQuery =
+        afterWhere.filter().noOp();
+    if (shared != null) {
+      filterQuery = filterQuery.sharedEqualTo(true);
+    }
+    if (ownerId != null) {
+      filterQuery = filterQuery.owner((q) => q.isarIdEqualTo(ownerId));
+    }
+    final QueryBuilder<Album, Album, QAfterSortBy> query;
+    switch (sortBy) {
+      case null:
+        query = filterQuery.noOp();
+      case AlbumSort.remoteId:
+        query = filterQuery.sortByRemoteId();
+      case AlbumSort.localId:
+        query = filterQuery.sortByLocalId();
+    }
+    return query.findAll();
   }
 
   @override
-  Future<Album?> getById(int id) => _db.albums.get(id);
+  Future<Album?> get(int id) => db.albums.get(id);
 
   @override
   Future<void> removeUsers(Album album, List<User> users) =>
-      _db.writeTxn(() => album.sharedUsers.update(unlink: users));
+      txn(() => album.sharedUsers.update(unlink: users));
 
   @override
   Future<void> addAssets(Album album, List<Asset> assets) =>
-      _db.writeTxn(() => album.assets.update(link: assets));
+      txn(() => album.assets.update(link: assets));
 
   @override
   Future<void> removeAssets(Album album, List<Asset> assets) =>
-      _db.writeTxn(() => album.assets.update(unlink: assets));
+      txn(() => album.assets.update(unlink: assets));
 
   @override
   Future<Album> recalculateMetadata(Album album) async {
@@ -82,4 +110,12 @@ class AlbumRepository implements IAlbumRepository {
         await album.assets.filter().updatedAtProperty().max();
     return album;
   }
+
+  @override
+  Future<void> addUsers(Album album, List<User> users) =>
+      txn(() => album.sharedUsers.update(link: users));
+
+  @override
+  Future<void> deleteAllLocal() =>
+      txn(() => db.albums.where().localIdIsNotNull().deleteAll());
 }

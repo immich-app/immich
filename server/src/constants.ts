@@ -20,10 +20,7 @@ export const serverVersion = new SemVer(version);
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export const envName = (process.env.IMMICH_ENV || 'production').toUpperCase();
-export const isDev = () => process.env.IMMICH_ENV === 'development';
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
 export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 
@@ -53,11 +50,6 @@ export const resourcePaths = {
 
 export const MOBILE_REDIRECT = 'app.immich:///oauth-callback';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
-
-export enum AuthType {
-  PASSWORD = 'password',
-  OAUTH = 'oauth',
-}
 
 export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico'];
 

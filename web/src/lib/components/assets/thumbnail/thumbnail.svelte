@@ -44,6 +44,7 @@
   export let readonly = false;
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
+  export let disableMouseOver = false;
   export let intersectionConfig: {
     root?: HTMLElement;
     bottom?: string;
@@ -207,7 +208,7 @@
       on:click={handleClick}
       role="link"
     >
-      {#if mouseOver}
+      {#if mouseOver && !disableMouseOver}
         <!-- lazy show the url on mouse over-->
         <a
           class="absolute z-30 {className} top-[41px]"

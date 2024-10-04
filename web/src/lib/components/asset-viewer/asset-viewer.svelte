@@ -67,6 +67,7 @@
     stopProgress: stopSlideshowProgress,
     slideshowNavigation,
     slideshowState,
+    slideshowTransition,
   } = slideshowStore;
 
   let appearsInAlbums: AlbumResponseDto[] = [];
@@ -82,12 +83,13 @@
   let numberOfComments: number;
   let fullscreenElement: Element;
   let unsubscribes: (() => void)[] = [];
+  let selectedEditType: string = '';
+  let stack: StackResponseDto | null = null;
+
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
 
   $: isFullScreen = fullscreenElement !== null;
-
-  let stack: StackResponseDto | null = null;
 
   const refreshStack = async () => {
     if (isSharedLink()) {
@@ -390,11 +392,9 @@
     onAction?.(action);
   };
 
-  let selectedEditType: string = '';
-
-  function handleUpdateSelectedEditType(type: string) {
+  const handleUpdateSelectedEditType = (type: string) => {
     selectedEditType = type;
-  }
+  };
 </script>
 
 <svelte:document bind:fullscreenElement />
@@ -508,6 +508,7 @@
               onNextAsset={() => navigateAsset('next')}
               on:close={closeViewer}
               {sharedLink}
+              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
             />
           {/if}
         {:else}
@@ -589,6 +590,7 @@
                 preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+              disableMouseOver
               readonly
               thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
               showStackedIcon={false}
