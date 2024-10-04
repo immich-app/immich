@@ -1,5 +1,4 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
@@ -55,8 +54,6 @@ export interface IPersonRepository {
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
   getDistinctNames(userId: string, options: PersonNameSearchOptions): Promise<PersonNameResponse[]>;
-
-  getAssets(personId: string): Promise<AssetEntity[]>;
 
   create(person: Partial<PersonEntity>): Promise<PersonEntity>;
   createAll(people: Partial<PersonEntity>[]): Promise<string[]>;
