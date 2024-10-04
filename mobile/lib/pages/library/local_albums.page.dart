@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
@@ -24,19 +25,18 @@ class LocalAlbumsPage extends HookConsumerWidget {
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(0),
-              dense: false,
-              visualDensity: VisualDensity.comfortable,
+            child: LargeLeadingTile(
+              leadingPadding: const EdgeInsets.only(
+                right: 16,
+              ),
               leading: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(15)),
                 child: ImmichThumbnail(
                   asset: albums[index].thumbnail.value,
-                  width: 60,
-                  height: 90,
+                  width: 80,
+                  height: 80,
                 ),
               ),
-              minVerticalPadding: 1,
               title: Text(
                 albums[index].name,
                 style: context.textTheme.titleSmall?.copyWith(

@@ -10,7 +10,6 @@ import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/widgets/common/share_partner_button.dart';
-import 'package:immich_mobile/widgets/partner/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
@@ -239,7 +238,7 @@ class SharingPage extends HookConsumerWidget {
                   ).tr(),
                 ),
               ),
-            if (partner.isNotEmpty) PartnerList(partner: partner),
+            // if (partner.isNotEmpty) PartnerList(partner: partner),
             SliverPadding(
               padding: const EdgeInsets.all(12),
               sliver: SliverToBoxAdapter(

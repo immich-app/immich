@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/share_partner_button.dart';
+import 'package:immich_mobile/widgets/common/user_avatar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -70,16 +72,69 @@ class LibraryPage extends ConsumerWidget {
             const SizedBox(height: 24),
             const Wrap(
               spacing: 8,
-              runSpacing: 16,
+              runSpacing: 8,
               children: [
                 PeopleCollectionCard(),
                 LocalAlbumsCollectionCard(),
                 PlacesCollectionCard(),
               ],
             ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: Icon(Icons.schedule_rounded),
+              title: Text(
+                'recently_added'.tr(),
+                style: context.textTheme.titleMedium?.copyWith(
+                  color: context.colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Divider(),
+            PartnerList(),
           ],
         ),
       ),
+    );
+  }
+}
+
+class PartnerList extends ConsumerWidget {
+  const PartnerList({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final partners = ref.watch(partnerSharedWithProvider);
+    return ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      separatorBuilder: (context, index) {
+        return Divider();
+      },
+      itemCount: partners.length,
+      shrinkWrap: true,
+      itemBuilder: (context, index) {
+        final partner = partners[index];
+        return ListTile(
+          contentPadding: const EdgeInsets.only(
+            left: 12.0,
+            right: 18.0,
+          ),
+          leading: userAvatar(context, partner, radius: 16),
+          title: Text(
+            "partner_list_user_photos",
+            style: context.textTheme.titleMedium?.copyWith(
+              color: context.colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+            ),
+          ).tr(
+            namedArgs: {
+              'user': partner.name,
+            },
+          ),
+          onTap: () => context.pushRoute(
+            (PartnerDetailRoute(partner: partner)),
+          ),
+        );
+      },
     );
   }
 }
@@ -261,7 +316,7 @@ class ActionButton extends StatelessWidget {
             label,
             style: TextStyle(
               color: context.colorScheme.onSurface,
-              fontSize: 14,
+              fontSize: 15,
             ),
           ),
         ),

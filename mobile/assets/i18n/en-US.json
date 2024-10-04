@@ -1,4 +1,7 @@
 {
+  "videos": "Videos",
+  "recently_added": "Recently added",
+  "partners": "Partners",
   "library": "Library",
   "on_this_device": "On this device",
   "add_a_name": "Add a name",
@@ -362,7 +365,6 @@
   "notification_permission_list_tile_enable_button": "Enable Notifications",
   "notification_permission_list_tile_title": "Notification Permission",
   "partner_list_user_photos": "{user}'s photos",
-  "partner_list_view_all": "View all",
   "partner_page_add_partner": "Add partner",
   "partner_page_empty_message": "Your photos are not yet shared with any partner.",
   "partner_page_no_more_users": "No more users to add",
@@ -371,7 +373,6 @@
   "partner_page_shared_to_title": "Shared to",
   "partner_page_stop_sharing_content": "{} will no longer be able to access your photos.",
   "partner_page_stop_sharing_title": "Stop sharing your photos?",
-  "partner_page_title": "Partner",
   "permission_onboarding_back": "Back",
   "permission_onboarding_continue_anyway": "Continue anyway",
   "permission_onboarding_get_started": "Get started",
