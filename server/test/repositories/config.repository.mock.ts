@@ -25,6 +25,21 @@ const envData: EnvData = {
     server: 'server-public-key',
   },
 
+  resourcePaths: {
+    lockFile: 'build-lock.json',
+    geodata: {
+      dateFile: '/build/geodata/geodata-date.txt',
+      admin1: '/build/geodata/admin1CodesASCII.txt',
+      admin2: '/build/geodata/admin2Codes.txt',
+      cities500: '/build/geodata/cities500.txt',
+      naturalEarthCountriesPath: 'build/ne_10m_admin_0_countries.geojson',
+    },
+    web: {
+      root: '/build/www',
+      indexHtml: '/build/www/index.html',
+    },
+  },
+
   storage: {
     ignoreMountCheckErrors: false,
   },
