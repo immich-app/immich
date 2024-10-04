@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
+import { ImmichWorker } from 'src/enum';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
@@ -21,7 +22,7 @@ import { usePagination } from 'src/utils/pagination';
 export class SmartInfoService extends BaseService {
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    if (app !== 'microservices') {
+    if (app !== ImmichWorker.MICROSERVICES) {
       return;
     }
 

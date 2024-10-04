@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType, SourceType } from 'src/enum';
+import { AssetType, ImmichWorker, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -73,7 +73,7 @@ describe(MetadataService.name, () => {
 
   describe('onBootstrapEvent', () => {
     it('should pause and resume queue during init', async () => {
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
       expect(mapMock.init).toHaveBeenCalledTimes(1);
@@ -83,7 +83,7 @@ describe(MetadataService.name, () => {
     it('should return if reverse geocoding is disabled', async () => {
       systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: false } });
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(jobMock.pause).not.toHaveBeenCalled();
       expect(mapMock.init).not.toHaveBeenCalled();

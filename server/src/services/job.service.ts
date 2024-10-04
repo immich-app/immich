@@ -3,7 +3,7 @@ import { snakeCase } from 'lodash';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
-import { AssetType, ManualJobName } from 'src/enum';
+import { AssetType, ImmichWorker, ManualJobName } from 'src/enum';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
   ConcurrentQueueName,
@@ -43,7 +43,7 @@ export class JobService extends BaseService {
 
   @OnEvent({ name: 'app.bootstrap' })
   onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    this.isMicroservices = app === 'microservices';
+    this.isMicroservices = app === ImmichWorker.MICROSERVICES;
   }
 
   @OnEvent({ name: 'config.update', server: true })

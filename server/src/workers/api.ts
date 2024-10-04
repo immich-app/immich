@@ -11,7 +11,7 @@ import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
-import { isStartUpError } from 'src/utils/events';
+import { isStartUpError } from 'src/services/storage.service';
 import { otelStart } from 'src/utils/instrumentation';
 import { useSwagger } from 'src/utils/misc';
 

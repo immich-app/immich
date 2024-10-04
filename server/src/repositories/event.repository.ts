@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { ModuleRef, Reflector } from '@nestjs/core';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -7,11 +7,16 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { ClassConstructor } from 'class-transformer';
+import _ from 'lodash';
 import { Server, Socket } from 'socket.io';
+import { EventConfig } from 'src/decorators';
+import { MetadataKey } from 'src/enum';
 import {
   ArgsOf,
   ClientEventMap,
   EmitEvent,
+  EmitHandler,
   EventItem,
   IEventRepository,
   serverEvents,
@@ -23,6 +28,14 @@ import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
+
+type Item<T extends EmitEvent> = {
+  event: T;
+  handler: EmitHandler<T>;
+  priority: number;
+  server: boolean;
+  label: string;
+};
 
 @Instrumentation()
 @WebSocketGateway({
@@ -42,6 +55,49 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(EventRepository.name);
+  }
+
+  setup({ services }: { services: ClassConstructor<unknown>[] }) {
+    const reflector = this.moduleRef.get(Reflector, { strict: false });
+    const repository = this.moduleRef.get<IEventRepository>(IEventRepository);
+    const items: Item<EmitEvent>[] = [];
+
+    // discovery
+    for (const Service of services) {
+      const instance = this.moduleRef.get<any>(Service);
+      const ctx = Object.getPrototypeOf(instance);
+      for (const property of Object.getOwnPropertyNames(ctx)) {
+        const descriptor = Object.getOwnPropertyDescriptor(ctx, property);
+        if (!descriptor || descriptor.get || descriptor.set) {
+          continue;
+        }
+
+        const handler = instance[property];
+        if (typeof handler !== 'function') {
+          continue;
+        }
+
+        const event = reflector.get<EventConfig>(MetadataKey.EVENT_CONFIG, handler);
+        if (!event) {
+          continue;
+        }
+
+        items.push({
+          event: event.name,
+          priority: event.priority || 0,
+          server: event.server ?? false,
+          handler: handler.bind(instance),
+          label: `${Service.name}.${handler.name}`,
+        });
+      }
+    }
+
+    const handlers = _.orderBy(items, ['priority'], ['asc']);
+
+    // register by priority
+    for (const handler of handlers) {
+      repository.on(handler);
+    }
   }
 
   afterInit(server: Server) {
