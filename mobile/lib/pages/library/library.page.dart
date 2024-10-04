@@ -69,7 +69,7 @@ class LibraryPage extends ConsumerWidget {
                     : const SizedBox.shrink(),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             const Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -79,9 +79,11 @@ class LibraryPage extends ConsumerWidget {
                 PlacesCollectionCard(),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             ListTile(
-              leading: Icon(Icons.schedule_rounded),
+              leading: Icon(
+                Icons.schedule_rounded,
+              ),
               title: Text(
                 'recently_added'.tr(),
                 style: context.textTheme.titleMedium?.copyWith(
