@@ -247,7 +247,7 @@ describe(MetadataService.name, () => {
     it('should handle an asset that could not be found', async () => {
       await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
       expect(assetMock.upsertExif).not.toHaveBeenCalled();
       expect(assetMock.update).not.toHaveBeenCalled();
     });
@@ -265,7 +265,7 @@ describe(MetadataService.name, () => {
       });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: sidecarDate }));
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
@@ -280,7 +280,7 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue({ ISO: [160] });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ iso: 160 }));
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
@@ -300,7 +300,7 @@ describe(MetadataService.name, () => {
       });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({ city: 'City', state: 'State', country: 'Country' }),
       );
@@ -320,7 +320,7 @@ describe(MetadataService.name, () => {
       });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }));
     });
 
@@ -482,7 +482,9 @@ describe(MetadataService.name, () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id], {
+        faces: { person: false },
+      });
       expect(storageMock.createOrOverwriteFile).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
@@ -508,7 +510,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({ orientation: Orientation.Rotate270CW.toString() }),
       );
@@ -536,7 +538,9 @@ describe(MetadataService.name, () => {
         assetStub.livePhotoWithOriginalFileName.originalPath,
         'MotionPhotoVideo',
       );
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id], {
+        faces: { person: false },
+      });
       expect(assetMock.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
         deviceAssetId: 'NONE',
@@ -579,7 +583,9 @@ describe(MetadataService.name, () => {
         assetStub.livePhotoWithOriginalFileName.originalPath,
         'EmbeddedVideoFile',
       );
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id], {
+        faces: { person: false },
+      });
       expect(assetMock.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
         deviceAssetId: 'NONE',
@@ -619,7 +625,9 @@ describe(MetadataService.name, () => {
       storageMock.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoWithOriginalFileName.id], {
+        faces: { person: false },
+      });
       expect(storageMock.readFile).toHaveBeenCalledWith(
         assetStub.livePhotoWithOriginalFileName.originalPath,
         expect.any(Object),
@@ -768,7 +776,7 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(tags);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith({
         assetId: assetStub.image.id,
         bitsPerSample: expect.any(Number),
@@ -826,7 +834,7 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(tags);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           timeZone: 'UTC+0',
@@ -846,7 +854,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalled();
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -867,7 +875,7 @@ describe(MetadataService.name, () => {
       });
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalled();
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -889,7 +897,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalled();
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -911,7 +919,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalled();
       expect(assetMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -975,11 +983,10 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFaceNoName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.createAll.mockResolvedValue([]);
-      personMock.replaceFaces.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(personMock.createAll).toHaveBeenCalledWith([]);
-      expect(personMock.replaceFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
-      expect(personMock.updateAll).toHaveBeenCalledWith([]);
+      expect(personMock.createAll).not.toHaveBeenCalled();
+      expect(personMock.refreshFaces).not.toHaveBeenCalled();
+      expect(personMock.updateAll).not.toHaveBeenCalled();
     });
 
     it('should skip importing faces with empty name', async () => {
@@ -988,11 +995,10 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFaceEmptyName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.createAll.mockResolvedValue([]);
-      personMock.replaceFaces.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(personMock.createAll).toHaveBeenCalledWith([]);
-      expect(personMock.replaceFaces).toHaveBeenCalledWith(assetStub.primaryImage.id, [], SourceType.EXIF);
-      expect(personMock.updateAll).toHaveBeenCalledWith([]);
+      expect(personMock.createAll).not.toHaveBeenCalled();
+      expect(personMock.refreshFaces).not.toHaveBeenCalled();
+      expect(personMock.updateAll).not.toHaveBeenCalled();
     });
 
     it('should apply metadata face tags creating new persons', async () => {
@@ -1001,14 +1007,12 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.createAll.mockResolvedValue([personStub.withName.id]);
-      personMock.replaceFaces.mockResolvedValue(['face-asset-uuid']);
       personMock.update.mockResolvedValue(personStub.withName);
       await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id], { faces: { person: false } });
       expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
       expect(personMock.createAll).toHaveBeenCalledWith([expect.objectContaining({ name: personStub.withName.name })]);
-      expect(personMock.replaceFaces).toHaveBeenCalledWith(
-        assetStub.primaryImage.id,
+      expect(personMock.refreshFaces).toHaveBeenCalledWith(
         [
           {
             id: 'random-uuid',
@@ -1023,7 +1027,7 @@ describe(MetadataService.name, () => {
             sourceType: SourceType.EXIF,
           },
         ],
-        SourceType.EXIF,
+        [],
       );
       expect(personMock.updateAll).toHaveBeenCalledWith([{ id: 'random-uuid', faceAssetId: 'random-uuid' }]);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
@@ -1040,14 +1044,12 @@ describe(MetadataService.name, () => {
       metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
       personMock.createAll.mockResolvedValue([]);
-      personMock.replaceFaces.mockResolvedValue(['face-asset-uuid']);
       personMock.update.mockResolvedValue(personStub.withName);
       await sut.handleMetadataExtraction({ id: assetStub.primaryImage.id });
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id]);
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.primaryImage.id], { faces: { person: false } });
       expect(personMock.getDistinctNames).toHaveBeenCalledWith(assetStub.primaryImage.ownerId, { withHidden: true });
-      expect(personMock.createAll).toHaveBeenCalledWith([]);
-      expect(personMock.replaceFaces).toHaveBeenCalledWith(
-        assetStub.primaryImage.id,
+      expect(personMock.createAll).not.toHaveBeenCalled();
+      expect(personMock.refreshFaces).toHaveBeenCalledWith(
         [
           {
             id: 'random-uuid',
@@ -1062,10 +1064,10 @@ describe(MetadataService.name, () => {
             sourceType: SourceType.EXIF,
           },
         ],
-        SourceType.EXIF,
+        [],
       );
-      expect(personMock.updateAll).toHaveBeenCalledWith([]);
-      expect(jobMock.queueAll).toHaveBeenCalledWith([]);
+      expect(personMock.updateAll).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalledWith();
     });
 
     it('should handle invalid modify date', async () => {

@@ -554,7 +554,7 @@ export type JobCreateDto = {
 };
 export type JobCommandDto = {
     command: JobCommand;
-    force: boolean;
+    force?: boolean;
 };
 export type LibraryResponseDto = {
     assetCount: number;
@@ -3426,8 +3426,9 @@ export enum Reason {
     UnsupportedFormat = "unsupported-format"
 }
 export enum AssetJobName {
-    RegenerateThumbnail = "regenerate-thumbnail",
+    RefreshFaces = "refresh-faces",
     RefreshMetadata = "refresh-metadata",
+    RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
 export enum AssetMediaSize {
