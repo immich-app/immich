@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
-import { envName, excludePaths, resourcePaths, serverVersion } from 'src/constants';
+import { excludePaths, resourcePaths, serverVersion } from 'src/constants';
 import { ImmichEnvironment } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -32,15 +32,13 @@ async function bootstrap() {
 
   otelStart(otelPort);
 
-  const port = Number(process.env.IMMICH_PORT) || 3001;
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
   const configRepository = app.get<IConfigRepository>(IConfigRepository);
 
-  const { environment } = configRepository.getEnv();
+  const { environment, port } = configRepository.getEnv();
   const isDev = environment === ImmichEnvironment.DEVELOPMENT;
 
-  logger.setAppName('Api');
   logger.setContext('Bootstrap');
   app.useLogger(logger);
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal', ...trustedProxies]);
@@ -76,7 +74,7 @@ async function bootstrap() {
   const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 30 * 60 * 1000;
 
-  logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
+  logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }
 
 bootstrap().catch((error) => {

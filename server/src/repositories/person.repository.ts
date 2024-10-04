@@ -5,6 +5,7 @@ import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { PaginationMode, SourceType } from 'src/enum';
 import {
@@ -31,6 +32,7 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
+    @InjectRepository(FaceSearchEntity) private faceSearchRepository: Repository<FaceSearchEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
   ) {}
 
@@ -296,12 +298,31 @@ export class PersonRepository implements IPersonRepository {
     return res.map((row) => row.id);
   }
 
-  async replaceFaces(assetId: string, entities: AssetFaceEntity[], sourceType: string): Promise<string[]> {
-    return this.dataSource.transaction(async (manager) => {
-      await manager.delete(AssetFaceEntity, { assetId, sourceType });
-      const assetFaces = await manager.save(AssetFaceEntity, entities);
-      return assetFaces.map(({ id }) => id);
-    });
+  async refreshFaces(
+    facesToAdd: Partial<AssetFaceEntity>[],
+    faceIdsToRemove: string[],
+    embeddingsToAdd?: FaceSearchEntity[],
+  ): Promise<void> {
+    const query = this.faceSearchRepository.createQueryBuilder().select('1');
+    if (facesToAdd.length > 0) {
+      const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
+      query.addCommonTableExpression(insertCte, 'added');
+    }
+
+    if (faceIdsToRemove.length > 0) {
+      const deleteCte = this.assetFaceRepository
+        .createQueryBuilder()
+        .delete()
+        .where('id = any(:faceIdsToRemove)', { faceIdsToRemove });
+      query.addCommonTableExpression(deleteCte, 'deleted');
+    }
+
+    if (embeddingsToAdd?.length) {
+      const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
+      query.addCommonTableExpression(embeddingCte, 'embeddings');
+    }
+
+    await query.execute();
   }
 
   async update(person: Partial<PersonEntity>): Promise<PersonEntity> {

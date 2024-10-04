@@ -178,7 +178,7 @@ export class MetadataService extends BaseService {
 
   async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -513,7 +513,7 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const discoveredFaces: Partial<AssetFaceEntity>[] = [];
+    const facesToAdd: Partial<AssetFaceEntity>[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
     const missing: Partial<PersonEntity>[] = [];
@@ -541,7 +541,7 @@ export class MetadataService extends BaseService {
         sourceType: SourceType.EXIF,
       };
 
-      discoveredFaces.push(face);
+      facesToAdd.push(face);
       if (!existingNameMap.has(loweredName)) {
         missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
         missingWithFaceAsset.push({ id: personId, faceAssetId: face.id });
@@ -550,18 +550,27 @@ export class MetadataService extends BaseService {
 
     if (missing.length > 0) {
       this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
+      const newPersonIds = await this.personRepository.createAll(missing);
+      const jobs = newPersonIds.map((id) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } }) as const);
+      await this.jobRepository.queueAll(jobs);
     }
 
-    const newPersonIds = await this.personRepository.createAll(missing);
+    const facesToRemove = asset.faces.filter((face) => face.sourceType === SourceType.EXIF).map((face) => face.id);
+    if (facesToRemove.length > 0) {
+      this.logger.debug(`Removing ${facesToRemove.length} faces for asset ${asset.id}`);
+    }
 
-    const faceIds = await this.personRepository.replaceFaces(asset.id, discoveredFaces, SourceType.EXIF);
-    this.logger.debug(`Created ${faceIds.length} faces for asset ${asset.id}`);
+    if (facesToAdd.length > 0) {
+      this.logger.debug(`Creating ${facesToAdd} faces from metadata for asset ${asset.id}`);
+    }
 
-    await this.personRepository.updateAll(missingWithFaceAsset);
+    if (facesToRemove.length > 0 || facesToAdd.length > 0) {
+      await this.personRepository.refreshFaces(facesToAdd, facesToRemove);
+    }
 
-    await this.jobRepository.queueAll(
-      newPersonIds.map((id) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } })),
-    );
+    if (missingWithFaceAsset.length > 0) {
+      await this.personRepository.updateAll(missingWithFaceAsset);
+    }
   }
 
   private getDates(asset: AssetEntity, exifTags: ImmichTags) {

@@ -7436,7 +7436,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.116.2",
+    "version": "1.117.0",
     "contact": {}
   },
   "tags": [],
@@ -8215,8 +8215,9 @@
       },
       "AssetJobName": {
         "enum": [
-          "regenerate-thumbnail",
+          "refresh-faces",
           "refresh-metadata",
+          "regenerate-thumbnail",
           "transcode-video"
         ],
         "type": "string"
@@ -9277,8 +9278,7 @@
           }
         },
         "required": [
-          "command",
-          "force"
+          "command"
         ],
         "type": "object"
       },
