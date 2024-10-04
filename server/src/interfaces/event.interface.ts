@@ -1,13 +1,15 @@
+import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
+import { ImmichWorker } from 'src/enum';
 
 export const IEventRepository = 'IEventRepository';
 
 type EventMap = {
   // app events
-  'app.bootstrap': ['api' | 'microservices'];
-  'app.shutdown': [];
+  'app.bootstrap': [ImmichWorker];
+  'app.shutdown': [ImmichWorker];
 
   // config events
   'config.update': [
@@ -85,6 +87,7 @@ export type EventItem<T extends EmitEvent> = {
 };
 
 export interface IEventRepository {
+  setup(options: { services: ClassConstructor<unknown>[] }): void;
   on<T extends keyof EventMap>(item: EventItem<T>): void;
   emit<T extends keyof EventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
 

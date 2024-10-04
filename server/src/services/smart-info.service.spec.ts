@@ -1,4 +1,5 @@
 import { SystemConfig } from 'src/config';
+import { ImmichWorker } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
@@ -61,7 +62,7 @@ describe(SmartInfoService.name, () => {
 
   describe('onBootstrapEvent', () => {
     it('should return if not microservices', async () => {
-      await sut.onBootstrap('api');
+      await sut.onBootstrap(ImmichWorker.API);
 
       expect(systemMock.get).not.toHaveBeenCalled();
       expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
@@ -76,7 +77,7 @@ describe(SmartInfoService.name, () => {
     it('should return if machine learning is disabled', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
@@ -91,7 +92,7 @@ describe(SmartInfoService.name, () => {
     it('should return if model and DB dimension size are equal', async () => {
       searchMock.getDimensionSize.mockResolvedValue(512);
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -107,7 +108,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(768);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -122,7 +123,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(768);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: true });
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);

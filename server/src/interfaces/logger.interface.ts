@@ -1,9 +1,9 @@
-import { LogLevel } from 'src/enum';
+import { ImmichWorker, LogLevel } from 'src/enum';
 
 export const ILoggerRepository = 'ILoggerRepository';
 
 export interface ILoggerRepository {
-  setAppName(name: string): void;
+  setAppName(name: ImmichWorker): void;
   setContext(message: string): void;
   setLogLevel(level: LogLevel | false): void;
   isLevelEnabled(level: LogLevel): boolean;

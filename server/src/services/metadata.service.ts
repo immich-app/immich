@@ -12,7 +12,7 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, SourceType } from 'src/enum';
+import { AssetType, ImmichWorker, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
@@ -89,7 +89,7 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 export class MetadataService extends BaseService {
   @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    if (app !== 'microservices') {
+    if (app !== ImmichWorker.MICROSERVICES) {
       return;
     }
     const config = await this.getConfig({ withCache: false });
