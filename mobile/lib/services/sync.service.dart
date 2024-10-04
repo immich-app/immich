@@ -95,10 +95,9 @@ class SyncService {
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
   Future<bool> syncRemoteAlbumsToDb(
-    List<Album> remote, {
-    required bool isShared,
-  }) =>
-      _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared));
+    List<Album> remote,
+  ) =>
+      _lock.run(() => _syncRemoteAlbumsToDb(remote));
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
@@ -311,17 +310,14 @@ class SyncService {
   /// returns `true` if there were any changes
   Future<bool> _syncRemoteAlbumsToDb(
     List<Album> remoteAlbums,
-    bool isShared,
   ) async {
     remoteAlbums.sortBy((e) => e.remoteId!);
 
-    final User me = await _userRepository.me();
     final List<Album> dbAlbums = await _albumRepository.getAll(
       remote: true,
-      shared: isShared ? true : null,
-      ownerId: isShared ? null : me.isarId,
       sortBy: AlbumSort.remoteId,
     );
+
     assert(dbAlbums.isSortedBy((e) => e.remoteId!), "dbAlbums not sorted!");
 
     final List<Asset> toDelete = [];
@@ -338,7 +334,7 @@ class SyncService {
       onlySecond: (dbAlbum) => _removeAlbumFromDb(dbAlbum, toDelete),
     );
 
-    if (isShared && toDelete.isNotEmpty) {
+    if (toDelete.isNotEmpty) {
       final List<int> idsToRemove = sharedAssetsToRemove(toDelete, existing);
       if (idsToRemove.isNotEmpty) {
         await _assetRepository.deleteById(idsToRemove);

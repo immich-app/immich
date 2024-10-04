@@ -40,8 +40,7 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
     return null;
   }
 
-  Future<void> getAllSharedAlbums() =>
-      _albumService.refreshRemoteAlbums(isShared: true);
+  Future<void> getAllSharedAlbums() => _albumService.refreshRemoteAlbums();
 
   Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
 

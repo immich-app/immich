@@ -152,7 +152,7 @@ class AlbumService {
 
   /// Checks remote albums (owned if `isShared` is false) for changes,
   /// updates the local database and returns `true` if there were any changes
-  Future<bool> refreshRemoteAlbums({required bool isShared}) async {
+  Future<bool> refreshRemoteAlbums() async {
     if (!_remoteCompleter.isCompleted) {
       // guard against concurrent calls
       return _remoteCompleter.future;
@@ -162,11 +162,18 @@ class AlbumService {
     bool changes = false;
     try {
       await _userService.refreshUsers();
-      final List<Album> serverAlbums =
-          await _albumApiRepository.getAll(shared: isShared ? true : null);
+      final List<Album> sharedAlbum =
+          await _albumApiRepository.getAll(shared: true);
+
+      final List<Album> ownedAlbum =
+          await _albumApiRepository.getAll(shared: null);
+
+      // only unique albums with albums id
+      final albums = <Album>{...sharedAlbum, ...ownedAlbum}.toList();
+      debugPrint("albums count ${albums.length}");
+
       changes = await _syncService.syncRemoteAlbumsToDb(
-        serverAlbums,
-        isShared: isShared,
+        albums,
       );
     } finally {
       _remoteCompleter.complete(changes);

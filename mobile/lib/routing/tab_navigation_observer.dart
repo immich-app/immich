@@ -6,7 +6,6 @@ import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 
 import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';

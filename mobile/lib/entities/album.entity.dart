@@ -114,7 +114,6 @@ class Album {
         ) &&
         shared == other.shared &&
         activityEnabled == other.activityEnabled &&
-        owner.value == other.owner.value &&
         thumbnail.value == other.thumbnail.value &&
         sharedUsers.length == other.sharedUsers.length &&
         assets.length == other.assets.length;
@@ -134,7 +133,6 @@ class Album {
       lastModifiedAssetTimestamp.hashCode ^
       shared.hashCode ^
       activityEnabled.hashCode ^
-      owner.value.hashCode ^
       thumbnail.value.hashCode ^
       sharedUsers.length.hashCode ^
       assets.length.hashCode;

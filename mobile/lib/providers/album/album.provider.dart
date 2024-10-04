@@ -28,8 +28,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   late final StreamSubscription<List<Album>> _streamSub;
 
   Future<void> getAllAlbums() async {
-    await _albumService.refreshRemoteAlbums(isShared: true);
-    await _albumService.refreshRemoteAlbums(isShared: false);
+    await _albumService.refreshRemoteAlbums();
   }
 
   Future<void> getDeviceAlbums() => _albumService.refreshDeviceAlbums();
