@@ -83,10 +83,11 @@ class LibraryPage extends ConsumerWidget {
             ListTile(
               leading: Icon(
                 Icons.schedule_rounded,
+                size: 26,
               ),
               title: Text(
                 'recently_added'.tr(),
-                style: context.textTheme.titleMedium?.copyWith(
+                style: context.textTheme.titleSmall?.copyWith(
                   color: context.colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
@@ -124,7 +125,7 @@ class PartnerList extends ConsumerWidget {
           leading: userAvatar(context, partner, radius: 16),
           title: Text(
             "partner_list_user_photos",
-            style: context.textTheme.titleMedium?.copyWith(
+            style: context.textTheme.titleSmall?.copyWith(
               color: context.colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),

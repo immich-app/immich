@@ -67,7 +67,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   void searchAlbums(String value) async {
     final query = db.albums
         .filter()
-        .owner((q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId))
+        .remoteIdIsNotNull()
         .nameContains(value, caseSensitive: false);
 
     final albums = await query.findAll();
