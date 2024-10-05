@@ -75,47 +75,110 @@ class AlbumsPage extends HookConsumerWidget {
       [],
     );
 
+    clearSearch() {
+      searchController.clear();
+      onSearch('');
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: showImmichAppbar
-            ? null
-            : Text(
-                "${'albums'.tr()} ${albums.length}",
-              ),
-        bottom: showImmichAppbar
-            ? const PreferredSize(
-                preferredSize: Size.fromHeight(0),
-                child: ImmichAppBar(),
-              )
-            : null,
-      ),
+      appBar: ImmichAppBar(),
       body: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.all(18.0),
         children: [
-          SearchBar(
-            backgroundColor: WidgetStatePropertyAll(
-              context.colorScheme.surfaceContainer,
-            ),
-            autoFocus: false,
-            hintText: "search_albums".tr(),
-            onChanged: onSearch,
-            elevation: const WidgetStatePropertyAll(0.25),
-            controller: searchController,
-            leading: const Icon(Icons.search_rounded),
-            padding: WidgetStateProperty.all(
-              const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: context.colorScheme.onSurface.withAlpha(10),
-                  width: 0.5,
-                ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: context.colorScheme.onSurface.withAlpha(0),
+                width: 0,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                colors: [
+                  context.colorScheme.primary.withOpacity(0.025),
+                  context.colorScheme.primary.withOpacity(0.05),
+                  context.colorScheme.primary.withOpacity(0.025),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                transform: GradientRotation(0.5 * pi),
               ),
             ),
+            child: TextField(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide(
+                    color: context.colorScheme.surfaceDim,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide(
+                    color: context.colorScheme.surfaceContainer,
+                  ),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide(
+                    color: context.colorScheme.surfaceDim,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide(
+                    color: context.colorScheme.surfaceContainerHighest,
+                  ),
+                ),
+                hintText:
+                    '${FocusScope.of(context).hasFocus} search_albums'.tr(),
+                hintStyle: context.textTheme.bodyLarge?.copyWith(
+                  color: context.colorScheme.onSurfaceSecondary,
+                ),
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: clearSearch,
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              controller: searchController,
+              onChanged: onSearch,
+              onTapOutside: (e) => FocusScope.of(context).unfocus(),
+            ),
           ),
+          // SearchBar(
+          //   backgroundColor: WidgetStatePropertyAll(
+          //     context.colorScheme.surfaceContainer,
+          //   ),
+          //   autoFocus: false,
+          //   hintText: "search_albums".tr(),
+          //   onChanged: onSearch,
+          //   elevation: const WidgetStatePropertyAll(0.25),
+          //   controller: searchController,
+          //   leading: const Icon(Icons.search_rounded),
+          //   trailing: [
+          //     searchController.text.isNotEmpty
+          //         ? IconButton(
+          //             icon: const Icon(Icons.clear_rounded),
+          //             onPressed: clearSearch,
+          //           )
+          //         : const SizedBox.shrink(),
+          //   ],
+          //   padding: WidgetStateProperty.all(
+          //     const EdgeInsets.symmetric(horizontal: 16),
+          //   ),
+          //   shape: WidgetStateProperty.all(
+          //     RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(20),
+          //       side: BorderSide(
+          //         color: context.colorScheme.onSurface.withAlpha(10),
+          //         width: 0.5,
+          //       ),
+          //     ),
+          //   ),
+          // ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 4,
@@ -180,7 +243,7 @@ class AlbumsPage extends HookConsumerWidget {
                   )
                 : ListView.builder(
                     shrinkWrap: true,
-                    physics: const ClampingScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: sorted.length,
                     itemBuilder: (context, index) {
                       return Padding(
