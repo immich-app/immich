@@ -1,16 +1,8 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { isNumber, isString } from 'class-validator';
 import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { Issuer, UserinfoResponse, custom, generators } from 'openid-client';
-import { SystemConfig } from 'src/config';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import {
@@ -30,6 +22,7 @@ import {
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
+import { OAuthProfile } from 'src/interfaces/oauth.interface';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
@@ -41,8 +34,6 @@ export interface LoginDetails {
   deviceType: string;
   deviceOS: string;
 }
-
-type OAuthProfile = UserinfoResponse;
 
 interface ClaimOptions<T> {
   key: string;
@@ -65,7 +56,7 @@ export type ValidateRequest = {
 export class AuthService extends BaseService {
   @OnEvent({ name: 'app.bootstrap' })
   onBootstrap() {
-    custom.setHttpOptionsDefaults({ timeout: 30_000 });
+    this.oauthRepository.init();
   }
 
   async login(dto: LoginCredentialDto, details: LoginDetails) {
@@ -191,21 +182,20 @@ export class AuthService extends BaseService {
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
-    const config = await this.getConfig({ withCache: false });
-    const client = await this.getOAuthClient(config);
-    const url = client.authorizationUrl({
-      redirect_uri: this.normalize(config, dto.redirectUri),
-      scope: config.oauth.scope,
-      state: generators.state(),
-    });
+    const { oauth } = await this.getConfig({ withCache: false });
 
+    if (!oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
+    const url = await this.oauthRepository.authorize(oauth, dto.redirectUri);
     return { url };
   }
 
   async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
-    const config = await this.getConfig({ withCache: false });
-    const profile = await this.getOAuthProfile(config, dto.url);
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = config.oauth;
+    const { oauth } = await this.getConfig({ withCache: false });
+    const profile = await this.oauthRepository.getProfile(oauth, dto.url, this.normalize(oauth, dto.url.split('?')[0]));
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -263,8 +253,12 @@ export class AuthService extends BaseService {
   }
 
   async link(auth: AuthDto, dto: OAuthCallbackDto): Promise<UserAdminResponseDto> {
-    const config = await this.getConfig({ withCache: false });
-    const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
+    const { oauth } = await this.getConfig({ withCache: false });
+    const { sub: oauthId } = await this.oauthRepository.getProfile(
+      oauth,
+      dto.url,
+      this.normalize(oauth, dto.url.split('?')[0]),
+    );
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
@@ -290,60 +284,7 @@ export class AuthService extends BaseService {
       return LOGIN_URL;
     }
 
-    const client = await this.getOAuthClient(config);
-    return client.issuer.metadata.end_session_endpoint || LOGIN_URL;
-  }
-
-  private async getOAuthProfile(config: SystemConfig, url: string): Promise<OAuthProfile> {
-    const redirectUri = this.normalize(config, url.split('?')[0]);
-    const client = await this.getOAuthClient(config);
-    const params = client.callbackParams(url);
-    try {
-      const tokens = await client.callback(redirectUri, params, { state: params.state });
-      return client.userinfo<OAuthProfile>(tokens.access_token || '');
-    } catch (error: Error | any) {
-      if (error.message.includes('unexpected JWT alg received')) {
-        this.logger.warn(
-          [
-            'Algorithm mismatch. Make sure the signing algorithm is set correctly in the OAuth settings.',
-            'Or, that you have specified a signing key in your OAuth provider.',
-          ].join(' '),
-        );
-      }
-
-      throw error;
-    }
-  }
-
-  private async getOAuthClient(config: SystemConfig) {
-    const { enabled, clientId, clientSecret, issuerUrl, signingAlgorithm, profileSigningAlgorithm } = config.oauth;
-
-    if (!enabled) {
-      throw new BadRequestException('OAuth2 is not enabled');
-    }
-
-    try {
-      const issuer = await Issuer.discover(issuerUrl);
-      return new issuer.Client({
-        client_id: clientId,
-        client_secret: clientSecret,
-        response_types: ['code'],
-        userinfo_signed_response_alg: profileSigningAlgorithm === 'none' ? undefined : profileSigningAlgorithm,
-        id_token_signed_response_alg: signingAlgorithm,
-      });
-    } catch (error: any | AggregateError) {
-      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
-      throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
-    }
-  }
-
-  private normalize(config: SystemConfig, redirectUri: string) {
-    const isMobile = redirectUri.startsWith('app.immich:/');
-    const { mobileRedirectUri, mobileOverrideEnabled } = config.oauth;
-    if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
-      return mobileRedirectUri;
-    }
-    return redirectUri;
+    return (await this.oauthRepository.getLogoutEndpoint(config.oauth)) || LOGIN_URL;
   }
 
   private getBearerToken(headers: IncomingHttpHeaders): string | null {
@@ -426,5 +367,16 @@ export class AuthService extends BaseService {
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
     const value = profile[options.key as keyof OAuthProfile];
     return options.isValid(value) ? (value as T) : options.default;
+  }
+
+  private normalize(
+    { mobileRedirectUri, mobileOverrideEnabled }: { mobileRedirectUri: string; mobileOverrideEnabled: boolean },
+    redirectUri: string,
+  ) {
+    const isMobile = redirectUri.startsWith('app.immich:/');
+    if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
+      return mobileRedirectUri;
+    }
+    return redirectUri;
   }
 }
