@@ -12,6 +12,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
@@ -277,11 +278,13 @@ class BackupService {
     }
 
     List<BackupCandidate> candidates = assets.toList();
+    List<UploadTask> backgroundTasks = [];
+
     if (isBackground) {
       candidates = _sortPhotosFirst(candidates);
     }
 
-    for (final candidate in candidates) {
+    for (final (i, candidate) in candidates.indexed) {
       final Asset asset = candidate.asset;
       File? file;
       File? livePhotoFile;
@@ -361,9 +364,7 @@ class BackupService {
             onProgress: onProgress,
           );
 
-          int statusCode;
           final fileLength = file.lengthSync();
-          dynamic body;
 
           String? livePhotoVideoId;
           if (asset.local!.isLivePhoto && livePhotoFile != null) {
@@ -379,7 +380,20 @@ class BackupService {
             baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          if (!isBackground) {
+          onCurrentAsset(
+            CurrentUploadAsset(
+              id: asset.localId!,
+              fileCreatedAt: asset.fileCreatedAt.year == 1970
+                  ? asset.fileModifiedAt
+                  : asset.fileCreatedAt,
+              fileName: originalFileName,
+              fileType: _getAssetType(asset.type),
+              fileSize: file.lengthSync(),
+              iCloudAsset: false,
+            ),
+          );
+
+          if (isBackground) {
             print("BACKGROUND SYNC");
             final (baseDir, dir, filename) = await Task.split(file: file);
 
@@ -398,22 +412,10 @@ class BackupService {
               fields: baseRequest.fields,
               headers: baseRequest.headers,
               updates: Updates.statusAndProgress,
+              metaData: i.toString(),
             );
 
-            final response = await FileDownloader().upload(
-              backgroundRequest,
-              onProgress: (percentage) => {
-                // onProgress returns a double in [0.0;1.0] for percentage
-                if (percentage > 0)
-                  baseRequest.onProgress(
-                    (percentage * fileLength).toInt(),
-                    fileLength,
-                  ),
-              },
-            );
-
-            body = jsonDecode(response.responseBody ?? "{}");
-            statusCode = response.responseStatusCode ?? 500;
+            backgroundTasks.add(backgroundRequest);
           } else {
             print("FOREGROUND SYNC");
             final fileStream = file.openRead();
@@ -440,68 +442,34 @@ class BackupService {
               cancellationToken: cancelToken,
             );
 
-            body = jsonDecode(await response.stream.bytesToString());
-            statusCode = response.statusCode;
-          }
-
-          onCurrentAsset(
-            CurrentUploadAsset(
-              id: asset.localId!,
-              fileCreatedAt: asset.fileCreatedAt.year == 1970
-                  ? asset.fileModifiedAt
-                  : asset.fileCreatedAt,
-              fileName: originalFileName,
-              fileType: _getAssetType(asset.type),
-              fileSize: file.lengthSync(),
-              iCloudAsset: false,
-            ),
-          );
-
-          if (![200, 201].contains(statusCode)) {
-            final error = body;
-
-            // debugPrint(
-            //   "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
-            // );
-
-            onError(
-              ErrorUploadAsset(
-                asset: asset,
-                id: asset.localId!,
-                fileCreatedAt: asset.fileCreatedAt,
-                fileName: originalFileName,
-                fileType: _getAssetType(candidate.asset.type),
-                errorMessage: error['error'],
-              ),
-            );
-
-            if (error == "Quota has been exceeded!") {
-              anyErrors = true;
+            dynamic body = jsonDecode(await response.stream.bytesToString());
+            int statusCode = response.statusCode;
+            if ((anyErrors =
+                    !_handleUploadError(asset, body, statusCode, onError)) ==
+                true) {
               break;
             }
 
-            continue;
-          }
+            bool isDuplicate = false;
+            if (statusCode == 200) {
+              isDuplicate = true;
+              duplicatedAssetIds.add(asset.localId!);
+            }
 
-          bool isDuplicate = false;
-          if (statusCode == 200) {
-            isDuplicate = true;
-            duplicatedAssetIds.add(asset.localId!);
-          }
-
-          onSuccess(
-            SuccessUploadAsset(
-              candidate: candidate,
-              remoteAssetId: body['id'] as String,
-              isDuplicate: isDuplicate,
-            ),
-          );
-
-          if (shouldSyncAlbums) {
-            await _albumService.syncUploadAlbums(
-              candidate.albumNames,
-              [body['id'] as String],
+            onSuccess(
+              SuccessUploadAsset(
+                candidate: candidate,
+                remoteAssetId: body['id'] as String,
+                isDuplicate: isDuplicate,
+              ),
             );
+
+            if (shouldSyncAlbums) {
+              await _albumService.syncUploadAlbums(
+                candidate.albumNames,
+                [body['id'] as String],
+              );
+            }
           }
         }
       } on http.CancelledException {
@@ -524,11 +492,68 @@ class BackupService {
       }
     }
 
+    if (isBackground) {
+      final response = await FileDownloader().uploadBatch(
+        backgroundTasks,
+        taskProgressCallback: (update) {
+          onProgress((update.progress * update.expectedFileSize).toInt(),
+              update.expectedFileSize);
+        },
+        taskStatusCallback: (update) {
+          // BackupCandidate index is stored in task metadata
+          int i = update.task.metaData.toInt();
+          if (update.status.isFinalState) {
+            dynamic body = jsonDecode(update.responseBody ?? "{}");
+            int statusCode = update.responseStatusCode ?? 500;
+            if (_handleUploadError(
+              candidates[i].asset,
+              body,
+              statusCode,
+              onError,
+            )) {
+              // TODO: Cancel queue because quota exceeded
+            }
+          }
+        },
+      );
+    }
+
     if (duplicatedAssetIds.isNotEmpty) {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
 
     return !anyErrors;
+  }
+
+  bool _handleUploadError(
+    Asset asset,
+    dynamic body,
+    int statusCode,
+    void Function(ErrorUploadAsset error) onError,
+  ) {
+    if (![200, 201].contains(statusCode)) {
+      final error = body;
+
+      debugPrint(
+        "Error(${error['statusCode']}) uploading ${asset.localId} | ${asset.fileName} | Created on ${asset.fileCreatedAt} | ${error['error']}",
+      );
+
+      onError(
+        ErrorUploadAsset(
+          asset: asset,
+          id: asset.localId!,
+          fileCreatedAt: asset.fileCreatedAt,
+          fileName: asset.fileName,
+          fileType: _getAssetType(asset.type),
+          errorMessage: error['error'],
+        ),
+      );
+
+      if (error == "Quota has been exceeded!") {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<String?> uploadLivePhotoVideo(
