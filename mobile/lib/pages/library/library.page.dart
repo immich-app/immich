@@ -203,10 +203,6 @@ class PeopleCollectionCard extends ConsumerWidget {
             height: size,
             width: size,
             decoration: BoxDecoration(
-              border: Border.all(
-                color: context.colorScheme.onSurface.withAlpha(10),
-                width: 1,
-              ),
               borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
                 colors: [
@@ -273,10 +269,6 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
             height: size,
             width: size,
             decoration: BoxDecoration(
-              border: Border.all(
-                color: context.colorScheme.onSurface.withAlpha(10),
-                width: 1,
-              ),
               borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
                 colors: [
@@ -333,10 +325,6 @@ class PlacesCollectionCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: context.colorScheme.secondaryContainer.withAlpha(100),
-              border: Border.all(
-                color: context.colorScheme.onSurface.withAlpha(10),
-                width: 1,
-              ),
             ),
             child: IgnorePointer(
               child: MapThumbnail(
