@@ -237,7 +237,7 @@ const milestones: Item[] = [
   withRelease({
     icon: mdiFaceRecognition,
     title: 'Metadata Face Import',
-    description: 'Read face metadata in Digikam format during metadata extraction',
+    description: 'Read face metadata in Digikam format during import',
     release: 'v1.114.0',
   }),
   withRelease({
