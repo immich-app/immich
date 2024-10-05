@@ -9,6 +9,7 @@
     mdiAllInclusive,
     mdiClose,
     mdiFastForward,
+    mdiImageRefreshOutline,
     mdiPause,
     mdiPlay,
     mdiSelectionSearch,
@@ -23,16 +24,17 @@
   export let description: ComponentType | undefined;
   export let jobCounts: JobCountsDto;
   export let queueStatus: QueueStatusDto;
-  export let allowForceCommand = true;
   export let icon: string;
   export let disabled = false;
 
-  export let allText: string;
+  export let allText: string | undefined;
+  export let refreshText: string | undefined;
   export let missingText: string;
   export let onCommand: (command: JobCommandDto) => void;
 
   $: waitingCount = jobCounts.waiting + jobCounts.paused + jobCounts.delayed;
   $: isIdle = !queueStatus.isActive && !queueStatus.isPaused;
+  $: multipleButtons = allText || refreshText;
 
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pr-4 pl-6';
 </script>
@@ -121,7 +123,9 @@
         <Icon path={mdiAlertCircle} size="36" />
         {$t('disabled').toUpperCase()}
       </JobTileButton>
-    {:else if !isIdle}
+    {/if}
+
+    {#if !disabled && !isIdle}
       {#if waitingCount > 0}
         <JobTileButton color="gray" on:click={() => onCommand({ command: JobCommand.Empty, force: false })}>
           <Icon path={mdiClose} size="24" />
@@ -141,16 +145,28 @@
           {$t('pause').toUpperCase()}
         </JobTileButton>
       {/if}
-    {:else if allowForceCommand}
-      <JobTileButton color="gray" on:click={() => onCommand({ command: JobCommand.Start, force: true })}>
-        <Icon path={mdiAllInclusive} size="24" />
-        {allText}
-      </JobTileButton>
+    {/if}
+
+    {#if !disabled && multipleButtons && isIdle}
+      {#if allText}
+        <JobTileButton color="dark-gray" on:click={() => onCommand({ command: JobCommand.Start, force: true })}>
+          <Icon path={mdiAllInclusive} size="24" />
+          {allText}
+        </JobTileButton>
+      {/if}
+      {#if refreshText}
+        <JobTileButton color="gray" on:click={() => onCommand({ command: JobCommand.Start, force: undefined })}>
+          <Icon path={mdiImageRefreshOutline} size="24" />
+          {refreshText}
+        </JobTileButton>
+      {/if}
       <JobTileButton color="light-gray" on:click={() => onCommand({ command: JobCommand.Start, force: false })}>
         <Icon path={mdiSelectionSearch} size="24" />
         {missingText}
       </JobTileButton>
-    {:else}
+    {/if}
+
+    {#if !disabled && !multipleButtons && isIdle}
       <JobTileButton color="light-gray" on:click={() => onCommand({ command: JobCommand.Start, force: false })}>
         <Icon path={mdiPlay} size="48" />
         {$t('start').toUpperCase()}

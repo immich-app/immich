@@ -137,7 +137,6 @@ class SyncService {
   Future<bool> _syncUsersFromServer(List<User> users) async {
     users.sortBy((u) => u.id);
     final dbUsers = await _userRepository.getAll(sortBy: UserSort.id);
-    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
     final List<int> toDelete = [];
     final List<User> toUpsert = [];
     final changes = diffSortedListsSync(
@@ -317,8 +316,6 @@ class SyncService {
       remote: true,
       sortBy: AlbumSort.remoteId,
     );
-
-    assert(dbAlbums.isSortedBy((e) => e.remoteId!), "dbAlbums not sorted!");
 
     final List<Asset> toDelete = [];
     final List<Asset> existing = [];
@@ -508,7 +505,6 @@ class SyncService {
         await _albumRepository.getAll(remote: false, sortBy: AlbumSort.localId);
     final List<Asset> deleteCandidates = [];
     final List<Asset> existing = [];
-    assert(inDb.isSorted((a, b) => a.localId!.compareTo(b.localId!)), "sort!");
     final bool anyChanges = await diffSortedLists(
       onDevice,
       inDb,

@@ -1,10 +1,12 @@
-import { getVectorExtension } from 'src/database.config';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+
+const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
 
 export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (getVectorExtension() === DatabaseExtension.VECTORS) {
+    if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }
@@ -13,9 +15,10 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
       const columns = await queryRunner.query(
         `SELECT column_name as name
         FROM information_schema.columns
-        WHERE table_name = '${tableName}'`);
+        WHERE table_name = '${tableName}'`,
+      );
       return columns.some((column: { name: string }) => column.name === 'embedding');
-    }
+    };
 
     const hasAssetEmbeddings = await hasEmbeddings('smart_search');
     if (!hasAssetEmbeddings) {
@@ -31,7 +34,7 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
     await queryRunner.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET STORAGE EXTERNAL`);
 
-    const hasFaceEmbeddings = await hasEmbeddings('asset_faces')
+    const hasFaceEmbeddings = await hasEmbeddings('asset_faces');
     if (hasFaceEmbeddings) {
       await queryRunner.query(`
         INSERT INTO face_search("faceId", embedding)
@@ -56,7 +59,7 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    if (getVectorExtension() === DatabaseExtension.VECTORS) {
+    if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }

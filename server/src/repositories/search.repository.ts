@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
-import { getVectorExtension } from 'src/database.config';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -10,7 +9,8 @@ import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { AssetType, PaginationMode } from 'src/enum';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateResult,
@@ -31,6 +31,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 @Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
+  private vectorExtension: VectorExtension;
   private faceColumns: string[];
   private assetsByCityQuery: string;
 
@@ -42,7 +43,9 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
   ) {
+    this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(SearchRepository.name);
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -440,7 +443,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   private getRuntimeConfig(numResults?: number): string {
-    if (getVectorExtension() === DatabaseExtension.VECTOR) {
+    if (this.vectorExtension === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 

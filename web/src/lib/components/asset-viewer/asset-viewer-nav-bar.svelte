@@ -34,6 +34,7 @@
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
+    mdiHeadSyncOutline,
     mdiImageRefreshOutline,
     mdiImageSearch,
     mdiMagnifyMinusOutline,
@@ -166,6 +167,11 @@
             />
           {/if}
           <hr />
+          <MenuOption
+            icon={mdiHeadSyncOutline}
+            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
+            text={$getAssetJobName(AssetJobName.RefreshFaces)}
+          />
           <MenuOption
             icon={mdiDatabaseRefreshOutline}
             onClick={() => onRunJob(AssetJobName.RefreshMetadata)}

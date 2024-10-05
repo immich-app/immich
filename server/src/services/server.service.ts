@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
@@ -36,7 +35,7 @@ export class ServerService extends BaseService {
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {
     const version = `v${serverVersion.toString()}`;
-    const buildMetadata = getBuildMetadata();
+    const { buildMetadata } = this.configRepository.getEnv();
     const buildVersions = await this.serverInfoRepository.getBuildVersions();
     const licensed = await this.systemMetadataRepository.get(SystemMetadataKey.LICENSE);
 
@@ -162,20 +161,13 @@ export class ServerService extends BaseService {
     if (!dto.licenseKey.startsWith('IMSV-')) {
       throw new BadRequestException('Invalid license key');
     }
-    const licenseValid = this.cryptoRepository.verifySha256(
-      dto.licenseKey,
-      dto.activationKey,
-      getServerLicensePublicKey(),
-    );
-
+    const { licensePublicKey } = this.configRepository.getEnv();
+    const licenseValid = this.cryptoRepository.verifySha256(dto.licenseKey, dto.activationKey, licensePublicKey.server);
     if (!licenseValid) {
       throw new BadRequestException('Invalid license key');
     }
 
-    const licenseData = {
-      ...dto,
-      activatedAt: new Date(),
-    };
+    const licenseData = { ...dto, activatedAt: new Date() };
 
     await this.systemMetadataRepository.set(SystemMetadataKey.LICENSE, licenseData);
 

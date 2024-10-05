@@ -6,7 +6,6 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
     getById: vitest.fn(),
     getAll: vitest.fn(),
     getAllForUser: vitest.fn(),
-    getAssets: vitest.fn(),
     getAllWithoutFaces: vitest.fn(),
 
     getByName: vitest.fn(),
@@ -28,7 +27,7 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
     reassignFaces: vitest.fn(),
     unassignFaces: vitest.fn(),
     createFaces: vitest.fn(),
-    replaceFaces: vitest.fn(),
+    refreshFaces: vitest.fn(),
     getFaces: vitest.fn(),
     reassignFace: vitest.fn(),
     getFaceById: vitest.fn(),
