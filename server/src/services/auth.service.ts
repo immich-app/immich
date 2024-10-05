@@ -192,10 +192,6 @@ export class AuthService extends BaseService {
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
     const config = await this.getConfig({ withCache: false });
-    if (!config.oauth.enabled) {
-      throw new BadRequestException('OAuth is not enabled');
-    }
-
     const client = await this.getOAuthClient(config);
     const url = client.authorizationUrl({
       redirect_uri: this.normalize(config, dto.redirectUri),
