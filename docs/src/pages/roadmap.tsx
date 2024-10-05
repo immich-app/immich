@@ -250,7 +250,7 @@ const milestones: Item[] = [
   withRelease({
     icon: mdiFolderSync,
     iconColor: 'green',
-    title: 'Ablume sync (mobile)',
+    title: 'Album sync (mobile)',
     description: 'Sync or mirror an album from your phone to the Immich server',
     release: 'v1.113.0',
   }),
@@ -258,7 +258,7 @@ const milestones: Item[] = [
     icon: mdiFolderMultiple,
     iconColor: 'brown',
     title: 'Folders',
-    description: 'View your external photos and videos in folders',
+    description: 'Browse your photos and videos in their folder structure',
     release: 'v1.113.0',
   }),
   withRelease({
