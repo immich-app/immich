@@ -3,7 +3,7 @@ import { Issuer, generators } from 'openid-client';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { AuthType } from 'src/enum';
+import { AuthType, Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -288,6 +288,17 @@ describe('AuthService', () => {
       ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
+    it('should not accept a key on a non-shared route', async () => {
+      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-key': 'key' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
     it('should not accept a key without a user', async () => {
       sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
       userMock.get.mockResolvedValue(null);
@@ -397,6 +408,17 @@ describe('AuthService', () => {
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
 
+    it('should throw an error if api key has insufficient permissions', async () => {
+      keyMock.getKey.mockResolvedValue({ ...keyStub.admin, permissions: [] });
+      await expect(
+        sut.authenticate({
+          headers: { 'x-api-key': 'auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: Permission.ASSET_READ },
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
     it('should return an auth dto', async () => {
       keyMock.getKey.mockResolvedValue(keyStub.admin);
       await expect(
@@ -419,6 +441,20 @@ describe('AuthService', () => {
 
     it('should work if called without query params', () => {
       expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:///oauth-callback?');
+    });
+  });
+
+  describe('authorize', () => {
+    it('should fail if oauth is disabled', async () => {
+      systemMock.get.mockResolvedValue({ oauth: { enabled: false } });
+      await expect(sut.authorize({ redirectUri: 'https://demo.immich.app' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should authorize the user', async () => {
+      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
+      await sut.authorize({ redirectUri: 'https://demo.immich.app' });
     });
   });
 
@@ -478,6 +514,22 @@ describe('AuthService', () => {
       expect(userMock.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
       expect(userMock.create).toHaveBeenCalledTimes(1);
     });
+
+    // TODO write once oidc has been moved to a repo and can be mocked.
+    // it('should throw an error if user should be auto registered but the email claim does not exist', async () => {
+    //   systemMock.get.mockResolvedValue(systemConfigStub.enabled);
+    //   userMock.getByEmail.mockResolvedValue(null);
+    //   userMock.getAdmin.mockResolvedValue(userStub.user1);
+    //   userMock.create.mockResolvedValue(userStub.user1);
+    //   sessionMock.create.mockResolvedValue(sessionStub.valid);
+
+    //   await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
+    //     BadRequestException,
+    //   );
+
+    //   expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
+    //   expect(userMock.create).toHaveBeenCalledTimes(1);
+    // });
 
     for (const url of [
       'app.immich:/',
