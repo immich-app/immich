@@ -190,17 +190,14 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
       displayLarge: TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white : primaryColor,
       ),
       displayMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white : Colors.black87,
       ),
       displaySmall: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.bold,
-        color: primaryColor,
       ),
       titleSmall: const TextStyle(
         fontSize: 16.0,

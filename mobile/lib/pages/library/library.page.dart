@@ -29,7 +29,7 @@ class LibraryPage extends ConsumerWidget {
     return Scaffold(
       appBar: const ImmichAppBar(
         showUploadButton: false,
-        actions: [CreateNewButton(), SharePartnerButton()],
+        actions: [SharePartnerButton()],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -406,10 +406,52 @@ class ActionButton extends StatelessWidget {
 
 class CreateNewButton extends StatelessWidget {
   const CreateNewButton({super.key});
+
   @override
   Widget build(BuildContext context) {
+    showBottomSheet() {
+      showModalBottomSheet(
+        backgroundColor: context.scaffoldBackgroundColor,
+        isScrollControlled: true,
+        context: context,
+        builder: (context) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 24,
+              ),
+              child: ListView(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child:
+                        Text("create_new", style: context.textTheme.bodyMedium)
+                            .tr(),
+                  ),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: const Icon(Icons.photo_album_rounded),
+                    onTap: () {
+                      context.pop();
+                      context.pushRoute(CreateAlbumRoute(isSharedAlbum: false));
+                    },
+                    title: const Text(
+                      "create_album",
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ).tr(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     return InkWell(
-      onTap: () {},
+      onTap: showBottomSheet,
       borderRadius: const BorderRadius.all(Radius.circular(25)),
       child: const Icon(
         Icons.add,

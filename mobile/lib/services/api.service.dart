@@ -106,7 +106,7 @@ class ApiService implements Authentication {
     try {
       final response = await client
           .get(
-            Uri.parse("$serverUrl/server-info/ping"),
+            Uri.parse("$serverUrl/server/ping"),
             headers: getRequestHeaders(),
           )
           .timeout(const Duration(seconds: 5));
