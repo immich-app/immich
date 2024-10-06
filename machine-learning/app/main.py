@@ -126,13 +126,13 @@ def get_entries(entries: str = Form()) -> InferenceEntries:
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/", response_class=ORJSONResponse)
-async def root() -> MessageResponse:
+@app.get("/")
+async def root() -> ORJSONResponse:
     return ORJSONResponse({"message": "Immich ML"})
 
 
-@app.get("/ping", response_class=PlainTextResponse)
-def ping() -> str:
+@app.get("/ping")
+def ping() -> PlainTextResponse:
     return PlainTextResponse("pong")
 
 
