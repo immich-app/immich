@@ -13,10 +13,6 @@ class StrEnum(str, Enum):
         return self.value
 
 
-class MessageResponse(TypedDict):
-    message: str
-
-
 class BoundingBox(TypedDict):
     x1: int
     y1: int
