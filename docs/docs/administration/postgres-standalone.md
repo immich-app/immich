@@ -15,7 +15,7 @@ You must install pgvecto.rs into your instance of Postgres using their [instruct
 :::note
 Immich is known to work with Postgres versions 14, 15, and 16. Earlier versions are unsupported.
 
-Make sure the installed version of pgvecto.rs is compatible with your version of Immich. For example, if your Immich version uses the dedicated database image `tensorchord/pgvecto-rs:pg14-v0.2.1`, you must install pgvecto.rs `>= 0.2.1, < 0.3.0`.
+Make sure the installed version of pgvecto.rs is compatible with your version of Immich. The current accepted range for pgvecto.rs is `>= 0.2.0, < 0.4.0`.
 :::
 
 ## Specifying the connection URL
