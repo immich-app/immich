@@ -28,7 +28,6 @@ from .schemas import (
     InferenceEntries,
     InferenceEntry,
     InferenceResponse,
-    MessageResponse,
     ModelFormat,
     ModelIdentity,
     ModelTask,
