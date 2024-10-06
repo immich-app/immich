@@ -7,7 +7,7 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev']
+    command: [ '/usr/src/app/bin/immich-dev' ]
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -53,9 +53,11 @@ services:
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
+    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
+    # user: 0:0
     build:
       context: ../web
-    command: ['/usr/src/app/bin/immich-web']
+    command: [ '/usr/src/app/bin/immich-web' ]
     env_file:
       - .env
     ports:
@@ -122,23 +124,7 @@ services:
       interval: 5m
       start_interval: 30s
       start_period: 5m
-    command:
-      [
-        'postgres',
-        '-c',
-        'shared_preload_libraries=vectors.so',
-        '-c',
-        'search_path="$$user", public, vectors',
-        '-c',
-        'logging_collector=on',
-        '-c',
-        'max_wal_size=2GB',
-        '-c',
-        'shared_buffers=512MB',
-        '-c',
-        'wal_compression=on',
-      ]
-
+    command: [ 'postgres', '-c', 'shared_preload_libraries=vectors.so', '-c', 'search_path="$$user", public, vectors', '-c', 'logging_collector=on', '-c', 'max_wal_size=2GB', '-c', 'shared_buffers=512MB', '-c', 'wal_compression=on' ]
   # set IMMICH_METRICS=true in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
