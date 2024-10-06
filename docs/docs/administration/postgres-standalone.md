@@ -13,9 +13,9 @@ Running with a pre-existing Postgres server can unlock powerful administrative f
 You must install pgvecto.rs into your instance of Postgres using their [instructions][vectors-install]. After installation, add `shared_preload_libraries = 'vectors.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vectors.so'`.
 
 :::note
-Immich is known to work with Postgres versions 14, 15, and 16. Earlier versions are unsupported.
+Immich is known to work with Postgres versions 14, 15, and 16. Earlier versions are unsupported. Postgres 17 is nominally compatible, but pgvecto.rs does not have prebuilt images or packages for it as of writing.
 
-Make sure the installed version of pgvecto.rs is compatible with your version of Immich. For example, if your Immich version uses the dedicated database image `tensorchord/pgvecto-rs:pg14-v0.2.1`, you must install pgvecto.rs `>= 0.2.1, < 0.3.0`.
+Make sure the installed version of pgvecto.rs is compatible with your version of Immich. The current accepted range for pgvecto.rs is `>= 0.2.0, < 0.4.0`.
 :::
 
 ## Specifying the connection URL
