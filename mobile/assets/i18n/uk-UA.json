@@ -11,7 +11,7 @@
   "advanced_settings_log_level_title": "Log level: {}",
   "advanced_settings_prefer_remote_subtitle": "Деякі пристрої вельми повільно завантажують мініатюри із елементів на пристрої. Активуйте для завантаження віддалених мініатюр натомість.",
   "advanced_settings_prefer_remote_title": "Перевага віддаленим зображенням",
-  "advanced_settings_proxy_headers_subtitle": "Определите заголовки прокси-сервера, которые Immich должен отправлять с каждым сетевым запросом.",
+  "advanced_settings_proxy_headers_subtitle": "Визначте заголовки проксі-сервера, які Immich має надсилати з кожним мережевим запитом.",
   "advanced_settings_proxy_headers_title": "Проксі-заголовки",
   "advanced_settings_self_signed_ssl_subtitle": "Пропускає перевірку SSL-сертифіката сервера. Потрібне для самопідписаних сертифікатів.",
   "advanced_settings_self_signed_ssl_title": "Дозволити самопідписані SSL-сертифікати",
