@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, Literal, Protocol, TypedDict, TypeGuard, TypeVar
+from typing import Any, Literal, Protocol, TypeGuard, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 
 class StrEnum(str, Enum):
@@ -13,11 +13,7 @@ class StrEnum(str, Enum):
         return self.value
 
 
-class TextResponse(BaseModel):
-    __root__: str
-
-
-class MessageResponse(BaseModel):
+class MessageResponse(TypedDict):
     message: str
 
 

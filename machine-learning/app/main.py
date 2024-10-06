@@ -12,7 +12,7 @@ from zipfile import BadZipFile
 
 import orjson
 from fastapi import Depends, FastAPI, File, Form, HTTPException
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
 from pydantic import ValidationError
@@ -35,7 +35,6 @@ from .schemas import (
     ModelType,
     PipelineRequest,
     T,
-    TextResponse,
 )
 
 MultiPartParser.max_file_size = 2**26  # spools to disk if payload is 64 MiB or larger
@@ -127,14 +126,14 @@ def get_entries(entries: str = Form()) -> InferenceEntries:
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/", response_model=MessageResponse)
-async def root() -> dict[str, str]:
-    return {"message": "Immich ML"}
+@app.get("/", response_class=ORJSONResponse)
+async def root() -> MessageResponse:
+    return ORJSONResponse({"message": "Immich ML"})
 
 
-@app.get("/ping", response_model=TextResponse)
+@app.get("/ping", response_class=PlainTextResponse)
 def ping() -> str:
-    return "pong"
+    return PlainTextResponse("pong")
 
 
 @app.post("/predict", dependencies=[Depends(update_state)])
