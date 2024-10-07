@@ -53,11 +53,10 @@ import 'package:immich_mobile/pages/search/person_result.page.dart';
 import 'package:immich_mobile/pages/search/recently_added.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/search/search_input.page.dart';
-import 'package:immich_mobile/pages/sharing/partner/partner.page.dart';
-import 'package:immich_mobile/pages/sharing/partner/partner_detail.page.dart';
-import 'package:immich_mobile/pages/sharing/shared_link/shared_link.page.dart';
-import 'package:immich_mobile/pages/sharing/shared_link/shared_link_edit.page.dart';
-import 'package:immich_mobile/pages/sharing/sharing.page.dart';
+import 'package:immich_mobile/pages/library/partner/partner.page.dart';
+import 'package:immich_mobile/pages/library/partner/partner_detail.page.dart';
+import 'package:immich_mobile/pages/library/shared_link/shared_link.page.dart';
+import 'package:immich_mobile/pages/library/shared_link/shared_link_edit.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -108,10 +107,6 @@ class AppRouter extends RootStackRouter {
         ),
         AutoRoute(
           page: SearchRoute.page,
-          guards: [_authGuard, _duplicateGuard],
-        ),
-        AutoRoute(
-          page: SharingRoute.page,
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/pages/albums/albums.page.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
@@ -56,14 +57,43 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     await createAlbum(albumName, {});
   }
 
-  @override
-  void dispose() {
-    _streamSub.cancel();
-    super.dispose();
+  Future<bool> leaveAlbum(Album album) async {
+    var res = await _albumService.leaveAlbum(album);
+
+    if (res) {
+      await deleteAlbum(album);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   void searchAlbums(String searchTerm, QuickFilterMode filterMode) async {
     state = await _albumService.search(searchTerm, filterMode);
+  }
+
+  Future<bool> removeUserFromAlbum(Album album, User user) async {
+    final result = await _albumService.removeUserFromAlbum(album, user);
+
+    if (result && album.sharedUsers.isEmpty) {
+      state = state.where((element) => element.id != album.id).toList();
+    }
+
+    return result;
+  }
+
+  Future<bool> removeAssetFromAlbum(Album album, Iterable<Asset> assets) {
+    return _albumService.removeAssetFromAlbum(album, assets);
+  }
+
+  Future<bool> setActivityEnabled(Album album, bool activityEnabled) {
+    return _albumService.setActivityEnabled(album, activityEnabled);
+  }
+
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
   }
 }
 

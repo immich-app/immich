@@ -442,7 +442,7 @@ class CreateNewButton extends StatelessWidget {
                     leading: const Icon(Icons.photo_album_rounded),
                     onTap: () {
                       context.pop();
-                      context.pushRoute(CreateAlbumRoute(isSharedAlbum: false));
+                      context.pushRoute(CreateAlbumRoute());
                     },
                     title: const Text(
                       "create_album",

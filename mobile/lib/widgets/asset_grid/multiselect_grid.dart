@@ -9,7 +9,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
@@ -324,7 +323,6 @@ class MultiselectGrid extends HookConsumerWidget {
 
         if (result != null) {
           ref.watch(albumProvider.notifier).getAllAlbums();
-          ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
           selectionEnabledHook.value = false;
 
           context.pushRoute(AlbumViewerRoute(albumId: result.id));

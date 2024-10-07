@@ -11,7 +11,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
@@ -51,7 +50,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       final a = album.valueOrNull;
       final bool isSuccess = a != null &&
           await ref
-              .read(sharedAlbumProvider.notifier)
+              .read(albumProvider.notifier)
               .removeAssetFromAlbum(a, assets);
 
       if (!isSuccess) {

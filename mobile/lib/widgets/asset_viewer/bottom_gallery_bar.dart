@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
@@ -231,7 +231,7 @@ class BottomGalleryBar extends ConsumerWidget {
       final album = ref.read(currentAlbumProvider);
       final bool isSuccess = album != null &&
           await ref
-              .read(sharedAlbumProvider.notifier)
+              .read(albumProvider.notifier)
               .removeAssetFromAlbum(album, [asset]);
 
       if (isSuccess) {

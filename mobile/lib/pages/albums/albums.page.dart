@@ -89,7 +89,7 @@ class AlbumsPage extends HookConsumerWidget {
               size: 28,
             ),
             onPressed: () => context.pushRoute(
-              CreateAlbumRoute(isSharedAlbum: false),
+              CreateAlbumRoute(),
             ),
           ),
         ],

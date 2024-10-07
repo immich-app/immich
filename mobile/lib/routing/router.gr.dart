@@ -607,15 +607,13 @@ class ChangePasswordRoute extends PageRouteInfo<void> {
 class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
   CreateAlbumRoute({
     Key? key,
-    required bool isSharedAlbum,
-    List<Asset>? initialAssets,
+    List<Asset>? assets,
     List<PageRouteInfo>? children,
   }) : super(
           CreateAlbumRoute.name,
           args: CreateAlbumRouteArgs(
             key: key,
-            isSharedAlbum: isSharedAlbum,
-            initialAssets: initialAssets,
+            assets: assets,
           ),
           initialChildren: children,
         );
@@ -625,11 +623,11 @@ class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<CreateAlbumRouteArgs>();
+      final args = data.argsAs<CreateAlbumRouteArgs>(
+          orElse: () => const CreateAlbumRouteArgs());
       return CreateAlbumPage(
         key: args.key,
-        isSharedAlbum: args.isSharedAlbum,
-        initialAssets: args.initialAssets,
+        assets: args.assets,
       );
     },
   );
@@ -638,19 +636,16 @@ class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
 class CreateAlbumRouteArgs {
   const CreateAlbumRouteArgs({
     this.key,
-    required this.isSharedAlbum,
-    this.initialAssets,
+    this.assets,
   });
 
   final Key? key;
 
-  final bool isSharedAlbum;
-
-  final List<Asset>? initialAssets;
+  final List<Asset>? assets;
 
   @override
   String toString() {
-    return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum, initialAssets: $initialAssets}';
+    return 'CreateAlbumRouteArgs{key: $key, assets: $assets}';
   }
 }
 
@@ -1529,25 +1524,6 @@ class SharedLinkRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const SharedLinkPage();
-    },
-  );
-}
-
-/// generated route for
-/// [SharingPage]
-class SharingRoute extends PageRouteInfo<void> {
-  const SharingRoute({List<PageRouteInfo>? children})
-      : super(
-          SharingRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'SharingRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const SharingPage();
     },
   );
 }

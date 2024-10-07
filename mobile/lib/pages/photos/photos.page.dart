@@ -7,7 +7,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/memories/memory_lane.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
@@ -34,7 +33,6 @@ class PhotosPage extends HookConsumerWidget {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
         ref.read(albumProvider.notifier).getAllAlbums();
-        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.read(serverInfoProvider.notifier).getServerInfo();
         return;
       },
