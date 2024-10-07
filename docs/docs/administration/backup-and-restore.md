@@ -34,14 +34,15 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
 ## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
 # rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
-docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them
+docker compose pull             # Update to latest version of Immich (if desired)
+docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
-sleep 10    # Wait for Postgres server to start up
+sleep 10                        # Wait for Postgres server to start up
+# Be sure to check the username and database name if you changed them from defaults
 gunzip < "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --username=postgres    # Restore Backup
-docker compose up -d    # Start remainder of Immich apps
+| docker exec -i immich_postgres psql --username=postgres --dbname immich   # Restore Backup
+docker compose up -d            # Start remainder of Immich apps
 ```
 
 </TabItem>
@@ -55,12 +56,13 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
 ## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
 # Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
-docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them
+docker compose pull             # Update to latest version of Immich (if desired)
+docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
-sleep 10    # Wait for Postgres server to start up
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres   # Restore Backup
-docker compose up -d    # Start remainder of Immich apps
+sleep 10                        # Wait for Postgres server to start up
+# Be sure to check the username and database name if you changed them from defaults
+gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres --dbname immich  # Restore Backup
+docker compose up -d            # Start remainder of Immich apps
 ```
 
 </TabItem>
@@ -103,15 +105,16 @@ services:
 Then you can restore with the same command but pointed at the latest dump.
 
 ```bash title='Automated Restore'
+# Be sure to check the username and database name if you changed them from defaults
 gunzip < db_dumps/last/immich-latest.sql.gz \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --username=postgres
+| docker exec -i immich_postgres psql --username=postgres --dbname immich
 ```
 
 :::note
 If you see the error `ERROR:  type "earth" does not exist`, or you have problems with Reverse Geocoding after a restore, add the following `sed` fragment to your restore command.
 
-Example: `gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres`
+Example: `gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres --dbname immich`
 :::
 
 ## Filesystem
