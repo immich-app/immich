@@ -92,7 +92,6 @@ export function searchAssetBuilder(
     withPeople,
     withSmartInfo,
     personIds,
-    withExif,
     withStacked,
     trashedAfter,
     trashedBefore,

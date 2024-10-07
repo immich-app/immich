@@ -26,7 +26,7 @@ import { asVector, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
