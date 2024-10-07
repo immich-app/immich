@@ -104,7 +104,7 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
 
 COPY --from=builder /opt/venv /opt/venv
 COPY ann/ann.py /usr/src/ann/ann.py
-COPY start.sh log_conf.json ./
+COPY start.sh log_conf.json gunicorn_conf.py ./
 COPY app .
 ENTRYPOINT ["tini", "--"]
 CMD ["./start.sh"]

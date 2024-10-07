@@ -39,6 +39,10 @@ class Settings(BaseSettings):
         case_sensitive = False
         env_nested_delimiter = "__"
 
+    @property
+    def device_id(self) -> str:
+        return os.environ.get("MACHINE_LEARNING_DEVICE_ID", "0")
+
 
 class LogSettings(BaseSettings):
     immich_log_level: str = "info"
