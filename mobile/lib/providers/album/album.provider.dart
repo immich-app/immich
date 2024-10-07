@@ -6,8 +6,6 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
@@ -65,36 +63,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   void searchAlbums(String searchTerm, QuickFilterMode filterMode) async {
-    switch (filterMode) {
-      case QuickFilterMode.all:
-        state = await db.albums
-            .filter()
-            .nameContains(searchTerm, caseSensitive: false)
-            .remoteIdIsNotNull()
-            .findAll();
-        return;
-      case QuickFilterMode.sharedWithMe:
-        state = await db.albums
-            .filter()
-            .nameContains(searchTerm, caseSensitive: false)
-            .remoteIdIsNotNull()
-            .owner(
-              (q) =>
-                  q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
-            )
-            .findAll();
-        return;
-      case QuickFilterMode.myAlbums:
-        state = await db.albums
-            .filter()
-            .nameContains(searchTerm, caseSensitive: false)
-            .remoteIdIsNotNull()
-            .owner(
-              (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
-            )
-            .findAll();
-        return;
-    }
+    state = await _albumService.search(searchTerm, filterMode);
   }
 }
 

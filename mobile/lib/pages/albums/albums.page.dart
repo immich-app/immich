@@ -80,7 +80,20 @@ class AlbumsPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: ImmichAppBar(),
+      appBar: ImmichAppBar(
+        showUploadButton: false,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.add_rounded,
+              size: 28,
+            ),
+            onPressed: () => context.pushRoute(
+              CreateAlbumRoute(isSharedAlbum: false),
+            ),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         displacement: 70,
         onRefresh: () async {
@@ -309,15 +322,8 @@ class QuickFilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton.icon(
+    return TextButton(
       onPressed: onTap,
-      icon: isSelected
-          ? Icon(
-              Icons.check_rounded,
-              color: context.colorScheme.onPrimary,
-              size: 18,
-            )
-          : const SizedBox.shrink(),
       style: ButtonStyle(
         backgroundColor: WidgetStateProperty.all(
           isSelected ? context.colorScheme.primary : Colors.transparent,
@@ -332,7 +338,7 @@ class QuickFilterButton extends StatelessWidget {
           ),
         ),
       ),
-      label: Text(
+      child: Text(
         label,
         style: TextStyle(
           color: isSelected
