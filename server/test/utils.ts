@@ -21,6 +21,7 @@ import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository
 import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
+import { newOAuthRepositoryMock } from 'test/repositories/oauth.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
@@ -64,6 +65,7 @@ export const newTestService = <T extends BaseService>(Service: Constructor<T, Ba
   const metricMock = newMetricRepositoryMock();
   const moveMock = newMoveRepositoryMock();
   const notificationMock = newNotificationRepositoryMock();
+  const oauthMock = newOAuthRepositoryMock();
   const partnerMock = newPartnerRepositoryMock();
   const personMock = newPersonRepositoryMock();
   const searchMock = newSearchRepositoryMock();
@@ -102,6 +104,7 @@ export const newTestService = <T extends BaseService>(Service: Constructor<T, Ba
     metricMock,
     moveMock,
     notificationMock,
+    oauthMock,
     partnerMock,
     personMock,
     searchMock,
@@ -142,6 +145,7 @@ export const newTestService = <T extends BaseService>(Service: Constructor<T, Ba
     metricMock,
     moveMock,
     notificationMock,
+    oauthMock,
     partnerMock,
     personMock,
     searchMock,
