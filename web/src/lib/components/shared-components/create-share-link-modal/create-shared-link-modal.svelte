@@ -25,6 +25,7 @@
 
   let sharedLink: string | null = null;
   let showQRCode: boolean;
+  let QRCodeWidth: number = 376;
   let description = '';
   let allowDownload = true;
   let allowUpload = false;
@@ -222,9 +223,9 @@
           />
         </div>
         <div class="mt-3" id="qrcode">
-        {#if showQRCode}
+        {#if showQRCode && sharedLink}
           <div class="container">
-            <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;"  displayWidth=376></QRCodeImage>
+            <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;"  displayWidth={QRCodeWidth}></QRCodeImage>
           </div>
         {/if}
         </div>
