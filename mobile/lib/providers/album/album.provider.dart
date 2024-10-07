@@ -64,24 +64,19 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     super.dispose();
   }
 
-  void searchAlbums(String value) async {
-    final query = db.albums
-        .filter()
-        .remoteIdIsNotNull()
-        .nameContains(value, caseSensitive: false);
-
-    final albums = await query.findAll();
-    state = albums;
-  }
-
-  void filterAlbums(QuickFilterMode mode) async {
-    switch (mode) {
+  void searchAlbums(String searchTerm, QuickFilterMode filterMode) async {
+    switch (filterMode) {
       case QuickFilterMode.all:
-        state = await db.albums.filter().remoteIdIsNotNull().findAll();
+        state = await db.albums
+            .filter()
+            .nameContains(searchTerm, caseSensitive: false)
+            .remoteIdIsNotNull()
+            .findAll();
         return;
       case QuickFilterMode.sharedWithMe:
         state = await db.albums
             .filter()
+            .nameContains(searchTerm, caseSensitive: false)
             .remoteIdIsNotNull()
             .owner(
               (q) =>
@@ -92,6 +87,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
       case QuickFilterMode.myAlbums:
         state = await db.albums
             .filter()
+            .nameContains(searchTerm, caseSensitive: false)
             .remoteIdIsNotNull()
             .owner(
               (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),

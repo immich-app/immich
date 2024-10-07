@@ -46,28 +46,26 @@ class AlbumsPage extends HookConsumerWidget {
       isGrid.value = !isGrid.value;
     }
 
-    onSearch(String value) {
+    onSearch(String searchTerm, QuickFilterMode mode) {
       debounceTimer.value?.cancel();
       debounceTimer.value = Timer(const Duration(milliseconds: 300), () {
-        filterMode.value = QuickFilterMode.all;
-        ref.read(albumProvider.notifier).searchAlbums(value);
+        ref.read(albumProvider.notifier).searchAlbums(searchTerm, mode);
       });
     }
 
     changeFilter(QuickFilterMode mode) {
       filterMode.value = mode;
-      ref.read(albumProvider.notifier).filterAlbums(mode);
     }
 
     useEffect(
       () {
         searchController.addListener(() {
-          onSearch(searchController.text);
+          onSearch(searchController.text, filterMode.value);
         });
 
         return () {
           searchController.removeListener(() {
-            onSearch(searchController.text);
+            onSearch(searchController.text, filterMode.value);
           });
           debounceTimer.value?.cancel();
         };
@@ -76,8 +74,9 @@ class AlbumsPage extends HookConsumerWidget {
     );
 
     clearSearch() {
+      filterMode.value = QuickFilterMode.all;
       searchController.clear();
-      onSearch('');
+      onSearch('', QuickFilterMode.all);
     }
 
     return Scaffold(
@@ -130,8 +129,7 @@ class AlbumsPage extends HookConsumerWidget {
                     color: context.colorScheme.surfaceContainerHighest,
                   ),
                 ),
-                hintText:
-                    '${FocusScope.of(context).hasFocus} search_albums'.tr(),
+                hintText: 'search_albums'.tr(),
                 hintStyle: context.textTheme.bodyLarge?.copyWith(
                   color: context.colorScheme.onSurfaceSecondary,
                 ),
@@ -144,41 +142,11 @@ class AlbumsPage extends HookConsumerWidget {
                     : const SizedBox.shrink(),
               ),
               controller: searchController,
-              onChanged: onSearch,
-              onTapOutside: (e) => FocusScope.of(context).unfocus(),
+              onChanged: (_) =>
+                  onSearch(searchController.text, filterMode.value),
+              onTapOutside: (_) => FocusScope.of(context).unfocus(),
             ),
           ),
-          // SearchBar(
-          //   backgroundColor: WidgetStatePropertyAll(
-          //     context.colorScheme.surfaceContainer,
-          //   ),
-          //   autoFocus: false,
-          //   hintText: "search_albums".tr(),
-          //   onChanged: onSearch,
-          //   elevation: const WidgetStatePropertyAll(0.25),
-          //   controller: searchController,
-          //   leading: const Icon(Icons.search_rounded),
-          //   trailing: [
-          //     searchController.text.isNotEmpty
-          //         ? IconButton(
-          //             icon: const Icon(Icons.clear_rounded),
-          //             onPressed: clearSearch,
-          //           )
-          //         : const SizedBox.shrink(),
-          //   ],
-          //   padding: WidgetStateProperty.all(
-          //     const EdgeInsets.symmetric(horizontal: 16),
-          //   ),
-          //   shape: WidgetStateProperty.all(
-          //     RoundedRectangleBorder(
-          //       borderRadius: BorderRadius.circular(20),
-          //       side: BorderSide(
-          //         color: context.colorScheme.onSurface.withAlpha(10),
-          //         width: 0.5,
-          //       ),
-          //     ),
-          //   ),
-          // ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 4,
@@ -187,17 +155,26 @@ class AlbumsPage extends HookConsumerWidget {
               QuickFilterButton(
                 label: 'All',
                 isSelected: filterMode.value == QuickFilterMode.all,
-                onTap: () => changeFilter(QuickFilterMode.all),
+                onTap: () {
+                  changeFilter(QuickFilterMode.all);
+                  onSearch(searchController.text, QuickFilterMode.all);
+                },
               ),
               QuickFilterButton(
                 label: 'Shared with me',
                 isSelected: filterMode.value == QuickFilterMode.sharedWithMe,
-                onTap: () => changeFilter(QuickFilterMode.sharedWithMe),
+                onTap: () {
+                  changeFilter(QuickFilterMode.sharedWithMe);
+                  onSearch(searchController.text, QuickFilterMode.sharedWithMe);
+                },
               ),
               QuickFilterButton(
                 label: 'My albums',
                 isSelected: filterMode.value == QuickFilterMode.myAlbums,
-                onTap: () => changeFilter(QuickFilterMode.myAlbums),
+                onTap: () {
+                  changeFilter(QuickFilterMode.myAlbums);
+                  onSearch(searchController.text, QuickFilterMode.myAlbums);
+                },
               ),
             ],
           ),
