@@ -337,6 +337,7 @@ export class MetadataService extends BaseService {
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
     const mediaTags = await this.metadataRepository.readTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.metadataRepository.readTags(asset.sidecarPath) : {};
+    const rawSidecarTags = asset.sidecarPath ? await this.metadataRepository.readTags(asset.sidecarPath, ['-e']) : {};
     const videoTags = asset.type === AssetType.VIDEO ? await this.getVideoTags(asset.originalPath) : {};
 
     // make sure dates comes from sidecar
@@ -345,6 +346,22 @@ export class MetadataService extends BaseService {
       for (const tag of EXIF_DATE_TAGS) {
         delete mediaTags[tag];
       }
+    }
+
+    // Use raw GPSLatitudeRef and GPSLongitudeRef from sidecar if their values are OK
+    // Exiftool will not look at these tags when doing a normal read
+    // because it considers them to be invalid in XMP.
+    const rawGPSLatitudeRef: string | undefined = rawSidecarTags.GPSLatitudeRef;
+    const rawGPSLongitudeRef: string | undefined = rawSidecarTags.GPSLongitudeRef;
+    if (rawGPSLatitudeRef && ['n', 'north', 's', 'south'].includes(rawGPSLatitudeRef.toLowerCase())) {
+      sidecarTags.GPSLatitudeRef = rawGPSLatitudeRef;
+    } else {
+      this.logger.warn(`Invalid value '${rawGPSLatitudeRef}' for GPSLatitudeRef in ${asset.sidecarPath}`);
+    }
+    if (rawGPSLongitudeRef && ['w', 'west', 'e', 'east'].includes(rawGPSLongitudeRef.toLowerCase())) {
+      sidecarTags.GPSLongitudeRef = rawGPSLongitudeRef;
+    } else {
+      this.logger.warn(`Invalid value '${rawGPSLongitudeRef}' for GPSLongitudeRef in ${asset.sidecarPath}`);
     }
 
     return { ...mediaTags, ...videoTags, ...sidecarTags };
@@ -620,10 +637,15 @@ export class MetadataService extends BaseService {
   }
 
   private async getGeo(tags: ImmichTags, reverseGeocoding: SystemConfig['reverseGeocoding']) {
-    let latitude = validate(tags.GPSLatitude);
-    let longitude = validate(tags.GPSLongitude);
+    const rawLatitude = validate(tags.GPSLatitude);
+    const rawLongitude = validate(tags.GPSLongitude);
+    const latitudeRef: string | undefined = tags.GPSLatitudeRef;
+    const longitudeRef: string | undefined = tags.GPSLongitudeRef;
 
-    // TODO take ref into account
+    let latitude =
+      rawLatitude && latitudeRef?.toLowerCase().startsWith('s') && rawLatitude > 0 ? -rawLatitude : rawLatitude;
+    let longitude =
+      rawLongitude && longitudeRef?.toLowerCase().startsWith('w') && rawLongitude > 0 ? -rawLongitude : rawLongitude;
 
     if (latitude === 0 && longitude === 0) {
       this.logger.warn('Latitude and longitude of 0, setting to null');

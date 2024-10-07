@@ -36,8 +36,8 @@ export class MetadataRepository implements IMetadataRepository {
     await this.exiftool.end();
   }
 
-  readTags(path: string): Promise<ImmichTags> {
-    return this.exiftool.read(path).catch((error) => {
+  readTags(path: string, readArgs: string[]): Promise<ImmichTags> {
+    return this.exiftool.read(path, readArgs).catch((error) => {
       this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
       return {};
     }) as Promise<ImmichTags>;
