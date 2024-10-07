@@ -796,11 +796,26 @@ class TestLoad:
         mock_model.model_format = ModelFormat.ONNX
 
 
+def test_root_endpoint(deployed_app: TestClient) -> None:
+    response = deployed_app.get("http://localhost:3003")
+
+    body = response.json()
+    assert response.status_code == 200
+    assert body == {"message": "Immich ML"}
+
+
+def test_ping_endpoint(deployed_app: TestClient) -> None:
+    response = deployed_app.get("http://localhost:3003/ping")
+
+    assert response.status_code == 200
+    assert response.text == "pong"
+
+
 @pytest.mark.skipif(
     not settings.test_full,
     reason="More time-consuming since it deploys the app and loads models.",
 )
-class TestEndpoints:
+class TestPredictionEndpoints:
     def test_clip_image_endpoint(
         self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
     ) -> None:
