@@ -105,7 +105,7 @@ services:
 Then you can restore with the same command but pointed at the latest dump.
 
 ```bash title='Automated Restore'
-# Be sure to check the username and database name if you changed them from defaults
+# Be sure to check the username if you changed it from default
 gunzip < db_dumps/last/immich-latest.sql.gz \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
 | docker exec -i immich_postgres psql --username=postgres
