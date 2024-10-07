@@ -113,14 +113,6 @@ export class SearchRepository implements ISearchRepository {
     return assets1;
   }
 
-  private createPersonFilter(builder: SelectQueryBuilder<AssetFaceEntity>, personIds: string[]) {
-    return builder
-      .select(`${builder.alias}."assetId"`)
-      .where(`${builder.alias}."personId" IN (:...personIds)`, { personIds })
-      .groupBy(`${builder.alias}."assetId"`)
-      .having(`COUNT(DISTINCT ${builder.alias}."personId") = :personCount`, { personCount: personIds.length });
-  }
-
   @GenerateSql({
     params: [
       { page: 1, size: 100 },
@@ -136,21 +128,12 @@ export class SearchRepository implements ISearchRepository {
   })
   async searchSmart(
     pagination: SearchPaginationOptions,
-    { embedding, userIds, personIds, ...options }: SmartSearchOptions,
+    { embedding, userIds, ...options }: SmartSearchOptions,
   ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
-
-      if (personIds?.length) {
-        const assetFaceBuilder = manager.createQueryBuilder(AssetFaceEntity, 'asset_face');
-        const cte = this.createPersonFilter(assetFaceBuilder, personIds);
-        builder
-          .addCommonTableExpression(cte, 'asset_face_ids')
-          .innerJoin('asset_face_ids', 'a', 'a."assetId" = asset.id');
-      }
-
       builder = searchAssetBuilder(builder, options);
       builder
         .innerJoin('asset.smartSearch', 'search')

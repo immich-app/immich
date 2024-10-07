@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
 import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
@@ -128,15 +129,14 @@ export function searchAssetBuilder(
   }
 
   if (personIds && personIds.length > 0) {
-    builder
-      .leftJoin(`${builder.alias}.faces`, 'faces')
-      .andWhere('faces.personId IN (:...personIds)', { personIds })
-      .addGroupBy(`${builder.alias}.id`)
-      .having('COUNT(DISTINCT faces.personId) = :personCount', { personCount: personIds.length });
-
-    if (withExif) {
-      builder.addGroupBy('exifInfo.assetId');
-    }
+    const cte = builder
+      .createQueryBuilder()
+      .select('faces."assetId"')
+      .from(AssetFaceEntity, 'faces')
+      .where('faces."personId" IN (:...personIds)', { personIds })
+      .groupBy(`faces."assetId"`)
+      .having(`COUNT(DISTINCT faces."personId") = :personCount`, { personCount: personIds.length });
+    builder.addCommonTableExpression(cte, 'face_ids').innerJoin('face_ids', 'a', 'a."assetId" = asset.id');
   }
 
   if (withStacked) {
