@@ -96,29 +96,6 @@ final albumRenderlistProvider =
   return const Stream.empty();
 });
 
-class RemoteAlbumsNotifier extends StateNotifier<List<Album>> {
-  RemoteAlbumsNotifier(this.db) : super([]) {
-    final query = db.albums.filter().remoteIdIsNotNull();
-
-    query.findAll().then((value) {
-      if (mounted) {
-        state = value;
-      }
-    });
-
-    _streamSub = query.watch().listen((data) => state = data);
-  }
-
-  final Isar db;
-  late final StreamSubscription<List<Album>> _streamSub;
-
-  @override
-  void dispose() {
-    _streamSub.cancel();
-    super.dispose();
-  }
-}
-
 class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
   LocalAlbumsNotifier(this.db) : super([]) {
     final query = db.albums.filter().not().remoteIdIsNotNull();
@@ -145,9 +122,4 @@ class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
 final localAlbumsProvider =
     StateNotifierProvider.autoDispose<LocalAlbumsNotifier, List<Album>>((ref) {
   return LocalAlbumsNotifier(ref.watch(dbProvider));
-});
-
-final remoteAlbumsProvider =
-    StateNotifierProvider.autoDispose<RemoteAlbumsNotifier, List<Album>>((ref) {
-  return RemoteAlbumsNotifier(ref.watch(dbProvider));
 });
