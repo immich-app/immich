@@ -8,6 +8,5 @@ env = os.environ
 
 
 # Round-robin device assignment for each worker
-def pre_fork(arbiter: Arbiter, _: Worker):
-    device_id = device_ids[len(arbiter.WORKERS) % len(device_ids)]
-    env["MACHINE_LEARNING_DEVICE_ID"] = str(device_id)
+def pre_fork(arbiter: Arbiter, _: Worker) -> None:
+    env["MACHINE_LEARNING_DEVICE_ID"] = device_ids[len(arbiter.WORKERS) % len(device_ids)]

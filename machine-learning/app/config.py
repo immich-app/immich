@@ -40,7 +40,7 @@ class Settings(BaseSettings):
         env_nested_delimiter = "__"
 
     @property
-    def device_id(self) -> int:
+    def device_id(self) -> str:
         return os.environ.get("MACHINE_LEARNING_DEVICE_ID", "0")
 
 
