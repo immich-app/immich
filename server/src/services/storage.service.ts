@@ -6,7 +6,9 @@ import { StorageFolder, SystemMetadataKey } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { ImmichStartupError } from 'src/utils/events';
+
+export class ImmichStartupError extends Error {}
+export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
 
 const docsMessage = `Please see https://immich.app/docs/administration/system-integrity#folder-checks for more information.`;
 

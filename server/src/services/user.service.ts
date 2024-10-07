@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { getClientLicensePublicKey, getServerLicensePublicKey } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -133,16 +132,18 @@ export class UserService extends BaseService {
       throw new BadRequestException('Invalid license key');
     }
 
+    const { licensePublicKey } = this.configRepository.getEnv();
+
     const clientLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
-      getClientLicensePublicKey(),
+      licensePublicKey.client,
     );
 
     const serverLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
-      getServerLicensePublicKey(),
+      licensePublicKey.server,
     );
 
     if (!clientLicenseValid && !serverLicenseValid) {
