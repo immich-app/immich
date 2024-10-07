@@ -38,10 +38,10 @@ docker compose pull             # Update to latest version of Immich (if desired
 docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
-# Be sure to check the username and database name if you changed them from defaults
+# Check the database user if you deviated from the default
 gunzip < "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --username=postgres --dbname immich   # Restore Backup
+| docker exec -i immich_postgres psql --username=postgres  # Restore Backup
 docker compose up -d            # Start remainder of Immich apps
 ```
 
@@ -60,8 +60,8 @@ docker compose pull             # Update to latest version of Immich (if desired
 docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
-# Be sure to check the username and database name if you changed them from defaults
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres --dbname immich  # Restore Backup
+# Check the database user if you deviated from the default
+gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres  # Restore Backup
 docker compose up -d            # Start remainder of Immich apps
 ```
 
@@ -108,13 +108,13 @@ Then you can restore with the same command but pointed at the latest dump.
 # Be sure to check the username and database name if you changed them from defaults
 gunzip < db_dumps/last/immich-latest.sql.gz \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --username=postgres --dbname immich
+| docker exec -i immich_postgres psql --username=postgres
 ```
 
 :::note
 If you see the error `ERROR:  type "earth" does not exist`, or you have problems with Reverse Geocoding after a restore, add the following `sed` fragment to your restore command.
 
-Example: `gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres --dbname immich`
+Example: `gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres`
 :::
 
 ## Filesystem
