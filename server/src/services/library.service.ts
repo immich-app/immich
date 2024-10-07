@@ -431,10 +431,6 @@ export class LibraryService extends BaseService {
     this.logger.debug(`Queueing metadata extraction for: ${asset.originalPath}`);
 
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
-
-    if (asset.type === AssetType.VIDEO) {
-      await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
-    }
   }
 
   async queueScan(id: string) {

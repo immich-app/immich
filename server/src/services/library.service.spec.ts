@@ -496,14 +496,6 @@ describe(LibraryService.name, () => {
             },
           },
         ],
-        [
-          {
-            name: JobName.VIDEO_CONVERSION,
-            data: {
-              id: assetStub.video.id,
-            },
-          },
-        ],
       ]);
     });
 
