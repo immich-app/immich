@@ -11,6 +11,7 @@ class LargeLeadingTile extends StatelessWidget {
       vertical: 8,
       horizontal: 16.0,
     ),
+    this.borderRadius = 20.0,
   });
 
   final Widget leading;
@@ -18,10 +19,12 @@ class LargeLeadingTile extends StatelessWidget {
   final Widget title;
   final Widget? subtitle;
   final EdgeInsetsGeometry leadingPadding;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(borderRadius),
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

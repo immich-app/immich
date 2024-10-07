@@ -81,205 +81,215 @@ class AlbumsPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: ImmichAppBar(),
-      body: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(18.0),
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: context.colorScheme.onSurface.withAlpha(0),
-                width: 0,
-              ),
-              borderRadius: BorderRadius.circular(24),
-              gradient: LinearGradient(
-                colors: [
-                  context.colorScheme.primary.withOpacity(0.025),
-                  context.colorScheme.primary.withOpacity(0.05),
-                  context.colorScheme.primary.withOpacity(0.025),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                transform: GradientRotation(0.5 * pi),
-              ),
-            ),
-            child: TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(
-                    color: context.colorScheme.surfaceDim,
-                  ),
+      body: RefreshIndicator(
+        displacement: 70,
+        onRefresh: () async {
+          await ref.read(albumProvider.notifier).getAllAlbums();
+        },
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(18.0),
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: context.colorScheme.onSurface.withAlpha(0),
+                  width: 0,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(
-                    color: context.colorScheme.surfaceContainer,
-                  ),
+                borderRadius: BorderRadius.circular(24),
+                gradient: LinearGradient(
+                  colors: [
+                    context.colorScheme.primary.withOpacity(0.025),
+                    context.colorScheme.primary.withOpacity(0.05),
+                    context.colorScheme.primary.withOpacity(0.025),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  transform: GradientRotation(0.5 * pi),
                 ),
-                disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(
-                    color: context.colorScheme.surfaceDim,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(
-                    color: context.colorScheme.surfaceContainerHighest,
-                  ),
-                ),
-                hintText: 'search_albums'.tr(),
-                hintStyle: context.textTheme.bodyLarge?.copyWith(
-                  color: context.colorScheme.onSurfaceSecondary,
-                ),
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: clearSearch,
-                      )
-                    : const SizedBox.shrink(),
               ),
-              controller: searchController,
-              onChanged: (_) =>
-                  onSearch(searchController.text, filterMode.value),
-              onTapOutside: (_) => FocusScope.of(context).unfocus(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: [
-              QuickFilterButton(
-                label: 'All',
-                isSelected: filterMode.value == QuickFilterMode.all,
-                onTap: () {
-                  changeFilter(QuickFilterMode.all);
-                  onSearch(searchController.text, QuickFilterMode.all);
-                },
-              ),
-              QuickFilterButton(
-                label: 'Shared with me',
-                isSelected: filterMode.value == QuickFilterMode.sharedWithMe,
-                onTap: () {
-                  changeFilter(QuickFilterMode.sharedWithMe);
-                  onSearch(searchController.text, QuickFilterMode.sharedWithMe);
-                },
-              ),
-              QuickFilterButton(
-                label: 'My albums',
-                isSelected: filterMode.value == QuickFilterMode.myAlbums,
-                onTap: () {
-                  changeFilter(QuickFilterMode.myAlbums);
-                  onSearch(searchController.text, QuickFilterMode.myAlbums);
-                },
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SortButton(),
-              IconButton(
-                icon: Icon(
-                  isGrid.value
-                      ? Icons.view_list_rounded
-                      : Icons.grid_view_outlined,
-                  size: 24,
-                ),
-                onPressed: toggleViewMode,
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
-            child: isGrid.value
-                ? GridView.builder(
-                    shrinkWrap: true,
-                    physics: const ClampingScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 250,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: .7,
+              child: TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.surfaceDim,
                     ),
-                    itemBuilder: (context, index) {
-                      return AlbumThumbnailCard(
-                        album: sorted[index],
-                        onTap: () => context.pushRoute(
-                          AlbumViewerRoute(albumId: sorted[index].id),
-                        ),
-                        showOwner: true,
-                      );
-                    },
-                    itemCount: sorted.length,
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: sorted.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: LargeLeadingTile(
-                          title: Text(
-                            sorted[index].name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: context.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          subtitle: sorted[index].ownerId == userId
-                              ? Text(
-                                  '${sorted[index].assetCount} items',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: context.textTheme.bodyMedium?.copyWith(
-                                    color:
-                                        context.colorScheme.onSurfaceSecondary,
-                                  ),
-                                )
-                              : sorted[index].ownerName != null
-                                  ? Text(
-                                      '${sorted[index].assetCount} items • ${'album_thumbnail_shared_by'.tr(
-                                        args: [
-                                          sorted[index].ownerName!,
-                                        ],
-                                      )}',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: context.textTheme.bodyMedium
-                                          ?.copyWith(
-                                        color: context
-                                            .colorScheme.onSurfaceSecondary,
-                                      ),
-                                    )
-                                  : null,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.surfaceContainer,
+                    ),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.surfaceDim,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.primary.withAlpha(100),
+                    ),
+                  ),
+                  hintText: 'search_albums'.tr(),
+                  hintStyle: context.textTheme.bodyLarge?.copyWith(
+                    color: context.colorScheme.onSurfaceSecondary,
+                  ),
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  suffixIcon: searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: clearSearch,
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                controller: searchController,
+                onChanged: (_) =>
+                    onSearch(searchController.text, filterMode.value),
+                onTapOutside: (_) => FocusScope.of(context).unfocus(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                QuickFilterButton(
+                  label: 'All',
+                  isSelected: filterMode.value == QuickFilterMode.all,
+                  onTap: () {
+                    changeFilter(QuickFilterMode.all);
+                    onSearch(searchController.text, QuickFilterMode.all);
+                  },
+                ),
+                QuickFilterButton(
+                  label: 'Shared with me',
+                  isSelected: filterMode.value == QuickFilterMode.sharedWithMe,
+                  onTap: () {
+                    changeFilter(QuickFilterMode.sharedWithMe);
+                    onSearch(
+                      searchController.text,
+                      QuickFilterMode.sharedWithMe,
+                    );
+                  },
+                ),
+                QuickFilterButton(
+                  label: 'My albums',
+                  isSelected: filterMode.value == QuickFilterMode.myAlbums,
+                  onTap: () {
+                    changeFilter(QuickFilterMode.myAlbums);
+                    onSearch(searchController.text, QuickFilterMode.myAlbums);
+                  },
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SortButton(),
+                IconButton(
+                  icon: Icon(
+                    isGrid.value
+                        ? Icons.view_list_rounded
+                        : Icons.grid_view_outlined,
+                    size: 24,
+                  ),
+                  onPressed: toggleViewMode,
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              child: isGrid.value
+                  ? GridView.builder(
+                      shrinkWrap: true,
+                      physics: const ClampingScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 250,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: .7,
+                      ),
+                      itemBuilder: (context, index) {
+                        return AlbumThumbnailCard(
+                          album: sorted[index],
                           onTap: () => context.pushRoute(
                             AlbumViewerRoute(albumId: sorted[index].id),
                           ),
-                          leadingPadding: const EdgeInsets.only(
-                            right: 16,
-                          ),
-                          leading: ClipRRect(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(15)),
-                            child: ImmichThumbnail(
-                              asset: sorted[index].thumbnail.value,
-                              width: 80,
-                              height: 80,
+                          showOwner: true,
+                        );
+                      },
+                      itemCount: sorted.length,
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: sorted.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: LargeLeadingTile(
+                            title: Text(
+                              sorted[index].name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
+                            subtitle: sorted[index].ownerId == userId
+                                ? Text(
+                                    '${sorted[index].assetCount} items',
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        context.textTheme.bodyMedium?.copyWith(
+                                      color: context
+                                          .colorScheme.onSurfaceSecondary,
+                                    ),
+                                  )
+                                : sorted[index].ownerName != null
+                                    ? Text(
+                                        '${sorted[index].assetCount} items • ${'album_thumbnail_shared_by'.tr(
+                                          args: [
+                                            sorted[index].ownerName!,
+                                          ],
+                                        )}',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: context.textTheme.bodyMedium
+                                            ?.copyWith(
+                                          color: context
+                                              .colorScheme.onSurfaceSecondary,
+                                        ),
+                                      )
+                                    : null,
+                            onTap: () => context.pushRoute(
+                              AlbumViewerRoute(albumId: sorted[index].id),
+                            ),
+                            leadingPadding: const EdgeInsets.only(
+                              right: 16,
+                            ),
+                            leading: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(15)),
+                              child: ImmichThumbnail(
+                                asset: sorted[index].thumbnail.value,
+                                width: 80,
+                                height: 80,
+                              ),
+                            ),
+                            // minVerticalPadding: 1,
                           ),
-                          // minVerticalPadding: 1,
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

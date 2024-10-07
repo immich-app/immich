@@ -170,7 +170,6 @@ class AlbumService {
 
       // only unique albums with albums id
       final albums = <Album>{...sharedAlbum, ...ownedAlbum}.toList();
-      debugPrint("albums count ${albums.length}");
 
       changes = await _syncService.syncRemoteAlbumsToDb(
         albums,
