@@ -61,6 +61,8 @@ describe(MetadataService.name, () => {
       tagMock,
       userMock,
     } = newTestService(MetadataService));
+
+    delete process.env.TZ;
   });
 
   afterEach(async () => {
@@ -273,6 +275,27 @@ describe(MetadataService.name, () => {
         fileCreatedAt: sidecarDate,
         localDateTime: sidecarDate,
       });
+    });
+
+    it('should account for the server being in a non-UTC timezone', async () => {
+      process.env.TZ = 'America/Los_Angeles';
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      metadataMock.readTags.mockResolvedValueOnce({
+        DateTimeOriginal: '2022:01:01 00:00:00',
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dateTimeOriginal: new Date('2022-01-01T08:00:00.000Z'),
+        }),
+      );
+
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          localDateTime: new Date('2022-01-01T00:00:00.000Z'),
+        }),
+      );
     });
 
     it('should handle lists of numbers', async () => {
