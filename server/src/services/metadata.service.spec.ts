@@ -1128,6 +1128,25 @@ describe(MetadataService.name, () => {
         }),
       );
     });
+
+    it('should handle video durations parsed as ExifDuration with value and scale', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
+      metadataMock.readTags.mockResolvedValue({
+        Duration: {
+          Value: 119_827_200,
+          Scale: 0.000_011_111_111_111_111_1, // 1/90000
+        },
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          // value * scale (in seconds)
+          duration: '00:22:11.413',
+        }),
+      );
+    });
   });
 
   describe('handleQueueSidecar', () => {
