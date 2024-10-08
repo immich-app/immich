@@ -577,13 +577,6 @@ export class MetadataService extends BaseService {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
     this.logger.debug(`Asset ${asset.id} date time is ${dateTime}`);
 
-    // created
-    let dateTimeOriginal = dateTime?.toDate();
-    if (!dateTimeOriginal) {
-      this.logger.warn(`Asset ${asset.id} has no valid date (${dateTime}), falling back to asset.fileCreatedAt`);
-      dateTimeOriginal = asset.fileCreatedAt;
-    }
-
     // timezone
     let timeZone = exifTags.tz ?? null;
     if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
@@ -598,13 +591,15 @@ export class MetadataService extends BaseService {
       this.logger.warn(`Asset ${asset.id} has no time zone information`);
     }
 
-    // offset minutes
-    const offsetMinutes = dateTime?.tzoffsetMinutes || 0;
-    let localDateTime = dateTimeOriginal;
-    if (offsetMinutes) {
-      localDateTime = new Date(dateTimeOriginal.getTime() + offsetMinutes * 60_000);
-      this.logger.debug(`Asset ${asset.id} local time is offset by ${offsetMinutes} minutes`);
+    let dateTimeOriginal = dateTime?.toDate();
+    let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
+    if (!localDateTime || !dateTimeOriginal) {
+      this.logger.warn(`Asset ${asset.id} has no valid date, falling back to asset.fileCreatedAt`);
+      dateTimeOriginal = asset.fileCreatedAt;
+      localDateTime = asset.fileCreatedAt;
     }
+
+    this.logger.debug(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
 
     let modifyDate = asset.fileModifiedAt;
     try {
