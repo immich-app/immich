@@ -97,7 +97,7 @@ class AlbumsPage extends HookConsumerWidget {
         },
         child: ListView(
           shrinkWrap: true,
-          padding: const EdgeInsets.all(18.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
           children: [
             Container(
               decoration: BoxDecoration(
@@ -120,6 +120,7 @@ class AlbumsPage extends HookConsumerWidget {
               child: TextField(
                 autofocus: false,
                 decoration: InputDecoration(
+                  contentPadding: EdgeInsets.all(8),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
                     borderSide: BorderSide(
@@ -163,7 +164,7 @@ class AlbumsPage extends HookConsumerWidget {
                 onTapOutside: (_) => searchFocusNode.unfocus(),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 4,
               runSpacing: 4,

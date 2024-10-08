@@ -14,7 +14,6 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
-import 'package:immich_mobile/widgets/common/share_partner_button.dart';
 import 'package:immich_mobile/widgets/common/user_avatar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -28,10 +27,7 @@ class LibraryPage extends ConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
     return Scaffold(
-      appBar: const ImmichAppBar(
-        showUploadButton: false,
-        actions: [SharePartnerButton()],
-      ),
+      appBar: ImmichAppBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ListView(
@@ -79,8 +75,8 @@ class LibraryPage extends ConsumerWidget {
               runSpacing: 8,
               children: [
                 PeopleCollectionCard(),
-                LocalAlbumsCollectionCard(),
                 PlacesCollectionCard(),
+                LocalAlbumsCollectionCard(),
               ],
             ),
             const SizedBox(height: 12),
@@ -131,16 +127,16 @@ class QuickAccessButtons extends ConsumerWidget {
               ),
             ),
             leading: const Icon(
-              Icons.schedule_rounded,
+              Icons.group_outlined,
               size: 26,
             ),
             title: Text(
-              'recently_added'.tr(),
+              'partners'.tr(),
               style: context.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
             ),
-            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
+            onTap: () => context.pushRoute(const PartnerRoute()),
           ),
           PartnerList(partners: partners),
         ],
@@ -406,63 +402,6 @@ class ActionButton extends StatelessWidget {
           icon,
           color: context.primaryColor,
         ),
-      ),
-    );
-  }
-}
-
-class CreateNewButton extends StatelessWidget {
-  const CreateNewButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    showBottomSheet() {
-      showModalBottomSheet(
-        backgroundColor: context.scaffoldBackgroundColor,
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 24,
-              ),
-              child: ListView(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16.0),
-                    child:
-                        Text("create_new", style: context.textTheme.bodyMedium)
-                            .tr(),
-                  ),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    leading: const Icon(Icons.photo_album_rounded),
-                    onTap: () {
-                      context.pop();
-                      context.pushRoute(CreateAlbumRoute());
-                    },
-                    title: const Text(
-                      "create_album",
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ).tr(),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    return InkWell(
-      onTap: showBottomSheet,
-      borderRadius: const BorderRadius.all(Radius.circular(25)),
-      child: const Icon(
-        Icons.add,
-        size: 32,
       ),
     );
   }

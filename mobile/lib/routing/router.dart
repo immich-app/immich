@@ -106,8 +106,9 @@ class AppRouter extends RootStackRouter {
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(
-          page: SearchRoute.page,
+          page: SearchInputRoute.page,
           guards: [_authGuard, _duplicateGuard],
+          maintainState: false,
         ),
         AutoRoute(
           page: LibraryRoute.page,
