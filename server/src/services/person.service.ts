@@ -45,7 +45,7 @@ import {
 } from 'src/interfaces/job.interface';
 import { BoundingBox } from 'src/interfaces/machine-learning.interface';
 import { CropOptions, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
-import { UpdateFacesData } from 'src/interfaces/person.interface';
+import { PersonSearchOptions, UpdateFacesData } from 'src/interfaces/person.interface';
 import { BaseService } from 'src/services/base.service';
 import { checkAccess, requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
@@ -65,11 +65,12 @@ export class PersonService extends BaseService {
     };
 
     const { machineLearning } = await this.getConfig({ withCache: false });
-    const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
+    const options: PersonSearchOptions = {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
-    });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
+    };
+    const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, options);
+    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, options);
 
     return {
       people: items.map((person) => mapPerson(person)),

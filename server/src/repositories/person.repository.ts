@@ -235,17 +235,24 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
-    const items = await this.personRepository
-      .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
-      .where('person.ownerId = :userId', { userId })
-      .innerJoin('face.asset', 'asset')
-      .andWhere('asset.isArchived = false')
-      .andWhere("person.thumbnailPath != ''")
-      .select('COUNT(DISTINCT(person.id))', 'total')
-      .addSelect('COUNT(DISTINCT(person.id)) FILTER (WHERE person.isHidden = true)', 'hidden')
-      .having('COUNT(face.assetId) != 0')
+  async getNumberOfPeople(userId: string, options?: PersonSearchOptions): Promise<PeopleStatistics> {
+    const items = await this.dataSource
+      .createQueryBuilder()
+      .select('COUNT(person.id)', 'total')
+      .addSelect('COUNT(person.id) FILTER (WHERE person."isHidden" = true)', 'hidden')
+      .from((subQuery) => {
+        return subQuery
+          .select('person.id', 'id')
+          .addSelect('person.isHidden', 'isHidden')
+          .from(PersonEntity, 'person')
+          .leftJoin('person.faces', 'face')
+          .where('person.ownerId = :userId', { userId })
+          .innerJoin('face.asset', 'asset')
+          .andWhere('asset.isArchived = false')
+          .andWhere("person.thumbnailPath != ''")
+          .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
+          .groupBy('person.id');
+      }, 'person')
       .getRawOne();
 
     if (items == undefined) {
