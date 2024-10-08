@@ -72,18 +72,22 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     state = await _albumService.search(searchTerm, filterMode);
   }
 
-  Future<bool> removeUserFromAlbum(Album album, User user) async {
-    final result = await _albumService.removeUserFromAlbum(album, user);
+  Future<void> addUsers(Album album, List<String> userIds) async {
+    await _albumService.addUsers(album, userIds);
+  }
 
-    if (result && album.sharedUsers.isEmpty) {
+  Future<bool> removeUser(Album album, User user) async {
+    final isRemoved = await _albumService.removeUser(album, user);
+
+    if (isRemoved && album.sharedUsers.isEmpty) {
       state = state.where((element) => element.id != album.id).toList();
     }
 
-    return result;
+    return isRemoved;
   }
 
-  Future<bool> removeAssetFromAlbum(Album album, Iterable<Asset> assets) {
-    return _albumService.removeAssetFromAlbum(album, assets);
+  Future<bool> removeAsset(Album album, Iterable<Asset> assets) {
+    return _albumService.removeAsset(album, assets);
   }
 
   Future<bool> setActivityEnabled(Album album, bool activityEnabled) {

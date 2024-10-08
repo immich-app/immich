@@ -271,11 +271,10 @@ class MultiselectGrid extends HookConsumerWidget {
         if (assets.isEmpty) {
           return;
         }
-        final result =
-            await ref.read(albumServiceProvider).addAdditionalAssetToAlbum(
-                  assets,
-                  album,
-                );
+        final result = await ref.read(albumServiceProvider).addAssets(
+              assets,
+              album,
+            );
 
         if (result != null) {
           if (result.alreadyInAlbum.isNotEmpty) {

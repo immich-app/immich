@@ -41,6 +41,7 @@ class AlbumsPage extends HookConsumerWidget {
     final debounceTimer = useRef<Timer?>(null);
     final filterMode = useState(QuickFilterMode.all);
     final userId = ref.watch(currentUserProvider)?.id;
+    final searchFocusNode = useFocusNode();
 
     toggleViewMode() {
       isGrid.value = !isGrid.value;
@@ -59,6 +60,7 @@ class AlbumsPage extends HookConsumerWidget {
 
     useEffect(
       () {
+        print("AlbumsPage useEffect");
         searchController.addListener(() {
           onSearch(searchController.text, filterMode.value);
         });
@@ -112,9 +114,9 @@ class AlbumsPage extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
                 gradient: LinearGradient(
                   colors: [
-                    context.colorScheme.primary.withOpacity(0.025),
-                    context.colorScheme.primary.withOpacity(0.05),
-                    context.colorScheme.primary.withOpacity(0.025),
+                    context.colorScheme.primary.withOpacity(0.075),
+                    context.colorScheme.primary.withOpacity(0.09),
+                    context.colorScheme.primary.withOpacity(0.075),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -122,6 +124,7 @@ class AlbumsPage extends HookConsumerWidget {
                 ),
               ),
               child: TextField(
+                autofocus: false,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
@@ -162,7 +165,8 @@ class AlbumsPage extends HookConsumerWidget {
                 controller: searchController,
                 onChanged: (_) =>
                     onSearch(searchController.text, filterMode.value),
-                onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                focusNode: searchFocusNode,
+                onTapOutside: (_) => searchFocusNode.unfocus(),
               ),
             ),
             const SizedBox(height: 16),
@@ -206,7 +210,7 @@ class AlbumsPage extends HookConsumerWidget {
                 IconButton(
                   icon: Icon(
                     isGrid.value
-                        ? Icons.view_list_rounded
+                        ? Icons.view_list_outlined
                         : Icons.grid_view_outlined,
                     size: 24,
                   ),

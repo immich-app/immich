@@ -220,7 +220,7 @@ class AlbumService {
     );
   }
 
-  Future<AlbumAddAssetsResponse?> addAdditionalAssetToAlbum(
+  Future<AlbumAddAssetsResponse?> addAssets(
     Iterable<Asset> assets,
     Album album,
   ) async {
@@ -259,22 +259,6 @@ class AlbumService {
         await _albumRepository.recalculateMetadata(album);
         await _albumRepository.update(album);
       });
-
-  Future<bool> addAdditionalUserToAlbum(
-    List<String> sharedUserIds,
-    Album album,
-  ) async {
-    try {
-      final updatedAlbum =
-          await _albumApiRepository.addUsers(album.remoteId!, sharedUserIds);
-      await _entityService.fillAlbumWithDatabaseEntities(updatedAlbum);
-      await _albumRepository.update(updatedAlbum);
-      return true;
-    } catch (e) {
-      debugPrint("Error addAdditionalUserToAlbum  ${e.toString()}");
-    }
-    return false;
-  }
 
   Future<bool> setActivityEnabled(Album album, bool enabled) async {
     try {
@@ -334,7 +318,7 @@ class AlbumService {
     }
   }
 
-  Future<bool> removeAssetFromAlbum(
+  Future<bool> removeAsset(
     Album album,
     Iterable<Asset> assets,
   ) async {
@@ -353,7 +337,7 @@ class AlbumService {
     return false;
   }
 
-  Future<bool> removeUserFromAlbum(
+  Future<bool> removeUser(
     Album album,
     User user,
   ) async {
@@ -370,10 +354,29 @@ class AlbumService {
       await _albumRepository.update(a!);
 
       return true;
-    } catch (e) {
-      debugPrint("Error removeUserFromAlbum  ${e.toString()}");
+    } catch (error) {
+      debugPrint("Error removeUser  ${error.toString()}");
       return false;
     }
+  }
+
+  Future<bool> addUsers(
+    Album album,
+    List<String> userIds,
+  ) async {
+    try {
+      final updatedAlbum =
+          await _albumApiRepository.addUsers(album.remoteId!, userIds);
+
+      album.sharedUsers.addAll(updatedAlbum.remoteUsers);
+      await _albumRepository.addUsers(album, album.sharedUsers.toList());
+      await _albumRepository.update(album);
+
+      return true;
+    } catch (error) {
+      debugPrint("Error addUsers ${error.toString()}");
+    }
+    return false;
   }
 
   Future<bool> changeTitleAlbum(

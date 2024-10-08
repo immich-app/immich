@@ -49,9 +49,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     Future<bool> onRemoveFromAlbumPressed(Iterable<Asset> assets) async {
       final a = album.valueOrNull;
       final bool isSuccess = a != null &&
-          await ref
-              .read(albumProvider.notifier)
-              .removeAssetFromAlbum(a, assets);
+          await ref.read(albumProvider.notifier).removeAsset(a, assets);
 
       if (!isSuccess) {
         ImmichToast.show(
@@ -80,7 +78,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         // Check if there is new assets add
         isProcessing.value = true;
 
-        await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+        await ref.watch(albumServiceProvider).addAssets(
               returnPayload.selectedAssets,
               albumInfo,
             );
@@ -97,9 +95,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (sharedUserIds != null) {
         isProcessing.value = true;
 
-        await ref
-            .watch(albumServiceProvider)
-            .addAdditionalUserToAlbum(sharedUserIds, album);
+        await ref.watch(albumProvider.notifier).addUsers(album, sharedUserIds);
 
         isProcessing.value = false;
       }
@@ -230,17 +226,17 @@ class AlbumViewerPage extends HookConsumerWidget {
       body: Stack(
         children: [
           album.widgetWhen(
-            onData: (data) => MultiselectGrid(
+            onData: (albumInfo) => MultiselectGrid(
               renderListProvider: albumRenderlistProvider(albumId),
               topWidget: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildHeader(data),
-                  if (data.isRemote) buildControlButton(data),
+                  buildHeader(albumInfo),
+                  if (albumInfo.isRemote) buildControlButton(albumInfo),
                 ],
               ),
               onRemoveFromAlbum: onRemoveFromAlbumPressed,
-              editEnabled: data.ownerId == userId,
+              editEnabled: albumInfo.ownerId == userId,
             ),
           ),
           AnimatedPositioned(

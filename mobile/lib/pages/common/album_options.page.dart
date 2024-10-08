@@ -65,7 +65,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       isProcessing.value = true;
 
       try {
-        await ref.read(albumProvider.notifier).removeUserFromAlbum(album, user);
+        await ref.read(albumProvider.notifier).removeUser(album, user);
         album.sharedUsers.remove(user);
         sharedUsers.value = album.sharedUsers.toList();
       } catch (error) {

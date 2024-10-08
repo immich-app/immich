@@ -164,7 +164,7 @@ void main() {
         () => albumRepository.update(AlbumStub.oneAsset),
       ).thenAnswer((_) async => AlbumStub.oneAsset);
 
-      final result = await sut.addAdditionalAssetToAlbum(
+      final result = await sut.addAssets(
         [AssetStub.image1, AssetStub.image2],
         AlbumStub.oneAsset,
       );
@@ -191,7 +191,7 @@ void main() {
         () => albumRepository.update(AlbumStub.sharedWithUser),
       ).thenAnswer((_) async => AlbumStub.sharedWithUser);
 
-      final result = await sut.addAdditionalUserToAlbum(
+      final result = await sut.addUsers(
         [UserStub.user2.id],
         AlbumStub.emptyAlbum,
       );

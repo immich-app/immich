@@ -230,9 +230,7 @@ class BottomGalleryBar extends ConsumerWidget {
     handleRemoveFromAlbum() async {
       final album = ref.read(currentAlbumProvider);
       final bool isSuccess = album != null &&
-          await ref
-              .read(albumProvider.notifier)
-              .removeAssetFromAlbum(album, [asset]);
+          await ref.read(albumProvider.notifier).removeAsset(album, [asset]);
 
       if (isSuccess) {
         // Workaround for asset remaining in the gallery

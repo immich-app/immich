@@ -38,7 +38,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
     );
 
     void addToAlbum(Album album) async {
-      final result = await albumService.addAdditionalAssetToAlbum(
+      final result = await albumService.addAssets(
         assets,
         album,
       );
