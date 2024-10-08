@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -25,6 +26,7 @@ describe(DownloadService.name, () => {
   let sut: DownloadService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
 
   it('should work', () => {
@@ -32,10 +34,54 @@ describe(DownloadService.name, () => {
   });
 
   beforeEach(() => {
-    ({ sut, accessMock, assetMock, storageMock } = newTestService(DownloadService));
+    ({ sut, accessMock, assetMock, loggerMock, storageMock } = newTestService(DownloadService));
   });
 
   describe('downloadArchive', () => {
+    it('should skip asset ids that could not be found', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.noResizePath, id: 'asset-1' }]);
+      storageMock.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
+    });
+
+    it('should log a warning if the original path could not be resolved', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      storageMock.realpath.mockRejectedValue(new Error('Could not read file'));
+      assetMock.getByIds.mockResolvedValue([
+        { ...assetStub.noResizePath, id: 'asset-1' },
+        { ...assetStub.noWebpPath, id: 'asset-2' },
+      ]);
+      storageMock.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(loggerMock.warn).toHaveBeenCalledTimes(2);
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
+    });
+
     it('should download an archive', async () => {
       const archiveMock = {
         addFile: vitest.fn(),
