@@ -178,27 +178,29 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget buildSharedUserIconsRow(Album album) {
-      return GestureDetector(
-        onTap: () => context.pushRoute(AlbumOptionsRoute(album: album)),
-        child: SizedBox(
-          height: 50,
-          child: ListView.builder(
-            padding: const EdgeInsets.only(left: 16),
-            scrollDirection: Axis.horizontal,
-            itemBuilder: ((context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: UserCircleAvatar(
-                  user: album.sharedUsers.toList()[index],
-                  radius: 18,
-                  size: 36,
+      return album.sharedUsers.isNotEmpty
+          ? GestureDetector(
+              onTap: () => context.pushRoute(AlbumOptionsRoute(album: album)),
+              child: SizedBox(
+                height: 50,
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(left: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: ((context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: UserCircleAvatar(
+                        user: album.sharedUsers.toList()[index],
+                        radius: 18,
+                        size: 36,
+                      ),
+                    );
+                  }),
+                  itemCount: album.sharedUsers.length,
                 ),
-              );
-            }),
-            itemCount: album.sharedUsers.length,
-          ),
-        ),
-      );
+              ),
+            )
+          : const SizedBox.shrink();
     }
 
     Widget buildHeader(Album album) {
