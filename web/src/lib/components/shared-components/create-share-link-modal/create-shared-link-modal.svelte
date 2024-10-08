@@ -15,7 +15,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { DateTime, Duration } from 'luxon';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import { QRCodeImage } from "svelte-qrcode-image";
+  import { QRCodeImage } from 'svelte-qrcode-image';
 
   export let onClose: () => void;
   export let albumId: string | undefined = undefined;
@@ -223,11 +223,11 @@
           />
         </div>
         <div class="mt-3" id="qrcode">
-        {#if showQRCode && sharedLink}
-          <div class="container">
-            <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;"  displayWidth={QRCodeWidth}></QRCodeImage>
-          </div>
-        {/if}
+          {#if showQRCode && sharedLink}
+            <div class="container">
+              <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;" displayWidth={QRCodeWidth} />
+            </div>
+          {/if}
         </div>
       </div>
     </div>
