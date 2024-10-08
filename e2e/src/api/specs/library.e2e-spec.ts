@@ -347,6 +347,62 @@ describe('/libraries', () => {
       expect(assets.items.find((asset) => asset.originalPath.includes('directoryB'))).toBeDefined();
     });
 
+    it('should scan multiple import paths with commas', async () => {
+      // https://github.com/immich-app/immich/issues/10699
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/folder, a`, `${testAssetDirInternal}/temp/folder, b`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(2);
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder, a'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder, b'))).toBeDefined();
+
+      utils.removeImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
+    });
+
+    it('should scan multiple import paths with braces', async () => {
+      // https://github.com/immich-app/immich/issues/10699
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/folder{ a`, `${testAssetDirInternal}/temp/folder} b`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(2);
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder{ a'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder} b'))).toBeDefined();
+
+      utils.removeImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
+    });
+
     it('should reimport a modified file', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
