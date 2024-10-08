@@ -56,7 +56,7 @@
   };
 
   const getLink = (path: string) => {
-    const url = new URL(AppRoute.TAGS, window.location.href);
+    const url = new URL(AppRoute.TAGS, globalThis.location.href);
     if (path) {
       url.searchParams.set(QueryParameter.PATH, path);
     }

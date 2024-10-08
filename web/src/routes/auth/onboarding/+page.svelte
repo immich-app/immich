@@ -30,7 +30,7 @@
   $: {
     const stepState = $page.url.searchParams.get('step');
     const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
-    index = temporaryIndex >= 0 ? temporaryIndex : 0;
+    index = Math.max(temporaryIndex, 0);
   }
 
   const handleDoneClicked = async () => {

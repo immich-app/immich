@@ -16,11 +16,11 @@
   let loading = true;
 
   onMount(async () => {
-    if (oauth.isCallback(window.location)) {
+    if (oauth.isCallback(globalThis.location)) {
       try {
         loading = true;
 
-        user = await oauth.link(window.location);
+        user = await oauth.link(globalThis.location);
 
         notificationController.show({
           message: $t('linked_oauth_account'),
@@ -60,7 +60,7 @@
         {#if user.oauthId}
           <Button size="sm" on:click={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
         {:else}
-          <Button size="sm" on:click={() => oauth.authorize(window.location)}>{$t('link_to_oauth')}</Button>
+          <Button size="sm" on:click={() => oauth.authorize(globalThis.location)}>{$t('link_to_oauth')}</Button>
         {/if}
       {/if}
     </div>

@@ -95,7 +95,7 @@ export const handleLogout = async (redirectUri: string) => {
     if (redirectUri.startsWith('/')) {
       await goto(redirectUri);
     } else {
-      window.location.href = redirectUri;
+      globalThis.location.href = redirectUri;
     }
   } finally {
     resetSavedUser();

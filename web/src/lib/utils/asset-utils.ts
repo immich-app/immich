@@ -522,7 +522,7 @@ export const delay = async (ms: number) => {
 };
 
 export const canCopyImageToClipboard = (): boolean => {
-  return !!(navigator.clipboard && window.ClipboardItem);
+  return !!(navigator.clipboard && globalThis.ClipboardItem);
 };
 
 const imgToBlob = async (imageElement: HTMLImageElement) => {
