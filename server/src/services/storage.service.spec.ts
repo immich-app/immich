@@ -1,8 +1,9 @@
 import { SystemMetadataKey } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { StorageService } from 'src/services/storage.service';
+import { ImmichStartupError, StorageService } from 'src/services/storage.service';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
@@ -11,11 +12,12 @@ describe(StorageService.name, () => {
   let sut: StorageService;
 
   let configMock: Mocked<IConfigRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    ({ sut, configMock, storageMock, systemMock } = newTestService(StorageService));
+    ({ sut, configMock, loggerMock, storageMock, systemMock } = newTestService(StorageService));
   });
 
   it('should work', () => {
@@ -56,6 +58,25 @@ describe(StorageService.name, () => {
 
       await expect(sut.onBootstrap()).rejects.toThrow('Failed to write');
 
+      expect(systemMock.set).not.toHaveBeenCalled();
+    });
+
+    it('should skip mount file creation if file already exists', async () => {
+      const error = new Error('Error creating file') as any;
+      error.code = 'EEXIST';
+      systemMock.get.mockResolvedValue({ mountFiles: false });
+      storageMock.createFile.mockRejectedValue(error);
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(loggerMock.warn).toHaveBeenCalledWith('Found existing mount file, skipping creation');
+    });
+
+    it('should throw an error if mount file could not be created', async () => {
+      systemMock.get.mockResolvedValue({ mountFiles: false });
+      storageMock.createFile.mockRejectedValue(new Error('Error creating file'));
+
+      await expect(sut.onBootstrap()).rejects.toBeInstanceOf(ImmichStartupError);
       expect(systemMock.set).not.toHaveBeenCalled();
     });
 

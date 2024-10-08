@@ -126,6 +126,14 @@ describe(NotificationService.name, () => {
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
     });
+
+    it('should fail if smtp configuration is invalid', async () => {
+      const oldConfig = configs.smtpDisabled;
+      const newConfig = configs.smtpEnabled;
+
+      notificationMock.verifySmtp.mockRejectedValue(new Error('Failed validating smtp'));
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).rejects.toBeInstanceOf(Error);
+    });
   });
 
   describe('onAssetHide', () => {
@@ -177,6 +185,18 @@ describe(NotificationService.name, () => {
         name: JobName.NOTIFY_ALBUM_INVITE,
         data: { id: '', recipientId: '42' },
       });
+    });
+  });
+
+  describe('onSessionDeleteEvent', () => {
+    it('should send a on_session_delete client event', () => {
+      vi.useFakeTimers();
+      sut.onSessionDelete({ sessionId: 'id' });
+      expect(eventMock.clientSend).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(500);
+
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_session_delete', 'id', 'id');
     });
   });
 
