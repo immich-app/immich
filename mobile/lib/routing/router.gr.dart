@@ -614,14 +614,15 @@ class CropImageRoute extends PageRouteInfo<CropImageRouteArgs> {
     Key? key,
     required Image image,
     required Asset asset,
+    required Function? shouldDeleteOrginal,
     List<PageRouteInfo>? children,
   }) : super(
           CropImageRoute.name,
           args: CropImageRouteArgs(
-            key: key,
-            image: image,
-            asset: asset,
-          ),
+              key: key,
+              image: image,
+              asset: asset,
+              shouldDeleteOrginal: shouldDeleteOrginal),
           initialChildren: children,
         );
 
@@ -635,6 +636,7 @@ class CropImageRoute extends PageRouteInfo<CropImageRouteArgs> {
         key: args.key,
         image: args.image,
         asset: args.asset,
+        shouldDeleteOrginal: args.shouldDeleteOrginal,
       );
     },
   );
@@ -645,6 +647,7 @@ class CropImageRouteArgs {
     this.key,
     required this.image,
     required this.asset,
+    this.shouldDeleteOrginal,
   });
 
   final Key? key;
@@ -652,6 +655,7 @@ class CropImageRouteArgs {
   final Image image;
 
   final Asset asset;
+  final Function? shouldDeleteOrginal;
 
   @override
   String toString() {
@@ -667,15 +671,16 @@ class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
     required Asset asset,
     required Image image,
     required bool isEdited,
+    Function? shouldDeleteOrginalOnCrop,
     List<PageRouteInfo>? children,
   }) : super(
           EditImageRoute.name,
           args: EditImageRouteArgs(
-            key: key,
-            asset: asset,
-            image: image,
-            isEdited: isEdited,
-          ),
+              key: key,
+              asset: asset,
+              image: image,
+              isEdited: isEdited,
+              shouldDeleteOrginalOnCrop: shouldDeleteOrginalOnCrop),
           initialChildren: children,
         );
 
@@ -690,18 +695,19 @@ class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
         asset: args.asset,
         image: args.image,
         isEdited: args.isEdited,
+        shouldDeleleOrginalOnCrop: args.shouldDeleteOrginalOnCrop,
       );
     },
   );
 }
 
 class EditImageRouteArgs {
-  const EditImageRouteArgs({
-    this.key,
-    required this.asset,
-    required this.image,
-    required this.isEdited,
-  });
+  const EditImageRouteArgs(
+      {this.key,
+      required this.asset,
+      required this.image,
+      required this.isEdited,
+      this.shouldDeleteOrginalOnCrop});
 
   final Key? key;
 
@@ -710,6 +716,7 @@ class EditImageRouteArgs {
   final Image image;
 
   final bool isEdited;
+  final Function? shouldDeleteOrginalOnCrop;
 
   @override
   String toString() {

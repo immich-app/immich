@@ -9,16 +9,18 @@ import 'edit.page.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 
-/// A widget for cropping an image.
-/// This widget uses [HookWidget] to manage its lifecycle and state. It allows
-/// users to crop an image and then navigate to the [EditImagePage] with the
-/// cropped image.
-
 @RoutePage()
 class CropImagePage extends HookWidget {
   final Image image;
   final Asset asset;
-  const CropImagePage({super.key, required this.image, required this.asset});
+  final Function? shouldDeleteOrginal;
+
+  const CropImagePage({
+    super.key,
+    required this.image,
+    required this.asset,
+    this.shouldDeleteOrginal,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,18 @@ class CropImagePage extends HookWidget {
             ),
             onPressed: () async {
               final croppedImage = await cropController.croppedImage();
+
+              // Show the delete confirmation dialog
+              final shouldDelete = await _showDeleteConfirmationDialog(context);
+
+              // If the user confirms, call the handleDelete method to delete the original asset
+              if (shouldDelete == true) {
+                if (shouldDeleteOrginal != null) {
+                  shouldDeleteOrginal!();
+                }
+              }
+
+              // Navigate to EditImagePage with the cropped image
               context.pushRoute(
                 EditImageRoute(
                   asset: asset,
@@ -155,6 +169,33 @@ class CropImagePage extends HookWidget {
           },
         ),
       ),
+    );
+  }
+
+  // Function to show a confirmation dialog
+  Future<bool?> _showDeleteConfirmationDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('Delete Original?'),
+          content: Text('Do you want to delete the original photo?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
