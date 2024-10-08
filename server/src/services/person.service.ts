@@ -325,7 +325,7 @@ export class PersonService extends BaseService {
 
       if (match && !mlFaceIds.delete(match.id)) {
         embeddings.push({ faceId: match.id, embedding });
-      } else {
+      } else if (!match) {
         const faceId = this.cryptoRepository.randomUUID();
         facesToAdd.push({
           id: faceId,
