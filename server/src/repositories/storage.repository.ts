@@ -182,6 +182,7 @@ export class StorageRepository implements IStorageRepository {
       onlyFiles: true,
       dot: includeHidden,
       ignore: exclusionPatterns,
+      suppressErrors: true,
     });
 
     let batch: string[] = [];
