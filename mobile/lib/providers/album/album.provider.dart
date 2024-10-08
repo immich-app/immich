@@ -86,12 +86,19 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     return isRemoved;
   }
 
-  Future<bool> removeAsset(Album album, Iterable<Asset> assets) {
-    return _albumService.removeAsset(album, assets);
+  Future<void> addAssets(Album album, Iterable<Asset> assets) async {
+    await _albumService.addAssets(album, assets);
   }
 
-  Future<bool> setActivityEnabled(Album album, bool activityEnabled) {
-    return _albumService.setActivityEnabled(album, activityEnabled);
+  Future<bool> removeAsset(Album album, Iterable<Asset> assets) async {
+    return await _albumService.removeAsset(album, assets);
+  }
+
+  Future<bool> setActivitystatus(
+    Album album,
+    bool enabled,
+  ) {
+    return _albumService.setActivityStatus(album, enabled);
   }
 
   @override

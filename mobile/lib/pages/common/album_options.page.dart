@@ -199,7 +199,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
                 activityEnabled.value = value;
                 if (await ref
                     .read(albumProvider.notifier)
-                    .setActivityEnabled(album, value)) {
+                    .setActivitystatus(album, value)) {
                   album.activityEnabled = value;
                 }
               },

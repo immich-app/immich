@@ -12,7 +12,6 @@ import 'package:immich_mobile/models/albums/asset_selection_page_result.model.da
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
-import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_viewer_editable_title.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
@@ -78,9 +77,9 @@ class AlbumViewerPage extends HookConsumerWidget {
         // Check if there is new assets add
         isProcessing.value = true;
 
-        await ref.watch(albumServiceProvider).addAssets(
-              returnPayload.selectedAssets,
+        await ref.watch(albumProvider.notifier).addAssets(
               albumInfo,
+              returnPayload.selectedAssets,
             );
 
         isProcessing.value = false;

@@ -221,8 +221,8 @@ class AlbumService {
   }
 
   Future<AlbumAddAssetsResponse?> addAssets(
-    Iterable<Asset> assets,
     Album album,
+    Iterable<Asset> assets,
   ) async {
     try {
       final result = await _albumApiRepository.addAssets(
@@ -241,7 +241,7 @@ class AlbumService {
         successfullyAdded: addedAssets.length,
       );
     } catch (e) {
-      debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
+      debugPrint("Error addAssets  ${e.toString()}");
     }
     return null;
   }
@@ -260,14 +260,14 @@ class AlbumService {
         await _albumRepository.update(album);
       });
 
-  Future<bool> setActivityEnabled(Album album, bool enabled) async {
+  Future<bool> setActivityStatus(Album album, bool enabled) async {
     try {
       final updatedAlbum = await _albumApiRepository.update(
         album.remoteId!,
         activityEnabled: enabled,
       );
-      await _entityService.fillAlbumWithDatabaseEntities(updatedAlbum);
-      await _albumRepository.update(updatedAlbum);
+      album.activityEnabled = updatedAlbum.activityEnabled;
+      await _albumRepository.update(album);
       return true;
     } catch (e) {
       debugPrint("Error setActivityEnabled  ${e.toString()}");
@@ -384,11 +384,12 @@ class AlbumService {
     String newAlbumTitle,
   ) async {
     try {
-      album = await _albumApiRepository.update(
+      final updatedAlbum = await _albumApiRepository.update(
         album.remoteId!,
         name: newAlbumTitle,
       );
-      await _entityService.fillAlbumWithDatabaseEntities(album);
+
+      album.name = updatedAlbum.name;
       await _albumRepository.update(album);
       return true;
     } catch (e) {

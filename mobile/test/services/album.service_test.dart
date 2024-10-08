@@ -165,8 +165,8 @@ void main() {
       ).thenAnswer((_) async => AlbumStub.oneAsset);
 
       final result = await sut.addAssets(
-        [AssetStub.image1, AssetStub.image2],
         AlbumStub.oneAsset,
+        [AssetStub.image1, AssetStub.image2],
       );
 
       expect(result != null, true);
@@ -192,8 +192,8 @@ void main() {
       ).thenAnswer((_) async => AlbumStub.sharedWithUser);
 
       final result = await sut.addUsers(
-        [UserStub.user2.id],
         AlbumStub.emptyAlbum,
+        [UserStub.user2.id],
       );
       expect(result, true);
     });
