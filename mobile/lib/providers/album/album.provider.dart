@@ -139,7 +139,7 @@ final albumRenderlistProvider =
 
 class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
   LocalAlbumsNotifier(this.db) : super([]) {
-    final query = db.albums.filter().not().remoteIdIsNotNull();
+    final query = db.albums.where().remoteIdIsNull();
 
     query.findAll().then((value) {
       if (mounted) {
