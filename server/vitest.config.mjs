@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     root: './',
     globals: true,
+    include: ['src/**/*.spec.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/cores/**', 'src/interfaces/**', 'src/services/**', 'src/utils/**'],
