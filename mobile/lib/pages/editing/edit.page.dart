@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'dart:ui' as ui;
 
 /// A stateless widget that provides functionality for editing an image.
 ///
@@ -43,16 +44,18 @@ class EditImagePage extends ConsumerWidget {
     final Completer<Uint8List> completer = Completer();
     image.image.resolve(const ImageConfiguration()).addListener(
           ImageStreamListener(
-            (ImageInfo info, bool _) {
-              info.image
-                  .toByteData(format: ImageByteFormat.png)
-                  .then((byteData) {
+            (ImageInfo info, bool _) async {
+              try {
+                final ByteData? byteData =
+                    await info.image.toByteData(format: ui.ImageByteFormat.png);
                 if (byteData != null) {
                   completer.complete(byteData.buffer.asUint8List());
                 } else {
                   completer.completeError('Failed to convert image to bytes');
                 }
-              });
+              } catch (e) {
+                completer.completeError('Error converting image: $e');
+              }
             },
             onError: (exception, stackTrace) =>
                 completer.completeError(exception),
@@ -69,9 +72,12 @@ class EditImagePage extends ConsumerWidget {
   ) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
+      // Use PNG format for lossless quality
+      final String fileName =
+          "${p.withoutExtension(asset.fileName)}_edited.png";
       await ref.read(fileMediaRepositoryProvider).saveImage(
             imageData,
-            title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
+            title: fileName,
           );
       await ref.read(albumProvider.notifier).getDeviceAlbums();
       Navigator.of(context).popUntil((route) => route.isFirst);
