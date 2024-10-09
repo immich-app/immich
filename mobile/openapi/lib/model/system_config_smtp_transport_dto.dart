@@ -66,6 +66,7 @@ class SystemConfigSmtpTransportDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigSmtpTransportDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigSmtpTransportDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

@@ -18,7 +18,7 @@ export class JobCommandDto {
   command!: JobCommand;
 
   @ValidateBoolean({ optional: true })
-  force!: boolean;
+  force?: boolean; // TODO: this uses undefined as a third state, which should be refactored to be more explicit
 }
 
 export class JobCreateDto {

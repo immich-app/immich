@@ -76,7 +76,6 @@ describe('/asset', () => {
   let user2Assets: AssetMediaResponseDto[];
   let locationAsset: AssetMediaResponseDto;
   let ratingAsset: AssetMediaResponseDto;
-  let facesAsset: AssetMediaResponseDto;
 
   const setupTests = async () => {
     await utils.resetDatabase();
@@ -236,7 +235,7 @@ describe('/asset', () => {
       await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
 
       // asset faces
-      facesAsset = await utils.createAsset(admin.accessToken, {
+      const facesAsset = await utils.createAsset(admin.accessToken, {
         assetData: {
           filename: 'portrait.jpg',
           bytes: await readFile(facesAssetFilepath),

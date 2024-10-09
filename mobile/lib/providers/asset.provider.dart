@@ -275,28 +275,14 @@ class AssetNotifier extends StateNotifier<bool> {
     return isSuccess ? remote.toList() : [];
   }
 
-  Future<void> toggleFavorite(List<Asset> assets, [bool? status]) async {
+  Future<void> toggleFavorite(List<Asset> assets, [bool? status]) {
     status ??= !assets.every((a) => a.isFavorite);
-    final newAssets = await _assetService.changeFavoriteStatus(assets, status);
-    for (Asset? newAsset in newAssets) {
-      if (newAsset == null) {
-        log.severe("Change favorite status failed for asset");
-        continue;
-      }
-    }
+    return _assetService.changeFavoriteStatus(assets, status);
   }
 
-  Future<void> toggleArchive(List<Asset> assets, [bool? status]) async {
+  Future<void> toggleArchive(List<Asset> assets, [bool? status]) {
     status ??= !assets.every((a) => a.isArchived);
-    final newAssets = await _assetService.changeArchiveStatus(assets, status);
-    int i = 0;
-    for (Asset oldAsset in assets) {
-      final newAsset = newAssets[i++];
-      if (newAsset == null) {
-        log.severe("Change archive status failed for asset ${oldAsset.id}");
-        continue;
-      }
-    }
+    return _assetService.changeArchiveStatus(assets, status);
   }
 }
 

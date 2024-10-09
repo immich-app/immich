@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getVectorExtension } from 'src/database.config';
+import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -8,8 +8,9 @@ import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
-import { AssetType } from 'src/enum';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { AssetType, PaginationMode } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateResult,
@@ -23,13 +24,14 @@ import {
 } from 'src/interfaces/search.interface';
 import { asVector, searchAssetBuilder } from 'src/utils/database';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
+import { Paginated, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
+  private vectorExtension: VectorExtension;
   private faceColumns: string[];
   private assetsByCityQuery: string;
 
@@ -41,7 +43,9 @@ export class SearchRepository implements ISearchRepository {
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
   ) {
+    this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(SearchRepository.name);
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -63,18 +67,16 @@ export class SearchRepository implements ISearchRepository {
       {
         takenAfter: DummyValue.DATE,
         lensModel: DummyValue.STRING,
-        ownerId: DummyValue.UUID,
         withStacked: true,
         isFavorite: true,
-        ownerIds: [DummyValue.UUID],
+        userIds: [DummyValue.UUID],
       },
     ],
   })
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
-    builder = searchAssetBuilder(builder, options);
+    builder = searchAssetBuilder(builder, options).orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
 
-    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: (pagination.page - 1) * pagination.size,
@@ -82,12 +84,33 @@ export class SearchRepository implements ISearchRepository {
     });
   }
 
-  private createPersonFilter(builder: SelectQueryBuilder<AssetFaceEntity>, personIds: string[]) {
-    return builder
-      .select(`${builder.alias}."assetId"`)
-      .where(`${builder.alias}."personId" IN (:...personIds)`, { personIds })
-      .groupBy(`${builder.alias}."assetId"`)
-      .having(`COUNT(DISTINCT ${builder.alias}."personId") = :personCount`, { personCount: personIds.length });
+  @GenerateSql({
+    params: [
+      100,
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
+    const builder1 = searchAssetBuilder(this.assetRepository.createQueryBuilder('asset'), options);
+    const builder2 = builder1.clone();
+
+    const uuid = randomUUID();
+    builder1.andWhere('asset.id > :uuid', { uuid }).orderBy('asset.id').take(size);
+    builder2.andWhere('asset.id < :uuid', { uuid }).orderBy('asset.id').take(size);
+
+    const [assets1, assets2] = await Promise.all([builder1.getMany(), builder2.getMany()]);
+    const missingCount = size - assets1.length;
+    for (let i = 0; i < missingCount && i < assets2.length; i++) {
+      assets1.push(assets2[i]);
+    }
+
+    return assets1;
   }
 
   @GenerateSql({
@@ -105,21 +128,12 @@ export class SearchRepository implements ISearchRepository {
   })
   async searchSmart(
     pagination: SearchPaginationOptions,
-    { embedding, userIds, personIds, ...options }: SmartSearchOptions,
+    { embedding, userIds, ...options }: SmartSearchOptions,
   ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
-
-      if (personIds?.length) {
-        const assetFaceBuilder = manager.createQueryBuilder(AssetFaceEntity, 'asset_face');
-        const cte = this.createPersonFilter(assetFaceBuilder, personIds);
-        builder
-          .addCommonTableExpression(cte, 'asset_face_ids')
-          .innerJoin('asset_face_ids', 'a', 'a."assetId" = asset.id');
-      }
-
       builder = searchAssetBuilder(builder, options);
       builder
         .innerJoin('asset.smartSearch', 'search')
@@ -412,7 +426,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   private getRuntimeConfig(numResults?: number): string {
-    if (getVectorExtension() === DatabaseExtension.VECTOR) {
+    if (this.vectorExtension === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 

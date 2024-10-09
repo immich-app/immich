@@ -1,12 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
-import { ExifEntity } from 'src/entities/exif.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
-import { Repository } from 'typeorm';
 
 @Instrumentation()
 @Injectable()
@@ -15,6 +12,7 @@ export class MetadataRepository implements IMetadataRepository {
     defaultVideosToUTC: true,
     backfillTimezones: true,
     inferTimezoneFromDatestamps: true,
+    inferTimezoneFromTimeStamp: true,
     useMWG: true,
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
@@ -24,10 +22,7 @@ export class MetadataRepository implements IMetadataRepository {
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
   });
 
-  constructor(
-    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
+  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(MetadataRepository.name);
   }
 

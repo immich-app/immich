@@ -127,7 +127,7 @@
     {assetStore}
     {assetInteractionStore}
     removeAction={AssetAction.ARCHIVE}
-    on:escape={handleEscape}
+    onEscape={handleEscape}
     withStacked
   >
     {#if $preferences.memories.enabled}

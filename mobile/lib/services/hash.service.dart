@@ -4,20 +4,24 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
-  HashService(this._db, this._backgroundService, this._albumMediaRepository);
-  final Isar _db;
+  HashService(
+    this._assetRepository,
+    this._backgroundService,
+    this._albumMediaRepository,
+  );
+  final IAssetRepository _assetRepository;
   final BackgroundService _backgroundService;
   final IAlbumMediaRepository _albumMediaRepository;
   final _log = Logger('HashService');
@@ -55,7 +59,8 @@ class HashService {
     final ids = assets
         .map(Platform.isAndroid ? (a) => a.localId!.toInt() : (a) => a.localId!)
         .toList();
-    final List<DeviceAsset?> hashes = await _lookupHashes(ids);
+    final List<DeviceAsset?> hashes =
+        await _assetRepository.getDeviceAssetsById(ids);
     final List<DeviceAsset> toAdd = [];
     final List<String> toHash = [];
 
@@ -65,7 +70,19 @@ class HashService {
       if (hashes[i] != null) {
         continue;
       }
-      final file = await assets[i].local!.originFile;
+
+      File? file;
+
+      try {
+        file = await assets[i].local!.originFile;
+      } catch (error, stackTrace) {
+        _log.warning(
+          "Error getting file to hash for asset ${assets[i].localId}, name: ${assets[i].fileName}, created on: ${assets[i].fileCreatedAt}, skipping",
+          error,
+          stackTrace,
+        );
+      }
+
       if (file == null) {
         final fileName = assets[i].fileName;
 
@@ -94,12 +111,6 @@ class HashService {
     return _getHashedAssets(assets, hashes);
   }
 
-  /// Lookup hashes of assets by their local ID
-  Future<List<DeviceAsset?>> _lookupHashes(List<Object> ids) =>
-      Platform.isAndroid
-          ? _db.androidDeviceAssets.getAll(ids.cast())
-          : _db.iOSDeviceAssets.getAllById(ids.cast());
-
   /// Processes a batch of files and saves any successfully hashed
   /// values to the DB table.
   Future<void> _processBatch(
@@ -119,11 +130,9 @@ class HashService {
     final validHashes = anyNull
         ? toAdd.where((e) => e.hash.length == 20).toList(growable: false)
         : toAdd;
-    await _db.writeTxn(
-      () => Platform.isAndroid
-          ? _db.androidDeviceAssets.putAll(validHashes.cast())
-          : _db.iOSDeviceAssets.putAll(validHashes.cast()),
-    );
+
+    await _assetRepository
+        .transaction(() => _assetRepository.upsertDeviceAssets(validHashes));
     _log.fine("Hashed ${validHashes.length}/${toHash.length} assets");
   }
 
@@ -156,7 +165,7 @@ class HashService {
 
 final hashServiceProvider = Provider(
   (ref) => HashService(
-    ref.watch(dbProvider),
+    ref.watch(assetRepositoryProvider),
     ref.watch(backgroundServiceProvider),
     ref.watch(albumMediaRepositoryProvider),
   ),

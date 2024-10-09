@@ -51,107 +51,109 @@ class CropImagePage extends HookWidget {
         ],
       ),
       backgroundColor: context.scaffoldBackgroundColor,
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.only(top: 20),
-                width: constraints.maxWidth * 0.9,
-                height: constraints.maxHeight * 0.6,
-                child: CropImage(
-                  controller: cropController,
-                  image: image,
-                  gridColor: Colors.white,
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: context.scaffoldBackgroundColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 20),
+                  width: constraints.maxWidth * 0.9,
+                  height: constraints.maxHeight * 0.6,
+                  child: CropImage(
+                    controller: cropController,
+                    image: image,
+                    gridColor: Colors.white,
                   ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            bottom: 10,
+                ),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: context.scaffoldBackgroundColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              bottom: 10,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.rotate_left,
+                                    color: Theme.of(context).iconTheme.color,
+                                  ),
+                                  onPressed: () {
+                                    cropController.rotateLeft();
+                                  },
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.rotate_right,
+                                    color: Theme.of(context).iconTheme.color,
+                                  ),
+                                  onPressed: () {
+                                    cropController.rotateRight();
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.rotate_left,
-                                  color: Theme.of(context).iconTheme.color,
-                                ),
-                                onPressed: () {
-                                  cropController.rotateLeft();
-                                },
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              _AspectRatioButton(
+                                cropController: cropController,
+                                aspectRatio: aspectRatio,
+                                ratio: null,
+                                label: 'Free',
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.rotate_right,
-                                  color: Theme.of(context).iconTheme.color,
-                                ),
-                                onPressed: () {
-                                  cropController.rotateRight();
-                                },
+                              _AspectRatioButton(
+                                cropController: cropController,
+                                aspectRatio: aspectRatio,
+                                ratio: 1.0,
+                                label: '1:1',
+                              ),
+                              _AspectRatioButton(
+                                cropController: cropController,
+                                aspectRatio: aspectRatio,
+                                ratio: 16.0 / 9.0,
+                                label: '16:9',
+                              ),
+                              _AspectRatioButton(
+                                cropController: cropController,
+                                aspectRatio: aspectRatio,
+                                ratio: 3.0 / 2.0,
+                                label: '3:2',
+                              ),
+                              _AspectRatioButton(
+                                cropController: cropController,
+                                aspectRatio: aspectRatio,
+                                ratio: 7.0 / 5.0,
+                                label: '7:5',
                               ),
                             ],
                           ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: null,
-                              label: 'Free',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 1.0,
-                              label: '1:1',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 16.0 / 9.0,
-                              label: '16:9',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 3.0 / 2.0,
-                              label: '3:2',
-                            ),
-                            _AspectRatioButton(
-                              cropController: cropController,
-                              aspectRatio: aspectRatio,
-                              ratio: 7.0 / 5.0,
-                              label: '7:5',
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }

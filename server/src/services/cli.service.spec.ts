@@ -1,30 +1,16 @@
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { CliService } from 'src/services/cli.service';
 import { userStub } from 'test/fixtures/user.stub';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, describe, it } from 'vitest';
 
 describe(CliService.name, () => {
   let sut: CliService;
 
   let userMock: Mocked<IUserRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    cryptoMock = newCryptoRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    userMock = newUserRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new CliService(cryptoMock, systemMock, userMock, loggerMock);
+    ({ sut, userMock } = newTestService(CliService));
   });
 
   describe('resetAdminPassword', () => {

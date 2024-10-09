@@ -1,13 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
-import { ImageFormat } from 'src/config';
 import { APP_MEDIA_LOCATION } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType, PathType, PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
@@ -15,14 +13,7 @@ import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { getAssetFiles } from 'src/utils/asset.util';
-
-export enum StorageFolder {
-  ENCODED_VIDEO = 'encoded-video',
-  LIBRARY = 'library',
-  UPLOAD = 'upload',
-  PROFILE = 'profile',
-  THUMBNAILS = 'thumbs',
-}
+import { getConfig } from 'src/utils/config';
 
 export const THUMBNAIL_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.THUMBNAILS));
 export const ENCODED_VIDEO_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.ENCODED_VIDEO));
@@ -44,21 +35,20 @@ export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDE
 let instance: StorageCore | null;
 
 export class StorageCore {
-  private configCore;
   private constructor(
     private assetRepository: IAssetRepository,
+    private configRepository: IConfigRepository,
     private cryptoRepository: ICryptoRepository,
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
     private storageRepository: IStorageRepository,
-    systemMetadataRepository: ISystemMetadataRepository,
+    private systemMetadataRepository: ISystemMetadataRepository,
     private logger: ILoggerRepository,
-  ) {
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-  }
+  ) {}
 
   static create(
     assetRepository: IAssetRepository,
+    configRepository: IConfigRepository,
     cryptoRepository: ICryptoRepository,
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
@@ -69,6 +59,7 @@ export class StorageCore {
     if (!instance) {
       instance = new StorageCore(
         assetRepository,
+        configRepository,
         cryptoRepository,
         moveRepository,
         personRepository,
@@ -258,7 +249,12 @@ export class StorageCore {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
     }
-    const config = await this.configCore.getConfig({ withCache: true });
+    const repos = {
+      configRepo: this.configRepository,
+      metadataRepo: this.systemMetadataRepository,
+      logger: this.logger,
+    };
+    const config = await getConfig(repos, { withCache: true });
     if (assetInfo && config.storageTemplate.hashVerificationEnabled) {
       const { checksum } = assetInfo;
       const newChecksum = await this.cryptoRepository.hashFile(newPath);

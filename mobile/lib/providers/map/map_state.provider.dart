@@ -1,28 +1,23 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'map_state.provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class MapStateNotifier extends _$MapStateNotifier {
-  final _log = Logger("MapStateNotifier");
-
   @override
   MapState build() {
     final appSettingsProvider = ref.read(appSettingsServiceProvider);
 
-    // Fetch and save the Style JSONs
-    loadStyles();
+    final lightStyleUrl =
+        ref.read(serverInfoProvider).serverConfig.mapLightStyleUrl;
+    final darkStyleUrl =
+        ref.read(serverInfoProvider).serverConfig.mapDarkStyleUrl;
+
     return MapState(
       themeMode: ThemeMode.values[
           appSettingsProvider.getSetting<int>(AppSettingsEnum.mapThemeMode)],
@@ -34,63 +29,9 @@ class MapStateNotifier extends _$MapStateNotifier {
           appSettingsProvider.getSetting<bool>(AppSettingsEnum.mapwithPartners),
       relativeTime:
           appSettingsProvider.getSetting<int>(AppSettingsEnum.mapRelativeDate),
+      lightStyleFetched: AsyncData(lightStyleUrl),
+      darkStyleFetched: AsyncData(darkStyleUrl),
     );
-  }
-
-  void loadStyles() async {
-    final documents = (await getApplicationDocumentsDirectory()).path;
-
-    // Set to loading
-    state = state.copyWith(lightStyleFetched: const AsyncLoading());
-
-    // Fetch and save light theme
-    final lightResponse = await ref
-        .read(apiServiceProvider)
-        .mapApi
-        .getMapStyleWithHttpInfo(MapTheme.light);
-
-    if (lightResponse.statusCode >= HttpStatus.badRequest) {
-      state = state.copyWith(
-        lightStyleFetched: AsyncError(lightResponse.body, StackTrace.current),
-      );
-      _log.severe(
-        "Cannot fetch map light style",
-        lightResponse.toLoggerString(),
-      );
-      return;
-    }
-
-    final lightJSON = lightResponse.body;
-    final lightFile = await File("$documents/map-style-light.json")
-        .writeAsString(lightJSON, flush: true);
-
-    // Update state with path
-    state =
-        state.copyWith(lightStyleFetched: AsyncData(lightFile.absolute.path));
-
-    // Set to loading
-    state = state.copyWith(darkStyleFetched: const AsyncLoading());
-
-    // Fetch and save dark theme
-    final darkResponse = await ref
-        .read(apiServiceProvider)
-        .mapApi
-        .getMapStyleWithHttpInfo(MapTheme.dark);
-
-    if (darkResponse.statusCode >= HttpStatus.badRequest) {
-      state = state.copyWith(
-        darkStyleFetched: AsyncError(darkResponse.body, StackTrace.current),
-      );
-      _log.severe("Cannot fetch map dark style", darkResponse.toLoggerString());
-      return;
-    }
-
-    final darkJSON = darkResponse.body;
-    final darkFile = await File("$documents/map-style-dark.json")
-        .writeAsString(darkJSON, flush: true);
-
-    // Update state with path
-    state = state.copyWith(darkStyleFetched: AsyncData(darkFile.absolute.path));
   }
 
   void switchTheme(ThemeMode mode) {

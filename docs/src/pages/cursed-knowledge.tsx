@@ -6,6 +6,7 @@ import {
   mdiLeadPencil,
   mdiLockOff,
   mdiLockOutline,
+  mdiMicrosoftWindows,
   mdiSecurity,
   mdiSpeedometerSlow,
   mdiTrashCan,
@@ -21,6 +22,18 @@ const withLanguage = (date: Date) => (language: string) => date.toLocaleDateStri
 type Item = Omit<TimelineItem, 'done' | 'getDateLabel'> & { date: Date };
 
 const items: Item[] = [
+  {
+    icon: mdiMicrosoftWindows,
+    iconColor: '#357EC7',
+    title: 'Hidden files in Windows are cursed',
+    description:
+      'Hidden files in Windows cannot be opened with the "w" flag. That, combined with SMB option "hide dot files" leads to a lot of confusion.',
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/12812',
+      text: '#12812',
+    },
+    date: new Date(2024, 8, 20),
+  },
   {
     icon: mdiWrap,
     iconColor: 'gray',

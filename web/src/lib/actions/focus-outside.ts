@@ -2,6 +2,11 @@ interface Options {
   onFocusOut?: (event: FocusEvent) => void;
 }
 
+/**
+ * Calls a function when focus leaves the element.
+ * @param node
+ * @param options Object containing onFocusOut function
+ */
 export function focusOutside(node: HTMLElement, options: Options = {}) {
   const { onFocusOut } = options;
 

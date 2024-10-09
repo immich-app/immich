@@ -43,4 +43,17 @@ class AssetMediaRepository implements IAssetMediaRepository {
     asset.local = local;
     return asset;
   }
+
+  @override
+  Future<String?> getOriginalFilename(String id) async {
+    final entity = await AssetEntity.fromId(id);
+
+    if (entity == null) {
+      return null;
+    }
+
+    // titleAsync gets the correct original filename for some assets on iOS
+    // otherwise using the `entity.title` would return a random GUID
+    return await entity.titleAsync;
+  }
 }
