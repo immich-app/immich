@@ -6,6 +6,7 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
+import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService } from 'test/utils';
 import { Mocked, beforeEach, vitest } from 'vitest';
 
@@ -26,6 +27,15 @@ describe(SearchService.name, () => {
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('getDuplicates', () => {
+    it('should get duplicates', async () => {
+      assetMock.getDuplicates.mockResolvedValue([assetStub.hasDupe]);
+      await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([
+        { duplicateId: assetStub.hasDupe.duplicateId, assets: [expect.objectContaining({ id: assetStub.hasDupe.id })] },
+      ]);
+    });
   });
 
   describe('handleQueueSearchDuplicates', () => {

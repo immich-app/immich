@@ -279,7 +279,7 @@ export class PersonRepository implements IPersonRepository {
     faceIdsToRemove: string[],
     embeddingsToAdd?: FaceSearchEntity[],
   ): Promise<void> {
-    const query = this.faceSearchRepository.createQueryBuilder().select('1');
+    const query = this.faceSearchRepository.createQueryBuilder().select('1').fromDummy();
     if (facesToAdd.length > 0) {
       const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
       query.addCommonTableExpression(insertCte, 'added');
@@ -296,6 +296,7 @@ export class PersonRepository implements IPersonRepository {
     if (embeddingsToAdd?.length) {
       const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
       query.addCommonTableExpression(embeddingCte, 'embeddings');
+      query.getQuery(); // typeorm mixes up parameters without this
     }
 
     await query.execute();

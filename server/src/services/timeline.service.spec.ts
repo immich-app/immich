@@ -69,6 +69,70 @@ describe(TimelineService.name, () => {
       });
     });
 
+    it('should include partner shared assets', async () => {
+      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
+
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isArchived: false,
+          userId: authStub.admin.user.id,
+          withPartners: true,
+        }),
+      ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
+      expect(assetMock.getTimeBucket).toHaveBeenCalledWith('bucket', {
+        size: TimeBucketSize.DAY,
+        timeBucket: 'bucket',
+        isArchived: false,
+        withPartners: true,
+        userIds: [authStub.admin.user.id],
+      });
+    });
+
+    it('should check permissions to read tag', async () => {
+      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
+      accessMock.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-123']));
+
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          userId: authStub.admin.user.id,
+          tagId: 'tag-123',
+        }),
+      ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
+      expect(assetMock.getTimeBucket).toHaveBeenCalledWith('bucket', {
+        size: TimeBucketSize.DAY,
+        tagId: 'tag-123',
+        timeBucket: 'bucket',
+        userIds: [authStub.admin.user.id],
+      });
+    });
+
+    it('should strip metadata if showExif is disabled', async () => {
+      accessMock.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-id']));
+      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
+
+      const buckets = await sut.getTimeBucket(
+        { ...authStub.admin, sharedLink: { ...authStub.adminSharedLink.sharedLink!, showExif: false } },
+        {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isArchived: true,
+          albumId: 'album-id',
+        },
+      );
+      expect(buckets).toEqual([expect.objectContaining({ id: 'asset-id' })]);
+      expect(buckets[0]).not.toHaveProperty('exif');
+      expect(assetMock.getTimeBucket).toHaveBeenCalledWith('bucket', {
+        size: TimeBucketSize.DAY,
+        timeBucket: 'bucket',
+        isArchived: true,
+        albumId: 'album-id',
+      });
+    });
+
     it('should return the assets for a library time bucket if user has library.read', async () => {
       assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
 
