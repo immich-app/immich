@@ -20,9 +20,7 @@ import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
 @RoutePage()
 class AlbumsPage extends HookConsumerWidget {
-  const AlbumsPage({super.key, this.showImmichAppbar = false});
-
-  final bool showImmichAppbar;
+  const AlbumsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

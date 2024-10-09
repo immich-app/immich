@@ -522,7 +522,6 @@ class SearchInputPage extends HookConsumerWidget {
             ),
           ),
           child: TextField(
-            autofocus: true,
             controller: textSearchController,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.all(8),

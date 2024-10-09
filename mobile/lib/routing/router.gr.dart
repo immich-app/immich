@@ -321,17 +321,10 @@ class AlbumViewerRouteArgs {
 
 /// generated route for
 /// [AlbumsPage]
-class AlbumsRoute extends PageRouteInfo<AlbumsRouteArgs> {
-  AlbumsRoute({
-    Key? key,
-    bool showImmichAppbar = false,
-    List<PageRouteInfo>? children,
-  }) : super(
+class AlbumsRoute extends PageRouteInfo<void> {
+  const AlbumsRoute({List<PageRouteInfo>? children})
+      : super(
           AlbumsRoute.name,
-          args: AlbumsRouteArgs(
-            key: key,
-            showImmichAppbar: showImmichAppbar,
-          ),
           initialChildren: children,
         );
 
@@ -340,30 +333,9 @@ class AlbumsRoute extends PageRouteInfo<AlbumsRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args =
-          data.argsAs<AlbumsRouteArgs>(orElse: () => const AlbumsRouteArgs());
-      return AlbumsPage(
-        key: args.key,
-        showImmichAppbar: args.showImmichAppbar,
-      );
+      return const AlbumsPage();
     },
   );
-}
-
-class AlbumsRouteArgs {
-  const AlbumsRouteArgs({
-    this.key,
-    this.showImmichAppbar = false,
-  });
-
-  final Key? key;
-
-  final bool showImmichAppbar;
-
-  @override
-  String toString() {
-    return 'AlbumsRouteArgs{key: $key, showImmichAppbar: $showImmichAppbar}';
-  }
 }
 
 /// generated route for
