@@ -1,8 +1,89 @@
 import { LoginResponseDto, getAllAlbums, getAssetStatistics } from '@immich/sdk';
-import { readFileSync } from 'node:fs';
+import { cpSync, readFileSync } from 'node:fs';
 import { mkdir, readdir, rm, symlink } from 'node:fs/promises';
-import { asKeyAuth, immichCli, testAssetDir, utils } from 'src/utils';
+import { asKeyAuth, immichCli, specialCharStrings, testAssetDir, utils } from 'src/utils';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+interface Test {
+  test: string;
+  paths: string[];
+  files: Record<string, boolean>;
+}
+
+const tests: Test[] = [
+  {
+    test: 'should support globbing with *',
+    paths: [`/photos*`],
+    files: {
+      '/photos1/image1.jpg': true,
+      '/photos2/image2.jpg': true,
+      '/images/image3.jpg': false,
+    },
+  },
+  {
+    test: 'should support paths with an asterisk',
+    paths: [`/photos\*/image1.jpg`],
+    files: {
+      '/photos*/image1.jpg': true,
+      '/photos*/image2.jpg': false,
+      '/images/image3.jpg': false,
+    },
+  },
+  {
+    test: 'should support paths with a space',
+    paths: [`/my photos/image1.jpg`],
+    files: {
+      '/my photos/image1.jpg': true,
+      '/my photos/image2.jpg': false,
+      '/images/image3.jpg': false,
+    },
+  },
+  {
+    test: 'should support paths with a single quote',
+    paths: [`/photos\'/image1.jpg`],
+    files: {
+      "/photos'/image1.jpg": true,
+      "/photos'/image2.jpg": false,
+      '/images/image3.jpg': false,
+    },
+  },
+  {
+    test: 'should support paths with a double quote',
+    paths: [`/photos\"/image1.jpg`],
+    files: {
+      '/photos"/image1.jpg': true,
+      '/photos"/image2.jpg': false,
+      '/images/image3.jpg': false,
+    },
+  },
+  {
+    test: 'should support paths with a comma',
+    paths: [`/photos, eh/image1.jpg`],
+    files: {
+      '/photos, eh/image1.jpg': true,
+      '/photos, eh/image2.jpg': false,
+      '/images/image3.jpg': false,
+    },
+  },
+  {
+    test: 'should support paths with an opening brace',
+    paths: [`/photos\{/image1.jpg`],
+    files: {
+      '/photos{/image1.jpg': true,
+      '/photos{/image2.jpg': false,
+      '/images/image3.jpg': false,
+    },
+  },
+  {
+    test: 'should support paths with a closing brace',
+    paths: [`/photos\}/image1.jpg`],
+    files: {
+      '/photos}/image1.jpg': true,
+      '/photos}/image2.jpg': false,
+      '/images/image3.jpg': false,
+    },
+  },
+];
 
 describe(`immich upload`, () => {
   let admin: LoginResponseDto;
@@ -30,6 +111,60 @@ describe(`immich upload`, () => {
 
       const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
       expect(assets.total).toBe(1);
+    });
+
+    describe(`should accept special cases`, () => {
+      for (const { test, paths, files } of tests) {
+        it(test, async () => {
+          const baseDir = `/tmp/upload/`;
+
+          const testPaths = Object.keys(files).map((filePath) => `${baseDir}/${filePath}`);
+          testPaths.map((filePath) => utils.createImageFile(filePath));
+
+          const commandLine = paths.map((argument) => `${baseDir}/${argument}`);
+
+          const expectedCount = Object.entries(files).filter((entry) => entry[1]).length;
+
+          const { stderr, stdout, exitCode } = await immichCli(['upload', ...commandLine]);
+          expect(stderr).toBe('');
+          expect(stdout.split('\n')).toEqual(
+            expect.arrayContaining([expect.stringContaining(`Successfully uploaded ${expectedCount} new asset`)]),
+          );
+          expect(exitCode).toBe(0);
+
+          const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+          expect(assets.total).toBe(expectedCount);
+
+          testPaths.map((filePath) => utils.removeImageFile(filePath));
+        });
+      }
+    });
+
+    it.each(specialCharStrings)(`should upload a multiple files from paths containing %s`, async (testString) => {
+      // https://github.com/immich-app/immich/issues/12078
+
+      // NOTE: this test must contain more than one path since a related bug is only triggered with multiple paths
+
+      const testPaths = [
+        `${testAssetDir}/temp/dir1${testString}name/asset.jpg`,
+        `${testAssetDir}/temp/dir2${testString}name/asset.jpg`,
+      ];
+
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, testPaths[0]);
+      cpSync(`${testAssetDir}/albums/nature/silver_fir.jpg`, testPaths[1]);
+
+      const { stderr, stdout, exitCode } = await immichCli(['upload', ...testPaths]);
+      expect(stderr).toBe('');
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 2 new assets')]),
+      );
+      expect(exitCode).toBe(0);
+
+      utils.removeImageFile(testPaths[0]);
+      utils.removeImageFile(testPaths[1]);
+
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(2);
     });
 
     it('should skip a duplicate file', async () => {
