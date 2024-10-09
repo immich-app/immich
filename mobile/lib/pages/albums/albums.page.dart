@@ -97,7 +97,7 @@ class AlbumsPage extends HookConsumerWidget {
         },
         child: ListView(
           shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
           children: [
             Container(
               decoration: BoxDecoration(
@@ -120,7 +120,7 @@ class AlbumsPage extends HookConsumerWidget {
               child: TextField(
                 autofocus: false,
                 decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(8),
+                  contentPadding: EdgeInsets.all(16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
                     borderSide: BorderSide(

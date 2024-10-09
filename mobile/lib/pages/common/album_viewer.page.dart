@@ -210,7 +210,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         children: [
           buildTitle(album),
           if (album.assets.isNotEmpty == true) buildAlbumDateRange(album),
-          if (album.shared) buildSharedUserIconsRow(album),
+          buildSharedUserIconsRow(album),
         ],
       );
     }

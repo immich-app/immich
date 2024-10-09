@@ -369,6 +369,8 @@ class AlbumService {
           await _albumApiRepository.addUsers(album.remoteId!, userIds);
 
       album.sharedUsers.addAll(updatedAlbum.remoteUsers);
+      album.shared = true;
+
       await _albumRepository.addUsers(album, album.sharedUsers.toList());
       await _albumRepository.update(album);
 

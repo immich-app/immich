@@ -79,23 +79,33 @@ void main() {
       verifyNoMoreInteractions(syncService);
     });
   });
+
   group('refreshRemoteAlbums', () {
-    test('isShared: false', () async {
+    test('is working', () async {
       when(() => userService.refreshUsers()).thenAnswer((_) async => true);
+      when(() => albumApiRepository.getAll(shared: true))
+          .thenAnswer((_) async => [AlbumStub.sharedWithUser]);
+
       when(() => albumApiRepository.getAll(shared: null))
           .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
+
       when(
         () => syncService.syncRemoteAlbumsToDb(
-          [AlbumStub.oneAsset, AlbumStub.twoAsset],
+          [
+            AlbumStub.sharedWithUser,
+            AlbumStub.oneAsset,
+            AlbumStub.twoAsset,
+          ],
         ),
       ).thenAnswer((_) async => true);
       final result = await sut.refreshRemoteAlbums();
       expect(result, true);
       verify(() => userService.refreshUsers()).called(1);
+      verify(() => albumApiRepository.getAll(shared: true)).called(1);
       verify(() => albumApiRepository.getAll(shared: null)).called(1);
       verify(
         () => syncService.syncRemoteAlbumsToDb(
-          [AlbumStub.oneAsset, AlbumStub.twoAsset],
+          [AlbumStub.sharedWithUser, AlbumStub.oneAsset, AlbumStub.twoAsset],
         ),
       ).called(1);
       verifyNoMoreInteractions(userService);
@@ -183,18 +193,23 @@ void main() {
       ).thenAnswer(
         (_) async => AlbumStub.sharedWithUser,
       );
+
       when(
-        () => entityService
-            .fillAlbumWithDatabaseEntities(AlbumStub.sharedWithUser),
-      ).thenAnswer((_) async => AlbumStub.sharedWithUser);
+        () => albumRepository.addUsers(
+          AlbumStub.emptyAlbum,
+          AlbumStub.emptyAlbum.sharedUsers.toList(),
+        ),
+      ).thenAnswer((_) async => AlbumStub.emptyAlbum);
+
       when(
-        () => albumRepository.update(AlbumStub.sharedWithUser),
-      ).thenAnswer((_) async => AlbumStub.sharedWithUser);
+        () => albumRepository.update(AlbumStub.emptyAlbum),
+      ).thenAnswer((_) async => AlbumStub.emptyAlbum);
 
       final result = await sut.addUsers(
         AlbumStub.emptyAlbum,
         [UserStub.user2.id],
       );
+
       expect(result, true);
     });
   });
