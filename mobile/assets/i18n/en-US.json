@@ -601,6 +601,6 @@
   "download_enqueue": "Download enqueued",
   "download_notfound": "Download not found",
   "download_waiting_to_retry": "Waiting to retry",
-  "crop_page_delete_orginal_title": "DDelete Original?",
+  "crop_page_delete_orginal_title": "Delete Original?",
   "crop_page_delete_orginal_content": "Do you want to delete the original file?"
 }
