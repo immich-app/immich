@@ -48,9 +48,8 @@ class BackupSettings extends HookConsumerWidget {
       if (Platform.isIOS)
         SettingsSwitchListTile(
           valueNotifier: ignoreIcloudAssets,
-          title: 'backup_controller_page_ignore_icloud_photos'.tr(),
-          subtitle:
-              'backup_controller_page_ignore_icloud_photos_desc'.tr(),
+          title: 'ignore_icloud_photos'.tr(),
+          subtitle: 'ignore_icloud_photos_description'.tr(),
         ),
       if (Platform.isAndroid && isAdvancedTroubleshooting.value)
         SettingsButtonListTile(

@@ -92,8 +92,6 @@
   "backup_controller_page_background_is_on": "Автоматическое резервное копирование в фоновом режиме включено",
   "backup_controller_page_background_turn_off": "Выключить фоновую службу",
   "backup_controller_page_background_turn_on": "Включить фоновую службу",
-  "backup_controller_page_ignore_icloud_photos": "Игнорировать фотографии в iCloud",
-  "backup_controller_page_ignore_icloud_photos_desc": "Фотографии, которые сохранены в iCloud, не будут загружаться на сервер Immich",
   "backup_controller_page_background_wifi": "Только через WiFi",
   "backup_controller_page_backup": "Резервное копирование",
   "backup_controller_page_backup_selected": "Выбрано: ",
