@@ -188,7 +188,7 @@ class CreateAlbumPage extends HookConsumerWidget {
           );
 
       if (newAlbum != null) {
-        ref.watch(albumProvider.notifier).getAllAlbums();
+        ref.watch(albumProvider.notifier).refreshRemoteAlbums();
         selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 

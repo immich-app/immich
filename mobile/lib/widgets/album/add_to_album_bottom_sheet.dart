@@ -30,7 +30,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
     useEffect(
       () {
         // Fetch album updates, e.g., cover image
-        ref.read(albumProvider.notifier).getAllAlbums();
+        ref.read(albumProvider.notifier).refreshRemoteAlbums();
 
         return null;
       },

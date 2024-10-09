@@ -58,7 +58,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         case TabEnum.search:
         // nothing to do
         case TabEnum.albums:
-          _ref.read(albumProvider.notifier).getAllAlbums();
+          _ref.read(albumProvider.notifier).refreshRemoteAlbums();
         case TabEnum.library:
         // nothing to do
       }

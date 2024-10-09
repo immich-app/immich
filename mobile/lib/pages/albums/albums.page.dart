@@ -91,7 +91,7 @@ class AlbumsPage extends HookConsumerWidget {
       body: RefreshIndicator(
         displacement: 70,
         onRefresh: () async {
-          await ref.read(albumProvider.notifier).getAllAlbums();
+          await ref.read(albumProvider.notifier).refreshRemoteAlbums();
         },
         child: ListView(
           shrinkWrap: true,
@@ -191,7 +191,10 @@ class AlbumsPage extends HookConsumerWidget {
                   isSelected: filterMode.value == QuickFilterMode.myAlbums,
                   onTap: () {
                     changeFilter(QuickFilterMode.myAlbums);
-                    onSearch(searchController.text, QuickFilterMode.myAlbums);
+                    onSearch(
+                      searchController.text,
+                      QuickFilterMode.myAlbums,
+                    );
                   },
                 ),
               ],
@@ -284,8 +287,9 @@ class AlbumsPage extends HookConsumerWidget {
                               right: 16,
                             ),
                             leading: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(15)),
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(15),
+                              ),
                               child: ImmichThumbnail(
                                 asset: sorted[index].thumbnail.value,
                                 width: 80,

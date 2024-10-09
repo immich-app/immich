@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -16,10 +17,11 @@ class TabControllerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final refreshing = ref.watch(assetProvider);
+    final isRefreshingAssets = ref.watch(assetProvider);
+    final isRefreshingRemoteAlbums = ref.watch(isRefreshingRemoteAlbumProvider);
 
-    Widget buildIcon(Widget icon) {
-      if (!refreshing) return icon;
+    Widget buildIcon({required Widget icon, required bool isProcessing}) {
+      if (!isProcessing) return icon;
       return Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -118,7 +120,8 @@ class TabControllerPage extends HookConsumerWidget {
               Icons.photo_library_outlined,
             ),
             selectedIcon: buildIcon(
-              Icon(
+              isProcessing: isRefreshingAssets,
+              icon: Icon(
                 Icons.photo_library,
                 color: context.primaryColor,
               ),
@@ -140,7 +143,8 @@ class TabControllerPage extends HookConsumerWidget {
               Icons.photo_album_outlined,
             ),
             selectedIcon: buildIcon(
-              Icon(
+              isProcessing: isRefreshingRemoteAlbums,
+              icon: Icon(
                 Icons.photo_album_rounded,
                 color: context.primaryColor,
               ),
@@ -152,7 +156,8 @@ class TabControllerPage extends HookConsumerWidget {
               Icons.space_dashboard_outlined,
             ),
             selectedIcon: buildIcon(
-              Icon(
+              isProcessing: isRefreshingAssets,
+              icon: Icon(
                 Icons.space_dashboard_rounded,
                 color: context.primaryColor,
               ),

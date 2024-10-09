@@ -11,8 +11,10 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 
+final isRefreshingRemoteAlbumProvider = StateProvider<bool>((ref) => false);
+
 class AlbumNotifier extends StateNotifier<List<Album>> {
-  AlbumNotifier(this._albumService, this.db) : super([]) {
+  AlbumNotifier(this._albumService, this.db, this.ref) : super([]) {
     final query = db.albums.filter().remoteIdIsNotNull();
     query.findAll().then((value) {
       if (mounted) {
@@ -24,13 +26,21 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
 
   final AlbumService _albumService;
   final Isar db;
+  final Ref ref;
   late final StreamSubscription<List<Album>> _streamSub;
 
-  Future<void> getAllAlbums() async {
+  Future<void> refreshRemoteAlbums() async {
+    final isRefresing =
+        ref.read(isRefreshingRemoteAlbumProvider.notifier).state;
+
+    if (isRefresing) return;
+
+    ref.read(isRefreshingRemoteAlbumProvider.notifier).state = true;
     await _albumService.refreshRemoteAlbums();
+    ref.read(isRefreshingRemoteAlbumProvider.notifier).state = false;
   }
 
-  Future<void> getDeviceAlbums() => _albumService.refreshDeviceAlbums();
+  Future<void> refreshDeviceAlbums() => _albumService.refreshDeviceAlbums();
 
   Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
 
@@ -113,6 +123,7 @@ final albumProvider =
   return AlbumNotifier(
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
+    ref,
   );
 });
 

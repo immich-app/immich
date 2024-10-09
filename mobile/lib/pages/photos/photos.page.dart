@@ -32,7 +32,7 @@ class PhotosPage extends HookConsumerWidget {
       () {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
-        ref.read(albumProvider.notifier).getAllAlbums();
+        Future(() => ref.read(albumProvider.notifier).refreshRemoteAlbums());
         ref.read(serverInfoProvider.notifier).getServerInfo();
         return;
       },

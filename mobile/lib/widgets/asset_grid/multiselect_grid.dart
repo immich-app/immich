@@ -321,7 +321,7 @@ class MultiselectGrid extends HookConsumerWidget {
             .createAlbumWithGeneratedName(assets);
 
         if (result != null) {
-          ref.watch(albumProvider.notifier).getAllAlbums();
+          ref.watch(albumProvider.notifier).refreshRemoteAlbums();
           selectionEnabledHook.value = false;
 
           context.pushRoute(AlbumViewerRoute(albumId: result.id));
