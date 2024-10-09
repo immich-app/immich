@@ -38,7 +38,8 @@ class CropImagePage extends HookWidget {
               size: 24,
             ),
             onPressed: () async {
-              final croppedImage = await cropController.croppedImage();
+              final croppedImage = await cropController.croppedImage(
+                  quality: FilterQuality.high);
               context.pushRoute(
                 EditImageRoute(
                   asset: asset,
