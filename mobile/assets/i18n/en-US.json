@@ -92,6 +92,8 @@
   "backup_controller_page_background_is_on": "Automatic background backup is on",
   "backup_controller_page_background_turn_off": "Turn off background service",
   "backup_controller_page_background_turn_on": "Turn on background service",
+  "ignore_icloud_photos": "Ignore iCloud photos",
+  "ignore_icloud_photos_description": "Photos that are stored on iCloud will not be uploaded to the Immich server",
   "backup_controller_page_background_wifi": "Only on WiFi",
   "backup_controller_page_backup": "Backup",
   "backup_controller_page_backup_selected": "Selected: ",
