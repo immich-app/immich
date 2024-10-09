@@ -58,11 +58,20 @@ describe(SharedLinkService.name, () => {
       expect(sharedLinkMock.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 
-    it('should throw an error for an password protected shared link', async () => {
+    it('should throw an error for an invalid password protected shared link', async () => {
       const authDto = authStub.adminSharedLink;
       sharedLinkMock.get.mockResolvedValue(sharedLinkStub.passwordRequired);
       await expect(sut.getMine(authDto, {})).rejects.toBeInstanceOf(UnauthorizedException);
       expect(sharedLinkMock.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
+    });
+
+    it('should allow a correct password on a password protected shared link', async () => {
+      sharedLinkMock.get.mockResolvedValue({ ...sharedLinkStub.individual, password: '123' });
+      await expect(sut.getMine(authStub.adminSharedLink, { password: '123' })).resolves.toBeDefined();
+      expect(sharedLinkMock.get).toHaveBeenCalledWith(
+        authStub.adminSharedLink.user.id,
+        authStub.adminSharedLink.sharedLink?.id,
+      );
     });
   });
 
@@ -296,6 +305,16 @@ describe(SharedLinkService.name, () => {
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '1 shared photos & videos',
         imageUrl: `${DEFAULT_EXTERNAL_DOMAIN}/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0`,
+        title: 'Public Share',
+      });
+      expect(sharedLinkMock.get).toHaveBeenCalled();
+    });
+
+    it('should return metadata tags with a default image path if the asset id is not set', async () => {
+      sharedLinkMock.get.mockResolvedValue({ ...sharedLinkStub.individual, album: undefined, assets: [] });
+      await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
+        description: '0 shared photos & videos',
+        imageUrl: `${DEFAULT_EXTERNAL_DOMAIN}/feature-panel.png`,
         title: 'Public Share',
       });
       expect(sharedLinkMock.get).toHaveBeenCalled();

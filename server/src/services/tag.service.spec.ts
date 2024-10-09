@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
+import { JobStatus } from 'src/interfaces/job.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { TagService } from 'src/services/tag.service';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -259,6 +260,13 @@ describe(TagService.name, () => {
 
       expect(tagMock.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(tagMock.removeAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1']);
+    });
+  });
+
+  describe('handleTagCleanup', () => {
+    it('should delete empty tags', async () => {
+      await expect(sut.handleTagCleanup()).resolves.toBe(JobStatus.SUCCESS);
+      expect(tagMock.deleteEmptyTags).toHaveBeenCalled();
     });
   });
 });

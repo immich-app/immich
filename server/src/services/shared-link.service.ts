@@ -20,7 +20,7 @@ import { OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService extends BaseService {
-  getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
+  async getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
     return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
 

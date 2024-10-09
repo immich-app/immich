@@ -72,6 +72,13 @@ describe('AuthService', () => {
     expect(sut).toBeDefined();
   });
 
+  describe('onBootstrap', () => {
+    it('should init the repo', () => {
+      sut.onBootstrap();
+      expect(oauthMock.init).toHaveBeenCalled();
+    });
+  });
+
   describe('login', () => {
     it('should throw an error if password login is disabled', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.disabled);

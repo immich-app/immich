@@ -11,7 +11,7 @@ const main = async () => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 2000);
   try {
-    const response = await fetch(`http://localhost:${port}/api/server-info/ping`, {
+    const response = await fetch(`http://localhost:${port}/api/server/ping`, {
       signal: controller.signal,
     });
 
