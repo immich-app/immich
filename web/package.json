@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.114.0",
+  "version": "1.117.0",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
-    "@faker-js/faker": "^8.4.1",
+    "@faker-js/faker": "^9.0.0",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/enhanced-img": "^0.3.0",
@@ -67,7 +67,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.7.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
+    "@mapbox/mapbox-gl-rtl-text": "^0.3.0",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.7.1",
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.7.2",
@@ -87,6 +87,6 @@
     "thumbhash": "^0.1.1"
   },
   "volta": {
-    "node": "20.17.0"
+    "node": "20.18.0"
   }
 }

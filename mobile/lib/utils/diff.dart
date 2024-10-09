@@ -1,16 +1,20 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
+
 /// Efficiently compares two sorted lists in O(n), calling the given callback
 /// for each item.
 /// Return `true` if there are any differences found, else `false`
-Future<bool> diffSortedLists<A, B>(
-  List<A> la,
-  List<B> lb, {
-  required int Function(A a, B b) compare,
-  required FutureOr<bool> Function(A a, B b) both,
-  required FutureOr<void> Function(A a) onlyFirst,
-  required FutureOr<void> Function(B b) onlySecond,
+Future<bool> diffSortedLists<T>(
+  List<T> la,
+  List<T> lb, {
+  required int Function(T a, T b) compare,
+  required FutureOr<bool> Function(T a, T b) both,
+  required FutureOr<void> Function(T a) onlyFirst,
+  required FutureOr<void> Function(T b) onlySecond,
 }) async {
+  assert(la.isSorted(compare), "first argument must be sorted");
+  assert(lb.isSorted(compare), "second argument must be sorted");
   bool diff = false;
   int i = 0, j = 0;
   for (; i < la.length && j < lb.length;) {
@@ -38,14 +42,16 @@ Future<bool> diffSortedLists<A, B>(
 /// Efficiently compares two sorted lists in O(n), calling the given callback
 /// for each item.
 /// Return `true` if there are any differences found, else `false`
-bool diffSortedListsSync<A, B>(
-  List<A> la,
-  List<B> lb, {
-  required int Function(A a, B b) compare,
-  required bool Function(A a, B b) both,
-  required void Function(A a) onlyFirst,
-  required void Function(B b) onlySecond,
+bool diffSortedListsSync<T>(
+  List<T> la,
+  List<T> lb, {
+  required int Function(T a, T b) compare,
+  required bool Function(T a, T b) both,
+  required void Function(T a) onlyFirst,
+  required void Function(T b) onlySecond,
 }) {
+  assert(la.isSorted(compare), "first argument must be sorted");
+  assert(lb.isSorted(compare), "second argument must be sorted");
   bool diff = false;
   int i = 0, j = 0;
   for (; i < la.length && j < lb.length;) {

@@ -124,7 +124,6 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            local_dir_use_symlinks=False,
             ignore_patterns=["*.armnn"],
         )
 
@@ -136,7 +135,6 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            local_dir_use_symlinks=False,
             ignore_patterns=[],
         )
 
@@ -212,9 +210,23 @@ class TestOrtSession:
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert session.provider_options == [
-            {"device_type": "GPU", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
+            {"device_type": "GPU.0", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
+
+    def test_sets_device_id_for_openvino(self) -> None:
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        session = OrtSession("ViT-B-32__openai", providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options[0]["device_type"] == "GPU.1"
+
+    def test_sets_device_id_for_cuda(self) -> None:
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
+
+        assert session.provider_options[0]["device_id"] == "1"
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(

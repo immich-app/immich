@@ -94,6 +94,7 @@ export const signupResponseDto = {
     quotaSizeInBytes: null,
     status: 'active',
     license: null,
+    profileChangedAt: expect.any(String),
   },
 };
 

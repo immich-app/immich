@@ -187,7 +187,7 @@ However, when the trash is emptied, the files will re-appear in the main timelin
 
 ### How does smart search work?
 
-Immich uses CLIP models. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
+Immich uses CLIP models. An ML model converts each image to an "embedding", which is essentially a string of numbers that semantically encodes what is in the image. The same is done for the text that you enter when you do a search, and that text embedding is then compared with those of the images to find similar ones. As such, there are no "tags", "labels", or "descriptions" generated that you can look at. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 
@@ -333,7 +333,11 @@ You may need to add mount points or docker volumes for the following internal co
 - `immich-machine-learning:/.cache`
 - `redis:/data`
 
-The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
+The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION` and `/cache` for machine-learning.
+
+:::note Docker Compose Volumes
+The Docker Compose top level volume element does not support non-root access, all of the above volumes must be local volume mounts.
+:::
 
 For a further hardened system, you can add the following block to every container except for `immich_postgres`.
 

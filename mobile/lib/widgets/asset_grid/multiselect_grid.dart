@@ -131,11 +131,7 @@ class MultiselectGrid extends HookConsumerWidget {
       processing.value = true;
       if (shareLocal) {
         // Share = Download + Send to OS specific share sheet
-        // Filter offline assets since we cannot fetch their original file
-        final liveAssets = selection.value.nonOfflineOnly(
-          errorCallback: errorBuilder('asset_action_share_err_offline'.tr()),
-        );
-        handleShareAssets(ref, context, liveAssets);
+        handleShareAssets(ref, context, selection.value);
       } else {
         final ids =
             remoteSelection(errorMessage: "home_page_share_err_local".tr())

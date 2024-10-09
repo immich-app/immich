@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
@@ -175,7 +176,7 @@ class LoginForm extends HookConsumerWidget {
     populateTestLoginInfo1() {
       usernameController.text = 'testuser@email.com';
       passwordController.text = 'password';
-      serverEndpointController.text = 'http://10.1.15.216:2283/api';
+      serverEndpointController.text = 'http://192.168.1.16:2283/api';
     }
 
     login() async {
@@ -185,6 +186,9 @@ class LoginForm extends HookConsumerWidget {
 
       // This will remove current cache asset state of previous user login.
       ref.read(assetProvider.notifier).clearAllAsset();
+
+      // Invalidate all api repository provider instance to take into account new access token
+      invalidateAllApiRepositoryProviders(ref);
 
       try {
         final isAuthenticated =

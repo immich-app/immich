@@ -5,7 +5,7 @@ import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { AssetOrder, AssetType, SharedLinkType } from 'src/enum';
+import { AssetOrder, AssetStatus, AssetType, SharedLinkType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -188,6 +188,7 @@ export const sharedLinkStub = {
       assets: [
         {
           id: 'id_1',
+          status: AssetStatus.ACTIVE,
           owner: undefined as unknown as UserEntity,
           ownerId: 'user_id_1',
           deviceAssetId: 'device_asset_id_1',

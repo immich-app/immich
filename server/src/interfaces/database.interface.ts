@@ -17,6 +17,7 @@ export enum DatabaseLock {
   Migrations = 200,
   SystemFileMounts = 300,
   StorageTemplateMigration = 420,
+  VersionHistory = 500,
   CLIPDimSize = 512,
   LibraryWatch = 1337,
   GetSystemConfig = 69,

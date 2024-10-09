@@ -1,11 +1,10 @@
 import 'dart:convert';
 
 import 'package:immich_mobile/entities/exif_info.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager/photo_manager.dart' show AssetEntity;
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:path/path.dart' as p;
 
@@ -23,8 +22,12 @@ class Asset {
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = remote.originalFileName,
-        height = remote.exifInfo?.exifImageHeight?.toInt(),
-        width = remote.exifInfo?.exifImageWidth?.toInt(),
+        height = isFlipped(remote)
+            ? remote.exifInfo?.exifImageWidth?.toInt()
+            : remote.exifInfo?.exifImageHeight?.toInt(),
+        width = isFlipped(remote)
+            ? remote.exifInfo?.exifImageHeight?.toInt()
+            : remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
         ownerId = fastHash(remote.ownerId),
         exifInfo =
@@ -41,33 +44,6 @@ class Asset {
         stackCount = remote.stack?.assetCount ?? 0,
         stackId = remote.stack?.id,
         thumbhash = remote.thumbhash;
-
-  Asset.local(AssetEntity local, List<int> hash)
-      : localId = local.id,
-        checksum = base64.encode(hash),
-        durationInSeconds = local.duration,
-        type = AssetType.values[local.typeInt],
-        height = local.height,
-        width = local.width,
-        fileName = local.title!,
-        ownerId = Store.get(StoreKey.currentUser).isarId,
-        fileModifiedAt = local.modifiedDateTime,
-        updatedAt = local.modifiedDateTime,
-        isFavorite = local.isFavorite,
-        isArchived = false,
-        isTrashed = false,
-        isOffline = false,
-        stackCount = 0,
-        fileCreatedAt = local.createDateTime {
-    if (fileCreatedAt.year == 1970) {
-      fileCreatedAt = fileModifiedAt;
-    }
-    if (local.latitude != null) {
-      exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
-    }
-    _local = local;
-    assert(hash.length == 20, "invalid SHA1 hash");
-  }
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -114,6 +90,8 @@ class Asset {
     }
     return _local;
   }
+
+  set local(AssetEntity? assetEntity) => _local = assetEntity;
 
   Id id = Isar.autoIncrement;
 
@@ -209,6 +187,10 @@ class Asset {
 
   @ignore
   Duration get duration => Duration(seconds: durationInSeconds);
+
+  // ignore: invalid_annotation_target
+  @ignore
+  set byteHash(List<int> hash) => checksum = base64.encode(hash);
 
   @override
   bool operator ==(other) {
@@ -528,4 +510,21 @@ extension AssetsHelper on IsarCollection<Asset> {
   ) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
+}
+
+/// Returns `true` if this [int] is flipped 90° clockwise
+bool isRotated90CW(int orientation) {
+  return [7, 8, -90].contains(orientation);
+}
+
+/// Returns `true` if this [int] is flipped 270° clockwise
+bool isRotated270CW(int orientation) {
+  return [5, 6, 90].contains(orientation);
+}
+
+/// Returns `true` if this [Asset] is flipped 90° or 270° clockwise
+bool isFlipped(AssetResponseDto response) {
+  final int orientation = response.exifInfo?.orientation?.toInt() ?? 0;
+  return orientation != 0 &&
+      (isRotated90CW(orientation) || isRotated270CW(orientation));
 }

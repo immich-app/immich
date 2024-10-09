@@ -6,6 +6,8 @@ import { handleError } from './handle-error';
 
 export type OnDelete = (assetIds: string[]) => void;
 export type OnRestore = (ids: string[]) => void;
+export type OnLink = (assets: { still: AssetResponseDto; motion: AssetResponseDto }) => void;
+export type OnUnlink = (assets: { still: AssetResponseDto; motion: AssetResponseDto }) => void;
 export type OnArchive = (ids: string[], isArchived: boolean) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnStack = (ids: string[]) => void;

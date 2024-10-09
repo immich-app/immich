@@ -4,7 +4,7 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { resourcePaths } from 'src/constants';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GitHubRelease, IServerInfoRepository, ServerBuildVersions } from 'src/interfaces/server-info.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
@@ -37,7 +37,10 @@ const getLockfileVersion = (name: string, lockfile?: BuildLockfile) => {
 @Instrumentation()
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(
+    @Inject(IConfigRepository) private configRepository: IConfigRepository,
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+  ) {
     this.logger.setContext(ServerInfoRepository.name);
   }
 
@@ -56,6 +59,8 @@ export class ServerInfoRepository implements IServerInfoRepository {
   }
 
   async getBuildVersions(): Promise<ServerBuildVersions> {
+    const { nodeVersion, resourcePaths } = this.configRepository.getEnv();
+
     const [nodejsOutput, ffmpegOutput, magickOutput] = await Promise.all([
       maybeFirstLine('node --version'),
       maybeFirstLine('ffmpeg -version'),
@@ -67,7 +72,7 @@ export class ServerInfoRepository implements IServerInfoRepository {
       .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
     return {
-      nodejs: nodejsOutput || process.env.NODE_VERSION || '',
+      nodejs: nodejsOutput || nodeVersion || '',
       exiftool: await exiftool.version(),
       ffmpeg: getLockfileVersion('ffmpeg', lockfile) || ffmpegOutput.replaceAll('ffmpeg version', '') || '',
       libvips: getLockfileVersion('libvips', lockfile) || sharp.versions.vips,

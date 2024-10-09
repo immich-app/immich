@@ -34,6 +34,7 @@
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
+    mdiHeadSyncOutline,
     mdiImageRefreshOutline,
     mdiImageSearch,
     mdiMagnifyMinusOutline,
@@ -59,7 +60,6 @@
   export let onClose: () => void;
 
   const sharedLink = getSharedLink();
-
   $: isOwner = $user && asset.ownerId === $user?.id;
   $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   // $: showEditorButton =
@@ -87,7 +87,7 @@
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
-      <CircleIconButton color="opaque" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
+      <CircleIconButton color="alert" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
     {/if}
     {#if asset.livePhotoVideoId}
       <slot name="motion-photo" />
@@ -167,6 +167,11 @@
             />
           {/if}
           <hr />
+          <MenuOption
+            icon={mdiHeadSyncOutline}
+            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
+            text={$getAssetJobName(AssetJobName.RefreshFaces)}
+          />
           <MenuOption
             icon={mdiDatabaseRefreshOutline}
             onClick={() => onRunJob(AssetJobName.RefreshMetadata)}

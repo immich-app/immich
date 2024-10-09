@@ -32,7 +32,7 @@
     type AssetResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
@@ -56,8 +56,10 @@
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
   export let onAction: OnAction | undefined = undefined;
-
-  let reactions: ActivityResponseDto[] = [];
+  export let reactions: ActivityResponseDto[] = [];
+  export let onClose: (dto: { asset: AssetResponseDto }) => void;
+  export let onNext: () => void;
+  export let onPrevious: () => void;
 
   const { setAsset } = assetViewingStore;
   const {
@@ -65,14 +67,8 @@
     stopProgress: stopSlideshowProgress,
     slideshowNavigation,
     slideshowState,
+    slideshowTransition,
   } = slideshowStore;
-
-  const dispatch = createEventDispatcher<{
-    action: { type: AssetAction; asset: AssetResponseDto };
-    close: { asset: AssetResponseDto };
-    next: void;
-    previous: void;
-  }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
   let shouldPlayMotionPhoto = false;
@@ -87,12 +83,13 @@
   let numberOfComments: number;
   let fullscreenElement: Element;
   let unsubscribes: (() => void)[] = [];
+  let selectedEditType: string = '';
+  let stack: StackResponseDto | null = null;
+
   let zoomToggle = () => void 0;
   let copyImage: () => Promise<void>;
 
   $: isFullScreen = fullscreenElement !== null;
-
-  let stack: StackResponseDto | null = null;
 
   const refreshStack = async () => {
     if (isSharedLink()) {
@@ -267,7 +264,7 @@
   };
 
   const closeViewer = () => {
-    dispatch('close', { asset });
+    onClose({ asset });
   };
 
   const closeEditor = () => {
@@ -316,7 +313,8 @@
     }
 
     e?.stopPropagation();
-    dispatch(order);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    order === 'previous' ? onPrevious() : onNext();
   };
 
   // const showEditorHandler = () => {
@@ -394,11 +392,9 @@
     onAction?.(action);
   };
 
-  let selectedEditType: string = '';
-
-  function handleUpdateSelectedEditType(type: string) {
+  const handleUpdateSelectedEditType = (type: string) => {
     selectedEditType = type;
-  }
+  };
 </script>
 
 <svelte:document bind:fullscreenElement />
@@ -512,6 +508,7 @@
               onNextAsset={() => navigateAsset('next')}
               on:close={closeViewer}
               {sharedLink}
+              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
             />
           {/if}
         {:else}
@@ -533,8 +530,8 @@
               disabled={!album?.isActivityEnabled}
               {isLiked}
               {numberOfComments}
-              on:favorite={handleFavorite}
-              on:openActivityTab={handleOpenActivity}
+              onFavorite={handleFavorite}
+              onOpenActivityTab={handleOpenActivity}
             />
           </div>
         {/if}
@@ -555,7 +552,7 @@
       class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
+      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
     </div>
   {/if}
 
@@ -593,6 +590,7 @@
                 preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+              disableMouseOver
               readonly
               thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
               showStackedIcon={false}
@@ -625,10 +623,10 @@
         assetId={asset.id}
         {isLiked}
         bind:reactions
-        on:addComment={handleAddComment}
-        on:deleteComment={handleRemoveComment}
-        on:deleteLike={() => (isLiked = null)}
-        on:close={() => (isShowActivity = false)}
+        onAddComment={handleAddComment}
+        onDeleteComment={handleRemoveComment}
+        onDeleteLike={() => (isLiked = null)}
+        onClose={() => (isShowActivity = false)}
       />
     </div>
   {/if}
