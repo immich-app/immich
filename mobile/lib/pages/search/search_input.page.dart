@@ -494,14 +494,17 @@ class SearchInputPage extends HookConsumerWidget {
       appBar: AppBar(
         automaticallyImplyLeading: true,
         actions: [
-          IconButton(
-            icon: isContextualSearch.value
-                ? const Icon(Icons.abc_rounded)
-                : const Icon(Icons.image_search_rounded),
-            onPressed: () {
-              isContextualSearch.value = !isContextualSearch.value;
-              textSearchController.clear();
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 14.0),
+            child: IconButton(
+              icon: isContextualSearch.value
+                  ? const Icon(Icons.abc_rounded)
+                  : const Icon(Icons.image_search_rounded),
+              onPressed: () {
+                isContextualSearch.value = !isContextualSearch.value;
+                textSearchController.clear();
+              },
+            ),
           ),
         ],
         title: Container(
