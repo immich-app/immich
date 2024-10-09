@@ -23,7 +23,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+    <NavigationBar {showUploadButton} onUploadClick={() => openFileUploadDialog()} />
   {/if}
 
   <slot name="header" />

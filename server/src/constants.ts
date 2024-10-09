@@ -1,6 +1,5 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { SemVer } from 'semver';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
@@ -20,44 +19,14 @@ export const serverVersion = new SemVer(version);
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export const envName = (process.env.IMMICH_ENV || 'production').toUpperCase();
-export const isDev = () => process.env.IMMICH_ENV === 'development';
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-export const WEB_ROOT = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www';
 const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
 export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 
 export const citiesFile = 'cities500.txt';
 
-const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
-
-const folders = {
-  geodata: join(buildFolder, 'geodata'),
-  web: join(buildFolder, 'www'),
-};
-
-export const resourcePaths = {
-  lockFile: join(buildFolder, 'build-lock.json'),
-  geodata: {
-    dateFile: join(folders.geodata, 'geodata-date.txt'),
-    admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
-    admin2: join(folders.geodata, 'admin2Codes.txt'),
-    cities500: join(folders.geodata, citiesFile),
-    naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
-  },
-  web: {
-    root: folders.web,
-    indexHtml: join(folders.web, 'index.html'),
-  },
-};
-
 export const MOBILE_REDIRECT = 'app.immich:///oauth-callback';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';
-
-export enum AuthType {
-  PASSWORD = 'password',
-  OAUTH = 'oauth',
-}
 
 export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico'];
 
@@ -75,6 +44,7 @@ export const supportedPresetTokens = [
   '{{y}}/{{MM}}-{{dd}}/{{filename}}',
   '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
   '{{y}}/{{MM}}/{{filename}}',
+  '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
   '{{y}}/{{MMM}}/{{filename}}',
   '{{y}}/{{MMMM}}/{{filename}}',
   '{{y}}/{{MM}}/{{dd}}/{{filename}}',

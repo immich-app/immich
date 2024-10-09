@@ -52,7 +52,7 @@
   <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="create-tag-form">
     <div class="my-4 flex flex-col gap-2">
       <Combobox
-        on:select={({ detail: option }) => handleSelect(option)}
+        onSelect={handleSelect}
         label={$t('tag')}
         options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
         placeholder={$t('search_tags')}

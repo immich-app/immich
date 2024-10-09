@@ -1,5 +1,5 @@
-import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/config';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/enum';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -80,6 +80,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       inputOptions: this.getBaseInputOptions(videoStream),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
+      progress: { frameCount: videoStream.frameCount, percentInterval: 5 },
     } as TranscodeCommand;
     if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
       const filters = this.getFilterOptions(videoStream);
@@ -115,6 +116,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       '-fps_mode passthrough',
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
+      '-strict unofficial',
     ];
 
     if (audioStream) {

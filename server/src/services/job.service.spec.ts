@@ -1,8 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { defaults } from 'src/config';
+import { ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IJobRepository,
   JobCommand,
@@ -12,19 +11,10 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMetricRepository } from 'src/interfaces/metric.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { JobService } from 'src/services/job.service';
 import { assetStub } from 'test/fixtures/asset.stub';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
-import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, vitest } from 'vitest';
 
 const makeMockHandlers = (status: JobStatus) => {
@@ -38,26 +28,28 @@ const makeMockHandlers = (status: JobStatus) => {
 describe(JobService.name, () => {
   let sut: JobService;
   let assetMock: Mocked<IAssetRepository>;
-  let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let personMock: Mocked<IPersonRepository>;
-  let metricMock: Mocked<IMetricRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    assetMock = newAssetRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    personMock = newPersonRepositoryMock();
-    metricMock = newMetricRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    sut = new JobService(assetMock, eventMock, jobMock, systemMock, personMock, metricMock, loggerMock);
+    ({ sut, assetMock, jobMock, systemMock } = newTestService(JobService));
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should update concurrency', () => {
+      sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      sut.onConfigUpdate({ oldConfig: defaults, newConfig: defaults });
+
+      expect(jobMock.setConcurrency).toHaveBeenCalledTimes(14);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DUPLICATE_DETECTION, 1);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BACKGROUND_TASK, 5);
+      expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(9, QueueName.STORAGE_TEMPLATE_MIGRATION, 1);
+    });
   });
 
   describe('handleNightlyJobs', () => {
@@ -239,36 +231,6 @@ describe(JobService.name, () => {
       expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
     });
 
-    it('should subscribe to config changes', async () => {
-      await sut.init(makeMockHandlers(JobStatus.FAILED));
-
-      SystemConfigCore.create(newSystemMetadataRepositoryMock(false), newLoggerRepositoryMock()).config$.next({
-        job: {
-          [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
-          [QueueName.SMART_SEARCH]: { concurrency: 10 },
-          [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
-          [QueueName.FACE_DETECTION]: { concurrency: 10 },
-          [QueueName.SEARCH]: { concurrency: 10 },
-          [QueueName.SIDECAR]: { concurrency: 10 },
-          [QueueName.LIBRARY]: { concurrency: 10 },
-          [QueueName.MIGRATION]: { concurrency: 10 },
-          [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
-          [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
-          [QueueName.NOTIFICATION]: { concurrency: 5 },
-        },
-      } as SystemConfig);
-
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.BACKGROUND_TASK, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.FACE_DETECTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MIGRATION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.THUMBNAIL_GENERATION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.VIDEO_CONVERSION, 10);
-    });
-
     const tests: Array<{ item: JobItem; jobs: JobName[] }> = [
       {
         item: { name: JobName.SIDECAR_SYNC, data: { id: 'asset-1' } },
@@ -288,7 +250,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GENERATE_PREVIEW],
+        jobs: [JobName.GENERATE_THUMBNAILS],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
@@ -299,28 +261,16 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_THUMBNAIL, JobName.GENERATE_THUMBHASH],
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } },
+        jobs: [],
       },
       {
-        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [
-          JobName.GENERATE_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH,
-          JobName.SMART_SEARCH,
-          JobName.FACE_DETECTION,
-          JobName.VIDEO_CONVERSION,
-        ],
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1', source: 'upload' } },
+        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
       },
       {
-        item: { name: JobName.GENERATE_PREVIEW, data: { id: 'asset-live-image', source: 'upload' } },
-        jobs: [
-          JobName.GENERATE_THUMBNAIL,
-          JobName.GENERATE_THUMBHASH,
-          JobName.SMART_SEARCH,
-          JobName.FACE_DETECTION,
-          JobName.VIDEO_CONVERSION,
-        ],
+        item: { name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-live-image', source: 'upload' } },
+        jobs: [JobName.SMART_SEARCH, JobName.FACE_DETECTION, JobName.VIDEO_CONVERSION],
       },
       {
         item: { name: JobName.SMART_SEARCH, data: { id: 'asset-1' } },
@@ -338,11 +288,11 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        if (item.name === JobName.GENERATE_PREVIEW && item.data.source === 'upload') {
+        if (item.name === JobName.GENERATE_THUMBNAILS && item.data.source === 'upload') {
           if (item.data.id === 'asset-live-image') {
-            assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
+            assetMock.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoStillAsset]);
           } else {
-            assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+            assetMock.getByIdsWithAllRelations.mockResolvedValue([assetStub.livePhotoMotionAsset]);
           }
         }
 
@@ -361,7 +311,7 @@ describe(JobService.name, () => {
         }
       });
 
-      it(`should not queue any jobs when ${item.name} finishes with 'false'`, async () => {
+      it(`should not queue any jobs when ${item.name} fails`, async () => {
         await sut.init(makeMockHandlers(JobStatus.FAILED));
         await jobMock.addHandler.mock.calls[0][2](item);
 

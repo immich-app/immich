@@ -185,7 +185,7 @@ class AlbumOptionsRouteArgs {
 class AlbumPreviewRoute extends PageRouteInfo<AlbumPreviewRouteArgs> {
   AlbumPreviewRoute({
     Key? key,
-    required AssetPathEntity album,
+    required Album album,
     List<PageRouteInfo>? children,
   }) : super(
           AlbumPreviewRoute.name,
@@ -218,7 +218,7 @@ class AlbumPreviewRouteArgs {
 
   final Key? key;
 
-  final AssetPathEntity album;
+  final Album album;
 
   @override
   String toString() {
@@ -753,6 +753,58 @@ class FavoritesRoute extends PageRouteInfo<void> {
       return const FavoritesPage();
     },
   );
+}
+
+/// generated route for
+/// [FilterImagePage]
+class FilterImageRoute extends PageRouteInfo<FilterImageRouteArgs> {
+  FilterImageRoute({
+    Key? key,
+    required Image image,
+    required Asset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FilterImageRoute.name,
+          args: FilterImageRouteArgs(
+            key: key,
+            image: image,
+            asset: asset,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'FilterImageRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<FilterImageRouteArgs>();
+      return FilterImagePage(
+        key: args.key,
+        image: args.image,
+        asset: args.asset,
+      );
+    },
+  );
+}
+
+class FilterImageRouteArgs {
+  const FilterImageRouteArgs({
+    this.key,
+    required this.image,
+    required this.asset,
+  });
+
+  final Key? key;
+
+  final Image image;
+
+  final Asset asset;
+
+  @override
+  String toString() {
+    return 'FilterImageRouteArgs{key: $key, image: $image, asset: $asset}';
+  }
 }
 
 /// generated route for

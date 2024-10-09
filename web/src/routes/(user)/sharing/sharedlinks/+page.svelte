@@ -52,7 +52,7 @@
   };
 </script>
 
-<ControlAppBar backIcon={mdiArrowLeft} on:close={() => goto(AppRoute.SHARING)}>
+<ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
   <svelte:fragment slot="leading">{$t('shared_links')}</svelte:fragment>
 </ControlAppBar>
 

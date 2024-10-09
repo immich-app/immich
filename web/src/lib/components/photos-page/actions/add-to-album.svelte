@@ -11,7 +11,7 @@
 
   let showAlbumPicker = false;
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  const { getAssets } = getAssetControlContext();
 
   const handleHideAlbumPicker = () => {
     showAlbumPicker = false;
@@ -28,7 +28,6 @@
     showAlbumPicker = false;
     const assetIds = [...getAssets()].map((asset) => asset.id);
     await addAssetsToAlbum(album.id, assetIds);
-    clearSelect();
   };
 </script>
 
@@ -41,8 +40,8 @@
 {#if showAlbumPicker}
   <AlbumSelectionModal
     {shared}
-    on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-    on:album={({ detail }) => handleAddToAlbum(detail)}
+    onNewAlbum={handleAddToNewAlbum}
+    onAlbumClick={handleAddToAlbum}
     onClose={handleHideAlbumPicker}
   />
 {/if}

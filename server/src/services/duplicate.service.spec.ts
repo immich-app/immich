@@ -1,5 +1,4 @@
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
@@ -7,38 +6,36 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { authStub } from 'test/fixtures/auth.stub';
+import { newTestService } from 'test/utils';
 import { Mocked, beforeEach, vitest } from 'vitest';
 
 vitest.useFakeTimers();
 
 describe(SearchService.name, () => {
   let sut: DuplicateService;
+
   let assetMock: Mocked<IAssetRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
-  let searchMock: Mocked<ISearchRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
   let jobMock: Mocked<IJobRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
+  let searchMock: Mocked<ISearchRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    assetMock = newAssetRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    searchMock = newSearchRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
-    jobMock = newJobRepositoryMock();
-
-    sut = new DuplicateService(systemMock, searchMock, assetMock, loggerMock, cryptoMock, jobMock);
+    ({ sut, assetMock, jobMock, loggerMock, searchMock, systemMock } = newTestService(DuplicateService));
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('getDuplicates', () => {
+    it('should get duplicates', async () => {
+      assetMock.getDuplicates.mockResolvedValue([assetStub.hasDupe]);
+      await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([
+        { duplicateId: assetStub.hasDupe.duplicateId, assets: [expect.objectContaining({ id: assetStub.hasDupe.id })] },
+      ]);
+    });
   });
 
   describe('handleQueueSearchDuplicates', () => {

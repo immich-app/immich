@@ -23,7 +23,8 @@ SELECT
   "ActivityEntity__ActivityEntity_user"."status" AS "ActivityEntity__ActivityEntity_user_status",
   "ActivityEntity__ActivityEntity_user"."updatedAt" AS "ActivityEntity__ActivityEntity_user_updatedAt",
   "ActivityEntity__ActivityEntity_user"."quotaSizeInBytes" AS "ActivityEntity__ActivityEntity_user_quotaSizeInBytes",
-  "ActivityEntity__ActivityEntity_user"."quotaUsageInBytes" AS "ActivityEntity__ActivityEntity_user_quotaUsageInBytes"
+  "ActivityEntity__ActivityEntity_user"."quotaUsageInBytes" AS "ActivityEntity__ActivityEntity_user_quotaUsageInBytes",
+  "ActivityEntity__ActivityEntity_user"."profileChangedAt" AS "ActivityEntity__ActivityEntity_user_profileChangedAt"
 FROM
   "activity" "ActivityEntity"
   LEFT JOIN "users" "ActivityEntity__ActivityEntity_user" ON "ActivityEntity__ActivityEntity_user"."id" = "ActivityEntity"."userId"

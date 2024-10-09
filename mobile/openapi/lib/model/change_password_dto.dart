@@ -46,6 +46,7 @@ class ChangePasswordDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ChangePasswordDto? fromJson(dynamic value) {
+    upgradeDto(value, "ChangePasswordDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

@@ -1,9 +1,9 @@
-import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 
 class BackupCandidate {
   BackupCandidate({required this.asset, required this.albumNames});
 
-  AssetEntity asset;
+  Asset asset;
   List<String> albumNames;
 
   @override

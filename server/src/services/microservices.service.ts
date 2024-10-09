@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
+import { ImmichWorker } from 'src/enum';
 import { ArgOf } from 'src/interfaces/event.interface';
 import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
@@ -15,6 +16,8 @@ import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { StorageService } from 'src/services/storage.service';
+import { TagService } from 'src/services/tag.service';
+import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { otelShutdown } from 'src/utils/instrumentation';
@@ -34,14 +37,16 @@ export class MicroservicesService {
     private sessionService: SessionService,
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
+    private tagService: TagService,
+    private trashService: TrashService,
     private userService: UserService,
     private duplicateService: DuplicateService,
     private versionService: VersionService,
   ) {}
 
-  @OnEmit({ event: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap' })
   async onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    if (app !== 'microservices') {
+    if (app !== ImmichWorker.MICROSERVICES) {
       return;
     }
 
@@ -64,9 +69,7 @@ export class MicroservicesService {
       [JobName.MIGRATE_ASSET]: (data) => this.mediaService.handleAssetMigration(data),
       [JobName.MIGRATE_PERSON]: (data) => this.personService.handlePersonMigration(data),
       [JobName.QUEUE_GENERATE_THUMBNAILS]: (data) => this.mediaService.handleQueueGenerateThumbnails(data),
-      [JobName.GENERATE_PREVIEW]: (data) => this.mediaService.handleGeneratePreview(data),
-      [JobName.GENERATE_THUMBNAIL]: (data) => this.mediaService.handleGenerateThumbnail(data),
-      [JobName.GENERATE_THUMBHASH]: (data) => this.mediaService.handleGenerateThumbhash(data),
+      [JobName.GENERATE_THUMBNAILS]: (data) => this.mediaService.handleGenerateThumbnails(data),
       [JobName.QUEUE_VIDEO_CONVERSION]: (data) => this.mediaService.handleQueueVideoConversion(data),
       [JobName.VIDEO_CONVERSION]: (data) => this.mediaService.handleVideoConversion(data),
       [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataService.handleQueueMetadataExtraction(data),
@@ -82,18 +85,20 @@ export class MicroservicesService {
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: (data) => this.metadataService.handleSidecarSync(data),
       [JobName.SIDECAR_WRITE]: (data) => this.metadataService.handleSidecarWrite(data),
-      [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
-      [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
+      [JobName.LIBRARY_QUEUE_SYNC_ALL]: () => this.libraryService.handleQueueSyncAll(),
+      [JobName.LIBRARY_QUEUE_SYNC_FILES]: (data) => this.libraryService.handleQueueSyncFiles(data), //Queues all files paths on disk
+      [JobName.LIBRARY_SYNC_FILE]: (data) => this.libraryService.handleSyncFile(data), //Handles a single path on disk //Watcher calls for new files
+      [JobName.LIBRARY_QUEUE_SYNC_ASSETS]: (data) => this.libraryService.handleQueueSyncAssets(data), //Queues all library assets
+      [JobName.LIBRARY_SYNC_ASSET]: (data) => this.libraryService.handleSyncAsset(data), //Handles all library assets // Watcher calls for unlink and changed
       [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
-      [JobName.LIBRARY_CHECK_OFFLINE]: (data) => this.libraryService.handleOfflineCheck(data),
-      [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleRemoveOffline(data),
-      [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
       [JobName.SEND_EMAIL]: (data) => this.notificationService.handleSendEmail(data),
       [JobName.NOTIFY_ALBUM_INVITE]: (data) => this.notificationService.handleAlbumInvite(data),
       [JobName.NOTIFY_ALBUM_UPDATE]: (data) => this.notificationService.handleAlbumUpdate(data),
       [JobName.NOTIFY_SIGNUP]: (data) => this.notificationService.handleUserSignup(data),
+      [JobName.TAG_CLEANUP]: () => this.tagService.handleTagCleanup(),
       [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
+      [JobName.QUEUE_TRASH_EMPTY]: () => this.trashService.handleQueueEmptyTrash(),
     });
   }
 

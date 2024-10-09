@@ -22,7 +22,6 @@ services:
       - IMMICH_METRICS=true
       - IMMICH_ENV=testing
     volumes:
-      - upload:/usr/src/app/upload
       - ./test-assets:/test-assets
     extra_hosts:
       - 'auth-server:host-gateway'
@@ -33,7 +32,7 @@ services:
       - 2285:3001
 
   redis:
-    image: redis:6.2-alpine@sha256:e3b17ba9479deec4b7d1eeec1548a253acc5374d68d3b27937fcfe4df8d18c7e
+    image: redis:6.2-alpine@sha256:2ba50e1ac3a0ea17b736ce9db2b0a9f6f8b85d4c27d5f5accc6a416d8f42c6d5
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
@@ -44,7 +43,3 @@ services:
       POSTGRES_DB: immich
     ports:
       - 5435:5432
-
-volumes:
-  model-cache:
-  upload:
