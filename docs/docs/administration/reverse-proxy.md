@@ -99,7 +99,7 @@ services:
       # increase readingTimeouts for the entrypoint used here
       traefik.http.routers.immich.entrypoints: websecure
       traefik.http.routers.immich.rule: Host(`immich.your-domain.com`)
-      traefik.http.services.immich.loadbalancer.server.port: 3001
+      traefik.http.services.immich.loadbalancer.server.port: 2283
 ```
 
 Keep in mind, that Traefik needs to communicate with the network where immich is in, usually done

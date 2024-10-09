@@ -68,7 +68,7 @@ Information on the current workers can be found [here](/docs/administration/jobs
 | Variable      | Description    |                  Default                   |
 | :------------ | :------------- | :----------------------------------------: |
 | `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  |
-| `IMMICH_PORT` | Listening port | `3001` (server), `3003` (machine learning) |
+| `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) |
 
 ## Database
 

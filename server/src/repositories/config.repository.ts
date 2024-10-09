@@ -50,7 +50,7 @@ export class ConfigRepository implements IConfigRepository {
     };
 
     return {
-      port: Number(process.env.IMMICH_PORT) || 3001,
+      port: Number(process.env.IMMICH_PORT) || 2283,
       environment,
       configFile: process.env.IMMICH_CONFIG_FILE,
       logLevel: process.env.IMMICH_LOG_LEVEL as LogLevel,
