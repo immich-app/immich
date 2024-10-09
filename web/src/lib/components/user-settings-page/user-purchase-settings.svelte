@@ -115,7 +115,7 @@
           title={$t('show_supporter_badge')}
           subtitle={$t('show_supporter_badge_description')}
           bind:checked={$preferences.purchase.showSupportBadge}
-          on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
+          onToggle={setSupportBadgeVisibility}
         />
       </div>
 

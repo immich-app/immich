@@ -181,7 +181,7 @@ describe('/search', () => {
         dto: { size: -1.5 },
         expected: ['size must not be less than 1', 'size must be an integer number'],
       },
-      ...['isArchived', 'isFavorite', 'isEncoded', 'isMotion', 'isOffline', 'isVisible'].map((value) => ({
+      ...['isArchived', 'isFavorite', 'isEncoded', 'isOffline', 'isMotion', 'isVisible'].map((value) => ({
         should: `should reject ${value} not a boolean`,
         dto: { [value]: 'immich' },
         expected: [`${value} must be a boolean value`],

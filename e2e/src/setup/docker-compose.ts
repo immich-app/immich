@@ -12,7 +12,8 @@ const setup = async () => {
 
   const timeout = setTimeout(() => _reject(new Error('Timeout starting e2e environment')), 60_000);
 
-  const child = spawn('docker', ['compose', 'up'], { stdio: 'pipe' });
+  const command = 'compose up --build --renew-anon-volumes --force-recreate --remove-orphans';
+  const child = spawn('docker', command.split(' '), { stdio: 'pipe' });
 
   child.stdout.on('data', (data) => {
     const input = data.toString();

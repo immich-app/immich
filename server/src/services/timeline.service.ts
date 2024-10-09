@@ -1,26 +1,18 @@
-import { BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository, TimeBucketOptions } from 'src/interfaces/asset.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { TimeBucketOptions } from 'src/interfaces/asset.interface';
+import { BaseService } from 'src/services/base.service';
 import { requireAccess } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 
-export class TimelineService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private repository: IAssetRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-  ) {}
-
+export class TimelineService extends BaseService {
   async getTimeBuckets(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
-
-    return this.repository.getTimeBuckets(timeBucketOptions);
+    return this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
 
   async getTimeBucket(
@@ -29,7 +21,7 @@ export class TimelineService {
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
-    const assets = await this.repository.getTimeBucket(dto.timeBucket, timeBucketOptions);
+    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     return !auth.sharedLink || auth.sharedLink?.showExif
       ? assets.map((asset) => mapAsset(asset, { withStack: true, auth }))
       : assets.map((asset) => mapAsset(asset, { stripMetadata: true, auth }));
@@ -56,20 +48,20 @@ export class TimelineService {
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
     if (dto.albumId) {
-      await requireAccess(this.access, { auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+      await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
     } else {
       dto.userId = dto.userId || auth.user.id;
     }
 
     if (dto.userId) {
-      await requireAccess(this.access, { auth, permission: Permission.TIMELINE_READ, ids: [dto.userId] });
+      await requireAccess(this.accessRepository, { auth, permission: Permission.TIMELINE_READ, ids: [dto.userId] });
       if (dto.isArchived !== false) {
-        await requireAccess(this.access, { auth, permission: Permission.ARCHIVE_READ, ids: [dto.userId] });
+        await requireAccess(this.accessRepository, { auth, permission: Permission.ARCHIVE_READ, ids: [dto.userId] });
       }
     }
 
     if (dto.tagId) {
-      await requireAccess(this.access, { auth, permission: Permission.TAG_READ, ids: [dto.tagId] });
+      await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_READ, ids: [dto.tagId] });
     }
 
     if (dto.withPartners) {

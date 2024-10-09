@@ -13,8 +13,10 @@
   export let assetId: string;
   export let loopVideo: boolean;
   export let checksum: string;
-  export let onPreviousAsset: () => void;
-  export let onNextAsset: () => void;
+  export let onPreviousAsset: () => void = () => {};
+  export let onNextAsset: () => void = () => {};
+  export let onVideoEnded: () => void = () => {};
+  export let onVideoStarted: () => void = () => {};
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
@@ -30,12 +32,10 @@
   }
   $: assetFileUrl = destroyed ? '' : playbackUrl;
 
-  const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
-
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
       await video.play();
-      dispatch('onVideoStarted');
+      onVideoStarted();
     } catch (error) {
       if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
         await tryForceMutedPlay(video);
@@ -86,7 +86,7 @@
     use:swipe
     on:swipe={onSwipe}
     on:canplay={(e) => handleCanPlay(e.currentTarget)}
-    on:ended={() => dispatch('onVideoEnded')}
+    on:ended={onVideoEnded}
     on:volumechange={(e) => {
       if (!forceMuted) {
         $videoViewerMuted = e.currentTarget.muted;
@@ -95,9 +95,8 @@
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+    src={assetFileUrl}
   >
-    <source src={assetFileUrl} type="video/mp4" />
-    <track kind="captions" />
   </video>
 
   {#if isVideoLoading}

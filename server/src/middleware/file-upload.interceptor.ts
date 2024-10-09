@@ -7,6 +7,7 @@ import multer, { StorageEngine, diskStorage } from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
+import { RouteKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
@@ -26,11 +27,6 @@ export function getFiles(files: UploadFiles) {
     file: getFile(files, 'assetData') as UploadFile,
     sidecarFile: getFile(files, 'sidecarData'),
   };
-}
-
-export enum Route {
-  ASSET = 'assets',
-  USER = 'users',
 }
 
 export interface ImmichFile extends Express.Multer.File {
@@ -115,7 +111,7 @@ export class FileUploadInterceptor implements NestInterceptor {
     const context_ = context.switchToHttp();
     const route = this.reflect.get<string>(PATH_METADATA, context.getClass());
 
-    const handler: RequestHandler | null = this.getHandler(route as Route);
+    const handler: RequestHandler | null = this.getHandler(route as RouteKey);
     if (handler) {
       await new Promise<void>((resolve, reject) => {
         const next: NextFunction = (error) => (error ? reject(transformException(error)) : resolve());
@@ -176,13 +172,13 @@ export class FileUploadInterceptor implements NestInterceptor {
     return false;
   }
 
-  private getHandler(route: Route) {
+  private getHandler(route: RouteKey) {
     switch (route) {
-      case Route.ASSET: {
+      case RouteKey.ASSET: {
         return this.handlers.assetUpload;
       }
 
-      case Route.USER: {
+      case RouteKey.USER: {
         return this.handlers.userProfile;
       }
 

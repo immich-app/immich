@@ -1,37 +1,25 @@
 import { BadRequestException } from '@nestjs/common';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { TrashService } from 'src/services/trash.service';
 import { authStub } from 'test/fixtures/auth.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newTrashRepositoryMock } from 'test/repositories/trash.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(TrashService.name, () => {
   let sut: TrashService;
+
   let accessMock: IAccessRepositoryMock;
-  let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let trashMock: Mocked<ITrashRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    trashMock = newTrashRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new TrashService(accessMock, eventMock, jobMock, trashMock, loggerMock);
+    ({ sut, accessMock, jobMock, trashMock } = newTestService(TrashService));
   });
 
   describe('restoreAssets', () => {
@@ -67,7 +55,7 @@ describe(TrashService.name, () => {
     });
 
     it('should restore', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-id'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
       trashMock.restore.mockResolvedValue(1);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.restore).toHaveBeenCalledWith('user-id');
@@ -83,7 +71,7 @@ describe(TrashService.name, () => {
     });
 
     it('should empty the trash', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-id'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
       trashMock.empty.mockResolvedValue(1);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.empty).toHaveBeenCalledWith('user-id');

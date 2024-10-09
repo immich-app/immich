@@ -1,7 +1,6 @@
-import { BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { SystemConfigCore } from 'src/cores/system-config.core';
 import {
   AssetResponseDto,
   MemoryLaneResponseDto,
@@ -21,45 +20,20 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IAssetDeleteJob,
-  IJobRepository,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
   JobName,
   JobStatus,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IStackRepository } from 'src/interfaces/stack.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { requireAccess } from 'src/utils/access';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
-export class AssetService {
-  private configCore: SystemConfigCore;
-
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(IStackRepository) private stackRepository: IStackRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(AssetService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-  }
-
+export class AssetService extends BaseService {
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const partnerIds = await getMyPartnerIds({
       userId: auth.user.id,
@@ -112,15 +86,15 @@ export class AssetService {
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_READ, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_READ, ids: [id] });
 
     const asset = await this.assetRepository.getById(
       id,
       {
         exifInfo: true,
-        tags: true,
         sharedLinks: true,
         smartInfo: true,
+        tags: true,
         owner: true,
         faces: {
           person: true,
@@ -161,7 +135,7 @@ export class AssetService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
@@ -204,7 +178,7 @@ export class AssetService {
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
     const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids });
 
     for (const id of ids) {
       await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
@@ -214,7 +188,7 @@ export class AssetService {
   }
 
   async handleAssetDeletionCheck(): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
     const trashedBefore = DateTime.now()
       .minus(Duration.fromObject({ days: trashedDays }))
@@ -301,7 +275,7 @@ export class AssetService {
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_DELETE, ids });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DELETE, ids });
     await this.assetRepository.updateAll(ids, {
       deletedAt: new Date(),
       status: force ? AssetStatus.DELETED : AssetStatus.TRASHED,
@@ -310,19 +284,24 @@ export class AssetService {
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds });
+    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds });
 
     const jobs: JobItem[] = [];
 
     for (const id of dto.assetIds) {
       switch (dto.name) {
+        case AssetJobName.REFRESH_FACES: {
+          jobs.push({ name: JobName.FACE_DETECTION, data: { id } });
+          break;
+        }
+
         case AssetJobName.REFRESH_METADATA: {
           jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
           break;
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GENERATE_PREVIEW, data: { id } });
+          jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id } });
           break;
         }
 

@@ -163,9 +163,9 @@
     <AssetViewer
       asset={$viewingAsset}
       onAction={handleAction}
-      on:previous={handlePrevious}
-      on:next={handleNext}
-      on:close={() => {
+      onPrevious={handlePrevious}
+      onNext={handleNext}
+      onClose={() => {
         assetViewingStore.showAssetViewer(false);
         handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
       }}

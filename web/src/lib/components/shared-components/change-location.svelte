@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import { timeDebounceOnSearch } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -14,12 +13,14 @@
   import { t } from 'svelte-i18n';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
 
-  export let asset: AssetResponseDto | undefined = undefined;
-
   interface Point {
     lng: number;
     lat: number;
   }
+
+  export let asset: AssetResponseDto | undefined = undefined;
+  export let onCancel: () => void;
+  export let onConfirm: (point: Point) => void;
 
   let places: PlacesResponseDto[] = [];
   let suggestedPlaces: PlacesResponseDto[] = [];
@@ -29,11 +30,6 @@
   let suggestionContainer: HTMLDivElement;
   let hideSuggestion = false;
   let addClipMapMarker: (long: number, lat: number) => void;
-
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    confirm: Point;
-  }>();
 
   $: lat = asset?.exifInfo?.latitude ?? undefined;
   $: lng = asset?.exifInfo?.longitude ?? undefined;
@@ -50,17 +46,11 @@
 
   let point: Point | null = null;
 
-  const handleCancel = () => dispatch('cancel');
-
-  const handleSelect = (selected: Point) => {
-    point = selected;
-  };
-
   const handleConfirm = () => {
     if (point) {
-      dispatch('confirm', point);
+      onConfirm(point);
     } else {
-      dispatch('cancel');
+      onCancel();
     }
   };
 
@@ -108,13 +98,7 @@
   };
 </script>
 
-<ConfirmDialog
-  confirmColor="primary"
-  title={$t('change_location')}
-  width="wide"
-  onConfirm={handleConfirm}
-  onCancel={handleCancel}
->
+<ConfirmDialog confirmColor="primary" title={$t('change_location')} width="wide" onConfirm={handleConfirm} {onCancel}>
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <div
       class="relative w-64 sm:w-96"
@@ -126,10 +110,8 @@
           placeholder={$t('search_places')}
           bind:name={searchWord}
           {showLoadingSpinner}
-          on:reset={() => {
-            suggestedPlaces = [];
-          }}
-          on:search={handleSearchPlaces}
+          onReset={() => (suggestedPlaces = [])}
+          onSearch={handleSearchPlaces}
           roundedBottom={suggestedPlaces.length === 0 || hideSuggestion}
         />
       </button>
@@ -180,7 +162,7 @@
           center={lat && lng ? { lat, lng } : undefined}
           simplified={true}
           clickable={true}
-          on:clickedPoint={({ detail: point }) => handleSelect(point)}
+          onClickPoint={(selected) => (point = selected)}
         />
       {/await}
     </div>

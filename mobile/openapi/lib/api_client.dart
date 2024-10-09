@@ -166,7 +166,6 @@ class ApiClient {
 
   /// Returns a native instance of an OpenAPI class matching the [specified type][targetType].
   static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
-    upgradeDto(value, targetType);
     try {
       switch (targetType) {
         case 'String':
@@ -373,8 +372,6 @@ class ApiClient {
           return MapMarkerResponseDto.fromJson(value);
         case 'MapReverseGeocodeResponseDto':
           return MapReverseGeocodeResponseDto.fromJson(value);
-        case 'MapTheme':
-          return MapThemeTypeTransformer().decode(value);
         case 'MemoriesResponse':
           return MemoriesResponse.fromJson(value);
         case 'MemoriesUpdate':
@@ -439,6 +436,8 @@ class ApiClient {
           return PurchaseUpdate.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'RandomSearchDto':
+          return RandomSearchDto.fromJson(value);
         case 'RatingsResponse':
           return RatingsResponse.fromJson(value);
         case 'RatingsUpdate':
@@ -449,8 +448,6 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
-        case 'ScanLibraryDto':
-          return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetResponseDto':
@@ -483,6 +480,8 @@ class ApiClient {
           return ServerStorageResponseDto.fromJson(value);
         case 'ServerThemeDto':
           return ServerThemeDto.fromJson(value);
+        case 'ServerVersionHistoryResponseDto':
+          return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
           return ServerVersionResponseDto.fromJson(value);
         case 'SessionResponseDto':
@@ -515,6 +514,8 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigFacesDto':
           return SystemConfigFacesDto.fromJson(value);
+        case 'SystemConfigGeneratedImageDto':
+          return SystemConfigGeneratedImageDto.fromJson(value);
         case 'SystemConfigImageDto':
           return SystemConfigImageDto.fromJson(value);
         case 'SystemConfigJobDto':
@@ -575,6 +576,8 @@ class ApiClient {
           return TagsResponse.fromJson(value);
         case 'TagsUpdate':
           return TagsUpdate.fromJson(value);
+        case 'TestEmailResponseDto':
+          return TestEmailResponseDto.fromJson(value);
         case 'TimeBucketResponseDto':
           return TimeBucketResponseDto.fromJson(value);
         case 'TimeBucketSize':

@@ -176,6 +176,7 @@ export interface ISearchRepository {
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
   searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
+  searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]>;
   upsert(assetId: string, embedding: number[]): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
   getAssetsByCity(userIds: string[]): Promise<AssetEntity[]>;

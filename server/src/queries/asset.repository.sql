@@ -268,35 +268,6 @@ DELETE FROM "assets"
 WHERE
   "ownerId" = $1
 
--- AssetRepository.getExternalLibraryAssetPaths
-SELECT DISTINCT
-  "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
-FROM
-  (
-    SELECT
-      "AssetEntity"."id" AS "AssetEntity_id",
-      "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-      "AssetEntity"."isOffline" AS "AssetEntity_isOffline"
-    FROM
-      "assets" "AssetEntity"
-      LEFT JOIN "libraries" "AssetEntity__AssetEntity_library" ON "AssetEntity__AssetEntity_library"."id" = "AssetEntity"."libraryId"
-      AND (
-        "AssetEntity__AssetEntity_library"."deletedAt" IS NULL
-      )
-    WHERE
-      (
-        (
-          ((("AssetEntity__AssetEntity_library"."id" = $1)))
-          AND ("AssetEntity"."isExternal" = $2)
-        )
-      )
-      AND ("AssetEntity"."deletedAt" IS NULL)
-  ) "distinctAlias"
-ORDER BY
-  "AssetEntity_id" ASC
-LIMIT
-  2
-
 -- AssetRepository.getByLibraryIdAndOriginalPath
 SELECT DISTINCT
   "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
@@ -365,18 +336,6 @@ WHERE
       "libraryId" = $1
       AND "originalPath" = path
   );
-
--- AssetRepository.updateOfflineLibraryAssets
-UPDATE "assets"
-SET
-  "isOffline" = $1,
-  "updatedAt" = CURRENT_TIMESTAMP
-WHERE
-  (
-    "libraryId" = $2
-    AND NOT ("originalPath" IN ($3))
-    AND "isOffline" = $4
-  )
 
 -- AssetRepository.getAllByDeviceId
 SELECT
@@ -1151,6 +1110,30 @@ WHERE
   AND "asset"."updatedAt" > $2
 
 -- AssetRepository.upsertFile
+INSERT INTO
+  "asset_files" (
+    "id",
+    "assetId",
+    "createdAt",
+    "updatedAt",
+    "type",
+    "path"
+  )
+VALUES
+  (DEFAULT, $1, DEFAULT, DEFAULT, $2, $3)
+ON CONFLICT ("assetId", "type") DO
+UPDATE
+SET
+  "assetId" = EXCLUDED."assetId",
+  "type" = EXCLUDED."type",
+  "path" = EXCLUDED."path",
+  "updatedAt" = DEFAULT
+RETURNING
+  "id",
+  "createdAt",
+  "updatedAt"
+
+-- AssetRepository.upsertFiles
 INSERT INTO
   "asset_files" (
     "id",

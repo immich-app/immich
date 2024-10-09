@@ -13,7 +13,7 @@ export class SystemConfigController {
   @Get()
   @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
   getConfig(): Promise<SystemConfigDto> {
-    return this.service.getConfig();
+    return this.service.getSystemConfig();
   }
 
   @Get('defaults')
@@ -25,7 +25,7 @@ export class SystemConfigController {
   @Put()
   @Authenticated({ permission: Permission.SYSTEM_CONFIG_UPDATE, admin: true })
   updateConfig(@Body() dto: SystemConfigDto): Promise<SystemConfigDto> {
-    return this.service.updateConfig(dto);
+    return this.service.updateSystemConfig(dto);
   }
 
   @Get('storage-template-options')

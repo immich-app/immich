@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import Checkbox from '$lib/components/elements/checkbox.svelte';
@@ -7,19 +6,16 @@
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let size: number;
+  export let onConfirm: () => void;
+  export let onCancel: () => void;
 
   let checked = false;
-
-  const dispatch = createEventDispatcher<{
-    confirm: void;
-    cancel: void;
-  }>();
 
   const handleConfirm = () => {
     if (checked) {
       $showDeleteModal = false;
     }
-    dispatch('confirm');
+    onConfirm();
   };
 </script>
 
@@ -27,7 +23,7 @@
   title={$t('permanently_delete_assets_count', { values: { count: size } })}
   confirmText={$t('delete')}
   onConfirm={handleConfirm}
-  onCancel={() => dispatch('cancel')}
+  {onCancel}
 >
   <svelte:fragment slot="prompt">
     <p>
