@@ -204,25 +204,11 @@ class MultiselectGrid extends HookConsumerWidget {
     void onDeleteLocal(bool onlyBackedUp) async {
       processing.value = true;
       try {
-        // Filter local assets based on the backup status (`isRemote`).
-        // If `onlyBackedUp` is true, only select assets that are also present on the server (`isRemote`).
-        final localIds = selection.value
-            .where((a) => a.isLocal && (!onlyBackedUp || a.isRemote))
-            .toList();
-
-        if (localIds.isEmpty) {
-          ImmichToast.show(
-            context: context,
-            msg: 'No backed-up assets selected for deletion.',
-            gravity: ToastGravity.BOTTOM,
-          );
-          return;
-        }
-
-        // Proceed with deletion of filtered assets
+        final localIds = selection.value.where((a) => a.isLocal).toList();
         final isDeleted = await ref
             .read(assetProvider.notifier)
-            .deleteLocalOnlyAssets(localIds, onlyBackedUp: onlyBackedUp);
+            .deleteLocalOnlyAssets(context, localIds,
+                onlyBackedUp: onlyBackedUp);
 
         if (isDeleted) {
           ImmichToast.show(

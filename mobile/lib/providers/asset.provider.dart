@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -14,6 +15,7 @@ import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
@@ -78,27 +80,48 @@ class AssetNotifier extends StateNotifier<bool> {
   }
 
   Future<bool> deleteLocalOnlyAssets(
+    BuildContext context,
     Iterable<Asset> deleteAssets, {
     bool onlyBackedUp = false,
   }) async {
     _deleteInProgress = true;
     state = true;
     try {
+      // Filter local assets based on the backup status (`isRemote`).
+      // If `onlyBackedUp` is true, only select assets that are also present on the server (`isRemote`).
+      final assetsToDelete = deleteAssets
+          .where((e) => e.isLocal && (!onlyBackedUp || e.isRemote))
+          .toList();
+
+      if (assetsToDelete.isEmpty) {
+        // No assets to delete, exit early
+        ImmichToast.show(
+          context: context,
+          msg: 'No backed-up assets selected for deletion.',
+          gravity: ToastGravity.BOTTOM,
+        );
+        return false;
+      }
+
+      // Continue with deletion of the filtered assets
       final assets = onlyBackedUp
-          ? deleteAssets.where((e) => e.storage == AssetState.merged)
-          : deleteAssets;
+          ? assetsToDelete.where((e) => e.storage == AssetState.merged)
+          : assetsToDelete;
+
       final localDeleted = await _deleteLocalAssets(assets);
       if (localDeleted.isNotEmpty) {
-        final localOnlyIds = deleteAssets
+        final localOnlyIds = assetsToDelete
             .where((e) => e.storage == AssetState.local)
             .map((e) => e.id)
             .toList();
         // Update merged assets to remote only
-        final mergedAssets =
-            deleteAssets.where((e) => e.storage == AssetState.merged).map((e) {
+        final mergedAssets = assetsToDelete
+            .where((e) => e.storage == AssetState.merged)
+            .map((e) {
           e.localId = null;
           return e;
         }).toList();
+
         await _db.writeTxn(() async {
           if (mergedAssets.isNotEmpty) {
             await _db.assets.putAll(mergedAssets);
