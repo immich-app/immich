@@ -170,7 +170,7 @@ class AlbumsPage extends HookConsumerWidget {
               runSpacing: 4,
               children: [
                 QuickFilterButton(
-                  label: 'All',
+                  label: 'all'.tr(),
                   isSelected: filterMode.value == QuickFilterMode.all,
                   onTap: () {
                     changeFilter(QuickFilterMode.all);
@@ -178,7 +178,7 @@ class AlbumsPage extends HookConsumerWidget {
                   },
                 ),
                 QuickFilterButton(
-                  label: 'Shared with me',
+                  label: 'shared_with_me'.tr(),
                   isSelected: filterMode.value == QuickFilterMode.sharedWithMe,
                   onTap: () {
                     changeFilter(QuickFilterMode.sharedWithMe);
@@ -189,7 +189,7 @@ class AlbumsPage extends HookConsumerWidget {
                   },
                 ),
                 QuickFilterButton(
-                  label: 'My albums',
+                  label: 'my_albums'.tr(),
                   isSelected: filterMode.value == QuickFilterMode.myAlbums,
                   onTap: () {
                     changeFilter(QuickFilterMode.myAlbums);
@@ -360,10 +360,14 @@ class SortButton extends ConsumerWidget {
 
     return MenuAnchor(
       style: MenuStyle(
+        elevation: WidgetStatePropertyAll(1),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
           ),
+        ),
+        padding: WidgetStatePropertyAll(
+          EdgeInsets.all(4),
         ),
       ),
       consumeOutsideTap: true,
@@ -399,7 +403,9 @@ class SortButton extends ConsumerWidget {
                 }
               },
               style: ButtonStyle(
-                padding: WidgetStateProperty.all(const EdgeInsets.all(8)),
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.fromLTRB(16, 16, 32, 16),
+                ),
                 backgroundColor: WidgetStateProperty.all(
                   albumSortOption == mode
                       ? context.colorScheme.primary
@@ -407,16 +413,17 @@ class SortButton extends ConsumerWidget {
                 ),
                 shape: WidgetStateProperty.all(
                   RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
               ),
               child: Text(
                 mode.label.tr(),
-                style: context.textTheme.bodyMedium?.copyWith(
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
                   color: albumSortOption == mode
                       ? context.colorScheme.onPrimary
-                      : context.colorScheme.onSurface,
+                      : context.colorScheme.onSurface.withAlpha(185),
                 ),
               ),
             ),

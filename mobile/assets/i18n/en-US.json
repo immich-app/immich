@@ -1,4 +1,7 @@
 {
+  "all": "All",
+  "shared_with_me": "Shared with me",
+  "my_albums": "My albums",
   "create_new": "CREATE NEW",
   "create_album": "Create album",
   "videos": "Videos",
