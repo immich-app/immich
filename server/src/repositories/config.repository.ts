@@ -44,6 +44,9 @@ export class ConfigRepository implements IConfigRepository {
     const environment = process.env.IMMICH_ENV as ImmichEnvironment;
     const isProd = environment === ImmichEnvironment.PRODUCTION;
     const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
+    // TODO change default to /data or similar
+    const uploadFolder = process.env.IMMICH_MEDIA_LOCATION || './upload';
+
     const folders = {
       geodata: join(buildFolder, 'geodata'),
       web: join(buildFolder, 'www'),
@@ -85,6 +88,13 @@ export class ConfigRepository implements IConfigRepository {
       },
 
       licensePublicKey: isProd ? productionKeys : stagingKeys,
+
+      mediaPaths: {
+        uploads: join(uploadFolder, 'upload'),
+        library: join(uploadFolder, 'library'),
+        thumbnails: join(uploadFolder, 'thumbs'),
+        encodedVideos: join(uploadFolder, 'encoded-video'),
+      },
 
       resourcePaths: {
         lockFile: join(buildFolder, 'build-lock.json'),

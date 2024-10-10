@@ -25,6 +25,13 @@ const envData: EnvData = {
     server: 'server-public-key',
   },
 
+  mediaPaths: {
+    uploads: '/data/uploads',
+    library: '/data/library',
+    thumbnails: '/data/thumbs',
+    encodedVideos: '/data/encoded-video',
+  },
+
   resourcePaths: {
     lockFile: 'build-lock.json',
     geodata: {
