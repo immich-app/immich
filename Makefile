@@ -66,6 +66,18 @@ test-e2e:
 	docker compose -f ./e2e/docker-compose.yml build
 	npm --prefix e2e run test
 	npm --prefix e2e run test:web
+test-medium:
+	docker run \
+    --rm \
+    -v ./server/src:/usr/src/app/src \
+    -v ./server/test:/usr/src/app/test \
+    -v ./server/vitest.config.medium.mjs:/usr/src/app/vitest.config.medium.mjs \
+    -v ./server/tsconfig.json:/usr/src/app/tsconfig.json \
+    -e NODE_ENV=development \
+    immich-server:latest \
+    -c "npm ci && npm run test:medium -- --run"
+test-medium-dev:
+	docker exec -it immich_server /bin/sh -c "npm run test:medium"
 
 build-all: $(foreach M,$(MODULES),build-$M) ;
 install-all: $(foreach M,$(MODULES),install-$M) ;
