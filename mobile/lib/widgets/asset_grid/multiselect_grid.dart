@@ -204,10 +204,11 @@ class MultiselectGrid extends HookConsumerWidget {
       processing.value = true;
       try {
         final localIds = selection.value.where((a) => a.isLocal).toList();
-
         final isDeleted = await ref
             .read(assetProvider.notifier)
-            .deleteLocalOnlyAssets(localIds, onlyBackedUp: onlyBackedUp);
+            .deleteLocalOnlyAssets(context, localIds,
+                onlyBackedUp: onlyBackedUp);
+
         if (isDeleted) {
           ImmichToast.show(
             context: context,
