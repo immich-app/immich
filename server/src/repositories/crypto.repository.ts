@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { xxh3 } from '@node-rs/xxhash';
 import { compareSync, hash } from 'bcrypt';
 import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -26,6 +27,10 @@ export class CryptoRepository implements ICryptoRepository {
 
   hashSha256(value: string) {
     return createHash('sha256').update(value).digest('base64');
+  }
+
+  xxHash(value: string) {
+    return xxh3.Xxh3.withSeed().update(value).digest();
   }
 
   verifySha256(value: string, encryptedValue: string, publicKey: string) {

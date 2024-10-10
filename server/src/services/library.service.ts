@@ -417,7 +417,6 @@ export class LibraryService extends BaseService {
       localDateTime: mtime,
       type: assetType,
       originalFileName: parse(assetPath).base,
-
       sidecarPath,
       isExternal: true,
     });

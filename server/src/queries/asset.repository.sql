@@ -64,7 +64,8 @@ SELECT
   "files"."createdAt" AS "files_createdAt",
   "files"."updatedAt" AS "files_updatedAt",
   "files"."type" AS "files_type",
-  "files"."path" AS "files_path"
+  "files"."path" AS "files_path",
+  "files"."checksum" AS "files_checksum"
 FROM
   "assets" "entity"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "entity"."id"
@@ -248,7 +249,8 @@ SELECT
   "AssetEntity__AssetEntity_files"."createdAt" AS "AssetEntity__AssetEntity_files_createdAt",
   "AssetEntity__AssetEntity_files"."updatedAt" AS "AssetEntity__AssetEntity_files_updatedAt",
   "AssetEntity__AssetEntity_files"."type" AS "AssetEntity__AssetEntity_files_type",
-  "AssetEntity__AssetEntity_files"."path" AS "AssetEntity__AssetEntity_files_path"
+  "AssetEntity__AssetEntity_files"."path" AS "AssetEntity__AssetEntity_files_path",
+  "AssetEntity__AssetEntity_files"."checksum" AS "AssetEntity__AssetEntity_files_checksum"
 FROM
   "assets" "AssetEntity"
   LEFT JOIN "exif" "AssetEntity__AssetEntity_exifInfo" ON "AssetEntity__AssetEntity_exifInfo"."assetId" = "AssetEntity"."id"
@@ -1117,10 +1119,11 @@ INSERT INTO
     "createdAt",
     "updatedAt",
     "type",
-    "path"
+    "path",
+    "checksum"
   )
 VALUES
-  (DEFAULT, $1, DEFAULT, DEFAULT, $2, $3)
+  (DEFAULT, $1, DEFAULT, DEFAULT, $2, $3, DEFAULT)
 ON CONFLICT ("assetId", "type") DO
 UPDATE
 SET
@@ -1141,10 +1144,11 @@ INSERT INTO
     "createdAt",
     "updatedAt",
     "type",
-    "path"
+    "path",
+    "checksum"
   )
 VALUES
-  (DEFAULT, $1, DEFAULT, DEFAULT, $2, $3)
+  (DEFAULT, $1, DEFAULT, DEFAULT, $2, $3, DEFAULT)
 ON CONFLICT ("assetId", "type") DO
 UPDATE
 SET

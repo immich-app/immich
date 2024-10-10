@@ -145,6 +145,7 @@ export interface UpsertFileOptions {
   assetId: string;
   type: AssetFileType;
   path: string;
+  checksum?: BigInt;
 }
 
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;

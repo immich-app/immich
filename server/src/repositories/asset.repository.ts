@@ -801,7 +801,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
-  async upsertFile(file: { assetId: string; type: AssetFileType; path: string }): Promise<void> {
+  async upsertFile(file: { assetId: string; type: AssetFileType; path: string; checksum?: BigInt }): Promise<void> {
     await this.fileRepository.upsert(file, { conflictPaths: ['assetId', 'type'] });
   }
 

@@ -21,7 +21,7 @@ import {
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, AssetType, CacheControl, Permission, StorageFolder } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, CacheControl, Permission, StorageFolder } from 'src/enum';
 import { JobName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { requireAccess, requireUploadAccess } from 'src/utils/access';
@@ -39,6 +39,7 @@ export interface UploadRequest {
 export interface UploadFile {
   uuid: string;
   checksum: Buffer;
+  xxhash: BigInt;
   originalPath: string;
   originalName: string;
   size: number;
@@ -334,6 +335,15 @@ export class AssetMediaService extends BaseService {
       sidecarPath: sidecarPath || null,
     });
 
+    await this.assetRepository.upsertFile({
+      assetId,
+      type: AssetFileType.ORIGINAL,
+      path: file.originalPath,
+      checksum: file.xxhash,
+    });
+
+    console.log('xxhash', file.xxhash);
+
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
     await this.jobRepository.queue({
@@ -363,6 +373,8 @@ export class AssetMediaService extends BaseService {
       livePhotoVideoId: asset.livePhotoVideoId,
       sidecarPath: asset.sidecarPath,
     });
+
+    // TODO: asset file original
 
     const { size } = await this.storageRepository.stat(created.originalPath);
     await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
@@ -398,6 +410,13 @@ export class AssetMediaService extends BaseService {
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: file.originalName,
       sidecarPath: sidecarFile?.originalPath,
+    });
+
+    await this.assetRepository.upsertFile({
+      assetId: asset.id,
+      type: AssetFileType.ORIGINAL,
+      path: asset.originalPath,
+      checksum: file.xxhash,
     });
 
     if (sidecarFile) {

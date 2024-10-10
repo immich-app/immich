@@ -35,4 +35,8 @@ export class AssetFileEntity {
 
   @Column()
   path!: string;
+
+  @Column({ type: 'bigint' })
+  @Index()
+  checksum!: BigInt | null;
 }

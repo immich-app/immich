@@ -11,6 +11,7 @@ export enum AssetType {
 }
 
 export enum AssetFileType {
+  ORIGINAL = 'original',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
 }
