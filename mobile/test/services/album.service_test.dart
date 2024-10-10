@@ -1,4 +1,7 @@
+import 'dart:collection';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -90,13 +93,11 @@ void main() {
           .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
 
       when(
-        () => syncService.syncRemoteAlbumsToDb(
-          [
-            AlbumStub.sharedWithUser,
-            AlbumStub.oneAsset,
-            AlbumStub.twoAsset,
-          ],
-        ),
+        () => syncService.syncRemoteAlbumsToDb([
+          AlbumStub.twoAsset,
+          AlbumStub.oneAsset,
+          AlbumStub.sharedWithUser,
+        ]),
       ).thenAnswer((_) async => true);
       final result = await sut.refreshRemoteAlbums();
       expect(result, true);
@@ -105,7 +106,11 @@ void main() {
       verify(() => albumApiRepository.getAll(shared: null)).called(1);
       verify(
         () => syncService.syncRemoteAlbumsToDb(
-          [AlbumStub.sharedWithUser, AlbumStub.oneAsset, AlbumStub.twoAsset],
+          [
+            AlbumStub.twoAsset,
+            AlbumStub.oneAsset,
+            AlbumStub.sharedWithUser,
+          ],
         ),
       ).called(1);
       verifyNoMoreInteractions(userService);
