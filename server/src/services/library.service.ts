@@ -303,7 +303,6 @@ export class LibraryService extends BaseService {
 
   async update(id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.findOrFail(id);
-    const library = await this.libraryRepository.update({ id, ...dto });
 
     if (dto.importPaths) {
       const validation = await this.validate(id, { importPaths: dto.importPaths });
@@ -316,6 +315,7 @@ export class LibraryService extends BaseService {
       }
     }
 
+    const library = await this.libraryRepository.update({ id, ...dto });
     return mapLibrary(library);
   }
 

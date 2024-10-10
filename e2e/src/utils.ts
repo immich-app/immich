@@ -374,8 +374,8 @@ export const utils = {
   },
 
   createDirectory: (path: string) => {
-    if (!existsSync(dirname(path))) {
-      mkdirSync(dirname(path), { recursive: true });
+    if (!existsSync(path)) {
+      mkdirSync(path, { recursive: true });
     }
   },
 
@@ -392,7 +392,7 @@ export const utils = {
       return;
     }
 
-    rmSync(path);
+    rmSync(path, { recursive: true });
   },
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
