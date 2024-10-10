@@ -26,7 +26,7 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { ReverseGeocodeResult } from 'src/interfaces/map.interface';
-import { ImmichTags } from 'src/interfaces/metadata.interface';
+import { ExifDuration, ImmichTags } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -243,7 +243,7 @@ export class MetadataService extends BaseService {
 
     await this.assetRepository.update({
       id: asset.id,
-      duration: exifTags.Duration?.toString() ?? null,
+      duration: this.durationToString(exifTags.Duration),
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
@@ -332,6 +332,18 @@ export class MetadataService extends BaseService {
     }
 
     return JobStatus.SUCCESS;
+  }
+
+  private durationToString(duration?: string | number | ExifDuration) {
+    if (!duration) {
+      return null;
+    }
+    if (!duration.hasOwnProperty('Value')) {
+      return duration.toString();
+    }
+    const exifDuration = duration as ExifDuration;
+    const seconds = exifDuration.Value * (exifDuration.Scale ?? 1);
+    return Duration.fromObject({ seconds }).toFormat('hh:mm:ss.SSS');
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
