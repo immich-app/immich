@@ -13,6 +13,7 @@ class SearchMapThumbnail extends StatelessWidget {
   });
 
   final double size;
+  final bool showTitle = true;
 
   @override
   Widget build(BuildContext context) {

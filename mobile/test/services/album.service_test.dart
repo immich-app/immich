@@ -79,25 +79,35 @@ void main() {
       verifyNoMoreInteractions(syncService);
     });
   });
+
   group('refreshRemoteAlbums', () {
-    test('isShared: false', () async {
+    test('is working', () async {
       when(() => userService.refreshUsers()).thenAnswer((_) async => true);
+      when(() => albumApiRepository.getAll(shared: true))
+          .thenAnswer((_) async => [AlbumStub.sharedWithUser]);
+
       when(() => albumApiRepository.getAll(shared: null))
           .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
+
       when(
-        () => syncService.syncRemoteAlbumsToDb(
-          [AlbumStub.oneAsset, AlbumStub.twoAsset],
-          isShared: false,
-        ),
+        () => syncService.syncRemoteAlbumsToDb([
+          AlbumStub.twoAsset,
+          AlbumStub.oneAsset,
+          AlbumStub.sharedWithUser,
+        ]),
       ).thenAnswer((_) async => true);
-      final result = await sut.refreshRemoteAlbums(isShared: false);
+      final result = await sut.refreshRemoteAlbums();
       expect(result, true);
       verify(() => userService.refreshUsers()).called(1);
+      verify(() => albumApiRepository.getAll(shared: true)).called(1);
       verify(() => albumApiRepository.getAll(shared: null)).called(1);
       verify(
         () => syncService.syncRemoteAlbumsToDb(
-          [AlbumStub.oneAsset, AlbumStub.twoAsset],
-          isShared: false,
+          [
+            AlbumStub.twoAsset,
+            AlbumStub.oneAsset,
+            AlbumStub.sharedWithUser,
+          ],
         ),
       ).called(1);
       verifyNoMoreInteractions(userService);
@@ -166,9 +176,9 @@ void main() {
         () => albumRepository.update(AlbumStub.oneAsset),
       ).thenAnswer((_) async => AlbumStub.oneAsset);
 
-      final result = await sut.addAdditionalAssetToAlbum(
-        [AssetStub.image1, AssetStub.image2],
+      final result = await sut.addAssets(
         AlbumStub.oneAsset,
+        [AssetStub.image1, AssetStub.image2],
       );
 
       expect(result != null, true);
@@ -185,18 +195,23 @@ void main() {
       ).thenAnswer(
         (_) async => AlbumStub.sharedWithUser,
       );
-      when(
-        () => entityService
-            .fillAlbumWithDatabaseEntities(AlbumStub.sharedWithUser),
-      ).thenAnswer((_) async => AlbumStub.sharedWithUser);
-      when(
-        () => albumRepository.update(AlbumStub.sharedWithUser),
-      ).thenAnswer((_) async => AlbumStub.sharedWithUser);
 
-      final result = await sut.addAdditionalUserToAlbum(
-        [UserStub.user2.id],
+      when(
+        () => albumRepository.addUsers(
+          AlbumStub.emptyAlbum,
+          AlbumStub.emptyAlbum.sharedUsers.toList(),
+        ),
+      ).thenAnswer((_) async => AlbumStub.emptyAlbum);
+
+      when(
+        () => albumRepository.update(AlbumStub.emptyAlbum),
+      ).thenAnswer((_) async => AlbumStub.emptyAlbum);
+
+      final result = await sut.addUsers(
         AlbumStub.emptyAlbum,
+        [UserStub.user2.id],
       );
+
       expect(result, true);
     });
   });

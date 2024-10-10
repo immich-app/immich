@@ -18,9 +18,10 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-  final Widget? action;
+  final List<Widget>? actions;
+  final bool showUploadButton;
 
-  const ImmichAppBar({super.key, this.action});
+  const ImmichAppBar({super.key, this.actions, this.showUploadButton = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -184,12 +185,18 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
         },
       ),
       actions: [
-        if (action != null)
-          Padding(padding: const EdgeInsets.only(right: 20), child: action!),
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: buildBackupIndicator(),
-        ),
+        if (actions != null)
+          ...actions!.map(
+            (action) => Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: action,
+            ),
+          ),
+        if (showUploadButton)
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: buildBackupIndicator(),
+          ),
         Padding(
           padding: const EdgeInsets.only(right: 20),
           child: buildProfileIndicator(),
