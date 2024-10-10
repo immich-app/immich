@@ -1,12 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 
 import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -22,14 +20,6 @@ class TabNavigationObserver extends AutoRouterObserver {
   });
 
   @override
-  void didInitTabRoute(TabPageRoute route, TabPageRoute? previousRoute) {
-    // Perform tasks on first navigation to SearchRoute
-    if (route.name == 'SearchRoute') {
-      // ref.refresh(getCuratedLocationProvider);
-    }
-  }
-
-  @override
   Future<void> didChangeTabRoute(
     TabPageRoute route,
     TabPageRoute previousRoute,
@@ -39,15 +29,6 @@ class TabNavigationObserver extends AutoRouterObserver {
       // Refresh Location State
       ref.invalidate(getPreviewPlacesProvider);
       ref.invalidate(getAllPeopleProvider);
-    }
-
-    if (route.name == 'SharingRoute') {
-      ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
-      Future(() => ref.read(assetProvider.notifier).getAllAsset());
-    }
-
-    if (route.name == 'LibraryRoute') {
-      ref.read(albumProvider.notifier).getAllAlbums();
     }
 
     if (route.name == 'HomeRoute') {

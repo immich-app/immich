@@ -9,7 +9,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
@@ -272,11 +271,10 @@ class MultiselectGrid extends HookConsumerWidget {
         if (assets.isEmpty) {
           return;
         }
-        final result =
-            await ref.read(albumServiceProvider).addAdditionalAssetToAlbum(
-                  assets,
-                  album,
-                );
+        final result = await ref.read(albumServiceProvider).addAssets(
+              album,
+              assets,
+            );
 
         if (result != null) {
           if (result.alreadyInAlbum.isNotEmpty) {
@@ -323,8 +321,7 @@ class MultiselectGrid extends HookConsumerWidget {
             .createAlbumWithGeneratedName(assets);
 
         if (result != null) {
-          ref.watch(albumProvider.notifier).getAllAlbums();
-          ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
+          ref.watch(albumProvider.notifier).refreshRemoteAlbums();
           selectionEnabledHook.value = false;
 
           context.pushRoute(AlbumViewerRoute(albumId: result.id));
