@@ -141,25 +141,21 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
     }
   }
 
-  let searchPattern: string;
-  if (patterns.length === 1) {
-    searchPattern = patterns[0];
-  } else if (patterns.length === 0) {
+  if (patterns.length === 0) {
     return crawledFiles;
-  } else {
-    searchPattern = '{' + patterns.join(',') + '}';
   }
 
-  if (recursive) {
-    searchPattern = searchPattern + '/**/';
-  }
+  const searchPatterns = patterns.map((pattern) => {
+    let escapedPattern = pattern;
+    if (recursive) {
+      escapedPattern = escapedPattern + '/**';
+    }
+    return `${escapedPattern}/*.{${extensions.join(',')}}`;
+  });
 
-  searchPattern = `${searchPattern}/*.{${extensions.join(',')}}`;
-
-  const globbedFiles = await glob(searchPattern, {
+  const globbedFiles = await glob(searchPatterns, {
     absolute: true,
     caseSensitiveMatch: false,
-    onlyFiles: true,
     dot: includeHidden,
     ignore: [`**/${exclusionPattern}`],
   });

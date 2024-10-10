@@ -235,30 +235,6 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAssets(personId: string): Promise<AssetEntity[]> {
-    return this.assetRepository.find({
-      where: {
-        faces: {
-          personId,
-        },
-        isVisible: true,
-        isArchived: false,
-      },
-      relations: {
-        faces: {
-          person: true,
-        },
-        exifInfo: true,
-      },
-      order: {
-        fileCreatedAt: 'desc',
-      },
-      // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
-      take: 1000,
-    });
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
   async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
     const items = await this.personRepository
       .createQueryBuilder('person')
@@ -303,7 +279,7 @@ export class PersonRepository implements IPersonRepository {
     faceIdsToRemove: string[],
     embeddingsToAdd?: FaceSearchEntity[],
   ): Promise<void> {
-    const query = this.faceSearchRepository.createQueryBuilder().select('1');
+    const query = this.faceSearchRepository.createQueryBuilder().select('1').fromDummy();
     if (facesToAdd.length > 0) {
       const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
       query.addCommonTableExpression(insertCte, 'added');
@@ -320,6 +296,7 @@ export class PersonRepository implements IPersonRepository {
     if (embeddingsToAdd?.length) {
       const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
       query.addCommonTableExpression(embeddingCte, 'embeddings');
+      query.getQuery(); // typeorm mixes up parameters without this
     }
 
     await query.execute();

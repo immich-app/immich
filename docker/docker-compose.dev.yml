@@ -45,7 +45,6 @@ services:
         soft: 1048576
         hard: 1048576
     ports:
-      - 3001:3001
       - 9230:9230
       - 9231:9231
     depends_on:
@@ -103,7 +102,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:2d1463258f2764328496376f5d965f20c6a67f66ea2b06dc42af351f75248792
+    image: redis:6.2-alpine@sha256:2ba50e1ac3a0ea17b736ce9db2b0a9f6f8b85d4c27d5f5accc6a416d8f42c6d5
     healthcheck:
       test: redis-cli ping || exit 1
 

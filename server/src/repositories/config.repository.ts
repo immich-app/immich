@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { join } from 'node:path';
+import { citiesFile } from 'src/constants';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
@@ -41,9 +43,14 @@ export class ConfigRepository implements IConfigRepository {
 
     const environment = process.env.IMMICH_ENV as ImmichEnvironment;
     const isProd = environment === ImmichEnvironment.PRODUCTION;
+    const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
+    const folders = {
+      geodata: join(buildFolder, 'geodata'),
+      web: join(buildFolder, 'www'),
+    };
 
     return {
-      port: Number(process.env.IMMICH_PORT) || 3001,
+      port: Number(process.env.IMMICH_PORT) || 2283,
       environment,
       configFile: process.env.IMMICH_CONFIG_FILE,
       logLevel: process.env.IMMICH_LOG_LEVEL as LogLevel,
@@ -78,6 +85,21 @@ export class ConfigRepository implements IConfigRepository {
       },
 
       licensePublicKey: isProd ? productionKeys : stagingKeys,
+
+      resourcePaths: {
+        lockFile: join(buildFolder, 'build-lock.json'),
+        geodata: {
+          dateFile: join(folders.geodata, 'geodata-date.txt'),
+          admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
+          admin2: join(folders.geodata, 'admin2Codes.txt'),
+          cities500: join(folders.geodata, citiesFile),
+          naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
+        },
+        web: {
+          root: folders.web,
+          indexHtml: join(folders.web, 'index.html'),
+        },
+      },
 
       storage: {
         ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',

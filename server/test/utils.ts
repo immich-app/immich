@@ -1,3 +1,5 @@
+import { PNG } from 'pngjs';
+import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
@@ -21,6 +23,7 @@ import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository
 import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
+import { newOAuthRepositoryMock } from 'test/repositories/oauth.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
@@ -35,13 +38,22 @@ import { newTrashRepositoryMock } from 'test/repositories/trash.repository.mock'
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { newVersionHistoryRepositoryMock } from 'test/repositories/version-history.repository.mock';
 import { newViewRepositoryMock } from 'test/repositories/view.repository.mock';
+import { Mocked } from 'vitest';
 
+type RepositoryOverrides = {
+  metadataRepository: IMetadataRepository;
+};
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
   new (...deps: Args): Type;
 };
 
-export const newTestService = <T extends BaseService>(Service: Constructor<T, BaseServiceArgs>) => {
+export const newTestService = <T extends BaseService>(
+  Service: Constructor<T, BaseServiceArgs>,
+  overrides?: RepositoryOverrides,
+) => {
+  const { metadataRepository } = overrides || {};
+
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggerRepositoryMock();
   const cryptoMock = newCryptoRepositoryMock();
@@ -60,10 +72,11 @@ export const newTestService = <T extends BaseService>(Service: Constructor<T, Ba
   const mapMock = newMapRepositoryMock();
   const mediaMock = newMediaRepositoryMock();
   const memoryMock = newMemoryRepositoryMock();
-  const metadataMock = newMetadataRepositoryMock();
+  const metadataMock = (metadataRepository || newMetadataRepositoryMock()) as Mocked<IMetadataRepository>;
   const metricMock = newMetricRepositoryMock();
   const moveMock = newMoveRepositoryMock();
   const notificationMock = newNotificationRepositoryMock();
+  const oauthMock = newOAuthRepositoryMock();
   const partnerMock = newPartnerRepositoryMock();
   const personMock = newPersonRepositoryMock();
   const searchMock = newSearchRepositoryMock();
@@ -102,6 +115,7 @@ export const newTestService = <T extends BaseService>(Service: Constructor<T, Ba
     metricMock,
     moveMock,
     notificationMock,
+    oauthMock,
     partnerMock,
     personMock,
     searchMock,
@@ -142,6 +156,7 @@ export const newTestService = <T extends BaseService>(Service: Constructor<T, Ba
     metricMock,
     moveMock,
     notificationMock,
+    oauthMock,
     partnerMock,
     personMock,
     searchMock,
@@ -157,4 +172,34 @@ export const newTestService = <T extends BaseService>(Service: Constructor<T, Ba
     versionHistoryMock,
     viewMock,
   };
+};
+
+const createPNG = (r: number, g: number, b: number) => {
+  const image = new PNG({ width: 1, height: 1 });
+  image.data[0] = r;
+  image.data[1] = g;
+  image.data[2] = b;
+  image.data[3] = 255;
+  return PNG.sync.write(image);
+};
+
+function* newPngFactory() {
+  for (let r = 0; r < 255; r++) {
+    for (let g = 0; g < 255; g++) {
+      for (let b = 0; b < 255; b++) {
+        yield createPNG(r, g, b);
+      }
+    }
+  }
+}
+
+const pngFactory = newPngFactory();
+
+export const newRandomImage = () => {
+  const { value } = pngFactory.next();
+  if (!value) {
+    throw new Error('Ran out of random asset data');
+  }
+
+  return value;
 };

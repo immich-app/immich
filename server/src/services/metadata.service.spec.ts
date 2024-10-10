@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType, SourceType } from 'src/enum';
+import { AssetType, ImmichWorker, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -61,6 +61,8 @@ describe(MetadataService.name, () => {
       tagMock,
       userMock,
     } = newTestService(MetadataService));
+
+    delete process.env.TZ;
   });
 
   afterEach(async () => {
@@ -73,7 +75,7 @@ describe(MetadataService.name, () => {
 
   describe('onBootstrapEvent', () => {
     it('should pause and resume queue during init', async () => {
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
       expect(mapMock.init).toHaveBeenCalledTimes(1);
@@ -83,7 +85,7 @@ describe(MetadataService.name, () => {
     it('should return if reverse geocoding is disabled', async () => {
       systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: false } });
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(jobMock.pause).not.toHaveBeenCalled();
       expect(mapMock.init).not.toHaveBeenCalled();
@@ -273,6 +275,27 @@ describe(MetadataService.name, () => {
         fileCreatedAt: sidecarDate,
         localDateTime: sidecarDate,
       });
+    });
+
+    it('should account for the server being in a non-UTC timezone', async () => {
+      process.env.TZ = 'America/Los_Angeles';
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      metadataMock.readTags.mockResolvedValueOnce({
+        DateTimeOriginal: '2022:01:01 00:00:00',
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dateTimeOriginal: new Date('2022-01-01T08:00:00.000Z'),
+        }),
+      );
+
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          localDateTime: new Date('2022-01-01T00:00:00.000Z'),
+        }),
+      );
     });
 
     it('should handle lists of numbers', async () => {

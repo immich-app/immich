@@ -34,7 +34,7 @@ export class LoggerRepository extends ConsoleLogger implements ILoggerRepository
   private static appName?: string = undefined;
 
   setAppName(name: string): void {
-    LoggerRepository.appName = name;
+    LoggerRepository.appName = name.charAt(0).toUpperCase() + name.slice(1);
   }
 
   isLevelEnabled(level: LogLevel) {

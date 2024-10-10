@@ -2037,22 +2037,22 @@ reference = "cuda12"
 
 [[package]]
 name = "onnxruntime-openvino"
-version = "1.19.0"
+version = "1.18.0"
 description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
 optional = false
 python-versions = "*"
 files = [
-    {file = "onnxruntime_openvino-1.19.0-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:8c5658da819b26d9f35f95204e1bdfb74a100a7533e74edab3af6316c1e316e8"},
-    {file = "onnxruntime_openvino-1.19.0-cp310-cp310-win_amd64.whl", hash = "sha256:fb8de2a60cf78db6e201b0a489479995d166938e9c53b01ff342dc7f5f8251ff"},
-    {file = "onnxruntime_openvino-1.19.0-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:f3a0b954026286421b3a769c746c403e8f141f3887d1dd601beb7c4dbf77488a"},
-    {file = "onnxruntime_openvino-1.19.0-cp311-cp311-win_amd64.whl", hash = "sha256:12330922ecdb694ea28dbdcf08c172e47a5a84fee603040691341336ee3e42bc"},
-    {file = "onnxruntime_openvino-1.19.0-cp39-cp39-manylinux_2_28_x86_64.whl", hash = "sha256:be00502b1a46ba1891cbe49049033745f71c0b99df6d24b979f5b4084b9567d0"},
+    {file = "onnxruntime_openvino-1.18.0-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:565b874d21bcd48126da7d62f57db019f5ec0e1f82ae9b0740afa2ad91f8d331"},
+    {file = "onnxruntime_openvino-1.18.0-cp310-cp310-win_amd64.whl", hash = "sha256:7f1931060f710a6c8e32121bb73044c4772ef5925802fc8776d3fe1e87ab3f75"},
+    {file = "onnxruntime_openvino-1.18.0-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:eb1723d386f70a8e26398d983ebe35d2c25ba56e9cdb382670ebbf1f5139f8ba"},
+    {file = "onnxruntime_openvino-1.18.0-cp311-cp311-win_amd64.whl", hash = "sha256:874a1e263dd86674593e5a879257650b06a8609c4d5768c3d8ed8dc4ae874b9c"},
+    {file = "onnxruntime_openvino-1.18.0-cp39-cp39-manylinux_2_28_x86_64.whl", hash = "sha256:597eb18f3de7ead69b08a242d74c4573b28bbfba40ca2a1a40f75bf7a834808e"},
 ]
 
 [package.dependencies]
 coloredlogs = "*"
 flatbuffers = "*"
-numpy = ">=1.21.6"
+numpy = ">=1.26.4"
 packaging = "*"
 protobuf = "*"
 sympy = "*"
@@ -2576,13 +2576,13 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-multipart"
-version = "0.0.10"
+version = "0.0.12"
 description = "A streaming multipart parser for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "python_multipart-0.0.10-py3-none-any.whl", hash = "sha256:2b06ad9e8d50c7a8db80e3b56dab590137b323410605af2be20d62a5f1ba1dc8"},
-    {file = "python_multipart-0.0.10.tar.gz", hash = "sha256:46eb3c6ce6fdda5fb1a03c7e11d490e407c6930a2703fe7aef4da71c374688fa"},
+    {file = "python_multipart-0.0.12-py3-none-any.whl", hash = "sha256:43dcf96cf65888a9cd3423544dd0d75ac10f7aa0c3c28a175bbcd00c9ce1aebf"},
+    {file = "python_multipart-0.0.12.tar.gz", hash = "sha256:045e1f98d719c1ce085ed7f7e1ef9d8ccc8c02ba02b5566d5f7521410ced58cb"},
 ]
 
 [[package]]
@@ -2813,18 +2813,19 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "rich"
-version = "13.8.1"
+version = "13.9.2"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 optional = false
-python-versions = ">=3.7.0"
+python-versions = ">=3.8.0"
 files = [
-    {file = "rich-13.8.1-py3-none-any.whl", hash = "sha256:1760a3c0848469b97b558fc61c85233e3dafb69c7a071b4d60c38099d3cd4c06"},
-    {file = "rich-13.8.1.tar.gz", hash = "sha256:8260cda28e3db6bf04d2d1ef4dbc03ba80a824c88b0e7668a0f23126a424844a"},
+    {file = "rich-13.9.2-py3-none-any.whl", hash = "sha256:8c82a3d3f8dcfe9e734771313e606b39d8247bb6b826e196f4914b333b743cf1"},
+    {file = "rich-13.9.2.tar.gz", hash = "sha256:51a2c62057461aaf7152b4d611168f93a9fc73068f8ded2790f29fe2b5366d0c"},
 ]
 
 [package.dependencies]
 markdown-it-py = ">=2.2.0"
 pygments = ">=2.13.0,<3.0.0"
+typing-extensions = {version = ">=4.0.0,<5.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
@@ -3266,13 +3267,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "uvicorn"
-version = "0.30.6"
+version = "0.31.0"
 description = "The lightning-fast ASGI server."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "uvicorn-0.30.6-py3-none-any.whl", hash = "sha256:65fd46fe3fda5bdc1b03b94eb634923ff18cd35b2f084813ea79d1f103f711b5"},
-    {file = "uvicorn-0.30.6.tar.gz", hash = "sha256:4b15decdda1e72be08209e860a1e10e92439ad5b97cf44cc945fcbee66fc5788"},
+    {file = "uvicorn-0.31.0-py3-none-any.whl", hash = "sha256:cac7be4dd4d891c363cd942160a7b02e69150dcbc7a36be04d5f4af4b17c8ced"},
+    {file = "uvicorn-0.31.0.tar.gz", hash = "sha256:13bc21373d103859f68fe739608e2eb054a816dea79189bc3ca08ea89a275906"},
 ]
 
 [package.dependencies]
@@ -3604,4 +3605,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "b2b053886ca1dd3a3305c63caf155b1976dfc4066f72f5d1ecfc42099db34aab"
+content-hash = "45c4d57450fbdd0c24a8e7e00ebd023412fa6db04700d0f3818c39c8777d0e31"

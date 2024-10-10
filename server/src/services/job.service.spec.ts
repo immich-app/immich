@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults } from 'src/config';
+import { ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import {
   IJobRepository,
@@ -40,7 +41,7 @@ describe(JobService.name, () => {
 
   describe('onConfigUpdate', () => {
     it('should update concurrency', () => {
-      sut.onBootstrap('microservices');
+      sut.onBootstrap(ImmichWorker.MICROSERVICES);
       sut.onConfigUpdate({ oldConfig: defaults, newConfig: defaults });
 
       expect(jobMock.setConcurrency).toHaveBeenCalledTimes(14);

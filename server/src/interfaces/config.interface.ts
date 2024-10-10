@@ -41,6 +41,21 @@ export interface EnvData {
     server: string;
   };
 
+  resourcePaths: {
+    lockFile: string;
+    geodata: {
+      dateFile: string;
+      admin1: string;
+      admin2: string;
+      cities500: string;
+      naturalEarthCountriesPath: string;
+    };
+    web: {
+      root: string;
+      indexHtml: string;
+    };
+  };
+
   storage: {
     ignoreMountCheckErrors: boolean;
   };

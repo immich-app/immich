@@ -84,9 +84,8 @@
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+    src={assetFileUrl}
   >
-    <source src={assetFileUrl} type="video/mp4" />
-    <track kind="captions" />
   </video>
 
   {#if isVideoLoading}

@@ -1,5 +1,7 @@
 import { SystemConfig } from 'src/config';
+import { ImmichWorker } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
@@ -15,13 +17,15 @@ describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
 
   let assetMock: Mocked<IAssetRepository>;
+  let databaseMock: Mocked<IDatabaseRepository>;
   let jobMock: Mocked<IJobRepository>;
   let machineLearningMock: Mocked<IMachineLearningRepository>;
   let searchMock: Mocked<ISearchRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    ({ sut, assetMock, jobMock, machineLearningMock, searchMock, systemMock } = newTestService(SmartInfoService));
+    ({ sut, assetMock, databaseMock, jobMock, machineLearningMock, searchMock, systemMock } =
+      newTestService(SmartInfoService));
 
     assetMock.getByIds.mockResolvedValue([assetStub.image]);
   });
@@ -61,7 +65,7 @@ describe(SmartInfoService.name, () => {
 
   describe('onBootstrapEvent', () => {
     it('should return if not microservices', async () => {
-      await sut.onBootstrap('api');
+      await sut.onBootstrap(ImmichWorker.API);
 
       expect(systemMock.get).not.toHaveBeenCalled();
       expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
@@ -76,7 +80,7 @@ describe(SmartInfoService.name, () => {
     it('should return if machine learning is disabled', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
@@ -91,7 +95,7 @@ describe(SmartInfoService.name, () => {
     it('should return if model and DB dimension size are equal', async () => {
       searchMock.getDimensionSize.mockResolvedValue(512);
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -107,7 +111,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(768);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -122,7 +126,7 @@ describe(SmartInfoService.name, () => {
       searchMock.getDimensionSize.mockResolvedValue(768);
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: true });
 
-      await sut.onBootstrap('microservices');
+      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
 
       expect(systemMock.get).toHaveBeenCalledTimes(1);
       expect(searchMock.getDimensionSize).toHaveBeenCalledTimes(1);
@@ -315,6 +319,30 @@ describe(SmartInfoService.name, () => {
 
       expect(machineLearningMock.encodeImage).not.toHaveBeenCalled();
       expect(searchMock.upsert).not.toHaveBeenCalled();
+    });
+
+    it('should fail if asset could not be found', async () => {
+      assetMock.getByIds.mockResolvedValue([]);
+
+      expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.FAILED);
+
+      expect(machineLearningMock.encodeImage).not.toHaveBeenCalled();
+      expect(searchMock.upsert).not.toHaveBeenCalled();
+    });
+
+    it('should wait for database', async () => {
+      machineLearningMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
+      databaseMock.isBusy.mockReturnValue(true);
+
+      expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
+
+      expect(databaseMock.wait).toHaveBeenCalledWith(512);
+      expect(machineLearningMock.encodeImage).toHaveBeenCalledWith(
+        'http://immich-machine-learning:3003',
+        '/uploads/user-id/thumbs/path.jpg',
+        expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
+      );
+      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, [0.01, 0.02, 0.03]);
     });
   });
 

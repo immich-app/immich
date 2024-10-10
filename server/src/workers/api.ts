@@ -5,13 +5,13 @@ import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
-import { excludePaths, resourcePaths, serverVersion } from 'src/constants';
+import { excludePaths, serverVersion } from 'src/constants';
 import { ImmichEnvironment } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ApiService } from 'src/services/api.service';
-import { isStartUpError } from 'src/utils/events';
+import { isStartUpError } from 'src/services/storage.service';
 import { otelStart } from 'src/utils/instrumentation';
 import { useSwagger } from 'src/utils/misc';
 
@@ -36,7 +36,7 @@ async function bootstrap() {
   const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
   const configRepository = app.get<IConfigRepository>(IConfigRepository);
 
-  const { environment, port } = configRepository.getEnv();
+  const { environment, port, resourcePaths } = configRepository.getEnv();
   const isDev = environment === ImmichEnvironment.DEVELOPMENT;
 
   logger.setContext('Bootstrap');
