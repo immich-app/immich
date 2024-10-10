@@ -242,6 +242,7 @@ class AlbumViewerPage extends HookConsumerWidget {
               ),
               onRemoveFromAlbum: onRemoveFromAlbumPressed,
               editEnabled: data.ownerId == userId,
+              stackEnabled: data.ownerId == userId,
             ),
           ),
           AnimatedPositioned(
