@@ -346,22 +346,20 @@
   };
 
   const handleRemoveUser = async (userId: string, nextViewMode: ViewMode) => {
-  if (userId == 'me' || userId === $user.id) {
-    await goto(backUrl);
-    return;
-  }
+    if (userId == 'me' || userId === $user.id) {
+      await goto(backUrl);
+      return;
+    }
 
-  try {
-    await refreshAlbum();
-    
-    // Dynamically set the view mode based on the passed argument
-    viewMode = album.albumUsers.length > 0 ? nextViewMode : ViewMode.VIEW;
+    try {
+      await refreshAlbum();
 
-  } catch (error) {
-    handleError(error, $t('errors.error_deleting_shared_user'));
-  }
-};
-
+      // Dynamically set the view mode based on the passed argument
+      viewMode = album.albumUsers.length > 0 ? nextViewMode : ViewMode.VIEW;
+    } catch (error) {
+      handleError(error, $t('errors.error_deleting_shared_user'));
+    }
+  };
 
   const handleDownloadAlbum = async () => {
     await downloadAlbum(album);
@@ -734,7 +732,7 @@
   <ShareInfoModal
     onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
-    onRemove={(userId) => handleRemoveUser(userId, ViewMode.VIEW_USERS)}  
+    onRemove={(userId) => handleRemoveUser(userId, ViewMode.VIEW_USERS)}
     onRefreshAlbum={refreshAlbum}
   />
 {/if}
@@ -748,7 +746,7 @@
       albumOrder = order;
       await setModeToView();
     }}
-    onRemove={(userId)=>handleRemoveUser(userId, ViewMode.OPTIONS)}
+    onRemove={(userId) => handleRemoveUser(userId, ViewMode.OPTIONS)}
     onClose={() => (viewMode = ViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
     onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

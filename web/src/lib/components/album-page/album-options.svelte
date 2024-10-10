@@ -5,7 +5,7 @@
     removeUserFromAlbum,
     type AlbumResponseDto,
     type UserResponseDto,
-    AssetOrder
+    AssetOrder,
   } from '@immich/sdk';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus, mdiDotsVertical } from '@mdi/js';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -83,62 +83,63 @@
 </script>
 
 {#if !selectedRemoveUser}
-<FullScreenModal title={$t('options')} {onClose}>
-  <div class="items-center justify-center">
-    <div class="py-2">
-      <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
-      <div class="grid p-2 gap-y-2">
-        {#if order}
-          <SettingDropdown
-            title={$t('display_order')}
-            options={Object.values(options)}
-            selectedOption={options[order]}
-            onToggle={handleToggle}
+  <FullScreenModal title={$t('options')} {onClose}>
+    <div class="items-center justify-center">
+      <div class="py-2">
+        <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
+        <div class="grid p-2 gap-y-2">
+          {#if order}
+            <SettingDropdown
+              title={$t('display_order')}
+              options={Object.values(options)}
+              selectedOption={options[order]}
+              onToggle={handleToggle}
+            />
+          {/if}
+          <SettingSwitch
+            title={$t('comments_and_likes')}
+            subtitle={$t('let_others_respond')}
+            checked={album.isActivityEnabled}
+            onToggle={onToggleEnabledActivity}
           />
-        {/if}
-        <SettingSwitch
-          title={$t('comments_and_likes')}
-          subtitle={$t('let_others_respond')}
-          checked={album.isActivityEnabled}
-          onToggle={onToggleEnabledActivity}
-        />
-      </div>
-    </div>
-    <div class="py-2">
-      <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
-      <div class="p-2">
-        <button type="button" class="flex items-center gap-2" on:click={onShowSelectSharedUser}>
-          <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
-            <div><Icon path={mdiPlus} size="25" /></div>
-          </div>
-          <div>{$t('invite_people')}</div>
-        </button>
-        
-        <div class="flex items-center gap-2 py-2 mt-2">
-          <div>
-            <UserAvatar user={user} size="md" />
-          </div>
-          <div class="w-full">{user.name}</div>
-          <div>{$t('owner')}</div>
         </div>
+      </div>
+      <div class="py-2">
+        <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
+        <div class="p-2">
+          <button type="button" class="flex items-center gap-2" on:click={onShowSelectSharedUser}>
+            <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
+              <div><Icon path={mdiPlus} size="25" /></div>
+            </div>
+            <div>{$t('invite_people')}</div>
+          </button>
 
-        {#each album.albumUsers as { user } (user.id)}
-          <div class="flex items-center gap-2 py-2">
+          <div class="flex items-center gap-2 py-2 mt-2">
             <div>
               <UserAvatar {user} size="md" />
             </div>
             <div class="w-full">{user.name}</div>
-            {#if user.id !== album.ownerId} <!-- Allow deletion for non-owners -->
-              <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
-                <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
-              </ButtonContextMenu>
-            {/if}
+            <div>{$t('owner')}</div>
           </div>
-        {/each}
+
+          {#each album.albumUsers as { user } (user.id)}
+            <div class="flex items-center gap-2 py-2">
+              <div>
+                <UserAvatar {user} size="md" />
+              </div>
+              <div class="w-full">{user.name}</div>
+              {#if user.id !== album.ownerId}
+                <!-- Allow deletion for non-owners -->
+                <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
+                  <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
+                </ButtonContextMenu>
+              {/if}
+            </div>
+          {/each}
+        </div>
       </div>
     </div>
-  </div>
-</FullScreenModal>
+  </FullScreenModal>
 {/if}
 
 {#if selectedRemoveUser}
