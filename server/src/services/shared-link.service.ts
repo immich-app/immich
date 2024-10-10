@@ -15,7 +15,6 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { checkAccess, requireAccess } from 'src/utils/access';
 import { OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
@@ -49,7 +48,7 @@ export class SharedLinkService extends BaseService {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
-        await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_SHARE, ids: [dto.albumId] });
+        await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [dto.albumId] });
         break;
       }
 
@@ -58,7 +57,7 @@ export class SharedLinkService extends BaseService {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_SHARE, ids: dto.assetIds });
+        await this.requireAccess({ auth, permission: Permission.ASSET_SHARE, ids: dto.assetIds });
 
         break;
       }
@@ -119,7 +118,7 @@ export class SharedLinkService extends BaseService {
 
     const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
     const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
-    const allowedAssetIds = await checkAccess(this.accessRepository, {
+    const allowedAssetIds = await this.checkAccess({
       auth,
       permission: Permission.ASSET_SHARE,
       ids: notPresentAssetIds,
