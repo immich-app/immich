@@ -30,11 +30,6 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   late final StreamSubscription<List<Album>> _streamSub;
 
   Future<void> refreshRemoteAlbums() async {
-    final isRefresing =
-        ref.read(isRefreshingRemoteAlbumProvider.notifier).state;
-
-    if (isRefresing) return;
-
     ref.read(isRefreshingRemoteAlbumProvider.notifier).state = true;
     await _albumService.refreshRemoteAlbums();
     ref.read(isRefreshingRemoteAlbumProvider.notifier).state = false;
