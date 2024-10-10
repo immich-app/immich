@@ -90,6 +90,10 @@
 	<string>We need to manage backup your photos album</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need to manage backup your photos album</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>IntentIntent</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
