@@ -1,328 +1,407 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
-import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/providers/partner.provider.dart';
+import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
+import 'package:immich_mobile/widgets/common/user_avatar.dart';
+import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
-class LibraryPage extends HookConsumerWidget {
+class LibraryPage extends ConsumerWidget {
   const LibraryPage({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
-    final albums = ref.watch(albumProvider);
-    final albumSortOption = ref.watch(albumSortByOptionsProvider);
-    final albumSortIsReverse = ref.watch(albumSortOrderProvider);
 
-    useEffect(
-      () {
-        ref.read(albumProvider.notifier).getAllAlbums();
-        return null;
-      },
-      [],
-    );
-
-    Widget buildSortButton() {
-      return PopupMenuButton(
-        position: PopupMenuPosition.over,
-        itemBuilder: (BuildContext context) {
-          return AlbumSortMode.values
-              .map<PopupMenuEntry<AlbumSortMode>>((option) {
-            final selected = albumSortOption == option;
-            return PopupMenuItem(
-              value: option,
+    return Scaffold(
+      appBar: ImmichAppBar(),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
               child: Row(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child: Icon(
-                      Icons.check,
-                      color:
-                          selected ? context.primaryColor : Colors.transparent,
-                    ),
+                  ActionButton(
+                    onPressed: () => context.pushRoute(const FavoritesRoute()),
+                    icon: Icons.favorite_outline_rounded,
+                    label: 'favorites'.tr(),
                   ),
-                  Text(
-                    option.label.tr(),
-                    style: TextStyle(
-                      color: selected ? context.primaryColor : null,
-                      fontSize: 14.0,
-                    ),
+                  const SizedBox(width: 8),
+                  ActionButton(
+                    onPressed: () => context.pushRoute(const ArchiveRoute()),
+                    icon: Icons.archive_outlined,
+                    label: 'archived'.tr(),
                   ),
                 ],
               ),
-            );
-          }).toList();
-        },
-        onSelected: (AlbumSortMode value) {
-          final selected = albumSortOption == value;
-          // Switch direction
-          if (selected) {
-            ref
-                .read(albumSortOrderProvider.notifier)
-                .changeSortDirection(!albumSortIsReverse);
-          } else {
-            ref.read(albumSortByOptionsProvider.notifier).changeSortMode(value);
-          }
-        },
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 5),
-              child: Icon(
-                albumSortIsReverse
-                    ? Icons.arrow_downward_rounded
-                    : Icons.arrow_upward_rounded,
-                size: 14,
-                color: context.primaryColor,
-              ),
             ),
-            Text(
-              albumSortOption.label.tr(),
-              style: context.textTheme.labelLarge?.copyWith(
-                color: context.primaryColor,
-              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                ActionButton(
+                  onPressed: () => context.pushRoute(const SharedLinkRoute()),
+                  icon: Icons.link_outlined,
+                  label: 'shared_links'.tr(),
+                ),
+                const SizedBox(width: 8),
+                trashEnabled
+                    ? ActionButton(
+                        onPressed: () => context.pushRoute(const TrashRoute()),
+                        icon: Icons.delete_outline_rounded,
+                        label: 'trash'.tr(),
+                      )
+                    : const SizedBox.shrink(),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                PeopleCollectionCard(),
+                PlacesCollectionCard(),
+                LocalAlbumsCollectionCard(),
+              ],
+            ),
+            const SizedBox(height: 12),
+            QuickAccessButtons(),
+            const SizedBox(
+              height: 32,
             ),
           ],
         ),
-      );
-    }
-
-    Widget buildCreateAlbumButton() {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          var cardSize = constraints.maxWidth;
-
-          return GestureDetector(
-            onTap: () =>
-                context.pushRoute(CreateAlbumRoute(isSharedAlbum: false)),
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(bottom: 32), // Adjust padding to suit
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: cardSize,
-                    height: cardSize,
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer,
-                      borderRadius: const BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.add_rounded,
-                        size: 28,
-                        color: context.primaryColor,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 8.0,
-                      bottom: 16,
-                    ),
-                    child: Text(
-                      'library_page_new_album',
-                      style: context.textTheme.labelLarge?.copyWith(
-                        color: context.colorScheme.onSurface,
-                      ),
-                    ).tr(),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    Widget buildLibraryNavButton(
-      String label,
-      IconData icon,
-      Function() onClick,
-    ) {
-      return Expanded(
-        child: FilledButton.icon(
-          onPressed: onClick,
-          label: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: context.colorScheme.onSurface,
-              ),
-            ),
-          ),
-          style: FilledButton.styleFrom(
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            backgroundColor: context.colorScheme.surfaceContainer,
-            alignment: Alignment.centerLeft,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-            ),
-          ),
-          icon: Icon(
-            icon,
-            color: context.primaryColor,
-          ),
-        ),
-      );
-    }
-
-    final remote = albums.where((a) => a.isRemote).toList();
-    final sorted = albumSortOption.sortFn(remote, albumSortIsReverse);
-    final local = albums.where((a) => a.isLocal).toList();
-
-    Widget? shareTrashButton() {
-      return trashEnabled
-          ? InkWell(
-              onTap: () => context.pushRoute(const TrashRoute()),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
-              child: Icon(
-                Icons.delete_rounded,
-                size: 25,
-                semanticLabel: 'profile_drawer_trash'.tr(),
-              ),
-            )
-          : null;
-    }
-
-    return Scaffold(
-      appBar: ImmichAppBar(
-        action: shareTrashButton(),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 12.0,
-                right: 12.0,
-                top: 24.0,
-                bottom: 12.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  buildLibraryNavButton(
-                      "library_page_favorites".tr(), Icons.favorite_border, () {
-                    context.navigateTo(const FavoritesRoute());
-                  }),
-                  const SizedBox(width: 12.0),
-                  buildLibraryNavButton(
-                      "library_page_archive".tr(), Icons.archive_outlined, () {
-                    context.navigateTo(const ArchiveRoute());
-                  }),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 12.0,
-                left: 12.0,
-                right: 12.0,
-                bottom: 20.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'library_page_albums',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      color: context.colorScheme.onSurface,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ).tr(),
-                  buildSortButton(),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(12.0),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 250,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: .7,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                childCount: sorted.length + 1,
-                (context, index) {
-                  if (index == 0) {
-                    return buildCreateAlbumButton();
-                  }
+    );
+  }
+}
 
-                  return AlbumThumbnailCard(
-                    album: sorted[index - 1],
-                    onTap: () => context.pushRoute(
-                      AlbumViewerRoute(
-                        albumId: sorted[index - 1].id,
-                      ),
-                    ),
-                  );
-                },
+class QuickAccessButtons extends ConsumerWidget {
+  const QuickAccessButtons({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final partners = ref.watch(partnerSharedWithProvider);
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: context.colorScheme.onSurface.withAlpha(10),
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            context.colorScheme.primary.withAlpha(10),
+            context.colorScheme.primary.withAlpha(15),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: ListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(partners.isEmpty ? 20 : 0),
+                bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 12.0,
-                left: 12.0,
-                right: 12.0,
-                bottom: 20.0,
+            leading: const Icon(
+              Icons.group_outlined,
+              size: 26,
+            ),
+            title: Text(
+              'partners'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'library_page_device_albums',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ).tr(),
+            ),
+            onTap: () => context.pushRoute(const PartnerRoute()),
+          ),
+          PartnerList(partners: partners),
+        ],
+      ),
+    );
+  }
+}
+
+class PartnerList extends ConsumerWidget {
+  const PartnerList({super.key, required this.partners});
+
+  final List<User> partners;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: partners.length,
+      shrinkWrap: true,
+      itemBuilder: (context, index) {
+        final partner = partners[index];
+        final isLastItem = index == partners.length - 1;
+        return ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(isLastItem ? 20 : 0),
+              bottomRight: Radius.circular(isLastItem ? 20 : 0),
+            ),
+          ),
+          contentPadding: const EdgeInsets.only(
+            left: 12.0,
+            right: 18.0,
+          ),
+          leading: userAvatar(context, partner, radius: 16),
+          title: Text(
+            "partner_list_user_photos",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+            ),
+          ).tr(
+            namedArgs: {
+              'user': partner.name,
+            },
+          ),
+          onTap: () => context.pushRoute(
+            (PartnerDetailRoute(partner: partner)),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class PeopleCollectionCard extends ConsumerWidget {
+  const PeopleCollectionCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final people = ref.watch(getAllPeopleProvider);
+    final size = MediaQuery.of(context).size.width * 0.5 - 20;
+    return GestureDetector(
+      onTap: () => context.pushRoute(const PeopleCollectionRoute()),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: size,
+            width: size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  context.colorScheme.primary.withAlpha(30),
+                  context.colorScheme.primary.withAlpha(25),
                 ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
+            child: people.widgetWhen(
+              onData: (people) {
+                return GridView.count(
+                  crossAxisCount: 2,
+                  padding: const EdgeInsets.all(12),
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: people.take(4).map((person) {
+                    return CircleAvatar(
+                      backgroundImage: NetworkImage(
+                        getFaceThumbnailUrl(person.id),
+                        headers: ApiService.getRequestHeaders(),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.all(12.0),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 250,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: .7,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                childCount: local.length,
-                (context, index) => AlbumThumbnailCard(
-                  album: local[index],
-                  onTap: () => context.pushRoute(
-                    AlbumViewerRoute(
-                      albumId: local[index].id,
-                    ),
-                  ),
-                ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'people'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class LocalAlbumsCollectionCard extends HookConsumerWidget {
+  const LocalAlbumsCollectionCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final albums = ref.watch(localAlbumsProvider);
+
+    final size = MediaQuery.of(context).size.width * 0.5 - 20;
+
+    return GestureDetector(
+      onTap: () => context.pushRoute(
+        const LocalAlbumsRoute(),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: size,
+            width: size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  context.colorScheme.primary.withAlpha(30),
+                  context.colorScheme.primary.withAlpha(25),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: GridView.count(
+              crossAxisCount: 2,
+              padding: const EdgeInsets.all(12),
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              physics: const NeverScrollableScrollPhysics(),
+              children: albums.take(4).map((album) {
+                return AlbumThumbnailCard(
+                  album: album,
+                  showTitle: false,
+                );
+              }).toList(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'on_this_device'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PlacesCollectionCard extends StatelessWidget {
+  const PlacesCollectionCard({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size.width * 0.5 - 20;
+    return GestureDetector(
+      onTap: () => context.pushRoute(const PlacesCollectionRoute()),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: size,
+            width: size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: context.colorScheme.secondaryContainer.withAlpha(100),
+            ),
+            child: IgnorePointer(
+              child: MapThumbnail(
+                zoom: 8,
+                centre: const LatLng(
+                  21.44950,
+                  -157.91959,
+                ),
+                showAttribution: false,
+                themeMode:
+                    context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'places'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+
+  const ActionButton({
+    super.key,
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: FilledButton.icon(
+        onPressed: onPressed,
+        label: Padding(
+          padding: const EdgeInsets.only(left: 4.0),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: context.colorScheme.onSurface,
+              fontSize: 15,
+            ),
+          ),
+        ),
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          backgroundColor: context.colorScheme.surfaceContainerLow,
+          alignment: Alignment.centerLeft,
+          shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(25)),
+            side: BorderSide(
+              color: context.colorScheme.onSurface.withAlpha(10),
+              width: 1,
+            ),
+          ),
+        ),
+        icon: Icon(
+          icon,
+          color: context.primaryColor,
+        ),
       ),
     );
   }

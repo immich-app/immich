@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
@@ -22,7 +23,11 @@ class PartnerDetailPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(assetProvider.notifier).getAllAsset();
+        Future.microtask(
+          () async => {
+            await ref.read(assetProvider.notifier).getAllAsset(),
+          },
+        );
         return null;
       },
       [],
@@ -64,19 +69,47 @@ class PartnerDetailPage extends HookConsumerWidget {
               title: Text(partner.name),
               elevation: 0,
               centerTitle: false,
-              actions: [
-                IconButton(
-                  onPressed: toggleInTimeline,
-                  icon: Icon(
-                    inTimeline.value
-                        ? Icons.collections
-                        : Icons.collections_outlined,
-                  ),
-                  tooltip: "Show/hide photos on your main timeline",
-                ),
-              ],
             ),
       body: MultiselectGrid(
+        topWidget: Padding(
+          padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: context.colorScheme.onSurface.withAlpha(10),
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  context.colorScheme.primary.withAlpha(10),
+                  context.colorScheme.primary.withAlpha(15),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                title: Text(
+                  "Show in timeline",
+                  style: context.textTheme.titleSmall?.copyWith(
+                    color: context.colorScheme.primary,
+                  ),
+                ),
+                subtitle: Text(
+                  "Show photos and videos from this user in your timeline",
+                  style: context.textTheme.bodyMedium,
+                ),
+                trailing: Switch(
+                  value: inTimeline.value,
+                  onChanged: (_) => toggleInTimeline(),
+                ),
+              ),
+            ),
+          ),
+        ),
         renderListProvider: assetsProvider(partner.isarId),
         onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
         deleteEnabled: false,

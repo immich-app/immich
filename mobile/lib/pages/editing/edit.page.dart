@@ -79,7 +79,7 @@ class EditImagePage extends ConsumerWidget {
             imageData,
             title: fileName,
           );
-      await ref.read(albumProvider.notifier).getDeviceAlbums();
+      await ref.read(albumProvider.notifier).refreshDeviceAlbums();
       Navigator.of(context).popUntil((route) => route.isFirst);
       ImmichToast.show(
         durationInSecond: 3,

@@ -32,6 +32,7 @@ class EntityService {
           .getByIds(album.remoteUsers.map((user) => user.id).toList());
       album.sharedUsers.clear();
       album.sharedUsers.addAll(users);
+      album.shared = true;
     }
     if (album.remoteAssets.isNotEmpty) {
       // replace all assets with assets from database

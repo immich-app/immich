@@ -36,7 +36,7 @@ class PartnerApiRepository extends ApiRepository
   }
 
   @override
-  Future<void> delete(String id) => checkNull(_api.removePartner(id));
+  Future<void> delete(String id) => _api.removePartner(id);
 
   @override
   Future<User> update(String id, {required bool inTimeline}) async {
