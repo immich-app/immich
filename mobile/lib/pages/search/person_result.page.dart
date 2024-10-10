@@ -92,6 +92,7 @@ class PersonResultPage extends HookConsumerWidget {
                   Text(
                     name.value,
                     style: context.textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -125,9 +126,11 @@ class PersonResultPage extends HookConsumerWidget {
                   headers: ApiService.getRequestHeaders(),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: buildTitleBlock(),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+                  child: buildTitleBlock(),
+                ),
               ),
             ],
           ),

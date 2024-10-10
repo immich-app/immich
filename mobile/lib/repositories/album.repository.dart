@@ -1,8 +1,10 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
+import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:isar/isar.dart';
@@ -118,4 +120,33 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   @override
   Future<void> deleteAllLocal() =>
       txn(() => db.albums.where().localIdIsNotNull().deleteAll());
+
+  @override
+  Future<List<Album>> search(
+    String searchTerm,
+    QuickFilterMode filterMode,
+  ) async {
+    var query = db.albums
+        .filter()
+        .nameContains(searchTerm, caseSensitive: false)
+        .remoteIdIsNotNull();
+
+    switch (filterMode) {
+      case QuickFilterMode.sharedWithMe:
+        query = query.owner(
+          (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+        );
+        break;
+      case QuickFilterMode.myAlbums:
+        query = query.owner(
+          (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+        );
+        break;
+      case QuickFilterMode.all:
+      default:
+        break;
+    }
+
+    return await query.findAll();
+  }
 }
