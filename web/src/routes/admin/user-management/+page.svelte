@@ -113,6 +113,7 @@
           onSubmit={onUserCreated}
           onCancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
+          oauthEnabled={data.oauthEnabled}
         />
       {/if}
 
