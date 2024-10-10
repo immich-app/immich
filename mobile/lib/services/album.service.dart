@@ -169,12 +169,15 @@ class AlbumService {
       final List<Album> ownedAlbum =
           await _albumApiRepository.getAll(shared: null);
 
-      // only unique albums with albums id
-      final albums = <Album>{...sharedAlbum, ...ownedAlbum}.toList();
-
-      changes = await _syncService.syncRemoteAlbumsToDb(
-        albums,
+      final albums = HashSet<Album>(
+        equals: (a, b) => a.remoteId == b.remoteId,
+        hashCode: (a) => a.remoteId.hashCode,
       );
+
+      albums.addAll(sharedAlbum);
+      albums.addAll(ownedAlbum);
+
+      changes = await _syncService.syncRemoteAlbumsToDb(albums.toList());
     } finally {
       _remoteCompleter.complete(changes);
     }
