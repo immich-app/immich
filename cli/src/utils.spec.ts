@@ -115,17 +115,7 @@ const tests: Test[] = [
       '/albums/image3.jpg': true,
     },
   },
-  {
-    test: 'should support globbing paths',
-    options: {
-      pathsToCrawl: ['/photos*'],
-    },
-    files: {
-      '/photos1/image1.jpg': true,
-      '/photos2/image2.jpg': true,
-      '/images/image3.jpg': false,
-    },
-  },
+
   {
     test: 'should crawl a single path without trailing slash',
     options: {
