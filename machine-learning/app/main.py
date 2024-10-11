@@ -84,7 +84,7 @@ async def preload_models(preload: PreloadModelData) -> None:
     elif preload.clip is not None:
         model = await model_cache.get(preload.clip, ModelType.TEXTUAL, ModelTask.SEARCH)
         await load(model)
-    
+
     if preload.clip is not None:
         model = await model_cache.get(preload.clip, ModelType.VISUAL, ModelTask.SEARCH)
         await load(model)
