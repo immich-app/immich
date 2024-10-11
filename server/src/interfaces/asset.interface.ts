@@ -172,12 +172,6 @@ export interface IAssetRepository {
     order?: FindOptionsOrder<AssetEntity>,
   ): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
-  getWith(
-    pagination: PaginationOptions,
-    property: WithProperty,
-    libraryId?: string,
-    withDeleted?: boolean,
-  ): Paginated<AssetEntity>;
   getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;

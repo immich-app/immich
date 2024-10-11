@@ -341,7 +341,10 @@ export class LibraryService extends BaseService {
 
     this.logger.debug(`Will delete all assets in library ${libraryId}`);
     for await (const assets of assetPagination) {
-      assetsFound = true;
+      if (assets.length > 0) {
+        assetsFound = true;
+      }
+
       this.logger.debug(`Queueing deletion of ${assets.length} asset(s) in library ${libraryId}`);
       await this.jobRepository.queueAll(
         assets.map((asset) => ({
@@ -545,30 +548,30 @@ export class LibraryService extends BaseService {
       }
     }
 
-    if (validImportPaths) {
-      const assetsOnDisk = this.storageRepository.walk({
-        pathsToCrawl: validImportPaths,
-        includeHidden: false,
-        exclusionPatterns: library.exclusionPatterns,
-        take: JOBS_LIBRARY_PAGINATION_SIZE,
-      });
-
-      let count = 0;
-
-      for await (const assetBatch of assetsOnDisk) {
-        count += assetBatch.length;
-        this.logger.debug(`Discovered ${count} asset(s) on disk for library ${library.id}...`);
-        await this.syncFiles(library, assetBatch);
-        this.logger.verbose(`Queued scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
-      }
-
-      if (count > 0) {
-        this.logger.debug(`Finished queueing scan of ${count} assets on disk for library ${library.id}`);
-      } else {
-        this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
-      }
-    } else {
+    if (validImportPaths.length === 0) {
       this.logger.warn(`No valid import paths found for library ${library.id}`);
+    }
+
+    const assetsOnDisk = this.storageRepository.walk({
+      pathsToCrawl: validImportPaths,
+      includeHidden: false,
+      exclusionPatterns: library.exclusionPatterns,
+      take: JOBS_LIBRARY_PAGINATION_SIZE,
+    });
+
+    let count = 0;
+
+    for await (const assetBatch of assetsOnDisk) {
+      count += assetBatch.length;
+      this.logger.debug(`Discovered ${count} asset(s) on disk for library ${library.id}...`);
+      await this.syncFiles(library, assetBatch);
+      this.logger.verbose(`Queued scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
+    }
+
+    if (count > 0) {
+      this.logger.debug(`Finished queueing scan of ${count} assets on disk for library ${library.id}`);
+    } else if (validImportPaths.length > 0) {
+      this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
     }
 
     await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });

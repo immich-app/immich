@@ -63,10 +63,6 @@ export class PersonRepository implements IPersonRepository {
     await this.personRepository.remove(entities);
   }
 
-  async deleteAll(): Promise<void> {
-    await this.personRepository.clear();
-  }
-
   async deleteFaces({ sourceType }: DeleteFacesOptions): Promise<void> {
     await this.assetFaceRepository
       .createQueryBuilder('asset_faces')
@@ -267,11 +263,6 @@ export class PersonRepository implements IPersonRepository {
   async createAll(people: Partial<PersonEntity>[]): Promise<string[]> {
     const results = await this.personRepository.save(people);
     return results.map((person) => person.id);
-  }
-
-  async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
-    const res = await this.assetFaceRepository.save(entities);
-    return res.map((row) => row.id);
   }
 
   async refreshFaces(

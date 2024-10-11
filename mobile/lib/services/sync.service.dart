@@ -797,8 +797,7 @@ class SyncService {
     assets.sort(Asset.compareByOwnerChecksumCreatedModified);
     assets.uniqueConsecutive(
       compare: Asset.compareByOwnerChecksum,
-      onDuplicate: (a, b) =>
-          _log.info("Ignoring duplicate assets on device:\n$a\n$b"),
+      onDuplicate: (a, b) => {},
     );
     final int duplicates = before - assets.length;
     if (duplicates > 0) {

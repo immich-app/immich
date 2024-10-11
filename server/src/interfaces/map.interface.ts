@@ -28,5 +28,4 @@ export interface IMapRepository {
   init(): Promise<void>;
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult>;
   getMapMarkers(ownerIds: string[], albumIds: string[], options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
-  fetchStyle(url: string): Promise<any>;
 }

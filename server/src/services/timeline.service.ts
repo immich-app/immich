@@ -5,7 +5,6 @@ import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dt
 import { Permission } from 'src/enum';
 import { TimeBucketOptions } from 'src/interfaces/asset.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 
 export class TimelineService extends BaseService {
@@ -48,20 +47,20 @@ export class TimelineService extends BaseService {
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
     if (dto.albumId) {
-      await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+      await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
     } else {
       dto.userId = dto.userId || auth.user.id;
     }
 
     if (dto.userId) {
-      await requireAccess(this.accessRepository, { auth, permission: Permission.TIMELINE_READ, ids: [dto.userId] });
+      await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [dto.userId] });
       if (dto.isArchived !== false) {
-        await requireAccess(this.accessRepository, { auth, permission: Permission.ARCHIVE_READ, ids: [dto.userId] });
+        await this.requireAccess({ auth, permission: Permission.ARCHIVE_READ, ids: [dto.userId] });
       }
     }
 
     if (dto.tagId) {
-      await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_READ, ids: [dto.tagId] });
+      await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [dto.tagId] });
     }
 
     if (dto.withPartners) {

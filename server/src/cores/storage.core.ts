@@ -15,9 +15,6 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
 
-export const THUMBNAIL_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.THUMBNAILS));
-export const ENCODED_VIDEO_DIR = resolve(join(APP_MEDIA_LOCATION, StorageFolder.ENCODED_VIDEO));
-
 export interface MoveRequest {
   entityId: string;
   pathType: PathType;
@@ -116,10 +113,6 @@ export class StorageCore {
       ? resolvedAppMediaLocation
       : resolvedAppMediaLocation + '/';
     return normalizedPath.startsWith(normalizedAppMediaLocation);
-  }
-
-  static isGeneratedAsset(path: string) {
-    return path.startsWith(THUMBNAIL_DIR) || path.startsWith(ENCODED_VIDEO_DIR);
   }
 
   async moveAssetImage(asset: AssetEntity, pathType: GeneratedImageType, format: ImageFormat) {

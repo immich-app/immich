@@ -5,7 +5,6 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetDeltaSyncDto, AssetDeltaSyncResponseDto, AssetFullSyncDto } from 'src/dtos/sync.dto';
 import { DatabaseAction, EntityType, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { setIsEqual } from 'src/utils/set';
 
@@ -15,7 +14,7 @@ export class SyncService extends BaseService {
   async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     // mobile implementation is faster if this is a single id
     const userId = dto.userId || auth.user.id;
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TIMELINE_READ, ids: [userId] });
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
       updatedUntil: dto.updatedUntil,
@@ -39,7 +38,7 @@ export class SyncService extends BaseService {
       return FULL_SYNC;
     }
 
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TIMELINE_READ, ids: dto.userIds });
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: dto.userIds });
 
     const limit = 10_000;
     const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
