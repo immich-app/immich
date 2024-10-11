@@ -78,10 +78,14 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 async def preload_models(preload: PreloadModelData) -> None:
     log.info(f"Preloading models: {preload}")
-    if preload.clip is not None:
+    if preload.clip_textual is not None:
+        model = await model_cache.get(preload.clip_textual, ModelType.TEXTUAL, ModelTask.SEARCH)
+        await load(model)
+    elif preload.clip is not None:
         model = await model_cache.get(preload.clip, ModelType.TEXTUAL, ModelTask.SEARCH)
         await load(model)
-
+    
+    if preload.clip is not None:
         model = await model_cache.get(preload.clip, ModelType.VISUAL, ModelTask.SEARCH)
         await load(model)
 
