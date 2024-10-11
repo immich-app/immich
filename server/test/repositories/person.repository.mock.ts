@@ -16,7 +16,6 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
     update: vitest.fn(),
     updateAll: vitest.fn(),
     delete: vitest.fn(),
-    deleteAll: vitest.fn(),
     deleteFaces: vitest.fn(),
 
     getStatistics: vitest.fn(),
@@ -26,7 +25,6 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
 
     reassignFaces: vitest.fn(),
     unassignFaces: vitest.fn(),
-    createFaces: vitest.fn(),
     refreshFaces: vitest.fn(),
     getFaces: vitest.fn(),
     reassignFace: vitest.fn(),

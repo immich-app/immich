@@ -13,13 +13,23 @@ import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interf
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AuthService } from 'src/services/auth.service';
 import { keyStub } from 'test/fixtures/api-key.stub';
-import { authStub, loginResponseStub } from 'test/fixtures/auth.stub';
+import { authStub } from 'test/fixtures/auth.stub';
 import { sessionStub } from 'test/fixtures/session.stub';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
+
+const oauthResponse = {
+  accessToken: 'cmFuZG9tLWJ5dGVz',
+  userId: 'user-id',
+  userEmail: 'immich@test.com',
+  name: 'immich_name',
+  profileImagePath: '',
+  isAdmin: false,
+  shouldChangePassword: false,
+};
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -100,7 +110,15 @@ describe('AuthService', () => {
     it('should successfully log the user in', async () => {
       userMock.getByEmail.mockResolvedValue(userStub.user1);
       sessionMock.create.mockResolvedValue(sessionStub.valid);
-      await expect(sut.login(fixtures.login, loginDetails)).resolves.toEqual(loginResponseStub.user1password);
+      await expect(sut.login(fixtures.login, loginDetails)).resolves.toEqual({
+        accessToken: 'cmFuZG9tLWJ5dGVz',
+        userId: 'user-id',
+        userEmail: 'immich@test.com',
+        name: 'immich_name',
+        profileImagePath: '',
+        isAdmin: false,
+        shouldChangePassword: false,
+      });
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
   });
@@ -469,7 +487,7 @@ describe('AuthService', () => {
       sessionMock.create.mockResolvedValue(sessionStub.valid);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+        oauthResponse,
       );
 
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
@@ -498,7 +516,7 @@ describe('AuthService', () => {
       sessionMock.create.mockResolvedValue(sessionStub.valid);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+        oauthResponse,
       );
 
       expect(userMock.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
@@ -546,7 +564,7 @@ describe('AuthService', () => {
       userMock.create.mockResolvedValue(userStub.user1);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+        oauthResponse,
       );
 
       expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
@@ -560,7 +578,7 @@ describe('AuthService', () => {
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 'abc' });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+        oauthResponse,
       );
 
       expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
@@ -574,7 +592,7 @@ describe('AuthService', () => {
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: -5 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+        oauthResponse,
       );
 
       expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
@@ -588,7 +606,7 @@ describe('AuthService', () => {
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 0 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+        oauthResponse,
       );
 
       expect(userMock.create).toHaveBeenCalledWith({
@@ -608,7 +626,7 @@ describe('AuthService', () => {
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 5 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
-        loginResponseStub.user1oauth,
+        oauthResponse,
       );
 
       expect(userMock.create).toHaveBeenCalledWith({

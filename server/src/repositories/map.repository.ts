@@ -113,20 +113,6 @@ export class MapRepository implements IMapRepository {
     }));
   }
 
-  async fetchStyle(url: string) {
-    try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data from ${url} with status ${response.status}: ${await response.text()}`);
-      }
-
-      return response.json();
-    } catch (error) {
-      throw new Error(`Failed to fetch data from ${url}: ${error}`);
-    }
-  }
-
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 

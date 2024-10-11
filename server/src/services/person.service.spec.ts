@@ -721,7 +721,6 @@ describe(PersonService.name, () => {
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ minScore: 0.7, modelName: 'buffalo_l' }),
       );
-      expect(personMock.createFaces).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
 
@@ -733,7 +732,6 @@ describe(PersonService.name, () => {
     });
 
     it('should create a face with no person and queue recognition job', async () => {
-      personMock.createFaces.mockResolvedValue([faceStub.face1.id]);
       machineLearningMock.detectFaces.mockResolvedValue(detectFaceMock);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
 
@@ -761,7 +759,6 @@ describe(PersonService.name, () => {
     });
 
     it('should add new face and delete an existing face not among the new detected faces', async () => {
-      personMock.createFaces.mockResolvedValue([faceStub.face1.id]);
       machineLearningMock.detectFaces.mockResolvedValue(detectFaceMock);
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, faces: [faceStub.primaryFace1] }]);
 
@@ -816,7 +813,6 @@ describe(PersonService.name, () => {
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
-      expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
     it('should fail if face does not have asset', async () => {
@@ -827,7 +823,6 @@ describe(PersonService.name, () => {
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
-      expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
     it('should skip if face already has an assigned person', async () => {
@@ -837,7 +832,6 @@ describe(PersonService.name, () => {
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
-      expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
     it('should match existing person', async () => {
