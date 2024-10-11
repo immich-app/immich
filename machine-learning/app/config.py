@@ -15,6 +15,7 @@ from uvicorn.workers import UvicornWorker
 
 class PreloadModelData(BaseModel):
     clip: str | None
+    clip_textual: str | None
     facial_recognition: str | None
 
 
