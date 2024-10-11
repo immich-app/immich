@@ -16,6 +16,10 @@ export enum AssetFileType {
   THUMBNAIL = 'thumbnail',
 }
 
+export enum RepairType {
+  CHECKSUM_MISMATCH = 'checksum-mismatch',
+}
+
 export enum AlbumUserRole {
   EDITOR = 'editor',
   VIEWER = 'viewer',

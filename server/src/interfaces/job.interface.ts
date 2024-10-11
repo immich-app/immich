@@ -15,6 +15,7 @@ export enum QueueName {
   SIDECAR = 'sidecar',
   LIBRARY = 'library',
   NOTIFICATION = 'notifications',
+  REPAIR = 'repair',
 }
 
 export type ConcurrentQueueName = Exclude<
@@ -111,6 +112,9 @@ export enum JobName {
 
   // Version check
   VERSION_CHECK = 'version-check',
+
+  // REPAIR
+  REPAIR_VERIFY_CHECKSUM = 'repair-verify-checksum',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -283,7 +287,10 @@ export type JobItem =
   | { name: JobName.NOTIFY_SIGNUP; data: INotifySignupJob }
 
   // Version check
-  | { name: JobName.VERSION_CHECK; data: IBaseJob };
+  | { name: JobName.VERSION_CHECK; data: IBaseJob }
+
+  // Repairs
+  | { name: JobName.REPAIR_VERIFY_CHECKSUM; data: IEntityJob };
 
 export enum JobStatus {
   SUCCESS = 'success',

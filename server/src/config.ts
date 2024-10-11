@@ -195,6 +195,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 3 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
     [QueueName.NOTIFICATION]: { concurrency: 5 },
+    [QueueName.REPAIR]: { concurrency: 2 },
   },
   logging: {
     enabled: true,

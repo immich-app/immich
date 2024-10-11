@@ -1,3 +1,4 @@
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -195,6 +196,8 @@ export interface IAssetRepository {
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
+  getFileById(assetFileId: string): Promise<AssetFileEntity | null>;
+  removeFile(assetId: string, type: AssetFileType): Promise<void>;
   upsertFile(file: UpsertFileOptions): Promise<void>;
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
 }

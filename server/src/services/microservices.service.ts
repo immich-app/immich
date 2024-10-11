@@ -12,6 +12,7 @@ import { MediaService } from 'src/services/media.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { NotificationService } from 'src/services/notification.service';
 import { PersonService } from 'src/services/person.service';
+import { RepairService } from 'src/services/repair.service';
 import { SessionService } from 'src/services/session.service';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
@@ -42,6 +43,7 @@ export class MicroservicesService {
     private userService: UserService,
     private duplicateService: DuplicateService,
     private versionService: VersionService,
+    private repairService: RepairService,
   ) {}
 
   @OnEvent({ name: 'app.bootstrap' })
@@ -99,6 +101,7 @@ export class MicroservicesService {
       [JobName.TAG_CLEANUP]: () => this.tagService.handleTagCleanup(),
       [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
       [JobName.QUEUE_TRASH_EMPTY]: () => this.trashService.handleQueueEmptyTrash(),
+      [JobName.REPAIR_VERIFY_CHECKSUM]: (data) => this.repairService.handleVerifyChecksum(data), //Handles a single path on disk //Watcher calls for new files
     });
   }
 

@@ -96,6 +96,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Trash
   [JobName.QUEUE_TRASH_EMPTY]: QueueName.BACKGROUND_TASK,
+
+  // Repair
+  [JobName.REPAIR_VERIFY_CHECKSUM]: QueueName.REPAIR,
 };
 
 @Instrumentation()

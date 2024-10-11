@@ -33,6 +33,16 @@ export class CryptoRepository implements ICryptoRepository {
     return Buffer.from(xxh3.Xxh3.withSeed().update(value).digest().toString(16), 'utf8');
   }
 
+  xxHashFile(filepath: string | Buffer): Promise<Buffer> {
+    return new Promise<Buffer>((resolve, reject) => {
+      const hash = xxh3.Xxh3.withSeed();
+      const stream = createReadStream(filepath);
+      stream.on('error', (error) => reject(error));
+      stream.on('data', (chunk) => hash.update(chunk));
+      stream.on('end', () => resolve(Buffer.from(hash.digest().toString(16), 'utf8')));
+    });
+  }
+
   verifySha256(value: string, encryptedValue: string, publicKey: string) {
     const publicKeyBuffer = Buffer.from(publicKey, 'base64');
     const cryptoPublicKey = createPublicKey({

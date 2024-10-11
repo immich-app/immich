@@ -1134,7 +1134,8 @@ SET
 RETURNING
   "id",
   "createdAt",
-  "updatedAt"
+  "updatedAt",
+  "checksum"
 
 -- AssetRepository.upsertFiles
 INSERT INTO
@@ -1159,4 +1160,5 @@ SET
 RETURNING
   "id",
   "createdAt",
-  "updatedAt"
+  "updatedAt",
+  "checksum"

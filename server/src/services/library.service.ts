@@ -16,7 +16,7 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { AssetType } from 'src/enum';
+import { AssetFileType, AssetType } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
@@ -303,7 +303,6 @@ export class LibraryService extends BaseService {
 
   async update(id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.findOrFail(id);
-    const library = await this.libraryRepository.update({ id, ...dto });
 
     if (dto.importPaths) {
       const validation = await this.validate(id, { importPaths: dto.importPaths });
@@ -316,6 +315,7 @@ export class LibraryService extends BaseService {
       }
     }
 
+    const library = await this.libraryRepository.update({ id, ...dto });
     return mapLibrary(library);
   }
 
@@ -424,6 +424,8 @@ export class LibraryService extends BaseService {
       isExternal: true,
     });
 
+    await this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.ORIGINAL, path: assetPath });
+
     await this.queuePostSyncJobs(asset);
 
     return JobStatus.SUCCESS;
@@ -482,6 +484,7 @@ export class LibraryService extends BaseService {
       if (!asset.isOffline) {
         this.logger.debug(`${explanation}, removing: ${asset.originalPath}`);
         await this.assetRepository.updateAll([asset.id], { isOffline: true, deletedAt: new Date() });
+        await this.assetRepository.removeFile(asset.id, AssetFileType.ORIGINAL);
       }
     };
 
@@ -517,6 +520,12 @@ export class LibraryService extends BaseService {
         fileCreatedAt: mtime,
         fileModifiedAt: mtime,
         originalFileName: parse(asset.originalPath).base,
+      });
+
+      await this.assetRepository.upsertFile({
+        assetId: asset.id,
+        type: AssetFileType.ORIGINAL,
+        path: asset.originalPath,
       });
     }
 

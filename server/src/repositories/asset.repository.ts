@@ -767,6 +767,17 @@ export class AssetRepository implements IAssetRepository {
     return builder.getMany();
   }
 
+  async removeFile(assetId: string, type: AssetFileType): Promise<void> {
+    await this.fileRepository.delete({ assetId, type });
+  }
+
+  async getFileById(assetFileId: string): Promise<AssetFileEntity | null> {
+    return this.fileRepository.findOne({
+      where: { id: assetFileId },
+      withDeleted: true,
+    });
+  }
+
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFile(file: { assetId: string; type: AssetFileType; path: string; checksum?: Buffer }): Promise<void> {
     await this.fileRepository.upsert(file, { conflictPaths: ['assetId', 'type'] });

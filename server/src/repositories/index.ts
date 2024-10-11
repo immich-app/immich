@@ -23,9 +23,11 @@ import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IRepairRepository } from 'src/interfaces/repair.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
+
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -60,6 +62,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { RepairRepository } from 'src/repositories/repair.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
@@ -109,6 +112,7 @@ export const repositories = [
   { provide: ITagRepository, useClass: TagRepository },
   { provide: ITrashRepository, useClass: TrashRepository },
   { provide: IUserRepository, useClass: UserRepository },
+  { provide: IRepairRepository, useClass: RepairRepository },
   { provide: IVersionHistoryRepository, useClass: VersionHistoryRepository },
   { provide: IViewRepository, useClass: ViewRepository },
 ];
