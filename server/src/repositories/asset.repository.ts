@@ -499,39 +499,6 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWith(
-    pagination: PaginationOptions,
-    property: WithProperty,
-    libraryId?: string,
-    withDeleted = false,
-  ): Paginated<AssetEntity> {
-    let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
-
-    switch (property) {
-      case WithProperty.SIDECAR: {
-        where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
-        break;
-      }
-
-      default: {
-        throw new Error(`Invalid getWith property: ${property}`);
-      }
-    }
-
-    if (libraryId) {
-      where = [{ ...where, libraryId }];
-    }
-
-    return paginate(this.repository, pagination, {
-      where,
-      withDeleted,
-      order: {
-        // Ensures correct order when paginating
-        createdAt: 'ASC',
-      },
-    });
-  }
-
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { albums: { id: albumId } },
