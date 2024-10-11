@@ -5,7 +5,6 @@ import { TrashResponseDto } from 'src/dtos/trash.dto';
 import { Permission } from 'src/enum';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 import { usePagination } from 'src/utils/pagination';
 
 export class TrashService extends BaseService {
@@ -15,7 +14,7 @@ export class TrashService extends BaseService {
       return { count: 0 };
     }
 
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DELETE, ids });
+    await this.requireAccess({ auth, permission: Permission.ASSET_DELETE, ids });
     await this.trashRepository.restoreAll(ids);
     await this.eventRepository.emit('assets.restore', { assetIds: ids, userId: auth.user.id });
 

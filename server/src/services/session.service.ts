@@ -5,7 +5,6 @@ import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { Permission } from 'src/enum';
 import { JobStatus } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 
 @Injectable()
 export class SessionService extends BaseService {
@@ -34,7 +33,7 @@ export class SessionService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
     await this.sessionRepository.delete(id);
   }
 

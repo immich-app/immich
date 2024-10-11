@@ -23,7 +23,6 @@ import {
 } from 'src/enum';
 import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
@@ -36,7 +35,7 @@ export class AuditService extends BaseService {
 
   async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
     const userId = dto.userId || auth.user.id;
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TIMELINE_READ, ids: [userId] });
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
 
     const audits = await this.auditRepository.getAfter(dto.after, {
       userIds: [userId],

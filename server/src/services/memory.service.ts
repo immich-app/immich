@@ -5,7 +5,6 @@ import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto, mapMemory } from '
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { checkAccess, requireAccess } from 'src/utils/access';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
 @Injectable()
@@ -16,7 +15,7 @@ export class MemoryService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.MEMORY_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
     const memory = await this.findOrFail(id);
     return mapMemory(memory);
   }
@@ -25,7 +24,7 @@ export class MemoryService extends BaseService {
     // TODO validate type/data combination
 
     const assetIds = dto.assetIds || [];
-    const allowedAssetIds = await checkAccess(this.accessRepository, {
+    const allowedAssetIds = await this.checkAccess({
       auth,
       permission: Permission.ASSET_SHARE,
       ids: assetIds,
@@ -44,7 +43,7 @@ export class MemoryService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
 
     const memory = await this.memoryRepository.update({
       id,
@@ -57,12 +56,12 @@ export class MemoryService extends BaseService {
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.MEMORY_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_DELETE, ids: [id] });
     await this.memoryRepository.delete(id);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.MEMORY_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
 
     const repos = { access: this.accessRepository, bulk: this.memoryRepository };
     const results = await addAssets(auth, repos, { parentId: id, assetIds: dto.ids });
@@ -76,7 +75,7 @@ export class MemoryService extends BaseService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
 
     const repos = { access: this.accessRepository, bulk: this.memoryRepository };
     const results = await removeAssets(auth, repos, {

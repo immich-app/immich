@@ -8,7 +8,6 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
 import { ImmichReadStream } from 'src/interfaces/storage.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';
 import { getPreferences } from 'src/utils/preferences';
@@ -62,7 +61,7 @@ export class DownloadService extends BaseService {
   }
 
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DOWNLOAD, ids: dto.assetIds });
+    await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: dto.assetIds });
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
@@ -105,20 +104,20 @@ export class DownloadService extends BaseService {
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
-      await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DOWNLOAD, ids: assetIds });
+      await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: assetIds });
       const assets = await this.assetRepository.getByIds(assetIds, { exifInfo: true });
       return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {
       const albumId = dto.albumId;
-      await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_DOWNLOAD, ids: [albumId] });
+      await this.requireAccess({ auth, permission: Permission.ALBUM_DOWNLOAD, ids: [albumId] });
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
     }
 
     if (dto.userId) {
       const userId = dto.userId;
-      await requireAccess(this.accessRepository, { auth, permission: Permission.TIMELINE_DOWNLOAD, ids: [userId] });
+      await this.requireAccess({ auth, permission: Permission.TIMELINE_DOWNLOAD, ids: [userId] });
       return usePagination(PAGINATION_SIZE, (pagination) =>
         this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
       );

@@ -15,7 +15,7 @@
       "groupName": "typescript-projects",
       "matchUpdateTypes": ["minor", "patch"],
       "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
-      "excludePackageNames": ["node", "@types/node"],
+      "excludePackageNames": ["node", "@types/node", "@mapbox/mapbox-gl-rtl-text"],
       "schedule": "on tuesday"
     },
     {
