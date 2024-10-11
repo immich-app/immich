@@ -15,6 +15,7 @@ const previewFile: AssetFileEntity = {
   path: '/uploads/user-id/thumbs/path.jpg',
   createdAt: new Date('2023-02-23T05:06:29.716Z'),
   updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  checksum: Buffer.from('file hash', 'utf8'),
 };
 
 const thumbnailFile: AssetFileEntity = {
@@ -24,6 +25,7 @@ const thumbnailFile: AssetFileEntity = {
   path: '/uploads/user-id/webp/path.ext',
   createdAt: new Date('2023-02-23T05:06:29.716Z'),
   updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  checksum: Buffer.from('file hash', 'utf8'),
 };
 
 const files: AssetFileEntity[] = [previewFile, thumbnailFile];
@@ -523,55 +525,8 @@ export const assetStub = {
     },
   } as AssetEntity),
 
-  liveMotionWithThumb: Object.freeze({
-    id: fileStub.livePhotoMotion.uuid,
-    status: AssetStatus.ACTIVE,
-    originalPath: fileStub.livePhotoMotion.originalPath,
-    ownerId: authStub.user1.user.id,
-    type: AssetType.VIDEO,
-    isVisible: false,
-    fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
-    fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
-    files: [
-      {
-        assetId: 'asset-id',
-        type: AssetFileType.PREVIEW,
-        path: '/uploads/user-id/thumbs/path.ext',
-        createdAt: new Date('2023-02-23T05:06:29.716Z'),
-        updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-      },
-      {
-        assetId: 'asset-id',
-        type: AssetFileType.THUMBNAIL,
-        path: '/uploads/user-id/webp/path.ext',
-        createdAt: new Date('2023-02-23T05:06:29.716Z'),
-        updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-      },
-    ],
-    exifInfo: {
-      fileSizeInByte: 100_000,
-      timeZone: `America/New_York`,
-    },
-  } as AssetEntity),
-
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
-    status: AssetStatus.ACTIVE,
-    originalPath: fileStub.livePhotoStill.originalPath,
-    ownerId: authStub.user1.user.id,
-    type: AssetType.IMAGE,
-    livePhotoVideoId: 'live-photo-motion-asset',
-    isVisible: true,
-    fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
-    fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
-    exifInfo: {
-      fileSizeInByte: 25_000,
-      timeZone: `America/New_York`,
-    },
-  } as AssetEntity),
-
-  livePhotoStillAssetWithTheSameLivePhotoMotionAsset: Object.freeze({
-    id: 'live-photo-still-asset-1',
     status: AssetStatus.ACTIVE,
     originalPath: fileStub.livePhotoStill.originalPath,
     ownerId: authStub.user1.user.id,
@@ -645,6 +600,7 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
   }),
+
   sidecar: Object.freeze<AssetEntity>({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
@@ -679,6 +635,7 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
   }),
+
   sidecarWithoutExt: Object.freeze<AssetEntity>({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
@@ -751,45 +708,7 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
   }),
-  missingFileExtension: Object.freeze<AssetEntity>({
-    id: 'asset-id',
-    status: AssetStatus.ACTIVE,
-    deviceAssetId: 'device-asset-id',
-    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    owner: userStub.user1,
-    ownerId: 'user-id',
-    deviceId: 'device-id',
-    originalPath: '/data/user1/photo.jpg',
-    checksum: Buffer.from('file hash', 'utf8'),
-    type: AssetType.IMAGE,
-    files,
-    thumbhash: Buffer.from('blablabla', 'base64'),
-    encodedVideoPath: null,
-    createdAt: new Date('2023-02-23T05:06:29.716Z'),
-    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    localDateTime: new Date('2023-02-23T05:06:29.716Z'),
-    isFavorite: true,
-    isArchived: false,
-    isExternal: true,
-    duration: null,
-    isVisible: true,
-    livePhotoVideo: null,
-    livePhotoVideoId: null,
-    libraryId: 'library-id',
-    library: libraryStub.externalLibrary1,
-    tags: [],
-    sharedLinks: [],
-    originalFileName: 'photo',
-    faces: [],
-    deletedAt: null,
-    sidecarPath: null,
-    exifInfo: {
-      fileSizeInByte: 5000,
-    } as ExifEntity,
-    duplicateId: null,
-    isOffline: false,
-  }),
+
   hasFileExtension: Object.freeze<AssetEntity>({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
@@ -829,6 +748,7 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
   }),
+
   imageDng: Object.freeze<AssetEntity>({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
@@ -868,6 +788,7 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
   }),
+
   hasEmbedding: Object.freeze<AssetEntity>({
     id: 'asset-id-embedding',
     status: AssetStatus.ACTIVE,
@@ -909,6 +830,7 @@ export const assetStub = {
     },
     isOffline: false,
   }),
+
   hasDupe: Object.freeze<AssetEntity>({
     id: 'asset-id-dupe',
     status: AssetStatus.ACTIVE,

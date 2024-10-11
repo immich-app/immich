@@ -141,8 +141,6 @@ describe(LibraryService.name, () => {
 
   describe('handleQueueAssetRefresh', () => {
     it('should queue refresh of a new asset', async () => {
-      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
-
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.walk.mockImplementation(mockWalk);
 
@@ -178,8 +176,6 @@ describe(LibraryService.name, () => {
       });
 
       storageMock.checkFileExists.mockResolvedValue(true);
-
-      assetMock.getWith.mockResolvedValue({ items: [], hasNextPage: false });
 
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
 

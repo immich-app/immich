@@ -38,6 +38,7 @@ import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { IViewRepository } from 'src/interfaces/view.interface';
+import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
 export class BaseService {
@@ -95,7 +96,7 @@ export class BaseService {
     );
   }
 
-  private get repos() {
+  private get configRepos() {
     return {
       configRepo: this.configRepository,
       metadataRepo: this.systemMetadataRepository,
@@ -104,10 +105,18 @@ export class BaseService {
   }
 
   getConfig(options: { withCache: boolean }) {
-    return getConfig(this.repos, options);
+    return getConfig(this.configRepos, options);
   }
 
   updateConfig(newConfig: SystemConfig) {
-    return updateConfig(this.repos, newConfig);
+    return updateConfig(this.configRepos, newConfig);
+  }
+
+  requireAccess(request: AccessRequest) {
+    return requireAccess(this.accessRepository, request);
+  }
+
+  checkAccess(request: AccessRequest) {
+    return checkAccess(this.accessRepository, request);
   }
 }

@@ -34,7 +34,7 @@ export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
   uuid: string;
   checksum: Buffer;
-  xxhash: BigInt;
+  xxhash: Buffer;
 }
 
 export function mapToUploadFile(file: ImmichFile): UploadFile {
@@ -150,7 +150,7 @@ export class FileUploadInterceptor implements NestInterceptor {
     }
 
     this.logger.debug(`Handling asset upload file: ${file.originalname}`);
-    const xxhash = new xxh3.Xxh3();
+    const xxhash = xxh3.Xxh3.withSeed();
     const sha1hash = createHash('sha1');
 
     file.stream.on('data', (chunk) => {
@@ -164,7 +164,11 @@ export class FileUploadInterceptor implements NestInterceptor {
         xxhash.reset();
         callback(error);
       } else {
-        callback(null, { ...info, checksum: sha1hash.digest(), xxhash: xxhash.digest() });
+        callback(null, {
+          ...info,
+          checksum: sha1hash.digest(),
+          xxhash: Buffer.from(xxhash.digest().toString(16), 'utf8'),
+        });
       }
     });
   }

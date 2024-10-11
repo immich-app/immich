@@ -11,7 +11,3 @@ export const keyStub = {
     user: userStub.admin,
   } as APIKeyEntity),
 };
-
-export const apiKeyCreateStub = {
-  name: 'API Key',
-};

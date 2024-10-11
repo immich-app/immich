@@ -86,12 +86,10 @@ class PartnerPage extends HookConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-            child: const Text(
+            child: Text(
               "partner_page_shared_to_title",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.onSurface.withAlpha(200),
               ),
             ).tr(),
           ),
@@ -104,10 +102,7 @@ class PartnerPage extends HookConsumerWidget {
                   leading: userAvatar(context, users[index]),
                   title: Text(
                     users[index].email,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: context.textTheme.bodyLarge,
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.person_remove),
@@ -148,7 +143,7 @@ class PartnerPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("partner_page_title").tr(),
+        title: const Text("partners").tr(),
         elevation: 0,
         centerTitle: false,
         actions: [

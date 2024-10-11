@@ -30,7 +30,7 @@ export class CryptoRepository implements ICryptoRepository {
   }
 
   xxHash(value: string) {
-    return xxh3.Xxh3.withSeed().update(value).digest();
+    return Buffer.from(xxh3.Xxh3.withSeed().update(value).digest().toString(16), 'utf8');
   }
 
   verifySha256(value: string, encryptedValue: string, publicKey: string) {

@@ -11,9 +11,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
-import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_viewer_editable_title.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
@@ -50,9 +48,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     Future<bool> onRemoveFromAlbumPressed(Iterable<Asset> assets) async {
       final a = album.valueOrNull;
       final bool isSuccess = a != null &&
-          await ref
-              .read(sharedAlbumProvider.notifier)
-              .removeAssetFromAlbum(a, assets);
+          await ref.read(albumProvider.notifier).removeAsset(a, assets);
 
       if (!isSuccess) {
         ImmichToast.show(
@@ -81,9 +77,9 @@ class AlbumViewerPage extends HookConsumerWidget {
         // Check if there is new assets add
         isProcessing.value = true;
 
-        await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
-              returnPayload.selectedAssets,
+        await ref.watch(albumProvider.notifier).addAssets(
               albumInfo,
+              returnPayload.selectedAssets,
             );
 
         isProcessing.value = false;
@@ -98,9 +94,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (sharedUserIds != null) {
         isProcessing.value = true;
 
-        await ref
-            .watch(albumServiceProvider)
-            .addAdditionalUserToAlbum(sharedUserIds, album);
+        await ref.watch(albumProvider.notifier).addUsers(album, sharedUserIds);
 
         isProcessing.value = false;
       }
@@ -184,27 +178,29 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget buildSharedUserIconsRow(Album album) {
-      return GestureDetector(
-        onTap: () => context.pushRoute(AlbumOptionsRoute(album: album)),
-        child: SizedBox(
-          height: 50,
-          child: ListView.builder(
-            padding: const EdgeInsets.only(left: 16),
-            scrollDirection: Axis.horizontal,
-            itemBuilder: ((context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: UserCircleAvatar(
-                  user: album.sharedUsers.toList()[index],
-                  radius: 18,
-                  size: 36,
+      return album.sharedUsers.isNotEmpty
+          ? GestureDetector(
+              onTap: () => context.pushRoute(AlbumOptionsRoute(album: album)),
+              child: SizedBox(
+                height: 50,
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(left: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: ((context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: UserCircleAvatar(
+                        user: album.sharedUsers.toList()[index],
+                        radius: 18,
+                        size: 36,
+                      ),
+                    );
+                  }),
+                  itemCount: album.sharedUsers.length,
                 ),
-              );
-            }),
-            itemCount: album.sharedUsers.length,
-          ),
-        ),
-      );
+              ),
+            )
+          : const SizedBox.shrink();
     }
 
     Widget buildHeader(Album album) {
@@ -214,7 +210,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         children: [
           buildTitle(album),
           if (album.assets.isNotEmpty == true) buildAlbumDateRange(album),
-          if (album.shared) buildSharedUserIconsRow(album),
+          buildSharedUserIconsRow(album),
         ],
       );
     }
@@ -231,17 +227,17 @@ class AlbumViewerPage extends HookConsumerWidget {
       body: Stack(
         children: [
           album.widgetWhen(
-            onData: (data) => MultiselectGrid(
+            onData: (albumInfo) => MultiselectGrid(
               renderListProvider: albumRenderlistProvider(albumId),
               topWidget: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildHeader(data),
-                  if (data.isRemote) buildControlButton(data),
+                  buildHeader(albumInfo),
+                  if (albumInfo.isRemote) buildControlButton(albumInfo),
                 ],
               ),
               onRemoveFromAlbum: onRemoveFromAlbumPressed,
-              editEnabled: data.ownerId == userId,
+              editEnabled: albumInfo.ownerId == userId,
             ),
           ),
           AnimatedPositioned(

@@ -48,7 +48,6 @@ export interface IDatabaseRepository {
   getPostgresVersion(): Promise<string>;
   getPostgresVersionRange(): string;
   createExtension(extension: DatabaseExtension): Promise<void>;
-  updateExtension(extension: DatabaseExtension, version?: string): Promise<void>;
   updateVectorExtension(extension: VectorExtension, version?: string): Promise<VectorUpdateResult>;
   reindex(index: VectorIndex): Promise<void>;
   shouldReindex(name: VectorIndex): Promise<boolean>;

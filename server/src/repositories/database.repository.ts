@@ -74,10 +74,6 @@ export class DatabaseRepository implements IDatabaseRepository {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
   }
 
-  async updateExtension(extension: DatabaseExtension, version?: string): Promise<void> {
-    await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
-  }
-
   async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
     const { availableVersion, installedVersion } = await this.getExtensionVersion(extension);
     if (!installedVersion) {

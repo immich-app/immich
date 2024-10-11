@@ -36,7 +36,7 @@ export class AssetFileEntity {
   @Column()
   path!: string;
 
-  @Column({ type: 'bigint' })
+  @Column({ type: 'bytea' })
   @Index()
-  checksum!: BigInt | null;
+  checksum!: Buffer | null;
 }

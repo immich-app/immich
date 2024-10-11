@@ -6,7 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -45,11 +45,11 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
       try {
         final isSuccess =
-            await ref.read(sharedAlbumProvider.notifier).leaveAlbum(album);
+            await ref.read(albumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
           context.navigateTo(
-            const TabControllerRoute(children: [SharingRoute()]),
+            TabControllerRoute(children: [AlbumsRoute()]),
           );
         } else {
           showErrorMessage();
@@ -65,9 +65,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       isProcessing.value = true;
 
       try {
-        await ref
-            .read(sharedAlbumProvider.notifier)
-            .removeUserFromAlbum(album, user);
+        await ref.read(albumProvider.notifier).removeUser(album, user);
         album.sharedUsers.remove(user);
         sharedUsers.value = album.sharedUsers.toList();
       } catch (error) {
@@ -200,8 +198,8 @@ class AlbumOptionsPage extends HookConsumerWidget {
               onChanged: (bool value) async {
                 activityEnabled.value = value;
                 if (await ref
-                    .read(sharedAlbumProvider.notifier)
-                    .setActivityEnabled(album, value)) {
+                    .read(albumProvider.notifier)
+                    .setActivitystatus(album, value)) {
                   album.activityEnabled = value;
                 }
               },

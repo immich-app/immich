@@ -24,7 +24,7 @@ import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entit
 import { AssetFileType, AssetStatus, AssetType, CacheControl, Permission, StorageFolder } from 'src/enum';
 import { JobName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess, requireUploadAccess } from 'src/utils/access';
+import { requireUploadAccess } from 'src/utils/access';
 import { getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -39,7 +39,7 @@ export interface UploadRequest {
 export interface UploadFile {
   uuid: string;
   checksum: Buffer;
-  xxhash: BigInt;
+  xxhash?: Buffer;
   originalPath: string;
   originalName: string;
   size: number;
@@ -126,7 +126,7 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await requireAccess(this.accessRepository, {
+      await this.requireAccess({
         auth,
         permission: Permission.ASSET_UPLOAD,
         // do not need an id here, but the interface requires it
@@ -160,7 +160,7 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+      await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
       const asset = (await this.assetRepository.getById(id)) as AssetEntity;
 
       this.requireQuota(auth, file.size);
@@ -183,7 +183,7 @@ export class AssetMediaService extends BaseService {
   }
 
   async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
 
     const asset = await this.findOrFail(id);
 
@@ -195,7 +195,7 @@ export class AssetMediaService extends BaseService {
   }
 
   async viewThumbnail(auth: AuthDto, id: string, dto: AssetMediaOptionsDto): Promise<ImmichFileResponse> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
@@ -218,7 +218,7 @@ export class AssetMediaService extends BaseService {
   }
 
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
 
@@ -341,8 +341,6 @@ export class AssetMediaService extends BaseService {
       path: file.originalPath,
       checksum: file.xxhash,
     });
-
-    console.log('xxhash', file.xxhash);
 
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });

@@ -57,9 +57,7 @@ export interface IPersonRepository {
 
   create(person: Partial<PersonEntity>): Promise<PersonEntity>;
   createAll(people: Partial<PersonEntity>[]): Promise<string[]>;
-  createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
-  deleteAll(): Promise<void>;
   deleteFaces(options: DeleteFacesOptions): Promise<void>;
   refreshFaces(
     facesToAdd: Partial<AssetFaceEntity>[],
