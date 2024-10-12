@@ -479,7 +479,10 @@ class SearchInputPage extends HookConsumerWidget {
                   editEnabled: true,
                   favoriteEnabled: true,
                   stackEnabled: false,
-                  emptyIndicator: const SizedBox(),
+                  emptyIndicator: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: QuickLinkList(),
+                  ),
                 ),
               ),
             ),
@@ -626,6 +629,100 @@ class SearchInputPage extends HookConsumerWidget {
           buildSearchResult(),
         ],
       ),
+    );
+  }
+}
+
+class QuickLinkList extends StatelessWidget {
+  const QuickLinkList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: context.colorScheme.outline.withAlpha(10),
+          width: 1,
+        ),
+        gradient: LinearGradient(
+          colors: [
+            context.colorScheme.primary.withAlpha(10),
+            context.colorScheme.primary.withAlpha(15),
+            context.colorScheme.primary.withAlpha(20),
+            context.colorScheme.primary.withAlpha(25),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: ListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          QuickLink(
+            title: 'recently_added'.tr(),
+            icon: Icons.schedule_outlined,
+            isTop: true,
+            onTap: () {},
+          ),
+          QuickLink(
+            title: 'videos'.tr(),
+            icon: Icons.play_circle_outline_rounded,
+            onTap: () {},
+          ),
+          QuickLink(
+            title: 'favorites'.tr(),
+            icon: Icons.favorite_border_rounded,
+            isBottom: true,
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class QuickLink extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isTop;
+  final bool isBottom;
+
+  const QuickLink({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.onTap,
+    this.isTop = false,
+    this.isBottom = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(isTop ? 20 : 0),
+      topRight: Radius.circular(isTop ? 20 : 0),
+      bottomLeft: Radius.circular(isBottom ? 20 : 0),
+      bottomRight: Radius.circular(isBottom ? 20 : 0),
+    );
+
+    return ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+      ),
+      leading: Icon(
+        icon,
+        size: 26,
+      ),
+      title: Text(
+        title,
+        style: context.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      onTap: onTap,
     );
   }
 }
