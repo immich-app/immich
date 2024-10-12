@@ -354,13 +354,9 @@ export class MediaService extends BaseService {
 
   private getTranscodeTarget(
     config: SystemConfigFFmpegDto,
-    videoStream?: VideoStreamInfo,
+    videoStream: VideoStreamInfo,
     audioStream?: AudioStreamInfo,
   ): TranscodeTarget {
-    if (!videoStream && !audioStream) {
-      return TranscodeTarget.NONE;
-    }
-
     const isAudioTranscodeRequired = this.isAudioTranscodeRequired(config, audioStream);
     const isVideoTranscodeRequired = this.isVideoTranscodeRequired(config, videoStream);
 
@@ -402,11 +398,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: VideoStreamInfo): boolean {
-    if (!stream) {
-      return false;
-    }
-
+  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo): boolean {
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;
