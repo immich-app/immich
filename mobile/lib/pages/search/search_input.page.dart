@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
@@ -481,7 +482,30 @@ class SearchInputPage extends HookConsumerWidget {
                   stackEnabled: false,
                   emptyIndicator: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: QuickLinkList(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      // mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 40),
+                        Center(
+                          child: Image.asset(
+                            context.isDarkTheme
+                                ? 'assets/polaroid-dark.png'
+                                : 'assets/polaroid-light.png',
+                            height: 125,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Center(
+                          child: Text(
+                            "Search for your favorite photos and videos",
+                            style: context.textTheme.labelLarge,
+                          ),
+                        ),
+                        SizedBox(height: 32),
+                        QuickLinkList(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -650,7 +674,6 @@ class QuickLinkList extends StatelessWidget {
             context.colorScheme.primary.withAlpha(10),
             context.colorScheme.primary.withAlpha(15),
             context.colorScheme.primary.withAlpha(20),
-            context.colorScheme.primary.withAlpha(25),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -664,18 +687,18 @@ class QuickLinkList extends StatelessWidget {
             title: 'recently_added'.tr(),
             icon: Icons.schedule_outlined,
             isTop: true,
-            onTap: () {},
+            onTap: () => context.pushRoute(const RecentlyAddedRoute()),
           ),
           QuickLink(
             title: 'videos'.tr(),
             icon: Icons.play_circle_outline_rounded,
-            onTap: () {},
+            onTap: () => context.pushRoute(AllVideosRoute()),
           ),
           QuickLink(
             title: 'favorites'.tr(),
             icon: Icons.favorite_border_rounded,
             isBottom: true,
-            onTap: () {},
+            onTap: () => context.pushRoute(FavoritesRoute()),
           ),
         ],
       ),
