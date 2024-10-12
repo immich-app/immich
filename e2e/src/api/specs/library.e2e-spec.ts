@@ -500,12 +500,12 @@ describe('/libraries', () => {
     });
 
     it('should set an asset offline its file is not in any import path', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
-
-      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
