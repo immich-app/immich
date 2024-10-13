@@ -314,13 +314,13 @@ export const langs = [
   { name: 'Vietnamese', code: 'vi', loader: () => import('$lib/i18n/vi.json') },
   {
     name: 'Chinese (Traditional)',
-    code: 'zh-Hant',
+    code: 'zh-TW',
     weblateCode: 'zh_Hant',
     loader: () => import('$lib/i18n/zh_Hant.json'),
   },
   {
     name: 'Chinese (Simplified)',
-    code: 'zh-Hans',
+    code: 'zh-CN',
     weblateCode: 'zh_SIMPLIFIED',
     loader: () => import('$lib/i18n/zh_SIMPLIFIED.json'),
   },
