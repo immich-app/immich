@@ -72,8 +72,8 @@ class SearchPage extends HookConsumerWidget {
       final searchResult = await ref
           .watch(paginatedSearchProvider.notifier)
           .getNextPage(filter.value, currentPage.value);
-      previousFilter.value = filter.value;
 
+      previousFilter.value = filter.value;
       searchResultCount.value = searchResult.length;
     }
 
@@ -371,7 +371,6 @@ class SearchPage extends HookConsumerWidget {
     showDisplayOptionPicker() {
       handleOnSelect(Map<DisplayOption, bool> value) {
         final filterText = <String>[];
-
         value.forEach((key, value) {
           switch (key) {
             case DisplayOption.notInAlbum:
@@ -407,6 +406,11 @@ class SearchPage extends HookConsumerWidget {
               break;
           }
         });
+
+        if (filterText.isEmpty) {
+          displayOptionCurrentFilterWidget.value = null;
+          return;
+        }
 
         displayOptionCurrentFilterWidget.value = Text(
           filterText.join(', '),
@@ -448,11 +452,14 @@ class SearchPage extends HookConsumerWidget {
 
       if (isContextualSearch.value) {
         filter.value = filter.value.copyWith(
-          context: value,
           filename: null,
+          context: value,
         );
       } else {
-        filter.value = filter.value.copyWith(filename: value, context: null);
+        filter.value = filter.value.copyWith(
+          filename: value,
+          context: null,
+        );
       }
 
       search();
@@ -482,29 +489,7 @@ class SearchPage extends HookConsumerWidget {
                   stackEnabled: false,
                   emptyIndicator: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        SizedBox(height: 40),
-                        Center(
-                          child: Image.asset(
-                            context.isDarkTheme
-                                ? 'assets/polaroid-dark.png'
-                                : 'assets/polaroid-light.png',
-                            height: 125,
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        Center(
-                          child: Text(
-                            "Search for your favorite photos and videos",
-                            style: context.textTheme.labelLarge,
-                          ),
-                        ),
-                        SizedBox(height: 32),
-                        QuickLinkList(),
-                      ],
-                    ),
+                    child: SearchEmptyContent(),
                   ),
                 ),
               ),
@@ -553,7 +538,9 @@ class SearchPage extends HookConsumerWidget {
           child: TextField(
             controller: textSearchController,
             decoration: InputDecoration(
-              contentPadding: EdgeInsets.all(8),
+              contentPadding: prefilter != null
+                  ? EdgeInsets.only(left: 24)
+                  : EdgeInsets.all(8),
               prefixIcon: prefilter != null
                   ? null
                   : Icon(
@@ -565,7 +552,6 @@ class SearchPage extends HookConsumerWidget {
                   : 'filename_search'.tr(),
               hintStyle: context.textTheme.bodyLarge?.copyWith(
                 color: context.themeData.colorScheme.onSurfaceSecondary,
-                fontWeight: FontWeight.w500,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(25),
@@ -652,6 +638,37 @@ class SearchPage extends HookConsumerWidget {
           buildSearchResult(),
         ],
       ),
+    );
+  }
+}
+
+class SearchEmptyContent extends StatelessWidget {
+  const SearchEmptyContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        SizedBox(height: 40),
+        Center(
+          child: Image.asset(
+            context.isDarkTheme
+                ? 'assets/polaroid-dark.png'
+                : 'assets/polaroid-light.png',
+            height: 125,
+          ),
+        ),
+        SizedBox(height: 16),
+        Center(
+          child: Text(
+            "Search for your photos and videos",
+            style: context.textTheme.labelLarge,
+          ),
+        ),
+        SizedBox(height: 32),
+        QuickLinkList(),
+      ],
     );
   }
 }

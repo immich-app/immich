@@ -16,7 +16,7 @@ import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/albums/albums.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
-import 'package:immich_mobile/pages/library/places/places_collection.part.dart';
+import 'package:immich_mobile/pages/library/places/places_collection.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
@@ -96,6 +96,11 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: ChangePasswordRoute.page),
+    AutoRoute(
+      page: SearchRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      maintainState: false,
+    ),
     CustomRoute(
       page: TabControllerRoute.page,
       guards: [_authGuard, _duplicateGuard],

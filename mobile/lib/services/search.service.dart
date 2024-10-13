@@ -106,6 +106,7 @@ class SearchService {
       return _assetRepository
           .getAllByRemoteId(response.assets.items.map((e) => e.id));
     } catch (error, stackTrace) {
+      print(error);
       _log.severe("Failed to search for assets", error, stackTrace);
     }
     return null;

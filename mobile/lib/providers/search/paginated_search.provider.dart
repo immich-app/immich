@@ -11,6 +11,7 @@ part 'paginated_search.provider.g.dart';
 class PaginatedSearch extends _$PaginatedSearch {
   Future<List<Asset>?> _search(SearchFilter filter, int page) async {
     final service = ref.read(searchServiceProvider);
+    print("filter $filter");
     final result = await service.search(filter, page);
 
     return result;
@@ -27,6 +28,7 @@ class PaginatedSearch extends _$PaginatedSearch {
     final newState = await AsyncValue.guard(() async {
       final assets = await _search(filter, nextPage);
 
+      print("Search lenght: ${assets?.length}");
       if (assets != null) {
         return [...?state.value, ...assets];
       }
