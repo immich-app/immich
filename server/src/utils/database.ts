@@ -136,6 +136,8 @@ export function searchAssetBuilder(
       .groupBy(`faces."assetId"`)
       .having(`COUNT(DISTINCT faces."personId") = :personCount`, { personCount: personIds.length });
     builder.addCommonTableExpression(cte, 'face_ids').innerJoin('face_ids', 'a', 'a."assetId" = asset.id');
+
+    builder.getQuery(); // typeorm mixes up parameters without this  (੭ °ཀ°)੭
   }
 
   if (withStacked) {
