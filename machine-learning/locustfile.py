@@ -74,10 +74,10 @@ class RecognitionFormDataLoadTest(InferenceLoadTest):
             "facial-recognition": {
                 "recognition": {
                     "modelName": self.environment.parsed_options.face_model,
-                    "options": {"minScore": self.environment.parsed_options.face_min_score},
                 },
                 "detection": {
                     "modelName": self.environment.parsed_options.face_model,
+                    "options": {"minScore": self.environment.parsed_options.face_min_score},
                 },
             }
         }
