@@ -11,7 +11,7 @@ Unable to set `app.immich:///oauth-callback` as a valid redirect URI? See [Mobil
 Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
 
 - [Authentik](https://goauthentik.io/integrations/sources/oauth/#openid-connect)
-- [Authelia](https://www.authelia.com/configuration/identity-providers/openid-connect/clients/)
+- [Authelia](https://www.authelia.com/integration/openid-connect/immich/)
 - [Okta](https://www.okta.com/openid-connect/)
 - [Google](https://developers.google.com/identity/openid-connect/openid-connect)
 
