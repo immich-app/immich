@@ -145,6 +145,7 @@
             { value: AudioCodec.Aac, text: 'AAC' },
             { value: AudioCodec.Mp3, text: 'MP3' },
             { value: AudioCodec.Libopus, text: 'Opus' },
+            { value: AudioCodec.Pcms16le, text: 'PCM (16 bit)' },
           ]}
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
         />

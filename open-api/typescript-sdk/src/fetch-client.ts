@@ -3501,7 +3501,8 @@ export enum TranscodeHWAccel {
 export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
-    Libopus = "libopus"
+    Libopus = "libopus",
+    Pcms16le = "pcm_s16le"
 }
 export enum VideoContainer {
     Mov = "mov",
