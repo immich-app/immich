@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
+import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
@@ -32,7 +33,6 @@ class SearchPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isContextualSearch = useState(true);
     final textSearchController = useTextEditingController();
-    final focusNode = useFocusNode();
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: prefilter?.people ?? {},
@@ -593,8 +593,8 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
             onSubmitted: handleTextSubmitted,
-            focusNode: focusNode,
-            onTapOutside: (_) => focusNode.unfocus(),
+            focusNode: ref.watch(searchInputFocusProvider),
+            onTapOutside: (_) => ref.read(searchInputFocusProvider).unfocus(),
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
+import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -44,21 +45,28 @@ class TabControllerPage extends HookConsumerWidget {
       );
     }
 
+    onNavigationSelected(TabsRouter router, int index) {
+      // On Photos page menu tapped
+      if (router.activeIndex == 0 && index == 0) {
+        scrollToTopNotifierProvider.scrollToTop();
+      }
+
+      // On Search page tapped
+      if (router.activeIndex == 1 && index == 1) {
+        ref.read(searchInputFocusProvider).requestFocus();
+      }
+
+      ref.read(hapticFeedbackProvider.notifier).selectionClick();
+      router.setActiveIndex(index);
+      ref.read(tabProvider.notifier).state = TabEnum.values[index];
+    }
+
     navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         labelType: NavigationRailLabelType.all,
         selectedIndex: tabsRouter.activeIndex,
-        onDestinationSelected: (index) {
-          // Selected Photos while it is active
-          if (tabsRouter.activeIndex == 0 && index == 0) {
-            // Scroll to top
-            scrollToTopNotifierProvider.scrollToTop();
-          }
-
-          ref.read(hapticFeedbackProvider.notifier).selectionClick();
-          tabsRouter.setActiveIndex(index);
-          ref.read(tabProvider.notifier).state = TabEnum.values[index];
-        },
+        onDestinationSelected: (index) =>
+            onNavigationSelected(tabsRouter, index),
         selectedIconTheme: IconThemeData(
           color: context.primaryColor,
         ),
@@ -103,16 +111,8 @@ class TabControllerPage extends HookConsumerWidget {
     bottomNavigationBar(TabsRouter tabsRouter) {
       return NavigationBar(
         selectedIndex: tabsRouter.activeIndex,
-        onDestinationSelected: (index) {
-          if (tabsRouter.activeIndex == 0 && index == 0) {
-            // Scroll to top
-            scrollToTopNotifierProvider.scrollToTop();
-          }
-
-          ref.read(hapticFeedbackProvider.notifier).selectionClick();
-          tabsRouter.setActiveIndex(index);
-          ref.read(tabProvider.notifier).state = TabEnum.values[index];
-        },
+        onDestinationSelected: (index) =>
+            onNavigationSelected(tabsRouter, index),
         destinations: [
           NavigationDestination(
             label: 'tab_controller_nav_photos'.tr(),
