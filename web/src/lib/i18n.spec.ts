@@ -24,7 +24,7 @@ describe('i18n', () => {
   });
 
   describe('getClosestAvailableLocale', () => {
-    const allLocales = ['ar', 'bg', 'en', 'en-US', 'en-DE', 'zh-Hans', 'zh-Hans-HK'];
+    const allLocales = ['ar', 'bg', 'en', 'en-US', 'en-DE', 'zh-Hans', 'zh-Hans-HK', 'zh-HK', 'zh-Hant'];
 
     it('returns undefined on mismatch', () => {
       expect(getClosestAvailableLocale([], allLocales)).toBeUndefined();
@@ -47,5 +47,11 @@ describe('i18n', () => {
       expect(getClosestAvailableLocale(['zh'], allLocales)).toBeUndefined();
       expect(getClosestAvailableLocale(['de', 'zh', 'en-US'], allLocales)).toBe('en-US');
     });
+
+    it('returns the locale for a alias match', () => {
+      expect(getClosestAvailableLocale(['zh-CN'], allLocales)).toBe('zh-Hans');
+      expect(getClosestAvailableLocale(['zh-TW'], allLocales)).toBe('zh-Hant');
+    });
+
   });
 });

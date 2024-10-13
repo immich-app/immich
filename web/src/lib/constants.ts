@@ -327,6 +327,12 @@ export const langs = [
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];
 
+// browser is zh-CN, but weblate use zh-Hans
+export const langAliasesMap: { [key: string]: string } = {
+  'zh-CN' : 'zh-Hans',
+  'zh-TW' : 'zh-Hant'
+};
+
 export enum ImmichProduct {
   Client = 'immich-client',
   Server = 'immich-server',

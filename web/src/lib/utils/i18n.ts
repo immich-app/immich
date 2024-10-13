@@ -1,4 +1,4 @@
-import { langs } from '$lib/constants';
+import { langAliasesMap, langs } from '$lib/constants';
 import { locale, t, waitLocale } from 'svelte-i18n';
 import { get, type Unsubscriber } from 'svelte/store';
 
@@ -23,7 +23,8 @@ function getSubLocales(refLocale: string) {
 
 export function getClosestAvailableLocale(locales: readonly string[], allLocales: readonly string[]) {
   const allLocalesSet = new Set(allLocales);
-  return locales.find((locale) => getSubLocales(locale).some((subLocale) => allLocalesSet.has(subLocale)));
+  const expandedLocales = locales.flatMap((locale) => [locale, langAliasesMap[locale] ?? null]).filter(Boolean);
+  return expandedLocales.find((locale) => getSubLocales(locale).some((subLocale) => allLocalesSet.has(subLocale)));
 }
 
 export const langCodes = langs.map((lang) => lang.code);
