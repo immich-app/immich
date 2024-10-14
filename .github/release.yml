@@ -4,6 +4,10 @@ changelog:
       labels:
         - changelog:breaking-change
 
+    - title: 🫥 Deprecated Changes
+      labels:
+        - changelog:deprecated
+
     - title: 🔒 Security
       labels:
         - changelog:security
