@@ -315,7 +315,11 @@ export class AlbumRepository implements IAlbumRepository {
     const getAlbumSharedOptions = () => {
       switch (shared) {
         case true: {
-          return { owner: '(album_users.usersId = :userId)', options: '' };
+          return {
+            owner:
+              '(album_users.usersId = :userId OR shared_links.userId = :userId OR (album.ownerId = :userId AND album_users.usersId IS NOT NULL))',
+            options: '',
+          };
         }
         case false: {
           return {
@@ -324,7 +328,7 @@ export class AlbumRepository implements IAlbumRepository {
           };
         }
         case undefined: {
-          return { owner: '(album.ownerId = :userId OR album_users.usersId = :userId)', options: '' };
+          return { owner: '(album.ownerId = :userId)', options: '' };
         }
       }
     };
@@ -334,9 +338,10 @@ export class AlbumRepository implements IAlbumRepository {
     let queryBuilder = this.repository
       .createQueryBuilder('album')
       .leftJoinAndSelect('album.owner', 'owner')
-      .leftJoin('albums_shared_users_users', 'album_users', 'album_users.albumsId = album.id');
+      .leftJoinAndSelect('album.albumUsers', 'album_users')
+      .leftJoinAndSelect('album_users.user', 'user');
 
-    if (shared === false) {
+    if (shared !== undefined) {
       queryBuilder = queryBuilder.leftJoin('shared_links', 'shared_links', 'shared_links.albumId = album.id');
     }
 
