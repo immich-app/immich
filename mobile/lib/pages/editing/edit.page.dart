@@ -1,19 +1,22 @@
-import 'dart:typed_data';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart' as p;
+
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:path/path.dart' as p;
+import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'dart:ui' as ui;
 
 /// A stateless widget that provides functionality for editing an image.
 ///
@@ -28,27 +31,31 @@ class EditImagePage extends ConsumerWidget {
   final Asset asset;
   final Image image;
   final bool isEdited;
+  final Function? shouldDeleleOrginalOnCrop;
 
   const EditImagePage({
     super.key,
     required this.asset,
     required this.image,
     required this.isEdited,
+    this.shouldDeleleOrginalOnCrop,
   });
   Future<Uint8List> _imageToUint8List(Image image) async {
     final Completer<Uint8List> completer = Completer();
     image.image.resolve(const ImageConfiguration()).addListener(
           ImageStreamListener(
-            (ImageInfo info, bool _) {
-              info.image
-                  .toByteData(format: ImageByteFormat.png)
-                  .then((byteData) {
+            (ImageInfo info, bool _) async {
+              try {
+                final ByteData? byteData =
+                    await info.image.toByteData(format: ui.ImageByteFormat.png);
                 if (byteData != null) {
                   completer.complete(byteData.buffer.asUint8List());
                 } else {
                   completer.completeError('Failed to convert image to bytes');
                 }
-              });
+              } catch (e) {
+                completer.completeError('Error converting image: $e');
+              }
             },
             onError: (exception, stackTrace) =>
                 completer.completeError(exception),
@@ -65,9 +72,12 @@ class EditImagePage extends ConsumerWidget {
   ) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
+      // Use PNG format for lossless quality
+      final String fileName =
+          "${p.withoutExtension(asset.fileName)}_edited.png";
       await ref.read(fileMediaRepositoryProvider).saveImage(
             imageData,
-            title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
+            title: fileName,
           );
       await ref.read(albumProvider.notifier).refreshDeviceAlbums();
       Navigator.of(context).popUntil((route) => route.isFirst);
@@ -166,7 +176,10 @@ class EditImagePage extends ConsumerWidget {
                   ),
                   onPressed: () {
                     context.pushRoute(
-                      CropImageRoute(asset: asset, image: image),
+                      CropImageRoute(
+                          asset: asset,
+                          image: image,
+                          shouldDeleteOrginal: shouldDeleleOrginalOnCrop),
                     );
                   },
                 ),

@@ -190,10 +190,10 @@ class BottomGalleryBar extends ConsumerWidget {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => EditImagePage(
-            asset: asset,
-            image: image,
-            isEdited: false,
-          ),
+              asset: asset,
+              image: image,
+              isEdited: false,
+              shouldDeleleOrginalOnCrop: handleDelete),
         ),
       );
     }
