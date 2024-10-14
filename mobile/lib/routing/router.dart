@@ -16,7 +16,7 @@ import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/albums/albums.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
-import 'package:immich_mobile/pages/library/places/places_collection.part.dart';
+import 'package:immich_mobile/pages/library/places/places_collection.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
@@ -52,7 +52,6 @@ import 'package:immich_mobile/pages/search/map/map_location_picker.page.dart';
 import 'package:immich_mobile/pages/search/person_result.page.dart';
 import 'package:immich_mobile/pages/search/recently_added.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
-import 'package:immich_mobile/pages/search/search_input.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner_detail.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link.page.dart';
@@ -97,6 +96,11 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: ChangePasswordRoute.page),
+    AutoRoute(
+      page: SearchRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      maintainState: false,
+    ),
     CustomRoute(
       page: TabControllerRoute.page,
       guards: [_authGuard, _duplicateGuard],
@@ -106,7 +110,7 @@ class AppRouter extends RootStackRouter {
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(
-          page: SearchInputRoute.page,
+          page: SearchRoute.page,
           guards: [_authGuard, _duplicateGuard],
           maintainState: false,
         ),
@@ -243,11 +247,6 @@ class AppRouter extends RootStackRouter {
     AutoRoute(
       page: BackupOptionsRoute.page,
       guards: [_authGuard, _duplicateGuard],
-    ),
-    CustomRoute(
-      page: SearchInputRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-      transitionsBuilder: TransitionsBuilders.noTransition,
     ),
     AutoRoute(
       page: HeaderSettingsRoute.page,

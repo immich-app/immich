@@ -108,6 +108,7 @@ class QuickAccessButtons extends ConsumerWidget {
           colors: [
             context.colorScheme.primary.withAlpha(10),
             context.colorScheme.primary.withAlpha(15),
+            context.colorScheme.primary.withAlpha(20),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
