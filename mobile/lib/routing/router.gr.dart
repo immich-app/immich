@@ -1292,29 +1292,29 @@ class RecentlyAddedRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [SearchInputPage]
-class SearchInputRoute extends PageRouteInfo<SearchInputRouteArgs> {
-  SearchInputRoute({
+/// [SearchPage]
+class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
+  SearchRoute({
     Key? key,
     SearchFilter? prefilter,
     List<PageRouteInfo>? children,
   }) : super(
-          SearchInputRoute.name,
-          args: SearchInputRouteArgs(
+          SearchRoute.name,
+          args: SearchRouteArgs(
             key: key,
             prefilter: prefilter,
           ),
           initialChildren: children,
         );
 
-  static const String name = 'SearchInputRoute';
+  static const String name = 'SearchRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<SearchInputRouteArgs>(
-          orElse: () => const SearchInputRouteArgs());
-      return SearchInputPage(
+      final args =
+          data.argsAs<SearchRouteArgs>(orElse: () => const SearchRouteArgs());
+      return SearchPage(
         key: args.key,
         prefilter: args.prefilter,
       );
@@ -1322,8 +1322,8 @@ class SearchInputRoute extends PageRouteInfo<SearchInputRouteArgs> {
   );
 }
 
-class SearchInputRouteArgs {
-  const SearchInputRouteArgs({
+class SearchRouteArgs {
+  const SearchRouteArgs({
     this.key,
     this.prefilter,
   });
@@ -1334,27 +1334,8 @@ class SearchInputRouteArgs {
 
   @override
   String toString() {
-    return 'SearchInputRouteArgs{key: $key, prefilter: $prefilter}';
+    return 'SearchRouteArgs{key: $key, prefilter: $prefilter}';
   }
-}
-
-/// generated route for
-/// [SearchPage]
-class SearchRoute extends PageRouteInfo<void> {
-  const SearchRoute({List<PageRouteInfo>? children})
-      : super(
-          SearchRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'SearchRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const SearchPage();
-    },
-  );
 }
 
 /// generated route for

@@ -81,7 +81,7 @@ class PlaceTile extends StatelessWidget {
 
     void navigateToPlace() {
       context.pushRoute(
-        SearchInputRoute(
+        SearchRoute(
           prefilter: SearchFilter(
             people: {},
             location: SearchLocationFilter(
