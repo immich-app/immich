@@ -424,7 +424,7 @@ export class ThumbnailConfig extends BaseConfig {
   getScaling(videoStream: VideoStreamInfo) {
     let options = super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int';
     if (!this.shouldToneMap(videoStream)) {
-      options += ':out_color_matrix=bt601:out_range=pc';
+      options += ':out_color_matrix=601:out_range=pc';
     }
     return options;
   }
@@ -432,7 +432,7 @@ export class ThumbnailConfig extends BaseConfig {
   getColors() {
     return {
       primaries: 'bt709',
-      transfer: 'bt601',
+      transfer: '601',
       matrix: 'bt470bg',
     };
   }
