@@ -102,6 +102,7 @@
           onSelect={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
         />
 
+        <!-- PCM is excluded here since it's a bad choice for users storage-wise -->
         <SettingSelect
           label={$t('admin.transcoding_audio_codec')}
           {disabled}
