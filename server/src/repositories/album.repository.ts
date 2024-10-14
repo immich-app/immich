@@ -3,8 +3,10 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { PaginationMode } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
+import { Paginated, paginatedBuilder, PaginationOptions } from 'src/utils/pagination';
 import {
   DataSource,
   EntityManager,
@@ -301,5 +303,55 @@ export class AlbumRepository implements IAlbumRepository {
     const result = await updateAlbums.execute();
 
     return result.affected;
+  }
+
+  @GenerateSql({ params: [{ take: 10, skip: 10, withCount: true }, DummyValue.UUID, DummyValue.STRING, undefined] })
+  getByName(
+    pagination: PaginationOptions,
+    userId: string,
+    albumName: string,
+    shared?: boolean,
+  ): Paginated<AlbumEntity> {
+    const getAlbumSharedOptions = () => {
+      switch (shared) {
+        case true: {
+          return { owner: '(album_users.usersId = :userId)', options: '' };
+        }
+        case false: {
+          return {
+            owner: '(album.ownerId = :userId)',
+            options: 'AND album_users.usersId IS NULL AND shared_links.id IS NULL',
+          };
+        }
+        case undefined: {
+          return { owner: '(album.ownerId = :userId OR album_users.usersId = :userId)', options: '' };
+        }
+      }
+    };
+
+    const albumSharedOptions = getAlbumSharedOptions();
+
+    let queryBuilder = this.repository
+      .createQueryBuilder('album')
+      .leftJoinAndSelect('album.owner', 'owner')
+      .leftJoin('albums_shared_users_users', 'album_users', 'album_users.albumsId = album.id');
+
+    if (shared === false) {
+      queryBuilder = queryBuilder.leftJoin('shared_links', 'shared_links', 'shared_links.albumId = album.id');
+    }
+
+    queryBuilder = queryBuilder.where(
+      `${albumSharedOptions.owner} AND (LOWER(album.albumName) LIKE :nameStart OR LOWER(album.albumName) LIKE :nameAnywhere) ${albumSharedOptions.options}`,
+      {
+        userId,
+        nameStart: `${albumName.toLowerCase()}%`,
+        nameAnywhere: `% ${albumName.toLowerCase()}%`,
+      },
+    );
+
+    return paginatedBuilder(queryBuilder, {
+      mode: PaginationMode.LIMIT_OFFSET,
+      ...pagination,
+    });
   }
 }

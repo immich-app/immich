@@ -520,3 +520,71 @@ WHERE
       "album_assets"."albumsId" = "albums"."id"
       AND "albums"."albumThumbnailAssetId" = "album_assets"."assetsId"
   )
+
+-- AlbumRepository.getByName
+SELECT
+  COUNT(DISTINCT ("album"."id")) AS "cnt"
+FROM
+  "albums" "album"
+  LEFT JOIN "users" "owner" ON "owner"."id" = "album"."ownerId"
+  AND ("owner"."deletedAt" IS NULL)
+  LEFT JOIN "albums_shared_users_users" "album_users" ON "album_users"."albumsId" = "album"."id"
+WHERE
+  (
+    (
+      "album"."ownerId" = $1
+      OR "album_users"."usersId" = $1
+    )
+    AND (
+      LOWER("album"."albumName") LIKE $2
+      OR LOWER("album"."albumName") LIKE $3
+    )
+  )
+  AND ("album"."deletedAt" IS NULL)
+SELECT
+  "album"."id" AS "album_id",
+  "album"."ownerId" AS "album_ownerId",
+  "album"."albumName" AS "album_albumName",
+  "album"."description" AS "album_description",
+  "album"."createdAt" AS "album_createdAt",
+  "album"."updatedAt" AS "album_updatedAt",
+  "album"."deletedAt" AS "album_deletedAt",
+  "album"."albumThumbnailAssetId" AS "album_albumThumbnailAssetId",
+  "album"."isActivityEnabled" AS "album_isActivityEnabled",
+  "album"."order" AS "album_order",
+  "owner"."id" AS "owner_id",
+  "owner"."name" AS "owner_name",
+  "owner"."isAdmin" AS "owner_isAdmin",
+  "owner"."email" AS "owner_email",
+  "owner"."storageLabel" AS "owner_storageLabel",
+  "owner"."oauthId" AS "owner_oauthId",
+  "owner"."profileImagePath" AS "owner_profileImagePath",
+  "owner"."shouldChangePassword" AS "owner_shouldChangePassword",
+  "owner"."createdAt" AS "owner_createdAt",
+  "owner"."deletedAt" AS "owner_deletedAt",
+  "owner"."status" AS "owner_status",
+  "owner"."updatedAt" AS "owner_updatedAt",
+  "owner"."quotaSizeInBytes" AS "owner_quotaSizeInBytes",
+  "owner"."quotaUsageInBytes" AS "owner_quotaUsageInBytes",
+  "owner"."profileChangedAt" AS "owner_profileChangedAt"
+FROM
+  "albums" "album"
+  LEFT JOIN "users" "owner" ON "owner"."id" = "album"."ownerId"
+  AND ("owner"."deletedAt" IS NULL)
+  LEFT JOIN "albums_shared_users_users" "album_users" ON "album_users"."albumsId" = "album"."id"
+WHERE
+  (
+    (
+      "album"."ownerId" = $1
+      OR "album_users"."usersId" = $1
+    )
+    AND (
+      LOWER("album"."albumName") LIKE $2
+      OR LOWER("album"."albumName") LIKE $3
+    )
+  )
+  AND ("album"."deletedAt" IS NULL)
+LIMIT
+  11
+OFFSET
+  10

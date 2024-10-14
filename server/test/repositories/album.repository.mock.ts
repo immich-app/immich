@@ -20,5 +20,6 @@ export const newAlbumRepositoryMock = (): Mocked<IAlbumRepository> => {
     update: vitest.fn(),
     delete: vitest.fn(),
     updateThumbnails: vitest.fn(),
+    getByName: vitest.fn(),
   };
 };

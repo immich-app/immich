@@ -448,6 +448,8 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
+        case 'SearchAlbumNameResponseDto':
+          return SearchAlbumNameResponseDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetResponseDto':
@@ -460,6 +462,8 @@ class ApiClient {
           return SearchFacetCountResponseDto.fromJson(value);
         case 'SearchFacetResponseDto':
           return SearchFacetResponseDto.fromJson(value);
+        case 'SearchPersonNameResponseDto':
+          return SearchPersonNameResponseDto.fromJson(value);
         case 'SearchResponseDto':
           return SearchResponseDto.fromJson(value);
         case 'SearchSuggestionType':

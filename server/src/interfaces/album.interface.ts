@@ -1,5 +1,6 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { IBulkAsset } from 'src/utils/asset.util';
+import { Paginated, PaginationOptions } from 'src/utils/pagination';
 
 export const IAlbumRepository = 'IAlbumRepository';
 
@@ -29,4 +30,5 @@ export interface IAlbumRepository extends IBulkAsset {
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   delete(id: string): Promise<void>;
   updateThumbnails(): Promise<number | undefined>;
+  getByName(pagination: PaginationOptions, userId: string, albumName: string, shared?: boolean): Paginated<AlbumEntity>;
 }

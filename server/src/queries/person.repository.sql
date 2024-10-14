@@ -205,6 +205,16 @@ WHERE
 
 -- PersonRepository.getByName
 SELECT
+  COUNT(1) AS "cnt"
+FROM
+  "person" "person"
+WHERE
+  "person"."ownerId" = $1
+  AND (
+    LOWER("person"."name") LIKE $2
+    OR LOWER("person"."name") LIKE $3
+  )
+SELECT
   "person"."id" AS "person_id",
   "person"."createdAt" AS "person_createdAt",
   "person"."updatedAt" AS "person_updatedAt",
@@ -223,7 +233,9 @@ WHERE
     OR LOWER("person"."name") LIKE $3
   )
 LIMIT
-  1000
+  11
+OFFSET
+  10
 
 -- PersonRepository.getDistinctNames
 SELECT DISTINCT

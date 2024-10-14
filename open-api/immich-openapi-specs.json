@@ -4337,6 +4337,82 @@
         ]
       }
     },
+    "/search/album": {
+      "get": {
+        "operationId": "searchAlbum",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "shared",
+            "required": false,
+            "in": "query",
+            "description": "true: only shared albums\nfalse: only non-shared own albums\nundefined: shared and owned albums",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 500,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchAlbumNameResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ],
+        "x-immich-lifecycle": {
+          "addedAt": "v1.118.0"
+        }
+      }
+    },
     "/search/cities": {
       "get": {
         "operationId": "getAssetsByCity",
@@ -4462,6 +4538,29 @@
             }
           },
           {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "This property was added in v118.0.0",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "This property was added in v118.0.0",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 500,
+              "type": "number"
+            }
+          },
+          {
             "name": "withHidden",
             "required": false,
             "in": "query",
@@ -4475,10 +4574,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/PersonResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/SearchPersonNameResponseDto"
                 }
               }
             },
@@ -10552,6 +10648,26 @@
         ],
         "type": "object"
       },
+      "SearchAlbumNameResponseDto": {
+        "properties": {
+          "albums": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumResponseDto"
+            },
+            "type": "array"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "albums"
+        ],
+        "type": "object"
+      },
       "SearchAlbumResponseDto": {
         "properties": {
           "count": {
@@ -10678,6 +10794,26 @@
         "required": [
           "counts",
           "fieldName"
+        ],
+        "type": "object"
+      },
+      "SearchPersonNameResponseDto": {
+        "properties": {
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseDto"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "people"
         ],
         "type": "object"
       },

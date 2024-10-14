@@ -22,6 +22,8 @@
   let abortController: AbortController | null = null;
   let timeout: NodeJS.Timeout | null = null;
 
+  // TODO: use pagination
+
   const search = () => {
     searchedPeopleLocal = searchNameLocal(searchName, searchedPeople, numberPeopleToSearch);
   };
@@ -58,8 +60,11 @@
     abortController = new AbortController();
     timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
     try {
-      const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
-      searchedPeople = data;
+      const data = await searchPerson(
+        { name: searchName, size: maximumLengthSearchPeople },
+        { signal: abortController?.signal },
+      );
+      searchedPeople = data.people;
       searchWord = searchName;
     } catch (error) {
       handleError(error, $t('errors.cant_search_people'));

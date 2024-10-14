@@ -1,21 +1,27 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
+
 import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { PersonResponseDto } from 'src/dtos/person.dto';
+import { mapPerson } from 'src/dtos/person.dto';
 import {
+  mapPlaces,
   MetadataSearchDto,
   PlacesResponseDto,
   RandomSearchDto,
+  SearchAlbumNameResponseDto,
+  SearchAlbumsDto,
   SearchPeopleDto,
+  SearchPersonNameResponseDto,
   SearchPlacesDto,
   SearchResponseDto,
   SearchSuggestionRequestDto,
   SearchSuggestionType,
   SmartSearchDto,
-  mapPlaces,
 } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetOrder } from 'src/enum';
+import { AlbumAssetCount } from 'src/interfaces/album.interface';
 import { SearchExploreItem } from 'src/interfaces/search.interface';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -23,8 +29,65 @@ import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class SearchService extends BaseService {
-  async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
+  async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<SearchPersonNameResponseDto> {
+    const { withHidden, name, page, size } = dto;
+    const pagination = {
+      take: size,
+      skip: (page - 1) * size,
+      withCount: true,
+    };
+    const { items, hasNextPage, count } = await this.personRepository.getByName(pagination, auth.user.id, name, {
+      withHidden,
+    });
+
+    const people = items.map((person) => mapPerson(person));
+
+    return {
+      people,
+      hasNextPage,
+      total: count,
+    };
+  }
+
+  async searchAlbum(auth: AuthDto, dto: SearchAlbumsDto): Promise<SearchAlbumNameResponseDto> {
+    const { shared, name, page, size } = dto;
+    const pagination = {
+      take: size,
+      skip: (page - 1) * size,
+      withCount: true,
+    };
+    const { items, hasNextPage, count } = await this.albumRepository.getByName(pagination, auth.user.id, name, shared);
+    const results = await this.albumRepository.getMetadataForIds(items.map((album) => album.id));
+    const albumMetadata: Record<string, AlbumAssetCount> = {};
+    for (const metadata of results) {
+      const { albumId, assetCount, startDate, endDate } = metadata;
+      albumMetadata[albumId] = {
+        albumId,
+        assetCount,
+        startDate,
+        endDate,
+      };
+    }
+
+    const albums: AlbumResponseDto[] = await Promise.all(
+      items.map(async (album) => {
+        const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
+        return {
+          ...mapAlbumWithoutAssets(album),
+          sharedLinks: undefined,
+          startDate: albumMetadata[album.id].startDate,
+          endDate: albumMetadata[album.id].endDate,
+          assetCount: albumMetadata[album.id].assetCount,
+          lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
+        };
+      }),
+    );
+
+    return {
+      albums,
+      total: count,
+      hasNextPage,
+    };
   }
 
   async searchPlaces(dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {
