@@ -212,6 +212,7 @@ SELECT
   "8258e303a73a72cf6abb13d73fb592dde0d68280"."thumbnailPath" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_thumbnailPath",
   "8258e303a73a72cf6abb13d73fb592dde0d68280"."faceAssetId" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_faceAssetId",
   "8258e303a73a72cf6abb13d73fb592dde0d68280"."isHidden" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_isHidden",
+  "8258e303a73a72cf6abb13d73fb592dde0d68280"."withArchived" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_withArchived",
   "AssetEntity__AssetEntity_stack"."id" AS "AssetEntity__AssetEntity_stack_id",
   "AssetEntity__AssetEntity_stack"."ownerId" AS "AssetEntity__AssetEntity_stack_ownerId",
   "AssetEntity__AssetEntity_stack"."primaryAssetId" AS "AssetEntity__AssetEntity_stack_primaryAssetId",

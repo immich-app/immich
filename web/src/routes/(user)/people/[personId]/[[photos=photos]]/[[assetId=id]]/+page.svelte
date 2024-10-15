@@ -45,6 +45,8 @@
   import {
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,
+    mdiArchiveArrowDown,
+    mdiArchiveArrowDownOutline,
     mdiArrowLeft,
     mdiCalendarEditOutline,
     mdiDotsVertical,
@@ -72,8 +74,10 @@
     UNASSIGN_ASSETS = 'unassign-faces',
   }
 
+  $: isArchived = person.withArchived ? undefined : person.withArchived;
+
   let assetStore = new AssetStore({
-    isArchived: false,
+    isArchived,
     personId: data.person.id,
   });
 
@@ -81,7 +85,7 @@
   $: thumbnailData = getPeopleThumbnailUrl(person);
   $: if (person) {
     handlePromiseError(updateAssetCount());
-    handlePromiseError(assetStore.updateOptions({ personId: person.id }));
+    handlePromiseError(assetStore.updateOptions({ personId: person.id, isArchived }));
   }
 
   const assetInteractionStore = createAssetInteractionStore();
@@ -338,6 +342,27 @@
     }
   };
 
+  const handleToggleWithArhived = async () => {
+    const withArchived = !person.withArchived;
+
+    try {
+      await updatePerson({
+        id: person.id,
+        personUpdateDto: { withArchived },
+      });
+
+      data.person.withArchived = withArchived;
+      refreshAssetGrid = !refreshAssetGrid;
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: withArchived } }));
+    }
+  };
+
+  const handleDeleteAssets = async (assetIds: string[]) => {
+    $assetStore.removeAssets(assetIds);
+    await updateAssetCount();
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -395,7 +420,7 @@
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
-        <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        <DeleteAssets menuItem onAssetDelete={handleDeleteAssets} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
@@ -422,6 +447,11 @@
               text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}
               onClick={() => (viewMode = ViewMode.MERGE_PEOPLE)}
+            />
+            <MenuOption
+              text={$t('show_archived_or_unarchived_assets', { values: { with: !person.withArchived } })}
+              icon={person.withArchived ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
+              onClick={handleToggleWithArhived}
             />
           </ButtonContextMenu>
         </svelte:fragment>

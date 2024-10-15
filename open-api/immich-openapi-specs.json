@@ -4152,6 +4152,14 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "withArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -10097,6 +10105,10 @@
           "name": {
             "description": "Person name.",
             "type": "string"
+          },
+          "withArchived": {
+            "description": "This property was added in v1.118.0",
+            "type": "boolean"
           }
         },
         "required": [
@@ -10229,6 +10241,10 @@
             "description": "This property was added in v1.107.0",
             "format": "date-time",
             "type": "string"
+          },
+          "withArchived": {
+            "description": "This property was added in v1.118.0",
+            "type": "boolean"
           }
         },
         "required": [
@@ -10270,6 +10286,10 @@
           "name": {
             "description": "Person name.",
             "type": "string"
+          },
+          "withArchived": {
+            "description": "This property was added in v1.118.0",
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -10303,6 +10323,10 @@
             "description": "This property was added in v1.107.0",
             "format": "date-time",
             "type": "string"
+          },
+          "withArchived": {
+            "description": "This property was added in v1.118.0",
+            "type": "boolean"
           }
         },
         "required": [

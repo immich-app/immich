@@ -17,7 +17,8 @@ SELECT
   "person"."birthDate" AS "person_birthDate",
   "person"."thumbnailPath" AS "person_thumbnailPath",
   "person"."faceAssetId" AS "person_faceAssetId",
-  "person"."isHidden" AS "person_isHidden"
+  "person"."isHidden" AS "person_isHidden",
+  "person"."withArchived" AS "person_withArchived"
 FROM
   "person" "person"
   LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
@@ -54,7 +55,8 @@ SELECT
   "person"."birthDate" AS "person_birthDate",
   "person"."thumbnailPath" AS "person_thumbnailPath",
   "person"."faceAssetId" AS "person_faceAssetId",
-  "person"."isHidden" AS "person_isHidden"
+  "person"."isHidden" AS "person_isHidden",
+  "person"."withArchived" AS "person_withArchived"
 FROM
   "person" "person"
   LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
@@ -83,7 +85,8 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_person"."birthDate" AS "AssetFaceEntity__AssetFaceEntity_person_birthDate",
   "AssetFaceEntity__AssetFaceEntity_person"."thumbnailPath" AS "AssetFaceEntity__AssetFaceEntity_person_thumbnailPath",
   "AssetFaceEntity__AssetFaceEntity_person"."faceAssetId" AS "AssetFaceEntity__AssetFaceEntity_person_faceAssetId",
-  "AssetFaceEntity__AssetFaceEntity_person"."isHidden" AS "AssetFaceEntity__AssetFaceEntity_person_isHidden"
+  "AssetFaceEntity__AssetFaceEntity_person"."isHidden" AS "AssetFaceEntity__AssetFaceEntity_person_isHidden",
+  "AssetFaceEntity__AssetFaceEntity_person"."withArchived" AS "AssetFaceEntity__AssetFaceEntity_person_withArchived"
 FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
@@ -116,7 +119,8 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_person"."birthDate" AS "AssetFaceEntity__AssetFaceEntity_person_birthDate",
       "AssetFaceEntity__AssetFaceEntity_person"."thumbnailPath" AS "AssetFaceEntity__AssetFaceEntity_person_thumbnailPath",
       "AssetFaceEntity__AssetFaceEntity_person"."faceAssetId" AS "AssetFaceEntity__AssetFaceEntity_person_faceAssetId",
-      "AssetFaceEntity__AssetFaceEntity_person"."isHidden" AS "AssetFaceEntity__AssetFaceEntity_person_isHidden"
+      "AssetFaceEntity__AssetFaceEntity_person"."isHidden" AS "AssetFaceEntity__AssetFaceEntity_person_isHidden",
+      "AssetFaceEntity__AssetFaceEntity_person"."withArchived" AS "AssetFaceEntity__AssetFaceEntity_person_withArchived"
     FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
@@ -153,6 +157,7 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_person"."thumbnailPath" AS "AssetFaceEntity__AssetFaceEntity_person_thumbnailPath",
       "AssetFaceEntity__AssetFaceEntity_person"."faceAssetId" AS "AssetFaceEntity__AssetFaceEntity_person_faceAssetId",
       "AssetFaceEntity__AssetFaceEntity_person"."isHidden" AS "AssetFaceEntity__AssetFaceEntity_person_isHidden",
+      "AssetFaceEntity__AssetFaceEntity_person"."withArchived" AS "AssetFaceEntity__AssetFaceEntity_person_withArchived",
       "AssetFaceEntity__AssetFaceEntity_asset"."id" AS "AssetFaceEntity__AssetFaceEntity_asset_id",
       "AssetFaceEntity__AssetFaceEntity_asset"."deviceAssetId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceAssetId",
       "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" AS "AssetFaceEntity__AssetFaceEntity_asset_ownerId",
@@ -213,7 +218,8 @@ SELECT
   "person"."birthDate" AS "person_birthDate",
   "person"."thumbnailPath" AS "person_thumbnailPath",
   "person"."faceAssetId" AS "person_faceAssetId",
-  "person"."isHidden" AS "person_isHidden"
+  "person"."isHidden" AS "person_isHidden",
+  "person"."withArchived" AS "person_withArchived"
 FROM
   "person" "person"
 WHERE
@@ -242,11 +248,18 @@ FROM
   "asset_faces" "face"
   LEFT JOIN "assets" "asset" ON "asset"."id" = "face"."assetId"
   AND ("asset"."deletedAt" IS NULL)
+  LEFT JOIN "person" "person" ON "person"."id" = "face"."personId"
 WHERE
   "face"."personId" = $1
-  AND "asset"."isArchived" = false
   AND "asset"."deletedAt" IS NULL
   AND "asset"."livePhotoVideoId" IS NULL
+  AND (
+    (
+      "person"."withArchived" = false
+      AND "asset"."isArchived" = false
+    )
+    OR "person"."withArchived" = true
+  )
 
 -- PersonRepository.getNumberOfPeople
 SELECT

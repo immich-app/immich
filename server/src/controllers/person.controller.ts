@@ -12,6 +12,7 @@ import {
   PersonResponseDto,
   PersonSearchDto,
   PersonStatisticsResponseDto,
+  PersonStatsDto,
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
 import { Permission } from 'src/enum';
@@ -65,8 +66,12 @@ export class PersonController {
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.PERSON_STATISTICS })
-  getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
-    return this.service.getStatistics(auth, id);
+  getPersonStatistics(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: PersonStatsDto,
+  ): Promise<PersonStatisticsResponseDto> {
+    return this.service.getStatistics(auth, id, dto);
   }
 
   @Get(':id/thumbnail')

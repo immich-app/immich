@@ -31,6 +31,7 @@ const responseDto: PersonResponseDto = {
   thumbnailPath: '/path/to/thumbnail.jpg',
   isHidden: false,
   updatedAt: expect.any(Date),
+  withArchived: false,
 };
 
 const statistics = { assets: 3 };
@@ -118,6 +119,7 @@ describe(PersonService.name, () => {
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: true,
             updatedAt: expect.any(Date),
+            withArchived: false,
           },
         ],
       });
@@ -218,6 +220,16 @@ describe(PersonService.name, () => {
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
+    it("should update a person's withArchived", async () => {
+      personMock.update.mockResolvedValue(personStub.withName);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+
+      await expect(sut.update(authStub.admin, 'person-1', { withArchived: true })).resolves.toEqual(responseDto);
+
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', withArchived: true });
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+    });
+
     it("should update a person's date of birth", async () => {
       personMock.update.mockResolvedValue(personStub.withBirthDate);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
@@ -229,6 +241,7 @@ describe(PersonService.name, () => {
         thumbnailPath: '/path/to/thumbnail.jpg',
         isHidden: false,
         updatedAt: expect.any(Date),
+        withArchived: false,
       });
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: '1976-06-30' });
       expect(jobMock.queue).not.toHaveBeenCalled();
@@ -381,6 +394,7 @@ describe(PersonService.name, () => {
         name: personStub.noName.name,
         thumbnailPath: personStub.noName.thumbnailPath,
         updatedAt: expect.any(Date),
+        withArchived: personStub.noName.withArchived,
       });
 
       expect(jobMock.queue).not.toHaveBeenCalledWith();
@@ -1171,13 +1185,13 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
       personMock.getStatistics.mockResolvedValue(statistics);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await expect(sut.getStatistics(authStub.admin, 'person-1')).resolves.toEqual({ assets: 3 });
+      await expect(sut.getStatistics(authStub.admin, 'person-1', {})).resolves.toEqual({ assets: 3 });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
     it('should require person.read permission', async () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
-      await expect(sut.getStatistics(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.getStatistics(authStub.admin, 'person-1', {})).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
   });

@@ -49,4 +49,7 @@ export class PersonEntity {
 
   @Column({ default: false })
   isHidden!: boolean;
+
+  @Column({ default: false })
+  withArchived!: boolean;
 }

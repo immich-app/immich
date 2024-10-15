@@ -220,6 +220,8 @@ export type PersonWithFacesResponseDto = {
     thumbnailPath: string;
     /** This property was added in v1.107.0 */
     updatedAt?: string;
+    /** This property was added in v1.118.0 */
+    withArchived?: boolean;
 };
 export type SmartInfoResponseDto = {
     objects?: string[] | null;
@@ -502,6 +504,8 @@ export type PersonResponseDto = {
     thumbnailPath: string;
     /** This property was added in v1.107.0 */
     updatedAt?: string;
+    /** This property was added in v1.118.0 */
+    withArchived?: boolean;
 };
 export type AssetFaceResponseDto = {
     boundingBoxX1: number;
@@ -703,6 +707,8 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name. */
     name?: string;
+    /** This property was added in v1.118.0 */
+    withArchived?: boolean;
 };
 export type PeopleUpdateDto = {
     people: PeopleUpdateItem[];
@@ -717,6 +723,8 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name. */
     name?: string;
+    /** This property was added in v1.118.0 */
+    withArchived?: boolean;
 };
 export type MergePersonDto = {
     ids: string[];
@@ -2410,13 +2418,16 @@ export function reassignFaces({ id, assetFaceUpdateDto }: {
         body: assetFaceUpdateDto
     })));
 }
-export function getPersonStatistics({ id }: {
+export function getPersonStatistics({ id, withArchived }: {
     id: string;
+    withArchived?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PersonStatisticsResponseDto;
-    }>(`/people/${encodeURIComponent(id)}/statistics`, {
+    }>(`/people/${encodeURIComponent(id)}/statistics${QS.query(QS.explode({
+        withArchived
+    }))}`, {
         ...opts
     }));
 }

@@ -45,6 +45,10 @@ export interface DeleteFacesOptions {
   sourceType: SourceType;
 }
 
+export interface PersonStatsOptions {
+  withArchived?: boolean;
+}
+
 export type UnassignFacesOptions = DeleteFacesOptions;
 
 export interface IPersonRepository {
@@ -74,7 +78,7 @@ export interface IPersonRepository {
   getFaces(assetId: string): Promise<AssetFaceEntity[]>;
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
-  getStatistics(personId: string): Promise<PersonStatistics>;
+  getStatistics(personId: string, options: PersonStatsOptions): Promise<PersonStatistics>;
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
