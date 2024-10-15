@@ -889,17 +889,17 @@ tqdm = ["tqdm"]
 
 [[package]]
 name = "ftfy"
-version = "6.2.3"
+version = "6.3.0"
 description = "Fixes mojibake and other problems with Unicode, after the fact"
 optional = false
-python-versions = "<4,>=3.8.1"
+python-versions = ">=3.9"
 files = [
-    {file = "ftfy-6.2.3-py3-none-any.whl", hash = "sha256:f15761b023f3061a66207d33f0c0149ad40a8319fd16da91796363e2c049fdf8"},
-    {file = "ftfy-6.2.3.tar.gz", hash = "sha256:79b505988f29d577a58a9069afe75553a02a46e42de6091c0660cdc67812badc"},
+    {file = "ftfy-6.3.0-py3-none-any.whl", hash = "sha256:17aca296801f44142e3ff2c16f93fbf6a87609ebb3704a9a41dd5d4903396caf"},
+    {file = "ftfy-6.3.0.tar.gz", hash = "sha256:1c7d6418e72b25a7760feb150acf574b86924dbb2e95b32c0b3abbd1ba3d7ad6"},
 ]
 
 [package.dependencies]
-wcwidth = ">=0.2.12,<0.3.0"
+wcwidth = "*"
 
 [[package]]
 name = "gevent"
