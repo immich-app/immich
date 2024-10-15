@@ -26,14 +26,14 @@ class AudioCodec {
   static const mp3 = AudioCodec._(r'mp3');
   static const aac = AudioCodec._(r'aac');
   static const libopus = AudioCodec._(r'libopus');
-  static const pcm_s16le = AudioCodec._(r'pcm_s16le');
+  static const pcmS16le = AudioCodec._(r'pcm_s16le');
 
   /// List of all possible values in this [enum][AudioCodec].
   static const values = <AudioCodec>[
     mp3,
     aac,
     libopus,
-    pcm_s16le,
+    pcmS16le,
   ];
 
   static AudioCodec? fromJson(dynamic value) => AudioCodecTypeTransformer().decode(value);
@@ -75,7 +75,7 @@ class AudioCodecTypeTransformer {
         case r'mp3': return AudioCodec.mp3;
         case r'aac': return AudioCodec.aac;
         case r'libopus': return AudioCodec.libopus;
-        case r'pcm_s16le': return AudioCodec.pcm_s16le;
+        case r'pcm_s16le': return AudioCodec.pcmS16le;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
