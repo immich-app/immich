@@ -220,7 +220,7 @@ export class PersonRepository implements IPersonRepository {
     /*
      * withArchived: true -> Return the count of all assets for a given person
      * withArchived: false -> Return the count of all unarchived assets for a given person
-     * withArchived: undefiend ->
+     * withArchived: undefined ->
      *  - If person.withArchived = true -> Return the count of all assets for a given person
      *  - If person.withArchived = false -> Return the count of all unarchived assets for a given person
      */
