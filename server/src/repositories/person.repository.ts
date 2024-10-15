@@ -225,7 +225,7 @@ export class PersonRepository implements IPersonRepository {
      *  - If person.withArchived = false -> Return the count of all unarchived assets for a given person
      */
 
-    let queryBuilder = this.assetFaceRepository
+    const queryBuilder = this.assetFaceRepository
       .createQueryBuilder('face')
       .leftJoin('face.asset', 'asset')
       .where('face.personId = :personId', { personId })
@@ -234,9 +234,9 @@ export class PersonRepository implements IPersonRepository {
       .select('COUNT(DISTINCT(asset.id))', 'count');
 
     if (options.withArchived === false) {
-      queryBuilder = queryBuilder.andWhere('asset.isArchived = false');
+      queryBuilder.andWhere('asset.isArchived = false');
     } else if (options.withArchived === undefined) {
-      queryBuilder = queryBuilder
+      queryBuilder
         .leftJoin('face.person', 'person')
         .andWhere('((person.withArchived = false AND asset.isArchived = false) OR person.withArchived = true)');
     }
