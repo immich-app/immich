@@ -1322,7 +1322,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
-            '-c:v av1',
+            '-c:v libsvtav1',
             '-movflags faststart',
             '-fps_mode passthrough',
             '-map 0:0',
