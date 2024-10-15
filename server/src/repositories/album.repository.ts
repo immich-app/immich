@@ -335,17 +335,17 @@ export class AlbumRepository implements IAlbumRepository {
 
     const albumSharedOptions = getAlbumSharedOptions();
 
-    let queryBuilder = this.repository
+    const queryBuilder = this.repository
       .createQueryBuilder('album')
       .leftJoinAndSelect('album.owner', 'owner')
       .leftJoinAndSelect('album.albumUsers', 'album_users')
       .leftJoinAndSelect('album_users.user', 'user');
 
     if (shared !== undefined) {
-      queryBuilder = queryBuilder.leftJoin('shared_links', 'shared_links', 'shared_links.albumId = album.id');
+      queryBuilder.leftJoin('shared_links', 'shared_links', 'shared_links.albumId = album.id');
     }
 
-    queryBuilder = queryBuilder.where(
+    queryBuilder.where(
       `${albumSharedOptions.owner} AND (LOWER(album.albumName) LIKE :nameStart OR LOWER(album.albumName) LIKE :nameAnywhere) ${albumSharedOptions.options}`,
       {
         userId,
