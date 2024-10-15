@@ -322,10 +322,10 @@ class SearchApi {
   /// * [String] name (required):
   ///
   /// * [num] page:
-  ///   This property was added in v118.0.0
+  ///   This property was added in v119.0.0
   ///
   /// * [num] size:
-  ///   This property was added in v118.0.0
+  ///   This property was added in v119.0.0
   ///
   /// * [bool] withHidden:
   Future<Response> searchPersonWithHttpInfo(String name, { num? page, num? size, bool? withHidden, }) async {
@@ -369,10 +369,10 @@ class SearchApi {
   /// * [String] name (required):
   ///
   /// * [num] page:
-  ///   This property was added in v118.0.0
+  ///   This property was added in v119.0.0
   ///
   /// * [num] size:
-  ///   This property was added in v118.0.0
+  ///   This property was added in v119.0.0
   ///
   /// * [bool] withHidden:
   Future<SearchPersonNameResponseDto?> searchPerson(String name, { num? page, num? size, bool? withHidden, }) async {

@@ -242,7 +242,7 @@ export class SearchPeopleDto {
 
   /** Page number for pagination */
   @ApiPropertyOptional()
-  @PropertyLifecycle({ addedAt: 'v118.0.0' })
+  @PropertyLifecycle({ addedAt: 'v119.0.0' })
   @IsInt()
   @Min(1)
   @Type(() => Number)
@@ -250,7 +250,7 @@ export class SearchPeopleDto {
 
   /** Number of items per page */
   @ApiPropertyOptional()
-  @PropertyLifecycle({ addedAt: 'v118.0.0' })
+  @PropertyLifecycle({ addedAt: 'v119.0.0' })
   @IsInt()
   @Min(1)
   @Max(1000)

@@ -4409,7 +4409,7 @@
           "Search"
         ],
         "x-immich-lifecycle": {
-          "addedAt": "v1.118.0"
+          "addedAt": "v1.119.0"
         }
       }
     },
@@ -4541,7 +4541,7 @@
             "name": "page",
             "required": false,
             "in": "query",
-            "description": "This property was added in v118.0.0",
+            "description": "This property was added in v119.0.0",
             "schema": {
               "minimum": 1,
               "default": 1,
@@ -4552,7 +4552,7 @@
             "name": "size",
             "required": false,
             "in": "query",
-            "description": "This property was added in v118.0.0",
+            "description": "This property was added in v119.0.0",
             "schema": {
               "minimum": 1,
               "maximum": 1000,

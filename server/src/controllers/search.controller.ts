@@ -78,7 +78,7 @@ export class SearchController {
   }
 
   @Get('album')
-  @EndpointLifecycle({ addedAt: 'v1.118.0' })
+  @EndpointLifecycle({ addedAt: 'v1.119.0' })
   @Authenticated()
   searchAlbum(@Auth() auth: AuthDto, @Query() dto: SearchAlbumsDto): Promise<SearchAlbumNameResponseDto> {
     return this.service.searchAlbum(auth, dto);
