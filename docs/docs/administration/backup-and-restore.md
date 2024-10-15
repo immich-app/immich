@@ -200,7 +200,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Stored in `UPLOAD_LOCATION/profile/<userID>`.
 - **Thumbs Images:**
   - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
-  - Stored in `UPLOCAD_LOCATION/thumbs/<userID>`.
+  - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
