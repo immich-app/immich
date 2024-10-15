@@ -270,9 +270,9 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   getColors() {
     return {
-      primaries: 'bt709',
-      transfer: 'bt709',
-      matrix: 'bt709',
+      primaries: '709',
+      transfer: '709',
+      matrix: '709',
     };
   }
 
@@ -424,16 +424,16 @@ export class ThumbnailConfig extends BaseConfig {
   getScaling(videoStream: VideoStreamInfo) {
     let options = super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int';
     if (!this.shouldToneMap(videoStream)) {
-      options += ':out_color_matrix=601:out_range=pc';
+      options += ':out_color_matrix=bt601:out_range=pc';
     }
     return options;
   }
 
   getColors() {
     return {
-      primaries: 'bt709',
+      primaries: '709',
       transfer: '601',
-      matrix: 'bt470bg',
+      matrix: '470bg',
     };
   }
 }
@@ -629,11 +629,11 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     const colors = this.getColors();
     const tonemapOptions = [
       'desat=0',
-      `matrix=${colors.matrix}`,
-      `primaries=${colors.primaries}`,
+      `matrix=bt${colors.matrix}`,
+      `primaries=bt${colors.primaries}`,
       'range=pc',
       `tonemap=${this.config.tonemap}`,
-      `transfer=${colors.transfer}`,
+      `transfer=bt${colors.transfer}`,
     ];
 
     return [`tonemap_cuda=${tonemapOptions.join(':')}`];
@@ -772,11 +772,11 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
     const tonemapOptions = [
       'desat=0',
       'format=nv12',
-      `matrix=${colors.matrix}`,
-      `primaries=${colors.primaries}`,
+      `matrix=bt${colors.matrix}`,
+      `primaries=bt${colors.primaries}`,
       'range=pc',
       `tonemap=${this.config.tonemap}`,
-      `transfer=${colors.transfer}`,
+      `transfer=bt${colors.transfer}`,
     ];
 
     return [
@@ -927,7 +927,7 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       return [
         `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
         'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
+        `tonemap_opencl=format=nv12:r=pc:p=bt${colors.primaries}:t=bt${colors.transfer}:m=bt${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
         'hwmap=derive_device=rkmpp:mode=write:reverse=1',
         'format=drm_prime',
       ];
