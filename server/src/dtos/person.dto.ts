@@ -44,7 +44,7 @@ export class PersonUpdateDto extends PersonCreateDto {
 
   @Optional()
   @IsBoolean()
-  @PropertyLifecycle({ addedAt: 'v1.118.0' })
+  @PropertyLifecycle({ addedAt: 'v1.119.0' })
   withArchived?: boolean;
 }
 
@@ -98,7 +98,7 @@ export class PersonResponseDto {
   isHidden!: boolean;
   @PropertyLifecycle({ addedAt: 'v1.107.0' })
   updatedAt?: Date;
-  @PropertyLifecycle({ addedAt: 'v1.118.0' })
+  @PropertyLifecycle({ addedAt: 'v1.119.0' })
   withArchived?: boolean;
 }
 

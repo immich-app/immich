@@ -44,7 +44,7 @@ class PersonWithFacesResponseDto {
   ///
   DateTime? updatedAt;
 
-  /// This property was added in v1.118.0
+  /// This property was added in v1.119.0
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

@@ -220,7 +220,7 @@ export type PersonWithFacesResponseDto = {
     thumbnailPath: string;
     /** This property was added in v1.107.0 */
     updatedAt?: string;
-    /** This property was added in v1.118.0 */
+    /** This property was added in v1.119.0 */
     withArchived?: boolean;
 };
 export type SmartInfoResponseDto = {
@@ -504,7 +504,7 @@ export type PersonResponseDto = {
     thumbnailPath: string;
     /** This property was added in v1.107.0 */
     updatedAt?: string;
-    /** This property was added in v1.118.0 */
+    /** This property was added in v1.119.0 */
     withArchived?: boolean;
 };
 export type AssetFaceResponseDto = {
@@ -707,7 +707,7 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name. */
     name?: string;
-    /** This property was added in v1.118.0 */
+    /** This property was added in v1.119.0 */
     withArchived?: boolean;
 };
 export type PeopleUpdateDto = {
@@ -723,7 +723,7 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name. */
     name?: string;
-    /** This property was added in v1.118.0 */
+    /** This property was added in v1.119.0 */
     withArchived?: boolean;
 };
 export type MergePersonDto = {
