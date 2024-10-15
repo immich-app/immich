@@ -152,6 +152,14 @@
         </div>
       {/if}
 
+      {#if info.sourceRef === 'main'}
+        <div class="col-span-full p-4">
+          <p class="immich-form-label text-sm" id="main-warning">
+            {$t('main_branch_warning')}
+          </p>
+        </div>
+      {/if}
+
       <div class="col-span-full">
         <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-history"
           >{$t('version_history')}</label

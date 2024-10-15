@@ -15,10 +15,13 @@
 
   let isOpen = false;
 
-  $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
-
   let info: ServerAboutResponseDto;
   let versions: ServerVersionHistoryResponseDto[] = [];
+
+  $: isMain = info?.sourceRef === 'main';
+  $: version = isMain
+    ? 'main ⚠️'
+    : $serverVersion && `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}`;
 
   onMount(async () => {
     await requestServerInfo();
