@@ -215,7 +215,7 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { withArchived: undefined }] })
+  @GenerateSql({ params: [DummyValue.UUID, {}] })
   async getStatistics(personId: string, options: PersonStatsOptions): Promise<PersonStatistics> {
     /*
      * withArchived: true -> Return the count of all assets for a given person
