@@ -188,7 +188,7 @@ export class AuthService extends BaseService {
       throw new BadRequestException('OAuth is not enabled');
     }
 
-    const url = await this.oauthRepository.authorize(oauth, dto.redirectUri);
+    const url = await this.oauthRepository.authorize(oauth, this.normalize(oauth, dto.redirectUri));
     return { url };
   }
 
