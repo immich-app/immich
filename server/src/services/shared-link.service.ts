@@ -1,21 +1,20 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  mapSharedLink,
+  mapSharedLinkWithoutMetadata,
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
-  mapSharedLink,
-  mapSharedLinkWithoutMetadata,
 } from 'src/dtos/shared-link.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { OpenGraphTags } from 'src/utils/misc';
+import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService extends BaseService {
@@ -177,6 +176,7 @@ export class SharedLinkService extends BaseService {
     }
 
     const config = await this.getConfig({ withCache: true });
+    const { port } = this.configRepository.getEnv();
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;
@@ -187,7 +187,7 @@ export class SharedLinkService extends BaseService {
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
       description: sharedLink.description || `${assetCount} shared photos & videos`,
-      imageUrl: new URL(imagePath, config.server.externalDomain || DEFAULT_EXTERNAL_DOMAIN).href,
+      imageUrl: new URL(imagePath, getExternalDomain(config.server, port)).href,
     };
   }
 

@@ -49,10 +49,9 @@ const envData: EnvData = {
   noColor: false,
 };
 
+export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });
 export const newConfigRepositoryMock = (): Mocked<IConfigRepository> => {
   return {
-    getEnv: vitest.fn().mockReturnValue(envData),
+    getEnv: vitest.fn().mockReturnValue(mockEnvData({})),
   };
 };
-
-export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });

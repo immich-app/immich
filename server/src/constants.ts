@@ -20,8 +20,6 @@ export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-const HOST_SERVER_PORT = process.env.IMMICH_PORT || '2283';
-export const DEFAULT_EXTERNAL_DOMAIN = 'http://localhost:' + HOST_SERVER_PORT;
 
 export const citiesFile = 'cities500.txt';
 
