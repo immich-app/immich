@@ -65,7 +65,7 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
 export interface IMetadataRepository {
   teardown(): Promise<void>;
-  readTags(path: string): Promise<ImmichTags>;
+  readTags(path: string, readArgs?: string[]): Promise<ImmichTags>;
   writeTags(path: string, tags: Partial<Tags>): Promise<void>;
   extractBinaryTag(tagName: string, path: string): Promise<Buffer>;
 }
