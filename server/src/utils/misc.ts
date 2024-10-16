@@ -16,6 +16,9 @@ import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
 import { MetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 
+export const getExternalDomain = (server: SystemConfig['server'], port: number) =>
+  server.externalDomain || `http://localhost:${port}`;
+
 /**
  * @returns a list of strings representing the keys of the object in dot notation
  */
