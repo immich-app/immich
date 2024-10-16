@@ -80,61 +80,54 @@ class AssetNotifier extends StateNotifier<bool> {
   }
 
   Future<bool> deleteLocalOnlyAssets(
-    BuildContext context,
     Iterable<Asset> deleteAssets, {
     bool onlyBackedUp = false,
   }) async {
     _deleteInProgress = true;
     state = true;
     try {
-      // Filter local assets based on the backup status (`isRemote`).
-      // If `onlyBackedUp` is true, only select assets that are also present on the server (`isRemote`).
-      final assetsToDelete = deleteAssets
-          .where((e) => e.isLocal && (!onlyBackedUp || e.isRemote))
-          .toList();
+      // Filter the assets based on the backed-up status
+      final assets = onlyBackedUp
+          ? deleteAssets.where((e) => e.storage == AssetState.merged)
+          : deleteAssets;
 
-      if (assetsToDelete.isEmpty) {
-        // No assets to delete, exit early
-        ImmichToast.show(
-          context: context,
-          msg: 'No backed-up assets selected for deletion.',
-          gravity: ToastGravity.BOTTOM,
-        );
-        return false;
+      if (assets.isEmpty) {
+        return false; // No assets to delete
       }
 
-      // Continue with deletion of the filtered assets
-      final assets = onlyBackedUp
-          ? assetsToDelete.where((e) => e.storage == AssetState.merged)
-          : assetsToDelete;
-
+      // Proceed with local deletion of the filtered assets
       final localDeleted = await _deleteLocalAssets(assets);
+
       if (localDeleted.isNotEmpty) {
-        final localOnlyIds = assetsToDelete
+        final localOnlyIds = assets
             .where((e) => e.storage == AssetState.local)
             .map((e) => e.id)
             .toList();
-        // Update merged assets to remote only
-        final mergedAssets = assetsToDelete
-            .where((e) => e.storage == AssetState.merged)
-            .map((e) {
+
+        // Update merged assets to remote-only
+        final mergedAssets =
+            assets.where((e) => e.storage == AssetState.merged).map((e) {
           e.localId = null;
           return e;
         }).toList();
 
+        // Update the local database
         await _db.writeTxn(() async {
           if (mergedAssets.isNotEmpty) {
-            await _db.assets.putAll(mergedAssets);
+            await _db.assets
+                .putAll(mergedAssets); // Use the filtered merged assets
           }
           await _db.exifInfos.deleteAll(localOnlyIds);
           await _db.assets.deleteAll(localOnlyIds);
         });
+
         return true;
       }
     } finally {
       _deleteInProgress = false;
       state = false;
     }
+
     return false;
   }
 
