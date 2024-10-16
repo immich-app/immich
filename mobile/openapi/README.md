@@ -166,6 +166,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
+*SearchApi* | [**searchAlbum**](doc//SearchApi.md#searchalbum) | **GET** /search/album | 
 *SearchApi* | [**searchMetadata**](doc//SearchApi.md#searchmetadata) | **POST** /search/metadata | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | 
@@ -383,12 +384,14 @@ Class | Method | HTTP request | Description
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
+ - [SearchAlbumNameResponseDto](doc//SearchAlbumNameResponseDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)
  - [SearchExploreResponseDto](doc//SearchExploreResponseDto.md)
  - [SearchFacetCountResponseDto](doc//SearchFacetCountResponseDto.md)
  - [SearchFacetResponseDto](doc//SearchFacetResponseDto.md)
+ - [SearchPersonNameResponseDto](doc//SearchPersonNameResponseDto.md)
  - [SearchResponseDto](doc//SearchResponseDto.md)
  - [SearchSuggestionType](doc//SearchSuggestionType.md)
  - [ServerAboutResponseDto](doc//ServerAboutResponseDto.md)
