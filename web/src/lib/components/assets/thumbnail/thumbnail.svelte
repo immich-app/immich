@@ -80,7 +80,6 @@
   let intersecting = false;
   let lastRetrievedElement: HTMLElement | undefined;
   let loaded = false;
-  let shareUser: UserResponseDto | undefined;
 
   $: if (!retrieveElement) {
     lastRetrievedElement = undefined;
@@ -88,9 +87,6 @@
   $: if (retrieveElement && element && lastRetrievedElement !== element) {
     lastRetrievedElement = element;
     onRetrieveElement?.(element);
-  }
-  $: if ($showUserThumbnails && showUserThumbnailsinViewer && (isSharedLink() || asset.ownerId != $user.id)) {
-    handlePromiseError(getShareUser());
   }
 
   $: width = thumbnailSize || thumbnailWidth || 235;
@@ -171,9 +167,9 @@
 
   const getShareUser = async () => {
     try {
-      shareUser = await getUserAndCacheResult(asset.ownerId);
+      return await getUserAndCacheResult(asset.ownerId);
     } catch (error) {
-      handleError(error, $t('errors.unable_to_load_liked_status'));
+      handleError(error, $t('errors.unable_to_load_items'));
     }
   };
 
@@ -286,10 +282,12 @@
           </div>
         {/if}
 
-        {#if shareUser && showUserThumbnailsinViewer}
-          <div class="absolute bottom-2 left-2 z-10">
-            <UserAvatar user={shareUser} size="sm" />
-          </div>
+        {#if showUserThumbnailsinViewer && $showUserThumbnails && (isSharedLink() || asset.ownerId != $user.id)}
+          {#await getShareUser() then shareUser}
+            <div class="absolute bottom-2 left-2 z-10">
+              <UserAvatar user={shareUser} size="sm" />
+            </div>
+          {/await}
         {/if}
 
         {#if !isSharedLink() && showArchiveIcon && asset.isArchived}

@@ -84,7 +84,7 @@
     class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
     data-testid="asset-viewer-navbar-actions"
   >
-    {#if asset.owner && asset.owner.id != $user.id}
+    {#if asset.owner && asset.owner.id !== $user.id}
       <div class="p-3 margin:auto">
         <UserAvatar user={asset.owner} size="xs"></UserAvatar>
       </div>

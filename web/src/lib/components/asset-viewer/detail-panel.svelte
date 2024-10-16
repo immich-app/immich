@@ -462,7 +462,7 @@
   </div>
 {/if}
 
-{#if (asset.ownerId != $user?.id && asset.owner) || ($user === undefined && asset.owner)}
+{#if asset.owner && (asset.ownerId != $user?.id || $user === undefined)}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
     {#if currentAlbum}
       <p class="text-sm">{$t('shared_by').toUpperCase()}</p>
