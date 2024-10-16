@@ -2,12 +2,12 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { getAssetThumbnailUrl, isSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { user } from '$lib/stores/user.store';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import { locale, playVideoThumbnailOnHover, showUserThumbnails } from '$lib/stores/preferences.store';
   import { getUserAndCacheResult } from '$lib/utils/users';
   import { getAssetPlaybackUrl } from '$lib/utils';
@@ -284,9 +284,11 @@
 
         {#if showUserThumbnailsinViewer && $showUserThumbnails && (isSharedLink() || asset.ownerId != $user.id)}
           {#await getShareUser() then shareUser}
-            <div class="absolute bottom-2 left-2 z-10">
-              <UserAvatar user={shareUser} size="sm" />
-            </div>
+            {#if shareUser}
+              <div class="absolute bottom-2 left-2 z-10">
+                <UserAvatar user={shareUser} size="sm" />
+              </div>
+            {/if}
           {/await}
         {/if}
 
