@@ -1060,7 +1060,7 @@ describe('/asset', () => {
         expected: {
           type: AssetTypeEnum.Image,
           originalFileName: 'philadelphia.nef',
-          fileCreatedAt: '2016-09-22T22:10:29.060Z',
+          fileCreatedAt: '2016-09-22T21:10:29.060Z',
           exifInfo: {
             make: 'NIKON CORPORATION',
             model: 'NIKON D700',
@@ -1069,11 +1069,11 @@ describe('/asset', () => {
             focalLength: 85,
             iso: 200,
             fileSizeInByte: 15_856_335,
-            dateTimeOriginal: '2016-09-22T22:10:29.060Z',
+            dateTimeOriginal: '2016-09-22T21:10:29.060Z',
             latitude: null,
             longitude: null,
             orientation: '1',
-            timeZone: 'UTC-5',
+            timeZone: 'UTC-4',
           },
         },
       },
