@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -172,65 +173,71 @@ class ThumbnailImage extends ConsumerWidget {
       );
     }
 
-    return Stack(
-      children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.decelerate,
-          decoration: BoxDecoration(
-            border: multiselectEnabled && isSelected
-                ? Border.all(
-                    color: canDeselect ? assetContainerColor : Colors.grey,
-                    width: 8,
-                  )
-                : const Border(),
-          ),
-          child: buildImage(),
-        ),
-        if (multiselectEnabled)
-          Padding(
-            padding: const EdgeInsets.all(3.0),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: buildSelectionIcon(asset),
+    Future<User?> userFuture = userService.getUserbyId(asset.ownerId);
+    return FutureBuilder<User?>(
+      future: userFuture,
+      builder: (BuildContext context, AsyncSnapshot<User?> userSnapshot) =>
+          Stack(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.decelerate,
+            decoration: BoxDecoration(
+              border: multiselectEnabled && isSelected
+                  ? Border.all(
+                      color: canDeselect ? assetContainerColor : Colors.grey,
+                      width: 8,
+                    )
+                  : const Border(),
             ),
+            child: buildImage(),
           ),
-        if (showStorageIndicator)
-          Positioned(
-            right: 8,
-            bottom: 5,
-            child: Icon(
-              storageIcon(asset),
-              color: Colors.white.withOpacity(.8),
-              size: 16,
+          if (multiselectEnabled)
+            Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: buildSelectionIcon(asset),
+              ),
             ),
-          ),
-        if (asset.isFavorite)
-          const Positioned(
-            left: 8,
-            bottom: 5,
-            child: Icon(
-              Icons.favorite,
-              color: Colors.white,
-              size: 18,
+          if (showStorageIndicator)
+            Positioned(
+              right: 8,
+              bottom: 5,
+              child: Icon(
+                storageIcon(asset),
+                color: Colors.white.withOpacity(.8),
+                size: 16,
+              ),
             ),
-          ),
-        // Not possible to favorite photos belonging to other users, so reuse lower left corner for partner images
-        if (asset.ownerId != Store.get(StoreKey.currentUser).isarId &&
-            showUserThumbnail)
-          Positioned(
-            left: 8,
-            bottom: 5,
-            child: UserCircleAvatar(
-              user: userService.lookupUserById(asset.ownerId),
-              radius: 8,
-              size: 18,
-            ).build(context),
-            // userAvatar(context, Store.get(StoreKey.currentUser), radius: 8),
-          ),
-        if (!asset.isImage) buildVideoIcon(),
-        if (asset.stackCount > 0) buildStackIcon(),
-      ],
+          if (asset.isFavorite)
+            const Positioned(
+              left: 8,
+              bottom: 5,
+              child: Icon(
+                Icons.favorite,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+          // Not possible to favorite photos belonging to other users, so reuse lower left corner for partner images
+          if (asset.ownerId != Store.get(StoreKey.currentUser).isarId &&
+              showUserThumbnail &&
+              userSnapshot.hasData)
+            Positioned(
+              left: 8,
+              bottom: 5,
+              child: UserCircleAvatar(
+                user: userSnapshot.data,
+                radius: 8,
+                size: 18,
+              ).build(context),
+              // userAvatar(context, Store.get(StoreKey.currentUser), radius: 8),
+            ),
+          if (!asset.isImage) buildVideoIcon(),
+          if (asset.stackCount > 0) buildStackIcon(),
+        ],
+      ),
     );
   }
 }

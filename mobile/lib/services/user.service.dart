@@ -27,7 +27,6 @@ class UserService {
   final IUserRepository _userRepository;
   final SyncService _syncService;
   final Logger _log = Logger("UserService");
-  final Map<Id, User> inMemoryUserMap = {};
 
   UserService(
     this._partnerApiRepository,
@@ -38,6 +37,10 @@ class UserService {
 
   Future<List<User>> getUsers({bool self = false}) =>
       _userRepository.getAll(self: self);
+
+  Future<User?> getUser(String id) async => await _userRepository.get(id);
+  Future<User?> getUserbyId(int id) async =>
+      await _userRepository.getByIsarId(id);
 
   Future<({String profileImagePath})?> uploadProfileImage(XFile image) async {
     try {
@@ -101,22 +104,6 @@ class UserService {
   Future<bool> refreshUsers() async {
     final users = await getUsersFromServer();
     if (users == null) return false;
-    final isSyncSuccess = await _syncService.syncUsersFromServer(users);
-    if (isSyncSuccess) {
-      inMemoryUserMap.clear();
-      final users = await getUsersInDb(self: true);
-      for (var user in users) {
-        inMemoryUserMap[user.isarId] = user;
-      }
-    }
-    return isSyncSuccess;
-  }
-
-  User? lookupUserById(Id userId) {
-    if (inMemoryUserMap.containsKey(userId)) {
-      return inMemoryUserMap[userId];
-    } else {
-      return null;
-    }
+    return await _syncService.syncUsersFromServer(users);
   }
 }

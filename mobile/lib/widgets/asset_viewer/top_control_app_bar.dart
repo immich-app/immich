@@ -165,16 +165,22 @@ class TopControlAppBar extends HookConsumerWidget {
     }
 
     Widget buildPartnerButton(Asset asset) {
-      final User? user = userService.lookupUserById(asset.ownerId);
-      return IconButton(
-        onPressed: () {
-          (user == null) ? null : onPartnerPressed(asset, user);
-        },
-        icon: UserCircleAvatar(
-          user: user,
-          radius: 10,
-          size: 20,
-        ).build(context),
+      Future<User?> userFuture = userService.getUserbyId(asset.ownerId);
+      return FutureBuilder<User?>(
+        future: userFuture,
+        builder: (BuildContext context, AsyncSnapshot<User?> userSnapshot) =>
+            IconButton(
+          onPressed: () {
+            (userSnapshot.hasData && userSnapshot.data != null)
+                ? onPartnerPressed(asset, userSnapshot.data!)
+                : null;
+          },
+          icon: UserCircleAvatar(
+            user: userSnapshot.data,
+            radius: 10,
+            size: 20,
+          ).build(context),
+        ),
       );
     }
 

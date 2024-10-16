@@ -4,6 +4,8 @@ import 'package:immich_mobile/interfaces/database.interface.dart';
 abstract interface class IUserRepository implements IDatabaseRepository {
   Future<User?> get(String id);
 
+  Future<User?> getByIsarId(int id);
+
   Future<List<User>> getByIds(List<String> ids);
 
   Future<List<User>> getAll({bool self = true, UserSort? sortBy});

@@ -23,37 +23,48 @@ class AssetStateInfo extends ConsumerWidget {
     final textColor = context.isDarkTheme ? Colors.white : Colors.black;
     final userService = ref.watch(userServiceProvider);
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
-    final User? user = (asset.ownerId == Store.get(StoreKey.currentUser).isarId)
-        ? null
-        : userService.lookupUserById(asset.ownerId);
 
-    return ListTile(
-      contentPadding: const EdgeInsets.all(0),
-      dense: true,
-      leading: (user == null)
-          ? Icon(
-              storageIcon(asset),
-              color: textColor.withAlpha(200),
-            )
-          : UserCircleAvatar(
-              user: user,
-              radius: 12,
-              size: 30,
-            ).build(context),
-      title: Text(
-        (user == null)
-            ? storageText(asset)
-            : isInAlbum
-                ? "album_thumbnail_shared_by".tr(args: [user.name])
-                : user.name,
-        style: context.textTheme.labelLarge,
-      ),
-      subtitle: (user == null || isInAlbum)
-          ? null
-          : Text(
-              "storage_asset_partner".tr(),
-              style: context.textTheme.bodySmall,
-            ),
+    Future<User?> userFuture = userService.getUserbyId(asset.ownerId);
+    return FutureBuilder<User?>(
+      future: userFuture,
+      builder: (BuildContext context, AsyncSnapshot<User?> userSnapshot) {
+        (userSnapshot.hasData);
+        final User? user =
+            (asset.ownerId == Store.get(StoreKey.currentUser).isarId)
+                ? null
+                : (userSnapshot.hasData)
+                    ? userSnapshot.data
+                    : null;
+
+        return ListTile(
+          contentPadding: const EdgeInsets.all(0),
+          dense: true,
+          leading: (user == null)
+              ? Icon(
+                  storageIcon(asset),
+                  color: textColor.withAlpha(200),
+                )
+              : UserCircleAvatar(
+                  user: user,
+                  radius: 12,
+                  size: 30,
+                ).build(context),
+          title: Text(
+            (user == null)
+                ? storageText(asset)
+                : isInAlbum
+                    ? "album_thumbnail_shared_by".tr(args: [user.name])
+                    : user.name,
+            style: context.textTheme.labelLarge,
+          ),
+          subtitle: (user == null || isInAlbum)
+              ? null
+              : Text(
+                  "storage_asset_partner".tr(),
+                  style: context.textTheme.bodySmall,
+                ),
+        );
+      },
     );
   }
 }
