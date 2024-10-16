@@ -652,7 +652,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
       primaries: 'bt709',
       transfer: 'bt709',
       matrix: 'bt709',
-    }
+    };
   }
 }
 
@@ -803,7 +803,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       primaries: 'bt709',
       transfer: 'bt709',
       matrix: 'bt709',
-    }
+    };
   }
 }
 
@@ -958,6 +958,6 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       primaries: 'bt709',
       transfer: 'bt709',
       matrix: 'bt709',
-    }
+    };
   }
 }
