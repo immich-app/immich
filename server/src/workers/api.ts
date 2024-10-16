@@ -15,8 +15,6 @@ import { isStartUpError } from 'src/services/storage.service';
 import { otelStart } from 'src/utils/instrumentation';
 import { useSwagger } from 'src/utils/misc';
 
-const host = process.env.HOST;
-
 function parseTrustedProxy(input?: string) {
   if (!input) {
     return [];
@@ -36,7 +34,7 @@ async function bootstrap() {
   const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
   const configRepository = app.get<IConfigRepository>(IConfigRepository);
 
-  const { environment, port, resourcePaths } = configRepository.getEnv();
+  const { environment, host, port, resourcePaths } = configRepository.getEnv();
   const isDev = environment === ImmichEnvironment.DEVELOPMENT;
 
   logger.setContext('Bootstrap');
