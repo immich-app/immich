@@ -104,6 +104,6 @@ class UserService {
   Future<bool> refreshUsers() async {
     final users = await getUsersFromServer();
     if (users == null) return false;
-    return await _syncService.syncUsersFromServer(users);
+    return _syncService.syncUsersFromServer(users);
   }
 }
