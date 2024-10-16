@@ -410,7 +410,7 @@ describe(MediaService.name, () => {
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=bt601:out_range=pc,format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -445,7 +445,7 @@ describe(MediaService.name, () => {
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=601:m=470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -482,7 +482,7 @@ describe(MediaService.name, () => {
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=601:m=470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -2096,7 +2096,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
             ),
           ]),
           twoPass: false,
@@ -2120,7 +2120,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
             ),
           ]),
           twoPass: false,
@@ -2141,7 +2141,7 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
-            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
           ]),
           twoPass: false,
         }),
@@ -2161,7 +2161,7 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
-            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
           ]),
           twoPass: false,
         }),
@@ -2181,7 +2181,7 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
-            '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
           ]),
           twoPass: false,
         }),
