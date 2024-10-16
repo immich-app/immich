@@ -14,7 +14,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
-import 'package:immich_mobile/widgets/common/user_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -171,7 +171,7 @@ class PartnerList extends ConsumerWidget {
             left: 12.0,
             right: 18.0,
           ),
-          leading: userAvatar(context, partner, radius: 16),
+          leading: UserCircleAvatar(user: partner, radius: 16),
           title: Text(
             "partner_list_user_photos",
             style: TextStyle(

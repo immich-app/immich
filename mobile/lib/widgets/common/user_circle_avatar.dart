@@ -37,7 +37,11 @@ class UserCircleAvatar extends StatelessWidget {
       user!.name[0].toUpperCase(),
       style: TextStyle(
         fontWeight: FontWeight.bold,
-        fontSize: radius < 12 ? radius : 12,
+        fontSize: radius <= 16
+            ? radius < 12
+                ? radius
+                : 14
+            : 16,
         color: isDarkTheme && user!.avatarColor == AvatarColorEnum.primary
             ? Colors.black
             : Colors.white,

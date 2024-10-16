@@ -8,7 +8,7 @@ import 'package:immich_mobile/services/partner.service.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/widgets/common/user_avatar.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage()
 class PartnerPage extends HookConsumerWidget {
@@ -42,7 +42,7 @@ class PartnerPage extends HookConsumerWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: userAvatar(context, u),
+                        child: UserCircleAvatar(user: u),
                       ),
                       Text(u.name),
                     ],
@@ -99,7 +99,7 @@ class PartnerPage extends HookConsumerWidget {
               itemCount: users.length,
               itemBuilder: ((context, index) {
                 return ListTile(
-                  leading: userAvatar(context, users[index]),
+                  leading: UserCircleAvatar(user: users[index]),
                   title: Text(
                     users[index].email,
                     style: context.textTheme.bodyLarge,
