@@ -492,6 +492,10 @@ export class VP9Config extends BaseConfig {
 }
 
 export class AV1Config extends BaseConfig {
+  getVideoCodec(): string {
+    return 'libsvtav1';
+  }
+
   getPresetOptions() {
     const speed = this.getPresetIndex() + 4; // Use 4 as slowest, giving us an effective range of 4-12 which is far more useful than 0-8
     if (speed >= 0) {
