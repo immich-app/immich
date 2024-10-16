@@ -866,7 +866,6 @@
       <AssetViewer
         {withStacked}
         {assetStore}
-        {showUserThumbnailsinViewer}
         asset={$viewingAsset}
         preloadAssets={$preloadAssets}
         {isShared}
