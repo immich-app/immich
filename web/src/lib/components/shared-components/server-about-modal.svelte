@@ -4,6 +4,8 @@
   import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+  import { mdiAlert } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let onClose: () => void;
 
@@ -153,7 +155,8 @@
       {/if}
 
       {#if info.sourceRef === 'main'}
-        <div class="col-span-full p-4">
+        <div class="col-span-full p-4 flex gap-1">
+          <Icon path={mdiAlert} size="2em" color="#ffcc4d" />
           <p class="immich-form-label text-sm" id="main-warning">
             {$t('main_branch_warning')}
           </p>
