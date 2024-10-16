@@ -339,13 +339,17 @@ export class MetadataService extends BaseService {
     const sidecarTags = asset.sidecarPath ? await this.metadataRepository.readTags(asset.sidecarPath) : {};
     const videoTags = asset.type === AssetType.VIDEO ? await this.getVideoTags(asset.originalPath) : {};
 
-    // make sure dates comes from sidecar
+    // prefer dates from sidecar tags
     const sidecarDate = firstDateTime(sidecarTags as Tags, EXIF_DATE_TAGS);
     if (sidecarDate) {
       for (const tag of EXIF_DATE_TAGS) {
         delete mediaTags[tag];
       }
     }
+
+    // prefer duration from video tags
+    delete mediaTags.Duration;
+    delete sidecarTags.Duration;
 
     return { ...mediaTags, ...videoTags, ...sidecarTags };
   }
