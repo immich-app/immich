@@ -629,11 +629,11 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     const colors = this.getColors();
     const tonemapOptions = [
       'desat=0',
-      `matrix=bt${colors.matrix}`,
-      `primaries=bt${colors.primaries}`,
+      `matrix=${colors.matrix}`,
+      `primaries=${colors.primaries}`,
       'range=pc',
       `tonemap=${this.config.tonemap}`,
-      `transfer=bt${colors.transfer}`,
+      `transfer=${colors.transfer}`,
     ];
 
     return [`tonemap_cuda=${tonemapOptions.join(':')}`];
@@ -645,6 +645,14 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
 
   getOutputThreadOptions() {
     return [];
+  }
+
+  getColors() {
+    return {
+      primaries: 'bt709',
+      transfer: 'bt709',
+      matrix: 'bt709',
+    }
   }
 }
 
@@ -772,11 +780,11 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
     const tonemapOptions = [
       'desat=0',
       'format=nv12',
-      `matrix=bt${colors.matrix}`,
-      `primaries=bt${colors.primaries}`,
+      `matrix=${colors.matrix}`,
+      `primaries=${colors.primaries}`,
       'range=pc',
       `tonemap=${this.config.tonemap}`,
-      `transfer=bt${colors.transfer}`,
+      `transfer=${colors.transfer}`,
     ];
 
     return [
@@ -788,6 +796,14 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
 
   getInputThreadOptions() {
     return [`-threads 1`];
+  }
+
+  getColors() {
+    return {
+      primaries: 'bt709',
+      transfer: 'bt709',
+      matrix: 'bt709',
+    }
   }
 }
 
@@ -927,7 +943,7 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       return [
         `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
         'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=bt${colors.primaries}:t=bt${colors.transfer}:m=bt${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
+        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
         'hwmap=derive_device=rkmpp:mode=write:reverse=1',
         'format=drm_prime',
       ];
@@ -935,5 +951,13 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
     return [];
+  }
+
+  getColors() {
+    return {
+      primaries: 'bt709',
+      transfer: 'bt709',
+      matrix: 'bt709',
+    }
   }
 }
