@@ -30,35 +30,6 @@ export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico
 
 export const FACE_THUMBNAIL_SIZE = 250;
 
-export const supportedYearTokens = ['y', 'yy'];
-export const supportedMonthTokens = ['M', 'MM', 'MMM', 'MMMM'];
-export const supportedWeekTokens = ['W', 'WW'];
-export const supportedDayTokens = ['d', 'dd'];
-export const supportedHourTokens = ['h', 'hh', 'H', 'HH'];
-export const supportedMinuteTokens = ['m', 'mm'];
-export const supportedSecondTokens = ['s', 'ss', 'SSS'];
-export const supportedPresetTokens = [
-  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-  '{{y}}/{{MM}}-{{dd}}/{{filename}}',
-  '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
-  '{{y}}/{{MM}}/{{filename}}',
-  '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
-  '{{y}}/{{MMM}}/{{filename}}',
-  '{{y}}/{{MMMM}}/{{filename}}',
-  '{{y}}/{{MM}}/{{dd}}/{{filename}}',
-  '{{y}}/{{MMMM}}/{{dd}}/{{filename}}',
-  '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-  '{{y}}-{{MM}}-{{dd}}/{{filename}}',
-  '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
-  '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
-  '{{y}}/{{y}}-{{MM}}/{{filename}}',
-  '{{y}}/{{y}}-{{WW}}/{{filename}}',
-  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
-  '{{y}}/{{y}}-{{MM}}/{{assetId}}',
-  '{{y}}/{{y}}-{{WW}}/{{assetId}}',
-  '{{album}}/{{filename}}',
-];
-
 type ModelInfo = { dimSize: number };
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   RN101__openai: { dimSize: 512 },
