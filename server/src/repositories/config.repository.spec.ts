@@ -1,6 +1,9 @@
-import { ConfigRepository } from 'src/repositories/config.repository';
+import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
 
-const getEnv = () => new ConfigRepository().getEnv();
+const getEnv = () => {
+  clearEnvCache();
+  return new ConfigRepository().getEnv();
+};
 
 describe('getEnv', () => {
   beforeEach(() => {
