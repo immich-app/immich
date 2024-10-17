@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
-import { citiesFile } from 'src/constants';
+import { citiesFile, excludePaths } from 'src/constants';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
@@ -29,6 +29,8 @@ const asSet = (value: string | undefined, defaults: ImmichWorker[]) => {
   const values = (value || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
   return new Set(values.length === 0 ? defaults : (values as ImmichWorker[]));
 };
+
+const parseBoolean = (value: string | undefined, defaultValue: boolean) => (value ? value === 'true' : defaultValue);
 
 const getEnv = (): EnvData => {
   const included = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
@@ -64,6 +66,16 @@ const getEnv = (): EnvData => {
     } catch (error) {
       throw new Error(`Failed to decode redis options: ${error}`);
     }
+  }
+
+  const globalEnabled = parseBoolean(process.env.IMMICH_METRICS, false);
+  const hostMetrics = parseBoolean(process.env.IMMICH_HOST_METRICS, globalEnabled);
+  const apiMetrics = parseBoolean(process.env.IMMICH_API_METRICS, globalEnabled);
+  const repoMetrics = parseBoolean(process.env.IMMICH_IO_METRICS, globalEnabled);
+  const jobMetrics = parseBoolean(process.env.IMMICH_JOB_METRICS, globalEnabled);
+  const telemetryEnabled = globalEnabled || hostMetrics || apiMetrics || repoMetrics || jobMetrics;
+  if (!telemetryEnabled && process.env.OTEL_SDK_DISABLED === undefined) {
+    process.env.OTEL_SDK_DISABLED = 'true';
   }
 
   return {
@@ -124,6 +136,16 @@ const getEnv = (): EnvData => {
         .filter(Boolean),
     },
 
+    otel: {
+      metrics: {
+        hostMetrics,
+        apiMetrics: {
+          enable: apiMetrics,
+          ignoreRoutes: excludePaths,
+        },
+      },
+    },
+
     redis: redisConfig,
 
     resourcePaths: {
@@ -148,6 +170,11 @@ const getEnv = (): EnvData => {
     telemetry: {
       apiPort: Number(process.env.IMMICH_API_METRICS_PORT || '') || 8081,
       microservicesPort: Number(process.env.IMMICH_MICROSERVICES_METRICS_PORT || '') || 8082,
+      enabled: telemetryEnabled,
+      hostMetrics,
+      apiMetrics,
+      repoMetrics,
+      jobMetrics,
     },
 
     workers,
