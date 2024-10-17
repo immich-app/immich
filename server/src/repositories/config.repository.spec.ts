@@ -9,6 +9,9 @@ const resetEnv = () => {
   for (const env of [
     'IMMICH_WORKERS_INCLUDE',
     'IMMICH_WORKERS_EXCLUDE',
+    'IMMICH_TRUSTED_PROXIES',
+    'IMMICH_API_METRICS_PORT',
+    'IMMICH_MICROSERVICES_METRICS_PORT',
 
     'DB_URL',
     'DB_HOSTNAME',
@@ -176,6 +179,43 @@ describe('getEnv', () => {
     it('should throw error for invalid workers', () => {
       process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
       expect(getEnv).toThrowError('Invalid worker(s) found: api,microservices,randomservice');
+    });
+  });
+
+  describe('network', () => {
+    it('should return default network options', () => {
+      const { network } = getEnv();
+      expect(network).toEqual({
+        trustedProxies: [],
+      });
+    });
+
+    it('should parse trusted proxies', () => {
+      process.env.IMMICH_TRUSTED_PROXIES = '10.1.0.0,10.2.0.0, 169.254.0.0/16';
+      const { network } = getEnv();
+      expect(network).toEqual({
+        trustedProxies: ['10.1.0.0', '10.2.0.0', '169.254.0.0/16'],
+      });
+    });
+  });
+
+  describe('telemetry', () => {
+    it('should return default ports', () => {
+      const { telemetry } = getEnv();
+      expect(telemetry).toEqual({
+        apiPort: 8081,
+        microservicesPort: 8082,
+      });
+    });
+
+    it('should parse custom ports', () => {
+      process.env.IMMICH_API_METRICS_PORT = '2001';
+      process.env.IMMICH_MICROSERVICES_METRICS_PORT = '2002';
+      const { telemetry } = getEnv();
+      expect(telemetry).toEqual({
+        apiPort: 2001,
+        microservicesPort: 2002,
+      });
     });
   });
 });

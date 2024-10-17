@@ -29,6 +29,11 @@ export interface EnvData {
     thirdPartySupportUrl?: string;
   };
 
+  bull: {
+    config: QueueOptions;
+    queues: RegisterQueueOptions[];
+  };
+
   database: {
     url?: string;
     host: string;
@@ -43,6 +48,10 @@ export interface EnvData {
   licensePublicKey: {
     client: string;
     server: string;
+  };
+
+  network: {
+    trustedProxies: string[];
   };
 
   resourcePaths: {
@@ -62,9 +71,9 @@ export interface EnvData {
 
   redis: RedisOptions;
 
-  bull: {
-    config: QueueOptions;
-    queues: RegisterQueueOptions[];
+  telemetry: {
+    apiPort: number;
+    microservicesPort: number;
   };
 
   storage: {

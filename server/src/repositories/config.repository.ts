@@ -117,6 +117,13 @@ const getEnv = (): EnvData => {
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,
 
+    network: {
+      trustedProxies: (process.env.IMMICH_TRUSTED_PROXIES ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    },
+
     redis: redisConfig,
 
     resourcePaths: {
@@ -136,6 +143,11 @@ const getEnv = (): EnvData => {
 
     storage: {
       ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',
+    },
+
+    telemetry: {
+      apiPort: Number(process.env.IMMICH_API_METRICS_PORT || '') || 8081,
+      microservicesPort: Number(process.env.IMMICH_MICROSERVICES_METRICS_PORT || '') || 8082,
     },
 
     workers,
