@@ -184,7 +184,9 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getPersonStatisticsWithHttpInfo(String id,) async {
+  ///
+  /// * [bool] withArchived:
+  Future<Response> getPersonStatisticsWithHttpInfo(String id, { bool? withArchived, }) async {
     // ignore: prefer_const_declarations
     final path = r'/people/{id}/statistics'
       .replaceAll('{id}', id);
@@ -195,6 +197,10 @@ class PeopleApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (withArchived != null) {
+      queryParams.addAll(_queryParams('', 'withArchived', withArchived));
+    }
 
     const contentTypes = <String>[];
 
@@ -213,8 +219,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PersonStatisticsResponseDto?> getPersonStatistics(String id,) async {
-    final response = await getPersonStatisticsWithHttpInfo(id,);
+  ///
+  /// * [bool] withArchived:
+  Future<PersonStatisticsResponseDto?> getPersonStatistics(String id, { bool? withArchived, }) async {
+    final response = await getPersonStatisticsWithHttpInfo(id,  withArchived: withArchived, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

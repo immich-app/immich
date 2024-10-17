@@ -19,6 +19,7 @@ class PersonResponseDto {
     required this.name,
     required this.thumbnailPath,
     this.updatedAt,
+    this.withArchived,
   });
 
   DateTime? birthDate;
@@ -40,6 +41,15 @@ class PersonResponseDto {
   ///
   DateTime? updatedAt;
 
+  /// This property was added in v1.119.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? withArchived;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
     other.birthDate == birthDate &&
@@ -47,7 +57,8 @@ class PersonResponseDto {
     other.isHidden == isHidden &&
     other.name == name &&
     other.thumbnailPath == thumbnailPath &&
-    other.updatedAt == updatedAt;
+    other.updatedAt == updatedAt &&
+    other.withArchived == withArchived;
 
   @override
   int get hashCode =>
@@ -57,10 +68,11 @@ class PersonResponseDto {
     (isHidden.hashCode) +
     (name.hashCode) +
     (thumbnailPath.hashCode) +
-    (updatedAt == null ? 0 : updatedAt!.hashCode);
+    (updatedAt == null ? 0 : updatedAt!.hashCode) +
+    (withArchived == null ? 0 : withArchived!.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[birthDate=$birthDate, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() => 'PersonResponseDto[birthDate=$birthDate, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt, withArchived=$withArchived]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -77,6 +89,11 @@ class PersonResponseDto {
       json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'updatedAt'] = null;
+    }
+    if (this.withArchived != null) {
+      json[r'withArchived'] = this.withArchived;
+    } else {
+    //  json[r'withArchived'] = null;
     }
     return json;
   }
@@ -96,6 +113,7 @@ class PersonResponseDto {
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
         updatedAt: mapDateTime(json, r'updatedAt', r''),
+        withArchived: mapValueOfType<bool>(json, r'withArchived'),
       );
     }
     return null;
