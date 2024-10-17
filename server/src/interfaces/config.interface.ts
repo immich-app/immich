@@ -1,3 +1,6 @@
+import { RegisterQueueOptions } from '@nestjs/bullmq';
+import { QueueOptions } from 'bullmq';
+import { RedisOptions } from 'ioredis';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { VectorExtension } from 'src/interfaces/database.interface';
 
@@ -55,6 +58,13 @@ export interface EnvData {
       root: string;
       indexHtml: string;
     };
+  };
+
+  redis: RedisOptions;
+
+  bull: {
+    config: QueueOptions;
+    queues: RegisterQueueOptions[];
   };
 
   storage: {

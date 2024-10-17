@@ -4,6 +4,7 @@ import { citiesFile } from 'src/constants';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { QueueName } from 'src/interfaces/job.interface';
 import { setDifference } from 'src/utils/set';
 
 // TODO replace src/config validation with class-validator, here
@@ -49,6 +50,24 @@ export class ConfigRepository implements IConfigRepository {
       web: join(buildFolder, 'www'),
     };
 
+    let redisConfig = {
+      host: process.env.REDIS_HOSTNAME || 'redis',
+      port: Number.parseInt(process.env.REDIS_PORT || '') || 6379,
+      db: Number.parseInt(process.env.REDIS_DBINDEX || '') || 0,
+      username: process.env.REDIS_USERNAME || undefined,
+      password: process.env.REDIS_PASSWORD || undefined,
+      path: process.env.REDIS_SOCKET || undefined,
+    };
+
+    const redisUrl = process.env.REDIS_URL;
+    if (redisUrl && redisUrl.startsWith('ioredis://')) {
+      try {
+        redisConfig = JSON.parse(Buffer.from(redisUrl.slice(10), 'base64').toString());
+      } catch (error) {
+        throw new Error(`Failed to decode redis options: ${error}`);
+      }
+    }
+
     return {
       host: process.env.IMMICH_HOST,
       port: Number(process.env.IMMICH_PORT) || 2283,
@@ -72,6 +91,19 @@ export class ConfigRepository implements IConfigRepository {
         thirdPartySupportUrl: process.env.IMMICH_THIRD_PARTY_SUPPORT_URL,
       },
 
+      bull: {
+        config: {
+          prefix: 'immich_bull',
+          connection: { ...redisConfig },
+          defaultJobOptions: {
+            attempts: 3,
+            removeOnComplete: true,
+            removeOnFail: false,
+          },
+        },
+        queues: Object.values(QueueName).map((name) => ({ name })),
+      },
+
       database: {
         url: process.env.DB_URL,
         host: process.env.DB_HOSTNAME || 'database',
@@ -86,6 +118,8 @@ export class ConfigRepository implements IConfigRepository {
       },
 
       licensePublicKey: isProd ? productionKeys : stagingKeys,
+
+      redis: redisConfig,
 
       resourcePaths: {
         lockFile: join(buildFolder, 'build-lock.json'),
