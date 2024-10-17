@@ -3,13 +3,13 @@ import { CronExpression } from '@nestjs/schedule';
 import { Request, Response } from 'express';
 import Joi, { Root } from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
-import { ImmichHeader } from 'src/dtos/auth.dto';
 import {
   AudioCodec,
   Colorspace,
   CQMode,
   ImageFormat,
   ImmichEnvironment,
+  ImmichHeader,
   LogLevel,
   ToneMapping,
   TranscodeHWAccel,

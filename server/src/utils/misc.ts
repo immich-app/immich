@@ -12,8 +12,7 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
-import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
-import { MetadataKey } from 'src/enum';
+import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 
 export const getExternalDomain = (server: SystemConfig['server'], port: number) =>
