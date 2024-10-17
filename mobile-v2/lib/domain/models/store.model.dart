@@ -33,35 +33,35 @@ class StoreKeyNotFoundException implements Exception {
 /// Key for each possible value in the `Store`.
 /// Also stores the converter to convert the value to and from the store and the type of value stored in the Store
 enum StoreKey<T, U> {
-  serverEndpoint<String, String>(
+  serverEndpoint<String, String>._(
     0,
     converter: StoreStringConverter(),
     type: String,
   ),
-  accessToken<String, String>(
+  accessToken<String, String>._(
     1,
     converter: StoreStringConverter(),
     type: String,
   ),
-  currentUser<User, String>(
+  currentUser<User, String>._(
     2,
     converter: StoreUserConverter(),
     type: String,
   ),
   // App settings
-  appTheme<AppTheme, int>(
+  appTheme<AppTheme, int>._(
     1000,
     converter: StoreEnumConverter(AppTheme.values),
     type: int,
   ),
-  themeMode<ThemeMode, int>(
+  themeMode<ThemeMode, int>._(
     1001,
     converter: StoreEnumConverter(ThemeMode.values),
     type: int,
   ),
-  darkMode<bool, int>(1002, converter: StoreBooleanConverter(), type: int);
+  darkMode<bool, int>._(1002, converter: StoreBooleanConverter(), type: int);
 
-  const StoreKey(this.id, {required this.converter, required this.type});
+  const StoreKey._(this.id, {required this.converter, required this.type});
   final int id;
 
   /// Primitive Type is also stored here to easily fetch it during runtime

@@ -21,6 +21,11 @@ class LogManager {
 
   List<LogMessage> _msgBuffer = [];
   Timer? _timer;
+
+  /// Whether to buffer logs in memory before writing to the database.
+  /// This is useful when logging in quick succession, as it increases performance
+  /// and reduces NAND wear. However, it may cause the logs to be lost in case of a crash / in isolates.
+  bool _shouldBuffer = true;
   late final StreamSubscription<logging.LogRecord> _subscription;
 
   void _onLogRecord(logging.LogRecord record) {
@@ -42,11 +47,14 @@ class LogManager {
       error: record.error?.toString(),
       stack: record.stackTrace?.toString(),
     );
-    _msgBuffer.add(lm);
 
-    // delayed batch writing to database: increases performance when logging
-    // messages in quick succession and reduces NAND wear
-    _timer ??= Timer(const Duration(seconds: 5), _flushBufferToDatabase);
+    if (_shouldBuffer) {
+      _msgBuffer.add(lm);
+      _timer ??=
+          Timer(const Duration(seconds: 5), () => _flushBufferToDatabase());
+    } else {
+      di<ILogRepository>().create(lm);
+    }
   }
 
   void _flushBufferToDatabase() {
@@ -56,7 +64,8 @@ class LogManager {
     di<ILogRepository>().createAll(buffer);
   }
 
-  void init() {
+  void init({bool? shouldBuffer}) {
+    _shouldBuffer = shouldBuffer ?? _shouldBuffer;
     _subscription = logging.Logger.root.onRecord.listen(_onLogRecord);
   }
 
@@ -106,18 +115,24 @@ class Logger {
 
   logging.Logger get _logger => logging.Logger(_loggerName);
 
-  // Highly detailed
+  /// Finest / Verbose logs. Useful for highly detailed messages
   void v(String message) => _logger.finest(message);
-  // Troubleshooting
+
+  /// Fine / Debug logs. Useful for troubleshooting
   void d(String message) => _logger.fine(message);
-  // General purpose
+
+  /// Info logs. Useful for general logging
   void i(String message) => _logger.info(message);
-  // Potential issues
-  void w(String message) => _logger.warning(message);
-  // Error
+
+  /// Warning logs. Useful to identify potential issues
+  void w(String message, [Object? error, StackTrace? stack]) =>
+      _logger.warning(message, error, stack);
+
+  /// Error logs. Useful for identifying issues
   void e(String message, [Object? error, StackTrace? stack]) =>
       _logger.severe(message, error, stack);
-  // Crash / Serious failure
+
+  /// Crash / Serious failure logs. Shouldn't happen
   void wtf(String message, [Object? error, StackTrace? stack]) =>
       _logger.shout(message, error, stack);
 }

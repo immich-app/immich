@@ -10,8 +10,8 @@ import 'package:immich_mobile/utils/constants/globals.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:openapi/api.dart';
 
-class ImmichApiClient extends ApiClient with LogMixin {
-  ImmichApiClient({required String endpoint}) : super(basePath: endpoint);
+class ImApiClient extends ApiClient with LogMixin {
+  ImApiClient({required String endpoint}) : super(basePath: endpoint);
 
   Map<String, String> get headers => defaultHeaderMap;
 

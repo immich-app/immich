@@ -6,10 +6,10 @@ import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/extensions/drift.extension.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
-class RenderListDriftRepository with LogMixin implements IRenderListRepository {
+class RenderListRepository with LogMixin implements IRenderListRepository {
   final DriftDatabaseRepository _db;
 
-  const RenderListDriftRepository(this._db);
+  const RenderListRepository(this._db);
 
   @override
   Stream<RenderList> watchAll() {

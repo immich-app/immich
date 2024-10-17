@@ -15,7 +15,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocProvider(
-        create: (_) => ImmichAssetGridCubit(
+        create: (_) => AssetGridCubit(
           renderStream: di<IRenderListRepository>().watchAll(),
           assetProvider: di<IAssetRepository>().getAll,
         ),

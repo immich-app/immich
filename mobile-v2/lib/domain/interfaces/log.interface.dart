@@ -7,7 +7,7 @@ abstract interface class ILogRepository {
   FutureOr<bool> create(LogMessage log);
 
   /// Bulk insert logs into DB
-  FutureOr<bool> createAll(List<LogMessage> log);
+  FutureOr<bool> createAll(Iterable<LogMessage> log);
 
   /// Fetches all logs
   FutureOr<List<LogMessage>> getAll();

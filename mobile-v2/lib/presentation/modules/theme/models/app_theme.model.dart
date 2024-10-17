@@ -3,14 +3,14 @@ import 'package:immich_mobile/presentation/modules/theme/models/app_colors.model
 import 'package:immich_mobile/utils/extensions/material_state.extension.dart';
 
 enum AppTheme {
-  blue(AppColors.blueLight, AppColors.blueDark),
+  blue._(AppColors.blueLight, AppColors.blueDark),
   // Fallback color for dynamic theme for non-supported platforms
-  dynamic(AppColors.blueLight, AppColors.blueDark);
+  dynamic._(AppColors.blueLight, AppColors.blueDark);
 
   final ColorScheme lightSchema;
   final ColorScheme darkSchema;
 
-  const AppTheme(this.lightSchema, this.darkSchema);
+  const AppTheme._(this.lightSchema, this.darkSchema);
 
   static ThemeData generateThemeData(ColorScheme color) {
     return ThemeData(
@@ -50,6 +50,14 @@ enum AppTheme {
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: color.outlineVariant),
           borderRadius: const BorderRadius.all(Radius.circular(15)),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+          borderSide: BorderSide(color: color.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+          borderSide: BorderSide(color: color.error),
         ),
         hintStyle: const TextStyle(
           fontSize: 16.0,

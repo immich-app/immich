@@ -10,9 +10,9 @@ import 'package:immich_mobile/presentation/components/input/filled_button.widget
 import 'package:immich_mobile/presentation/components/input/password_form_field.widget.dart';
 import 'package:immich_mobile/presentation/components/input/text_button.widget.dart';
 import 'package:immich_mobile/presentation/components/input/text_form_field.widget.dart';
-import 'package:immich_mobile/presentation/modules/common/states/server_info/server_feature_config.state.dart';
 import 'package:immich_mobile/presentation/modules/login/models/login_page.model.dart';
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
+import 'package:immich_mobile/presentation/states/server_info/server_feature_config.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:material_symbols_icons/symbols.dart';
 

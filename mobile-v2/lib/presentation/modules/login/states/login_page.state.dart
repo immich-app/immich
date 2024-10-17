@@ -5,12 +5,14 @@ import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/album_sync.service.dart';
 import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
-import 'package:immich_mobile/presentation/modules/common/states/server_info/server_feature_config.state.dart';
 import 'package:immich_mobile/presentation/modules/login/models/login_page.model.dart';
+import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
+import 'package:immich_mobile/presentation/states/server_info/server_feature_config.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
@@ -126,7 +128,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
     await di<IStoreRepository>().upsert(StoreKey.accessToken, accessToken);
 
     /// Set token to interceptor
-    await di<ImmichApiClient>().init(accessToken: accessToken);
+    await di<ImApiClient>().init(accessToken: accessToken);
 
     final user = await di<UserService>().getMyUser();
     if (user == null) {
@@ -139,7 +141,9 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
     await di<IUserRepository>().upsert(user);
     // Remove and Sync assets in background
     await di<IAssetRepository>().deleteAll();
-    unawaited(di<AssetSyncService>().performFullRemoteSyncForUser(user));
+    await di<GalleryPermissionNotifier>().requestPermission();
+    unawaited(di<AssetSyncService>().performFullRemoteSyncIsolate(user));
+    unawaited(di<AlbumSyncService>().performFullDeviceSyncIsolate());
 
     emit(state.copyWith(
       isValidationInProgress: false,

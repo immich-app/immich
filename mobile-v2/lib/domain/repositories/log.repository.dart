@@ -7,10 +7,10 @@ import 'package:immich_mobile/domain/interfaces/log.interface.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 
-class LogDriftRepository implements ILogRepository {
+class LogRepository implements ILogRepository {
   final DriftDatabaseRepository _db;
 
-  const LogDriftRepository(this._db);
+  const LogRepository(this._db);
 
   @override
   Future<List<LogMessage>> getAll() async {
@@ -32,14 +32,7 @@ class LogDriftRepository implements ILogRepository {
   @override
   FutureOr<bool> create(LogMessage log) async {
     try {
-      await _db.into(_db.logs).insert(LogsCompanion.insert(
-            content: log.content,
-            level: log.level,
-            createdAt: Value(log.createdAt),
-            error: Value(log.error),
-            logger: Value(log.logger),
-            stack: Value(log.stack),
-          ));
+      await _db.into(_db.logs).insert(_toEntity(log));
       return true;
     } catch (e) {
       debugPrint("Error while adding a log to the DB - $e");
@@ -48,20 +41,10 @@ class LogDriftRepository implements ILogRepository {
   }
 
   @override
-  FutureOr<bool> createAll(List<LogMessage> logs) async {
+  FutureOr<bool> createAll(Iterable<LogMessage> logs) async {
     try {
       await _db.batch((b) {
-        b.insertAll(
-          _db.logs,
-          logs.map((log) => LogsCompanion.insert(
-                content: log.content,
-                level: log.level,
-                createdAt: Value(log.createdAt),
-                error: Value(log.error),
-                logger: Value(log.logger),
-                stack: Value(log.stack),
-              )),
-        );
+        b.insertAll(_db.logs, logs.map(_toEntity));
       });
       return true;
     } catch (e) {
@@ -80,6 +63,17 @@ class LogDriftRepository implements ILogRepository {
       return false;
     }
   }
+}
+
+LogsCompanion _toEntity(LogMessage log) {
+  return LogsCompanion.insert(
+    content: log.content,
+    level: log.level,
+    createdAt: Value(log.createdAt),
+    error: Value(log.error),
+    logger: Value(log.logger),
+    stack: Value(log.stack),
+  );
 }
 
 LogMessage _toModel(Log log) {

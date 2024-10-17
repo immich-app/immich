@@ -15,15 +15,15 @@ import 'package:openapi/api.dart';
 class LoginService with LogMixin {
   const LoginService();
 
-  Future<bool> isEndpointAvailable(Uri uri, {ImmichApiClient? client}) async {
+  Future<bool> isEndpointAvailable(Uri uri, {ImApiClient? client}) async {
     String baseUrl = uri.toString();
 
     if (!baseUrl.endsWith('/api')) {
       baseUrl += '/api';
     }
 
-    final serverAPI = client?.getServerApi() ??
-        ImmichApiClient(endpoint: baseUrl).getServerApi();
+    final serverAPI =
+        client?.getServerApi() ?? ImApiClient(endpoint: baseUrl).getServerApi();
     try {
       await serverAPI.pingServer();
     } catch (e) {
@@ -35,7 +35,7 @@ class LoginService with LogMixin {
 
   Future<String> resolveEndpoint(Uri uri, {Client? client}) async {
     String baseUrl = uri.toString();
-    final d = client ?? ImmichApiClient(endpoint: baseUrl).client;
+    final d = client ?? ImApiClient(endpoint: baseUrl).client;
 
     try {
       // Check for well-known endpoint
@@ -62,7 +62,7 @@ class LoginService with LogMixin {
   Future<String?> passwordLogin(String email, String password) async {
     try {
       final loginResponse =
-          await di<ImmichApiClient>().getAuthenticationApi().login(
+          await di<ImApiClient>().getAuthenticationApi().login(
                 LoginCredentialDto(email: email, password: password),
               );
 
@@ -76,7 +76,7 @@ class LoginService with LogMixin {
   Future<String?> oAuthLogin() async {
     const String oAuthCallbackSchema = 'app.immich';
 
-    final oAuthApi = di<ImmichApiClient>().getOAuthApi();
+    final oAuthApi = di<ImApiClient>().getOAuthApi();
 
     try {
       final oAuthUrl = await oAuthApi.startOAuth(
@@ -125,7 +125,7 @@ class LoginService with LogMixin {
     }
 
     /// Set token to interceptor
-    await di<ImmichApiClient>().init(accessToken: accessToken);
+    await di<ImApiClient>().init(accessToken: accessToken);
 
     final user = await di<UserService>().getMyUser().timeout(
       const Duration(seconds: 10),

@@ -6,14 +6,13 @@ import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/presentation/components/grid/draggable_scrollbar.dart';
 import 'package:immich_mobile/presentation/components/grid/immich_asset_grid.state.dart';
 import 'package:immich_mobile/presentation/components/image/immich_image.widget.dart';
+import 'package:immich_mobile/presentation/components/image/immich_thumbnail.widget.dart';
 import 'package:immich_mobile/utils/extensions/async_snapshot.extension.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
-import 'package:immich_mobile/utils/extensions/color.extension.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 part 'immich_asset_grid_header.widget.dart';
-part 'immich_grid_asset_placeholder.widget.dart';
 
 class ImAssetGrid extends StatefulWidget {
   const ImAssetGrid({super.key});
@@ -56,8 +55,7 @@ class _ImAssetGridState extends State<ImAssetGrid> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      BlocBuilder<ImmichAssetGridCubit, RenderList>(
+  Widget build(BuildContext context) => BlocBuilder<AssetGridCubit, RenderList>(
         builder: (_, renderList) {
           final elements = renderList.elements;
           final grid = FlutterListView(
@@ -72,7 +70,7 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                     _MonthHeader(text: section.header),
                   RenderListDayHeaderElement() => Text(section.header),
                   RenderListAssetElement() => FutureBuilder(
-                      future: context.read<ImmichAssetGridCubit>().loadAssets(
+                      future: context.read<AssetGridCubit>().loadAssets(
                             section.assetOffset,
                             section.assetCount,
                           ),
@@ -83,6 +81,7 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                           shrinkWrap: true,
                           addAutomaticKeepAlives: false,
                           cacheExtent: 100,
+                          padding: const EdgeInsets.all(0),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
@@ -97,8 +96,8 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                               dimension: 200,
                               // Show Placeholder when drag scrolled
                               child: asset == null || _isDragScrolling
-                                  ? const _ImImagePlaceholder()
-                                  : ImImage(asset),
+                                  ? const ImImagePlaceholder()
+                                  : ImThumbnail(asset),
                             );
                           },
                           itemCount: section.assetCount,

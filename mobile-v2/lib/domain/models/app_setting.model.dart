@@ -6,11 +6,11 @@ import 'package:immich_mobile/presentation/modules/theme/models/app_theme.model.
 // This model is the only exclusion which refers to entities from the presentation layer
 // as well as the domain layer
 enum AppSetting<T> {
-  appTheme<AppTheme>(StoreKey.appTheme, AppTheme.blue),
-  themeMode<ThemeMode>(StoreKey.themeMode, ThemeMode.system),
-  darkMode<bool>(StoreKey.darkMode, false);
+  appTheme<AppTheme>._(StoreKey.appTheme, AppTheme.blue),
+  themeMode<ThemeMode>._(StoreKey.themeMode, ThemeMode.system),
+  darkMode<bool>._(StoreKey.darkMode, false);
 
-  const AppSetting(this.storeKey, this.defaultValue);
+  const AppSetting._(this.storeKey, this.defaultValue);
 
   // ignore: avoid-dynamic
   final StoreKey<T, dynamic> storeKey;

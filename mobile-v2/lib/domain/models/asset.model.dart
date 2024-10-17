@@ -12,7 +12,7 @@ enum AssetType {
 }
 
 class Asset {
-  final int id;
+  final int? id;
   final String name;
   final String hash;
   final int? height;
@@ -32,9 +32,10 @@ class Asset {
   bool get isRemote => remoteId != null;
   bool get isLocal => localId != null;
   bool get isMerged => isRemote && isLocal;
+  bool get isImage => type == AssetType.image;
 
   const Asset({
-    required this.id,
+    this.id,
     required this.name,
     required this.hash,
     this.height,
@@ -49,7 +50,6 @@ class Asset {
   });
 
   factory Asset.remote(AssetResponseDto dto) => Asset(
-        id: 0, // assign a temporary auto gen ID
         remoteId: dto.id,
         createdTime: dto.fileCreatedAt,
         duration: dto.duration.tryParseInt() ?? 0,
@@ -93,29 +93,38 @@ class Asset {
   }
 
   Asset merge(Asset newAsset) {
-    if (newAsset.modifiedTime.isAfter(modifiedTime)) {
+    final existingAsset = this;
+    assert(existingAsset.id != null, "Existing asset must be from the db");
+
+    final oldestCreationTime =
+        existingAsset.createdTime.isBefore(newAsset.createdTime)
+            ? existingAsset.createdTime
+            : newAsset.createdTime;
+
+    if (newAsset.modifiedTime.isAfter(existingAsset.modifiedTime)) {
       return newAsset.copyWith(
-        height: newAsset.height ?? height,
-        width: newAsset.width ?? width,
-        localId: () => newAsset.localId ?? localId,
-        remoteId: () => newAsset.remoteId ?? remoteId,
-        livePhotoVideoId: newAsset.livePhotoVideoId ?? livePhotoVideoId,
+        id: newAsset.id ?? existingAsset.id,
+        localId: () => existingAsset.localId ?? newAsset.localId,
+        remoteId: () => existingAsset.remoteId ?? newAsset.remoteId,
+        width: newAsset.width ?? existingAsset.width,
+        height: newAsset.height ?? existingAsset.height,
+        createdTime: oldestCreationTime,
       );
     }
 
-    return copyWith(
-      height: height ?? newAsset.height,
-      width: width ?? newAsset.width,
-      localId: () => localId ?? newAsset.localId,
-      remoteId: () => remoteId ?? newAsset.remoteId,
-      livePhotoVideoId: livePhotoVideoId ?? newAsset.livePhotoVideoId,
+    return existingAsset.copyWith(
+      localId: () => existingAsset.localId ?? newAsset.localId,
+      remoteId: () => existingAsset.remoteId ?? newAsset.remoteId,
+      width: existingAsset.width ?? newAsset.width,
+      height: existingAsset.height ?? newAsset.height,
+      createdTime: oldestCreationTime,
     );
   }
 
   @override
   String toString() => """
 {
-  "id": "$id",
+  "id": "${id ?? "-"}",
   "remoteId": "${remoteId ?? "-"}",
   "localId": "${localId ?? "-"}",
   "name": "$name",
@@ -163,8 +172,7 @@ class Asset {
         livePhotoVideoId.hashCode;
   }
 
-  static int compareByRemoteId(Asset a, Asset b) =>
-      CollectionUtil.compareToNullable(a.remoteId, b.remoteId);
+  static int compareByHash(Asset a, Asset b) => a.hash.compareTo(b.hash);
 
   static int compareByLocalId(Asset a, Asset b) =>
       CollectionUtil.compareToNullable(a.localId, b.localId);

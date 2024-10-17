@@ -16,7 +16,6 @@ extension LevelExtension on Level {
   LogLevel toLogLevel() => switch (this) {
         Level.FINEST => LogLevel.verbose,
         Level.FINE => LogLevel.debug,
-        Level.INFO => LogLevel.info,
         Level.WARNING => LogLevel.warning,
         Level.SEVERE => LogLevel.error,
         Level.SHOUT => LogLevel.wtf,

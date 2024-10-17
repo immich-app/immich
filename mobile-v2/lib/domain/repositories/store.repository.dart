@@ -7,10 +7,10 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
-class StoreDriftRepository with LogMixin implements IStoreRepository {
+class StoreRepository with LogMixin implements IStoreRepository {
   final DriftDatabaseRepository _db;
 
-  const StoreDriftRepository(this._db);
+  const StoreRepository(this._db);
 
   @override
   FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key) async {

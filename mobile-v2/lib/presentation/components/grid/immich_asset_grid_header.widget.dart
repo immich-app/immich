@@ -9,7 +9,12 @@ class _HeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 32.0, left: 16.0, right: 24.0),
+      padding: const EdgeInsets.only(
+        top: 32.0,
+        left: 16.0,
+        right: 24.0,
+        bottom: 16.0,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

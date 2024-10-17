@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
 
+const String kImmichAppName = "Immich";
+
 /// Log messages stored in the DB
 const int kLogMessageLimit = 500;
+
+/// Cache constants
+const int kCacheStalePeriod = 30; // in days
+const String kCacheFullImagesKey = 'ImFullImageCacheKey';
+const int kCacheMaxNrOfFullImages = 500;
+const String kCacheThumbnailsKey = 'ImThumbnailCacheKey';
+const int kCacheMaxNrOfThumbnails = 500;
+
+/// Grid constants
+const int kGridThumbnailSize = 200;
+const int kGridThumbnailQuality = 80;
 
 /// RenderList constants
 const int kRenderListBatchSize = 512;
 const int kRenderListOppositeBatchSize = 128;
 
-/// Chunked asset sync size
+/// Sync constants
 const int kFullSyncChunkSize = 10000;
+const int kHashAssetsFileLimit = 128;
+const int kHashAssetsSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 /// Headers
 // Auth header

@@ -3,6 +3,7 @@ import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/immich_app.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/log_manager.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,8 @@ void main() {
   LogManager.setGlobalErrorCallbacks();
   // Init localization
   LocaleSettings.useDeviceLocale();
+  // Clear photo_manager cache
+  PhotoManager.clearFileCache();
 
   runApp(const ImApp());
 }

@@ -11,7 +11,7 @@ import Flutter
 
     // Register piegon handler
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
-    ImmichHostServiceSetup.setUp(binaryMessenger: controller.binaryMessenger, api: ImmichHostServiceImpl())
+    ImHostServiceSetup.setUp(binaryMessenger: controller.binaryMessenger, api: ImHostServiceImpl())
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

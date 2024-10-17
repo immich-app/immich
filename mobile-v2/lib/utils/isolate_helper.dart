@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,7 +33,7 @@ class IsolateHelper {
   IsolateHelper();
 
   void preIsolateHandling() {
-    final apiClient = di<ImmichApiClient>();
+    final apiClient = di<ImApiClient>();
     _clientData = _ImApiClientData(
       endpoint: apiClient.basePath,
       headersMap: apiClient.defaultHeaderMap,
@@ -42,7 +43,7 @@ class IsolateHelper {
   void postIsolateHandling() {
     assert(_clientData != null);
     // Reconstruct client from cached data
-    final client = ImmichApiClient(endpoint: _clientData!.endpoint);
+    final client = ImApiClient(endpoint: _clientData!.endpoint);
     for (final entry in _clientData.headersMap.entries) {
       client.addDefaultHeader(entry.key, entry.value);
     }
@@ -54,7 +55,7 @@ class IsolateHelper {
     );
 
     // Init log manager to continue listening to log events
-    LogManager.I.init();
+    LogManager.I.init(shouldBuffer: false);
   }
 
   static Future<T> run<T>(FutureOr<T> Function() computation) async {
@@ -66,9 +67,15 @@ class IsolateHelper {
     final helper = IsolateHelper()..preIsolateHandling();
     return await Isolate.run(() async {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+      DartPluginRegistrant.ensureInitialized();
+      // Delay to ensure the isolate is ready
+      await Future.delayed(const Duration(milliseconds: 100));
       helper.postIsolateHandling();
       try {
-        return await computation();
+        final result = await computation();
+        // Delay to ensure the isolate is not killed prematurely
+        await Future.delayed(const Duration(milliseconds: 100));
+        return result;
       } finally {
         // Always close the new database connection on Isolate end
         await di<DriftDatabaseRepository>().close();

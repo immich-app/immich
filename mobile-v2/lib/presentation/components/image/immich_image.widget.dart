@@ -1,48 +1,89 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
-import 'package:immich_mobile/service_locator.dart';
-import 'package:immich_mobile/utils/immich_api_client.dart';
-import 'package:immich_mobile/utils/immich_image_url_helper.dart';
-import 'package:material_symbols_icons/symbols.dart';
+import 'package:immich_mobile/presentation/components/image/provider/immich_local_image_provider.dart';
+import 'package:immich_mobile/presentation/components/image/provider/immich_remote_image_provider.dart';
+import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
+import 'package:octo_image/octo_image.dart';
 
+class ImImagePlaceholder extends StatelessWidget {
+  const ImImagePlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      height: 200,
+      color: context.colorScheme.surfaceContainerHighest,
+    );
+  }
+}
+
+// ignore: prefer-single-widget-per-file
 class ImImage extends StatelessWidget {
   final Asset asset;
   final double? width;
   final double? height;
+  final Widget placeholder;
 
-  const ImImage(this.asset, {this.width, this.height, super.key});
+  const ImImage(
+    this.asset, {
+    this.width,
+    this.height,
+    this.placeholder = const ImImagePlaceholder(),
+    super.key,
+  });
+
+  // Helper function to return the image provider for the asset
+  // either by using the asset ID or the asset itself
+  /// [asset] is the Asset to request, or else use [assetId] to get a remote
+  /// image provider
+  /// Use [isThumbnail] and [thumbnailSize] if you'd like to request a thumbnail
+  /// The size of the square thumbnail to request. Ignored if isThumbnail
+  /// is not true
+  static ImageProvider imageProvider({Asset? asset, String? assetId}) {
+    if (asset == null && assetId == null) {
+      throw Exception('Must supply either asset or assetId');
+    }
+
+    if (asset == null) {
+      return ImRemoteImageProvider(assetId: assetId!);
+    }
+
+    // Whether to use the local asset image provider or a remote one
+    final useLocal = !asset.isRemote || asset.isLocal;
+
+    if (useLocal) {
+      return ImLocalImageProvider(asset: asset);
+    }
+
+    return ImRemoteImageProvider(assetId: asset.remoteId!);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CachedNetworkImage(
-      imageUrl: ImImageUrlHelper.getThumbnailUrl(asset),
-      httpHeaders: di<ImmichApiClient>().headers,
-      cacheKey: ImImageUrlHelper.getThumbnailUrl(asset),
+    return OctoImage(
+      fadeInDuration: const Duration(milliseconds: 0),
+      fadeOutDuration: const Duration(milliseconds: 200),
+      placeholderBuilder: (_) => placeholder,
+      image: ImImage.imageProvider(asset: asset),
       width: width,
       height: height,
-      // keeping memCacheWidth, memCacheHeight, maxWidthDiskCache and
-      // maxHeightDiskCache = null allows to simply store the webp thumbnail
-      // from the server and use it for all rendered thumbnail sizes
       fit: BoxFit.cover,
-      fadeInDuration: const Duration(milliseconds: 250),
-      progressIndicatorBuilder: (_, url, downloadProgress) {
-        // Show loading if desired
-        return const SizedBox.square(
-          dimension: 250,
-          child: DecoratedBox(decoration: BoxDecoration(color: Colors.grey)),
-        );
-      },
-      errorWidget: (_, url, error) {
-        if (error is HttpExceptionWithStatus &&
-            error.statusCode >= 400 &&
-            error.statusCode < 500) {
-          CachedNetworkImage.evictFromCache(url);
+      errorBuilder: (_, error, stackTrace) {
+        if (error is PlatformException &&
+            error.code == "The asset not found!") {
+          debugPrint(
+            "Asset ${asset.localId ?? asset.id ?? "-"} does not exist anymore on device!",
+          );
+        } else {
+          debugPrint(
+            "Error getting thumb for assetId=${asset.localId ?? asset.id ?? "-"}: $error",
+          );
         }
         return Icon(
-          Symbols.image_not_supported_rounded,
-          color: Theme.of(context).primaryColor,
+          Icons.image_not_supported_outlined,
+          color: context.colorScheme.primary,
         );
       },
     );

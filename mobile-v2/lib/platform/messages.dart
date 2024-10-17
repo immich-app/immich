@@ -11,7 +11,7 @@ import 'package:pigeon/pigeon.dart';
   swiftOptions: SwiftOptions(),
 ))
 @HostApi()
-abstract class ImmichHostService {
+abstract class ImHostService {
   @async
-  List<Uint8List?>? digestFiles(List<String> paths);
+  List<Uint8List?> digestFiles(List<String> paths);
 }

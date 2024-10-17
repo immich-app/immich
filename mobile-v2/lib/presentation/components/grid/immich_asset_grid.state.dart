@@ -13,7 +13,7 @@ typedef RenderListAssetProvider = FutureOr<List<Asset>> Function({
   int? limit,
 });
 
-class ImmichAssetGridCubit extends Cubit<RenderList> {
+class AssetGridCubit extends Cubit<RenderList> {
   final Stream<RenderList> _renderStream;
   final RenderListAssetProvider _assetProvider;
   late final StreamSubscription _renderListSubscription;
@@ -24,7 +24,7 @@ class ImmichAssetGridCubit extends Cubit<RenderList> {
   /// assets cache loaded from DB with offset [_bufOffset]
   List<Asset> _buf = [];
 
-  ImmichAssetGridCubit({
+  AssetGridCubit({
     required Stream<RenderList> renderStream,
     required RenderListAssetProvider assetProvider,
   })  : _renderStream = renderStream,

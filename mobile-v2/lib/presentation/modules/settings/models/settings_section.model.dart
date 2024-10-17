@@ -4,17 +4,17 @@ import 'package:immich_mobile/presentation/router/router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 enum SettingSection {
-  general(
+  general._(
     icon: Symbols.interests_rounded,
     labelKey: 'settings.sections.general',
     destination: GeneralSettingsRoute(),
   ),
-  advance(
+  advance._(
     icon: Symbols.build_rounded,
     labelKey: 'settings.sections.advance',
     destination: AdvanceSettingsRoute(),
   ),
-  about(
+  about._(
     icon: Symbols.help_rounded,
     labelKey: 'settings.sections.about',
     destination: AboutSettingsRoute(),
@@ -24,7 +24,7 @@ enum SettingSection {
   final String labelKey;
   final IconData icon;
 
-  const SettingSection({
+  const SettingSection._({
     required this.labelKey,
     required this.icon,
     required this.destination,

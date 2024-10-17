@@ -22,6 +22,7 @@ class SettingsWrapperPage extends StatelessWidget {
 }
 
 @RoutePage()
+// ignore: prefer-single-widget-per-file
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 

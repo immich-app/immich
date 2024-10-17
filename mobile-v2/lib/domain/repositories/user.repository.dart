@@ -7,10 +7,10 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
-class UserDriftRepository with LogMixin implements IUserRepository {
+class UserRepository with LogMixin implements IUserRepository {
   final DriftDatabaseRepository _db;
 
-  const UserDriftRepository(this._db);
+  const UserRepository(this._db);
 
   @override
   FutureOr<User?> getForId(String userId) async {
