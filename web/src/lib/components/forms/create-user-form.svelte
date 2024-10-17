@@ -13,6 +13,7 @@
   export let onClose: () => void;
   export let onSubmit: () => void;
   export let onCancel: () => void;
+  export let oauthEnabled = false;
 
   let error: string;
   let success: string;
@@ -90,12 +91,17 @@
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">{$t('password')}</label>
-      <PasswordField id="password" bind:password autocomplete="new-password" />
+      <PasswordField id="password" bind:password autocomplete="new-password" required={!oauthEnabled} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="confirmPassword">{$t('confirm_password')}</label>
-      <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
+      <PasswordField
+        id="confirmPassword"
+        bind:password={confirmPassword}
+        autocomplete="new-password"
+        required={!oauthEnabled}
+      />
     </div>
 
     <div class="my-4 flex place-items-center justify-between gap-2">
