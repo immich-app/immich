@@ -29,6 +29,12 @@ server {
     proxy_set_header   Connection "upgrade";
     proxy_redirect     off;
 
+    # Disable unnecessary buffering of proxy requests and responses to /tmp. This can cause issues
+    # when the file is larger than the mounted tmpfs, and immich can handle streaming of large files.
+    # Also increases transfer speed since the body is sent to the proxied server immediately.
+    proxy_request_buffering off;
+    proxy_buffering off;
+
     # set timeout
     proxy_read_timeout 600s;
     proxy_send_timeout 600s;
