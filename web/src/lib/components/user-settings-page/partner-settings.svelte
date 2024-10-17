@@ -19,6 +19,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { showUserThumbnails } from '$lib/stores/preferences.store';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -122,6 +123,13 @@
 
 <section class="my-4">
   {#if partners.length > 0}
+    <div class="ml-4">
+      <SettingSwitch
+        title={$t('show_user_thumbnails')}
+        subtitle={$t('show_user_thumbnails_description')}
+        bind:checked={$showUserThumbnails}
+      />
+    </div>
     {#each partners as partner (partner.user.id)}
       <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
         <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">

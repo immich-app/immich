@@ -11,7 +11,6 @@
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
-    showUserThumbnails,
   } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
   import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
@@ -168,14 +167,6 @@
           title={$t('permanent_deletion_warning')}
           subtitle={$t('permanent_deletion_warning_setting_description')}
           bind:checked={$showDeleteModal}
-        />
-      </div>
-
-      <div class="ml-4">
-        <SettingSwitch
-          title={$t('show_user_thumbnails')}
-          subtitle={$t('show_user_thumbnails_description')}
-          bind:checked={$showUserThumbnails}
         />
       </div>
     </div>
