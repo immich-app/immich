@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  export type Size = 'full' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
+  export type Size = 'full' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
 </script>
 
 <script lang="ts">
@@ -56,6 +56,7 @@
 
   const sizeClasses: Record<Size, string> = {
     full: 'w-full h-full',
+    xs: 'w-6 h-6',
     sm: 'w-7 h-7',
     md: 'w-10 h-10',
     lg: 'w-12 h-12',
@@ -90,7 +91,8 @@
   {#if showFallback}
     <span
       class="flex h-full w-full select-none items-center justify-center font-medium"
-      class:text-xs={size === 'sm'}
+      class:text-xs={size === 'xs'}
+      class:text-sm={size === 'sm'}
       class:text-lg={size === 'lg'}
       class:text-xl={size === 'xl'}
       class:text-2xl={size === 'xxl'}
