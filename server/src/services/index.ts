@@ -20,6 +20,7 @@ import { MicroservicesService } from 'src/services/microservices.service';
 import { NotificationService } from 'src/services/notification.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
+import { RepairService } from 'src/services/repair.service';
 import { SearchService } from 'src/services/search.service';
 import { ServerService } from 'src/services/server.service';
 import { SessionService } from 'src/services/session.service';
@@ -63,6 +64,7 @@ export const services = [
   PartnerService,
   PersonService,
   SearchService,
+  RepairService,
   ServerService,
   SessionService,
   SharedLinkService,

@@ -16,7 +16,7 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { AssetType } from 'src/enum';
+import { AssetFileType, AssetType } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
@@ -420,10 +420,11 @@ export class LibraryService extends BaseService {
       localDateTime: mtime,
       type: assetType,
       originalFileName: parse(assetPath).base,
-
       sidecarPath,
       isExternal: true,
     });
+
+    await this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.ORIGINAL, path: assetPath });
 
     await this.queuePostSyncJobs(asset);
 
@@ -483,6 +484,7 @@ export class LibraryService extends BaseService {
       if (!asset.isOffline) {
         this.logger.debug(`${explanation}, removing: ${asset.originalPath}`);
         await this.assetRepository.updateAll([asset.id], { isOffline: true, deletedAt: new Date() });
+        await this.assetRepository.removeFile(asset.id, AssetFileType.ORIGINAL);
       }
     };
 
@@ -518,6 +520,12 @@ export class LibraryService extends BaseService {
         fileCreatedAt: mtime,
         fileModifiedAt: mtime,
         originalFileName: parse(asset.originalPath).base,
+      });
+
+      await this.assetRepository.upsertFile({
+        assetId: asset.id,
+        type: AssetFileType.ORIGINAL,
+        path: asset.originalPath,
       });
     }
 

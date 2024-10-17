@@ -5,6 +5,8 @@ export interface ICryptoRepository {
   randomUUID(): string;
   hashFile(filePath: string | Buffer): Promise<Buffer>;
   hashSha256(data: string): string;
+  xxHash(value: string): Buffer;
+  xxHashFile(filePath: string | Buffer): Promise<Buffer>;
   verifySha256(data: string, encrypted: string, publicKey: string): boolean;
   hashSha1(data: string | Buffer): Buffer;
   hashBcrypt(data: string | Buffer, saltOrRounds: string | number): Promise<string>;

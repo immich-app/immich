@@ -35,4 +35,8 @@ export class AssetFileEntity {
 
   @Column()
   path!: string;
+
+  @Column({ type: 'bytea', nullable: true, default: null })
+  @Index()
+  checksum!: Buffer | null;
 }
