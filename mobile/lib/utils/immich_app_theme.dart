@@ -163,10 +163,10 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: colorScheme.surfaceContainer,
     ),
-    fontFamily: 'Overpass',
+    fontFamily: 'BeVietnamPro',
     snackBarTheme: SnackBarThemeData(
       contentTextStyle: TextStyle(
-        fontFamily: 'Overpass',
+        fontFamily: 'BeVietnamPro',
         color: primaryColor,
         fontWeight: FontWeight.bold,
       ),
@@ -175,7 +175,7 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
     appBarTheme: AppBarTheme(
       titleTextStyle: TextStyle(
         color: primaryColor,
-        fontFamily: 'Overpass',
+        fontFamily: 'BeVietnamPro',
         fontWeight: FontWeight.bold,
         fontSize: 18,
       ),
