@@ -236,6 +236,7 @@ class SearchFilter {
   String? context;
   String? filename;
   String? description;
+  String? language;
   Set<Person> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
@@ -249,6 +250,7 @@ class SearchFilter {
     this.context,
     this.filename,
     this.description,
+    this.language,
     required this.people,
     required this.location,
     required this.camera,
@@ -279,6 +281,7 @@ class SearchFilter {
     String? context,
     String? filename,
     String? description,
+    String? language,
     Set<Person>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
@@ -290,6 +293,7 @@ class SearchFilter {
       context: context ?? this.context,
       filename: filename ?? this.filename,
       description: description ?? this.description,
+      language: language,
       people: people ?? this.people,
       location: location ?? this.location,
       camera: camera ?? this.camera,
@@ -301,7 +305,7 @@ class SearchFilter {
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
   }
 
   @override
@@ -311,6 +315,7 @@ class SearchFilter {
     return other.context == context &&
         other.filename == filename &&
         other.description == description &&
+        other.language == language &&
         other.people == people &&
         other.location == location &&
         other.camera == camera &&
@@ -324,6 +329,7 @@ class SearchFilter {
     return context.hashCode ^
         filename.hashCode ^
         description.hashCode ^
+        language.hashCode ^
         people.hashCode ^
         location.hashCode ^
         camera.hashCode ^
