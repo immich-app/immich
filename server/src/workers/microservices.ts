@@ -5,13 +5,13 @@ import { serverVersion } from 'src/constants';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { isStartUpError } from 'src/services/storage.service';
 import { otelStart } from 'src/utils/instrumentation';
 
 export async function bootstrap() {
-  const otelPort = Number.parseInt(process.env.IMMICH_MICROSERVICES_METRICS_PORT ?? '8082');
-
-  otelStart(otelPort);
+  const { telemetry } = new ConfigRepository().getEnv();
+  otelStart(telemetry.microservicesPort);
 
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);

@@ -31,6 +31,10 @@ const envData: EnvData = {
     server: 'server-public-key',
   },
 
+  network: {
+    trustedProxies: [],
+  },
+
   redis: {
     host: 'redis',
     port: 6379,
@@ -54,6 +58,11 @@ const envData: EnvData = {
 
   storage: {
     ignoreMountCheckErrors: false,
+  },
+
+  telemetry: {
+    apiPort: 8081,
+    microservicesPort: 8082,
   },
 
   workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES],
