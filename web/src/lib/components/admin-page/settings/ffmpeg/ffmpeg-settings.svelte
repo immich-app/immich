@@ -102,6 +102,7 @@
           onSelect={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
         />
 
+        <!-- PCM is excluded here since it's a bad choice for users storage-wise -->
         <SettingSelect
           label={$t('admin.transcoding_audio_codec')}
           {disabled}
@@ -145,6 +146,7 @@
             { value: AudioCodec.Aac, text: 'AAC' },
             { value: AudioCodec.Mp3, text: 'MP3' },
             { value: AudioCodec.Libopus, text: 'Opus' },
+            { value: AudioCodec.PcmS16Le, text: 'PCM (16 bit)' },
           ]}
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
         />

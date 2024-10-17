@@ -19,7 +19,7 @@ The default configuration looks like this:
     "targetVideoCodec": "h264",
     "acceptedVideoCodecs": ["h264"],
     "targetAudioCodec": "aac",
-    "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
+    "acceptedAudioCodecs": ["aac", "mp3", "libopus", "pcm_s16le"],
     "acceptedContainers": ["mov", "ogg", "webm"],
     "targetResolution": "720",
     "maxBitrate": "0",
