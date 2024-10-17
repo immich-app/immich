@@ -888,6 +888,7 @@
   "look": "Mirar",
   "loop_videos": "Vídeos en bucle",
   "loop_videos_description": "Habilite la reproducción automática de un video en el visor de detalles.",
+  "main_branch_warning": "Estás ejecutando una compilación desde la rama principal. ¡Recomendamos encarecidamente usar una versión de lanzamiento!",
   "make": "Marca",
   "manage_shared_links": "Administrar enlaces compartidos",
   "manage_sharing_with_partners": "Administrar el uso compartido con invitados",
