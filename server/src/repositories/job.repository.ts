@@ -5,7 +5,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
-import { bullConfig } from 'src/config';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   IJobRepository,
   JobCounts,
@@ -106,14 +106,16 @@ export class JobRepository implements IJobRepository {
   constructor(
     private moduleReference: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
+    @Inject(IConfigRepository) private configRepository: IConfigRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(JobRepository.name);
   }
 
   addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
+    const { bull } = this.configRepository.getEnv();
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);
-    const workerOptions: WorkerOptions = { ...bullConfig, concurrency };
+    const workerOptions: WorkerOptions = { ...bull.config, concurrency };
     this.workers[queueName] = new Worker(queueName, workerHandler, workerOptions);
   }
 

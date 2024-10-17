@@ -1,9 +1,6 @@
-import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { ConfigModuleOptions } from '@nestjs/config';
 import { CronExpression } from '@nestjs/schedule';
-import { QueueOptions } from 'bullmq';
 import { Request, Response } from 'express';
-import { RedisOptions } from 'ioredis';
 import Joi, { Root } from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { ImmichHeader } from 'src/dtos/auth.dto';
@@ -362,38 +359,6 @@ export const immichAppConfig: ConfigModuleOptions = {
     IMMICH_IO_METRICS: Joi.boolean().optional().default(false),
   }),
 };
-
-export function parseRedisConfig(): RedisOptions {
-  const redisUrl = process.env.REDIS_URL;
-  if (redisUrl && redisUrl.startsWith('ioredis://')) {
-    try {
-      const decodedString = Buffer.from(redisUrl.slice(10), 'base64').toString();
-      return JSON.parse(decodedString);
-    } catch (error) {
-      throw new Error(`Failed to decode redis options: ${error}`);
-    }
-  }
-  return {
-    host: process.env.REDIS_HOSTNAME || 'redis',
-    port: Number.parseInt(process.env.REDIS_PORT || '6379'),
-    db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
-    username: process.env.REDIS_USERNAME || undefined,
-    password: process.env.REDIS_PASSWORD || undefined,
-    path: process.env.REDIS_SOCKET || undefined,
-  };
-}
-
-export const bullConfig: QueueOptions = {
-  prefix: 'immich_bull',
-  connection: parseRedisConfig(),
-  defaultJobOptions: {
-    attempts: 3,
-    removeOnComplete: true,
-    removeOnFail: false,
-  },
-};
-
-export const bullQueues: RegisterQueueOptions[] = Object.values(QueueName).map((name) => ({ name }));
 
 export const clsConfig: ClsModuleOptions = {
   middleware: {

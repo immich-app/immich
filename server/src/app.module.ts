@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
-import { bullConfig, bullQueues, clsConfig, immichAppConfig } from 'src/config';
+import { clsConfig, immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
 import { databaseConfig } from 'src/database.config';
 import { entities } from 'src/entities';
@@ -20,6 +20,7 @@ import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { services } from 'src/services';
 import { DatabaseService } from 'src/services/database.service';
 import { otelConfig } from 'src/utils/instrumentation';
@@ -35,9 +36,12 @@ const middleware = [
   { provide: APP_GUARD, useClass: AuthGuard },
 ];
 
+const configRepository = new ConfigRepository();
+const { bull } = configRepository.getEnv();
+
 const imports = [
-  BullModule.forRoot(bullConfig),
-  BullModule.registerQueue(...bullQueues),
+  BullModule.forRoot(bull.config),
+  BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(clsConfig),
   ConfigModule.forRoot(immichAppConfig),
   OpenTelemetryModule.forRoot(otelConfig),
