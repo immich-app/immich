@@ -14,12 +14,18 @@ class JobCommandDto {
   /// Returns a new [JobCommandDto] instance.
   JobCommandDto({
     required this.command,
-    required this.force,
+    this.force,
   });
 
   JobCommand command;
 
-  bool force;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? force;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCommandDto &&
@@ -30,7 +36,7 @@ class JobCommandDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (command.hashCode) +
-    (force.hashCode);
+    (force == null ? 0 : force!.hashCode);
 
   @override
   String toString() => 'JobCommandDto[command=$command, force=$force]';
@@ -38,7 +44,11 @@ class JobCommandDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'command'] = this.command;
+    if (this.force != null) {
       json[r'force'] = this.force;
+    } else {
+    //  json[r'force'] = null;
+    }
     return json;
   }
 
@@ -46,12 +56,13 @@ class JobCommandDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static JobCommandDto? fromJson(dynamic value) {
+    upgradeDto(value, "JobCommandDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return JobCommandDto(
         command: JobCommand.fromJson(json[r'command'])!,
-        force: mapValueOfType<bool>(json, r'force')!,
+        force: mapValueOfType<bool>(json, r'force'),
       );
     }
     return null;
@@ -100,7 +111,6 @@ class JobCommandDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'command',
-    'force',
   };
 }
 

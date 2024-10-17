@@ -638,9 +638,7 @@ export class AssetStore {
         this.options.userId ||
         this.options.personId ||
         this.options.albumId ||
-        isMismatched(this.options.isArchived, asset.isArchived) ||
-        isMismatched(this.options.isFavorite, asset.isFavorite) ||
-        isMismatched(this.options.isTrashed, asset.isTrashed)
+        this.isExcluded(asset)
       ) {
         // If asset is already in the bucket we don't need to recalculate
         // asset store containers
@@ -661,7 +659,7 @@ export class AssetStore {
     const updatedBuckets = new Set<AssetBucket>();
 
     for (const asset of assets) {
-      const timeBucket = DateTime.fromISO(asset.fileCreatedAt).toUTC().startOf('month').toString();
+      const timeBucket = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month').toString();
       let bucket = this.getBucketByDate(timeBucket);
 
       if (!bucket) {
@@ -699,24 +697,20 @@ export class AssetStore {
 
   async findAndLoadBucketAsPending(id: string) {
     const bucketInfo = this.assetToBucket[id];
-    if (bucketInfo) {
-      const bucket = bucketInfo.bucket;
+    let bucket: AssetBucket | null = bucketInfo?.bucket ?? null;
+    if (!bucket) {
+      const asset = await getAssetInfo({ id });
+      if (!asset || this.isExcluded(asset)) {
+        return;
+      }
+
+      bucket = await this.loadBucketAtTime(asset.localDateTime, { preventCancel: true, pending: true });
+    }
+
+    if (bucket && bucket.assets.some((a) => a.id === id)) {
       this.pendingScrollBucket = bucket;
       this.pendingScrollAssetId = id;
       this.emit(false);
-      return bucket;
-    }
-    const asset = await getAssetInfo({ id });
-    if (asset) {
-      if (this.options.isArchived !== asset.isArchived) {
-        return;
-      }
-      const bucket = await this.loadBucketAtTime(asset.localDateTime, { preventCancel: true, pending: true });
-      if (bucket) {
-        this.pendingScrollBucket = bucket;
-        this.pendingScrollAssetId = asset.id;
-        this.emit(false);
-      }
       return bucket;
     }
   }
@@ -791,7 +785,7 @@ export class AssetStore {
     if (assets.length === 0) {
       return;
     }
-    const assetsToReculculate: AssetResponseDto[] = [];
+    const assetsToRecalculate: AssetResponseDto[] = [];
 
     for (const _asset of assets) {
       const asset = this.assets.find((asset) => asset.id === _asset.id);
@@ -799,17 +793,17 @@ export class AssetStore {
         continue;
       }
 
-      const recalculate = asset.fileCreatedAt !== _asset.fileCreatedAt;
+      const recalculate = asset.localDateTime !== _asset.localDateTime;
       Object.assign(asset, _asset);
 
       if (recalculate) {
-        assetsToReculculate.push(asset);
+        assetsToRecalculate.push(asset);
       }
     }
 
-    this.removeAssets(assetsToReculculate.map((asset) => asset.id));
-    this.addAssetsToBuckets(assetsToReculculate);
-    this.emit(assetsToReculculate.length > 0);
+    this.removeAssets(assetsToRecalculate.map((asset) => asset.id));
+    this.addAssetsToBuckets(assetsToRecalculate);
+    this.emit(assetsToRecalculate.length > 0);
   }
 
   removeAssets(ids: string[]) {
@@ -904,6 +898,14 @@ export class AssetStore {
       this.assetToBucket = assetToBucket;
     }
     this.store$.set(this);
+  }
+
+  private isExcluded(asset: AssetResponseDto) {
+    return (
+      isMismatched(this.options.isArchived ?? false, asset.isArchived) ||
+      isMismatched(this.options.isFavorite, asset.isFavorite) ||
+      isMismatched(this.options.isTrashed ?? false, asset.isTrashed)
+    );
   }
 }
 

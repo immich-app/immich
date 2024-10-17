@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "machine-learning"
-version = "1.113.1"
+version = "1.118.2"
 description = ""
 authors = ["Hau Tran <alex.tran1502@gmail.com>"]
 readme = "README.md"
@@ -13,7 +13,8 @@ opencv-python-headless = ">=4.7.0.72,<5.0"
 pillow = ">=9.5.0,<11.0"
 fastapi-slim = ">=0.95.2,<1.0"
 uvicorn = {extras = ["standard"], version = ">=0.22.0,<1.0"}
-pydantic = "^1.10.8"
+pydantic = "^2.0.0"
+pydantic-settings = "^2.5.2"
 aiocache = ">=0.12.1,<1.0"
 rich = ">=13.4.2"
 ftfy = ">=6.1.1"
@@ -51,7 +52,7 @@ onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
 optional = true
 
 [tool.poetry.group.openvino.dependencies]
-onnxruntime-openvino = "^1.17.1"
+onnxruntime-openvino = ">=1.17.1,<1.19.0"
 
 [tool.poetry.group.armnn]
 optional = true

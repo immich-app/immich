@@ -4,7 +4,6 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import { photoViewer } from '$lib/stores/assets.store';
@@ -19,6 +18,9 @@
   export let editedFace: AssetFaceResponseDto;
   export let assetId: string;
   export let assetType: AssetTypeEnum;
+  export let onClose: () => void;
+  export let onCreatePerson: (featurePhoto: string | null) => void;
+  export let onReassign: (person: PersonResponseDto) => void;
 
   // loading spinners
   let isShowLoadingNewPerson = false;
@@ -31,25 +33,16 @@
 
   $: showPeople = searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden);
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    createPerson: string | null;
-    reassign: PersonResponseDto;
-  }>();
-  const handleBackButton = () => {
-    dispatch('close');
-  };
-
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
 
     const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, $photoViewer);
 
-    dispatch('createPerson', newFeaturePhoto);
+    onCreatePerson(newFeaturePhoto);
 
     clearTimeout(timeout);
     isShowLoadingNewPerson = false;
-    dispatch('createPerson', newFeaturePhoto);
+    onCreatePerson(newFeaturePhoto);
   };
 </script>
 
@@ -60,7 +53,7 @@
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
       <div class="flex items-center gap-2">
-        <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={handleBackButton} />
+        <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
         <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('select_face')}</p>
       </div>
       <div class="flex justify-end gap-2">
@@ -80,7 +73,7 @@
         {/if}
       </div>
     {:else}
-      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={handleBackButton} />
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
       <div class="w-full flex">
         <SearchPeople
           type="input"
@@ -103,7 +96,7 @@
       {#each showPeople as person (person.id)}
         {#if !editedFace.person || person.id !== editedFace.person.id}
           <div class="w-fit">
-            <button type="button" class="w-[90px]" on:click={() => dispatch('reassign', person)}>
+            <button type="button" class="w-[90px]" on:click={() => onReassign(person)}>
               <div class="relative">
                 <ImageThumbnail
                   curve

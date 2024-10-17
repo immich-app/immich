@@ -32,10 +32,10 @@
     subtitle?: string;
     description?: ComponentType;
     allText?: string;
-    missingText?: string;
+    refreshText?: string;
+    missingText: string;
     disabled?: boolean;
     icon: string;
-    allowForceCommand?: boolean;
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
@@ -61,43 +61,54 @@
       icon: mdiFileJpgBox,
       title: $getJobName(JobName.ThumbnailGeneration),
       subtitle: $t('admin.thumbnail_generation_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: $getJobName(JobName.MetadataExtraction),
       subtitle: $t('admin.metadata_extraction_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
       title: $getJobName(JobName.Library),
       subtitle: $t('admin.library_tasks_description'),
-      allText: $t('all').toUpperCase(),
-      missingText: $t('refresh').toUpperCase(),
+      allText: $t('all'),
+      missingText: $t('refresh'),
     },
     [JobName.Sidecar]: {
       title: $getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
       subtitle: $t('admin.sidecar_job_description'),
-      allText: $t('sync').toUpperCase(),
-      missingText: $t('discover').toUpperCase(),
+      allText: $t('sync'),
+      missingText: $t('discover'),
       disabled: !$featureFlags.sidecar,
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: $getJobName(JobName.SmartSearch),
       subtitle: $t('admin.smart_search_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
       disabled: !$featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
       title: $getJobName(JobName.DuplicateDetection),
       subtitle: $t('admin.duplicate_detection_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
       disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
       title: $getJobName(JobName.FaceDetection),
       subtitle: $t('admin.face_detection_description'),
+      allText: $t('reset'),
+      refreshText: $t('refresh'),
+      missingText: $t('missing'),
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
@@ -105,6 +116,8 @@
       icon: mdiTagFaces,
       title: $getJobName(JobName.FacialRecognition),
       subtitle: $t('admin.facial_recognition_job_description'),
+      allText: $t('reset'),
+      missingText: $t('missing'),
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
@@ -112,18 +125,20 @@
       icon: mdiVideo,
       title: $getJobName(JobName.VideoConversion),
       subtitle: $t('admin.video_conversion_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
       title: $getJobName(JobName.StorageTemplateMigration),
-      allowForceCommand: false,
+      missingText: $t('missing'),
       description: StorageMigrationDescription,
     },
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: $getJobName(JobName.Migration),
       subtitle: $t('admin.migration_job_description'),
-      allowForceCommand: false,
+      missingText: $t('missing'),
     },
   };
   $: jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
@@ -150,7 +165,7 @@
 </script>
 
 <div class="flex flex-col gap-7">
-  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, missingText, allowForceCommand, icon, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}
@@ -158,12 +173,12 @@
       {disabled}
       {subtitle}
       {description}
-      allText={allText || $t('all').toUpperCase()}
-      missingText={missingText || $t('missing').toUpperCase()}
-      {allowForceCommand}
+      allText={allText?.toUpperCase()}
+      refreshText={refreshText?.toUpperCase()}
+      missingText={missingText.toUpperCase()}
       {jobCounts}
       {queueStatus}
-      on:command={({ detail }) => (handleCommandOverride || handleCommand)(jobName, detail)}
+      onCommand={(command) => (handleCommandOverride || handleCommand)(jobName, command)}
     />
   {/each}
 </div>

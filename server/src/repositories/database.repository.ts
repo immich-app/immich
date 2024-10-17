@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
-import { getVectorExtension } from 'src/database.config';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -22,12 +22,15 @@ import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 @Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
+  private vectorExtension: VectorExtension;
   readonly asyncLock = new AsyncLock();
 
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
   ) {
+    this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(DatabaseRepository.name);
   }
 
@@ -69,10 +72,6 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
-  }
-
-  async updateExtension(extension: DatabaseExtension, version?: string): Promise<void> {
-    await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
   async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
@@ -119,7 +118,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     try {
       await this.dataSource.query(`REINDEX INDEX ${index}`);
     } catch (error) {
-      if (getVectorExtension() !== DatabaseExtension.VECTORS) {
+      if (this.vectorExtension !== DatabaseExtension.VECTORS) {
         throw error;
       }
       this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
@@ -141,7 +140,7 @@ export class DatabaseRepository implements IDatabaseRepository {
   }
 
   async shouldReindex(name: VectorIndex): Promise<boolean> {
-    if (getVectorExtension() !== DatabaseExtension.VECTORS) {
+    if (this.vectorExtension !== DatabaseExtension.VECTORS) {
       return false;
     }
 

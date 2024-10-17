@@ -183,23 +183,13 @@ class AlbumInfoCard extends HookConsumerWidget {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
-                          child: FutureBuilder(
-                            builder: ((context, snapshot) {
-                              if (snapshot.hasData) {
-                                return Text(
-                                  snapshot.data.toString() +
-                                      (album.isAll
-                                          ? " (${'backup_all'.tr()})"
-                                          : ""),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                );
-                              }
-                              return const Text("0");
-                            }),
-                            future: album.assetCount,
+                          child: Text(
+                            album.assetCount.toString() +
+                                (album.isAll ? " (${'backup_all'.tr()})" : ""),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ),
                       ],
@@ -208,7 +198,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   IconButton(
                     onPressed: () {
                       context.pushRoute(
-                        AlbumPreviewRoute(album: album.albumEntity),
+                        AlbumPreviewRoute(album: album.album),
                       );
                     },
                     icon: Icon(

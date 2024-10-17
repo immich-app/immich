@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
@@ -181,20 +181,12 @@ class BottomGalleryBar extends ConsumerWidget {
         );
         return;
       }
-      ref.read(imageViewerStateProvider.notifier).shareAsset(asset, context);
+      ref.read(downloadStateProvider.notifier).shareAsset(asset, context);
     }
 
     void handleEdit() async {
       final image = Image(image: ImmichImage.imageProvider(asset: asset));
-      if (asset.isOffline) {
-        ImmichToast.show(
-          durationInSecond: 1,
-          context: context,
-          msg: 'asset_action_edit_err_offline'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
-        return;
-      }
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => EditImagePage(
@@ -229,7 +221,7 @@ class BottomGalleryBar extends ConsumerWidget {
         return;
       }
 
-      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+      ref.read(downloadStateProvider.notifier).downloadAsset(
             asset,
             context,
           );
@@ -238,9 +230,7 @@ class BottomGalleryBar extends ConsumerWidget {
     handleRemoveFromAlbum() async {
       final album = ref.read(currentAlbumProvider);
       final bool isSuccess = album != null &&
-          await ref
-              .read(sharedAlbumProvider.notifier)
-              .removeAssetFromAlbum(album, [asset]);
+          await ref.read(albumProvider.notifier).removeAsset(album, [asset]);
 
       if (isSuccess) {
         // Workaround for asset remaining in the gallery

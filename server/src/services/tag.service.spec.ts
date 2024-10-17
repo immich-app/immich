@@ -1,26 +1,22 @@
 import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { IEventRepository } from 'src/interfaces/event.interface';
+import { JobStatus } from 'src/interfaces/job.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { TagService } from 'src/services/tag.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(TagService.name, () => {
   let sut: TagService;
+
   let accessMock: IAccessRepositoryMock;
-  let eventMock: Mocked<IEventRepository>;
   let tagMock: Mocked<ITagRepository>;
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    tagMock = newTagRepositoryMock();
-    sut = new TagService(accessMock, eventMock, tagMock);
+    ({ sut, accessMock, tagMock } = newTestService(TagService));
 
     accessMock.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
   });
@@ -140,6 +136,23 @@ describe(TagService.name, () => {
         parent: expect.objectContaining({ id: 'tag-parent' }),
       });
     });
+
+    it('should upsert a tag and ignore leading and trailing slashes', async () => {
+      tagMock.getByValue.mockResolvedValueOnce(null);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
+      tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
+      await expect(sut.upsert(authStub.admin, { tags: ['/Parent/Child/'] })).resolves.toBeDefined();
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(1, {
+        value: 'Parent',
+        userId: 'admin_id',
+        parent: undefined,
+      });
+      expect(tagMock.upsertValue).toHaveBeenNthCalledWith(2, {
+        value: 'Parent/Child',
+        userId: 'admin_id',
+        parent: expect.objectContaining({ id: 'tag-parent' }),
+      });
+    });
   });
 
   describe('remove', () => {
@@ -247,6 +260,13 @@ describe(TagService.name, () => {
 
       expect(tagMock.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(tagMock.removeAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1']);
+    });
+  });
+
+  describe('handleTagCleanup', () => {
+    it('should delete empty tags', async () => {
+      await expect(sut.handleTagCleanup()).resolves.toBe(JobStatus.SUCCESS);
+      expect(tagMock.deleteEmptyTags).toHaveBeenCalled();
     });
   });
 });

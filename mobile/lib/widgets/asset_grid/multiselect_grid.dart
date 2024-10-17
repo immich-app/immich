@@ -9,7 +9,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
@@ -131,11 +130,7 @@ class MultiselectGrid extends HookConsumerWidget {
       processing.value = true;
       if (shareLocal) {
         // Share = Download + Send to OS specific share sheet
-        // Filter offline assets since we cannot fetch their original file
-        final liveAssets = selection.value.nonOfflineOnly(
-          errorCallback: errorBuilder('asset_action_share_err_offline'.tr()),
-        );
-        handleShareAssets(ref, context, liveAssets);
+        handleShareAssets(ref, context, selection.value);
       } else {
         final ids =
             remoteSelection(errorMessage: "home_page_share_err_local".tr())
@@ -276,11 +271,10 @@ class MultiselectGrid extends HookConsumerWidget {
         if (assets.isEmpty) {
           return;
         }
-        final result =
-            await ref.read(albumServiceProvider).addAdditionalAssetToAlbum(
-                  assets,
-                  album,
-                );
+        final result = await ref.read(albumServiceProvider).addAssets(
+              album,
+              assets,
+            );
 
         if (result != null) {
           if (result.alreadyInAlbum.isNotEmpty) {
@@ -327,8 +321,7 @@ class MultiselectGrid extends HookConsumerWidget {
             .createAlbumWithGeneratedName(assets);
 
         if (result != null) {
-          ref.watch(albumProvider.notifier).getAllAlbums();
-          ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
+          ref.watch(albumProvider.notifier).refreshRemoteAlbums();
           selectionEnabledHook.value = false;
 
           context.pushRoute(AlbumViewerRoute(albumId: result.id));

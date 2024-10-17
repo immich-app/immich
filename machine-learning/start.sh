@@ -17,6 +17,7 @@ fi
 
 gunicorn app.main:app \
 	-k app.config.CustomUvicornWorker \
+	-c gunicorn_conf.py \
 	-b "$IMMICH_HOST":"$IMMICH_PORT" \
 	-w "$MACHINE_LEARNING_WORKERS" \
 	-t "$MACHINE_LEARNING_WORKER_TIMEOUT" \

@@ -1,28 +1,21 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IMemoryRepository } from 'src/interfaces/memory.interface';
-import { checkAccess, requireAccess } from 'src/utils/access';
+import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
 @Injectable()
-export class MemoryService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IMemoryRepository) private repository: IMemoryRepository,
-  ) {}
-
+export class MemoryService extends BaseService {
   async search(auth: AuthDto) {
-    const memories = await this.repository.search(auth.user.id);
+    const memories = await this.memoryRepository.search(auth.user.id);
     return memories.map((memory) => mapMemory(memory));
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.MEMORY_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
     const memory = await this.findOrFail(id);
     return mapMemory(memory);
   }
@@ -31,12 +24,12 @@ export class MemoryService {
     // TODO validate type/data combination
 
     const assetIds = dto.assetIds || [];
-    const allowedAssetIds = await checkAccess(this.access, {
+    const allowedAssetIds = await this.checkAccess({
       auth,
       permission: Permission.ASSET_SHARE,
       ids: assetIds,
     });
-    const memory = await this.repository.create({
+    const memory = await this.memoryRepository.create({
       ownerId: auth.user.id,
       type: dto.type,
       data: dto.data,
@@ -50,9 +43,9 @@ export class MemoryService {
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
-    await requireAccess(this.access, { auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
 
-    const memory = await this.repository.update({
+    const memory = await this.memoryRepository.update({
       id,
       isSaved: dto.isSaved,
       memoryAt: dto.memoryAt,
@@ -63,28 +56,28 @@ export class MemoryService {
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.access, { auth, permission: Permission.MEMORY_DELETE, ids: [id] });
-    await this.repository.delete(id);
+    await this.requireAccess({ auth, permission: Permission.MEMORY_DELETE, ids: [id] });
+    await this.memoryRepository.delete(id);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await requireAccess(this.access, { auth, permission: Permission.MEMORY_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
 
-    const repos = { access: this.access, bulk: this.repository };
+    const repos = { access: this.accessRepository, bulk: this.memoryRepository };
     const results = await addAssets(auth, repos, { parentId: id, assetIds: dto.ids });
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
-      await this.repository.update({ id, updatedAt: new Date() });
+      await this.memoryRepository.update({ id, updatedAt: new Date() });
     }
 
     return results;
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await requireAccess(this.access, { auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
 
-    const repos = { access: this.access, bulk: this.repository };
+    const repos = { access: this.accessRepository, bulk: this.memoryRepository };
     const results = await removeAssets(auth, repos, {
       parentId: id,
       assetIds: dto.ids,
@@ -93,14 +86,14 @@ export class MemoryService {
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
-      await this.repository.update({ id, updatedAt: new Date() });
+      await this.memoryRepository.update({ id, updatedAt: new Date() });
     }
 
     return results;
   }
 
   private async findOrFail(id: string) {
-    const memory = await this.repository.get(id);
+    const memory = await this.memoryRepository.get(id);
     if (!memory) {
       throw new BadRequestException('Memory not found');
     }

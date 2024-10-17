@@ -32,6 +32,7 @@ export class UserResponseDto {
   profileImagePath!: string;
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor!: UserAvatarColor;
+  profileChangedAt!: Date;
 }
 
 export class UserLicense {
@@ -47,6 +48,7 @@ export const mapUser = (entity: UserEntity): UserResponseDto => {
     name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: getPreferences(entity).avatar.color,
+    profileChangedAt: entity.profileChangedAt,
   };
 };
 
@@ -60,7 +62,6 @@ export class UserAdminCreateDto {
   @Transform(toEmail)
   email!: string;
 
-  @IsNotEmpty()
   @IsString()
   password!: string;
 

@@ -13,6 +13,8 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
     <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
+    <link rel="preload" as="font" type="font/ttf" href="%app.font%" crossorigin="anonymous" />
+    <link rel="preload" as="font" type="font/ttf" href="%app.monofont%" crossorigin="anonymous" />
     %sveltekit.head%
     <style>
       /* prevent FOUC */
@@ -74,7 +76,7 @@
       if (!theme) {
         theme = { value: 'light', system: true };
       } else if (theme === 'dark' || theme === 'light') {
-        theme = { value: item, system: false };
+        theme = { value: theme, system: false };
         localStorage.setItem(colorThemeKeyName, JSON.stringify(theme));
       } else {
         theme = JSON.parse(theme);

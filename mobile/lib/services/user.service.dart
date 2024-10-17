@@ -1,68 +1,48 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:immich_mobile/services/partner.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/interfaces/partner_api.interface.dart';
+import 'package:immich_mobile/interfaces/user.interface.dart';
+import 'package:immich_mobile/interfaces/user_api.interface.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
+import 'package:immich_mobile/repositories/user.repository.dart';
+import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 final userServiceProvider = Provider(
   (ref) => UserService(
-    ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
+    ref.watch(partnerApiRepositoryProvider),
+    ref.watch(userApiRepositoryProvider),
+    ref.watch(userRepositoryProvider),
     ref.watch(syncServiceProvider),
-    ref.watch(partnerServiceProvider),
   ),
 );
 
 class UserService {
-  final ApiService _apiService;
-  final Isar _db;
+  final IPartnerApiRepository _partnerApiRepository;
+  final IUserApiRepository _userApiRepository;
+  final IUserRepository _userRepository;
   final SyncService _syncService;
-  final PartnerService _partnerService;
   final Logger _log = Logger("UserService");
 
   UserService(
-    this._apiService,
-    this._db,
+    this._partnerApiRepository,
+    this._userApiRepository,
+    this._userRepository,
     this._syncService,
-    this._partnerService,
   );
 
-  Future<List<User>?> _getAllUsers() async {
-    try {
-      final dto = await _apiService.usersApi.searchUsers();
-      return dto?.map(User.fromSimpleUserDto).toList();
-    } catch (e) {
-      _log.warning("Failed get all users", e);
-      return null;
-    }
-  }
+  Future<List<User>> getUsers({bool self = false}) =>
+      _userRepository.getAll(self: self);
 
-  Future<List<User>> getUsersInDb({bool self = false}) async {
-    if (self) {
-      return _db.users.where().findAll();
-    }
-    final int userId = Store.get(StoreKey.currentUser).isarId;
-    return _db.users.where().isarIdNotEqualTo(userId).findAll();
-  }
-
-  Future<CreateProfileImageResponseDto?> uploadProfileImage(XFile image) async {
+  Future<({String profileImagePath})?> uploadProfileImage(XFile image) async {
     try {
-      return await _apiService.usersApi.createProfileImage(
-        MultipartFile.fromBytes(
-          'file',
-          await image.readAsBytes(),
-          filename: image.name,
-        ),
+      return await _userApiRepository.createProfileImage(
+        name: image.name,
+        data: await image.readAsBytes(),
       );
     } catch (e) {
       _log.warning("Failed to upload profile image", e);
@@ -71,13 +51,19 @@ class UserService {
   }
 
   Future<List<User>?> getUsersFromServer() async {
-    final List<User>? users = await _getAllUsers();
-    final List<User>? sharedBy =
-        await _partnerService.getPartners(PartnerDirection.by);
-    final List<User>? sharedWith =
-        await _partnerService.getPartners(PartnerDirection.with_);
+    List<User>? users;
+    try {
+      users = await _userApiRepository.getAll();
+    } catch (e) {
+      _log.warning("Failed to fetch users", e);
+      users = null;
+    }
+    final List<User> sharedBy =
+        await _partnerApiRepository.getAll(Direction.sharedByMe);
+    final List<User> sharedWith =
+        await _partnerApiRepository.getAll(Direction.sharedWithMe);
 
-    if (users == null || sharedBy == null || sharedWith == null) {
+    if (users == null) {
       _log.warning("Failed to refresh users");
       return null;
     }

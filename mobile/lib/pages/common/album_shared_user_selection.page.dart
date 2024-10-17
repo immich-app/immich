@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -25,20 +25,15 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
     final suggestedShareUsers = ref.watch(otherUsersProvider);
 
     createSharedAlbum() async {
-      var newAlbum =
-          await ref.watch(sharedAlbumProvider.notifier).createSharedAlbum(
-                ref.watch(albumTitleProvider),
-                assets,
-                sharedUsersList.value,
-              );
+      var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
+            ref.watch(albumTitleProvider),
+            assets,
+          );
 
       if (newAlbum != null) {
-        await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
-        // ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
         context.maybePop(true);
-        context
-            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
+        context.navigateTo(TabControllerRoute(children: [AlbumsRoute()]));
       }
 
       ScaffoldMessenger(

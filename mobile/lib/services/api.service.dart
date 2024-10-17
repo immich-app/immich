@@ -97,27 +97,13 @@ class ApiService implements Authentication {
   }
 
   Future<bool> _isEndpointAvailable(String serverUrl) async {
-    final Client client = Client();
-
     if (!serverUrl.endsWith('/api')) {
       serverUrl += '/api';
     }
 
     try {
-      final response = await client
-          .get(
-            Uri.parse("$serverUrl/server-info/ping"),
-            headers: getRequestHeaders(),
-          )
-          .timeout(const Duration(seconds: 5));
-
-      _log.info("Pinging server with response code ${response.statusCode}");
-      if (response.statusCode != 200) {
-        _log.severe(
-          "Server Gateway Error: ${response.body} - Cannot communicate to the server",
-        );
-        return false;
-      }
+      await setEndpoint(serverUrl);
+      await serverInfoApi.pingServer().timeout(Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;
     } on SocketException catch (_) {

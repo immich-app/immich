@@ -11,10 +11,12 @@ import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, isDev, serverVersion } from 'src/constants';
-import { ImmichCookie, ImmichHeader } from 'src/dtos/auth.dto';
+import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { Metadata } from 'src/middleware/auth.guard';
+
+export const getExternalDomain = (server: SystemConfig['server'], port: number) =>
+  server.externalDomain || `http://localhost:${port}`;
 
 /**
  * @returns a list of strings representing the keys of the object in dot notation
@@ -193,7 +195,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
   return document;
 };
 
-export const useSwagger = (app: INestApplication, force = false) => {
+export const useSwagger = (app: INestApplication, { write }: { write: boolean }) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
@@ -210,7 +212,7 @@ export const useSwagger = (app: INestApplication, force = false) => {
         in: 'header',
         name: ImmichHeader.API_KEY,
       },
-      Metadata.API_KEY_SECURITY,
+      MetadataKey.API_KEY_SECURITY,
     )
     .addServer('/api')
     .build();
@@ -230,7 +232,7 @@ export const useSwagger = (app: INestApplication, force = false) => {
 
   SwaggerModule.setup('doc', app, specification, customOptions);
 
-  if (isDev() || force) {
+  if (write) {
     // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });

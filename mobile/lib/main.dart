@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/utils/download.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -72,7 +74,6 @@ Future<void> initApp() async {
   var log = Logger("ImmichErrorLogger");
 
   FlutterError.onError = (details) {
-    debugPrint("FlutterError - Catch all: $details");
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
@@ -82,11 +83,29 @@ Future<void> initApp() async {
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint("FlutterError - Catch all: $error");
     log.severe('PlatformDispatcher - Catch all', error, stack);
     return true;
   };
 
   initializeTimeZones();
+
+  FileDownloader().configureNotification(
+    running: TaskNotification(
+      'downloading_media'.tr(),
+      'file: {filename}',
+    ),
+    complete: TaskNotification(
+      'download_finished'.tr(),
+      'file: {filename}',
+    ),
+    progressBar: true,
+  );
+
+  FileDownloader().trackTasksInGroup(
+    downloadGroupLivePhoto,
+    markDownloadedComplete: false,
+  );
 }
 
 Future<Isar> loadDb() async {
@@ -188,8 +207,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   @override
   Widget build(BuildContext context) {
-    var router = ref.watch(appRouterProvider);
-    var immichTheme = ref.watch(immichThemeProvider);
+    final router = ref.watch(appRouterProvider);
+    final immichTheme = ref.watch(immichThemeProvider);
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,

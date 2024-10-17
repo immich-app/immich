@@ -1,45 +1,25 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  mapSharedLink,
+  mapSharedLinkWithoutMetadata,
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
-  mapSharedLink,
-  mapSharedLinkWithoutMetadata,
 } from 'src/dtos/shared-link.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { checkAccess, requireAccess } from 'src/utils/access';
-import { OpenGraphTags } from 'src/utils/misc';
+import { BaseService } from 'src/services/base.service';
+import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
-export class SharedLinkService {
-  private configCore: SystemConfigCore;
-
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-  ) {
-    this.logger.setContext(SharedLinkService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-  }
-
-  getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.repository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
+export class SharedLinkService extends BaseService {
+  async getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
+    return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
@@ -67,7 +47,7 @@ export class SharedLinkService {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
-        await requireAccess(this.access, { auth, permission: Permission.ALBUM_SHARE, ids: [dto.albumId] });
+        await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [dto.albumId] });
         break;
       }
 
@@ -76,13 +56,13 @@ export class SharedLinkService {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        await requireAccess(this.access, { auth, permission: Permission.ASSET_SHARE, ids: dto.assetIds });
+        await this.requireAccess({ auth, permission: Permission.ASSET_SHARE, ids: dto.assetIds });
 
         break;
       }
     }
 
-    const sharedLink = await this.repository.create({
+    const sharedLink = await this.sharedLinkRepository.create({
       key: this.cryptoRepository.randomBytes(50),
       userId: auth.user.id,
       type: dto.type,
@@ -101,7 +81,7 @@ export class SharedLinkService {
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
     await this.findOrFail(auth.user.id, id);
-    const sharedLink = await this.repository.update({
+    const sharedLink = await this.sharedLinkRepository.update({
       id,
       userId: auth.user.id,
       description: dto.description,
@@ -116,12 +96,12 @@ export class SharedLinkService {
 
   async remove(auth: AuthDto, id: string): Promise<void> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    await this.repository.remove(sharedLink);
+    await this.sharedLinkRepository.remove(sharedLink);
   }
 
   // TODO: replace `userId` with permissions and access control checks
   private async findOrFail(userId: string, id: string) {
-    const sharedLink = await this.repository.get(userId, id);
+    const sharedLink = await this.sharedLinkRepository.get(userId, id);
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
     }
@@ -137,7 +117,7 @@ export class SharedLinkService {
 
     const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
     const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
-    const allowedAssetIds = await checkAccess(this.access, {
+    const allowedAssetIds = await this.checkAccess({
       auth,
       permission: Permission.ASSET_SHARE,
       ids: notPresentAssetIds,
@@ -161,7 +141,7 @@ export class SharedLinkService {
       sharedLink.assets.push({ id: assetId } as AssetEntity);
     }
 
-    await this.repository.update(sharedLink);
+    await this.sharedLinkRepository.update(sharedLink);
 
     return results;
   }
@@ -185,7 +165,7 @@ export class SharedLinkService {
       sharedLink.assets = sharedLink.assets.filter((asset) => asset.id !== assetId);
     }
 
-    await this.repository.update(sharedLink);
+    await this.sharedLinkRepository.update(sharedLink);
 
     return results;
   }
@@ -195,7 +175,8 @@ export class SharedLinkService {
       return null;
     }
 
-    const config = await this.configCore.getConfig({ withCache: true });
+    const config = await this.getConfig({ withCache: true });
+    const { port } = this.configRepository.getEnv();
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets.length || 0;
@@ -206,7 +187,7 @@ export class SharedLinkService {
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
       description: sharedLink.description || `${assetCount} shared photos & videos`,
-      imageUrl: new URL(imagePath, config.server.externalDomain || DEFAULT_EXTERNAL_DOMAIN).href,
+      imageUrl: new URL(imagePath, getExternalDomain(config.server, port)).href,
     };
   }
 

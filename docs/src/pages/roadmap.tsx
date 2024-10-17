@@ -70,6 +70,8 @@ import {
   mdiThemeLightDark,
   mdiTrashCanOutline,
   mdiVectorCombine,
+  mdiFolderSync,
+  mdiFaceRecognition,
   mdiVideo,
   mdiWeb,
 } from '@mdi/js';
@@ -78,6 +80,7 @@ import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
+  'v1.114.0': new Date(2024, 8, 6),
   'v1.113.0': new Date(2024, 7, 30),
   'v1.112.0': new Date(2024, 7, 14),
   'v1.111.0': new Date(2024, 6, 26),
@@ -232,6 +235,12 @@ const roadmap: Item[] = [
 
 const milestones: Item[] = [
   withRelease({
+    icon: mdiFaceRecognition,
+    title: 'Metadata Face Import',
+    description: 'Read face metadata in Digikam format during import',
+    release: 'v1.114.0',
+  }),
+  withRelease({
     icon: mdiTagMultiple,
     iconColor: 'orange',
     title: 'Tags',
@@ -239,10 +248,17 @@ const milestones: Item[] = [
     release: 'v1.113.0',
   }),
   withRelease({
+    icon: mdiFolderSync,
+    iconColor: 'green',
+    title: 'Album sync (mobile)',
+    description: 'Sync or mirror an album from your phone to the Immich server',
+    release: 'v1.113.0',
+  }),
+  withRelease({
     icon: mdiFolderMultiple,
     iconColor: 'brown',
     title: 'Folders',
-    description: 'View your photos and videos in folders',
+    description: 'Browse your photos and videos in their folder structure',
     release: 'v1.113.0',
   }),
   withRelease({

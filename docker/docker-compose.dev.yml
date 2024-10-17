@@ -36,13 +36,17 @@ services:
       IMMICH_BUILD_URL: https://github.com/immich-app/immich/actions/runs/9654404849
       IMMICH_BUILD_IMAGE: development
       IMMICH_BUILD_IMAGE_URL: https://github.com/immich-app/immich/pkgs/container/immich-server
+      IMMICH_THIRD_PARTY_SOURCE_URL: https://github.com/immich-app/immich/
+      IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/immich-app/immich/issues
+      IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://immich.app/docs
+      IMMICH_THIRD_PARTY_SUPPORT_URL: https://immich.app/docs/third-party
     ulimits:
       nofile:
         soft: 1048576
         hard: 1048576
     ports:
-      - 3001:3001
       - 9230:9230
+      - 9231:9231
     depends_on:
       - redis
       - database
@@ -98,7 +102,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:e3b17ba9479deec4b7d1eeec1548a253acc5374d68d3b27937fcfe4df8d18c7e
+    image: redis:6.2-alpine@sha256:2ba50e1ac3a0ea17b736ce9db2b0a9f6f8b85d4c27d5f5accc6a416d8f42c6d5
     healthcheck:
       test: redis-cli ping || exit 1
 

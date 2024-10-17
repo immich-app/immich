@@ -1,24 +1,20 @@
 <script lang="ts">
+  import Checkbox from '$lib/components/elements/checkbox.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+  import { serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteUserAdmin, type UserResponseDto } from '@immich/sdk';
-  import { serverConfig } from '$lib/stores/server-config.store';
-  import { createEventDispatcher } from 'svelte';
-  import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let user: UserResponseDto;
+  export let onSuccess: () => void;
+  export let onFail: () => void;
+  export let onCancel: () => void;
 
   let forceDelete = false;
   let deleteButtonDisabled = false;
   let userIdInput: string = '';
-
-  const dispatch = createEventDispatcher<{
-    success: void;
-    fail: void;
-    cancel: void;
-  }>();
 
   const handleDeleteUser = async () => {
     try {
@@ -28,13 +24,13 @@
       });
 
       if (deletedAt == undefined) {
-        dispatch('fail');
+        onFail();
       } else {
-        dispatch('success');
+        onSuccess();
       }
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_user'));
-      dispatch('fail');
+      onFail();
     }
   };
 
@@ -48,7 +44,7 @@
   title={$t('delete_user')}
   confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
   onConfirm={handleDeleteUser}
-  onCancel={() => dispatch('cancel')}
+  {onCancel}
   disabled={deleteButtonDisabled}
 >
   <svelte:fragment slot="prompt">

@@ -49,7 +49,7 @@ For RKMPP to work:
 
 - You must have a supported Rockchip ARM SoC.
 - Only RK3588 supports hardware tonemapping, other SoCs use slower software tonemapping while still using hardware encoding.
-- Tonemapping requires `/usr/lib/aarch64-linux-gnu/libmali.so.1` to be present on your host system. Install [`libmali-valhall-g610-g6p0-gbm`][libmali-rockchip] and modify the [`hwaccel.transcoding.yml`][hw-file] file:
+- Tonemapping requires `/usr/lib/aarch64-linux-gnu/libmali.so.1` to be present on your host system. Install the [`libmali`][libmali-rockchip] release that corresponds to your Mali GPU (`libmali-valhall-g610-g13p0-gbm` on RK3588) and modify the [`hwaccel.transcoding.yml`][hw-file] file:
   - under `rkmpp` uncomment the 3 lines required for OpenCL tonemapping by removing the `#` symbol at the beginning of each line
   - `- /dev/mali0:/dev/mali0`
   - `- /etc/OpenCL:/etc/OpenCL:ro`
@@ -89,16 +89,7 @@ immich-server:
   devices:
     - /dev/dri:/dev/dri
   volumes:
-    - ${UPLOAD_LOCATION}:/usr/src/app/upload
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  ports:
-    - 2283:3001
-  depends_on:
-    - redis
-    - database
-  restart: always
+  ...
 ```
 
 Once this is done, you can continue to step 3 of "Basic Setup".

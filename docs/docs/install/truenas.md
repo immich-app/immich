@@ -30,6 +30,8 @@ You can organize these as one parent with seven child datasets, for example `mnt
 
 :::info Permissions
 The **pgData** dataset must be owned by the user `netdata` (UID 999) for postgres to start. The other datasets must be owned by the user `root` (UID 0) or a group that includes the user `root` (UID 0) for immich to have the necessary permissions.
+
+The **library** dataset must have [ACL mode](https://www.truenas.com/docs/core/coretutorials/storage/pools/permissions/#access-control-lists) set to `Passthrough` if you plan on using a [storage template](/docs/administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **uploads** to **library**, immich performs `chmod` internally and needs to be allowed to execute the command.
 :::
 
 ## Installing the Immich Application
