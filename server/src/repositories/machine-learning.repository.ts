@@ -53,6 +53,7 @@ export interface Face {
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
+export type TextEncodingOptions = ModelOptions & { language?: string };
 
 @Injectable()
 export class MachineLearningRepository {
@@ -168,8 +169,8 @@ export class MachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
-  async encodeText(urls: string[], text: string, { modelName }: CLIPConfig) {
-    const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName } } };
+  async encodeText(urls: string[], text: string, { language, modelName }: TextEncodingOptions) {
+    const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, options: { language } } } };
     const response = await this.predict<ClipTextualResponse>(urls, { text }, request);
     return response[ModelTask.SEARCH];
   }
