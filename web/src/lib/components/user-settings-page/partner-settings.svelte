@@ -20,6 +20,7 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
   import { showUserThumbnails } from '$lib/stores/preferences.store';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -130,72 +131,74 @@
         bind:checked={$showUserThumbnails}
       />
     </div>
-    {#each partners as partner (partner.user.id)}
-      <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
-        <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
-          <div class="flex gap-4">
-            <UserAvatar user={partner.user} size="md" />
-            <div class="text-left">
-              <p class="text-immich-fg dark:text-immich-dark-fg">
-                {partner.user.name}
-              </p>
-              <p class="text-sm text-immich-fg/75 dark:text-immich-dark-fg/75">
-                {partner.user.email}
-              </p>
+    <SettingAccordion key="partner-sharing" title={$t('partner_sharing')} subtitle={$t('manage_sharing_with_partners')}>
+      {#each partners as partner (partner.user.id)}
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
+          <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
+            <div class="flex gap-4">
+              <UserAvatar user={partner.user} size="md" />
+              <div class="text-left">
+                <p class="text-immich-fg dark:text-immich-dark-fg">
+                  {partner.user.name}
+                </p>
+                <p class="text-sm text-immich-fg/75 dark:text-immich-dark-fg/75">
+                  {partner.user.email}
+                </p>
+              </div>
             </div>
+
+            {#if partner.sharedByMe}
+              <CircleIconButton
+                on:click={() => handleRemovePartner(partner.user)}
+                icon={mdiClose}
+                size={'16'}
+                title={$t('stop_sharing_photos_with_user')}
+              />
+            {/if}
           </div>
 
-          {#if partner.sharedByMe}
-            <CircleIconButton
-              on:click={() => handleRemovePartner(partner.user)}
-              icon={mdiClose}
-              size={'16'}
-              title={$t('stop_sharing_photos_with_user')}
-            />
-          {/if}
-        </div>
+          <div class="dark:text-gray-200 text-immich-dark-gray">
+            <!-- I am sharing my assets with this user -->
+            {#if partner.sharedByMe}
+              <hr class="my-4 border border-gray-200 dark:border-gray-700" />
+              <p class="text-xs font-medium my-4">
+                {$t('shared_with_partner', { values: { partner: partner.user.name } }).toUpperCase()}
+              </p>
+              <p class="text-md">{$t('partner_can_access', { values: { partner: partner.user.name } })}</p>
+              <ul class="text-sm">
+                <li class="flex gap-2 place-items-center py-1 mt-2">
+                  <Icon path={mdiCheck} />
+                  {$t('partner_can_access_assets')}
+                </li>
+                <li class="flex gap-2 place-items-center py-1">
+                  <Icon path={mdiCheck} />
+                  {$t('partner_can_access_location')}
+                </li>
+              </ul>
+            {/if}
 
-        <div class="dark:text-gray-200 text-immich-dark-gray">
-          <!-- I am sharing my assets with this user -->
-          {#if partner.sharedByMe}
-            <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">
-              {$t('shared_with_partner', { values: { partner: partner.user.name } }).toUpperCase()}
-            </p>
-            <p class="text-md">{$t('partner_can_access', { values: { partner: partner.user.name } })}</p>
-            <ul class="text-sm">
-              <li class="flex gap-2 place-items-center py-1 mt-2">
-                <Icon path={mdiCheck} />
-                {$t('partner_can_access_assets')}
-              </li>
-              <li class="flex gap-2 place-items-center py-1">
-                <Icon path={mdiCheck} />
-                {$t('partner_can_access_location')}
-              </li>
-            </ul>
-          {/if}
-
-          <!-- this user is sharing assets with me -->
-          {#if partner.sharedWithMe}
-            <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">
-              {$t('shared_from_partner', { values: { partner: partner.user.name } }).toUpperCase()}
-            </p>
-            <SettingSwitch
-              title={$t('show_in_timeline')}
-              subtitle={$t('show_in_timeline_setting_description')}
-              bind:checked={partner.inTimeline}
-              onToggle={(isChecked) => handleShowOnTimelineChanged(partner, isChecked)}
-            />
-          {/if}
+            <!-- this user is sharing assets with me -->
+            {#if partner.sharedWithMe}
+              <hr class="my-4 border border-gray-200 dark:border-gray-700" />
+              <p class="text-xs font-medium my-4">
+                {$t('shared_from_partner', { values: { partner: partner.user.name } }).toUpperCase()}
+              </p>
+              <SettingSwitch
+                title={$t('show_in_timeline')}
+                subtitle={$t('show_in_timeline_setting_description')}
+                bind:checked={partner.inTimeline}
+                onToggle={(isChecked) => handleShowOnTimelineChanged(partner, isChecked)}
+              />
+            {/if}
+          </div>
         </div>
+      {/each}
+
+      <div class="flex justify-end mt-5">
+        <Button size="sm" on:click={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
       </div>
-    {/each}
+    </SettingAccordion>
   {/if}
-
-  <div class="flex justify-end mt-5">
-    <Button size="sm" on:click={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
-  </div>
 </section>
 
 {#if createPartnerFlag}
