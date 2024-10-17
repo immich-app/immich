@@ -52,7 +52,9 @@ export class BaseConfig implements VideoCodecSWConfig {
         break;
       }
       case TranscodeHWAccel.VAAPI: {
-        handler = new VAAPIConfig(config, devices);
+        handler = config.accelDecode
+          ? new VaapiHwDecodeConfig(config, devices)
+          : new VaapiSwDecodeConfig(config, devices);
         break;
       }
       case TranscodeHWAccel.RKMPP: {
@@ -688,7 +690,7 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
     const options = this.getToneMapping(videoStream);
     options.push('format=nv12', 'hwupload=extra_hw_frames=64');
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_qsv=${this.getScaling(videoStream)}`);
+      options.push(`scale_qsv=${this.getScaling(videoStream)}:mode=hq`);
     }
     return options;
   }
@@ -811,7 +813,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
   }
 }
 
-export class VAAPIConfig extends BaseHWConfig {
+export class VaapiSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
     if (this.devices.length === 0) {
       throw new Error('No VAAPI device found');
@@ -829,7 +831,7 @@ export class VAAPIConfig extends BaseHWConfig {
     const options = this.getToneMapping(videoStream);
     options.push('format=nv12', 'hwupload');
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}`);
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`);
     }
 
     return options;
@@ -875,6 +877,76 @@ export class VAAPIConfig extends BaseHWConfig {
 
   useCQP() {
     return this.config.cqMode !== CQMode.ICQ || this.config.targetVideoCodec === VideoCodec.VP9;
+  }
+}
+
+export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
+  getBaseInputOptions() {
+    if (this.devices.length === 0) {
+      throw new Error('No VAAPI device found');
+    }
+
+    const options = [
+      '-hwaccel vaapi',
+      '-hwaccel_output_format vaapi',
+      '-noautorotate',
+      ...this.getInputThreadOptions(),
+    ];
+    const hwDevice = this.getPreferredHardwareDevice();
+    if (hwDevice) {
+      options.push(`-hwaccel_device ${hwDevice}`);
+    }
+
+    return options;
+  }
+
+  getFilterOptions(videoStream: VideoStreamInfo) {
+    const options = [];
+    if (this.shouldScale(videoStream) || !this.shouldToneMap(videoStream)) {
+      let scaling = `scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`;
+      if (!this.shouldToneMap(videoStream)) {
+        scaling += ':format=nv12';
+      }
+      options.push(scaling);
+    }
+
+    options.push(...this.getToneMapping(videoStream));
+    return options;
+  }
+
+  getToneMapping(videoStream: VideoStreamInfo): string[] {
+    if (!this.shouldToneMap(videoStream)) {
+      return [];
+    }
+
+    const colors = this.getColors();
+    const tonemapOptions = [
+      'desat=0',
+      'format=nv12',
+      `matrix=${colors.matrix}`,
+      `primaries=${colors.primaries}`,
+      'range=pc',
+      `tonemap=${this.config.tonemap}`,
+      `transfer=${colors.transfer}`,
+    ];
+
+    return [
+      'hwmap=derive_device=opencl',
+      `tonemap_opencl=${tonemapOptions.join(':')}`,
+      'hwmap=derive_device=vaapi:reverse=1,format=vaapi',
+    ];
+  }
+
+  getInputThreadOptions() {
+    return [`-threads 1`];
+  }
+
+  getColors() {
+    return {
+      primaries: 'bt709',
+      transfer: 'bt709',
+      matrix: 'bt709',
+    };
   }
 }
 
