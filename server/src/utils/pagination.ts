@@ -5,17 +5,20 @@ import { FindManyOptions, ObjectLiteral, Repository, SelectQueryBuilder } from '
 export interface PaginationOptions {
   take: number;
   skip?: number;
+  withCount?: boolean;
 }
 
 export interface PaginatedBuilderOptions {
   take: number;
   skip?: number;
   mode?: PaginationMode;
+  withCount?: boolean;
 }
 
 export interface PaginationResult<T> {
   items: T[];
   hasNextPage: boolean;
+  count?: number;
 }
 
 export type Paginated<T> = Promise<PaginationResult<T>>;
@@ -33,11 +36,15 @@ export async function* usePagination<T>(
   }
 }
 
-function paginationHelper<Entity extends ObjectLiteral>(items: Entity[], take: number): PaginationResult<Entity> {
+function paginationHelper<Entity extends ObjectLiteral>(
+  items: Entity[],
+  take: number,
+  count?: number,
+): PaginationResult<Entity> {
   const hasNextPage = items.length > take;
   items.splice(take);
 
-  return { items, hasNextPage };
+  return { items, hasNextPage, count };
 }
 
 export async function paginate<Entity extends ObjectLiteral>(
@@ -62,7 +69,7 @@ export async function paginate<Entity extends ObjectLiteral>(
 
 export async function paginatedBuilder<Entity extends ObjectLiteral>(
   qb: SelectQueryBuilder<Entity>,
-  { take, skip, mode }: PaginatedBuilderOptions,
+  { take, skip, mode, withCount }: PaginatedBuilderOptions,
 ): Paginated<Entity> {
   if (mode === PaginationMode.LIMIT_OFFSET) {
     qb.limit(take + 1).offset(skip);
@@ -70,6 +77,8 @@ export async function paginatedBuilder<Entity extends ObjectLiteral>(
     qb.take(take + 1).skip(skip);
   }
 
+  const count = withCount ? await qb.getCount() : undefined;
+
   const items = await qb.getMany();
-  return paginationHelper(items, take);
+  return paginationHelper(items, take, count);
 }

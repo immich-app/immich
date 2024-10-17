@@ -3,8 +3,10 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { PaginationMode } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
+import { Paginated, paginatedBuilder, PaginationOptions } from 'src/utils/pagination';
 import {
   DataSource,
   EntityManager,
@@ -301,5 +303,60 @@ export class AlbumRepository implements IAlbumRepository {
     const result = await updateAlbums.execute();
 
     return result.affected;
+  }
+
+  @GenerateSql({ params: [{ take: 10, skip: 10, withCount: true }, DummyValue.UUID, DummyValue.STRING, undefined] })
+  getByName(
+    pagination: PaginationOptions,
+    userId: string,
+    albumName: string,
+    shared?: boolean,
+  ): Paginated<AlbumEntity> {
+    const getAlbumSharedOptions = () => {
+      switch (shared) {
+        case true: {
+          return {
+            owner:
+              '(album_users.usersId = :userId OR shared_links.userId = :userId OR (album.ownerId = :userId AND album_users.usersId IS NOT NULL))',
+            options: '',
+          };
+        }
+        case false: {
+          return {
+            owner: '(album.ownerId = :userId)',
+            options: 'AND album_users.usersId IS NULL AND shared_links.id IS NULL',
+          };
+        }
+        case undefined: {
+          return { owner: '(album.ownerId = :userId)', options: '' };
+        }
+      }
+    };
+
+    const albumSharedOptions = getAlbumSharedOptions();
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('album')
+      .leftJoinAndSelect('album.owner', 'owner')
+      .leftJoinAndSelect('album.albumUsers', 'album_users')
+      .leftJoinAndSelect('album_users.user', 'user');
+
+    if (shared !== undefined) {
+      queryBuilder.leftJoin('shared_links', 'shared_links', 'shared_links.albumId = album.id');
+    }
+
+    queryBuilder.where(
+      `${albumSharedOptions.owner} AND (LOWER(album.albumName) LIKE :nameStart OR LOWER(album.albumName) LIKE :nameAnywhere) ${albumSharedOptions.options}`,
+      {
+        userId,
+        nameStart: `${albumName.toLowerCase()}%`,
+        nameAnywhere: `% ${albumName.toLowerCase()}%`,
+      },
+    );
+
+    return paginatedBuilder(queryBuilder, {
+      mode: PaginationMode.LIMIT_OFFSET,
+      ...pagination,
+    });
   }
 }

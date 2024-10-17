@@ -1,9 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { PersonResponseDto } from 'src/dtos/person.dto';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { AssetOrder, AssetType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
@@ -184,10 +185,51 @@ export class SmartSearchDto extends BaseSearchDto {
   page?: number;
 }
 
-export class SearchPlacesDto {
+export class SearchDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
+}
+
+export class SearchPlacesDto extends SearchDto {}
+
+export class SearchAlbumsDto extends SearchDto {
+  /**
+   * true: only shared albums
+   * false: only non-shared own albums
+   * undefined: shared and owned albums
+   */
+  @ValidateBoolean({ optional: true })
+  shared?: boolean;
+
+  /** Page number for pagination */
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page: number = 1;
+
+  /** Number of items per page */
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  size: number = 500;
+}
+
+export class SearchPersonNameResponseDto {
+  people!: PersonResponseDto[];
+  @ApiProperty({ type: 'integer' })
+  total?: number;
+  hasNextPage?: boolean;
+}
+
+export class SearchAlbumNameResponseDto {
+  albums!: AlbumResponseDto[];
+  @ApiProperty({ type: 'integer' })
+  total?: number;
+  hasNextPage?: boolean;
 }
 
 export class SearchPeopleDto {
@@ -197,6 +239,23 @@ export class SearchPeopleDto {
 
   @ValidateBoolean({ optional: true })
   withHidden?: boolean;
+
+  /** Page number for pagination */
+  @ApiPropertyOptional()
+  @PropertyLifecycle({ addedAt: 'v119.0.0' })
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page: number = 1;
+
+  /** Number of items per page */
+  @ApiPropertyOptional()
+  @PropertyLifecycle({ addedAt: 'v119.0.0' })
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  @Type(() => Number)
+  size: number = 500;
 }
 
 export class PlacesResponseDto {

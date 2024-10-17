@@ -284,15 +284,16 @@
       return;
     }
 
-    const result = await searchPerson({ name: personName, withHidden: true });
+    // We need to search for 5 people: we show only 3 people for the SUGGEST_MERGE view mode + the person to merge + the person to be merged in = 5
+    const result = await searchPerson({ name: personName, size: 5, withHidden: true });
 
-    const existingPerson = result.find(
+    const existingPerson = result.people.find(
       ({ name, id }: PersonResponseDto) => name.toLowerCase() === personName.toLowerCase() && id !== person.id && name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
       personMerge1 = person;
-      potentialMergePeople = result
+      potentialMergePeople = result.people
         .filter(
           (person: PersonResponseDto) =>
             personMerge2.name.toLowerCase() === person.name.toLowerCase() &&

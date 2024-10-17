@@ -1,14 +1,17 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { EndpointLifecycle } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
   RandomSearchDto,
+  SearchAlbumNameResponseDto,
+  SearchAlbumsDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
+  SearchPersonNameResponseDto,
   SearchPlacesDto,
   SearchResponseDto,
   SearchSuggestionRequestDto,
@@ -51,7 +54,7 @@ export class SearchController {
 
   @Get('person')
   @Authenticated()
-  searchPerson(@Auth() auth: AuthDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+  searchPerson(@Auth() auth: AuthDto, @Query() dto: SearchPeopleDto): Promise<SearchPersonNameResponseDto> {
     return this.service.searchPerson(auth, dto);
   }
 
@@ -72,5 +75,12 @@ export class SearchController {
   getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
     // TODO fix open api generation to indicate that results can be nullable
     return this.service.getSearchSuggestions(auth, dto) as Promise<string[]>;
+  }
+
+  @Get('album')
+  @EndpointLifecycle({ addedAt: 'v1.119.0' })
+  @Authenticated()
+  searchAlbum(@Auth() auth: AuthDto, @Query() dto: SearchAlbumsDto): Promise<SearchAlbumNameResponseDto> {
+    return this.service.searchAlbum(auth, dto);
   }
 }
