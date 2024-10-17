@@ -154,7 +154,7 @@
         </div>
       {/if}
 
-      {#if info.sourceRef === 'main'}
+      {#if info.sourceRef === 'main' && info.repository === 'immich-app/immich'}
         <div class="col-span-full p-4 flex gap-1">
           <Icon path={mdiAlert} size="2em" color="#ffcc4d" />
           <p class="immich-form-label text-sm" id="main-warning">
