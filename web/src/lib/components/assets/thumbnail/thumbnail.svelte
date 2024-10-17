@@ -169,7 +169,7 @@
     try {
       return await getUserAndCacheResult(asset.ownerId);
     } catch (error) {
-      handleError(error, $t('errors.unable_to_load_items'));
+      handleError(error, $t('errors.failed_to_load_people'));
     }
   };
 

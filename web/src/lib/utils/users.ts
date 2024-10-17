@@ -2,15 +2,17 @@ import { getUserFromStore, updateUserInStore, userExistsInStore } from '$lib/sto
 import { getUser, type UserResponseDto } from '@immich/sdk';
 
 export const getUserAndCacheResult = async (userId: string, skipCache: boolean = false): Promise<UserResponseDto> => {
-  let user: UserResponseDto;
+  let user: UserResponseDto | Promise<UserResponseDto>;
   if (!skipCache && userExistsInStore(userId)) {
     user = getUserFromStore(userId)!;
+    return user;
   } else {
     //Add to store indicating a request to server is in-flight
-    updateUserInStore({ userId });
-    user = await getUser({ id: userId });
-    //Update store with results of server request
-    updateUserInStore({ user });
+    const userRequest = getUser({ id: userId }).then((user) => {
+      updateUserInStore({ user });
+      return user;
+    });
+    updateUserInStore({ userId, userRequest });
+    return userRequest;
   }
-  return user;
 };
