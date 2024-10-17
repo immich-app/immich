@@ -23,7 +23,6 @@ import { repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { services } from 'src/services';
 import { DatabaseService } from 'src/services/database.service';
-import { otelConfig } from 'src/utils/instrumentation';
 
 const common = [...services, ...repositories];
 
@@ -37,14 +36,14 @@ const middleware = [
 ];
 
 const configRepository = new ConfigRepository();
-const { bull } = configRepository.getEnv();
+const { bull, otel } = configRepository.getEnv();
 
 const imports = [
   BullModule.forRoot(bull.config),
   BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(clsConfig),
   ConfigModule.forRoot(immichAppConfig),
-  OpenTelemetryModule.forRoot(otelConfig),
+  OpenTelemetryModule.forRoot(otel),
   TypeOrmModule.forRootAsync({
     inject: [ModuleRef],
     useFactory: (moduleRef: ModuleRef) => {

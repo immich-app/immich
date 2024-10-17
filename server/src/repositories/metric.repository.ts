@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { MetricOptions } from '@opentelemetry/api';
 import { MetricService } from 'nestjs-otel';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IMetricGroupRepository, IMetricRepository, MetricGroupOptions } from 'src/interfaces/metric.interface';
-import { apiMetrics, hostMetrics, jobMetrics, repoMetrics } from 'src/utils/instrumentation';
 
 class MetricGroupRepository implements IMetricGroupRepository {
   private enabled = false;
+
   constructor(private metricService: MetricService) {}
 
   addToCounter(name: string, value: number, options?: MetricOptions): void {
@@ -39,10 +40,11 @@ export class MetricRepository implements IMetricRepository {
   jobs: MetricGroupRepository;
   repo: MetricGroupRepository;
 
-  constructor(metricService: MetricService) {
-    this.api = new MetricGroupRepository(metricService).configure({ enabled: apiMetrics });
-    this.host = new MetricGroupRepository(metricService).configure({ enabled: hostMetrics });
-    this.jobs = new MetricGroupRepository(metricService).configure({ enabled: jobMetrics });
-    this.repo = new MetricGroupRepository(metricService).configure({ enabled: repoMetrics });
+  constructor(metricService: MetricService, @Inject(IConfigRepository) configRepository: IConfigRepository) {
+    const { telemetry } = configRepository.getEnv();
+    this.api = new MetricGroupRepository(metricService).configure({ enabled: telemetry.apiMetrics });
+    this.host = new MetricGroupRepository(metricService).configure({ enabled: telemetry.hostMetrics });
+    this.jobs = new MetricGroupRepository(metricService).configure({ enabled: telemetry.jobMetrics });
+    this.repo = new MetricGroupRepository(metricService).configure({ enabled: telemetry.repoMetrics });
   }
 }

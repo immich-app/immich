@@ -12,6 +12,11 @@ const resetEnv = () => {
     'IMMICH_TRUSTED_PROXIES',
     'IMMICH_API_METRICS_PORT',
     'IMMICH_MICROSERVICES_METRICS_PORT',
+    'IMMICH_METRICS',
+    'IMMICH_API_METRICS',
+    'IMMICH_HOST_METRICS',
+    'IMMICH_IO_METRICS',
+    'IMMICH_JOB_METRICS',
 
     'DB_URL',
     'DB_HOSTNAME',
@@ -200,11 +205,16 @@ describe('getEnv', () => {
   });
 
   describe('telemetry', () => {
-    it('should return default ports', () => {
+    it('should have default values', () => {
       const { telemetry } = getEnv();
       expect(telemetry).toEqual({
         apiPort: 8081,
         microservicesPort: 8082,
+        enabled: false,
+        apiMetrics: false,
+        hostMetrics: false,
+        jobMetrics: false,
+        repoMetrics: false,
       });
     });
 
@@ -212,9 +222,34 @@ describe('getEnv', () => {
       process.env.IMMICH_API_METRICS_PORT = '2001';
       process.env.IMMICH_MICROSERVICES_METRICS_PORT = '2002';
       const { telemetry } = getEnv();
-      expect(telemetry).toEqual({
+      expect(telemetry).toMatchObject({
         apiPort: 2001,
         microservicesPort: 2002,
+      });
+    });
+
+    it('should run with telemetry enabled', () => {
+      process.env.IMMICH_METRICS = 'true';
+      const { telemetry } = getEnv();
+      expect(telemetry).toMatchObject({
+        enabled: true,
+        apiMetrics: true,
+        hostMetrics: true,
+        jobMetrics: true,
+        repoMetrics: true,
+      });
+    });
+
+    it('should run with telemetry enabled and jobs disabled', () => {
+      process.env.IMMICH_METRICS = 'true';
+      process.env.IMMICH_JOB_METRICS = 'false';
+      const { telemetry } = getEnv();
+      expect(telemetry).toMatchObject({
+        enabled: true,
+        apiMetrics: true,
+        hostMetrics: true,
+        jobMetrics: false,
+        repoMetrics: true,
       });
     });
   });

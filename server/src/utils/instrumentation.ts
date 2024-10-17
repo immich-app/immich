@@ -7,31 +7,18 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { NodeSDK, contextBase, metrics, resources } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { snakeCase, startCase } from 'lodash';
-import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { performance } from 'node:perf_hooks';
-import { excludePaths, serverVersion } from 'src/constants';
+import { serverVersion } from 'src/constants';
 import { DecorateAll } from 'src/decorators';
-
-let metricsEnabled = process.env.IMMICH_METRICS === 'true';
-export const hostMetrics =
-  process.env.IMMICH_HOST_METRICS == null ? metricsEnabled : process.env.IMMICH_HOST_METRICS === 'true';
-export const apiMetrics =
-  process.env.IMMICH_API_METRICS == null ? metricsEnabled : process.env.IMMICH_API_METRICS === 'true';
-export const repoMetrics =
-  process.env.IMMICH_IO_METRICS == null ? metricsEnabled : process.env.IMMICH_IO_METRICS === 'true';
-export const jobMetrics =
-  process.env.IMMICH_JOB_METRICS == null ? metricsEnabled : process.env.IMMICH_JOB_METRICS === 'true';
-
-metricsEnabled ||= hostMetrics || apiMetrics || repoMetrics || jobMetrics;
-if (!metricsEnabled && process.env.OTEL_SDK_DISABLED === undefined) {
-  process.env.OTEL_SDK_DISABLED = 'true';
-}
+import { ConfigRepository } from 'src/repositories/config.repository';
 
 const aggregation = new metrics.ExplicitBucketHistogramAggregation(
   [0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10_000],
   true,
 );
+
+const { telemetry } = new ConfigRepository().getEnv();
 
 let otelSingleton: NodeSDK | undefined;
 
@@ -64,23 +51,13 @@ export const otelShutdown = async () => {
   }
 };
 
-export const otelConfig: OpenTelemetryModuleOptions = {
-  metrics: {
-    hostMetrics,
-    apiMetrics: {
-      enable: apiMetrics,
-      ignoreRoutes: excludePaths,
-    },
-  },
-};
-
 function ExecutionTimeHistogram({
   description,
   unit = 'ms',
   valueType = contextBase.ValueType.DOUBLE,
 }: contextBase.MetricOptions = {}) {
   return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
-    if (!repoMetrics || process.env.OTEL_SDK_DISABLED) {
+    if (!telemetry.repoMetrics || process.env.OTEL_SDK_DISABLED) {
       return;
     }
 
