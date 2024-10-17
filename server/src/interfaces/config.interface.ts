@@ -1,6 +1,7 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
+import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { VectorExtension } from 'src/interfaces/database.interface';
 
@@ -54,6 +55,8 @@ export interface EnvData {
     trustedProxies: string[];
   };
 
+  otel: OpenTelemetryModuleOptions;
+
   resourcePaths: {
     lockFile: string;
     geodata: {
@@ -74,6 +77,11 @@ export interface EnvData {
   telemetry: {
     apiPort: number;
     microservicesPort: number;
+    enabled: boolean;
+    apiMetrics: boolean;
+    hostMetrics: boolean;
+    repoMetrics: boolean;
+    jobMetrics: boolean;
   };
 
   storage: {
