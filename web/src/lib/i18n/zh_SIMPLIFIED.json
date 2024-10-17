@@ -1369,7 +1369,7 @@
   "version_announcement_closing": "你的朋友，Alex",
   "version_announcement_message": "嗨，朋友，当前应用出新版本了，请抽空阅读一下<link>发行说明</link>，并及时更新你的<code>docker-compose.yml</code>和<code>.env</code>文件，避免存在配置错误，特别是当你是使用WatchTower或其它类似的自动升级工具时。",
   "version_history": "版本历史",
-  "version_history_item": "在{date}安装版本{version}",
+  "version_history_item": "在 {date} 安装版本 {version}",
   "video": "视频",
   "video_hover_setting": "鼠标悬停时播放视频缩略图",
   "video_hover_setting_description": "当鼠标悬停在项目上时播放视频缩略图。即使禁用了这个功能，也可以通过将鼠标悬停在播放图标上来开始播放。",
