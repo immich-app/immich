@@ -215,7 +215,7 @@ class MultiselectGrid extends HookConsumerWidget {
           // Show a toast with the correct number of deleted assets
           final deletedCount = localIds
               .where((e) =>
-                  !onlyBackedUp || e.isRemote) // Only count backed-up assets
+                  !onlyBackedUp || e.isRemote,) // Only count backed-up assets
               .length;
 
           ImmichToast.show(

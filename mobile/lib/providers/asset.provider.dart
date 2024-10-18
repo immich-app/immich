@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -15,7 +14,6 @@ import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
