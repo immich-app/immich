@@ -25,6 +25,7 @@ import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IRepairRepository } from 'src/interfaces/repair.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
@@ -69,6 +70,7 @@ export class BaseService {
     @Inject(IOAuthRepository) protected oauthRepository: IOAuthRepository,
     @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,
+    @Inject(IRepairRepository) protected repairRepository: IRepairRepository,
     @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
     @Inject(IServerInfoRepository) protected serverInfoRepository: IServerInfoRepository,
     @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,

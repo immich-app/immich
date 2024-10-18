@@ -37,7 +37,7 @@ import {
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
 import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
@@ -385,6 +385,20 @@ export const utils = {
     }
 
     rmSync(path);
+  },
+
+  flipBitInFile: (filePath: string, byteIndex: number, bitPosition: number) => {
+    const data = readFileSync(filePath);
+
+    // Check if the byte index is within the file size
+    if (byteIndex >= data.length) {
+      throw new Error('Byte index is out of range.');
+    }
+
+    // Flip the specific bit using XOR
+    data[byteIndex] ^= 1 << bitPosition;
+
+    writeFileSync(filePath, data);
   },
 
   removeDirectory: (path: string) => {

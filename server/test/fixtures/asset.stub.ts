@@ -15,6 +15,7 @@ const previewFile: AssetFileEntity = {
   path: '/uploads/user-id/thumbs/path.jpg',
   createdAt: new Date('2023-02-23T05:06:29.716Z'),
   updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  checksum: Buffer.from('file hash', 'utf8'),
 };
 
 const thumbnailFile: AssetFileEntity = {
@@ -24,6 +25,7 @@ const thumbnailFile: AssetFileEntity = {
   path: '/uploads/user-id/webp/path.ext',
   createdAt: new Date('2023-02-23T05:06:29.716Z'),
   updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  checksum: Buffer.from('file hash', 'utf8'),
 };
 
 const files: AssetFileEntity[] = [previewFile, thumbnailFile];
