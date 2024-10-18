@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -21,6 +22,7 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.isOwner,
     required this.onActivitiesPressed,
     required this.isPartner,
+    required this.onPartnerPressed,
   });
 
   final Asset asset;
@@ -31,6 +33,7 @@ class TopControlAppBar extends HookConsumerWidget {
   final VoidCallback onAddToAlbumPressed;
   final VoidCallback onRestorePressed;
   final VoidCallback onActivitiesPressed;
+  final Function(Asset, User) onPartnerPressed;
   final Function(Asset) onFavorite;
   final bool isPlayingMotionVideo;
   final bool isOwner;

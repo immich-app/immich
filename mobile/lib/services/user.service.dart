@@ -38,6 +38,10 @@ class UserService {
   Future<List<User>> getUsers({bool self = false}) =>
       _userRepository.getAll(self: self);
 
+  Future<User?> getUser(String id) async => await _userRepository.get(id);
+  Future<User?> getUserbyIsarId(int id) async =>
+      await _userRepository.getByIsarId(id);
+
   Future<({String profileImagePath})?> uploadProfileImage(XFile image) async {
     try {
       return await _userApiRepository.createProfileImage(

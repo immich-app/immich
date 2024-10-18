@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class GalleryAppBar extends ConsumerWidget {
   final Asset asset;
@@ -35,6 +37,7 @@ class GalleryAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentAlbumProvider);
+    final isInAlbum = album?.isRemote ?? false;
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
 
     final isPartner = ref
@@ -93,6 +96,61 @@ class GalleryAppBar extends ConsumerWidget {
       );
     }
 
+    showPartnerInfo(Asset asset, User user) {
+      showDialog(
+        context: context,
+        builder: (BuildContext _) {
+          return SimpleDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 5,
+            title: Center(
+              heightFactor: 0.8,
+              child: Text(
+                isInAlbum
+                    ? "album_thumbnail_shared_by".tr(args: [""])
+                    : "partner_sharing_dialog_title".tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            children: [
+              SimpleDialogOption(
+                onPressed: () {
+                  // Need to determine if we are viewing from the partner sharing view
+                  // Navigator.of(context, rootNavigator: true).pop();
+                  // context.pushRoute((PartnerDetailRoute(partner: user)));
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    UserCircleAvatar(
+                      user: user,
+                      radius: 15,
+                      size: 30,
+                    ).build(context),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 16.0),
+                      child: Text(
+                        user.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     handleDownloadAsset() {
       ref.read(downloadStateProvider.notifier).downloadAsset(asset, context);
     }
@@ -117,6 +175,7 @@ class GalleryAppBar extends ConsumerWidget {
             onToggleMotionVideo: onToggleMotionVideo,
             onAddToAlbumPressed: () => addToAlbum(asset),
             onActivitiesPressed: handleActivities,
+            onPartnerPressed: showPartnerInfo,
           ),
         ),
       ),

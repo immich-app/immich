@@ -114,6 +114,7 @@ class PartnerDetailPage extends HookConsumerWidget {
         onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
         deleteEnabled: false,
         favoriteEnabled: false,
+        showUserThumbnail: false,
       ),
     );
   }
