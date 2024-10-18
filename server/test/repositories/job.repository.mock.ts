@@ -16,5 +16,6 @@ export const newJobRepositoryMock = (): Mocked<IJobRepository> => {
     getJobCounts: vitest.fn(),
     clear: vitest.fn(),
     waitForQueueCompletion: vitest.fn(),
+    removeJob: vitest.fn(),
   };
 };
