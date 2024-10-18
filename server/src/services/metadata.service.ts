@@ -192,6 +192,8 @@ export class MetadataService extends BaseService {
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
 
+    const { width, height } = this.getImageDimensions(exifTags);
+
     const exifData: Partial<ExifEntity> = {
       assetId: asset.id,
 
@@ -209,8 +211,8 @@ export class MetadataService extends BaseService {
 
       // image/file
       fileSizeInByte: stats.size,
-      exifImageHeight: validate(exifTags.ImageHeight),
-      exifImageWidth: validate(exifTags.ImageWidth),
+      exifImageHeight: validate(height),
+      exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
@@ -332,6 +334,20 @@ export class MetadataService extends BaseService {
     }
 
     return JobStatus.SUCCESS;
+  }
+
+  private getImageDimensions(exifTags: ImmichTags): { width?: number; height?: number } {
+    /*
+     * The "true" values for width and height are a bit hidden, depending on the camera model and file format.
+     * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
+     * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
+     */
+
+    let [width, height] = exifTags.ImageSize?.split('x').map((dim) => Number.parseInt(dim) || undefined) || [];
+    if (!width || !height) {
+      [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
+    }
+    return { width, height };
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
