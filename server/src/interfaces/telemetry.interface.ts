@@ -1,6 +1,6 @@
 import { MetricOptions } from '@opentelemetry/api';
 
-export const IMetricRepository = 'IMetricRepository';
+export const ITelemetryRepository = 'ITelemetryRepository';
 
 export interface MetricGroupOptions {
   enabled: boolean;
@@ -13,7 +13,7 @@ export interface IMetricGroupRepository {
   configure(options: MetricGroupOptions): this;
 }
 
-export interface IMetricRepository {
+export interface ITelemetryRepository {
   api: IMetricGroupRepository;
   host: IMetricGroupRepository;
   jobs: IMetricGroupRepository;

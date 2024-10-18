@@ -20,7 +20,6 @@ import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
-import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
@@ -34,6 +33,7 @@ import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
+import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
@@ -64,7 +64,6 @@ export class BaseService {
     @Inject(IMediaRepository) protected mediaRepository: IMediaRepository,
     @Inject(IMemoryRepository) protected memoryRepository: IMemoryRepository,
     @Inject(IMetadataRepository) protected metadataRepository: IMetadataRepository,
-    @Inject(IMetricRepository) protected metricRepository: IMetricRepository,
     @Inject(IMoveRepository) protected moveRepository: IMoveRepository,
     @Inject(INotificationRepository) protected notificationRepository: INotificationRepository,
     @Inject(IOAuthRepository) protected oauthRepository: IOAuthRepository,
@@ -78,6 +77,7 @@ export class BaseService {
     @Inject(IStorageRepository) protected storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) protected systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) protected tagRepository: ITagRepository,
+    @Inject(ITelemetryRepository) protected telemetryRepository: ITelemetryRepository,
     @Inject(ITrashRepository) protected trashRepository: ITrashRepository,
     @Inject(IUserRepository) protected userRepository: IUserRepository,
     @Inject(IVersionHistoryRepository) protected versionRepository: IVersionHistoryRepository,

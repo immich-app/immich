@@ -410,7 +410,7 @@ describe(MediaService.name, () => {
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=601:out_range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=bt601:out_range=pc,format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -445,7 +445,7 @@ describe(MediaService.name, () => {
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=601:m=470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -482,7 +482,7 @@ describe(MediaService.name, () => {
             '-frames:v 1',
             '-update 1',
             '-v verbose',
-            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=601:m=bt470bg:range=pc,format=yuv420p`,
+            String.raw`-vf fps=12:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=601:m=470bg:range=pc,format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -1619,7 +1619,7 @@ describe(MediaService.name, () => {
             '-refs 5',
             '-g 256',
             '-v verbose',
-            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
+            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq',
             '-preset 7',
             '-global_quality:v 23',
             '-maxrate 10000k',
@@ -1803,7 +1803,7 @@ describe(MediaService.name, () => {
             '-strict unofficial',
             '-g 256',
             '-v verbose',
-            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720:mode=hq:out_range=pc',
             '-compression_level 7',
             '-rc_mode 1',
           ]),
@@ -1941,6 +1941,79 @@ describe(MediaService.name, () => {
             '-filter_hw_device accel',
           ]),
           outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should use hardware decoding for vaapi if enabled', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining([
+            '-hwaccel vaapi',
+            '-hwaccel_output_format vaapi',
+            '-noautorotate',
+            '-threads 1',
+          ]),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12'),
+          ]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should use hardware tone-mapping for qsv if hardware decoding is enabled and should tone map', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_output_format vaapi', '-threads 1']),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=vaapi:reverse=1,format=vaapi',
+            ),
+          ]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should use preferred device for vaapi when hardware decoding', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128', 'renderD129', 'renderD130']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true, preferredHwDevice: 'renderD129' },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_device /dev/dri/renderD129']),
+          outputOptions: expect.any(Array),
           twoPass: false,
         }),
       );
@@ -2096,7 +2169,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
             ),
           ]),
           twoPass: false,
@@ -2120,7 +2193,7 @@ describe(MediaService.name, () => {
           inputOptions: [],
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+              'zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
             ),
           ]),
           twoPass: false,
@@ -2141,7 +2214,7 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
-            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
           ]),
           twoPass: false,
         }),
@@ -2161,7 +2234,7 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
-            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            '-vf zscale=t=linear:npl=100,tonemap=hable:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
           ]),
           twoPass: false,
         }),
@@ -2181,7 +2254,7 @@ describe(MediaService.name, () => {
           outputOptions: expect.arrayContaining([
             '-c:v h264',
             '-c:a copy',
-            '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=bt709:t=bt709:m=bt709:range=pc,format=yuv420p',
+            '-vf zscale=t=linear:npl=250,tonemap=mobius:desat=0,zscale=p=709:t=709:m=709:range=pc,format=yuv420p',
           ]),
           twoPass: false,
         }),

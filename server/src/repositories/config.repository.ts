@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
-import { citiesFile } from 'src/constants';
+import { citiesFile, excludePaths } from 'src/constants';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { QueueName } from 'src/interfaces/job.interface';
 import { setDifference } from 'src/utils/set';
 
 // TODO replace src/config validation with class-validator, here
@@ -29,85 +30,170 @@ const asSet = (value: string | undefined, defaults: ImmichWorker[]) => {
   return new Set(values.length === 0 ? defaults : (values as ImmichWorker[]));
 };
 
+const parseBoolean = (value: string | undefined, defaultValue: boolean) => (value ? value === 'true' : defaultValue);
+
+const getEnv = (): EnvData => {
+  const included = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
+  const excluded = asSet(process.env.IMMICH_WORKERS_EXCLUDE, []);
+  const workers = [...setDifference(included, excluded)];
+  for (const worker of workers) {
+    if (!WORKER_TYPES.has(worker)) {
+      throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
+    }
+  }
+
+  const environment = process.env.IMMICH_ENV as ImmichEnvironment;
+  const isProd = environment === ImmichEnvironment.PRODUCTION;
+  const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
+  const folders = {
+    geodata: join(buildFolder, 'geodata'),
+    web: join(buildFolder, 'www'),
+  };
+
+  let redisConfig = {
+    host: process.env.REDIS_HOSTNAME || 'redis',
+    port: Number.parseInt(process.env.REDIS_PORT || '') || 6379,
+    db: Number.parseInt(process.env.REDIS_DBINDEX || '') || 0,
+    username: process.env.REDIS_USERNAME || undefined,
+    password: process.env.REDIS_PASSWORD || undefined,
+    path: process.env.REDIS_SOCKET || undefined,
+  };
+
+  const redisUrl = process.env.REDIS_URL;
+  if (redisUrl && redisUrl.startsWith('ioredis://')) {
+    try {
+      redisConfig = JSON.parse(Buffer.from(redisUrl.slice(10), 'base64').toString());
+    } catch (error) {
+      throw new Error(`Failed to decode redis options: ${error}`);
+    }
+  }
+
+  const globalEnabled = parseBoolean(process.env.IMMICH_METRICS, false);
+  const hostMetrics = parseBoolean(process.env.IMMICH_HOST_METRICS, globalEnabled);
+  const apiMetrics = parseBoolean(process.env.IMMICH_API_METRICS, globalEnabled);
+  const repoMetrics = parseBoolean(process.env.IMMICH_IO_METRICS, globalEnabled);
+  const jobMetrics = parseBoolean(process.env.IMMICH_JOB_METRICS, globalEnabled);
+  const telemetryEnabled = globalEnabled || hostMetrics || apiMetrics || repoMetrics || jobMetrics;
+  if (!telemetryEnabled && process.env.OTEL_SDK_DISABLED === undefined) {
+    process.env.OTEL_SDK_DISABLED = 'true';
+  }
+
+  return {
+    host: process.env.IMMICH_HOST,
+    port: Number(process.env.IMMICH_PORT) || 2283,
+    environment,
+    configFile: process.env.IMMICH_CONFIG_FILE,
+    logLevel: process.env.IMMICH_LOG_LEVEL as LogLevel,
+
+    buildMetadata: {
+      build: process.env.IMMICH_BUILD,
+      buildUrl: process.env.IMMICH_BUILD_URL,
+      buildImage: process.env.IMMICH_BUILD_IMAGE,
+      buildImageUrl: process.env.IMMICH_BUILD_IMAGE_URL,
+      repository: process.env.IMMICH_REPOSITORY,
+      repositoryUrl: process.env.IMMICH_REPOSITORY_URL,
+      sourceRef: process.env.IMMICH_SOURCE_REF,
+      sourceCommit: process.env.IMMICH_SOURCE_COMMIT,
+      sourceUrl: process.env.IMMICH_SOURCE_URL,
+      thirdPartySourceUrl: process.env.IMMICH_THIRD_PARTY_SOURCE_URL,
+      thirdPartyBugFeatureUrl: process.env.IMMICH_THIRD_PARTY_BUG_FEATURE_URL,
+      thirdPartyDocumentationUrl: process.env.IMMICH_THIRD_PARTY_DOCUMENTATION_URL,
+      thirdPartySupportUrl: process.env.IMMICH_THIRD_PARTY_SUPPORT_URL,
+    },
+
+    bull: {
+      config: {
+        prefix: 'immich_bull',
+        connection: { ...redisConfig },
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      },
+      queues: Object.values(QueueName).map((name) => ({ name })),
+    },
+
+    database: {
+      url: process.env.DB_URL,
+      host: process.env.DB_HOSTNAME || 'database',
+      port: Number(process.env.DB_PORT) || 5432,
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      name: process.env.DB_DATABASE_NAME || 'immich',
+
+      skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
+      vectorExtension:
+        process.env.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
+    },
+
+    licensePublicKey: isProd ? productionKeys : stagingKeys,
+
+    network: {
+      trustedProxies: (process.env.IMMICH_TRUSTED_PROXIES ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    },
+
+    otel: {
+      metrics: {
+        hostMetrics,
+        apiMetrics: {
+          enable: apiMetrics,
+          ignoreRoutes: excludePaths,
+        },
+      },
+    },
+
+    redis: redisConfig,
+
+    resourcePaths: {
+      lockFile: join(buildFolder, 'build-lock.json'),
+      geodata: {
+        dateFile: join(folders.geodata, 'geodata-date.txt'),
+        admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
+        admin2: join(folders.geodata, 'admin2Codes.txt'),
+        cities500: join(folders.geodata, citiesFile),
+        naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
+      },
+      web: {
+        root: folders.web,
+        indexHtml: join(folders.web, 'index.html'),
+      },
+    },
+
+    storage: {
+      ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',
+    },
+
+    telemetry: {
+      apiPort: Number(process.env.IMMICH_API_METRICS_PORT || '') || 8081,
+      microservicesPort: Number(process.env.IMMICH_MICROSERVICES_METRICS_PORT || '') || 8082,
+      enabled: telemetryEnabled,
+      hostMetrics,
+      apiMetrics,
+      repoMetrics,
+      jobMetrics,
+    },
+
+    workers,
+
+    noColor: !!process.env.NO_COLOR,
+  };
+};
+
+let cached: EnvData | undefined;
+
 @Injectable()
 export class ConfigRepository implements IConfigRepository {
   getEnv(): EnvData {
-    const included = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
-    const excluded = asSet(process.env.IMMICH_WORKERS_EXCLUDE, []);
-    const workers = [...setDifference(included, excluded)];
-    for (const worker of workers) {
-      if (!WORKER_TYPES.has(worker)) {
-        throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
-      }
+    if (!cached) {
+      cached = getEnv();
     }
 
-    const environment = process.env.IMMICH_ENV as ImmichEnvironment;
-    const isProd = environment === ImmichEnvironment.PRODUCTION;
-    const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
-    const folders = {
-      geodata: join(buildFolder, 'geodata'),
-      web: join(buildFolder, 'www'),
-    };
-
-    return {
-      port: Number(process.env.IMMICH_PORT) || 2283,
-      environment,
-      configFile: process.env.IMMICH_CONFIG_FILE,
-      logLevel: process.env.IMMICH_LOG_LEVEL as LogLevel,
-
-      buildMetadata: {
-        build: process.env.IMMICH_BUILD,
-        buildUrl: process.env.IMMICH_BUILD_URL,
-        buildImage: process.env.IMMICH_BUILD_IMAGE,
-        buildImageUrl: process.env.IMMICH_BUILD_IMAGE_URL,
-        repository: process.env.IMMICH_REPOSITORY,
-        repositoryUrl: process.env.IMMICH_REPOSITORY_URL,
-        sourceRef: process.env.IMMICH_SOURCE_REF,
-        sourceCommit: process.env.IMMICH_SOURCE_COMMIT,
-        sourceUrl: process.env.IMMICH_SOURCE_URL,
-        thirdPartySourceUrl: process.env.IMMICH_THIRD_PARTY_SOURCE_URL,
-        thirdPartyBugFeatureUrl: process.env.IMMICH_THIRD_PARTY_BUG_FEATURE_URL,
-        thirdPartyDocumentationUrl: process.env.IMMICH_THIRD_PARTY_DOCUMENTATION_URL,
-        thirdPartySupportUrl: process.env.IMMICH_THIRD_PARTY_SUPPORT_URL,
-      },
-
-      database: {
-        url: process.env.DB_URL,
-        host: process.env.DB_HOSTNAME || 'database',
-        port: Number(process.env.DB_PORT) || 5432,
-        username: process.env.DB_USERNAME || 'postgres',
-        password: process.env.DB_PASSWORD || 'postgres',
-        name: process.env.DB_DATABASE_NAME || 'immich',
-
-        skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
-        vectorExtension:
-          process.env.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
-      },
-
-      licensePublicKey: isProd ? productionKeys : stagingKeys,
-
-      resourcePaths: {
-        lockFile: join(buildFolder, 'build-lock.json'),
-        geodata: {
-          dateFile: join(folders.geodata, 'geodata-date.txt'),
-          admin1: join(folders.geodata, 'admin1CodesASCII.txt'),
-          admin2: join(folders.geodata, 'admin2Codes.txt'),
-          cities500: join(folders.geodata, citiesFile),
-          naturalEarthCountriesPath: join(folders.geodata, 'ne_10m_admin_0_countries.geojson'),
-        },
-        web: {
-          root: folders.web,
-          indexHtml: join(folders.web, 'index.html'),
-        },
-      },
-
-      storage: {
-        ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',
-      },
-
-      workers,
-
-      noColor: !!process.env.NO_COLOR,
-    };
+    return cached;
   }
 }
+
+export const clearEnvCache = () => (cached = undefined);

@@ -8,9 +8,6 @@ import { OnEvent } from 'src/decorators';
 import {
   AuthDto,
   ChangePasswordDto,
-  ImmichCookie,
-  ImmichHeader,
-  ImmichQuery,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthAuthorizeResponseDto,
@@ -21,7 +18,7 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { AuthType, Permission } from 'src/enum';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
 import { OAuthProfile } from 'src/interfaces/oauth.interface';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
