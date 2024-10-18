@@ -120,7 +120,7 @@ class ServiceLocator {
   static void _registerPreGlobalStates() {
     _registerSingleton(AppRouter());
     _registerLazySingleton<AppThemeCubit>(() => AppThemeCubit(di()));
-    _registerSingleton(GalleryPermissionNotifier());
+    _registerSingleton(GalleryPermissionProvider());
   }
 
   static void registerApiClient(String endpoint) {
@@ -138,12 +138,12 @@ class ServiceLocator {
   }
 
   static void registerPostGlobalStates() {
-    _registerLazySingleton<ServerFeatureConfigCubit>(
-      () => ServerFeatureConfigCubit(di()),
+    _registerLazySingleton<ServerFeatureConfigProvider>(
+      () => ServerFeatureConfigProvider(di()),
     );
   }
 
   static void registerCurrentUser(User user) {
-    _registerSingleton(CurrentUserCubit(user));
+    _registerSingleton(CurrentUserProvider(user));
   }
 }

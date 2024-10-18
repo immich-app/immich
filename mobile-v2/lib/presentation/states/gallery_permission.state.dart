@@ -15,8 +15,8 @@ enum GalleryPermissionStatus {
   bool get isLimited => this == GalleryPermissionStatus.limited;
 }
 
-class GalleryPermissionNotifier extends ValueNotifier<GalleryPermissionStatus> {
-  GalleryPermissionNotifier() : super(GalleryPermissionStatus.yetToRequest) {
+class GalleryPermissionProvider extends ValueNotifier<GalleryPermissionStatus> {
+  GalleryPermissionProvider() : super(GalleryPermissionStatus.yetToRequest) {
     checkPermission();
   }
 

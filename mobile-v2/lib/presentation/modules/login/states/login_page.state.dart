@@ -73,7 +73,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
       ServiceLocator.registerPostGlobalStates();
 
       // Fetch server features
-      await di<ServerFeatureConfigCubit>().getFeatures();
+      await di<ServerFeatureConfigProvider>().getFeatures();
 
       emit(state.copyWith(isServerValidated: true));
     } finally {
@@ -141,7 +141,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
     await di<IUserRepository>().upsert(user);
     // Remove and Sync assets in background
     await di<IAssetRepository>().deleteAll();
-    await di<GalleryPermissionNotifier>().requestPermission();
+    await di<GalleryPermissionProvider>().requestPermission();
     unawaited(di<AssetSyncService>().performFullRemoteSyncIsolate(user));
     unawaited(di<AlbumSyncService>().performFullDeviceSyncIsolate());
 

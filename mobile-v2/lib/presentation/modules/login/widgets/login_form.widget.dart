@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:immich_mobile/domain/models/server-info/server_feature_config.model.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/components/common/gap.widget.dart';
 import 'package:immich_mobile/presentation/components/common/loading_indicator.widget.dart';
@@ -132,9 +131,9 @@ class _CredentialsFormState extends State<_CredentialsForm> {
       selector: (model) => model.isValidationInProgress,
       builder: (_, isValidationInProgress) => isValidationInProgress
           ? const ImLoadingIndicator()
-          : BlocBuilder<ServerFeatureConfigCubit, ServerFeatureConfig>(
-              bloc: di(),
-              builder: (_, state) => Column(
+          : ValueListenableBuilder(
+              valueListenable: di<ServerFeatureConfigProvider>(),
+              builder: (_, state, __) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: [

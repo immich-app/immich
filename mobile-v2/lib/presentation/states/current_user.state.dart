@@ -1,8 +1,8 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 
-class CurrentUserCubit extends Cubit<User> {
-  CurrentUserCubit(super.initialState);
+class CurrentUserProvider extends ValueNotifier<User> {
+  CurrentUserProvider(super.initialState);
 
-  void updateUser(User user) => emit(user);
+  void updateUser(User user) => value = user;
 }

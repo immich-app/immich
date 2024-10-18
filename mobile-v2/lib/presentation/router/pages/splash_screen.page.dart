@@ -54,7 +54,7 @@ class _SplashScreenState extends State<SplashScreenPage>
   Future<void> _tryLogin() async {
     if (await di<LoginService>().tryAutoLogin() && mounted) {
       unawaited(di<AssetSyncService>()
-          .performFullRemoteSyncIsolate(di<CurrentUserCubit>().state));
+          .performFullRemoteSyncIsolate(di<CurrentUserProvider>().value));
       unawaited(di<AlbumSyncService>().performFullDeviceSyncIsolate());
       unawaited(context.replaceRoute(const TabControllerRoute()));
     } else {
