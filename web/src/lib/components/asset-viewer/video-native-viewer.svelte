@@ -4,7 +4,7 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { tick } from 'svelte';
+  import { createEventDispatcher, onDestroy, tick } from 'svelte';
   import { swipe } from 'svelte-gestures';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
@@ -22,12 +22,15 @@
   let isVideoLoading = true;
   let assetFileUrl: string;
   let forceMuted = false;
+  let playbackUrl: string;
+  let destroyed = false;
 
   $: if (element) {
-    assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+    playbackUrl = getAssetPlaybackUrl({ id: assetId, checksum });
     forceMuted = false;
     element.load();
   }
+  $: assetFileUrl = destroyed ? '' : playbackUrl;
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
@@ -62,6 +65,14 @@
       onPreviousAsset();
     }
   };
+  onDestroy(() => {
+    destroyed = true;
+    if (element) {
+      element.pause();
+      element.src = '';
+      element.load();
+    }
+  });
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
