@@ -37,7 +37,6 @@
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_vi_VN.md">Tiếng Việt</a>
-  <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
 ## ข้อจำกัดความรับผิดชอบ
