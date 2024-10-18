@@ -12,7 +12,7 @@ describe('AlbumCard component', () => {
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
-    register('en-US', () => import('$lib/i18n/en.json'));
+    register('en-US', () => import('$i18n/en.json'));
     await waitLocale('en-US');
   });
 
