@@ -349,7 +349,13 @@ export class MediaService extends BaseService {
   }
 
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
-    return streams.sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
+    const validStreams = streams.filter((stream) => stream.codecName !== 'unknown');
+
+    if (validStreams.length === 1) {
+      return validStreams[0];
+    }
+
+    return validStreams.sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
   }
 
   private getTranscodeTarget(
