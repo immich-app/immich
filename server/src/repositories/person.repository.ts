@@ -183,8 +183,15 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })
-  getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
+  @GenerateSql({
+    params: [{ take: 10, skip: 10, withCount: true }, DummyValue.UUID, DummyValue.STRING, { withHidden: true }],
+  })
+  getByName(
+    pagination: PaginationOptions,
+    userId: string,
+    personName: string,
+    { withHidden }: PersonNameSearchOptions,
+  ): Paginated<PersonEntity> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .where(
@@ -196,7 +203,10 @@ export class PersonRepository implements IPersonRepository {
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
-    return queryBuilder.getMany();
+    return paginatedBuilder(queryBuilder, {
+      mode: PaginationMode.LIMIT_OFFSET,
+      ...pagination,
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { withHidden: true }] })
