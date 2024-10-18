@@ -863,6 +863,7 @@
   "look": "Tampilan",
   "loop_videos": "Ulangi video",
   "loop_videos_description": "Aktifkan untuk mengulangi video secara otomatis dalam penampil detail.",
+  "main_branch_warning": "Anda menjalankan buatan dari cabang utama (main). Kami sangat menyarankan menggunakan versi rilis!",
   "make": "Merek",
   "manage_shared_links": "Kelola tautan terbagi",
   "manage_sharing_with_partners": "Kelola pembagian dengan partner",
