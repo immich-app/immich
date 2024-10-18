@@ -20,7 +20,6 @@ import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMemoryRepositoryMock } from 'test/repositories/memory.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
-import { newMetricRepositoryMock } from 'test/repositories/metric.repository.mock';
 import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
 import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
 import { newOAuthRepositoryMock } from 'test/repositories/oauth.repository.mock';
@@ -34,6 +33,7 @@ import { newStackRepositoryMock } from 'test/repositories/stack.repository.mock'
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
+import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { newTrashRepositoryMock } from 'test/repositories/trash.repository.mock';
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { newVersionHistoryRepositoryMock } from 'test/repositories/version-history.repository.mock';
@@ -73,7 +73,6 @@ export const newTestService = <T extends BaseService>(
   const mediaMock = newMediaRepositoryMock();
   const memoryMock = newMemoryRepositoryMock();
   const metadataMock = (metadataRepository || newMetadataRepositoryMock()) as Mocked<IMetadataRepository>;
-  const metricMock = newMetricRepositoryMock();
   const moveMock = newMoveRepositoryMock();
   const notificationMock = newNotificationRepositoryMock();
   const oauthMock = newOAuthRepositoryMock();
@@ -87,6 +86,7 @@ export const newTestService = <T extends BaseService>(
   const storageMock = newStorageRepositoryMock();
   const systemMock = newSystemMetadataRepositoryMock();
   const tagMock = newTagRepositoryMock();
+  const telemetryMock = newTelemetryRepositoryMock();
   const trashMock = newTrashRepositoryMock();
   const userMock = newUserRepositoryMock();
   const versionHistoryMock = newVersionHistoryRepositoryMock();
@@ -112,7 +112,6 @@ export const newTestService = <T extends BaseService>(
     mediaMock,
     memoryMock,
     metadataMock,
-    metricMock,
     moveMock,
     notificationMock,
     oauthMock,
@@ -126,6 +125,7 @@ export const newTestService = <T extends BaseService>(
     storageMock,
     systemMock,
     tagMock,
+    telemetryMock,
     trashMock,
     userMock,
     versionHistoryMock,
@@ -153,7 +153,6 @@ export const newTestService = <T extends BaseService>(
     mediaMock,
     memoryMock,
     metadataMock,
-    metricMock,
     moveMock,
     notificationMock,
     oauthMock,
@@ -167,6 +166,7 @@ export const newTestService = <T extends BaseService>(
     storageMock,
     systemMock,
     tagMock,
+    telemetryMock,
     trashMock,
     userMock,
     versionHistoryMock,
