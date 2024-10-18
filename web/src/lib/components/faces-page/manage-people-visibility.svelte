@@ -145,7 +145,7 @@
     {@const hidden = personIsHidden[person.id]}
     <button
       type="button"
-      class="group relative"
+      class="group relative w-full h-full"
       on:click={() => (personIsHidden[person.id] = !hidden)}
       aria-pressed={hidden}
       aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
