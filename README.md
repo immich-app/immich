@@ -34,6 +34,7 @@
 <a href="readme_i18n/README_sv_SE.md">Svenska</a>
 <a href="readme_i18n/README_ar_JO.md">العربية</a>
 <a href="readme_i18n/README_vi_VN.md">Tiếng Việt</a>
+<a href="readme_i18n/README_th_TH.md">ภาษาไทย</a>
 
 </p>
 
