@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
@@ -18,6 +20,7 @@ import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/upload_request.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
@@ -272,11 +275,13 @@ class BackupService {
     }
 
     List<BackupCandidate> candidates = assets.toList();
+    List<UploadTask> backgroundTasks = [];
+
     if (isBackground) {
       candidates = _sortPhotosFirst(candidates);
     }
 
-    for (final candidate in candidates) {
+    for (final (i, candidate) in candidates.indexed) {
       final Asset asset = candidate.asset;
       File? file;
       File? livePhotoFile;
@@ -338,44 +343,27 @@ class BackupService {
             }
           }
 
-          final fileStream = file.openRead();
-          final assetRawUploadData = http.MultipartFile(
-            "assetData",
-            fileStream,
-            file.lengthSync(),
-            filename: originalFileName,
+          Map<String, String> fields = {
+            "deviceAssetId": asset.localId!,
+            'deviceId': deviceId,
+            'fileCreatedAt': asset.fileCreatedAt.toUtc().toIso8601String(),
+            'fileModifiedAt': asset.fileModifiedAt.toUtc().toIso8601String(),
+            'isFavorite': asset.isFavorite.toString(),
+            'duration': asset.duration.toString(),
+          };
+
+          Map<String, String> headers = ApiService.getRequestHeaders();
+
+          UploadRequest baseRequest = UploadRequest(
+            method: 'POST',
+            url: '$savedEndpoint/assets',
+            fields: fields,
+            headers: headers,
+            isBackground: isBackground,
+            onProgress: onProgress,
           );
 
-          final baseRequest = MultipartRequest(
-            'POST',
-            Uri.parse('$savedEndpoint/assets'),
-            onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
-          );
-
-          baseRequest.headers.addAll(ApiService.getRequestHeaders());
-          baseRequest.headers["Transfer-Encoding"] = "chunked";
-          baseRequest.fields['deviceAssetId'] = asset.localId!;
-          baseRequest.fields['deviceId'] = deviceId;
-          baseRequest.fields['fileCreatedAt'] =
-              asset.fileCreatedAt.toUtc().toIso8601String();
-          baseRequest.fields['fileModifiedAt'] =
-              asset.fileModifiedAt.toUtc().toIso8601String();
-          baseRequest.fields['isFavorite'] = asset.isFavorite.toString();
-          baseRequest.fields['duration'] = asset.duration.toString();
-          baseRequest.files.add(assetRawUploadData);
-
-          onCurrentAsset(
-            CurrentUploadAsset(
-              id: asset.localId!,
-              fileCreatedAt: asset.fileCreatedAt.year == 1970
-                  ? asset.fileModifiedAt
-                  : asset.fileCreatedAt,
-              fileName: originalFileName,
-              fileType: _getAssetType(asset.type),
-              fileSize: file.lengthSync(),
-              iCloudAsset: false,
-            ),
-          );
+          final fileLength = file.lengthSync();
 
           String? livePhotoVideoId;
           if (asset.local!.isLivePhoto && livePhotoFile != null) {
@@ -391,60 +379,96 @@ class BackupService {
             baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          final response = await httpClient.send(
-            baseRequest,
-            cancellationToken: cancelToken,
-          );
-
-          final responseBody =
-              jsonDecode(await response.stream.bytesToString());
-
-          if (![200, 201].contains(response.statusCode)) {
-            final error = responseBody;
-            final errorMessage = error['message'] ?? error['error'];
-
-            debugPrint(
-              "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
-            );
-
-            onError(
-              ErrorUploadAsset(
-                asset: asset,
-                id: asset.localId!,
-                fileCreatedAt: asset.fileCreatedAt,
-                fileName: originalFileName,
-                fileType: _getAssetType(candidate.asset.type),
-                errorMessage: errorMessage,
-              ),
-            );
-
-            if (errorMessage == "Quota has been exceeded!") {
-              anyErrors = true;
-              break;
-            }
-
-            continue;
-          }
-
-          bool isDuplicate = false;
-          if (response.statusCode == 200) {
-            isDuplicate = true;
-            duplicatedAssetIds.add(asset.localId!);
-          }
-
-          onSuccess(
-            SuccessUploadAsset(
-              candidate: candidate,
-              remoteAssetId: responseBody['id'] as String,
-              isDuplicate: isDuplicate,
+          onCurrentAsset(
+            CurrentUploadAsset(
+              id: asset.localId!,
+              fileCreatedAt: asset.fileCreatedAt.year == 1970
+                  ? asset.fileModifiedAt
+                  : asset.fileCreatedAt,
+              fileName: originalFileName,
+              fileType: _getAssetType(asset.type),
+              fileSize: file.lengthSync(),
+              iCloudAsset: false,
             ),
           );
 
-          if (shouldSyncAlbums) {
-            await _albumService.syncUploadAlbums(
-              candidate.albumNames,
-              [responseBody['id'] as String],
+          if (isBackground) {
+            print("BACKGROUND SYNC");
+            final (baseDir, dir, filename) = await Task.split(file: file);
+
+            // Priority 10 for testing purposes; maybe we could change that to a lower value later
+            baseRequest.priority = 10;
+
+            final backgroundRequest = UploadTask(
+              filename: filename,
+              baseDirectory: baseDir,
+              directory: dir,
+              fileField: "assetData",
+              mimeType: "application/octet-stream",
+              url: baseRequest.url,
+              httpRequestMethod: baseRequest.method,
+              priority: baseRequest.priority,
+              fields: baseRequest.fields,
+              headers: baseRequest.headers,
+              updates: Updates.statusAndProgress,
+              metaData: i.toString(),
             );
+
+            backgroundTasks.add(backgroundRequest);
+          } else {
+            print("FOREGROUND SYNC");
+            final fileStream = file.openRead();
+            final assetRawUploadData = http.MultipartFile(
+              "assetData",
+              fileStream,
+              fileLength,
+              filename: originalFileName,
+            );
+
+            final foregroundRequest = MultipartRequest(
+              baseRequest.method,
+              Uri.parse(baseRequest.url),
+              onProgress: ((bytes, totalBytes) =>
+                  baseRequest.onProgress(bytes, totalBytes)),
+            );
+            foregroundRequest.headers["Transfer-Encoding"] = "chunked";
+            foregroundRequest.headers.addAll(baseRequest.headers);
+            foregroundRequest.fields.addAll(baseRequest.fields);
+            foregroundRequest.files.add(assetRawUploadData);
+
+            final response = await httpClient.send(
+              foregroundRequest,
+              cancellationToken: cancelToken,
+            );
+
+            dynamic body = jsonDecode(await response.stream.bytesToString());
+            int statusCode = response.statusCode;
+            if ((anyErrors =
+                    !_handleUploadError(asset, body, statusCode, onError)) ==
+                true) {
+              break;
+            }
+
+            bool isDuplicate = false;
+            if (statusCode == 200) {
+              isDuplicate = true;
+              duplicatedAssetIds.add(asset.localId!);
+            }
+
+            onSuccess(
+              SuccessUploadAsset(
+                candidate: candidate,
+                remoteAssetId: body['id'] as String,
+                isDuplicate: isDuplicate,
+              ),
+            );
+
+            if (shouldSyncAlbums) {
+              await _albumService.syncUploadAlbums(
+                candidate.albumNames,
+                [body['id'] as String],
+              );
+            }
           }
         }
       } on http.CancelledException {
@@ -467,6 +491,32 @@ class BackupService {
       }
     }
 
+    if (isBackground) {
+      final response = await FileDownloader().uploadBatch(
+        backgroundTasks,
+        taskProgressCallback: (update) {
+          onProgress((update.progress * update.expectedFileSize).toInt(),
+              update.expectedFileSize);
+        },
+        taskStatusCallback: (update) {
+          // BackupCandidate index is stored in task metadata
+          int i = update.task.metaData.toInt();
+          if (update.status.isFinalState) {
+            dynamic body = jsonDecode(update.responseBody ?? "{}");
+            int statusCode = update.responseStatusCode ?? 500;
+            if (_handleUploadError(
+              candidates[i].asset,
+              body,
+              statusCode,
+              onError,
+            )) {
+              // TODO: Cancel queue because quota exceeded
+            }
+          }
+        },
+      );
+    }
+
     if (duplicatedAssetIds.isNotEmpty) {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
@@ -474,10 +524,41 @@ class BackupService {
     return !anyErrors;
   }
 
+  bool _handleUploadError(
+    Asset asset,
+    dynamic body,
+    int statusCode,
+    void Function(ErrorUploadAsset error) onError,
+  ) {
+    if (![200, 201].contains(statusCode)) {
+      final error = body;
+
+      debugPrint(
+        "Error(${error['statusCode']}) uploading ${asset.localId} | ${asset.fileName} | Created on ${asset.fileCreatedAt} | ${error['error']}",
+      );
+
+      onError(
+        ErrorUploadAsset(
+          asset: asset,
+          id: asset.localId!,
+          fileCreatedAt: asset.fileCreatedAt,
+          fileName: asset.fileName,
+          fileType: _getAssetType(asset.type),
+          errorMessage: error['error'],
+        ),
+      );
+
+      if (error == "Quota has been exceeded!") {
+        return false;
+      }
+    }
+    return true;
+  }
+
   Future<String?> uploadLivePhotoVideo(
     String originalFileName,
     File? livePhotoVideoFile,
-    MultipartRequest baseRequest,
+    UploadRequest baseRequest,
     http.CancellationToken cancelToken,
   ) async {
     if (livePhotoVideoFile == null) {
@@ -487,35 +568,33 @@ class BackupService {
       originalFileName,
       p.extension(livePhotoVideoFile.path),
     );
-    final fileStream = livePhotoVideoFile.openRead();
-    final livePhotoRawUploadData = http.MultipartFile(
-      "assetData",
-      fileStream,
-      livePhotoVideoFile.lengthSync(),
+
+    final (baseDir, dir, _) = await Task.split(file: livePhotoVideoFile);
+
+    final backgroundRequest = UploadTask(
       filename: livePhotoTitle,
-    );
-    final livePhotoReq = MultipartRequest(
-      baseRequest.method,
-      baseRequest.url,
-      onProgress: baseRequest.onProgress,
+      baseDirectory: baseDir,
+      directory: dir,
+      url: baseRequest.url,
+      httpRequestMethod: baseRequest.method,
+      priority: baseRequest.priority,
     )
       ..headers.addAll(baseRequest.headers)
       ..fields.addAll(baseRequest.fields);
 
-    livePhotoReq.files.add(livePhotoRawUploadData);
+    final response = await FileDownloader()
+        .upload(backgroundRequest); //TODO: onProgress callback?
 
-    var response = await httpClient.send(
-      livePhotoReq,
-      cancellationToken: cancelToken,
-    );
+    var responseBody = jsonDecode(response.responseBody ?? "{}");
 
-    var responseBody = jsonDecode(await response.stream.bytesToString());
-
-    if (![200, 201].contains(response.statusCode)) {
-      var error = responseBody;
+    if (response.status == TaskStatus.failed ||
+        ![200, 201].contains(response.responseStatusCode)) {
+      final error = response.exception != null
+          ? response.exception!.description
+          : responseBody;
 
       debugPrint(
-        "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | ${error['error']}",
+        "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | $error",
       );
     }
 
