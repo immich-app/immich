@@ -44,7 +44,7 @@ Some search examples:
 </TabItem>
   <TabItem value="Mobile" label="Mobile">
 
-<img src={require('./img/moblie-smart-serach.webp').default} width="30%" title='Smart search on mobile' />
+<img src={require('./img/mobile-smart-search.webp').default} width="30%" title='Smart search on mobile' />
 
 </TabItem>
 </Tabs>
@@ -55,16 +55,36 @@ Navigating to `Administration > Settings > Machine Learning Settings > Smart Sea
 
 ### CLIP model
 
-More powerful models can be used for more accurate search results, but are slower and can require more server resources. Check out the models [here][huggingface-clip] for more options!
+The default search model is fast, but there are many other options that can provide better search results. The tradeoff of using these models is that they use more memory and are slower (both during Smart Search jobs and when searching). For example, the current best model for English, `ViT-H-14-378-quickgelu__dfn5b`, is roughly 72x slower and uses approximates 4.3GiB of memory compared to 801MiB with the default model `ViT-B-32__openai`.
 
-[Multilingual models][huggingface-multilingual-clip] are also available so users can search in their native language. These models support over 100 languages; the `nllb` models in particular support 200.
+The first step of choosing the right model for you is to decide which languages your users will search in.
+
+If your users will only search in English, then the recommended [CLIP][huggingface-clip] section is the best place to look. This is a curated list of the models that generally perform the best for their size class. The models here are ordered from higher to lower quality. This means that the top models will generally rank the most relevant results higher and have a higher capacity to understand descriptive, detailed, and/or niche queries. They models are also generally ordered from larger to smaller, so consider the impact on memory usage, job processing and search speed when deciding on one. The smaller models in this list are not too different in quality and many times faster.
+
+[Multilingual models][huggingface-multilingual-clip] are also available so users can search in their native language. Use these models if you expect non-English searches to be common. They can be separated into two search patterns:
+
+- `nllb` models expect the search query to be in the language specified in the user settings
+- `xlm` models understand search text regardless of the current language setting
+
+`nllb` models perform the best and are recommended when users primarily searches in their native, non-English language. `xlm` models are more flexible and are recommended for mixed language search, where the same user might search in different languages at different times.
+
+A third option is if your users will search entirely in major Western European languages, such as English, Spanish, French and German. The `ViT-H-14-quickgelu__dfn5b` and `ViT-H-14-378-quickgelu__dfn5b` models perform the best for these languages and are similarly flexible as `xlm` models. However, they understand very few languages compared to the explicitly multilingual `nllb` and `xlm` models, so don't use them for other languages.
+
 :::note
 Multilingual models are much slower and larger and perform slightly worse for English than English-only models. For this reason, only use them if you actually intend to search in a language besides English.
-
-As a special case, the `ViT-H-14-quickgelu__dfn5b` and `ViT-H-14-378-quickgelu__dfn5b` models are excellent at many European languages despite not specifically being multilingual. They're very intensive regardless, however - especially the latter.
 :::
 
-Once you've chosen a model, change this setting to the name of the model you chose. Be sure to re-run Smart Search on all assets after this change.
+Once you've chosen a model, follow these steps:
+
+1. Copy the name of the model (e.g. `ViT-B-16-SigLIP__webli`)
+2. Go to the [Smart Search settings][smart-search-settings]
+3. Paste the model name into the Model Name section
+4. Save the settings
+5. Go to the [Job Status page][job-status-page]
+6. Click "All" next to "Smart Search" to begin re-processing your assets with the new model
+7. (Optional) Confirm that the logs for the server and machine learning service don't have relevant errors
+
+In rare instances, changing the model might leave bits of the old model's incompatible data in the database, causing errors when processing Smart Search jobs. If you notice errors like this in the logs, you can change the model back to the previous one and save, then back again to the new model.
 
 :::note
 Feel free to make a feature request if there's a model you want to use that we don't currently support.
@@ -72,3 +92,5 @@ Feel free to make a feature request if there's a model you want to use that we d
 
 [huggingface-clip]: https://huggingface.co/collections/immich-app/clip-654eaefb077425890874cd07
 [huggingface-multilingual-clip]: https://huggingface.co/collections/immich-app/multilingual-clip-654eb08c2382f591eeb8c2a7
+[smart-search-settings]: https://my.immich.app/admin/system-settings?isOpen=machine-learning+smart-search
+[job-status-page]: https://my.immich.app/admin/jobs-status

@@ -235,6 +235,7 @@ class SearchDisplayFilters {
 class SearchFilter {
   String? context;
   String? filename;
+  String? language;
   Set<Person> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
@@ -247,6 +248,7 @@ class SearchFilter {
   SearchFilter({
     this.context,
     this.filename,
+    this.language,
     required this.people,
     required this.location,
     required this.camera,
@@ -258,6 +260,7 @@ class SearchFilter {
   SearchFilter copyWith({
     String? context,
     String? filename,
+    String? language,
     Set<Person>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
@@ -268,6 +271,7 @@ class SearchFilter {
     return SearchFilter(
       context: context,
       filename: filename,
+      language: language,
       people: people ?? this.people,
       location: location ?? this.location,
       camera: camera ?? this.camera,
@@ -279,7 +283,7 @@ class SearchFilter {
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
+    return 'SearchFilter(context: $context, filename: $filename, language: $language, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
   }
 
   @override
@@ -288,6 +292,7 @@ class SearchFilter {
 
     return other.context == context &&
         other.filename == filename &&
+        other.language == language &&
         other.people == people &&
         other.location == location &&
         other.camera == camera &&
@@ -300,6 +305,7 @@ class SearchFilter {
   int get hashCode {
     return context.hashCode ^
         filename.hashCode ^
+        language.hashCode ^
         people.hashCode ^
         location.hashCode ^
         camera.hashCode ^
