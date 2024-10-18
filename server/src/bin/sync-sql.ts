@@ -14,8 +14,8 @@ import { entities } from 'src/entities';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { AuthService } from 'src/services/auth.service';
-import { otelConfig } from 'src/utils/instrumentation';
 import { Logger } from 'typeorm';
 
 export class SqlLogger implements Logger {
@@ -74,6 +74,8 @@ class SqlGenerator {
     await rm(this.options.targetDir, { force: true, recursive: true });
     await mkdir(this.options.targetDir);
 
+    const { otel } = new ConfigRepository().getEnv();
+
     const moduleFixture = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
@@ -84,7 +86,7 @@ class SqlGenerator {
           logger: this.sqlLogger,
         }),
         TypeOrmModule.forFeature(entities),
-        OpenTelemetryModule.forRoot(otelConfig),
+        OpenTelemetryModule.forRoot(otel),
       ],
       providers: [...repositories, AuthService, SchedulerRegistry],
     }).compile();

@@ -8,6 +8,12 @@ const envData: EnvData = {
   environment: ImmichEnvironment.PRODUCTION,
 
   buildMetadata: {},
+  bull: {
+    config: {
+      prefix: 'immich_bull',
+    },
+    queues: [{ name: 'queue-1' }],
+  },
 
   database: {
     host: 'database',
@@ -23,6 +29,26 @@ const envData: EnvData = {
   licensePublicKey: {
     client: 'client-public-key',
     server: 'server-public-key',
+  },
+
+  network: {
+    trustedProxies: [],
+  },
+
+  otel: {
+    metrics: {
+      hostMetrics: false,
+      apiMetrics: {
+        enable: false,
+        ignoreRoutes: [],
+      },
+    },
+  },
+
+  redis: {
+    host: 'redis',
+    port: 6379,
+    db: 0,
   },
 
   resourcePaths: {
@@ -44,15 +70,24 @@ const envData: EnvData = {
     ignoreMountCheckErrors: false,
   },
 
+  telemetry: {
+    apiPort: 8081,
+    microservicesPort: 8082,
+    enabled: false,
+    hostMetrics: false,
+    apiMetrics: false,
+    jobMetrics: false,
+    repoMetrics: false,
+  },
+
   workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES],
 
   noColor: false,
 };
 
+export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });
 export const newConfigRepositoryMock = (): Mocked<IConfigRepository> => {
   return {
-    getEnv: vitest.fn().mockReturnValue(envData),
+    getEnv: vitest.fn().mockReturnValue(mockEnvData({})),
   };
 };
-
-export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });

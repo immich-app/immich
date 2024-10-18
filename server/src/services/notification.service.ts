@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
@@ -16,6 +15,7 @@ import { EmailImageAttachment, EmailTemplate } from 'src/interfaces/notification
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
+import { getExternalDomain } from 'src/utils/misc';
 import { isEqualObject } from 'src/utils/object';
 import { getPreferences } from 'src/utils/preferences';
 
@@ -128,10 +128,11 @@ export class NotificationService extends BaseService {
     }
 
     const { server } = await this.getConfig({ withCache: false });
+    const { port } = this.configRepository.getEnv();
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.TEST_EMAIL,
       data: {
-        baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
+        baseUrl: getExternalDomain(server, port),
         displayName: user.name,
       },
     });
@@ -156,10 +157,11 @@ export class NotificationService extends BaseService {
     }
 
     const { server } = await this.getConfig({ withCache: true });
+    const { port } = this.configRepository.getEnv();
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
       data: {
-        baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
+        baseUrl: getExternalDomain(server, port),
         displayName: user.name,
         username: user.email,
         password: tempPassword,
@@ -199,10 +201,11 @@ export class NotificationService extends BaseService {
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.getConfig({ withCache: false });
+    const { port } = this.configRepository.getEnv();
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
       data: {
-        baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
+        baseUrl: getExternalDomain(server, port),
         albumId: album.id,
         albumName: album.albumName,
         senderName: album.owner.name,
@@ -241,6 +244,7 @@ export class NotificationService extends BaseService {
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
     const { server } = await this.getConfig({ withCache: false });
+    const { port } = this.configRepository.getEnv();
 
     for (const recipient of recipients) {
       const user = await this.userRepository.get(recipient.id, { withDeleted: false });
@@ -257,7 +261,7 @@ export class NotificationService extends BaseService {
       const { html, text } = await this.notificationRepository.renderEmail({
         template: EmailTemplate.ALBUM_UPDATE,
         data: {
-          baseUrl: server.externalDomain || DEFAULT_EXTERNAL_DOMAIN,
+          baseUrl: getExternalDomain(server, port),
           albumId: album.id,
           albumName: album.albumName,
           recipientName: recipient.name,
