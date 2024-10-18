@@ -59,7 +59,7 @@ wget -O hwaccel.ml.yml https://github.com/immich-app/immich/releases/latest/down
 - Populate custom database information if necessary.
 
 :::info Optional Features
-You can make the required edits to `docker-compose.yml` to add external libraries or enable hardware acceleration now by following [their guides](#setting-up-optional-features) up to and including those edits.
+You can edit `docker-compose.yml` to add external libraries or enable hardware acceleration now by following [their guides](#setting-up-optional-features).
 :::
 
 ## Step 3 - Start the containers
@@ -121,10 +121,10 @@ When a new version of Immich is [released][releases], the application can be upg
 docker compose pull && docker compose up -d
 ```
 
-To clean up disk space, the old version's obsolete containers can be deleted with the following command, which deletes all stopped containers. As such, make sure to start Immich (with the previous command) before running it.
+To clean up disk space, the old version's obsolete containers can be deleted with the following command, which deletes all unused container images. As such, make sure to start Immich (with the previous command) before running it.
 
 ```bash title="Delete all stopped containers"
-docker system prune
+docker image prune
 ```
 
 :::caution Automatic Updates
