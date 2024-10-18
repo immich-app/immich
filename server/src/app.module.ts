@@ -14,6 +14,7 @@ import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
@@ -66,6 +67,7 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(ITelemetryRepository) private telemetryRepository: ITelemetryRepository,
   ) {
     logger.setAppName(this.worker);
   }
@@ -73,6 +75,7 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
   abstract getWorker(): ImmichWorker;
 
   async onModuleInit() {
+    this.telemetryRepository.setup({ repositories: repositories.map(({ useClass }) => useClass) });
     this.eventRepository.setup({ services });
     await this.eventRepository.emit('app.bootstrap', this.worker);
   }

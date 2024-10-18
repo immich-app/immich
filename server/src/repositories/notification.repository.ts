@@ -15,9 +15,7 @@ import {
   SendEmailResponse,
   SmtpOptions,
 } from 'src/interfaces/notification.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 
-@Instrumentation()
 @Injectable()
 export class NotificationRepository implements INotificationRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {

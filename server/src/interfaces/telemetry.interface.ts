@@ -1,4 +1,5 @@
 import { MetricOptions } from '@opentelemetry/api';
+import { ClassConstructor } from 'class-transformer';
 
 export const ITelemetryRepository = 'ITelemetryRepository';
 
@@ -14,6 +15,7 @@ export interface IMetricGroupRepository {
 }
 
 export interface ITelemetryRepository {
+  setup(options: { repositories: ClassConstructor<unknown>[] }): void;
   api: IMetricGroupRepository;
   host: IMetricGroupRepository;
   jobs: IMetricGroupRepository;

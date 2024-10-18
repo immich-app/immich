@@ -7,7 +7,6 @@ import sharp from 'sharp';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GitHubRelease, IServerInfoRepository, ServerBuildVersions } from 'src/interfaces/server-info.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 
 const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
@@ -34,7 +33,6 @@ const getLockfileVersion = (name: string, lockfile?: BuildLockfile) => {
   return item?.version;
 };
 
-@Instrumentation()
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {
   constructor(

@@ -15,11 +15,9 @@ import {
   VectorUpdateResult,
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
   private vectorExtension: VectorExtension;
