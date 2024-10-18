@@ -18,6 +18,7 @@ class PeopleUpdateItem {
     required this.id,
     this.isHidden,
     this.name,
+    this.withArchived,
   });
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
@@ -53,13 +54,23 @@ class PeopleUpdateItem {
   ///
   String? name;
 
+  /// This property was added in v1.119.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? withArchived;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateItem &&
     other.birthDate == birthDate &&
     other.featureFaceAssetId == featureFaceAssetId &&
     other.id == id &&
     other.isHidden == isHidden &&
-    other.name == name;
+    other.name == name &&
+    other.withArchived == withArchived;
 
   @override
   int get hashCode =>
@@ -68,10 +79,11 @@ class PeopleUpdateItem {
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
     (id.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
-    (name == null ? 0 : name!.hashCode);
+    (name == null ? 0 : name!.hashCode) +
+    (withArchived == null ? 0 : withArchived!.hashCode);
 
   @override
-  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, id=$id, isHidden=$isHidden, name=$name]';
+  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, id=$id, isHidden=$isHidden, name=$name, withArchived=$withArchived]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -96,6 +108,11 @@ class PeopleUpdateItem {
     } else {
     //  json[r'name'] = null;
     }
+    if (this.withArchived != null) {
+      json[r'withArchived'] = this.withArchived;
+    } else {
+    //  json[r'withArchived'] = null;
+    }
     return json;
   }
 
@@ -113,6 +130,7 @@ class PeopleUpdateItem {
         id: mapValueOfType<String>(json, r'id')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),
+        withArchived: mapValueOfType<bool>(json, r'withArchived'),
       );
     }
     return null;
