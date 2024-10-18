@@ -8515,7 +8515,8 @@
         "enum": [
           "mp3",
           "aac",
-          "libopus"
+          "libopus",
+          "pcm_s16le"
         ],
         "type": "string"
       },

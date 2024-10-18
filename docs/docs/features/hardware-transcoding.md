@@ -23,7 +23,7 @@ You do not need to redo any transcoding jobs after enabling hardware acceleratio
 - Raspberry Pi is currently not supported.
 - Two-pass mode is only supported for NVENC. Other APIs will ignore this setting.
 - By default, only encoding is currently hardware accelerated. This means the CPU is still used for software decoding and tone-mapping.
-  - NVENC and RKMPP can be fully accelerated by enabling hardware decoding in the video transcoding settings.
+  - You can benefit from end-to-end acceleration by enabling hardware decoding in the video transcoding settings.
 - Hardware dependent
   - Codec support varies, but H.264 and HEVC are usually supported.
     - Notably, NVIDIA and AMD GPUs do not support VP9 encoding.
@@ -66,7 +66,7 @@ For RKMPP to work:
 
 3. Redeploy the `immich-server` container with these updated settings.
 4. In the Admin page under `Video transcoding settings`, change the hardware acceleration setting to the appropriate option and save.
-5. (Optional) If using a compatible backend, you may enable hardware decoding for optimal performance.
+5. (Optional) Enable hardware decoding for optimal performance.
 
 #### Single Compose File
 

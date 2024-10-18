@@ -3,14 +3,14 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
-import { AuthDto, ImmichCookie } from 'src/dtos/auth.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
 } from 'src/dtos/shared-link.dto';
-import { Permission } from 'src/enum';
+import { ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
