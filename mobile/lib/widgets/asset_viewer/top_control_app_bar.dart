@@ -6,8 +6,6 @@ import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
-import 'package:immich_mobile/services/user.service.dart';
-import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -46,7 +44,6 @@ class TopControlAppBar extends HookConsumerWidget {
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
-    final userService = ref.watch(userServiceProvider);
     final comments = album != null &&
             album.remoteId != null &&
             asset.remoteId != null
@@ -164,26 +161,6 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
-    Widget buildPartnerButton(Asset asset) {
-      Future<User?> userFuture = userService.getUserbyId(asset.ownerId);
-      return FutureBuilder<User?>(
-        future: userFuture,
-        builder: (BuildContext context, AsyncSnapshot<User?> userSnapshot) =>
-            IconButton(
-          onPressed: () {
-            (userSnapshot.hasData && userSnapshot.data != null)
-                ? onPartnerPressed(asset, userSnapshot.data!)
-                : null;
-          },
-          icon: UserCircleAvatar(
-            user: userSnapshot.data,
-            radius: 10,
-            size: 20,
-          ).build(context),
-        ),
-      );
-    }
-
     Widget buildBackButton() {
       return IconButton(
         onPressed: () {
@@ -214,7 +191,6 @@ class TopControlAppBar extends HookConsumerWidget {
           buildAddToAlbumButton(),
         if (asset.isTrashed) buildRestoreButton(),
         if (album != null && album.shared) buildActivitiesButton(),
-        if (isPartner) buildPartnerButton(a),
         buildMoreInfoButton(),
       ],
     );

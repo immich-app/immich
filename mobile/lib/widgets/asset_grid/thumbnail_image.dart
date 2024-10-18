@@ -173,7 +173,7 @@ class ThumbnailImage extends ConsumerWidget {
       );
     }
 
-    Future<User?> userFuture = userService.getUserbyId(asset.ownerId);
+    Future<User?> userFuture = userService.getUserbyIsarId(asset.ownerId);
     return FutureBuilder<User?>(
       future: userFuture,
       builder: (BuildContext context, AsyncSnapshot<User?> userSnapshot) =>

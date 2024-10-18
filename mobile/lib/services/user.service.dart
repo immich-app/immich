@@ -39,7 +39,7 @@ class UserService {
       _userRepository.getAll(self: self);
 
   Future<User?> getUser(String id) async => await _userRepository.get(id);
-  Future<User?> getUserbyId(int id) async =>
+  Future<User?> getUserbyIsarId(int id) async =>
       await _userRepository.getByIsarId(id);
 
   Future<({String profileImagePath})?> uploadProfileImage(XFile image) async {
