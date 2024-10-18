@@ -111,12 +111,7 @@
     <ChangePasswordSettings />
   </SettingAccordion>
 
-  <SettingAccordion
-    icon={mdiAccountGroupOutline}
-    key="partner-sharing"
-    title={$t('partner_sharing')}
-    subtitle={$t('manage_sharing_with_partners')}
-  >
+  <SettingAccordion icon={mdiAccountGroupOutline} key="sharing" title={$t('sharing')} subtitle={$t('manage_sharing')}>
     <PartnerSettings user={$user} />
   </SettingAccordion>
 
