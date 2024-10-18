@@ -33,6 +33,7 @@ jobs:
               - 'server/**'
               - 'openapi/**'
               - 'web/**'
+              - 'i18n/**'
             machine-learning:
               - 'machine-learning/**'
 

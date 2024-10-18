@@ -37,6 +37,7 @@ WORKDIR /usr/src/app
 COPY web/package*.json web/svelte.config.js ./
 RUN npm ci
 COPY web ./
+COPY i18n ../i18n
 RUN npm run build
 
 
