@@ -289,7 +289,6 @@ export class MediaService extends BaseService {
       countFrames: this.logger.isLevelEnabled(LogLevel.DEBUG), // makes frame count more reliable for progress logs
     });
     const mainVideoStream = this.getMainStream(videoStreams);
-
     const mainAudioStream = this.getMainStream(audioStreams);
     if (!mainVideoStream || !format.formatName) {
       return JobStatus.FAILED;
