@@ -15,6 +15,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { DateTime, Duration } from 'luxon';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { QRCodeImage } from 'svelte-qrcode-image';
 
   export let onClose: () => void;
   export let albumId: string | undefined = undefined;
@@ -23,6 +24,8 @@
   export let onCreated: () => void = () => {};
 
   let sharedLink: string | null = null;
+  let showQRCode: boolean;
+  let QRCodeWidth: number = 376;
   let description = '';
   let allowDownload = true;
   let allowUpload = false;
@@ -94,6 +97,7 @@
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
       onCreated();
+      showQRCode = true;
     } catch (error) {
       handleError(error, $t('errors.failed_to_create_shared_link'));
     }
@@ -217,6 +221,13 @@
             disabled={editingLink && !shouldChangeExpirationTime}
             number={true}
           />
+        </div>
+        <div class="mt-3" id="qrcode">
+          {#if showQRCode && sharedLink}
+            <div class="container">
+              <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;" displayWidth={QRCodeWidth} />
+            </div>
+          {/if}
         </div>
       </div>
     </div>

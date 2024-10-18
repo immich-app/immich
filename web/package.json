@@ -84,6 +84,7 @@
     "svelte-i18n": "^4.0.0",
     "svelte-local-storage-store": "^0.6.4",
     "svelte-maplibre": "^0.9.13",
+    "svelte-qrcode-image": "^2.0.0-alpha.1",
     "thumbhash": "^0.1.1"
   },
   "volta": {
