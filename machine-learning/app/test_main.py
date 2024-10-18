@@ -323,7 +323,7 @@ class TestAnnSession:
         session.run(None, input_feed)
 
         ann_session.return_value.execute.assert_called_once_with(123, [input1, input2])
-        np_spy.call_count == 2
+        assert np_spy.call_count == 2
         np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
 
 
@@ -456,11 +456,14 @@ class TestCLIP:
 
 
 class TestFaceRecognition:
-    def test_set_min_score(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(FaceRecognizer, "load")
-        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache", min_score=0.5)
+    def test_set_min_score(self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
-        assert face_recognizer.min_score == 0.5
+        face_detector = FaceDetector("buffalo_s", min_score=0.5, cache_dir="test_cache")
+        face_detector.load()
+
+        assert face_detector.min_score == 0.5
+        assert face_detector.model.det_thresh == 0.5
 
     def test_detection(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceDetector, "load")

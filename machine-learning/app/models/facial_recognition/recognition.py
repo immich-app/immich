@@ -19,9 +19,8 @@ class FaceRecognizer(InferenceModel):
     depends = [(ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)]
     identity = (ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
 
-    def __init__(self, model_name: str, min_score: float = 0.7, **model_kwargs: Any) -> None:
+    def __init__(self, model_name: str, **model_kwargs: Any) -> None:
         super().__init__(model_name, **model_kwargs)
-        self.min_score = model_kwargs.pop("minScore", min_score)
         self.batch = self.model_format == ModelFormat.ONNX
 
     def _load(self) -> ModelSession:
