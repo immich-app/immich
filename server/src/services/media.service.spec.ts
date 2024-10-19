@@ -2292,6 +2292,22 @@ describe(MediaService.name, () => {
 
       expect(mediaMock.probe).toHaveBeenCalledWith(assetStub.video.originalPath, { countFrames: false });
     });
+
+    it('should process unknown audio stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.audioStreamUnknown);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:a copy']),
+          twoPass: false,
+        }),
+      );
+    });
   });
 
   describe('isSRGB', () => {
