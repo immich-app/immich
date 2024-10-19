@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/utils/store_converters.dart';
-import 'package:immich_mobile/presentation/modules/theme/models/app_theme.model.dart';
+import 'package:immich_mobile/presentation/theme/app_theme.dart';
 
 @immutable
 class StoreValue<T> {

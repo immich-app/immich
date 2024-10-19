@@ -2,6 +2,10 @@ import 'package:get_it/get_it.dart';
 import 'package:immich_mobile/domain/interfaces/album.interface.dart';
 import 'package:immich_mobile/domain/interfaces/album_asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/album_etag.interface.dart';
+import 'package:immich_mobile/domain/interfaces/api/authentication_api.interface.dart';
+import 'package:immich_mobile/domain/interfaces/api/server_api.interface.dart';
+import 'package:immich_mobile/domain/interfaces/api/sync_api.interface.dart';
+import 'package:immich_mobile/domain/interfaces/api/user_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/database.interface.dart';
 import 'package:immich_mobile/domain/interfaces/device_album.interface.dart';
@@ -15,6 +19,10 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/repositories/album.repository.dart';
 import 'package:immich_mobile/domain/repositories/album_asset.repository.dart';
 import 'package:immich_mobile/domain/repositories/album_etag.repository.dart';
+import 'package:immich_mobile/domain/repositories/api/authentication_api.repository.dart';
+import 'package:immich_mobile/domain/repositories/api/server_api.repository.dart';
+import 'package:immich_mobile/domain/repositories/api/sync_api.repository.dart';
+import 'package:immich_mobile/domain/repositories/api/user_api.repository.dart';
 import 'package:immich_mobile/domain/repositories/asset.repository.dart';
 import 'package:immich_mobile/domain/repositories/database.repository.dart';
 import 'package:immich_mobile/domain/repositories/device_album.repository.dart';
@@ -29,11 +37,9 @@ import 'package:immich_mobile/domain/services/app_setting.service.dart';
 import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
-import 'package:immich_mobile/domain/services/server_info.service.dart';
-import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/platform/messages.g.dart';
-import 'package:immich_mobile/presentation/modules/theme/states/app_theme.state.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
+import 'package:immich_mobile/presentation/states/app_theme.state.dart';
 import 'package:immich_mobile/presentation/states/current_user.state.dart';
 import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
 import 'package:immich_mobile/presentation/states/server_info/server_feature_config.state.dart';
@@ -68,6 +74,7 @@ class ServiceLocator {
     _registerSingleton(DriftDatabaseRepository());
     _registerRepositories();
     _registerPreGlobalStates();
+    _registerServices();
   }
 
   static void configureServicesForIsolate({
@@ -78,37 +85,63 @@ class ServiceLocator {
     _registerSingleton(apiClient);
 
     _registerRepositories();
-    registerPostValidationServices();
+    _registerServices();
   }
 
   static void _registerRepositories() {
-    /// Repositories
+    // Used for transactions
     _registerSingleton<IDatabaseRepository>(di<DriftDatabaseRepository>());
-    _registerFactory<IStoreRepository>(() => StoreRepository(di()));
-    _registerFactory<ILogRepository>(() => LogRepository(di()));
-    _registerFactory<AppSettingService>(() => AppSettingService(di()));
-    _registerFactory<IUserRepository>(() => UserRepository(di()));
-    _registerFactory<IAssetRepository>(() => AssetRepository(di()));
-    _registerFactory<IAlbumRepository>(() => AlbumRepository(di()));
+    _registerSingleton(ImApiClient(endpoint: ''));
+
+    _registerFactory<IStoreRepository>(() => StoreRepository(db: di()));
+    _registerFactory<ILogRepository>(() => LogRepository(db: di()));
+    _registerFactory<AppSettingService>(() => AppSettingService(store: di()));
+    _registerFactory<IUserRepository>(() => UserRepository(db: di()));
+    _registerFactory<IAssetRepository>(() => AssetRepository(db: di()));
+    _registerFactory<IAlbumRepository>(() => AlbumRepository(db: di()));
     _registerFactory<IDeviceAssetRepository>(
       () => const DeviceAssetRepository(),
     );
-    _registerFactory<IRenderListRepository>(() => RenderListRepository(di()));
+    _registerFactory<IRenderListRepository>(
+      () => RenderListRepository(db: di()),
+    );
     _registerFactory<IDeviceAssetToHashRepository>(
-      () => DeviceAssetToHashRepository(di()),
+      () => DeviceAssetToHashRepository(db: di()),
     );
     _registerFactory<IDeviceAlbumRepository>(
       () => const DeviceAlbumRepository(),
     );
     _registerFactory<IAlbumToAssetRepository>(
-      () => AlbumToAssetRepository(di()),
+      () => AlbumToAssetRepository(db: di()),
     );
-    _registerFactory<IAlbumETagRepository>(() => AlbumETagRepository(di()));
 
-    /// Services
-    _registerFactory<LoginService>(() => const LoginService());
+    /// API Repos
+    _registerFactory<IAlbumETagRepository>(() => AlbumETagRepository(db: di()));
+    _registerFactory<ISyncApiRepository>(
+      () => SyncApiRepository(syncApi: di<ImApiClient>().getSyncApi()),
+    );
+    _registerFactory<IServerApiRepository>(
+      () => ServerApiRepository(serverApi: di<ImApiClient>().getServerApi()),
+    );
+    _registerFactory<IAuthenticationApiRepository>(
+      () => AuthenticationApiRepository(
+        authenticationApi: di<ImApiClient>().getAuthenticationApi(),
+        oAuthApi: di<ImApiClient>().getOAuthApi(),
+      ),
+    );
+    _registerFactory<IUserApiRepository>(
+      () => UserApiRepository(usersApi: di<ImApiClient>().getUsersApi()),
+    );
+  }
+
+  static void _registerServices() {
+    /// Special services. So they are initiated as singletons
     _registerSingleton(ImHostService());
     _registerSingleton(const AlbumSyncService());
+    _registerSingleton(const AssetSyncService());
+
+    ///
+    _registerFactory<LoginService>(() => const LoginService());
     _registerFactory<HashService>(() => HashService(
           hostService: di(),
           assetToHashRepo: di(),
@@ -119,28 +152,21 @@ class ServiceLocator {
 
   static void _registerPreGlobalStates() {
     _registerSingleton(AppRouter());
-    _registerLazySingleton<AppThemeCubit>(() => AppThemeCubit(di()));
+    _registerLazySingleton<AppThemeProvider>(
+      () => AppThemeProvider(settingsService: di()),
+    );
     _registerSingleton(GalleryPermissionProvider());
-  }
-
-  static void registerApiClient(String endpoint) {
-    _registerSingleton(ImApiClient(endpoint: endpoint));
-  }
-
-  static void registerPostValidationServices() {
-    _registerFactory<UserService>(() => UserService(
-          di<ImApiClient>().getUsersApi(),
-        ));
-    _registerFactory<ServerInfoService>(() => ServerInfoService(
-          di<ImApiClient>().getServerApi(),
-        ));
-    _registerSingleton(const AssetSyncService());
   }
 
   static void registerPostGlobalStates() {
     _registerLazySingleton<ServerFeatureConfigProvider>(
-      () => ServerFeatureConfigProvider(di()),
+      () => ServerFeatureConfigProvider(serverApiRepo: di()),
     );
+  }
+
+  static Future<void> registerApiClient(String endpoint) async {
+    await di.unregister<ImApiClient>();
+    _registerSingleton(ImApiClient(endpoint: endpoint));
   }
 
   static void registerCurrentUser(User user) {

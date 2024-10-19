@@ -10,16 +10,16 @@ import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 class AlbumRepository with LogMixin implements IAlbumRepository {
   final DriftDatabaseRepository _db;
 
-  const AlbumRepository(this._db);
+  const AlbumRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
   FutureOr<Album?> upsert(Album album) async {
     try {
       final albumData = _toEntity(album);
-      final data = await _db.into(_db.album).insertReturningOrNull(
-            albumData,
-            onConflict: DoUpdate((_) => albumData, target: [_db.album.localId]),
-          );
+      final data = await _db.album.insertReturningOrNull(
+        albumData,
+        onConflict: DoUpdate((_) => albumData, target: [_db.album.localId]),
+      );
       if (data != null) {
         return _toModel(data);
       }

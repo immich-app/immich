@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:openapi/api.dart' as api;
-
 class User {
   const User({
     required this.id,
@@ -96,25 +94,6 @@ class User {
         memoryEnabled.hashCode ^
         avatarColor.hashCode;
   }
-
-  factory User.fromAdminDto(
-    api.UserAdminResponseDto userDto, [
-    api.UserPreferencesResponseDto? userPreferences,
-  ]) {
-    return User(
-      id: userDto.id,
-      updatedAt: DateTime.now(),
-      name: userDto.name,
-      email: userDto.email,
-      isAdmin: userDto.isAdmin,
-      quotaSizeInBytes: userDto.quotaSizeInBytes ?? 0,
-      quotaUsageInBytes: userDto.quotaUsageInBytes ?? 0,
-      inTimeline: true,
-      profileImagePath: userDto.profileImagePath,
-      memoryEnabled: userPreferences?.memories.enabled ?? true,
-      avatarColor: userDto.avatarColor.toEnum(),
-    );
-  }
 }
 
 enum UserAvatarColor {
@@ -129,34 +108,6 @@ enum UserAvatarColor {
   orange,
   gray,
   amber,
-}
-
-extension AvatarColorEnumHelper on api.UserAvatarColor {
-  UserAvatarColor toEnum() {
-    switch (this) {
-      case api.UserAvatarColor.primary:
-        return UserAvatarColor.primary;
-      case api.UserAvatarColor.pink:
-        return UserAvatarColor.pink;
-      case api.UserAvatarColor.red:
-        return UserAvatarColor.red;
-      case api.UserAvatarColor.yellow:
-        return UserAvatarColor.yellow;
-      case api.UserAvatarColor.blue:
-        return UserAvatarColor.blue;
-      case api.UserAvatarColor.green:
-        return UserAvatarColor.green;
-      case api.UserAvatarColor.purple:
-        return UserAvatarColor.purple;
-      case api.UserAvatarColor.orange:
-        return UserAvatarColor.orange;
-      case api.UserAvatarColor.gray:
-        return UserAvatarColor.gray;
-      case api.UserAvatarColor.amber:
-        return UserAvatarColor.amber;
-    }
-    return UserAvatarColor.primary;
-  }
 }
 
 extension AvatarColorToColorHelper on UserAvatarColor {

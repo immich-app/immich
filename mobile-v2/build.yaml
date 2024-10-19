@@ -33,6 +33,7 @@ targets:
       slang_build_runner:
         options:
           fallback_strategy: base_locale_empty_string
+          string_interpolation: braces
           input_directory: assets/i18n
           output_directory: lib/i18n
           timestamp: false

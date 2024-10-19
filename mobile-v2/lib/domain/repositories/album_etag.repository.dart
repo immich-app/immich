@@ -10,17 +10,16 @@ import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 class AlbumETagRepository with LogMixin implements IAlbumETagRepository {
   final DriftDatabaseRepository _db;
 
-  const AlbumETagRepository(this._db);
+  const AlbumETagRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
   FutureOr<bool> upsert(AlbumETag albumETag) async {
     try {
       final entity = _toEntity(albumETag);
-      await _db.into(_db.albumETag).insert(
-            entity,
-            onConflict:
-                DoUpdate((_) => entity, target: [_db.albumETag.albumId]),
-          );
+      await _db.albumETag.insertOne(
+        entity,
+        onConflict: DoUpdate((_) => entity, target: [_db.albumETag.albumId]),
+      );
       return true;
     } catch (e, s) {
       log.e("Error while adding an album etag to the DB", e, s);
@@ -30,10 +29,9 @@ class AlbumETagRepository with LogMixin implements IAlbumETagRepository {
 
   @override
   FutureOr<AlbumETag?> get(int albumId) async {
-    return await _db.managers.albumETag
-        .filter((r) => r.albumId.id.equals(albumId))
-        .map(_toModel)
-        .getSingleOrNull();
+    final query = _db.albumETag.select()
+      ..where((r) => r.albumId.equals(albumId));
+    return await query.map(_toModel).getSingleOrNull();
   }
 }
 

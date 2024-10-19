@@ -9,7 +9,7 @@ import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 class RenderListRepository with LogMixin implements IRenderListRepository {
   final DriftDatabaseRepository _db;
 
-  const RenderListRepository(this._db);
+  const RenderListRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
   Stream<RenderList> watchAll() {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/presentation/modules/theme/models/app_colors.model.dart';
+import 'package:immich_mobile/presentation/theme/app_colors.dart';
 import 'package:immich_mobile/utils/extensions/material_state.extension.dart';
 
 enum AppTheme {

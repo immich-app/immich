@@ -1,11 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
-import 'package:immich_mobile/domain/interfaces/renderlist.interface.dart';
+import 'package:immich_mobile/domain/utils/renderlist_providers.dart';
 import 'package:immich_mobile/presentation/components/grid/immich_asset_grid.state.dart';
 import 'package:immich_mobile/presentation/components/grid/immich_asset_grid.widget.dart';
-import 'package:immich_mobile/service_locator.dart';
 
 @RoutePage()
 class HomePage extends StatelessWidget {
@@ -16,8 +14,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: BlocProvider(
         create: (_) => AssetGridCubit(
-          renderStream: di<IRenderListRepository>().watchAll(),
-          assetProvider: di<IAssetRepository>().getAll,
+          renderListProvider: RenderListProvider.mainTimeline(),
         ),
         child: const ImAssetGrid(),
       ),

@@ -10,7 +10,7 @@ import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 class StoreRepository with LogMixin implements IStoreRepository {
   final DriftDatabaseRepository _db;
 
-  const StoreRepository(this._db);
+  const StoreRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
   FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key) async {

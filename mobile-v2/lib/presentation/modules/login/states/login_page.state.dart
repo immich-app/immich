@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:immich_mobile/domain/interfaces/api/user_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
@@ -8,7 +9,6 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/album_sync.service.dart';
 import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
-import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/modules/login/models/login_page.model.dart';
 import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
@@ -19,7 +19,7 @@ import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 import 'package:immich_mobile/utils/snackbar_manager.dart';
 
 class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
-  LoginPageCubit() : super(LoginPageState.reset());
+  LoginPageCubit() : super(LoginPageState.initial());
 
   String _appendSchema(String url) {
     // Add schema if none is set
@@ -68,8 +68,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
       url = await loginService.resolveEndpoint(uri);
 
       di<IStoreRepository>().upsert(StoreKey.serverEndpoint, url);
-      ServiceLocator.registerApiClient(url);
-      ServiceLocator.registerPostValidationServices();
+      await ServiceLocator.registerApiClient(url);
       ServiceLocator.registerPostGlobalStates();
 
       // Fetch server features
@@ -130,7 +129,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
     /// Set token to interceptor
     await di<ImApiClient>().init(accessToken: accessToken);
 
-    final user = await di<UserService>().getMyUser();
+    final user = await di<IUserApiRepository>().getMyUser();
     if (user == null) {
       SnackbarManager.showError(t.login.error.error_login);
       return;
@@ -152,6 +151,6 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
   }
 
   void resetServerValidation() {
-    emit(LoginPageState.reset());
+    emit(LoginPageState.initial());
   }
 }

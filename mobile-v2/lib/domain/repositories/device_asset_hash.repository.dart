@@ -12,7 +12,8 @@ class DeviceAssetToHashRepository
     implements IDeviceAssetToHashRepository {
   final DriftDatabaseRepository _db;
 
-  const DeviceAssetToHashRepository(this._db);
+  const DeviceAssetToHashRepository({required DriftDatabaseRepository db})
+      : _db = db;
 
   @override
   FutureOr<bool> upsertAll(Iterable<DeviceAssetToHash> assetHash) async {
@@ -31,10 +32,9 @@ class DeviceAssetToHashRepository
 
   @override
   Future<List<DeviceAssetToHash>> getForIds(Iterable<String> localIds) async {
-    return await _db.managers.deviceAssetToHash
-        .filter((f) => f.localId.isIn(localIds))
-        .map(_toModel)
-        .get();
+    final query = _db.deviceAssetToHash.select()
+      ..where((f) => f.localId.isIn(localIds));
+    return await query.map(_toModel).get();
   }
 
   @override

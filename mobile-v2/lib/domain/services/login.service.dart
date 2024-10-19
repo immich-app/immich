@@ -4,28 +4,31 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart';
+import 'package:immich_mobile/domain/interfaces/api/authentication_api.interface.dart';
+import 'package:immich_mobile/domain/interfaces/api/server_api.interface.dart';
+import 'package:immich_mobile/domain/interfaces/api/user_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
-import 'package:openapi/api.dart';
 
+// Cannot add dependency repos to constructor as this requires the newly registered API client from login
+// and not a cached repos from DI
 class LoginService with LogMixin {
   const LoginService();
 
-  Future<bool> isEndpointAvailable(Uri uri, {ImApiClient? client}) async {
+  Future<bool> isEndpointAvailable(Uri uri) async {
     String baseUrl = uri.toString();
 
     if (!baseUrl.endsWith('/api')) {
       baseUrl += '/api';
     }
 
-    final serverAPI =
-        client?.getServerApi() ?? ImApiClient(endpoint: baseUrl).getServerApi();
+    await ServiceLocator.registerApiClient(baseUrl);
+
     try {
-      await serverAPI.pingServer();
+      await di<IServerApiRepository>().pingServer();
     } catch (e) {
       log.e("Exception occured while validating endpoint", e);
       return false;
@@ -61,12 +64,7 @@ class LoginService with LogMixin {
 
   Future<String?> passwordLogin(String email, String password) async {
     try {
-      final loginResponse =
-          await di<ImApiClient>().getAuthenticationApi().login(
-                LoginCredentialDto(email: email, password: password),
-              );
-
-      return loginResponse?.accessToken;
+      return await di<IAuthenticationApiRepository>().login(email, password);
     } catch (e, s) {
       log.e("Exception occured while performing password login", e, s);
     }
@@ -75,16 +73,14 @@ class LoginService with LogMixin {
 
   Future<String?> oAuthLogin() async {
     const String oAuthCallbackSchema = 'app.immich';
-
-    final oAuthApi = di<ImApiClient>().getOAuthApi();
+    final authApi = di<IAuthenticationApiRepository>();
 
     try {
-      final oAuthUrl = await oAuthApi.startOAuth(
-        OAuthConfigDto(redirectUri: "$oAuthCallbackSchema:/"),
+      final oAuthUrl = await authApi.startOAuth(
+        redirectUri: "$oAuthCallbackSchema:/",
       );
 
-      final oAuthUrlRes = oAuthUrl?.url;
-      if (oAuthUrlRes == null) {
+      if (oAuthUrl == null) {
         log.e(
           "oAuth Server URL not available. Kindly ensure oAuth login is enabled in the server",
         );
@@ -92,15 +88,11 @@ class LoginService with LogMixin {
       }
 
       final oAuthCallbackUrl = await FlutterWebAuth2.authenticate(
-        url: oAuthUrlRes,
+        url: oAuthUrl,
         callbackUrlScheme: oAuthCallbackSchema,
       );
 
-      final loginResponse = await oAuthApi.finishOAuth(
-        OAuthCallbackDto(url: oAuthCallbackUrl),
-      );
-
-      return loginResponse?.accessToken;
+      return await authApi.finishOAuth(oAuthCallbackUrl);
     } catch (e) {
       log.e("Exception occured while performing oauth login", e);
     }
@@ -114,8 +106,7 @@ class LoginService with LogMixin {
       return false;
     }
 
-    ServiceLocator.registerApiClient(serverEndpoint);
-    ServiceLocator.registerPostValidationServices();
+    await ServiceLocator.registerApiClient(serverEndpoint);
     ServiceLocator.registerPostGlobalStates();
 
     final accessToken =
@@ -124,10 +115,10 @@ class LoginService with LogMixin {
       return false;
     }
 
-    /// Set token to interceptor
+    // Set token to interceptor
     await di<ImApiClient>().init(accessToken: accessToken);
 
-    final user = await di<UserService>().getMyUser().timeout(
+    final user = await di<IUserApiRepository>().getMyUser().timeout(
       const Duration(seconds: 10),
       // ignore: function-always-returns-null
       onTimeout: () {

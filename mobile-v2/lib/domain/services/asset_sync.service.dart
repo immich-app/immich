@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/domain/interfaces/api/sync_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/database.interface.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
@@ -8,10 +9,8 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/collection_util.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
-import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/isolate_helper.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
-import 'package:openapi/api.dart';
 
 class AssetSyncService with LogMixin {
   const AssetSyncService();
@@ -36,9 +35,9 @@ class AssetSyncService with LogMixin {
     int? limit,
   }) async {
     try {
-      final syncClient = di<ImApiClient>().getSyncApi();
       final db = di<IDatabaseRepository>();
       final assetRepo = di<IAssetRepository>();
+      final syncApiRepo = di<ISyncApiRepository>();
 
       final chunkSize = limit ?? kFullSyncChunkSize;
       final updatedTill = updatedUtil ?? DateTime.now().toUtc();
@@ -50,17 +49,15 @@ class AssetSyncService with LogMixin {
           "Requesting more chunks from lastId - ${lastAssetId ?? "<initial_fetch>"}",
         );
 
-        final assets = await syncClient.getFullSyncForUser(AssetFullSyncDto(
+        final assetsFromServer = await syncApiRepo.getFullSyncForUser(
           limit: chunkSize,
           updatedUntil: updatedTill,
           lastId: lastAssetId,
           userId: user.id,
-        ));
-        if (assets == null) {
+        );
+        if (assetsFromServer == null) {
           break;
         }
-
-        final assetsFromServer = assets.map(Asset.remote).toList();
 
         await db.txn(() async {
           final assetsInDb =
@@ -73,8 +70,8 @@ class AssetSyncService with LogMixin {
           );
         });
 
-        lastAssetId = assets.lastOrNull?.id;
-        if (assets.length != chunkSize) break;
+        lastAssetId = assetsFromServer.lastOrNull?.remoteId;
+        if (assetsFromServer.length != chunkSize) break;
       }
 
       return true;

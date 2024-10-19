@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/utils/collection_util.dart';
-import 'package:immich_mobile/utils/extensions/string.extension.dart';
-import 'package:openapi/api.dart';
 
 enum AssetType {
   // do not change this order!
@@ -48,19 +46,6 @@ class Asset {
     this.remoteId,
     this.livePhotoVideoId,
   });
-
-  factory Asset.remote(AssetResponseDto dto) => Asset(
-        remoteId: dto.id,
-        createdTime: dto.fileCreatedAt,
-        duration: dto.duration.tryParseInt() ?? 0,
-        height: dto.exifInfo?.exifImageHeight?.toInt(),
-        width: dto.exifInfo?.exifImageWidth?.toInt(),
-        hash: dto.checksum,
-        name: dto.originalFileName,
-        livePhotoVideoId: dto.livePhotoVideoId,
-        modifiedTime: dto.fileModifiedAt,
-        type: _toAssetType(dto.type),
-      );
 
   Asset copyWith({
     int? id,
@@ -177,10 +162,3 @@ class Asset {
   static int compareByLocalId(Asset a, Asset b) =>
       CollectionUtil.compareToNullable(a.localId, b.localId);
 }
-
-AssetType _toAssetType(AssetTypeEnum type) => switch (type) {
-      AssetTypeEnum.AUDIO => AssetType.audio,
-      AssetTypeEnum.IMAGE => AssetType.image,
-      AssetTypeEnum.VIDEO => AssetType.video,
-      _ => AssetType.other,
-    };

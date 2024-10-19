@@ -11,16 +11,16 @@ import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 class AlbumToAssetRepository with LogMixin implements IAlbumToAssetRepository {
   final DriftDatabaseRepository _db;
 
-  const AlbumToAssetRepository(this._db);
+  const AlbumToAssetRepository({required DriftDatabaseRepository db})
+      : _db = db;
 
   @override
   FutureOr<bool> addAssetIds(int albumId, Iterable<int> assetIds) async {
     try {
       await _db.albumToAsset.insertAll(
-        assetIds.map((a) => AlbumToAssetCompanion.insert(
-              assetId: a,
-              albumId: albumId,
-            )),
+        assetIds.map(
+          (a) => AlbumToAssetCompanion.insert(assetId: a, albumId: albumId),
+        ),
         onConflict: DoNothing(
           target: [_db.albumToAsset.assetId, _db.albumToAsset.albumId],
         ),

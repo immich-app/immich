@@ -17,9 +17,9 @@ class ServerFeatureConfig {
     );
   }
 
-  const ServerFeatureConfig.reset()
-      : features = const ServerFeatures.reset(),
-        config = const ServerConfig.reset();
+  const ServerFeatureConfig.initial()
+      : features = const ServerFeatures.initial(),
+        config = const ServerConfig.initial();
 
   @override
   String toString() =>

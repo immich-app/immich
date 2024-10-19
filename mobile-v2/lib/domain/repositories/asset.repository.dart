@@ -11,7 +11,7 @@ import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 class AssetRepository with LogMixin implements IAssetRepository {
   final DriftDatabaseRepository _db;
 
-  const AssetRepository(this._db);
+  const AssetRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
   Future<bool> upsertAll(Iterable<Asset> assets) async {

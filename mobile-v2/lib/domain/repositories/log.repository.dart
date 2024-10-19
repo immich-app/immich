@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/repositories/database.repository.dart';
 class LogRepository implements ILogRepository {
   final DriftDatabaseRepository _db;
 
-  const LogRepository(this._db);
+  const LogRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
   Future<List<LogMessage>> getAll() async {
@@ -32,7 +32,7 @@ class LogRepository implements ILogRepository {
   @override
   FutureOr<bool> create(LogMessage log) async {
     try {
-      await _db.into(_db.logs).insert(_toEntity(log));
+      await _db.logs.insertOne(_toEntity(log));
       return true;
     } catch (e) {
       debugPrint("Error while adding a log to the DB - $e");
@@ -56,7 +56,7 @@ class LogRepository implements ILogRepository {
   @override
   FutureOr<bool> deleteAll() async {
     try {
-      await _db.managers.logs.delete();
+      await _db.logs.deleteAll();
       return true;
     } catch (e) {
       debugPrint("Error while clearning the logs in DB - $e");

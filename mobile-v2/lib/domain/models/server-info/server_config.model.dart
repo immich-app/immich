@@ -1,5 +1,3 @@
-import 'package:openapi/api.dart';
-
 class ServerConfig {
   final String? oauthButtonText;
 
@@ -11,12 +9,7 @@ class ServerConfig {
     );
   }
 
-  factory ServerConfig.fromDto(ServerConfigDto dto) => ServerConfig(
-        oauthButtonText:
-            dto.oauthButtonText.isEmpty ? null : dto.oauthButtonText,
-      );
-
-  const ServerConfig.reset() : oauthButtonText = null;
+  const ServerConfig.initial() : oauthButtonText = null;
 
   @override
   String toString() =>

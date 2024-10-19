@@ -1,5 +1,3 @@
-import 'package:openapi/api.dart';
-
 class ServerFeatures {
   final bool hasPasswordLogin;
   final bool hasOAuthLogin;
@@ -16,12 +14,7 @@ class ServerFeatures {
     );
   }
 
-  factory ServerFeatures.fromDto(ServerFeaturesDto dto) => ServerFeatures(
-        hasPasswordLogin: dto.passwordLogin,
-        hasOAuthLogin: dto.oauth,
-      );
-
-  const ServerFeatures.reset()
+  const ServerFeatures.initial()
       : hasPasswordLogin = true,
         hasOAuthLogin = false;
 

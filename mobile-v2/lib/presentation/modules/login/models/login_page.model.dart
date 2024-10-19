@@ -12,7 +12,7 @@ class LoginPageState {
     required this.isLoginSuccessful,
   });
 
-  factory LoginPageState.reset() {
+  factory LoginPageState.initial() {
     return const LoginPageState(
       isServerValidated: false,
       isValidationInProgress: false,

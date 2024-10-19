@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/models/app_setting.model.dart';
 class AppSettingService {
   final IStoreRepository _store;
 
-  const AppSettingService(this._store);
+  const AppSettingService({required IStoreRepository store}) : _store = store;
 
   Future<T> get<T>(AppSetting<T> setting) async {
     final value = await _store.tryGet(setting.storeKey);

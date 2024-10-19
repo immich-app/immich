@@ -5,17 +5,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
 import 'package:immich_mobile/domain/models/render_list.model.dart';
+import 'package:immich_mobile/domain/utils/renderlist_providers.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
 
-typedef RenderListProvider = Stream<RenderList> Function();
-typedef RenderListAssetProvider = FutureOr<List<Asset>> Function({
-  int? offset,
-  int? limit,
-});
-
 class AssetGridCubit extends Cubit<RenderList> {
-  final Stream<RenderList> _renderStream;
-  final RenderListAssetProvider _assetProvider;
+  final RenderListProvider _renderListProvider;
   late final StreamSubscription _renderListSubscription;
 
   /// offset of the assets from last section in [_buf]
@@ -24,13 +18,11 @@ class AssetGridCubit extends Cubit<RenderList> {
   /// assets cache loaded from DB with offset [_bufOffset]
   List<Asset> _buf = [];
 
-  AssetGridCubit({
-    required Stream<RenderList> renderStream,
-    required RenderListAssetProvider assetProvider,
-  })  : _renderStream = renderStream,
-        _assetProvider = assetProvider,
+  AssetGridCubit({required RenderListProvider renderListProvider})
+      : _renderListProvider = renderListProvider,
         super(RenderList.empty()) {
-    _renderListSubscription = _renderStream.listen((renderList) {
+    _renderListSubscription =
+        _renderListProvider.renderStreamProvider().listen((renderList) {
       _bufOffset = 0;
       _buf = [];
       emit(renderList);
@@ -68,7 +60,10 @@ class AssetGridCubit extends Cubit<RenderList> {
       );
 
       // load the calculated batch (start:start+len) from the DB and put it into the buffer
-      _buf = await _assetProvider(offset: start, limit: len);
+      _buf = await _renderListProvider.renderAssetProvider(
+        offset: start,
+        limit: len,
+      );
       _bufOffset = start;
 
       assert(_bufOffset <= offset);
