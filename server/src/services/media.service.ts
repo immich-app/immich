@@ -348,7 +348,7 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
+  private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
     return streams
       .filter((stream) => stream.codecName !== 'unknown')
       .sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];

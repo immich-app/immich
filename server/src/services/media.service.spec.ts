@@ -17,7 +17,7 @@ import {
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobCounts, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AudioStreamInfo, IMediaRepository, RawImageInfo, VideoStreamInfo } from 'src/interfaces/media.interface';
+import { IMediaRepository, RawImageInfo } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -2292,6 +2292,14 @@ describe(MediaService.name, () => {
 
       expect(mediaMock.probe).toHaveBeenCalledWith(assetStub.video.originalPath, { countFrames: false });
     });
+
+    it('should process unknown audio stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.audioStreamUnknown);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveResolved();
+    });
   });
 
   describe('isSRGB', () => {
@@ -2338,42 +2346,6 @@ describe(MediaService.name, () => {
     it('should return true for 16-bit image with sRGB profile', () => {
       const asset = { ...assetStub.image, exifInfo: { profileDescription: 'sRGB', bitsPerSample: 16 } as ExifEntity };
       expect(sut.isSRGB(asset)).toEqual(true);
-    });
-  });
-
-  describe('getMainStream', () => {
-    it('should return the main stream based on frame count', () => {
-      const streams: VideoStreamInfo[] = [
-        { codecName: 'h264', frameCount: 1000 } as VideoStreamInfo,
-        { codecName: 'h265', frameCount: 1500 } as VideoStreamInfo,
-        { codecName: 'unknown', frameCount: 2000 } as VideoStreamInfo,
-      ];
-
-      const result = sut.getMainStream(streams);
-
-      expect(result).toEqual({ codecName: 'h265', frameCount: 1500 });
-    });
-
-    it('should filter out streams with codecName "unknown"', () => {
-      const streams: AudioStreamInfo[] = [
-        { codecName: 'aac', frameCount: 500 } as AudioStreamInfo,
-        { codecName: 'unknown', frameCount: 1000 } as AudioStreamInfo,
-      ];
-
-      const result = sut.getMainStream(streams);
-
-      expect(result).toEqual({ codecName: 'aac', frameCount: 500 });
-    });
-
-    it('should return undefined if no valid streams are provided', () => {
-      const streams: AudioStreamInfo[] = [
-        { codecName: 'unknown', frameCount: 500 } as AudioStreamInfo,
-        { codecName: 'unknown', frameCount: 1000 } as AudioStreamInfo,
-      ];
-
-      const result = sut.getMainStream(streams);
-
-      expect(result).toBeUndefined();
     });
   });
 });
