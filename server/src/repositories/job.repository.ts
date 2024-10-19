@@ -7,6 +7,7 @@ import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
+  IEntityJob,
   IJobRepository,
   JobCounts,
   JobItem,
@@ -252,6 +253,9 @@ export class JobRepository implements IJobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
+      case JobName.NOTIFY_ALBUM_UPDATE: {
+        return { jobId: item.data.id, delay: item.data?.delay };
+      }
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         return { jobId: item.data.id };
       }
@@ -261,7 +265,6 @@ export class JobRepository implements IJobRepository {
       case JobName.QUEUE_FACIAL_RECOGNITION: {
         return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
       }
-
       default: {
         return null;
       }
@@ -270,5 +273,21 @@ export class JobRepository implements IJobRepository {
 
   private getQueue(queue: QueueName): Queue {
     return this.moduleReference.get<Queue>(getQueueToken(queue), { strict: false });
+  }
+
+  public async removeJob(jobId: string, name: JobName): Promise<IEntityJob | undefined> {
+    const existingJob = await this.getQueue(JOBS_TO_QUEUE[name]).getJob(jobId);
+    if (!existingJob) {
+      return;
+    }
+    try {
+      await existingJob.remove();
+    } catch (error: any) {
+      if (error.message?.includes('Missing key for job')) {
+        return;
+      }
+      throw error;
+    }
+    return existingJob.data;
   }
 }

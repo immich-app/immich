@@ -124,7 +124,7 @@ export class JobService extends BaseService {
       throw new BadRequestException(`Job is already running`);
     }
 
-    this.metricRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
+    this.telemetryRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
 
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
@@ -197,19 +197,19 @@ export class JobService extends BaseService {
         }
 
         const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
-        this.metricRepository.jobs.addToGauge(queueMetric, 1);
+        this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
 
         try {
           const status = await handler(data);
           const jobMetric = `immich.jobs.${name.replaceAll('-', '_')}.${status}`;
-          this.metricRepository.jobs.addToCounter(jobMetric, 1);
+          this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
           if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
             await this.onDone(item);
           }
         } catch (error: Error | any) {
           this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
         } finally {
-          this.metricRepository.jobs.addToGauge(queueMetric, -1);
+          this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
         }
       });
     }

@@ -278,6 +278,7 @@ export enum AudioCodec {
   MP3 = 'mp3',
   AAC = 'aac',
   LIBOPUS = 'libopus',
+  PCMS16LE = 'pcm_s16le',
 }
 
 export enum VideoContainer {
