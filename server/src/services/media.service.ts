@@ -348,14 +348,10 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
-    const validStreams = streams.filter((stream) => stream.codecName !== 'unknown');
-
-    if (validStreams.length === 1) {
-      return validStreams[0];
-    }
-
-    return validStreams.sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
+  public getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
+    return streams
+      .filter((stream) => stream.codecName !== 'unknown')
+      .sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
   }
 
   private getTranscodeTarget(
