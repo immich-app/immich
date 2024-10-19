@@ -11,6 +11,8 @@ describe('ChangeDate component', () => {
 
   const getDateInput = () => screen.getByLabelText('date_and_time') as HTMLInputElement;
   const getTimeZoneInput = () => screen.getByLabelText('timezone') as HTMLInputElement;
+  const getCancelButton = () => screen.getByText('cancel');
+  const getConfirmButton = () => screen.getByText('confirm');
 
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
@@ -24,5 +26,25 @@ describe('ChangeDate component', () => {
     render(ChangeDate, { initialDate, initialTimeZone, onCancel, onConfirm });
     expect(getDateInput().value).toBe('2024-01-01T00:00');
     expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
+  });
+
+  test('calls onConfirm with correct date on confirm', async () => {
+    render(ChangeDate, {
+      props: { initialDate, initialTimeZone, onCancel, onConfirm },
+    });
+
+    await fireEvent.click(getConfirmButton());
+
+    expect(onConfirm).toHaveBeenCalledWith('2024-01-01T00:00:00.000+01:00');
+  });
+
+  test('calls onCancel on cancel', async () => {
+    render(ChangeDate, {
+      props: { initialDate, initialTimeZone, onCancel, onConfirm },
+    });
+
+    await fireEvent.click(getCancelButton());
+
+    expect(onCancel).toHaveBeenCalled();
   });
 });
