@@ -47,4 +47,24 @@ describe('ChangeDate component', () => {
 
     expect(onCancel).toHaveBeenCalled();
   });
+
+  describe('when date is in daylight saving time', () => {
+    const dstDate = DateTime.fromISO('2024-07-01');
+
+    test('should render correct timezone with offset', () => {
+      render(ChangeDate, { initialDate: dstDate, initialTimeZone, onCancel, onConfirm });
+
+      expect(getTimeZoneInput().value).toBe('Europe/Berlin (+02:00)');
+    });
+
+    test('calls onConfirm with correct date on confirm', async () => {
+      render(ChangeDate, {
+        props: { initialDate: dstDate, initialTimeZone, onCancel, onConfirm },
+      });
+
+      await fireEvent.click(getConfirmButton());
+
+      expect(onConfirm).toHaveBeenCalledWith('2024-07-01T00:00:00.000+02:00');
+    });
+  });
 });
