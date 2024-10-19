@@ -17,7 +17,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import {
     formatGroupTitle,
@@ -589,8 +589,7 @@
   let shiftKeyIsDown = false;
 
   const deselectAllAssets = () => {
-    $isSelectingAllAssets = false;
-    assetInteractionStore.clearMultiselect();
+    cancelMultiselect(assetInteractionStore);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
