@@ -467,6 +467,11 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
   }
 };
 
+export const cancelMultiselect = (assetInteractionStore: AssetInteractionStore) => {
+  isSelectingAllAssets.set(false);
+  assetInteractionStore.clearMultiselect();
+};
+
 export const toggleArchive = async (asset: AssetResponseDto) => {
   const $t = get(t);
   try {
