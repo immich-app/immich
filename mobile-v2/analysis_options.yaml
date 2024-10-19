@@ -8,6 +8,8 @@ linter:
     - unawaited_futures
 
 analyzer:
+  plugins:
+    - custom_lint
   exclude:
     - openapi/**
 
@@ -61,3 +63,26 @@ dart_code_metrics:
     - prefer-single-widget-per-file:
         ignore-private-widgets: true
     - prefer-correct-callback-field-name: false
+
+custom_lint:
+  rules:
+    - import_rule_photo_manager:
+      message: photo_manager must only be used in MediaRepositories
+      restrict: package:photo_manager
+      allowed:
+        - 'lib/domain/repositories/device_{album,asset}.repository.dart'
+    - import_rule_drift:
+      message: drift must only be used in entities and repositories
+      restrict: package:drift
+      allowed:
+        - lib/domain/entities/*
+        - lib/domain/repositories/*.repository.dart
+        - lib/utils/extensions/drift.extension.dart
+
+    - import_rule_openapi:
+      message: openapi must only be used through Api Repositories
+      restrict: package:openapi
+      allowed:
+        - lib/domain/repositories/api/*
+        - lib/utils/immich_api_client.dart
+        - lib/utils/openapi_patching.dart

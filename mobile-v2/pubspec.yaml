@@ -76,6 +76,10 @@ dev_dependencies:
   flutter_gen_runner: ^5.8.0
   # Type safe platform channels
   pigeon: ^22.5.0
+  # Custom lint
+  custom_lint: ^0.6.4
+  immich_mobile_lint:
+    path: './immich_lint'
 
 flutter:
   uses-material-design: true

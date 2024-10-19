@@ -190,6 +190,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  ci:
+    dependency: transitive
+    description:
+      name: ci
+      sha256: "145d095ce05cddac4d797a158bc4cf3b6016d1fe63d8c3d2fbd7212590adca13"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   cli_util:
     dependency: transitive
     description:
@@ -254,6 +262,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  custom_lint:
+    dependency: "direct dev"
+    description:
+      name: custom_lint
+      sha256: "832fcdc676171205201c9cffafd6b5add19393962f6598af8472b48b413026e6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.8"
+  custom_lint_builder:
+    dependency: transitive
+    description:
+      name: custom_lint_builder
+      sha256: c3d82779026f91b8e00c9ac18934595cbc9b490094ea682052beeafdb2bd50ac
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.8"
+  custom_lint_core:
+    dependency: transitive
+    description:
+      name: custom_lint_core
+      sha256: "4ddbbdaa774265de44c97054dcec058a83d9081d071785ece601e348c18c267d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.5"
   dart_style:
     dependency: transitive
     description:
@@ -450,6 +482,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  freezed_annotation:
+    dependency: transitive
+    description:
+      name: freezed_annotation
+      sha256: c2e2d632dd9b8a2b7751117abcfc2b4888ecfe181bd9fca7170d9ef02e595fe2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.4"
   frontend_server_client:
     dependency: transitive
     description:
@@ -490,6 +530,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  hotreloader:
+    dependency: transitive
+    description:
+      name: hotreloader
+      sha256: ed56fdc1f3a8ac924e717257621d09e9ec20e308ab6352a73a50a1d7a4d9158e
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.0"
   http:
     dependency: "direct main"
     description:
@@ -522,6 +570,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.3"
+  immich_mobile_lint:
+    dependency: "direct dev"
+    description:
+      path: immich_lint
+      relative: true
+    source: path
+    version: "0.0.0"
   intl:
     dependency: "direct main"
     description:
