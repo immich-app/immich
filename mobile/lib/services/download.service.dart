@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -114,38 +115,42 @@ class DownloadService {
         _findTaskRecord(records, livePhotosId, LivePhotosPart.video);
     final imageFilePath = await imageRecord.task.filePath();
     final videoFilePath = await videoRecord.task.filePath();
-    Asset? resultAsset;
+
     try {
-      resultAsset = await _fileMediaRepository.saveLivePhoto(
+      final result = await _fileMediaRepository.saveLivePhoto(
         image: File(imageFilePath),
         video: File(videoFilePath),
         title: task.filename,
       );
-      if (resultAsset == null) {
-        _log.warning(
-          "Asset cannot be saved as a live photo. This is most likely a motion photo. Saving only the image file",
-        );
-        resultAsset = await _fileMediaRepository
-            .saveImageWithFile(imageFilePath, title: task.filename);
-      }
-      await _downloadRepository.deleteRecordsWithIds([
-        imageRecord.task.taskId,
-        videoRecord.task.taskId,
-      ]);
 
-      return resultAsset != null;
+      return result != null;
+    } on PlatformException catch (error, stack) {
+      // Handle saving MotionPhotos on iOS
+      if (error.code == 'PHPhotosErrorDomain (-1)') {
+        final result = await _fileMediaRepository
+            .saveImageWithFile(imageFilePath, title: task.filename);
+        return result != null;
+      }
+      _log.severe("Error saving live photo", error, stack);
+      return false;
     } catch (error, stack) {
       _log.severe("Error saving live photo", error, stack);
       return false;
     } finally {
       final imageFile = File(imageFilePath);
-      final videoFile = File(videoFilePath);
       if (await imageFile.exists()) {
         await imageFile.delete();
       }
+
+      final videoFile = File(videoFilePath);
       if (await videoFile.exists()) {
         await videoFile.delete();
       }
+
+      await _downloadRepository.deleteRecordsWithIds([
+        imageRecord.task.taskId,
+        videoRecord.task.taskId,
+      ]);
     }
   }
 
