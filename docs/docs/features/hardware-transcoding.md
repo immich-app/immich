@@ -42,6 +42,7 @@ You do not need to redo any transcoding jobs after enabling hardware acceleratio
   - You must have a 9th gen Intel CPU or newer
   - If you have an 11th gen CPU or older, then you may need to follow [these][jellyfin-lp] instructions as Low-Power mode is required
   - Additionally, if the server specifically has an 11th gen CPU and is running kernel 5.15 (shipped with Ubuntu 22.04 LTS), then you will need to upgrade this kernel (from [Jellyfin docs][jellyfin-kernel-bug])
+  - If you have a Jasper Lake CPU, it does not support ICQ bitrate control. You will need to set the Hardware Acceleration -> Constant quality mode to CQP
 
 #### RKMPP
 
