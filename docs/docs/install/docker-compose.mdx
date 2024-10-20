@@ -64,13 +64,13 @@ You can edit `docker-compose.yml` to add external libraries or enable hardware a
 
 ## Step 3 - Start the containers
 
-From the directory you created in Step 1 (which should now contain your customized `docker-compose.yml` and `.env` files), run `docker compose up -d`.
+From the directory you created in Step 1 (which should now contain your customized `docker-compose.yml` and `.env` files), run this command:
 
 ```bash title="Start the containers using docker compose command"
 docker compose up -d
 ```
 
-This starts immich and ensures it automatically restarts after system reboots or crashes (thanks to the `restart: always` entries in `docker-compose.yml`).
+This starts immich as a background service (per the `-d` flag), ensuring it restarts after system reboots or crashes (per the `restart` fields in `docker-compose.yml`).
 
 :::info Docker version
 If you get an error `unknown shorthand flag: 'd' in -d`, you are probably running the wrong Docker version. (This happens, for example, with the docker.io package in Ubuntu 22.04.3 LTS.) You can correct the problem by following the complete [Docker Engine install](https://docs.docker.com/engine/install/) procedure for your distribution, crucially the "Uninstall old versions" and "Install using the apt/rpm repository" sections. These replace the distro's Docker packages with Docker's official ones.
