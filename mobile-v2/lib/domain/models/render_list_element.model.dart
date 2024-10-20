@@ -18,6 +18,35 @@ sealed class RenderListElement {
   int get hashCode => date.hashCode;
 }
 
+/// Used to pad the render list elements
+class RenderListPaddingElement extends RenderListElement {
+  final double topPadding;
+
+  const RenderListPaddingElement({
+    required this.topPadding,
+    required super.date,
+  });
+
+  factory RenderListPaddingElement.beforeElement({
+    required double top,
+    RenderListElement? before,
+  }) =>
+      RenderListPaddingElement(
+        topPadding: top,
+        date: before?.date ?? DateTime.now(),
+      );
+
+  @override
+  bool operator ==(covariant RenderListPaddingElement other) {
+    if (identical(this, other)) return true;
+
+    return super == other && other.topPadding == topPadding;
+  }
+
+  @override
+  int get hashCode => super.hashCode ^ topPadding.hashCode;
+}
+
 class RenderListMonthHeaderElement extends RenderListElement {
   late final String header;
 

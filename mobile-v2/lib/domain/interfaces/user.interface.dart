@@ -8,4 +8,7 @@ abstract interface class IUserRepository {
 
   /// Fetches user
   FutureOr<User?> getForId(String userId);
+
+  /// Removes all users
+  FutureOr<void> deleteAll();
 }

@@ -75,8 +75,8 @@ class DraggableScrollbar extends StatefulWidget {
     this.backgroundColor = Colors.white,
     this.foregroundColor = Colors.black,
     this.padding,
-    this.scrollbarAnimationDuration = const Duration(milliseconds: 300),
-    this.scrollbarTimeToFade = const Duration(milliseconds: 600),
+    this.scrollbarAnimationDuration = Durations.medium2,
+    this.scrollbarTimeToFade = Durations.long4,
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
@@ -219,6 +219,10 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
   Timer? _fadeoutTimer;
   List<FlutterListViewItemPosition> _positions = [];
 
+  /// The controller can have only one active callback
+  /// cache the old one, invoke it in the new callback and restore it on dispose
+  FlutterSliverListControllerOnPaintItemPositionCallback? _oldCallback;
+
   @override
   void initState() {
     super.initState();
@@ -246,14 +250,19 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
       curve: Curves.fastOutSlowIn,
     );
 
+    _oldCallback =
+        widget.controller.sliverController.onPaintItemPositionsCallback;
     widget.controller.sliverController.onPaintItemPositionsCallback =
         (height, pos) {
       _positions = pos;
+      _oldCallback?.call(height, pos);
     };
   }
 
   @override
   void dispose() {
+    widget.controller.sliverController.onPaintItemPositionsCallback =
+        _oldCallback;
     _thumbAnimationController.dispose();
     _labelAnimationController.dispose();
     _fadeoutTimer?.cancel();
@@ -304,7 +313,9 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
   }
 
   double get _barMaxScrollExtent =>
-      (context.size?.height ?? 0) - widget.heightScrollThumb;
+      (context.size?.height ?? 0) -
+      widget.heightScrollThumb -
+      (widget.padding?.vertical ?? 0);
 
   double get _maxScrollRatio =>
       _barMaxScrollExtent / widget.controller.position.maxScrollExtent;
@@ -414,7 +425,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
           widget.scrollStateListener(true);
 
           _dragHaltTimer = Timer(
-            const Duration(milliseconds: 500),
+            Durations.long2,
             () => widget.scrollStateListener(false),
           );
         }

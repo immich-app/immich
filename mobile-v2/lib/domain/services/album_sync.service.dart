@@ -22,6 +22,7 @@ class AlbumSyncService with LogMixin {
 
   Future<bool> performFullDeviceSync() async {
     try {
+      final Stopwatch stopwatch = Stopwatch()..start();
       final deviceAlbums = await di<IDeviceAlbumRepository>().getAll();
       final dbAlbums = await di<IAlbumRepository>().getAll(localOnly: true);
       final hasChange = await CollectionUtil.diffLists(
@@ -34,6 +35,7 @@ class AlbumSyncService with LogMixin {
         onlySecond: _addDeviceAlbum,
       );
 
+      log.i("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
       return hasChange;
     } catch (e, s) {
       log.e("Error performing full device sync", e, s);
@@ -47,8 +49,8 @@ class AlbumSyncService with LogMixin {
     DateTime? modifiedUntil,
   }) async {
     assert(dbAlbum.id != null, "Album ID from DB is null");
-    final albumEtag =
-        await di<IAlbumETagRepository>().get(dbAlbum.id!) ?? AlbumETag.empty();
+    final albumEtag = await di<IAlbumETagRepository>().get(dbAlbum.id!) ??
+        AlbumETag.initial();
     final assetCountInDevice =
         await di<IDeviceAlbumRepository>().getAssetCount(deviceAlbum.localId!);
 
@@ -66,6 +68,7 @@ class AlbumSyncService with LogMixin {
 
   Future<void> _addDeviceAlbum(Album album, {DateTime? modifiedUntil}) async {
     try {
+      log.i("Syncing device album ${album.name}");
       final albumId = (await di<IAlbumRepository>().upsert(album))?.id;
       // break fast if we cannot add an album
       if (albumId == null) {
@@ -115,6 +118,7 @@ class AlbumSyncService with LogMixin {
 
   Future<void> _removeDeviceAlbum(Album album) async {
     assert(album.id != null, "Album ID from DB is null");
+    log.i("Removing device album ${album.name}");
     final albumId = album.id!;
     try {
       await di<IDatabaseRepository>().txn(() async {

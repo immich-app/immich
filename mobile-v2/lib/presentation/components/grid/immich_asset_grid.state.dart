@@ -8,7 +8,27 @@ import 'package:immich_mobile/domain/models/render_list.model.dart';
 import 'package:immich_mobile/domain/utils/renderlist_providers.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
 
-class AssetGridCubit extends Cubit<RenderList> {
+class AssetGridState {
+  final bool isDragScrolling;
+  final RenderList renderList;
+
+  const AssetGridState({
+    required this.isDragScrolling,
+    required this.renderList,
+  });
+
+  factory AssetGridState.empty() =>
+      AssetGridState(isDragScrolling: false, renderList: RenderList.empty());
+
+  AssetGridState copyWith({bool? isDragScrolling, RenderList? renderList}) {
+    return AssetGridState(
+      isDragScrolling: isDragScrolling ?? this.isDragScrolling,
+      renderList: renderList ?? this.renderList,
+    );
+  }
+}
+
+class AssetGridCubit extends Cubit<AssetGridState> {
   final RenderListProvider _renderListProvider;
   late final StreamSubscription _renderListSubscription;
 
@@ -20,13 +40,19 @@ class AssetGridCubit extends Cubit<RenderList> {
 
   AssetGridCubit({required RenderListProvider renderListProvider})
       : _renderListProvider = renderListProvider,
-        super(RenderList.empty()) {
+        super(AssetGridState.empty()) {
     _renderListSubscription =
         _renderListProvider.renderStreamProvider().listen((renderList) {
       _bufOffset = 0;
       _buf = [];
-      emit(renderList);
+      emit(state.copyWith(renderList: renderList));
     });
+  }
+
+  void setDragScrolling(bool isScrolling) {
+    if (state.isDragScrolling != isScrolling) {
+      emit(state.copyWith(isDragScrolling: isScrolling));
+    }
   }
 
   /// Loads the requested assets from the database to an internal buffer if not cached
@@ -34,7 +60,7 @@ class AssetGridCubit extends Cubit<RenderList> {
   Future<List<Asset>> loadAssets(int offset, int count) async {
     assert(offset >= 0);
     assert(count > 0);
-    assert(offset + count <= state.totalCount);
+    assert(offset + count <= state.renderList.totalCount);
 
     // the requested slice (offset:offset+count) is not contained in the cache buffer `_buf`
     // thus, fill the buffer with a new batch of assets that at least contains the requested

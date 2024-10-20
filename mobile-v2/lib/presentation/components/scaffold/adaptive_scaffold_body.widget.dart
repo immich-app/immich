@@ -22,7 +22,7 @@ class ImAdaptiveScaffoldBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdaptiveLayout(
       internalAnimations: false,
-      transitionDuration: const Duration(milliseconds: 300),
+      transitionDuration: Durations.medium2,
       bodyRatio: bodyRatio,
       body: SlotLayout(
         config: {

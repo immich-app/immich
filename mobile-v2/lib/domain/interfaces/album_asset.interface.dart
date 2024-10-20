@@ -14,4 +14,7 @@ abstract interface class IAlbumToAssetRepository {
 
   /// Removes album with the given [albumId]
   FutureOr<void> deleteAlbumId(int albumId);
+
+  /// Removes all album to asset mappings
+  FutureOr<void> deleteAll();
 }

@@ -69,12 +69,12 @@ class IsolateHelper {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
       DartPluginRegistrant.ensureInitialized();
       // Delay to ensure the isolate is ready
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(Durations.short2);
       helper.postIsolateHandling();
       try {
         final result = await computation();
         // Delay to ensure the isolate is not killed prematurely
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(Durations.short2);
         return result;
       } finally {
         // Always close the new database connection on Isolate end

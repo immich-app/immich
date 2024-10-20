@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-const String kImmichAppName = "Immich";
-
 /// Log messages stored in the DB
 const int kLogMessageLimit = 500;
 
@@ -13,6 +11,7 @@ const String kCacheThumbnailsKey = 'ImThumbnailCacheKey';
 const int kCacheMaxNrOfThumbnails = 500;
 
 /// Grid constants
+const double kGridAutoHideAppBarOffset = 30;
 const int kGridThumbnailSize = 200;
 const int kGridThumbnailQuality = 80;
 

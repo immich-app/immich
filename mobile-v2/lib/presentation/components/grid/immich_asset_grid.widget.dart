@@ -1,7 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
-import 'package:immich_mobile/domain/models/render_list.model.dart';
 import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/presentation/components/grid/draggable_scrollbar.dart';
 import 'package:immich_mobile/presentation/components/grid/immich_asset_grid.state.dart';
@@ -15,28 +15,33 @@ import 'package:material_symbols_icons/symbols.dart';
 part 'immich_asset_grid_header.widget.dart';
 
 class ImAssetGrid extends StatefulWidget {
-  const ImAssetGrid({super.key});
+  /// The padding for the grid
+  final double? topPadding;
+
+  final FlutterListViewController? controller;
+
+  const ImAssetGrid({this.controller, this.topPadding, super.key});
 
   @override
   State createState() => _ImAssetGridState();
 }
 
 class _ImAssetGridState extends State<ImAssetGrid> {
-  bool _isDragScrolling = false;
-  final FlutterListViewController _controller = FlutterListViewController();
+  late final FlutterListViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = widget.controller ?? FlutterListViewController();
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onDragScrolling(bool isScrolling) {
-    if (_isDragScrolling != isScrolling) {
-      setState(() {
-        _isDragScrolling = isScrolling;
-      });
+    // Dispose controller if it was created here
+    if (widget.controller == null) {
+      _controller.dispose();
     }
+    super.dispose();
   }
 
   Text? _labelBuilder(List<RenderListElement> elements, int currentPosition) {
@@ -55,9 +60,21 @@ class _ImAssetGridState extends State<ImAssetGrid> {
   }
 
   @override
-  Widget build(BuildContext context) => BlocBuilder<AssetGridCubit, RenderList>(
-        builder: (_, renderList) {
-          final elements = renderList.elements;
+  Widget build(BuildContext context) =>
+      BlocBuilder<AssetGridCubit, AssetGridState>(
+        builder: (_, state) {
+          final elements = state.renderList.elements;
+          if (widget.topPadding != null &&
+              elements.firstOrNull is! RenderListPaddingElement) {
+            elements.insert(
+              0,
+              RenderListPaddingElement.beforeElement(
+                top: widget.topPadding!,
+                before: elements.firstOrNull,
+              ),
+            );
+          }
+
           final grid = FlutterListView(
             controller: _controller,
             delegate: FlutterListViewDelegate(
@@ -66,6 +83,9 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                 final section = elements[sectionIndex];
 
                 return switch (section) {
+                  RenderListPaddingElement() => Padding(
+                      padding: EdgeInsets.only(top: section.topPadding),
+                    ),
                   RenderListMonthHeaderElement() =>
                     _MonthHeader(text: section.header),
                   RenderListDayHeaderElement() => Text(section.header),
@@ -95,7 +115,7 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                             return SizedBox.square(
                               dimension: 200,
                               // Show Placeholder when drag scrolled
-                              child: asset == null || _isDragScrolling
+                              child: asset == null || state.isDragScrolling
                                   ? const ImImagePlaceholder()
                                   : ImThumbnail(asset),
                             );
@@ -111,17 +131,26 @@ class _ImAssetGridState extends State<ImAssetGrid> {
             ),
           );
 
+          final EdgeInsetsGeometry? padding;
+          if (widget.topPadding != null) {
+            padding = EdgeInsets.only(top: widget.topPadding!);
+          } else {
+            padding = null;
+          }
+
           return DraggableScrollbar(
             foregroundColor: context.colorScheme.onSurface,
             backgroundColor: context.colorScheme.surfaceContainerHighest,
-            scrollStateListener: _onDragScrolling,
+            scrollStateListener:
+                context.read<AssetGridCubit>().setDragScrolling,
             controller: _controller,
             maxItemCount: elements.length,
             labelTextBuilder: (int position) =>
                 _labelBuilder(elements, position),
             labelConstraints: const BoxConstraints(maxHeight: 36),
-            scrollbarAnimationDuration: const Duration(milliseconds: 300),
-            scrollbarTimeToFade: const Duration(milliseconds: 1000),
+            scrollbarAnimationDuration: Durations.medium2,
+            scrollbarTimeToFade: Durations.extralong4,
+            padding: padding,
             child: grid,
           );
         },

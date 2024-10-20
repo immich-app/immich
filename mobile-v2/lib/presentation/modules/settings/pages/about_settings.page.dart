@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/components/image/immich_logo.widget.dart';
 import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_appbar.widget.dart';
-import 'package:immich_mobile/utils/constants/globals.dart';
 import 'package:immich_mobile/utils/constants/size_constants.dart';
 
 @RoutePage()
@@ -19,7 +18,7 @@ class AboutSettingsPage extends StatelessWidget {
         subtitle: Text(context.t.settings.about.third_party_sub_title),
         onTap: () => showLicensePage(
           context: context,
-          applicationName: kImmichAppName,
+          applicationName: context.t.immich,
           applicationIcon: const ImLogo(width: SizeConstants.xl),
         ),
       ),

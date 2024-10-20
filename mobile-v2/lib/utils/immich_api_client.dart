@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
@@ -57,6 +58,7 @@ class ImApiClient extends ApiClient with LogMixin {
 
     if (res.statusCode == HttpStatus.unauthorized) {
       log.e("Token invalid. Redirecting to login route");
+      await di<LoginService>().logout();
       await di<AppRouter>().replaceAll([const LoginRoute()]);
       throw ApiException(res.statusCode, "Unauthorized");
     }

@@ -75,4 +75,9 @@ class AlbumToAssetRepository with LogMixin implements IAlbumToAssetRepository {
   FutureOr<void> deleteAlbumId(int albumId) async {
     await _db.albumToAsset.deleteWhere((row) => row.albumId.equals(albumId));
   }
+
+  @override
+  FutureOr<void> deleteAll() async {
+    await _db.albumToAsset.deleteAll();
+  }
 }

@@ -11,4 +11,7 @@ abstract interface class IAlbumRepository {
 
   /// Removes album with the given [id]
   FutureOr<void> deleteId(int id);
+
+  /// Removes all albums
+  FutureOr<void> deleteAll();
 }

@@ -1,18 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:immich_mobile/domain/interfaces/api/user_api.interface.dart';
-import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/album_sync.service.dart';
-import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/modules/login/models/login_page.model.dart';
-import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
-import 'package:immich_mobile/presentation/states/server_info/server_feature_config.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
@@ -68,11 +62,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
       url = await loginService.resolveEndpoint(uri);
 
       di<IStoreRepository>().upsert(StoreKey.serverEndpoint, url);
-      await ServiceLocator.registerApiClient(url);
-      ServiceLocator.registerPostGlobalStates();
-
-      // Fetch server features
-      await di<ServerFeatureConfigProvider>().getFeatures();
+      await di<LoginService>().handlePostUrlResolution(url);
 
       emit(state.copyWith(isServerValidated: true));
     } finally {
@@ -129,20 +119,13 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
     /// Set token to interceptor
     await di<ImApiClient>().init(accessToken: accessToken);
 
-    final user = await di<IUserApiRepository>().getMyUser();
+    final user = await di<LoginService>().handlePostLogin();
     if (user == null) {
       SnackbarManager.showError(t.login.error.error_login);
       return;
     }
 
-    // Register user
-    ServiceLocator.registerCurrentUser(user);
     await di<IUserRepository>().upsert(user);
-    // Remove and Sync assets in background
-    await di<IAssetRepository>().deleteAll();
-    await di<GalleryPermissionProvider>().requestPermission();
-    unawaited(di<AssetSyncService>().performFullRemoteSyncIsolate(user));
-    unawaited(di<AlbumSyncService>().performFullDeviceSyncIsolate());
 
     emit(state.copyWith(
       isValidationInProgress: false,

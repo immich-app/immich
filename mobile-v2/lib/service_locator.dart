@@ -42,7 +42,7 @@ import 'package:immich_mobile/presentation/router/router.dart';
 import 'package:immich_mobile/presentation/states/app_theme.state.dart';
 import 'package:immich_mobile/presentation/states/current_user.state.dart';
 import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
-import 'package:immich_mobile/presentation/states/server_info/server_feature_config.state.dart';
+import 'package:immich_mobile/presentation/states/server_feature_config.state.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 
 final di = GetIt.I;

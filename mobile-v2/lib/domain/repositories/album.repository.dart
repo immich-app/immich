@@ -50,7 +50,12 @@ class AlbumRepository with LogMixin implements IAlbumRepository {
 
   @override
   FutureOr<void> deleteId(int id) async {
-    await _db.asset.deleteWhere((row) => row.id.equals(id));
+    await _db.album.deleteWhere((row) => row.id.equals(id));
+  }
+
+  @override
+  FutureOr<void> deleteAll() async {
+    await _db.album.deleteAll();
   }
 }
 

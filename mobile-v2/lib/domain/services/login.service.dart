@@ -1,14 +1,25 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart';
+import 'package:immich_mobile/domain/interfaces/album.interface.dart';
+import 'package:immich_mobile/domain/interfaces/album_asset.interface.dart';
+import 'package:immich_mobile/domain/interfaces/album_etag.interface.dart';
 import 'package:immich_mobile/domain/interfaces/api/authentication_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/api/server_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/api/user_api.interface.dart';
+import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/services/album_sync.service.dart';
+import 'package:immich_mobile/domain/services/asset_sync.service.dart';
+import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
+import 'package:immich_mobile/presentation/states/server_feature_config.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
@@ -99,6 +110,38 @@ class LoginService with LogMixin {
     return null;
   }
 
+  Future<void> handlePostUrlResolution(String serverEndpoint) async {
+    await ServiceLocator.registerApiClient(serverEndpoint);
+    ServiceLocator.registerPostGlobalStates();
+
+    // Fetch server features
+    await di<ServerFeatureConfigProvider>().getFeatures();
+  }
+
+  Future<User?> handlePostLogin() async {
+    final user = await di<IUserApiRepository>().getMyUser().timeout(
+      const Duration(seconds: 10),
+      // ignore: function-always-returns-null
+      onTimeout: () {
+        log.w("Timedout while fetching user details using saved credentials");
+        return null;
+      },
+    );
+    if (user == null) {
+      return null;
+    }
+
+    ServiceLocator.registerCurrentUser(user);
+
+    // sync assets in background
+    unawaited(di<AssetSyncService>().performFullRemoteSyncIsolate(user));
+    if (di<GalleryPermissionProvider>().hasPermission) {
+      unawaited(di<AlbumSyncService>().performFullDeviceSyncIsolate());
+    }
+
+    return user;
+  }
+
   Future<bool> tryAutoLogin() async {
     final serverEndpoint =
         await di<IStoreRepository>().tryGet(StoreKey.serverEndpoint);
@@ -106,8 +149,7 @@ class LoginService with LogMixin {
       return false;
     }
 
-    await ServiceLocator.registerApiClient(serverEndpoint);
-    ServiceLocator.registerPostGlobalStates();
+    await handlePostUrlResolution(serverEndpoint);
 
     final accessToken =
         await di<IStoreRepository>().tryGet(StoreKey.accessToken);
@@ -118,19 +160,20 @@ class LoginService with LogMixin {
     // Set token to interceptor
     await di<ImApiClient>().init(accessToken: accessToken);
 
-    final user = await di<IUserApiRepository>().getMyUser().timeout(
-      const Duration(seconds: 10),
-      // ignore: function-always-returns-null
-      onTimeout: () {
-        log.w("Timedout while fetching user details using saved credentials");
-        return null;
-      },
-    );
+    final user = await handlePostLogin();
     if (user == null) {
       return false;
     }
 
-    ServiceLocator.registerCurrentUser(user);
     return true;
+  }
+
+  Future<void> logout() async {
+    // Remove existing assets
+    await di<IAssetRepository>().deleteAll();
+    await di<IAlbumRepository>().deleteAll();
+    await di<IAlbumToAssetRepository>().deleteAll();
+    await di<IAlbumETagRepository>().deleteAll();
+    await di<IUserRepository>().deleteAll();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/presentation/theme/app_colors.dart';
+import 'package:immich_mobile/presentation/theme/app_typography.dart';
 import 'package:immich_mobile/utils/extensions/material_state.extension.dart';
 
 enum AppTheme {
@@ -69,6 +70,23 @@ enum AppTheme {
         valueIndicatorColor:
             Color.alphaBlend(color.primary.withAlpha(80), color.onSurface)
                 .withAlpha(240),
+      ),
+      textTheme: TextTheme(
+        titleLarge: AppTypography.titleLarge,
+        titleMedium: AppTypography.titleMedium,
+        titleSmall: AppTypography.titleSmall,
+        displayLarge: AppTypography.displayLarge,
+        displayMedium: AppTypography.displayMedium,
+        displaySmall: AppTypography.displaySmall,
+        headlineLarge: AppTypography.headlineLarge,
+        headlineMedium: AppTypography.headlineMedium,
+        headlineSmall: AppTypography.headlineSmall,
+        bodyLarge: AppTypography.bodyLarge,
+        bodyMedium: AppTypography.bodyMedium,
+        bodySmall: AppTypography.bodySmall,
+        labelLarge: AppTypography.labelLarge,
+        labelMedium: AppTypography.labelMedium,
+        labelSmall: AppTypography.labelSmall,
       ),
       snackBarTheme: SnackBarThemeData(
         elevation: 4,

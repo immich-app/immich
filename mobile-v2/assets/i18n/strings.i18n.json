@@ -1,4 +1,5 @@
 {
+    "immich": "Immich",
     "tab_controller": {
       "photos": "Photos",
       "search": "Search",
@@ -34,5 +35,8 @@
         "oauth_button": "OAuth",
         "login_disabled": "Login Disabled"
       }
+    },
+    "logs": {
+      "title": "Logs"
     }
   }

@@ -33,6 +33,11 @@ class AlbumETagRepository with LogMixin implements IAlbumETagRepository {
       ..where((r) => r.albumId.equals(albumId));
     return await query.map(_toModel).getSingleOrNull();
   }
+
+  @override
+  FutureOr<void> deleteAll() async {
+    await _db.albumETag.deleteAll();
+  }
 }
 
 AlbumETagCompanion _toEntity(AlbumETag albumETag) {

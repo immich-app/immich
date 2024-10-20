@@ -35,6 +35,7 @@ class AssetSyncService with LogMixin {
     int? limit,
   }) async {
     try {
+      final Stopwatch stopwatch = Stopwatch()..start();
       final db = di<IDatabaseRepository>();
       final assetRepo = di<IAssetRepository>();
       final syncApiRepo = di<ISyncApiRepository>();
@@ -74,6 +75,7 @@ class AssetSyncService with LogMixin {
         if (assetsFromServer.length != chunkSize) break;
       }
 
+      log.i("Full remote sync took - ${stopwatch.elapsedMilliseconds}ms");
       return true;
     } catch (e, s) {
       log.e("Error performing full remote sync for user - ${user.name}", e, s);

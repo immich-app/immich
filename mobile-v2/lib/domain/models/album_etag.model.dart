@@ -11,7 +11,7 @@ class AlbumETag {
     required this.modifiedTime,
   });
 
-  factory AlbumETag.empty() {
+  factory AlbumETag.initial() {
     return AlbumETag(
       albumId: -1,
       assetCount: 0,

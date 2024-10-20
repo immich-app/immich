@@ -64,7 +64,7 @@ class ImImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return OctoImage(
       fadeInDuration: const Duration(milliseconds: 0),
-      fadeOutDuration: const Duration(milliseconds: 200),
+      fadeOutDuration: Durations.short4,
       placeholderBuilder: (_) => placeholder,
       image: ImImage.imageProvider(asset: asset),
       width: width,

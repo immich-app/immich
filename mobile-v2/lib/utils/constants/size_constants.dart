@@ -9,3 +9,9 @@ class SizeConstants {
   static const l = 32.0;
   static const xl = 64.0;
 }
+
+class BodyRatioConstants {
+  const BodyRatioConstants._();
+
+  static const oneThird = 1 / 3;
+}

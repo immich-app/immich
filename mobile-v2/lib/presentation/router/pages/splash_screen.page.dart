@@ -3,14 +3,10 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:immich_mobile/domain/services/album_sync.service.dart';
-import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/presentation/components/image/immich_logo.widget.dart';
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
-import 'package:immich_mobile/presentation/states/current_user.state.dart';
-import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
@@ -53,11 +49,7 @@ class _SplashScreenState extends State<SplashScreenPage>
   }
 
   Future<void> _tryLogin() async {
-    await di<GalleryPermissionProvider>().requestPermission();
     if (await di<LoginService>().tryAutoLogin() && mounted) {
-      unawaited(di<AssetSyncService>()
-          .performFullRemoteSyncIsolate(di<CurrentUserProvider>().value));
-      unawaited(di<AlbumSyncService>().performFullDeviceSyncIsolate());
       unawaited(context.replaceRoute(const TabControllerRoute()));
     } else if (mounted) {
       unawaited(context.replaceRoute(const LoginRoute()));

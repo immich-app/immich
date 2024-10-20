@@ -5,6 +5,7 @@ import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_ap
 import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_wrapper.widget.dart';
 import 'package:immich_mobile/presentation/modules/settings/models/settings_section.model.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
+import 'package:immich_mobile/utils/constants/size_constants.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 
 @RoutePage()
@@ -16,7 +17,7 @@ class SettingsWrapperPage extends StatelessWidget {
     return ImAdaptiveRouteWrapper(
       primaryBody: (_) => const SettingsPage(),
       primaryRoute: SettingsRoute.name,
-      bodyRatio: 0.3,
+      bodyRatio: BodyRatioConstants.oneThird,
     );
   }
 }

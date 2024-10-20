@@ -44,6 +44,11 @@ class UserRepository with LogMixin implements IUserRepository {
       return false;
     }
   }
+
+  @override
+  FutureOr<void> deleteAll() async {
+    await _db.user.deleteAll();
+  }
 }
 
 User _toModel(UserData user) {

@@ -8,4 +8,7 @@ abstract interface class IAlbumETagRepository {
 
   /// Fetches the album etag for the given [albumId]
   FutureOr<AlbumETag?> get(int albumId);
+
+  /// Removes all album eTags
+  FutureOr<void> deleteAll();
 }

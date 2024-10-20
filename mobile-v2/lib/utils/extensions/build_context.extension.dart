@@ -17,6 +17,9 @@ extension BuildContextHelper on BuildContext {
   /// Get the [Size] of [MediaQuery]
   Size get mediaQuerySize => MediaQuery.sizeOf(this);
 
+  /// Get the [Padding] of [MediaQuery]
+  EdgeInsets get mediaQueryPadding => MediaQuery.paddingOf(this);
+
   /// Get the [EdgeInsets] of [MediaQuery]
   EdgeInsets get viewInsets => MediaQuery.viewInsetsOf(this);
 

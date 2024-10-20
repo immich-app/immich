@@ -2,12 +2,27 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:immich_mobile/domain/utils/renderlist_providers.dart';
+import 'package:immich_mobile/presentation/components/appbar/immich_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/components/grid/immich_asset_grid.state.dart';
 import 'package:immich_mobile/presentation/components/grid/immich_asset_grid.widget.dart';
+import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 
 @RoutePage()
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _showAppBar = ValueNotifier<bool>(true);
+
+  @override
+  void dispose() {
+    _showAppBar.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +31,35 @@ class HomePage extends StatelessWidget {
         create: (_) => AssetGridCubit(
           renderListProvider: RenderListProvider.mainTimeline(),
         ),
-        child: const ImAssetGrid(),
+        child: Stack(children: [
+          ImAssetGrid(
+            topPadding: kToolbarHeight + context.mediaQueryPadding.top - 8,
+          ),
+          ValueListenableBuilder(
+            valueListenable: _showAppBar,
+            builder: (_, shouldShow, appBar) {
+              final Duration duration;
+              if (shouldShow) {
+                // Animate out app bar slower
+                duration = Durations.short3;
+              } else {
+                // Animate in app bar faster
+                duration = Durations.medium2;
+              }
+              return AnimatedPositioned(
+                duration: duration,
+                curve: Curves.easeOut,
+                left: 0,
+                right: 0,
+                top: shouldShow
+                    ? 0
+                    : -(kToolbarHeight + context.mediaQueryPadding.top),
+                child: appBar!,
+              );
+            },
+            child: const ImAppBar(),
+          ),
+        ]),
       ),
     );
   }
