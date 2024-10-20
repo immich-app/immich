@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -12,6 +12,7 @@ import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/download.dart';
+import 'package:logging/logging.dart';
 
 final downloadServiceProvider = Provider(
   (ref) => DownloadService(
@@ -23,6 +24,7 @@ final downloadServiceProvider = Provider(
 class DownloadService {
   final IDownloadRepository _downloadRepository;
   final IFileMediaRepository _fileMediaRepository;
+  final Logger _log = Logger("DownloadService");
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
   void Function(TaskStatusUpdate)? onVideoDownloadStatus;
   void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
@@ -55,19 +57,25 @@ class DownloadService {
     onLivePhotoDownloadStatus?.call(update);
   }
 
-  Future<bool> saveImage(Task task) async {
+  Future<bool> saveImageWithPath(Task task) async {
     final filePath = await task.filePath();
     final title = task.filename;
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
-    final data = await File(filePath).readAsBytes();
-
-    final Asset? resultAsset = await _fileMediaRepository.saveImage(
-      data,
-      title: title,
-      relativePath: relativePath,
-    );
-
-    return resultAsset != null;
+    try {
+      final Asset? resultAsset = await _fileMediaRepository.saveImageWithFile(
+        filePath,
+        title: title,
+        relativePath: relativePath,
+      );
+      return resultAsset != null;
+    } catch (error, stack) {
+      _log.severe("Error saving image", error, stack);
+      return false;
+    } finally {
+      if (await File(filePath).exists()) {
+        await File(filePath).delete();
+      }
+    }
   }
 
   Future<bool> saveVideo(Task task) async {
@@ -75,58 +83,74 @@ class DownloadService {
     final title = task.filename;
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
     final file = File(filePath);
-
-    final Asset? resultAsset = await _fileMediaRepository.saveVideo(
-      file,
-      title: title,
-      relativePath: relativePath,
-    );
-
-    return resultAsset != null;
+    try {
+      final Asset? resultAsset = await _fileMediaRepository.saveVideo(
+        file,
+        title: title,
+        relativePath: relativePath,
+      );
+      return resultAsset != null;
+    } catch (error, stack) {
+      _log.severe("Error saving video", error, stack);
+      return false;
+    } finally {
+      if (await file.exists()) {
+        await file.delete();
+      }
+    }
   }
 
   Future<bool> saveLivePhotos(
     Task task,
     String livePhotosId,
   ) async {
+    final records = await _downloadRepository.getLiveVideoTasks();
+    if (records.length < 2) {
+      return false;
+    }
+
+    final imageRecord =
+        _findTaskRecord(records, livePhotosId, LivePhotosPart.image);
+    final videoRecord =
+        _findTaskRecord(records, livePhotosId, LivePhotosPart.video);
+    final imageFilePath = await imageRecord.task.filePath();
+    final videoFilePath = await videoRecord.task.filePath();
+
     try {
-      final records = await _downloadRepository.getLiveVideoTasks();
-      if (records.length < 2) {
-        return false;
-      }
-
-      final imageRecord = records.firstWhere(
-        (record) {
-          final metadata = LivePhotosMetadata.fromJson(record.task.metaData);
-          return metadata.id == livePhotosId &&
-              metadata.part == LivePhotosPart.image;
-        },
-      );
-
-      final videoRecord = records.firstWhere((record) {
-        final metadata = LivePhotosMetadata.fromJson(record.task.metaData);
-        return metadata.id == livePhotosId &&
-            metadata.part == LivePhotosPart.video;
-      });
-
-      final imageFilePath = await imageRecord.task.filePath();
-      final videoFilePath = await videoRecord.task.filePath();
-
-      final resultAsset = await _fileMediaRepository.saveLivePhoto(
+      final result = await _fileMediaRepository.saveLivePhoto(
         image: File(imageFilePath),
         video: File(videoFilePath),
         title: task.filename,
       );
 
+      return result != null;
+    } on PlatformException catch (error, stack) {
+      // Handle saving MotionPhotos on iOS
+      if (error.code == 'PHPhotosErrorDomain (-1)') {
+        final result = await _fileMediaRepository
+            .saveImageWithFile(imageFilePath, title: task.filename);
+        return result != null;
+      }
+      _log.severe("Error saving live photo", error, stack);
+      return false;
+    } catch (error, stack) {
+      _log.severe("Error saving live photo", error, stack);
+      return false;
+    } finally {
+      final imageFile = File(imageFilePath);
+      if (await imageFile.exists()) {
+        await imageFile.delete();
+      }
+
+      final videoFile = File(videoFilePath);
+      if (await videoFile.exists()) {
+        await videoFile.delete();
+      }
+
       await _downloadRepository.deleteRecordsWithIds([
         imageRecord.task.taskId,
         videoRecord.task.taskId,
       ]);
-
-      return resultAsset != null;
-    } catch (error) {
-      debugPrint("Error saving live photo: $error");
-      return false;
     }
   }
 
@@ -151,7 +175,9 @@ class DownloadService {
       await _downloadRepository.download(
         _buildDownloadTask(
           asset.livePhotoVideoId!,
-          asset.fileName.toUpperCase().replaceAll(".HEIC", '.MOV'),
+          asset.fileName
+              .toUpperCase()
+              .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
           group: downloadGroupLivePhoto,
           metadata: LivePhotosMetadata(
             part: LivePhotosPart.video,
@@ -190,4 +216,15 @@ class DownloadService {
       metaData: metadata ?? '',
     );
   }
+}
+
+TaskRecord _findTaskRecord(
+  List<TaskRecord> records,
+  String livePhotosId,
+  LivePhotosPart part,
+) {
+  return records.firstWhere((record) {
+    final metadata = LivePhotosMetadata.fromJson(record.task.metaData);
+    return metadata.id == livePhotosId && metadata.part == part;
+  });
 }
