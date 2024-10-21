@@ -177,6 +177,11 @@ export class SmartSearchDto extends BaseSearchDto {
   @IsNotEmpty()
   query!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  language?: string;
+
   @IsInt()
   @Min(1)
   @Type(() => Number)

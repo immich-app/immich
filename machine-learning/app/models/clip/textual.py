@@ -10,6 +10,7 @@ from tokenizers import Encoding, Tokenizer
 
 from app.config import log
 from app.models.base import InferenceModel
+from app.models.constants import WEBLATE_TO_FLORES200
 from app.models.transforms import clean_text
 from app.schemas import ModelSession, ModelTask, ModelType
 
@@ -18,8 +19,9 @@ class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
 
-    def _predict(self, inputs: str, **kwargs: Any) -> NDArray[np.float32]:
-        res: NDArray[np.float32] = self.session.run(None, self.tokenize(inputs))[0][0]
+    def _predict(self, inputs: str, language: str | None = None, **kwargs: Any) -> NDArray[np.float32]:
+        tokens = self.tokenize(inputs, language=language)
+        res: NDArray[np.float32] = self.session.run(None, tokens)[0][0]
         return res
 
     def _load(self) -> ModelSession:
@@ -28,6 +30,7 @@ class BaseCLIPTextualEncoder(InferenceModel):
         self.tokenizer = self._load_tokenizer()
         tokenizer_kwargs: dict[str, Any] | None = self.text_cfg.get("tokenizer_kwargs")
         self.canonicalize = tokenizer_kwargs is not None and tokenizer_kwargs.get("clean") == "canonicalize"
+        self.is_nllb = self.model_name.startswith("nllb")
         log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
 
         return session
@@ -37,7 +40,7 @@ class BaseCLIPTextualEncoder(InferenceModel):
         pass
 
     @abstractmethod
-    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
+    def tokenize(self, text: str, language: str | None = None) -> dict[str, NDArray[np.int32]]:
         pass
 
     @property
@@ -92,14 +95,17 @@ class OpenClipTextualEncoder(BaseCLIPTextualEncoder):
 
         return tokenizer
 
-    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
+    def tokenize(self, text: str, language: str | None = None) -> dict[str, NDArray[np.int32]]:
         text = clean_text(text, canonicalize=self.canonicalize)
+        if self.is_nllb:
+            flores_code = code if language and (code := WEBLATE_TO_FLORES200.get(language)) else "eng_Latn"
+            text = f"{flores_code}{text}"
         tokens: Encoding = self.tokenizer.encode(text)
         return {"text": np.array([tokens.ids], dtype=np.int32)}
 
 
 class MClipTextualEncoder(OpenClipTextualEncoder):
-    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
+    def tokenize(self, text: str, language: str | None = None) -> dict[str, NDArray[np.int32]]:
         text = clean_text(text, canonicalize=self.canonicalize)
         tokens: Encoding = self.tokenizer.encode(text)
         return {
