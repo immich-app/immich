@@ -10,6 +10,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
 
   $: shouldRender = $memoryStore?.length > 0;
 
@@ -75,11 +76,13 @@
             class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
             href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
           >
-            <img
-              class="h-full w-full rounded-xl object-cover"
-              src={getAssetThumbnailUrl(memory.assets[0].id)}
-              alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
-              draggable="false"
+            <ImageThumbnail
+              curve
+              url={getAssetThumbnailUrl(memory.assets[0].id)}
+              base64ThumbHash={memory.assets[0].thumbhash}
+              altText={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
+              widthStyle="100%"
+              heightStyle="100%"
             />
             <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
               {$memoryLaneTitle(memory.yearsAgo)}
