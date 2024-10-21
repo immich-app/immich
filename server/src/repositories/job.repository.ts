@@ -16,7 +16,6 @@ import {
   QueueStatus,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 
 export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // misc
@@ -98,7 +97,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_TRASH_EMPTY]: QueueName.BACKGROUND_TASK,
 };
 
-@Instrumentation()
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
