@@ -66,7 +66,7 @@ For RKMPP to work:
 
 3. Redeploy the `immich-server` container with these updated settings.
 4. In the Admin page under `Video transcoding settings`, change the hardware acceleration setting to the appropriate option and save.
-- For Jasper Lake CPUs, you will need to set the `Hardware Acceleration` -> `Constant quality mode` to `CQP`
+- For Jasper Lake and Elkhart Lake CPUs, you will need to set the `Hardware Acceleration` -> `Constant quality mode` to `CQP`
 5. (Optional) Enable hardware decoding for optimal performance.
 
 #### Single Compose File
