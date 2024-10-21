@@ -61,53 +61,6 @@ class TabControllerPage extends HookConsumerWidget {
       ref.read(tabProvider.notifier).state = TabEnum.values[index];
     }
 
-    navigationRail(TabsRouter tabsRouter) {
-      return NavigationRail(
-        labelType: NavigationRailLabelType.all,
-        selectedIndex: tabsRouter.activeIndex,
-        onDestinationSelected: (index) =>
-            onNavigationSelected(tabsRouter, index),
-        selectedIconTheme: IconThemeData(
-          color: context.primaryColor,
-        ),
-        selectedLabelTextStyle: TextStyle(
-          color: context.primaryColor,
-        ),
-        useIndicator: false,
-        destinations: [
-          NavigationRailDestination(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 4,
-              left: 4,
-              right: 4,
-              bottom: 4,
-            ),
-            icon: const Icon(Icons.photo_library_outlined),
-            selectedIcon: const Icon(Icons.photo_library),
-            label: const Text('tab_controller_nav_photos').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.search_rounded),
-            selectedIcon: const Icon(Icons.search),
-            label: const Text('tab_controller_nav_search').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.photo_album_outlined),
-            selectedIcon: const Icon(Icons.photo_album),
-            label: const Text('albums').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.space_dashboard_outlined),
-            selectedIcon: const Icon(Icons.space_dashboard_rounded),
-            label: const Text('library').tr(),
-          ),
-        ],
-      );
-    }
-
     bottomNavigationBar(TabsRouter tabsRouter) {
       return NavigationBar(
         selectedIndex: tabsRouter.activeIndex,
@@ -186,33 +139,13 @@ class TabControllerPage extends HookConsumerWidget {
           canPop: tabsRouter.activeIndex == 0,
           onPopInvokedWithResult: (didPop, _) =>
               !didPop ? tabsRouter.setActiveIndex(0) : null,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const medium = 600;
-              final Widget? bottom;
-              final Widget body;
-              if (constraints.maxWidth < medium) {
-                // Normal phone width
-                bottom = bottomNavigationBar(tabsRouter);
-                body = child;
-              } else {
-                // Medium tablet width
-                bottom = null;
-                body = Row(
-                  children: [
-                    navigationRail(tabsRouter),
-                    Expanded(child: child),
-                  ],
-                );
-              }
-              return Scaffold(
-                body: HeroControllerScope(
-                  controller: HeroController(),
-                  child: body,
-                ),
-                bottomNavigationBar: multiselectEnabled ? null : bottom,
-              );
-            },
+          child: Scaffold(
+            body: HeroControllerScope(
+              controller: HeroController(),
+              child: child,
+            ),
+            bottomNavigationBar:
+                multiselectEnabled ? null : bottomNavigationBar(tabsRouter),
           ),
         );
       },
