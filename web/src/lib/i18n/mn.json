@@ -28,7 +28,8 @@
   "added_to_favorites_count": "Дуртай зурагнуудад {count, number} нэмэгдлээ",
   "admin": {
     "authentication_settings": "Танин нэвтрэлт тохиргоо",
-    "authentication_settings_description": "",
+    "authentication_settings_description": "Нууц үгийн удирдлага, OAuth болон бусад танин нэвтрэлтийн тохиргоо",
+    "authentication_settings_disable_all": "Бүх нэвтрэх аргуудыг идэвхигүй болгохдоо итгэлтэй байна уу? Нэвтрэх үйлдэл бүрэн идэвхигүй болно.",
     "check_all": "Бүгдийг сонгох",
     "crontab_guru": "",
     "disable_login": "",
@@ -816,10 +817,14 @@
   "view_next_asset": "",
   "view_previous_asset": "",
   "viewer": "",
-  "waiting": "",
-  "week": "",
-  "welcome_to_immich": "",
-  "year": "",
-  "yes": "",
-  "zoom_image": ""
+  "waiting": "Хүлээж байна",
+  "warning": "Анхааруулга",
+  "week": "Долоо хоног",
+  "welcome": "Тавтай морил",
+  "welcome_to_immich": "Тавтай морилно уу",
+  "year": "Он",
+  "years_ago": "{years, plural, one {# year} other {# years}} өмнө",
+  "yes": "Тийм",
+  "you_dont_have_any_shared_links": "Танд хуваалцсан холбоос алга",
+  "zoom_image": "Зургийг томруулж харах"
 }
