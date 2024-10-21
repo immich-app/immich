@@ -179,33 +179,13 @@ class TabControllerPage extends HookConsumerWidget {
           canPop: tabsRouter.activeIndex == 0,
           onPopInvokedWithResult: (didPop, _) =>
               !didPop ? tabsRouter.setActiveIndex(0) : null,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const medium = 600;
-              final Widget? bottom;
-              final Widget body;
-              if (constraints.maxWidth < medium) {
-                // Normal phone width
-                bottom = bottomNavigationBar(tabsRouter);
-                body = child;
-              } else {
-                // Medium tablet width
-                bottom = null;
-                body = Row(
-                  children: [
-                    navigationRail(tabsRouter),
-                    Expanded(child: child),
-                  ],
-                );
-              }
-              return Scaffold(
-                body: HeroControllerScope(
-                  controller: HeroController(),
-                  child: body,
-                ),
-                bottomNavigationBar: multiselectEnabled ? null : bottom,
-              );
-            },
+          child: Scaffold(
+            body: HeroControllerScope(
+              controller: HeroController(),
+              child: child,
+            ),
+            bottomNavigationBar:
+                multiselectEnabled ? null : bottomNavigationBar(tabsRouter),
           ),
         );
       },
