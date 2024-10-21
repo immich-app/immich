@@ -3,10 +3,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { timeToSeconds } from '$lib/utils/date-time';
+  import { user } from '$lib/stores/user.store';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
-  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { locale, playVideoThumbnailOnHover, showUserThumbnails } from '$lib/stores/preferences.store';
+  import { getUserAndCacheResult } from '$lib/utils/users';
   import { getAssetPlaybackUrl } from '$lib/utils';
   import {
     mdiArchiveArrowDownOutline,
@@ -19,6 +22,7 @@
   } from '@mdi/js';
 
   import { fade } from 'svelte/transition';
+  import { t } from 'svelte-i18n';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
@@ -30,6 +34,7 @@
   import { onDestroy } from 'svelte';
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
 
   export let asset: AssetResponseDto;
   export let dateGroup: DateGroup | undefined = undefined;
@@ -45,6 +50,7 @@
   export let showArchiveIcon = false;
   export let showStackedIcon = true;
   export let disableMouseOver = false;
+  export let showUserThumbnailsinViewer = true;
   export let intersectionConfig: {
     root?: HTMLElement;
     bottom?: string;
@@ -64,7 +70,6 @@
 
   let className = '';
   export { className as class };
-
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
@@ -157,6 +162,14 @@
       assetStore.taskManager.separatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
     } else {
       intersecting = false;
+    }
+  };
+
+  const getShareUser = async () => {
+    try {
+      return await getUserAndCacheResult(asset.ownerId);
+    } catch (error) {
+      handleError(error, $t('errors.failed_to_load_people'));
     }
   };
 
@@ -267,6 +280,16 @@
           <div class="absolute bottom-2 left-2 z-10">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
+        {/if}
+
+        {#if showUserThumbnailsinViewer && $showUserThumbnails && (isSharedLink() || asset.ownerId != $user.id)}
+          {#await getShareUser() then shareUser}
+            {#if shareUser}
+              <div class="absolute bottom-2 left-2 z-10">
+                <UserAvatar user={shareUser} size="sm" />
+              </div>
+            {/if}
+          {/await}
         {/if}
 
         {#if !isSharedLink() && showArchiveIcon && asset.isArchived}

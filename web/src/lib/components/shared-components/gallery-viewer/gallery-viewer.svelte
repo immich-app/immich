@@ -21,6 +21,7 @@
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
+  export let showUserThumbnailsinViewer = true;
   export let viewport: Viewport;
   export let onIntersected: (() => void) | undefined = undefined;
   export let showAssetName = false;
@@ -142,6 +143,7 @@
           onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           selected={selectedAssets.has(asset)}
           {showArchiveIcon}
+          {showUserThumbnailsinViewer}
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}
         />
