@@ -20,7 +20,6 @@ import { TagService } from 'src/services/tag.service';
 import { TrashService } from 'src/services/trash.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
-import { otelShutdown } from 'src/utils/instrumentation';
 
 @Injectable()
 export class MicroservicesService {
@@ -100,9 +99,5 @@ export class MicroservicesService {
       [JobName.VERSION_CHECK]: () => this.versionService.handleVersionCheck(),
       [JobName.QUEUE_TRASH_EMPTY]: () => this.trashService.handleQueueEmptyTrash(),
     });
-  }
-
-  async onShutdown() {
-    await otelShutdown();
   }
 }
