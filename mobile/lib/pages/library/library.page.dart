@@ -197,58 +197,66 @@ class PeopleCollectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final people = ref.watch(getAllPeopleProvider);
-    final size = MediaQuery.of(context).size.width * 0.5 - 20;
-    return GestureDetector(
-      onTap: () => context.pushRoute(const PeopleCollectionRoute()),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: size,
-            width: size,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                colors: [
-                  context.colorScheme.primary.withAlpha(30),
-                  context.colorScheme.primary.withAlpha(25),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            child: people.widgetWhen(
-              onData: (people) {
-                return GridView.count(
-                  crossAxisCount: 2,
-                  padding: const EdgeInsets.all(12),
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: people.take(4).map((person) {
-                    return CircleAvatar(
-                      backgroundImage: NetworkImage(
-                        getFaceThumbnailUrl(person.id),
-                        headers: ApiService.getRequestHeaders(),
-                      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        final widthFactor = isTablet ? 0.25 : 0.5;
+        final padding = isTablet ? 38.0 : 20.0;
+        final size = MediaQuery.of(context).size.width * widthFactor - padding;
+
+        return GestureDetector(
+          onTap: () => context.pushRoute(const PeopleCollectionRoute()),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: size,
+                width: size,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [
+                      context.colorScheme.primary.withAlpha(30),
+                      context.colorScheme.primary.withAlpha(25),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: people.widgetWhen(
+                  onData: (people) {
+                    return GridView.count(
+                      crossAxisCount: 2,
+                      padding: const EdgeInsets.all(12),
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: people.take(4).map((person) {
+                        return CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            getFaceThumbnailUrl(person.id),
+                            headers: ApiService.getRequestHeaders(),
+                          ),
+                        );
+                      }).toList(),
                     );
-                  }).toList(),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'people'.tr(),
-              style: context.textTheme.titleSmall?.copyWith(
-                color: context.colorScheme.onSurface,
-                fontWeight: FontWeight.w500,
+                  },
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'people'.tr(),
+                  style: context.textTheme.titleSmall?.copyWith(
+                    color: context.colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -260,55 +268,62 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(localAlbumsProvider);
 
-    final size = MediaQuery.of(context).size.width * 0.5 - 20;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        final widthFactor = isTablet ? 0.25 : 0.5;
+        final padding = isTablet ? 38.0 : 20.0;
+        final size = MediaQuery.of(context).size.width * widthFactor - padding;
 
-    return GestureDetector(
-      onTap: () => context.pushRoute(
-        const LocalAlbumsRoute(),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: size,
-            width: size,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                colors: [
-                  context.colorScheme.primary.withAlpha(30),
-                  context.colorScheme.primary.withAlpha(25),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            child: GridView.count(
-              crossAxisCount: 2,
-              padding: const EdgeInsets.all(12),
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              physics: const NeverScrollableScrollPhysics(),
-              children: albums.take(4).map((album) {
-                return AlbumThumbnailCard(
-                  album: album,
-                  showTitle: false,
-                );
-              }).toList(),
-            ),
+        return GestureDetector(
+          onTap: () => context.pushRoute(
+            const LocalAlbumsRoute(),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'on_this_device'.tr(),
-              style: context.textTheme.titleSmall?.copyWith(
-                color: context.colorScheme.onSurface,
-                fontWeight: FontWeight.w500,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: size,
+                width: size,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [
+                      context.colorScheme.primary.withAlpha(30),
+                      context.colorScheme.primary.withAlpha(25),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  padding: const EdgeInsets.all(12),
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: albums.take(4).map((album) {
+                    return AlbumThumbnailCard(
+                      album: album,
+                      showTitle: false,
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'on_this_device'.tr(),
+                  style: context.textTheme.titleSmall?.copyWith(
+                    color: context.colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -317,44 +332,52 @@ class PlacesCollectionCard extends StatelessWidget {
   const PlacesCollectionCard({super.key});
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.width * 0.5 - 20;
-    return GestureDetector(
-      onTap: () => context.pushRoute(const PlacesCollectionRoute()),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: size,
-            width: size,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: context.colorScheme.secondaryContainer.withAlpha(100),
-            ),
-            child: IgnorePointer(
-              child: MapThumbnail(
-                zoom: 8,
-                centre: const LatLng(
-                  21.44950,
-                  -157.91959,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        final widthFactor = isTablet ? 0.25 : 0.5;
+        final padding = isTablet ? 38.0 : 20.0;
+        final size = MediaQuery.of(context).size.width * widthFactor - padding;
+
+        return GestureDetector(
+          onTap: () => context.pushRoute(const PlacesCollectionRoute()),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: size,
+                width: size,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: context.colorScheme.secondaryContainer.withAlpha(100),
                 ),
-                showAttribution: false,
-                themeMode:
-                    context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
+                child: IgnorePointer(
+                  child: MapThumbnail(
+                    zoom: 8,
+                    centre: const LatLng(
+                      21.44950,
+                      -157.91959,
+                    ),
+                    showAttribution: false,
+                    themeMode:
+                        context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
+                  ),
+                ),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'places'.tr(),
-              style: context.textTheme.titleSmall?.copyWith(
-                color: context.colorScheme.onSurface,
-                fontWeight: FontWeight.w500,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'places'.tr(),
+                  style: context.textTheme.titleSmall?.copyWith(
+                    color: context.colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
