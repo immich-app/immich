@@ -3,10 +3,8 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { MemoryEntity } from 'src/entities/memory.entity';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class MemoryRepository implements IMemoryRepository {
   constructor(

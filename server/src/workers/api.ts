@@ -11,16 +11,18 @@ import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
 import { isStartUpError } from 'src/services/storage.service';
-import { otelStart } from 'src/utils/instrumentation';
 import { useSwagger } from 'src/utils/misc';
 
 async function bootstrap() {
   process.title = 'immich-api';
 
   const { telemetry, network } = new ConfigRepository().getEnv();
-  otelStart(telemetry.apiPort);
+  if (telemetry.enabled) {
+    bootstrapTelemetry(telemetry.apiPort);
+  }
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);

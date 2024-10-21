@@ -86,27 +86,6 @@ export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
   return Chunked({ ...options, mergeFn: setUnion });
 }
 
-// https://stackoverflow.com/a/74898678
-export function DecorateAll(
-  decorator: <T>(
-    target: any,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>,
-  ) => TypedPropertyDescriptor<T> | void,
-) {
-  return (target: any) => {
-    const descriptors = Object.getOwnPropertyDescriptors(target.prototype);
-    for (const [propName, descriptor] of Object.entries(descriptors)) {
-      const isMethod = typeof descriptor.value == 'function' && propName !== 'constructor';
-      if (!isMethod) {
-        continue;
-      }
-      decorator({ ...target, constructor: { ...target.constructor, name: target.name } as any }, propName, descriptor);
-      Object.defineProperty(target.prototype, propName, descriptor);
-    }
-  };
-}
-
 const UUID = '00000000-0000-4000-a000-000000000000';
 
 export const DummyValue = {
@@ -127,6 +106,9 @@ export interface GenerateSqlQueries {
   name?: string;
   params: unknown[];
 }
+
+export const Telemetry = (options: { enabled?: boolean }) =>
+  SetMetadata(MetadataKey.TELEMETRY_ENABLED, options?.enabled ?? true);
 
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);

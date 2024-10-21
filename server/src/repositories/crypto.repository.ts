@@ -3,9 +3,7 @@ import { compareSync, hash } from 'bcrypt';
 import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 
-@Instrumentation()
 @Injectable()
 export class CryptoRepository implements ICryptoRepository {
   randomUUID() {

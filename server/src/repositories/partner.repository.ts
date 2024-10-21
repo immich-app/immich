@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { IPartnerRepository, PartnerIds } from 'src/interfaces/partner.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DeepPartial, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {
   constructor(@InjectRepository(PartnerEntity) private repository: Repository<PartnerEntity>) {}

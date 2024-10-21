@@ -4,7 +4,6 @@ import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import {
   DataSource,
   EntityManager,
@@ -23,7 +22,6 @@ const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   return album;
 };
 
-@Instrumentation()
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
   constructor(

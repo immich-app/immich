@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
 import { citiesFile, excludePaths } from 'src/constants';
+import { Telemetry } from 'src/decorators';
 import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
@@ -74,9 +75,6 @@ const getEnv = (): EnvData => {
   const repoMetrics = parseBoolean(process.env.IMMICH_IO_METRICS, globalEnabled);
   const jobMetrics = parseBoolean(process.env.IMMICH_JOB_METRICS, globalEnabled);
   const telemetryEnabled = globalEnabled || hostMetrics || apiMetrics || repoMetrics || jobMetrics;
-  if (!telemetryEnabled && process.env.OTEL_SDK_DISABLED === undefined) {
-    process.env.OTEL_SDK_DISABLED = 'true';
-  }
 
   return {
     host: process.env.IMMICH_HOST,
@@ -186,6 +184,7 @@ const getEnv = (): EnvData => {
 let cached: EnvData | undefined;
 
 @Injectable()
+@Telemetry({ enabled: false })
 export class ConfigRepository implements IConfigRepository {
   getEnv(): EnvData {
     if (!cached) {

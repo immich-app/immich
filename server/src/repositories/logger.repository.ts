@@ -1,6 +1,7 @@
 import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
+import { Telemetry } from 'src/decorators';
 import { LogLevel } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -17,6 +18,7 @@ enum LogColor {
 }
 
 @Injectable({ scope: Scope.TRANSIENT })
+@Telemetry({ enabled: false })
 export class LoggerRepository extends ConsoleLogger implements ILoggerRepository {
   private static logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
   private noColor: boolean;

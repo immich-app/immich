@@ -12,11 +12,9 @@ import {
   ModelTask,
   ModelType,
 } from 'src/interfaces/machine-learning.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 
 const errorPrefix = 'Machine learning request';
 
-@Instrumentation()
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
   private async predict<T>(url: string, payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
