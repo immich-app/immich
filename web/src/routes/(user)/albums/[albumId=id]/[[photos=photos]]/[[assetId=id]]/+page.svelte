@@ -747,6 +747,7 @@
       await setModeToView();
     }}
     onRemove={(userId) => handleRemoveUser(userId, ViewMode.OPTIONS)}
+    onRefreshAlbum={refreshAlbum}
     onClose={() => (viewMode = ViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
     onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
