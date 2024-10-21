@@ -15,6 +15,7 @@ export const personStub = {
     faceAssetId: null,
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
   hidden: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -29,6 +30,7 @@ export const personStub = {
     faceAssetId: null,
     faceAsset: null,
     isHidden: true,
+    withArchived: false,
   }),
   withName: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -43,6 +45,7 @@ export const personStub = {
     faceAssetId: 'assetFaceId',
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
   withBirthDate: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -57,6 +60,7 @@ export const personStub = {
     faceAssetId: null,
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
   noThumbnail: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -71,6 +75,7 @@ export const personStub = {
     faceAssetId: null,
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
   newThumbnail: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -85,6 +90,7 @@ export const personStub = {
     faceAssetId: 'asset-id',
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
   primaryPerson: Object.freeze<PersonEntity>({
     id: 'person-1',
@@ -99,6 +105,7 @@ export const personStub = {
     faceAssetId: null,
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
   mergePerson: Object.freeze<PersonEntity>({
     id: 'person-2',
@@ -113,6 +120,7 @@ export const personStub = {
     faceAssetId: null,
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
   randomPerson: Object.freeze<PersonEntity>({
     id: 'person-3',
@@ -127,5 +135,6 @@ export const personStub = {
     faceAssetId: null,
     faceAsset: null,
     isHidden: false,
+    withArchived: false,
   }),
 };
