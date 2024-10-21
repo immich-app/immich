@@ -20,6 +20,11 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
   Future<User?> get(String id) => db.users.getById(id);
 
   @override
+  Future<User?> getByIsarId(int id) {
+    return db.users.where().isarIdEqualTo(id).findFirst();
+  }
+
+  @override
   Future<List<User>> getAll({bool self = true, UserSort? sortBy}) {
     final baseQuery = db.users.where();
     final int userId = Store.get(StoreKey.currentUser).isarId;
