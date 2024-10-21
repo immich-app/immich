@@ -633,6 +633,29 @@ describe('/libraries', () => {
       });
     });
 
+    it("should fail if path isn't absolute", async () => {
+      const pathToTest = `relative/path`;
+
+      const cwd = process.cwd();
+      // Create directory in cwd
+      utils.createDirectory(`${cwd}/${pathToTest}`);
+
+      const response = await utils.validateLibrary(admin.accessToken, library.id, {
+        importPaths: [pathToTest],
+      });
+
+      utils.removeDirectory(`${cwd}/${pathToTest}`);
+
+      expect(response.importPaths?.length).toEqual(1);
+      const pathResponse = response?.importPaths?.at(0);
+
+      expect(pathResponse).toEqual({
+        importPath: pathToTest,
+        isValid: false,
+        message: expect.stringMatching('Import path must be absolute, try /usr/src/app/relative/path'),
+      });
+    });
+
     it('should fail if path is a file', async () => {
       const pathToTest = `${testAssetDirInternal}/albums/nature/el_torcal_rocks.jpg`;
 
