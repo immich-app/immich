@@ -24,7 +24,7 @@ services:
       IMMICH_VERSION=${IMMICH_VERSION}
       UPLOAD_LOCATION=${UPLOAD_LOCATION}
     ports:
-      - 2283:3001
+      - 2283:2283
     depends_on:
       - redis
       - database
