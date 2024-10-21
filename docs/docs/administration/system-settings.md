@@ -206,3 +206,60 @@ When this option is enabled the `immich-server` will periodically make requests 
 ## Video Transcoding Settings
 
 The system administrator can define parameters according to which video files will be converted to different formats (depending on the settings). The settings can be changed in depth, to learn more about the terminology used here, refer to FFmpeg documentation for [H.264](https://trac.ffmpeg.org/wiki/Encode/H.264) codec, [HEVC](https://trac.ffmpeg.org/wiki/Encode/H.265) codec and [VP9](https://trac.ffmpeg.org/wiki/Encode/VP9) codec.
+
+Which streams of a video file will be transcoded is determined by the [Transcode Policy](#ffmpeg-transcode). Streams that are transcoded use the following settings. (Streams that are not transcoded are untouched and preserve their original settings.)
+
+### `ffmpeg.preset`
+
+The amount of "compute effort" to put into transcoding. These use [the preset names from h264](https://trac.ffmpeg.org/wiki/Encode/H.264#Preset) and will be converted to appropriate values for encoders that configure effort in different ways.
+
+The default value is `ultrafast`.
+
+### `ffmpeg.targetAudioCodec`
+
+Which audio codec to use when the audio stream is being transcoded. Can be one of `mp3`, `aac`, `libopus`.
+
+The default value is `aac`.
+
+### `ffmpeg.targetVideoCodec`
+
+Which video codec to use when the video stream is being transcoded. Can be one of `h264`, `hevc`, `vp9` or `av1`.
+
+The default value is `h264`.
+
+### `ffmpeg.targetResolution`
+
+When transcoding video downscale the largest dimension to this value. Videos are never upscaled.
+
+The default value is `720`.
+
+### `ffmpeg.transcode`
+
+The transcoding policy configures which streams of a video asset will be transcoded. The transcoding decision is made independently for video streams and audio streams.
+
+The default policy is `required`.
+
+#### `all`
+
+Videos are always transcoded. This ensures consistency during video playback.
+
+#### `disabled`
+
+Videos are never transcoded. This saves space and resources on the server, but may prevent playback on devices that don't support the source format (especially web browsers) or result in high bandwidth usage when playing high-bitrate files.
+
+#### `required`
+
+Video is transcoded when any of the following conditions are met:
+
+- The video is HDR.
+- The video codec is not in `acceptedVideoCodecs`.
+
+Audio is transcoded if the audio codec is not in `acceptedAudioCodecs`.
+
+#### `bitrate`
+
+In addition to the conditions in `required`, video is also transcoded if their bitrate is over `maxBitrate`.
+
+#### `optimal`
+
+In addition to the conditions in `required`, video is also transcoded if the horizontal **and** vertical resolutions are higher than `targetResolution`.
