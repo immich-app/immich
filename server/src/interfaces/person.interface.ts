@@ -52,7 +52,12 @@ export interface IPersonRepository {
   getAllForUser(pagination: PaginationOptions, userId: string, options: PersonSearchOptions): Paginated<PersonEntity>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
-  getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
+  getByName(
+    pagination: PaginationOptions,
+    userId: string,
+    personName: string,
+    options: PersonNameSearchOptions,
+  ): Paginated<PersonEntity>;
   getDistinctNames(userId: string, options: PersonNameSearchOptions): Promise<PersonNameResponse[]>;
 
   create(person: Partial<PersonEntity>): Promise<PersonEntity>;

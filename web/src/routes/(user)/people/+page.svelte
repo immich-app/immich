@@ -208,11 +208,11 @@
       await changeName();
       return;
     }
-    const data = await searchPerson({ name: personName, withHidden: true });
+    const data = await searchPerson({ name: personName, size: 5, withHidden: true });
 
     // We check if another person has the same name as the name entered by the user
 
-    const existingPerson = data.find(
+    const existingPerson = data.people.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() &&
         edittingPerson &&

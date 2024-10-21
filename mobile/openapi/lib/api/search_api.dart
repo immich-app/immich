@@ -193,6 +193,82 @@ class SearchApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /search/album' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] name (required):
+  ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [bool] shared:
+  ///   true: only shared albums false: only non-shared own albums undefined: shared and owned albums
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  Future<Response> searchAlbumWithHttpInfo(String name, { num? page, bool? shared, num? size, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/search/album';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'name', name));
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (shared != null) {
+      queryParams.addAll(_queryParams('', 'shared', shared));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] name (required):
+  ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [bool] shared:
+  ///   true: only shared albums false: only non-shared own albums undefined: shared and owned albums
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  Future<SearchAlbumNameResponseDto?> searchAlbum(String name, { num? page, bool? shared, num? size, }) async {
+    final response = await searchAlbumWithHttpInfo(name,  page: page, shared: shared, size: size, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SearchAlbumNameResponseDto',) as SearchAlbumNameResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'POST /search/metadata' operation and returns the [Response].
   /// Parameters:
   ///
@@ -245,8 +321,14 @@ class SearchApi {
   ///
   /// * [String] name (required):
   ///
+  /// * [num] page:
+  ///   This property was added in v119.0.0
+  ///
+  /// * [num] size:
+  ///   This property was added in v119.0.0
+  ///
   /// * [bool] withHidden:
-  Future<Response> searchPersonWithHttpInfo(String name, { bool? withHidden, }) async {
+  Future<Response> searchPersonWithHttpInfo(String name, { num? page, num? size, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search/person';
 
@@ -258,6 +340,12 @@ class SearchApi {
     final formParams = <String, String>{};
 
       queryParams.addAll(_queryParams('', 'name', name));
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
     if (withHidden != null) {
       queryParams.addAll(_queryParams('', 'withHidden', withHidden));
     }
@@ -280,9 +368,15 @@ class SearchApi {
   ///
   /// * [String] name (required):
   ///
+  /// * [num] page:
+  ///   This property was added in v119.0.0
+  ///
+  /// * [num] size:
+  ///   This property was added in v119.0.0
+  ///
   /// * [bool] withHidden:
-  Future<List<PersonResponseDto>?> searchPerson(String name, { bool? withHidden, }) async {
-    final response = await searchPersonWithHttpInfo(name,  withHidden: withHidden, );
+  Future<SearchPersonNameResponseDto?> searchPerson(String name, { num? page, num? size, bool? withHidden, }) async {
+    final response = await searchPersonWithHttpInfo(name,  page: page, size: size, withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -290,11 +384,8 @@ class SearchApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PersonResponseDto>') as List)
-        .cast<PersonResponseDto>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SearchPersonNameResponseDto',) as SearchPersonNameResponseDto;
+    
     }
     return null;
   }

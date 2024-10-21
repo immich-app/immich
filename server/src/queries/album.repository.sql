@@ -520,3 +520,87 @@ WHERE
       "album_assets"."albumsId" = "albums"."id"
       AND "albums"."albumThumbnailAssetId" = "album_assets"."assetsId"
   )
+
+-- AlbumRepository.getByName
+SELECT
+  COUNT(DISTINCT ("album"."id")) AS "cnt"
+FROM
+  "albums" "album"
+  LEFT JOIN "users" "owner" ON "owner"."id" = "album"."ownerId"
+  AND ("owner"."deletedAt" IS NULL)
+  LEFT JOIN "albums_shared_users_users" "album_users" ON "album_users"."albumsId" = "album"."id"
+  LEFT JOIN "users" "user" ON "user"."id" = "album_users"."usersId"
+  AND ("user"."deletedAt" IS NULL)
+WHERE
+  (
+    ("album"."ownerId" = $1)
+    AND (
+      LOWER("album"."albumName") LIKE $2
+      OR LOWER("album"."albumName") LIKE $3
+    )
+  )
+  AND ("album"."deletedAt" IS NULL)
+SELECT
+  "album"."id" AS "album_id",
+  "album"."ownerId" AS "album_ownerId",
+  "album"."albumName" AS "album_albumName",
+  "album"."description" AS "album_description",
+  "album"."createdAt" AS "album_createdAt",
+  "album"."updatedAt" AS "album_updatedAt",
+  "album"."deletedAt" AS "album_deletedAt",
+  "album"."albumThumbnailAssetId" AS "album_albumThumbnailAssetId",
+  "album"."isActivityEnabled" AS "album_isActivityEnabled",
+  "album"."order" AS "album_order",
+  "owner"."id" AS "owner_id",
+  "owner"."name" AS "owner_name",
+  "owner"."isAdmin" AS "owner_isAdmin",
+  "owner"."email" AS "owner_email",
+  "owner"."storageLabel" AS "owner_storageLabel",
+  "owner"."oauthId" AS "owner_oauthId",
+  "owner"."profileImagePath" AS "owner_profileImagePath",
+  "owner"."shouldChangePassword" AS "owner_shouldChangePassword",
+  "owner"."createdAt" AS "owner_createdAt",
+  "owner"."deletedAt" AS "owner_deletedAt",
+  "owner"."status" AS "owner_status",
+  "owner"."updatedAt" AS "owner_updatedAt",
+  "owner"."quotaSizeInBytes" AS "owner_quotaSizeInBytes",
+  "owner"."quotaUsageInBytes" AS "owner_quotaUsageInBytes",
+  "owner"."profileChangedAt" AS "owner_profileChangedAt",
+  "album_users"."albumsId" AS "album_users_albumsId",
+  "album_users"."usersId" AS "album_users_usersId",
+  "album_users"."role" AS "album_users_role",
+  "user"."id" AS "user_id",
+  "user"."name" AS "user_name",
+  "user"."isAdmin" AS "user_isAdmin",
+  "user"."email" AS "user_email",
+  "user"."storageLabel" AS "user_storageLabel",
+  "user"."oauthId" AS "user_oauthId",
+  "user"."profileImagePath" AS "user_profileImagePath",
+  "user"."shouldChangePassword" AS "user_shouldChangePassword",
+  "user"."createdAt" AS "user_createdAt",
+  "user"."deletedAt" AS "user_deletedAt",
+  "user"."status" AS "user_status",
+  "user"."updatedAt" AS "user_updatedAt",
+  "user"."quotaSizeInBytes" AS "user_quotaSizeInBytes",
+  "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes",
+  "user"."profileChangedAt" AS "user_profileChangedAt"
+FROM
+  "albums" "album"
+  LEFT JOIN "users" "owner" ON "owner"."id" = "album"."ownerId"
+  AND ("owner"."deletedAt" IS NULL)
+  LEFT JOIN "albums_shared_users_users" "album_users" ON "album_users"."albumsId" = "album"."id"
+  LEFT JOIN "users" "user" ON "user"."id" = "album_users"."usersId"
+  AND ("user"."deletedAt" IS NULL)
+WHERE
+  (
+    ("album"."ownerId" = $1)
+    AND (
+      LOWER("album"."albumName") LIKE $2
+      OR LOWER("album"."albumName") LIKE $3
+    )
+  )
+  AND ("album"."deletedAt" IS NULL)
+LIMIT
+  11
+OFFSET
+  10
