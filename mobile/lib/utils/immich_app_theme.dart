@@ -243,6 +243,28 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
         ),
       ),
     ),
+    navigationRailTheme: NavigationRailThemeData(
+      // backgroundColor:
+      //     isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+      labelType: NavigationRailLabelType.all,
+      unselectedLabelTextStyle: TextStyle(
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w500,
+        fontFamily: 'Overpass',
+      ),
+      selectedLabelTextStyle: TextStyle(
+        color: primaryColor,
+        fontWeight: FontWeight.w500,
+        fontFamily: 'Overpass',
+      ),
+      unselectedIconTheme: IconThemeData(
+        color: colorScheme.onSurface,
+      ),
+      selectedIconTheme: IconThemeData(
+        color: primaryColor,
+      ),
+      useIndicator: true,
+    ),
     inputDecorationTheme: InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(

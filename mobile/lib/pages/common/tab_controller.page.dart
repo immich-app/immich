@@ -67,13 +67,6 @@ class TabControllerPage extends HookConsumerWidget {
         selectedIndex: tabsRouter.activeIndex,
         onDestinationSelected: (index) =>
             onNavigationSelected(tabsRouter, index),
-        selectedIconTheme: IconThemeData(
-          color: context.primaryColor,
-        ),
-        selectedLabelTextStyle: TextStyle(
-          color: context.primaryColor,
-        ),
-        useIndicator: false,
         destinations: [
           NavigationRailDestination(
             padding: EdgeInsets.only(
