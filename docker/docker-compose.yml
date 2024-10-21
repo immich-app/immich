@@ -21,8 +21,8 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     environment:
-      IMMICH_VERSION=${IMMICH_VERSION}
-      UPLOAD_LOCATION=${UPLOAD_LOCATION}
+      IMMICH_VERSION: ${IMMICH_VERSION}
+      UPLOAD_LOCATION: ${UPLOAD_LOCATION}
     ports:
       - 2283:2283
     depends_on:
@@ -43,7 +43,7 @@ services:
     volumes:
       - model-cache:/cache
     environment:
-      IMMICH_VERSION=${IMMICH_VERSION}
+      IMMICH_VERSION: ${IMMICH_VERSION}
     restart: always
     healthcheck:
       disable: false
