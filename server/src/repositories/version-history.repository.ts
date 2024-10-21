@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VersionHistoryEntity } from 'src/entities/version-history.entity';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class VersionHistoryRepository implements IVersionHistoryRepository {
   constructor(@InjectRepository(VersionHistoryEntity) private repository: Repository<VersionHistoryEntity>) {}

@@ -3,10 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SessionEntity } from 'src/entities/session.entity';
 import { ISessionRepository, SessionSearchOptions } from 'src/interfaces/session.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { LessThanOrEqual, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class SessionRepository implements ISessionRepository {
   constructor(@InjectRepository(SessionEntity) private repository: Repository<SessionEntity>) {}

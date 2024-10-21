@@ -4,11 +4,9 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository.js';
 
-@Instrumentation()
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
   constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}

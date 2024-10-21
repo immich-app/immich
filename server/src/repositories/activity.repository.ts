@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Repository } from 'typeorm';
 
 export interface ActivitySearch {
@@ -13,7 +12,6 @@ export interface ActivitySearch {
   isLiked?: boolean;
 }
 
-@Instrumentation()
 @Injectable()
 export class ActivityRepository implements IActivityRepository {
   constructor(@InjectRepository(ActivityEntity) private repository: Repository<ActivityEntity>) {}
