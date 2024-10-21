@@ -23,6 +23,9 @@ services:
     environment:
       IMMICH_VERSION: ${IMMICH_VERSION}
       UPLOAD_LOCATION: ${UPLOAD_LOCATION}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - 2283:2283
     depends_on:
