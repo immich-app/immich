@@ -1,5 +1,9 @@
 # Repair Page
 
+:::warning
+This feature is currently disabled and will be reworked in the near future.
+:::
+
 The repair page is designed to give information to the system administrator about files that are not tracked, or offline paths.
 
 ## Natural State
