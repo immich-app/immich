@@ -59,7 +59,7 @@ class LibraryPage extends ConsumerWidget {
                   icon: Icons.link_outlined,
                   label: 'shared_links'.tr(),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: trashEnabled ? 8 : 0),
                 trashEnabled
                     ? ActionButton(
                         onPressed: () => context.pushRoute(const TrashRoute()),
