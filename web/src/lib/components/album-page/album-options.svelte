@@ -84,7 +84,7 @@
     }
   };
 
-  const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
+  const handleUpdateSharedUserRole = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
       await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
       const message = $t('user_role_set', {
@@ -155,12 +155,12 @@
                 <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
                   {#if role === AlbumUserRole.Viewer}
                     <MenuOption
-                      onClick={() => handleSetReadonly(user, AlbumUserRole.Editor)}
+                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Editor)}
                       text={$t('allow_edits')}
                     />
                   {:else}
                     <MenuOption
-                      onClick={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Viewer)}
                       text={$t('disallow_edits')}
                     />
                   {/if}
