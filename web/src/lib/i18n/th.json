@@ -28,6 +28,7 @@
   "added_to_favorites_count": "{count, number} รูปถูกเพิ่มเข้ารายการโปรด",
   "admin": {
     "add_exclusion_pattern_description": "เพิ่มรูปแบบการยกเว้น การ Glob โดยใช้ *, ** และ ? ถูกรองรับ ถ้าต้องการละเว้นไฟล์ทั้งหมดในไดเร็กทอรีใดๆที่ชื่อว่า \"Raw\" ให้ใช้ \"**/Raw/**\" ถ้าต้องการละเว้นไฟล์ทั้งหมดที่ลงท้ายด้วย \".tif\" ให้ใช้ \"**/*.tif\" ถ้าต้องการละเว้นพาธที่เริ่มจากไดเรกทอรีบนสุดให้ใช้ \"/พาธ/ที่ต้องการ/ละเว้น/**\"",
+    "asset_offline_description": "Immich",
     "authentication_settings": "ตั้งค่าการเข้าถึง",
     "authentication_settings_description": "จัดการรหัสผ่าน, OAuth, และตั้งค่าการเข้าถึงอื่นๆ",
     "authentication_settings_disable_all": "คุณแน่ใจว่าต้องการปิดวิธีการล็อกอินทั้งหมดหรือไม่? ล็อกอินจะถูกปิดทั้งหมด",
@@ -54,6 +55,7 @@
     "failed_job_command": "คำสั่ง {command} ของงาน {job} ล้มเหลว",
     "force_delete_user_warning": "คําเตือน: ขั้นตอนนี้จะลบผู้ใช้และสื่อทั้งหมดทันที ขั้นตอนนี้จะย้อนกลับมาไม่ได้และกู้คืนไฟล์ไม่ได้.",
     "forcing_refresh_library_files": "บังคับรีเฟรชไฟล์ทั้งหมด",
+    "image_format": "Format",
     "image_format_description": "WebP จะสร้างไฟล์ที่เล็กกว่า JPEG แต่ใช้เวลา encode นานกว่า",
     "image_prefer_embedded_preview": "ใช้พรีวิวแบบฝังตัว",
     "image_prefer_embedded_preview_setting_description": "ใช้พรีวิวฝังตัวในรูปภาพ RAW ในการวิเคราะห์รูปภาพถ้ามี แต่คุณภาพรูปภาพขึ้นอยู่กับกล้อง และอาจจะมีสิ่งตกค้างจากการย่อขนาดไฟล์",

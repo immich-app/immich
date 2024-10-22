@@ -29,9 +29,9 @@
   "admin": {
     "add_exclusion_pattern_description": "הוסף דפוסי החרגה. נתמכת התאמת דפוסים באמצעות *, ** ו-?. כדי להתעלם מכל הקבצים בתיקיה כלשהי בשם \"Raw\", השתמש ב \"**/Raw/**\". כדי להתעלם מכל הקבצים המסתיימים ב \"tif.\", השתמש ב \"tif.*/**\". כדי להתעלם מנתיב מוחלט, השתמש ב \"**/נתיב/להתעלמות\".",
     "asset_offline_description": "נכס ספרייה חיצונית זה לא נמצא יותר בדיסק והועבר לאשפה. אם הקובץ הועבר מתוך הספרייה, בדוק את ציר הזמן שלך עבור הנכס המקביל החדש. כדי לשחזר נכס זה, נא לוודא ש-Immich יכול לגשת אל נתיב הקובץ למטה וסרוק מחדש את הספרייה.",
-    "authentication_settings": "הגדרות אימות",
-    "authentication_settings_description": "נהל סיסמה, OAuth, והגדרות אימות אחרות",
-    "authentication_settings_disable_all": "האם את/ה בטוח/ה שברצונך להשבית את כל שיטות ההתחברות? כניסה למערכת תהיה מושבתת לחלוטין.",
+    "authentication_settings": "הגדרות התחברות",
+    "authentication_settings_description": "נהל סיסמה, OAuth, והגדרות התחברות אחרות",
+    "authentication_settings_disable_all": "האם ברצונך להשבית את כל שיטות ההתחברות? כניסה למערכת תהיה מושבתת לחלוטין.",
     "authentication_settings_reenable": "כדי לאפשר מחדש, השתמש ב<link>פקודת שרת</link>.",
     "background_task_job": "משימות רקע",
     "check_all": "סמן הכל",
@@ -287,7 +287,7 @@
     "transcoding_hardware_acceleration": "האצת חומרה",
     "transcoding_hardware_acceleration_description": "ניסיוני; המרה הרבה יותר מהירה, אבל תהיה באיכות נמוכה יותר באותו קצב סיביות",
     "transcoding_hardware_decoding": "פענוח חומרה",
-    "transcoding_hardware_decoding_setting_description": "חל רק על NVENC, QSV ו-RKMPP. מאפשר האצה מקצה לקצה במקום רק להאיץ קידוד. ייתכן שלא יפעל על כל הסרטונים.",
+    "transcoding_hardware_decoding_setting_description": "מאפשר האצה מקצה לקצה במקום רק האצת קידוד. ייתכן שלא יפעל על כל הסרטונים.",
     "transcoding_hevc_codec": "קידוד HEVC",
     "transcoding_max_b_frames": "B-פריימים מרביים",
     "transcoding_max_b_frames_description": "ערכים גבוהים יותר משפרים את יעילות הדחיסה, אך מאטים את הקידוד. ייתכן שלא יהיה תואם עם האצת חומרה במכשירים ישנים יותר. 0 משבית את B-פריימים, בעוד ש1- מגדיר את הערך זה באופן אוטומטי.",
@@ -888,6 +888,7 @@
   "look": "מראה",
   "loop_videos": "הפעלה חוזרת של סרטונים",
   "loop_videos_description": "אפשר הפעלה חוזרת אוטומטית של סרטון במציג הפרטים.",
+  "main_branch_warning": "את/ה משתמש/ת בגרסת פיתוח; אנחנו ממליצים בחום להשתמש בגרסה יציבה!",
   "make": "תוצרת",
   "manage_shared_links": "נהל קישורים משותפים",
   "manage_sharing_with_partners": "נהל שיתוף עם שותפים",
@@ -1395,5 +1396,5 @@
   "years_ago": "לפני {years, plural, one {שנה #} other {# שנים}}",
   "yes": "כן",
   "you_dont_have_any_shared_links": "אין לך קישורים משותפים",
-  "zoom_image": "התקרב לתמונה"
+  "zoom_image": "זום לתמונה"
 }
