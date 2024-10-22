@@ -49,12 +49,13 @@ class FaceRecognizer(InferenceModel):
 
     def _predict_batch(self, cropped_faces: list[NDArray[np.uint8]]) -> NDArray[np.float32]:
         if not self.batch_size or len(cropped_faces) <= self.batch_size:
-            return self.model.get_feat(cropped_faces)
+            embeddings: NDArray[np.float32] = self.model.get_feat(cropped_faces)
+            return embeddings
 
-        embeddings: list[NDArray[np.float32]] = []
+        batch_embeddings: list[NDArray[np.float32]] = []
         for i in range(0, len(cropped_faces), self.batch_size):
-            embeddings.append(self.model.get_feat(cropped_faces[i : i + self.batch_size]))
-        return np.concatenate(embeddings, axis=0)
+            batch_embeddings.append(self.model.get_feat(cropped_faces[i : i + self.batch_size]))
+        return np.concatenate(batch_embeddings, axis=0)
 
     def postprocess(self, faces: FaceDetectionOutput, embeddings: NDArray[np.float32]) -> FacialRecognitionOutput:
         return [
