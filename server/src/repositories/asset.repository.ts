@@ -29,7 +29,6 @@ import {
 } from 'src/interfaces/asset.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { searchAssetBuilder } from 'src/utils/database';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
@@ -54,7 +53,6 @@ const dateTrunc = (options: TimeBucketOptions) =>
     truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
-@Instrumentation()
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(

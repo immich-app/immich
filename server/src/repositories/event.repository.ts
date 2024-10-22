@@ -24,7 +24,6 @@ import {
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService } from 'src/services/auth.service';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
@@ -37,7 +36,6 @@ type Item<T extends EmitEvent> = {
   label: string;
 };
 
-@Instrumentation()
 @WebSocketGateway({
   cors: true,
   path: '/api/socket.io',

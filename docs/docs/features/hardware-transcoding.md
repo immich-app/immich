@@ -62,10 +62,13 @@ For RKMPP to work:
 1. If you do not already have it, download the latest [`hwaccel.transcoding.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In the `docker-compose.yml` under `immich-server`, uncomment the `extends` section and change `cpu` to the appropriate backend.
 
-- For VAAPI on WSL2, be sure to use `vaapi-wsl` rather than `vaapi`
+   Note: For VAAPI on WSL2, be sure to use `vaapi-wsl` rather than `vaapi`
 
 3. Redeploy the `immich-server` container with these updated settings.
 4. In the Admin page under `Video transcoding settings`, change the hardware acceleration setting to the appropriate option and save.
+
+   Note: For Jasper Lake and Elkhart Lake CPUs, you will need to set the `Hardware Acceleration` -> `Constant quality mode` to `CQP`
+
 5. (Optional) Enable hardware decoding for optimal performance.
 
 #### Single Compose File
