@@ -30,6 +30,7 @@ jobs:
           filters: |
             web:
               - 'web/**'
+              - 'i18n/**'
               - 'open-api/typescript-sdk/**'
             server:
               - 'server/**'
