@@ -6,7 +6,6 @@ import onnx
 import onnxruntime as ort
 from insightface.model_zoo import ArcFaceONNX
 from insightface.utils.face_align import norm_crop
-from more_itertools import chunked
 from numpy.typing import NDArray
 from onnx.tools.update_model_dims import update_inputs_outputs_dims
 from PIL import Image
@@ -53,8 +52,8 @@ class FaceRecognizer(InferenceModel):
             return self.model.get_feat(cropped_faces)
 
         embeddings: list[NDArray[np.float32]] = []
-        for faces in chunked(cropped_faces, self.batch_size):
-            embeddings.append(self.model.get_feat(faces))
+        for i in range(0, len(cropped_faces), self.batch_size):
+            embeddings.append(self.model.get_feat(cropped_faces[i : i + self.batch_size]))
         return np.concatenate(embeddings, axis=0)
 
     def postprocess(self, faces: FaceDetectionOutput, embeddings: NDArray[np.float32]) -> FacialRecognitionOutput:
