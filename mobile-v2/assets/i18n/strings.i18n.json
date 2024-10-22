@@ -37,6 +37,10 @@
       }
     },
     "logs": {
-      "title": "Logs"
+      "title": "Logs",
+      "no_logs": "No logs available"
+    },
+    "common": {
+      "loading": "Loading"
     }
   }

@@ -44,6 +44,8 @@ class DriftDatabaseRepository extends $DriftDatabaseRepository
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
+        // ignore: no-empty-block
+        onUpgrade: (m, from, to) async {},
         beforeOpen: (details) async {
           if (kDebugMode) {
             await validateDatabaseSchema();
@@ -52,8 +54,6 @@ class DriftDatabaseRepository extends $DriftDatabaseRepository
           await customStatement('PRAGMA journal_mode = WAL');
           await customStatement('PRAGMA foreign_keys = ON');
         },
-        // ignore: no-empty-block
-        onUpgrade: (m, from, to) async {},
       );
 
   @override

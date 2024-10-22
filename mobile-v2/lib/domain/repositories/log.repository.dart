@@ -14,7 +14,10 @@ class LogRepository implements ILogRepository {
 
   @override
   Future<List<LogMessage>> getAll() async {
-    return await _db.managers.logs.map(_toModel).get();
+    return await _db.managers.logs
+        .orderBy((o) => o.createdAt.desc())
+        .map(_toModel)
+        .get();
   }
 
   @override
@@ -23,14 +26,14 @@ class LogRepository implements ILogRepository {
     if (totalCount > limit) {
       final rowsToDelete = totalCount - limit;
       await _db.managers.logs
-          .orderBy((o) => o.createdAt.desc())
+          .orderBy((o) => o.createdAt.asc())
           .limit(rowsToDelete)
           .delete();
     }
   }
 
   @override
-  FutureOr<bool> create(LogMessage log) async {
+  Future<bool> create(LogMessage log) async {
     try {
       await _db.logs.insertOne(_toEntity(log));
       return true;
@@ -41,11 +44,11 @@ class LogRepository implements ILogRepository {
   }
 
   @override
-  FutureOr<bool> createAll(Iterable<LogMessage> logs) async {
+  Future<bool> createAll(Iterable<LogMessage> logs) async {
     try {
-      await _db.batch((b) {
-        b.insertAll(_db.logs, logs.map(_toEntity));
-      });
+      await _db.txn(() async => await _db.batch((b) {
+            b.insertAll(_db.logs, logs.map(_toEntity));
+          }));
       return true;
     } catch (e) {
       debugPrint("Error while adding a log to the DB - $e");
@@ -54,7 +57,7 @@ class LogRepository implements ILogRepository {
   }
 
   @override
-  FutureOr<bool> deleteAll() async {
+  Future<bool> deleteAll() async {
     try {
       await _db.logs.deleteAll();
       return true;
@@ -70,8 +73,8 @@ LogsCompanion _toEntity(LogMessage log) {
     content: log.content,
     level: log.level,
     createdAt: Value(log.createdAt),
-    error: Value(log.error),
     logger: Value(log.logger),
+    error: Value(log.error),
     stack: Value(log.stack),
   );
 }
@@ -79,10 +82,10 @@ LogsCompanion _toEntity(LogMessage log) {
 LogMessage _toModel(Log log) {
   return LogMessage(
     content: log.content,
-    createdAt: log.createdAt,
     level: log.level,
-    error: log.error,
+    createdAt: log.createdAt,
     logger: log.logger,
+    error: log.error,
     stack: log.stack,
   );
 }

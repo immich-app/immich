@@ -1,36 +1,44 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 
-class ImAdaptiveRoutePrimaryAppBar extends StatelessWidget
+class ImAdaptiveRouteAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  const ImAdaptiveRoutePrimaryAppBar({super.key});
+  final String? title;
+  final bool isPrimary;
 
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      leading: BackButton(onPressed: () => context.router.root.maybePop()),
-    );
-  }
+  /// Passed to [AppBar] actions
+  final List<Widget>? actions;
+
+  const ImAdaptiveRouteAppBar({
+    super.key,
+    this.title,
+    this.isPrimary = true,
+    this.actions,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-
-// ignore: prefer-single-widget-per-file
-class ImAdaptiveRouteSecondaryAppBar extends StatelessWidget
-    implements PreferredSizeWidget {
-  const ImAdaptiveRouteSecondaryAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final Widget leading;
+    if (isPrimary) {
+      leading = BackButton(
+        onPressed: () => unawaited(context.router.root.maybePop()),
+      );
+    } else {
+      leading = context.isTablet
+          ? CloseButton(onPressed: () => unawaited(context.maybePop()))
+          : BackButton(onPressed: () => unawaited(context.maybePop()));
+    }
+
     return AppBar(
-      leading: context.isTablet
-          ? CloseButton(onPressed: () => context.maybePop())
-          : BackButton(onPressed: () => context.maybePop()),
+      leading: leading,
+      title: title == null ? null : Text(title!),
+      actions: actions,
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

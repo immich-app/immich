@@ -13,7 +13,7 @@ class AlbumETagRepository with LogMixin implements IAlbumETagRepository {
   const AlbumETagRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
-  FutureOr<bool> upsert(AlbumETag albumETag) async {
+  Future<bool> upsert(AlbumETag albumETag) async {
     try {
       final entity = _toEntity(albumETag);
       await _db.albumETag.insertOne(
@@ -28,14 +28,14 @@ class AlbumETagRepository with LogMixin implements IAlbumETagRepository {
   }
 
   @override
-  FutureOr<AlbumETag?> get(int albumId) async {
+  Future<AlbumETag?> get(int albumId) async {
     final query = _db.albumETag.select()
       ..where((r) => r.albumId.equals(albumId));
     return await query.map(_toModel).getSingleOrNull();
   }
 
   @override
-  FutureOr<void> deleteAll() async {
+  Future<void> deleteAll() async {
     await _db.albumETag.deleteAll();
   }
 }
@@ -43,17 +43,17 @@ class AlbumETagRepository with LogMixin implements IAlbumETagRepository {
 AlbumETagCompanion _toEntity(AlbumETag albumETag) {
   return AlbumETagCompanion.insert(
     id: Value.absentIfNull(albumETag.id),
-    modifiedTime: Value(albumETag.modifiedTime),
     albumId: albumETag.albumId,
+    modifiedTime: Value(albumETag.modifiedTime),
     assetCount: Value(albumETag.assetCount),
   );
 }
 
 AlbumETag _toModel(AlbumETagData albumETag) {
   return AlbumETag(
+    id: albumETag.id,
     albumId: albumETag.albumId,
     assetCount: albumETag.assetCount,
     modifiedTime: albumETag.modifiedTime,
-    id: albumETag.id,
   );
 }

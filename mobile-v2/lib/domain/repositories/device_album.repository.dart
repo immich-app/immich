@@ -52,17 +52,17 @@ class DeviceAlbumRepository with LogMixin implements IDeviceAlbumRepository {
     return await AssetPathEntity.fromId(
       albumId,
       filterOption: FilterOptionGroup(
-        containsPathModified: true,
-        orders: orderByModificationDate
-            ? [const OrderOption(type: OrderOptionType.updateDate)]
-            : [],
         imageOption: const FilterOption(needTitle: true),
         videoOption: const FilterOption(needTitle: true),
+        containsPathModified: true,
         updateTimeCond: DateTimeCond(
           min: modifiedFrom ?? DateTime.utc(-271820),
           max: modifiedUntil ?? DateTime.utc(275760),
           ignore: modifiedFrom != null || modifiedUntil != null,
         ),
+        orders: orderByModificationDate
+            ? [const OrderOption(type: OrderOptionType.updateDate)]
+            : [],
       ),
     );
   }

@@ -27,7 +27,7 @@ class ImAdaptiveRouteWrapper extends StatelessWidget {
         return ImAdaptiveScaffoldBody(
           primaryBody: primaryBody,
           secondaryBody:
-              ctx.topRoute.name != primaryRoute ? (_) => child : null,
+              ctx.topRoute.name == primaryRoute ? null : (_) => child,
           bodyRatio: bodyRatio,
         );
       }

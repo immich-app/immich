@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 @immutable
-abstract class AppColors {
+abstract final class AppColors {
   const AppColors();
 
   /// Blue color
@@ -25,9 +25,9 @@ abstract class AppColors {
     onErrorContainer: Color(0xff410002),
     surface: Color(0xFFF0EFF4),
     onSurface: Color(0xff1a1b21),
-    onSurfaceVariant: Color(0xff444651),
     surfaceContainer: Color(0xfffefbff),
     surfaceContainerHighest: Color(0xffe0e2ef),
+    onSurfaceVariant: Color(0xff444651),
     outline: Color(0xff747782),
     outlineVariant: Color(0xffc4c6d3),
     shadow: Color(0xff000000),
@@ -58,9 +58,9 @@ abstract class AppColors {
     onErrorContainer: Color(0xffffb4ab),
     surface: Color(0xFF15181C),
     onSurface: Color(0xffe2e2e9),
-    onSurfaceVariant: Color(0xffc2c6d2),
     surfaceContainer: Color(0xff1a1e22),
     surfaceContainerHighest: Color(0xff424852),
+    onSurfaceVariant: Color(0xffc2c6d2),
     outline: Color(0xff8c919c),
     outlineVariant: Color(0xff424751),
     shadow: Color(0xff000000),

@@ -15,7 +15,7 @@ class AlbumToAssetRepository with LogMixin implements IAlbumToAssetRepository {
       : _db = db;
 
   @override
-  FutureOr<bool> addAssetIds(int albumId, Iterable<int> assetIds) async {
+  Future<bool> addAssetIds(int albumId, Iterable<int> assetIds) async {
     try {
       await _db.albumToAsset.insertAll(
         assetIds.map(
@@ -33,14 +33,14 @@ class AlbumToAssetRepository with LogMixin implements IAlbumToAssetRepository {
   }
 
   @override
-  FutureOr<List<int>> getAssetIdsOnlyInAlbum(int albumId) async {
+  Future<List<int>> getAssetIdsOnlyInAlbum(int albumId) async {
     final assetId = _db.asset.id;
     final query = _db.asset.selectOnly()
       ..addColumns([assetId])
       ..join([
         innerJoin(
           _db.albumToAsset,
-          _db.albumToAsset.assetId.equalsExp(_db.asset.id) &
+          _db.albumToAsset.assetId.equalsExp(assetId) &
               _db.asset.remoteId.isNull(),
           useColumns: false,
         ),
@@ -55,7 +55,7 @@ class AlbumToAssetRepository with LogMixin implements IAlbumToAssetRepository {
   }
 
   @override
-  FutureOr<List<Asset>> getAssetsForAlbum(int albumId) async {
+  Future<List<Asset>> getAssetsForAlbum(int albumId) async {
     final query = _db.asset.select().join([
       innerJoin(
         _db.albumToAsset,
@@ -72,12 +72,12 @@ class AlbumToAssetRepository with LogMixin implements IAlbumToAssetRepository {
   }
 
   @override
-  FutureOr<void> deleteAlbumId(int albumId) async {
+  Future<void> deleteAlbumId(int albumId) async {
     await _db.albumToAsset.deleteWhere((row) => row.albumId.equals(albumId));
   }
 
   @override
-  FutureOr<void> deleteAll() async {
+  Future<void> deleteAll() async {
     await _db.albumToAsset.deleteAll();
   }
 }

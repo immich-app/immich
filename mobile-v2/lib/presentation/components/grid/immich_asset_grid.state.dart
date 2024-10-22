@@ -26,6 +26,17 @@ class AssetGridState {
       renderList: renderList ?? this.renderList,
     );
   }
+
+  @override
+  bool operator ==(covariant AssetGridState other) {
+    if (identical(this, other)) return true;
+
+    return other.renderList == renderList &&
+        other.isDragScrolling == isDragScrolling;
+  }
+
+  @override
+  int get hashCode => renderList.hashCode ^ isDragScrolling.hashCode;
 }
 
 class AssetGridCubit extends Cubit<AssetGridState> {
@@ -43,6 +54,9 @@ class AssetGridCubit extends Cubit<AssetGridState> {
         super(AssetGridState.empty()) {
     _renderListSubscription =
         _renderListProvider.renderStreamProvider().listen((renderList) {
+      if (renderList == state.renderList) {
+        return;
+      }
       _bufOffset = 0;
       _buf = [];
       emit(state.copyWith(renderList: renderList));
@@ -87,8 +101,8 @@ class AssetGridCubit extends Cubit<AssetGridState> {
 
       // load the calculated batch (start:start+len) from the DB and put it into the buffer
       _buf = await _renderListProvider.renderAssetProvider(
-        offset: start,
         limit: len,
+        offset: start,
       );
       _bufOffset = start;
 

@@ -13,15 +13,15 @@ abstract class IStoreConverter<T, U> {
 }
 
 abstract interface class IStoreRepository {
-  FutureOr<bool> upsert<T, U>(StoreKey<T, U> key, T value);
+  Future<bool> upsert<T, U>(StoreKey<T, U> key, T value);
 
-  FutureOr<T> get<T, U>(StoreKey<T, U> key);
+  Future<T> get<T, U>(StoreKey<T, U> key);
 
-  FutureOr<T?> tryGet<T, U>(StoreKey<T, U> key);
+  Future<T?> tryGet<T, U>(StoreKey<T, U> key);
 
   Stream<T?> watch<T, U>(StoreKey<T, U> key);
 
-  FutureOr<void> delete(StoreKey key);
+  Future<void> delete(StoreKey key);
 
-  FutureOr<void> deleteAll();
+  Future<void> deleteAll();
 }

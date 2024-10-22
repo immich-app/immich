@@ -66,21 +66,21 @@ class ImTextFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      onChanged: onChanged,
       focusNode: focusNode,
-      obscureText: shouldObscure,
-      validator: validator,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         suffixIcon: suffixIcon,
       ),
-      autofillHints: autoFillHints,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       readOnly: isDisabled,
+      obscureText: shouldObscure,
+      onChanged: onChanged,
       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       onFieldSubmitted: onSubmitted,
+      validator: validator,
+      autofillHints: autoFillHints,
     );
   }
 }

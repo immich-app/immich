@@ -40,7 +40,7 @@ class IsolateHelper {
     );
   }
 
-  void postIsolateHandling() {
+  Future<void> postIsolateHandling() async {
     assert(_clientData != null);
     // Reconstruct client from cached data
     final client = ImApiClient(endpoint: _clientData!.endpoint);
@@ -55,7 +55,7 @@ class IsolateHelper {
     );
 
     // Init log manager to continue listening to log events
-    LogManager.I.init(shouldBuffer: false);
+    await LogManager.I.init(shouldBuffer: false);
   }
 
   static Future<T> run<T>(FutureOr<T> Function() computation) async {
@@ -70,10 +70,10 @@ class IsolateHelper {
       DartPluginRegistrant.ensureInitialized();
       // Delay to ensure the isolate is ready
       await Future.delayed(Durations.short2);
-      helper.postIsolateHandling();
+      await helper.postIsolateHandling();
       try {
         final result = await computation();
-        // Delay to ensure the isolate is not killed prematurely
+        // Wait for isolate to end; i.e, logs to be flushed
         await Future.delayed(Durations.short2);
         return result;
       } finally {

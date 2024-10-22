@@ -19,7 +19,7 @@ class ImageLoadingException implements Exception {
 ///
 /// Credit to [flutter_cached_network_image](https://github.com/Baseflow/flutter_cached_network_image/blob/develop/cached_network_image/lib/src/image_provider/_image_loader.dart)
 /// for this wonderful implementation of their image loader
-class ImageLoader {
+abstract final class ImageLoader {
   static Future<ui.Codec> loadImageFromCache(
     String uri, {
     required CacheManager cache,
@@ -28,8 +28,8 @@ class ImageLoader {
   }) async {
     final stream = cache.getFileStream(
       uri,
-      withProgress: chunkEvents != null,
       headers: di<ImApiClient>().headers,
+      withProgress: chunkEvents != null,
     );
 
     await for (final result in stream) {
@@ -44,8 +44,7 @@ class ImageLoader {
       } else if (result is FileInfo) {
         // We have the file
         final buffer = await ui.ImmutableBuffer.fromFilePath(result.file.path);
-        final decoded = await decode(buffer);
-        return decoded;
+        return await decode(buffer);
       }
     }
 

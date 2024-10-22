@@ -35,10 +35,10 @@ dynamic upgradeDto(dynamic value, String targetType) {
   }
 }
 
-addDefault(dynamic value, String keys, dynamic defaultValue) {
+addDefault(Map value, String keys, dynamic defaultValue) {
   // Loop through the keys and assign the default value if the key is not present
   List<String> keyList = keys.split('.');
-  dynamic current = value;
+  Map current = value;
 
   for (int i = 0; i < keyList.length - 1; i++) {
     if (current[keyList[i]] == null) {

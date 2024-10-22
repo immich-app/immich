@@ -16,25 +16,23 @@ class DeviceAssetRepository
 
   @override
   Future<Asset> toAsset(ph.AssetEntity entity) async {
-    var asset = Asset(
-      hash: '',
+    return Asset(
       name: await entity.titleAsync,
-      type: _toAssetType(entity.type),
-      createdTime: entity.createDateTime,
-      modifiedTime: entity.modifiedDateTime,
-      duration: entity.duration,
+      hash: '',
       height: entity.height,
       width: entity.width,
+      type: _toAssetType(entity.type),
+      createdTime: entity.createDateTime.year == 1970
+          ? entity.modifiedDateTime
+          : entity.createDateTime,
+      modifiedTime: entity.modifiedDateTime,
+      duration: entity.duration,
       localId: entity.id,
     );
-    if (asset.createdTime.year == 1970) {
-      asset = asset.copyWith(createdTime: asset.modifiedTime);
-    }
-    return asset;
   }
 
   @override
-  FutureOr<File?> getOriginalFile(String localId) async {
+  Future<File?> getOriginalFile(String localId) async {
     try {
       final entity = await ph.AssetEntity.fromId(localId);
       if (entity == null) {
@@ -49,7 +47,7 @@ class DeviceAssetRepository
   }
 
   @override
-  FutureOr<Uint8List?> getThumbnail(
+  Future<Uint8List?> getThumbnail(
     String assetId, {
     int width = kGridThumbnailSize,
     int height = kGridThumbnailSize,

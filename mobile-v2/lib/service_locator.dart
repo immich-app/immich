@@ -47,7 +47,7 @@ import 'package:immich_mobile/utils/immich_api_client.dart';
 
 final di = GetIt.I;
 
-class ServiceLocator {
+abstract final class ServiceLocator {
   const ServiceLocator._internal();
 
   static void _registerFactory<T extends Object>(T Function() factoryFun) {
@@ -118,19 +118,19 @@ class ServiceLocator {
     /// API Repos
     _registerFactory<IAlbumETagRepository>(() => AlbumETagRepository(db: di()));
     _registerFactory<ISyncApiRepository>(
-      () => SyncApiRepository(syncApi: di<ImApiClient>().getSyncApi()),
+      () => SyncApiRepository(syncApi: di<ImApiClient>().syncApi),
     );
     _registerFactory<IServerApiRepository>(
-      () => ServerApiRepository(serverApi: di<ImApiClient>().getServerApi()),
+      () => ServerApiRepository(serverApi: di<ImApiClient>().serverApi),
     );
     _registerFactory<IAuthenticationApiRepository>(
       () => AuthenticationApiRepository(
-        authenticationApi: di<ImApiClient>().getAuthenticationApi(),
-        oAuthApi: di<ImApiClient>().getOAuthApi(),
+        authenticationApi: di<ImApiClient>().authenticationApi,
+        oAuthApi: di<ImApiClient>().oAuthApi,
       ),
     );
     _registerFactory<IUserApiRepository>(
-      () => UserApiRepository(usersApi: di<ImApiClient>().getUsersApi()),
+      () => UserApiRepository(usersApi: di<ImApiClient>().usersApi),
     );
   }
 
@@ -144,9 +144,9 @@ class ServiceLocator {
     _registerFactory<LoginService>(() => const LoginService());
     _registerFactory<HashService>(() => HashService(
           hostService: di(),
-          assetToHashRepo: di(),
-          deviceAlbumRepo: di(),
           deviceAssetRepo: di(),
+          deviceAlbumRepo: di(),
+          assetToHashRepo: di(),
         ));
   }
 

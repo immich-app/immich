@@ -1,3 +1,5 @@
+// ignore_for_file: avoid-collection-mutating-methods
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -13,6 +15,7 @@ import 'package:logging/logging.dart' as logging;
 /// in the class.
 class LogManager {
   LogManager._();
+
   static final LogManager _instance = LogManager._();
   static final Map<String, Logger> _loggers = <String, Logger>{};
 
@@ -40,10 +43,10 @@ class LogManager {
     }());
 
     final lm = LogMessage(
-      logger: record.loggerName,
       content: record.message,
       level: record.level.toLogLevel(),
       createdAt: record.time,
+      logger: record.loggerName,
       error: record.error?.toString(),
       stack: record.stackTrace?.toString(),
     );
@@ -53,7 +56,7 @@ class LogManager {
       _timer ??=
           Timer(const Duration(seconds: 5), () => _flushBufferToDatabase());
     } else {
-      di<ILogRepository>().create(lm);
+      unawaited(di<ILogRepository>().create(lm));
     }
   }
 
@@ -61,12 +64,13 @@ class LogManager {
     _timer = null;
     final buffer = _msgBuffer;
     _msgBuffer = [];
-    di<ILogRepository>().createAll(buffer);
+    unawaited(di<ILogRepository>().createAll(buffer));
   }
 
-  void init({bool? shouldBuffer}) {
+  Future<void> init({bool? shouldBuffer}) async {
     _shouldBuffer = shouldBuffer ?? _shouldBuffer;
     _subscription = logging.Logger.root.onRecord.listen(_onLogRecord);
+    await di<ILogRepository>().truncate();
   }
 
   Logger get(String? loggerName) => _loggers.putIfAbsent(
@@ -80,14 +84,14 @@ class LogManager {
   }
 
   void dispose() {
-    _subscription.cancel();
+    unawaited(_subscription.cancel());
   }
 
-  void clearLogs() {
+  Future<void> clearLogs() async {
     _timer?.cancel();
     _timer = null;
     _msgBuffer.clear();
-    di<ILogRepository>().deleteAll();
+    await di<ILogRepository>().deleteAll();
   }
 
   static void setGlobalErrorCallbacks() {

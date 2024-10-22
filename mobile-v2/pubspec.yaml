@@ -54,6 +54,7 @@ dependencies:
   flutter_list_view: ^1.1.28
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
+  skeletonizer: ^1.4.2
 
   openapi:
     path: openapi

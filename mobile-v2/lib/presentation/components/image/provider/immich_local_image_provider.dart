@@ -49,12 +49,12 @@ class ImLocalImageProvider extends ImageProvider<ImLocalImageProvider> {
     // Load a small thumbnail
     final thumbBytes =
         await di<IDeviceAssetRepository>().getThumbnail(a.localId!);
-    if (thumbBytes != null) {
+    if (thumbBytes == null) {
+      debugPrint("Loading thumb for ${a.name} failed");
+    } else {
       final buffer = await ui.ImmutableBuffer.fromUint8List(thumbBytes);
       final codec = await decode(buffer);
       yield codec;
-    } else {
-      debugPrint("Loading thumb for ${a.name} failed");
     }
 
     if (asset.isImage) {

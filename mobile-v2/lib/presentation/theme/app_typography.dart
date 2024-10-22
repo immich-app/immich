@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class AppTypography {
+abstract final class AppTypography {
   const AppTypography();
 
   static const TextStyle displayLarge = TextStyle(
@@ -30,16 +30,16 @@ class AppTypography {
   );
 
   static const TextStyle titleLarge = TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.bold,
+    fontSize: 20,
+    fontWeight: FontWeight.normal,
   );
   static const TextStyle titleMedium = TextStyle(
     fontSize: 16,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.normal,
   );
   static const TextStyle titleSmall = TextStyle(
     fontSize: 14,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.normal,
   );
 
   static const TextStyle bodyLarge = TextStyle(

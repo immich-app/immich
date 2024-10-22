@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 part 'immich_asset_grid_header.widget.dart';
+part 'immich_asset_render_grid.widget.dart';
 
 class ImAssetGrid extends StatefulWidget {
   /// The padding for the grid
@@ -76,7 +77,6 @@ class _ImAssetGridState extends State<ImAssetGrid> {
           }
 
           final grid = FlutterListView(
-            controller: _controller,
             delegate: FlutterListViewDelegate(
               (_, sectionIndex) {
                 // ignore: avoid-unsafe-collection-methods
@@ -89,70 +89,46 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                   RenderListMonthHeaderElement() =>
                     _MonthHeader(text: section.header),
                   RenderListDayHeaderElement() => Text(section.header),
-                  RenderListAssetElement() => FutureBuilder(
-                      future: context.read<AssetGridCubit>().loadAssets(
-                            section.assetOffset,
-                            section.assetCount,
-                          ),
-                      builder: (_, assetsSnap) {
-                        final assets = assetsSnap.data;
-                        return GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          addAutomaticKeepAlives: false,
-                          cacheExtent: 100,
-                          padding: const EdgeInsets.all(0),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            mainAxisSpacing: 3,
-                            crossAxisSpacing: 3,
-                          ),
-                          itemBuilder: (_, i) {
-                            final asset = assetsSnap.isWaiting || assets == null
-                                ? null
-                                : assets.elementAtOrNull(i);
-                            return SizedBox.square(
-                              dimension: 200,
-                              // Show Placeholder when drag scrolled
-                              child: asset == null || state.isDragScrolling
-                                  ? const ImImagePlaceholder()
-                                  : ImThumbnail(asset),
-                            );
-                          },
-                          itemCount: section.assetCount,
-                        );
-                      },
+                  RenderListAssetElement() => _StaticGrid(
+                      section: section,
+                      isDragging: state.isDragScrolling,
                     ),
                 };
               },
               childCount: elements.length,
               addAutomaticKeepAlives: false,
             ),
+            controller: _controller,
           );
 
           final EdgeInsetsGeometry? padding;
-          if (widget.topPadding != null) {
-            padding = EdgeInsets.only(top: widget.topPadding!);
-          } else {
+          if (widget.topPadding == null) {
             padding = null;
+          } else {
+            padding = EdgeInsets.only(top: widget.topPadding!);
           }
 
           return DraggableScrollbar(
-            foregroundColor: context.colorScheme.onSurface,
-            backgroundColor: context.colorScheme.surfaceContainerHighest,
-            scrollStateListener:
-                context.read<AssetGridCubit>().setDragScrolling,
             controller: _controller,
             maxItemCount: elements.length,
+            scrollStateListener:
+                context.read<AssetGridCubit>().setDragScrolling,
+            backgroundColor: context.colorScheme.surfaceContainerHighest,
+            foregroundColor: context.colorScheme.onSurface,
+            padding: padding,
+            scrollbarAnimationDuration: Durations.medium2,
+            scrollbarTimeToFade: Durations.extralong4,
             labelTextBuilder: (int position) =>
                 _labelBuilder(elements, position),
             labelConstraints: const BoxConstraints(maxHeight: 36),
-            scrollbarAnimationDuration: Durations.medium2,
-            scrollbarTimeToFade: Durations.extralong4,
-            padding: padding,
             child: grid,
           );
         },
+        // no.of elements are not equal or is modified
+        buildWhen: (previous, current) =>
+            (previous.renderList.elements.length !=
+                current.renderList.elements.length) ||
+            !previous.renderList.modifiedTime
+                .isAtSameMomentAs(current.renderList.modifiedTime),
       );
 }

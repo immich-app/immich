@@ -8,10 +8,10 @@ import 'package:immich_mobile/utils/constants/globals.dart';
 
 abstract interface class IDeviceAssetRepository<T> {
   /// Fetches the [File] for the given [assetId]
-  FutureOr<File?> getOriginalFile(String assetId);
+  Future<File?> getOriginalFile(String assetId);
 
   /// Fetches the thumbnail for the given [assetId]
-  FutureOr<Uint8List?> getThumbnail(
+  Future<Uint8List?> getThumbnail(
     String assetId, {
     int width = kGridThumbnailSize,
     int height = kGridThumbnailSize,

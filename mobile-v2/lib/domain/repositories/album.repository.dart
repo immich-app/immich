@@ -13,7 +13,7 @@ class AlbumRepository with LogMixin implements IAlbumRepository {
   const AlbumRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
-  FutureOr<Album?> upsert(Album album) async {
+  Future<Album?> upsert(Album album) async {
     try {
       final albumData = _toEntity(album);
       final data = await _db.album.insertReturningOrNull(
@@ -30,7 +30,7 @@ class AlbumRepository with LogMixin implements IAlbumRepository {
   }
 
   @override
-  FutureOr<List<Album>> getAll({
+  Future<List<Album>> getAll({
     bool localOnly = false,
     bool remoteOnly = false,
   }) async {
@@ -49,12 +49,12 @@ class AlbumRepository with LogMixin implements IAlbumRepository {
   }
 
   @override
-  FutureOr<void> deleteId(int id) async {
+  Future<void> deleteId(int id) async {
     await _db.album.deleteWhere((row) => row.id.equals(id));
   }
 
   @override
-  FutureOr<void> deleteAll() async {
+  Future<void> deleteAll() async {
     await _db.album.deleteAll();
   }
 }
@@ -62,11 +62,11 @@ class AlbumRepository with LogMixin implements IAlbumRepository {
 AlbumCompanion _toEntity(Album album) {
   return AlbumCompanion.insert(
     id: Value.absentIfNull(album.id),
-    localId: Value(album.localId),
-    remoteId: Value(album.remoteId),
     name: album.name,
     modifiedTime: Value(album.modifiedTime),
     thumbnailAssetId: Value(album.thumbnailAssetId),
+    localId: Value(album.localId),
+    remoteId: Value(album.remoteId),
   );
 }
 

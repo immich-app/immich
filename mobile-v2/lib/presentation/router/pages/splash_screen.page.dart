@@ -21,7 +21,6 @@ class SplashScreenWrapperPage extends AutoRouter implements AutoRouteWrapper {
 }
 
 @RoutePage()
-// ignore: prefer-single-widget-per-file
 class SplashScreenPage extends StatefulWidget {
   const SplashScreenPage({super.key});
 
@@ -63,7 +62,7 @@ class _SplashScreenState extends State<SplashScreenPage>
         future: di.allReady(),
         builder: (_, snap) {
           if (snap.hasData) {
-            _tryLogin();
+            unawaited(_tryLogin());
           } else if (snap.hasError) {
             log.wtf(
               "Error while initializing the app",
@@ -75,7 +74,7 @@ class _SplashScreenState extends State<SplashScreenPage>
           return Center(
             child: RotationTransition(
               turns: _animationController,
-              child: const ImLogo(width: 100),
+              child: const ImLogo(dimension: 100),
             ),
           );
         },

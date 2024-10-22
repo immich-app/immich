@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -17,7 +18,7 @@ enum GalleryPermissionStatus {
 
 class GalleryPermissionProvider extends ValueNotifier<GalleryPermissionStatus> {
   GalleryPermissionProvider() : super(GalleryPermissionStatus.yetToRequest) {
-    checkPermission();
+    unawaited(checkPermission());
   }
 
   bool get hasPermission => value.isGranted || value.isLimited;

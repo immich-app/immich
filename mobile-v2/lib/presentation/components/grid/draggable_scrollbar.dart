@@ -98,11 +98,11 @@ class DraggableScrollbar extends StatefulWidget {
     required BoxConstraints? labelConstraints,
     required bool alwaysVisibleScrollThumb,
   }) {
-    var scrollThumbAndLabel = labelText == null
+    Widget scrollThumbAndLabel = labelText == null
         ? scrollThumb
         : Row(
-            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
             children: [
               _ScrollLabel(
                 animation: labelAnimation,
@@ -145,8 +145,8 @@ class DraggableScrollbar extends StatefulWidget {
           color: backgroundColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(height),
-            bottomLeft: Radius.circular(height),
             topRight: const Radius.circular(4.0),
+            bottomLeft: Radius.circular(height),
             bottomRight: const Radius.circular(4.0),
           ),
           child: Container(
@@ -195,9 +195,9 @@ class _ScrollLabel extends StatelessWidget {
           color: backgroundColor,
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
           child: Container(
-            constraints: constraints ?? _defaultConstraints,
-            padding: const EdgeInsets.symmetric(horizontal: 15),
             alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            constraints: constraints ?? _defaultConstraints,
             child: child,
           ),
         ),
@@ -231,8 +231,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
     _currentItem = 0;
 
     _thumbAnimationController = AnimationController(
-      vsync: this,
       duration: widget.scrollbarAnimationDuration,
+      vsync: this,
     );
 
     _thumbAnimation = CurvedAnimation(
@@ -241,8 +241,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
     );
 
     _labelAnimationController = AnimationController(
-      vsync: this,
       duration: widget.scrollbarAnimationDuration,
+      vsync: this,
     );
 
     _labelAnimation = CurvedAnimation(
@@ -291,16 +291,16 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
                   onVerticalDragEnd: _onVerticalDragEnd,
                   child: Container(
                     alignment: Alignment.topRight,
-                    margin: EdgeInsets.only(top: _barOffset),
                     padding: widget.padding,
+                    margin: EdgeInsets.only(top: _barOffset),
                     child: widget.scrollThumbBuilder(
                       widget.backgroundColor,
                       widget.foregroundColor,
                       _thumbAnimation,
                       _labelAnimation,
                       widget.heightScrollThumb,
-                      labelText: labelText,
                       labelConstraints: widget.labelConstraints,
+                      labelText: labelText,
                     ),
                   ),
                 ),
@@ -356,7 +356,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
             _thumbAnimationController.forward();
           }
 
-          final lastItemPos = itemPos;
+          final lastItemPos = _itemPos;
           if (lastItemPos < widget.maxItemCount) {
             _currentItem = lastItemPos;
           }
@@ -378,7 +378,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
     widget.scrollStateListener(true);
   }
 
-  int get itemIndex {
+  int get _itemIndex {
     int index = 0;
     double minDiff = 1000;
     for (final pos in _positions) {
@@ -391,21 +391,21 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
     return index;
   }
 
-  int get itemPos =>
+  int get _itemPos =>
       ((_barOffset / (_barMaxScrollExtent)) * widget.maxItemCount).toInt();
 
   void _jumpToBarPos() {
-    final lastItemPos = itemPos;
+    final lastItemPos = _itemPos;
     if (lastItemPos > widget.maxItemCount - 1) {
       return;
     }
 
-    _currentItem = itemIndex;
+    _currentItem = _itemIndex;
     widget.controller.sliverController.jumpToIndex(lastItemPos);
   }
 
   Timer? _dragHaltTimer;
-  int lastTimerPos = 0;
+  int _lastTimerPos = 0;
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     setState(() {
@@ -418,9 +418,9 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
         _barOffset =
             clampDouble(_barOffset, _barMinScrollExtent, _barMaxScrollExtent);
 
-        final lastItemPos = itemPos;
-        if (lastItemPos != lastTimerPos) {
-          lastTimerPos = lastItemPos;
+        final lastItemPos = _itemPos;
+        if (lastItemPos != _lastTimerPos) {
+          _lastTimerPos = lastItemPos;
           _dragHaltTimer?.cancel();
           widget.scrollStateListener(true);
 

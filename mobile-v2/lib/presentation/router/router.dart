@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/presentation/modules/home/pages/home.page.dart';
 import 'package:immich_mobile/presentation/modules/library/pages/library.page.dart';
 import 'package:immich_mobile/presentation/modules/login/pages/login.page.dart';
-import 'package:immich_mobile/presentation/modules/logs/pages/log.page.dart';
+import 'package:immich_mobile/presentation/modules/logs/pages/logs.page.dart';
 import 'package:immich_mobile/presentation/modules/search/pages/search.page.dart';
 import 'package:immich_mobile/presentation/modules/settings/pages/about_settings.page.dart';
 import 'package:immich_mobile/presentation/modules/settings/pages/advance_settings.page.dart';
@@ -29,12 +29,15 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
         AutoRoute(
           page: SplashScreenWrapperRoute.page,
-          initial: true,
           children: [
             AutoRoute(page: SplashScreenRoute.page, initial: true),
             AutoRoute(page: LoginRoute.page),
           ],
+          initial: true,
         ),
+        AutoRoute(page: LogsWrapperRoute.page, children: [
+          AutoRoute(page: LogsRoute.page),
+        ]),
         AutoRoute(page: LogsRoute.page),
         AutoRoute(page: TabControllerRoute.page, children: [
           AutoRoute(page: HomeRoute.page),

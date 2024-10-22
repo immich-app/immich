@@ -16,16 +16,16 @@ class AssetRepository with LogMixin implements IAssetRepository {
   @override
   Future<bool> upsertAll(Iterable<Asset> assets) async {
     try {
-      await _db.batch((batch) {
-        final rows = assets.map(_toEntity);
-        for (final row in rows) {
-          batch.insert(
-            _db.asset,
-            row,
-            onConflict: DoUpdate((_) => row, target: [_db.asset.hash]),
-          );
-        }
-      });
+      await _db.txn(() async => await _db.batch((batch) {
+            final rows = assets.map(_toEntity);
+            for (final row in rows) {
+              batch.insert(
+                _db.asset,
+                row,
+                onConflict: DoUpdate((_) => row, target: [_db.asset.hash]),
+              );
+            }
+          }));
 
       return true;
     } catch (e, s) {
@@ -85,7 +85,7 @@ class AssetRepository with LogMixin implements IAssetRepository {
   }
 
   @override
-  FutureOr<void> deleteIds(Iterable<int> ids) async {
+  Future<void> deleteIds(Iterable<int> ids) async {
     await _db.asset.deleteWhere((row) => row.id.isIn(ids));
   }
 }
@@ -93,16 +93,16 @@ class AssetRepository with LogMixin implements IAssetRepository {
 AssetCompanion _toEntity(Asset asset) {
   return AssetCompanion.insert(
     id: Value.absentIfNull(asset.id),
-    localId: Value(asset.localId),
-    remoteId: Value(asset.remoteId),
     name: asset.name,
     hash: asset.hash,
     height: Value(asset.height),
     width: Value(asset.width),
     type: asset.type,
     createdTime: asset.createdTime,
-    duration: Value(asset.duration),
     modifiedTime: Value(asset.modifiedTime),
+    duration: Value(asset.duration),
+    localId: Value(asset.localId),
+    remoteId: Value(asset.remoteId),
     livePhotoVideoId: Value(asset.livePhotoVideoId),
   );
 }

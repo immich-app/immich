@@ -26,6 +26,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final gridHasPadding = !context.isTablet && _showAppBar.value;
+
     return Scaffold(
       body: BlocProvider(
         create: (_) => AssetGridCubit(
@@ -33,32 +35,35 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Stack(children: [
           ImAssetGrid(
-            topPadding: kToolbarHeight + context.mediaQueryPadding.top - 8,
+            topPadding: gridHasPadding
+                ? kToolbarHeight + context.mediaQueryPadding.top - 8
+                : null,
           ),
-          ValueListenableBuilder(
-            valueListenable: _showAppBar,
-            builder: (_, shouldShow, appBar) {
-              final Duration duration;
-              if (shouldShow) {
-                // Animate out app bar slower
-                duration = Durations.short3;
-              } else {
-                // Animate in app bar faster
-                duration = Durations.medium2;
-              }
-              return AnimatedPositioned(
-                duration: duration,
-                curve: Curves.easeOut,
-                left: 0,
-                right: 0,
-                top: shouldShow
-                    ? 0
-                    : -(kToolbarHeight + context.mediaQueryPadding.top),
-                child: appBar!,
-              );
-            },
-            child: const ImAppBar(),
-          ),
+          if (!context.isTablet)
+            ValueListenableBuilder(
+              valueListenable: _showAppBar,
+              builder: (_, shouldShow, appBar) {
+                final Duration duration;
+                if (shouldShow) {
+                  // Animate out app bar slower
+                  duration = Durations.short3;
+                } else {
+                  // Animate in app bar faster
+                  duration = Durations.medium2;
+                }
+                return AnimatedPositioned(
+                  left: 0,
+                  top: shouldShow
+                      ? 0
+                      : -(kToolbarHeight + context.mediaQueryPadding.top),
+                  right: 0,
+                  curve: Curves.easeOut,
+                  duration: duration,
+                  child: appBar!,
+                );
+              },
+              child: const ImAppBar(),
+            ),
         ]),
       ),
     );

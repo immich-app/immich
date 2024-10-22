@@ -51,9 +51,9 @@ class AssetSyncService with LogMixin {
         );
 
         final assetsFromServer = await syncApiRepo.getFullSyncForUser(
+          lastId: lastAssetId,
           limit: chunkSize,
           updatedUntil: updatedTill,
-          lastId: lastAssetId,
           userId: user.id,
         );
         if (assetsFromServer == null) {
@@ -92,8 +92,8 @@ class AssetSyncService with LogMixin {
     final (toAdd, toUpdate, toRemove) = await _diffAssets(
       newAssets,
       existingAssets,
-      compare: compare,
       isRemoteSync: isRemoteSync,
+      compare: compare,
     );
 
     final assetsToAdd = toAdd.followedBy(toUpdate);
@@ -111,7 +111,7 @@ class AssetSyncService with LogMixin {
   }) async {
     // fast paths for trivial cases: reduces memory usage during initial sync etc.
     if (newAssets.isEmpty && inDb.isEmpty) {
-      return const (<Asset>[], <Asset>[], <Asset>[]);
+      return (<Asset>[], <Asset>[], <Asset>[]);
     } else if (newAssets.isEmpty && isRemoteSync == null) {
       // remove all from database
       return (const <Asset>[], const <Asset>[], inDb);

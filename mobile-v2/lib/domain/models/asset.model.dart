@@ -71,8 +71,8 @@ class Asset {
       createdTime: createdTime ?? this.createdTime,
       modifiedTime: modifiedTime ?? this.modifiedTime,
       duration: duration ?? this.duration,
-      localId: localId != null ? localId() : this.localId,
-      remoteId: remoteId != null ? remoteId() : this.remoteId,
+      localId: localId == null ? this.localId : localId(),
+      remoteId: remoteId == null ? this.remoteId : remoteId(),
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
     );
   }
@@ -89,20 +89,20 @@ class Asset {
     if (newAsset.modifiedTime.isAfter(existingAsset.modifiedTime)) {
       return newAsset.copyWith(
         id: newAsset.id ?? existingAsset.id,
+        height: newAsset.height ?? existingAsset.height,
+        width: newAsset.width ?? existingAsset.width,
+        createdTime: oldestCreationTime,
         localId: () => existingAsset.localId ?? newAsset.localId,
         remoteId: () => existingAsset.remoteId ?? newAsset.remoteId,
-        width: newAsset.width ?? existingAsset.width,
-        height: newAsset.height ?? existingAsset.height,
-        createdTime: oldestCreationTime,
       );
     }
 
     return existingAsset.copyWith(
+      height: existingAsset.height ?? newAsset.height,
+      width: existingAsset.width ?? newAsset.width,
+      createdTime: oldestCreationTime,
       localId: () => existingAsset.localId ?? newAsset.localId,
       remoteId: () => existingAsset.remoteId ?? newAsset.remoteId,
-      width: existingAsset.width ?? newAsset.width,
-      height: existingAsset.height ?? newAsset.height,
-      createdTime: oldestCreationTime,
     );
   }
 

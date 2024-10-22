@@ -66,9 +66,9 @@ class ImApiClient extends ApiClient with LogMixin {
     return res;
   }
 
-  UsersApi getUsersApi() => UsersApi(this);
-  ServerApi getServerApi() => ServerApi(this);
-  AuthenticationApi getAuthenticationApi() => AuthenticationApi(this);
-  OAuthApi getOAuthApi() => OAuthApi(this);
-  SyncApi getSyncApi() => SyncApi(this);
+  UsersApi get usersApi => UsersApi(this);
+  ServerApi get serverApi => ServerApi(this);
+  AuthenticationApi get authenticationApi => AuthenticationApi(this);
+  OAuthApi get oAuthApi => OAuthApi(this);
+  SyncApi get syncApi => SyncApi(this);
 }

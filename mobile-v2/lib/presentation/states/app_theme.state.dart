@@ -19,7 +19,7 @@ class AppThemeProvider extends ValueNotifier<AppTheme> {
 
   @override
   void dispose() {
-    _appSettingSubscription.cancel();
+    unawaited(_appSettingSubscription.cancel());
     super.dispose();
   }
 }

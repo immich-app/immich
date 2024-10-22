@@ -18,51 +18,68 @@ dart_code_metrics:
     - recommended
   rules:
     # Common
-    - avoid-accessing-collections-by-constant-index
+    - arguments-ordering:
+        last:
+          - child
     - avoid-accessing-other-classes-private-members
-    - avoid-cascade-after-if-null
+    - avoid-assigning-to-static-field
+    - avoid-assignments-as-conditions
+    - avoid-async-call-in-sync-function
     - avoid-collapsible-if
-    - avoid-collection-methods-with-unrelated-types
-    - avoid-double-slash-imports
-    - avoid-duplicate-cascades
-    - avoid-duplicate-patterns
-    - avoid-generics-shadowing
+    - avoid-collection-equality-checks
+    - avoid-collection-mutating-methods
+    - avoid-complex-loop-conditions
+    - avoid-declaring-call-method
+    - avoid-extensions-on-records
+    - avoid-function-type-in-records
     - avoid-global-state
+    - avoid-inverted-boolean-checks
+    - avoid-late-final-reassignment
+    - avoid-local-functions
+    - avoid-negated-conditions
+    - avoid-nested-streams-and-futures
+    - avoid-referencing-subclasses
+    - binary-expression-operand-order
+    - move-variable-outside-iteration
+    - prefer-abstract-final-static-class
+    - prefer-early-return
+    - prefer-first
+    - prefer-immediate-return
+    - prefer-last
+    - prefer-simpler-boolean-expressions
+    - prefer-type-over-var
+    - use-existing-variable
     # Flutter
-    - always-remove-listener
     - avoid-border-all
-    - avoid-empty-setstate
     - avoid-expanded-as-spacer
-    - avoid-incomplete-copy-with
     - avoid-inherited-widget-in-initstate
     - avoid-late-context
-    - avoid-recursive-widget-calls
     - avoid-returning-widgets
     - avoid-shrink-wrap-in-lists
     - avoid-single-child-column-or-row
-    - avoid-state-constructors
     - avoid-stateless-widget-initialized-fields
-    - avoid-unnecessary-overrides-in-state
-    - avoid-unnecessary-stateful-widgets
     - avoid-wrapping-in-padding
-    - dispose-fields
     - prefer-const-border-radius
+    - prefer-correct-callback-field-name: false
     - prefer-correct-edge-insets-constructor
-    - prefer-dedicated-media-query-methods
     - prefer-define-hero-tag
     - prefer-extracting-callbacks
+    - prefer-for-loop-in-children
+    - prefer-match-file-name: false
+    - prefer-single-widget-per-file:
+        ignore-private-widgets: true
+        exclude:
+          - lib/presentation/**/*.page.dart
     - prefer-sliver-prefix
     - prefer-text-rich
     - prefer-using-list-view
-    - proper-super-calls
-    - use-setstate-synchronously
-    - prefer-match-file-name: false
-    - avoid-passing-self-as-argument:
-        exclude:
-          - lib/domain/repositories/**
-    - prefer-single-widget-per-file:
-        ignore-private-widgets: true
-    - prefer-correct-callback-field-name: false
+    - prefer-widget-private-members:
+        ignore-static: true
+    # get-it
+    - avoid-functions-in-register-singleton
+    # bloc
+    - avoid-empty-build-when
+    - avoid-passing-bloc-to-bloc
 
 custom_lint:
   rules:

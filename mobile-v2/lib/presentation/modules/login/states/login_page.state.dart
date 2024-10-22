@@ -61,7 +61,7 @@ class LoginPageCubit extends Cubit<LoginPageState> with LogMixin {
       // Check for /.well-known/immich
       url = await loginService.resolveEndpoint(uri);
 
-      di<IStoreRepository>().upsert(StoreKey.serverEndpoint, url);
+      await di<IStoreRepository>().upsert(StoreKey.serverEndpoint, url);
       await di<LoginService>().handlePostUrlResolution(url);
 
       emit(state.copyWith(isServerValidated: true));

@@ -77,9 +77,9 @@ class _PadAlignedIcon extends StatelessWidget {
         alignment: alignment,
         child: Icon(
           icon,
-          color: Colors.white,
           size: 20,
           fill: (filled != null && filled!) ? 1 : null,
+          color: Colors.white,
         ),
       ),
     );

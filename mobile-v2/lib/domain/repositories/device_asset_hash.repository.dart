@@ -16,12 +16,13 @@ class DeviceAssetToHashRepository
       : _db = db;
 
   @override
-  FutureOr<bool> upsertAll(Iterable<DeviceAssetToHash> assetHash) async {
+  Future<bool> upsertAll(Iterable<DeviceAssetToHash> assetHash) async {
     try {
-      await _db.batch((batch) => batch.insertAllOnConflictUpdate(
-            _db.deviceAssetToHash,
-            assetHash.map(_toEntity),
-          ));
+      await _db.txn(() async =>
+          await _db.batch((batch) => batch.insertAllOnConflictUpdate(
+                _db.deviceAssetToHash,
+                assetHash.map(_toEntity),
+              )));
 
       return true;
     } catch (e, s) {
@@ -38,7 +39,7 @@ class DeviceAssetToHashRepository
   }
 
   @override
-  FutureOr<void> deleteIds(Iterable<int> ids) async {
+  Future<void> deleteIds(Iterable<int> ids) async {
     await _db.deviceAssetToHash.deleteWhere((row) => row.id.isIn(ids));
   }
 }

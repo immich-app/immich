@@ -9,7 +9,7 @@ class AdvanceSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: ImAdaptiveRouteSecondaryAppBar(),
+      appBar: ImAdaptiveRouteAppBar(isPrimary: false),
       body: Center(child: Text('Advanced Settings')),
     );
   }

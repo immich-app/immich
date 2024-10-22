@@ -4,11 +4,11 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 
 abstract interface class IUserRepository {
   /// Insert user
-  FutureOr<bool> upsert(User user);
+  Future<bool> upsert(User user);
 
   /// Fetches user
-  FutureOr<User?> getForId(String userId);
+  Future<User?> getForId(String userId);
 
   /// Removes all users
-  FutureOr<void> deleteAll();
+  Future<void> deleteAll();
 }

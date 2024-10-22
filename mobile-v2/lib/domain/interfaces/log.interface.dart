@@ -4,17 +4,17 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 
 abstract interface class ILogRepository {
   /// Inserts a new log into the DB
-  FutureOr<bool> create(LogMessage log);
+  Future<bool> create(LogMessage log);
 
   /// Bulk insert logs into DB
-  FutureOr<bool> createAll(Iterable<LogMessage> log);
+  Future<bool> createAll(Iterable<LogMessage> log);
 
   /// Fetches all logs
-  FutureOr<List<LogMessage>> getAll();
+  Future<List<LogMessage>> getAll();
 
   /// Clears all logs
-  FutureOr<bool> deleteAll();
+  Future<bool> deleteAll();
 
   /// Truncates the logs to the most recent [limit]. Defaults to recent 250 logs
-  FutureOr<void> truncate({int limit = 250});
+  Future<void> truncate({int limit = 250});
 }

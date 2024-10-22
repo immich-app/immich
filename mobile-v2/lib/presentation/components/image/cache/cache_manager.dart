@@ -14,8 +14,8 @@ class ImRemoteThumbnailCacheManager extends CacheManager {
       : super(
           Config(
             kCacheThumbnailsKey,
-            maxNrOfCacheObjects: kCacheMaxNrOfThumbnails,
             stalePeriod: const Duration(days: kCacheStalePeriod),
+            maxNrOfCacheObjects: kCacheMaxNrOfThumbnails,
           ),
         );
 }
@@ -33,8 +33,8 @@ class ImRemoteImageCacheManager extends CacheManager {
       : super(
           Config(
             kCacheFullImagesKey,
-            maxNrOfCacheObjects: kCacheMaxNrOfFullImages,
             stalePeriod: const Duration(days: kCacheStalePeriod),
+            maxNrOfCacheObjects: kCacheMaxNrOfFullImages,
           ),
         );
 }

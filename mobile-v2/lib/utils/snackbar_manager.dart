@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/utils/constants/globals.dart';
 
-class SnackbarManager {
+abstract final class SnackbarManager {
   const SnackbarManager();
 
   static ScaffoldMessengerState? get _s => kScafMessengerKey.currentState;

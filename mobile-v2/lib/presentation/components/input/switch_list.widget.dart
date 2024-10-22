@@ -29,18 +29,27 @@ class ImSwitchListTile<T> extends StatefulWidget {
 
 class _ImSwitchListTileState<T> extends State<ImSwitchListTile<T>> {
   // Actual switch list state
-  late bool isEnabled;
+  late bool _isEnabled;
   final AppSettingService _appSettingService = di();
 
-  Future<void> set(bool enabled) async {
-    if (isEnabled == enabled) return;
+  Future<void> _set(bool enabled) async {
+    if (_isEnabled == enabled) return;
 
-    final value = T != bool ? widget.toAppSetting!(enabled) : enabled as T;
+    final value = T == bool ? enabled as T : widget.toAppSetting!(enabled);
     if (value != null &&
         await _appSettingService.upsert(widget.setting, value) &&
         context.mounted) {
       setState(() {
-        isEnabled = enabled;
+        _isEnabled = enabled;
+      });
+    }
+  }
+
+  Future<void> _initSetting() async {
+    final value = await _appSettingService.get(widget.setting);
+    if (context.mounted) {
+      setState(() {
+        _isEnabled = T == bool ? value as bool : widget.fromAppSetting!(value);
       });
     }
   }
@@ -48,20 +57,14 @@ class _ImSwitchListTileState<T> extends State<ImSwitchListTile<T>> {
   @override
   void initState() {
     super.initState();
-    _appSettingService.get(widget.setting).then((value) {
-      if (context.mounted) {
-        setState(() {
-          isEnabled = T != bool ? widget.fromAppSetting!(value) : value as bool;
-        });
-      }
-    });
+    _initSetting().ignore();
   }
 
   @override
   Widget build(BuildContext context) {
     return SwitchListTile(
-      value: isEnabled,
-      onChanged: (value) => set(value),
+      value: _isEnabled,
+      onChanged: (value) => unawaited(_set(value)),
     );
   }
 }

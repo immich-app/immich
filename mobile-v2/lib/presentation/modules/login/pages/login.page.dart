@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,15 +57,15 @@ class _LoginPageState extends State<LoginPage>
 
   void _onLoginPageStateChange(BuildContext context, LoginPageState state) {
     if (state.isLoginSuccessful) {
-      context.replaceRoute(const TabControllerRoute());
+      unawaited(context.replaceRoute(const TabControllerRoute()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final PreferredSizeWidget? appBar;
-    late final Widget primaryBody;
-    late final Widget secondaryBody;
+    final Widget primaryBody;
+    final Widget secondaryBody;
 
     Widget rotatingLogo = GestureDetector(
       onDoubleTap: _populateDemoCredentials,
@@ -73,7 +75,7 @@ class _LoginPageState extends State<LoginPage>
           children: [
             RotationTransition(
               turns: _animationController,
-              child: const ImLogo(width: 100),
+              child: const ImLogo(dimension: 100),
             ),
             const SizedGap.lh(),
             const ImLogoText(),
@@ -104,7 +106,7 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
           TextButton(
-            onPressed: () => context.navigateRoot(const LogsRoute()),
+            onPressed: () => unawaited(context.navigateRoot(const LogsRoute())),
             child: const Text('Logs'),
           ),
         ],
@@ -122,7 +124,9 @@ class _LoginPageState extends State<LoginPage>
                   fontWeight: FontWeight.w500,
                 ),
                 child: InkWell(
-                  onTap: () => launchUrl(Uri.parse(_serverUrlController.text)),
+                  onTap: () => unawaited(
+                    launchUrl(Uri.parse(_serverUrlController.text)),
+                  ),
                   child: Text(
                     _serverUrlController.text,
                     textAlign: TextAlign.center,
@@ -157,12 +161,12 @@ class _LoginPageState extends State<LoginPage>
           bottom,
         ]),
       );
+      secondaryBody = const SizedBox.shrink();
     }
 
     return BlocListener<LoginPageCubit, LoginPageState>(
       listener: _onLoginPageStateChange,
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
         appBar: appBar,
         body: SafeArea(
           child: ImAdaptiveScaffoldBody(
@@ -170,6 +174,7 @@ class _LoginPageState extends State<LoginPage>
             secondaryBody: (_) => secondaryBody,
           ),
         ),
+        resizeToAvoidBottomInset: false,
       ),
     );
   }
@@ -182,13 +187,14 @@ class _MobileAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      scrolledUnderElevation: 0.0,
       actions: [
         IconButton(
-          onPressed: () => context.navigateRoot(const SettingsRoute()),
+          onPressed: () =>
+              unawaited(context.navigateRoot(const SettingsRoute())),
           icon: const Icon(Symbols.settings),
         ),
       ],
+      scrolledUnderElevation: 0.0,
     );
   }
 

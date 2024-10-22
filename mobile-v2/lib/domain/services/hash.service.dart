@@ -88,7 +88,8 @@ class HashService with LogMixin {
     }
 
     assert(hashesInDB.isEmpty, "All hashes should be processed at this point");
-    _assetHashRepository.deleteIds(orphanedHashes.map((e) => e.id!).toList());
+    await _assetHashRepository
+        .deleteIds(orphanedHashes.map((e) => e.id!).toList());
 
     return hashedAssets;
   }
@@ -103,21 +104,21 @@ class HashService with LogMixin {
     final hashedAssets = <Asset>[];
 
     for (final (index, hash) in hashes.indexed) {
-      // ignore: avoid-unsafe-collection-methods
-      final asset = toBeHashed.elementAt(index).asset;
-      if (hash?.length == 20) {
+      final asset = toBeHashed.elementAtOrNull(index)?.asset;
+      if (asset != null && hash?.length == 20) {
         hashedAssets.add(asset.copyWith(hash: base64.encode(hash!)));
       } else {
-        log.w("Failed to hash file ${asset.localId ?? '<null>'}, skipping");
+        log.w("Failed to hash file ${asset?.localId ?? '<null>'}, skipping");
       }
     }
 
     // Store the cache for future retrieval
-    _assetHashRepository.upsertAll(hashedAssets.map((a) => DeviceAssetToHash(
-          localId: a.localId!,
-          hash: a.hash,
-          modifiedTime: a.modifiedTime,
-        )));
+    await _assetHashRepository
+        .upsertAll(hashedAssets.map((a) => DeviceAssetToHash(
+              localId: a.localId!,
+              hash: a.hash,
+              modifiedTime: a.modifiedTime,
+            )));
 
     log.v("Hashed ${hashedAssets.length}/${toBeHashed.length} assets");
     return hashedAssets;
@@ -127,8 +128,7 @@ class HashService with LogMixin {
   /// Files that could not be hashed will have a `null` value
   Future<List<Uint8List?>> _hashFiles(List<String> paths) async {
     try {
-      final hashes = await _hostService.digestFiles(paths);
-      return hashes;
+      return await _hostService.digestFiles(paths);
     } catch (e, s) {
       log.e("Error occured while hashing assets", e, s);
     }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
@@ -15,32 +17,31 @@ class SettingsWrapperPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ImAdaptiveRouteWrapper(
-      primaryBody: (_) => const SettingsPage(),
       primaryRoute: SettingsRoute.name,
-      bodyRatio: BodyRatioConstants.oneThird,
+      primaryBody: (_) => const SettingsPage(),
+      bodyRatio: RatioConstants.oneThird,
     );
   }
 }
 
 @RoutePage()
-// ignore: prefer-single-widget-per-file
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ImAdaptiveRoutePrimaryAppBar(),
+      appBar: const ImAdaptiveRouteAppBar(isPrimary: true),
       body: ListView.builder(
-        itemCount: SettingSection.values.length,
         itemBuilder: (_, index) {
           final section = SettingSection.values.elementAt(index);
           return ListTile(
-            title: Text(context.t[section.labelKey]),
-            onTap: () => context.navigateRoot(section.destination),
             leading: Icon(section.icon),
+            title: Text(context.t[section.labelKey]),
+            onTap: () => unawaited(context.navigateRoot(section.destination)),
           );
         },
+        itemCount: SettingSection.values.length,
       ),
     );
   }

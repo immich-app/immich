@@ -32,16 +32,16 @@ class SyncApiRepository with LogMixin implements ISyncApiRepository {
 }
 
 Asset _fromAssetResponseDto(AssetResponseDto dto) => Asset(
-      remoteId: dto.id,
-      createdTime: dto.fileCreatedAt,
-      duration: dto.duration.tryParseInt() ?? 0,
+      name: dto.originalFileName,
+      hash: dto.checksum,
       height: dto.exifInfo?.exifImageHeight?.toInt(),
       width: dto.exifInfo?.exifImageWidth?.toInt(),
-      hash: dto.checksum,
-      name: dto.originalFileName,
-      livePhotoVideoId: dto.livePhotoVideoId,
-      modifiedTime: dto.fileModifiedAt,
       type: _toAssetType(dto.type),
+      createdTime: dto.fileCreatedAt,
+      modifiedTime: dto.fileModifiedAt,
+      duration: dto.duration.tryParseInt() ?? 0,
+      remoteId: dto.id,
+      livePhotoVideoId: dto.livePhotoVideoId,
     );
 
 AssetType _toAssetType(AssetTypeEnum type) => switch (type) {

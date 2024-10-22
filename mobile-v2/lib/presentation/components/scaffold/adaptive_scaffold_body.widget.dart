@@ -21,14 +21,11 @@ class ImAdaptiveScaffoldBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdaptiveLayout(
-      internalAnimations: false,
-      transitionDuration: Durations.medium2,
-      bodyRatio: bodyRatio,
       body: SlotLayout(
         config: {
           Breakpoints.standard: SlotLayout.from(
-            key: const Key('ImAdaptiveScaffold Body Standard'),
             builder: primaryBody,
+            key: const Key('ImAdaptiveScaffold Body Standard'),
           ),
         },
       ),
@@ -37,11 +34,14 @@ class ImAdaptiveScaffoldBody extends StatelessWidget {
           /// No secondary body in mobile layouts
           Breakpoints.small: SlotLayoutConfig.empty(),
           Breakpoints.mediumAndUp: SlotLayout.from(
-            key: const Key('ImAdaptiveScaffold Secondary Body Medium'),
             builder: secondaryBody,
+            key: const Key('ImAdaptiveScaffold Secondary Body Medium'),
           ),
         },
       ),
+      bodyRatio: bodyRatio,
+      transitionDuration: Durations.medium2,
+      internalAnimations: false,
     );
   }
 }

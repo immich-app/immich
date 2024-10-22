@@ -5,18 +5,18 @@ import 'package:material_symbols_icons/symbols.dart';
 
 enum SettingSection {
   general._(
-    icon: Symbols.interests_rounded,
     labelKey: 'settings.sections.general',
+    icon: Symbols.interests_rounded,
     destination: GeneralSettingsRoute(),
   ),
   advance._(
-    icon: Symbols.build_rounded,
     labelKey: 'settings.sections.advance',
+    icon: Symbols.build_rounded,
     destination: AdvanceSettingsRoute(),
   ),
   about._(
-    icon: Symbols.help_rounded,
     labelKey: 'settings.sections.about',
+    icon: Symbols.help_rounded,
     destination: AboutSettingsRoute(),
   );
 

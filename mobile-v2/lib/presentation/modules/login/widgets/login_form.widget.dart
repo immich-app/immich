@@ -34,14 +34,14 @@ class LoginForm extends StatelessWidget {
       builder: (_, isServerValidated) => SingleChildScrollView(
         child: AnimatedSwitcher(
           duration: Durations.medium1,
+          layoutBuilder: (current, previous) =>
+              current ?? (previous.lastOrNull ?? const SizedBox.shrink()),
           child: isServerValidated
               ? _CredentialsForm(
                   emailController: emailController,
                   passwordController: passwordController,
                 )
               : _ServerForm(controller: serverUrlController),
-          layoutBuilder: (current, previous) =>
-              current ?? (previous.lastOrNull ?? const SizedBox.shrink()),
         ),
       ),
     );
@@ -75,13 +75,13 @@ class _ServerFormState extends State<_ServerForm> {
       child: BlocSelector<LoginPageCubit, LoginPageState, bool>(
         selector: (model) => model.isValidationInProgress,
         builder: (_, isValidationInProgress) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ImTextFormField(
               controller: widget.controller,
-              label: context.t.login.label.endpoint,
               validator: context.read<LoginPageCubit>().validateServerUrl,
+              label: context.t.login.label.endpoint,
               autoFillHints: const [AutofillHints.url],
               keyboardType: TextInputType.url,
               textInputAction: TextInputAction.go,
@@ -89,10 +89,10 @@ class _ServerFormState extends State<_ServerForm> {
             ),
             const SizedGap.mh(),
             ImFilledButton(
-              label: context.t.login.label.next_button,
               icon: Symbols.arrow_forward_rounded,
               onPressed: () => unawaited(_validateForm(context)),
               isDisabled: isValidationInProgress,
+              label: context.t.login.label.next_button,
             ),
             const SizedGap.mh(),
             if (isValidationInProgress) const ImLoadingIndicator(),
@@ -117,11 +117,11 @@ class _CredentialsForm extends StatefulWidget {
 }
 
 class _CredentialsFormState extends State<_CredentialsForm> {
-  final passwordFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
 
   @override
   void dispose() {
-    passwordFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -134,28 +134,27 @@ class _CredentialsFormState extends State<_CredentialsForm> {
           : ValueListenableBuilder(
               valueListenable: di<ServerFeatureConfigProvider>(),
               builder: (_, state, __) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (state.features.hasPasswordLogin) ...[
                     ImTextFormField(
                       controller: widget.emailController,
                       label: context.t.login.label.email,
-                      isDisabled: isValidationInProgress,
                       textInputAction: TextInputAction.next,
-                      onSubmitted: (_) => passwordFocusNode.requestFocus(),
+                      isDisabled: isValidationInProgress,
+                      onSubmitted: (_) => _passwordFocusNode.requestFocus(),
                     ),
                     const SizedGap.mh(),
                     ImPasswordFormField(
                       controller: widget.passwordController,
+                      focusNode: _passwordFocusNode,
                       label: context.t.login.label.password,
-                      focusNode: passwordFocusNode,
-                      isDisabled: isValidationInProgress,
                       textInputAction: TextInputAction.go,
+                      isDisabled: isValidationInProgress,
                     ),
                     const SizedGap.mh(),
                     ImFilledButton(
-                      label: context.t.login.label.login_button,
                       icon: Symbols.login_rounded,
                       onPressed: () => unawaited(
                         context.read<LoginPageCubit>().passwordLogin(
@@ -163,31 +162,32 @@ class _CredentialsFormState extends State<_CredentialsForm> {
                               password: widget.passwordController.text,
                             ),
                       ),
+                      label: context.t.login.label.login_button,
                     ),
                     // Divider when both password and oAuth login is enabled
                     if (state.features.hasOAuthLogin) const Divider(),
                   ],
                   if (state.features.hasOAuthLogin)
                     ImFilledButton(
-                      label: state.config.oauthButtonText ??
-                          context.t.login.label.oauth_button,
                       icon: Symbols.pin_rounded,
                       onPressed: () => unawaited(
                         context.read<LoginPageCubit>().oAuthLogin(),
                       ),
+                      label: state.config.oauthButtonText ??
+                          context.t.login.label.oauth_button,
                     ),
                   if (!state.features.hasPasswordLogin &&
                       !state.features.hasOAuthLogin)
                     ImFilledButton(
-                      label: context.t.login.label.login_disabled,
                       isDisabled: true,
+                      label: context.t.login.label.login_disabled,
                     ),
                   const SizedGap.sh(),
                   ImTextButton(
-                    label: context.t.login.label.back_button,
                     icon: Symbols.arrow_back_rounded,
                     onPressed:
                         context.read<LoginPageCubit>().resetServerValidation,
+                    label: context.t.login.label.back_button,
                   ),
                 ],
               ),

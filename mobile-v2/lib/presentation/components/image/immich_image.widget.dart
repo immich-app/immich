@@ -12,9 +12,9 @@ class ImImagePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: context.colorScheme.surfaceContainerHighest,
       width: 200,
       height: 200,
-      color: context.colorScheme.surfaceContainerHighest,
     );
   }
 }
@@ -63,13 +63,8 @@ class ImImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OctoImage(
-      fadeInDuration: const Duration(milliseconds: 0),
-      fadeOutDuration: Durations.short4,
-      placeholderBuilder: (_) => placeholder,
       image: ImImage.imageProvider(asset: asset),
-      width: width,
-      height: height,
-      fit: BoxFit.cover,
+      placeholderBuilder: (_) => placeholder,
       errorBuilder: (_, error, stackTrace) {
         if (error is PlatformException &&
             error.code == "The asset not found!") {
@@ -86,6 +81,11 @@ class ImImage extends StatelessWidget {
           color: context.colorScheme.primary,
         );
       },
+      fadeOutDuration: Durations.short4,
+      fadeInDuration: Duration.zero,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
     );
   }
 }

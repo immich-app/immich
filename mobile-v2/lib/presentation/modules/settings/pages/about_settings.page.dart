@@ -12,14 +12,14 @@ class AboutSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ImAdaptiveRouteSecondaryAppBar(),
+      appBar: const ImAdaptiveRouteAppBar(isPrimary: false),
       body: ListTile(
         title: Text(context.t.settings.about.third_party_title),
         subtitle: Text(context.t.settings.about.third_party_sub_title),
         onTap: () => showLicensePage(
           context: context,
           applicationName: context.t.immich,
-          applicationIcon: const ImLogo(width: SizeConstants.xl),
+          applicationIcon: const ImLogo(dimension: SizeConstants.xl),
         ),
       ),
     );

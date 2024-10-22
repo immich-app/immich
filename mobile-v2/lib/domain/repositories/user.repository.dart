@@ -13,7 +13,7 @@ class UserRepository with LogMixin implements IUserRepository {
   const UserRepository({required DriftDatabaseRepository db}) : _db = db;
 
   @override
-  FutureOr<User?> getForId(String userId) async {
+  Future<User?> getForId(String userId) async {
     return await _db.managers.user
         .filter((f) => f.id.equals(userId))
         .map(_toModel)
@@ -21,23 +21,23 @@ class UserRepository with LogMixin implements IUserRepository {
   }
 
   @override
-  FutureOr<bool> upsert(User user) async {
+  Future<bool> upsert(User user) async {
     try {
-      await _db.into(_db.user).insertOnConflictUpdate(
-            UserCompanion.insert(
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              profileImagePath: user.profileImagePath,
-              avatarColor: user.avatarColor,
-              inTimeline: Value(user.inTimeline),
-              isAdmin: Value(user.isAdmin),
-              memoryEnabled: Value(user.memoryEnabled),
-              quotaSizeInBytes: Value(user.quotaSizeInBytes),
-              quotaUsageInBytes: Value(user.quotaSizeInBytes),
-              updatedAt: Value(user.updatedAt),
-            ),
-          );
+      await _db.user.insertOnConflictUpdate(
+        UserCompanion.insert(
+          id: user.id,
+          updatedAt: Value(user.updatedAt),
+          name: user.name,
+          email: user.email,
+          isAdmin: Value(user.isAdmin),
+          quotaSizeInBytes: Value(user.quotaSizeInBytes),
+          quotaUsageInBytes: Value(user.quotaSizeInBytes),
+          inTimeline: Value(user.inTimeline),
+          profileImagePath: user.profileImagePath,
+          memoryEnabled: Value(user.memoryEnabled),
+          avatarColor: user.avatarColor,
+        ),
+      );
       return true;
     } catch (e, s) {
       log.e("Cannot insert User into table - $user", e, s);
@@ -46,7 +46,7 @@ class UserRepository with LogMixin implements IUserRepository {
   }
 
   @override
-  FutureOr<void> deleteAll() async {
+  Future<void> deleteAll() async {
     await _db.user.deleteAll();
   }
 }
@@ -54,15 +54,15 @@ class UserRepository with LogMixin implements IUserRepository {
 User _toModel(UserData user) {
   return User(
     id: user.id,
-    email: user.email,
-    avatarColor: user.avatarColor,
-    inTimeline: user.inTimeline,
-    isAdmin: user.isAdmin,
-    memoryEnabled: user.memoryEnabled,
+    updatedAt: user.updatedAt,
     name: user.name,
-    profileImagePath: user.profileImagePath,
+    email: user.email,
+    isAdmin: user.isAdmin,
     quotaSizeInBytes: user.quotaSizeInBytes,
     quotaUsageInBytes: user.quotaUsageInBytes,
-    updatedAt: user.updatedAt,
+    inTimeline: user.inTimeline,
+    profileImagePath: user.profileImagePath,
+    memoryEnabled: user.memoryEnabled,
+    avatarColor: user.avatarColor,
   );
 }

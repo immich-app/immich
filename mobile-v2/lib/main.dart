@@ -6,17 +6,17 @@ import 'package:immich_mobile/utils/log_manager.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // DI Injection
   ServiceLocator.configureServices();
   // Init logging
-  LogManager.I.init();
+  await LogManager.I.init();
   LogManager.setGlobalErrorCallbacks();
   // Init localization
   LocaleSettings.useDeviceLocale();
   // Clear photo_manager cache
-  PhotoManager.clearFileCache();
+  await PhotoManager.clearFileCache();
 
   runApp(const ImApp());
 }

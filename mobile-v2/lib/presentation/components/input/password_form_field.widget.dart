@@ -40,33 +40,33 @@ class ImPasswordFormField extends StatefulWidget {
 }
 
 class _ImPasswordFormFieldState extends State<ImPasswordFormField> {
-  final showPassword = ValueNotifier(false);
+  final _showPassword = ValueNotifier(false);
 
   @override
   void dispose() {
-    showPassword.dispose();
+    _showPassword.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: showPassword,
+      valueListenable: _showPassword,
       builder: (_, showPass, child) => ImTextFormField(
         controller: widget.controller,
+        focusNode: widget.focusNode,
         onChanged: widget.onChanged,
         shouldObscure: !showPass,
-        hint: widget.hint,
-        label: widget.label,
-        focusNode: widget.focusNode,
         suffixIcon: IconButton(
-          onPressed: () => showPassword.value = !showPassword.value,
+          onPressed: () => _showPassword.value = !_showPassword.value,
           icon: Icon(
-            showPassword.value
+            _showPassword.value
                 ? Symbols.visibility_off_rounded
                 : Symbols.visibility_rounded,
           ),
         ),
+        label: widget.label,
+        hint: widget.hint,
         autoFillHints: const [AutofillHints.password],
         keyboardType: TextInputType.visiblePassword,
         textInputAction: widget.textInputAction,
