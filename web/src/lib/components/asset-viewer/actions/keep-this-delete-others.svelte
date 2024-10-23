@@ -18,4 +18,4 @@
   };
 </script>
 
-<MenuOption icon={mdiPinOutline} onClick={handleKeepThisDeleteOthers} text={"Keep this, delete others"} />
+<MenuOption icon={mdiPinOutline} onClick={handleKeepThisDeleteOthers} text={'Keep this, delete others'} />
