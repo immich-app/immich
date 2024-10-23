@@ -28,6 +28,7 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -439,17 +440,11 @@ export const deleteStack = async (stackIds: string[]) => {
   }
 };
 
-export const keepThisDeleteOthers = async (keepId: string, stackId: string) => {
+export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: StackResponseDto) => {
   const $t = get(t);
 
   try {
-    const stack = await getStack({ id: stackId });
-    const assetToKeep = stack.assets.find((asset) => asset.id === keepId);
-    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepId).map((asset) => asset.id);
-    if (!assetToKeep) {
-      return;
-    }
-
+    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
     await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
     await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
 
@@ -458,8 +453,8 @@ export const keepThisDeleteOthers = async (keepId: string, stackId: string) => {
       message: $t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }),
     });
 
-    assetToKeep.stack = null;
-    return assetToKeep;
+    keepAsset.stack = null;
+    return keepAsset;
   } catch (error) {
     handleError(error, $t('errors.failed_to_keep_this_delete_others'));
   }

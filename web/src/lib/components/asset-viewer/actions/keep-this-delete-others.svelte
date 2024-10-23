@@ -12,7 +12,7 @@
   export let onAction: OnAction;
 
   const handleKeepThisDeleteOthers = async () => {
-    const keptAsset = await keepThisDeleteOthers(asset.id, stack.id);
+    const keptAsset = await keepThisDeleteOthers(asset, stack);
     if (keptAsset) {
       onAction({ type: AssetAction.UNSTACK, assets: [keptAsset] });
     }
