@@ -5,6 +5,7 @@
   import type { AssetResponseDto, StackResponseDto } from '@immich/sdk';
   import { mdiPinOutline } from '@mdi/js';
   import type { OnAction } from './action';
+  import { t } from 'svelte-i18n';
 
   export let stack: StackResponseDto;
   export let asset: AssetResponseDto;
@@ -18,4 +19,4 @@
   };
 </script>
 
-<MenuOption icon={mdiPinOutline} onClick={handleKeepThisDeleteOthers} text={'Keep this, delete others'} />
+<MenuOption icon={mdiPinOutline} onClick={handleKeepThisDeleteOthers} text={$t('keep_this_delete_others')} />

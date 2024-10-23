@@ -1251,6 +1251,7 @@
   "unselect_all_duplicates": "Unselect all duplicates",
   "unstack": "Un-stack",
   "unstacked_assets_count": "Un-stacked {count, plural, one {# asset} other {# assets}}",
+  "keep_this_delete_others": "Keep this, delete others",
   "untracked_files": "Untracked files",
   "untracked_files_decription": "These files are not tracked by the application. They can be the results of failed moves, interrupted uploads, or left behind due to a bug",
   "kept_this_deleted_others": "Kept this asset and deleted {count, plural, one {# asset} other {# assets}}",
