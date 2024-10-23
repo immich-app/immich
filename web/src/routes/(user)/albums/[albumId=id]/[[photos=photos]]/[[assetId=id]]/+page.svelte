@@ -164,6 +164,9 @@
 
     if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
+    } else if (backUrl === AppRoute.SHARED_LINKS) {
+      // The last route was shared links. We should go back to the last page in history
+      backUrl = history.state?.backUrl || AppRoute.ALBUMS;
     }
   });
 
