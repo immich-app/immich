@@ -47,6 +47,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
+  import { castPhoto } from '$lib/utils/cast-sender';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;

@@ -19,6 +19,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import { castPhoto } from '$lib/utils/cast-sender';
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
@@ -47,6 +48,7 @@
 
   $: preload(useOriginalImage, preloadAssets);
   $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
+  $: cast(imageLoaderUrl);
 
   photoZoomState.set({
     currentRotation: 0,
@@ -60,6 +62,10 @@
   onDestroy(() => {
     $boundingBoxesArray = [];
   });
+
+  const cast = async (url: string) => {
+    await castPhoto('https://immich-dev.jogenfors.se' + url);
+  };
 
   const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
     for (const preloadAsset of preloadAssets || []) {
