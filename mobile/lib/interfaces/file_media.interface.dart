@@ -10,6 +10,12 @@ abstract interface class IFileMediaRepository {
     String? relativePath,
   });
 
+  Future<Asset?> saveImageWithFile(
+    String filePath, {
+    String? title,
+    String? relativePath,
+  });
+
   Future<Asset?> saveVideo(
     File file, {
     required String title,

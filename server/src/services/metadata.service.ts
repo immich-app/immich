@@ -579,7 +579,7 @@ export class MetadataService extends BaseService {
 
   private getDates(asset: AssetEntity, exifTags: ImmichTags) {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
-    this.logger.debug(`Asset ${asset.id} date time is ${dateTime}`);
+    this.logger.verbose(`Asset ${asset.id} date time is ${dateTime}`);
 
     // timezone
     let timeZone = exifTags.tz ?? null;
@@ -590,7 +590,7 @@ export class MetadataService extends BaseService {
     }
 
     if (timeZone) {
-      this.logger.debug(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
+      this.logger.verbose(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
     } else {
       this.logger.warn(`Asset ${asset.id} has no time zone information`);
     }
@@ -603,7 +603,7 @@ export class MetadataService extends BaseService {
       localDateTime = asset.fileCreatedAt;
     }
 
-    this.logger.debug(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
+    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
 
     let modifyDate = asset.fileModifiedAt;
     try {

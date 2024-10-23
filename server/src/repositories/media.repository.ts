@@ -17,7 +17,6 @@ import {
   TranscodeCommand,
   VideoInfo,
 } from 'src/interfaces/media.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
@@ -36,7 +35,6 @@ type ProgressEvent = {
   percent?: number;
 };
 
-@Instrumentation()
 @Injectable()
 export class MediaRepository implements IMediaRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
@@ -202,7 +200,7 @@ export class MediaRepository implements IMediaRepository {
 
         lastProgressFrame = progress.frames;
         const percent = ((progress.frames / frameCount) * 100).toFixed(2);
-        const ms = Math.floor((frameCount - progress.frames) / progress.currentFps) * 1000;
+        const ms = progress.currentFps ? Math.floor((frameCount - progress.frames) / progress.currentFps) * 1000 : 0;
         const duration = ms ? Duration.fromMillis(ms).rescale().toHuman({ unitDisplay: 'narrow' }) : '';
         const outputText = output instanceof Writable ? 'stream' : output.split('/').pop();
         this.logger.debug(

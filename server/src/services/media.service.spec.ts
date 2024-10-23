@@ -1327,7 +1327,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset 12',
@@ -1453,7 +1452,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
@@ -1614,7 +1612,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-bf 7',
             '-refs 5',
             '-g 256',
@@ -1800,7 +1797,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload,scale_vaapi=-2:720:mode=hq:out_range=pc',
@@ -2071,7 +2067,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-g 256',
             '-v verbose',
             '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
@@ -2291,6 +2286,22 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
       expect(mediaMock.probe).toHaveBeenCalledWith(assetStub.video.originalPath, { countFrames: false });
+    });
+
+    it('should process unknown audio stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.audioStreamUnknown);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:a copy']),
+          twoPass: false,
+        }),
+      );
     });
   });
 

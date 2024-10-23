@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/download/download_state.model.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
+import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/share.service.dart';
@@ -15,10 +16,12 @@ import 'package:immich_mobile/widgets/common/share_dialog.dart';
 class DownloadStateNotifier extends StateNotifier<DownloadState> {
   final DownloadService _downloadService;
   final ShareService _shareService;
+  final AlbumService _albumService;
 
   DownloadStateNotifier(
     this._downloadService,
     this._shareService,
+    this._albumService,
   ) : super(
           DownloadState(
             downloadStatus: TaskStatus.complete,
@@ -76,7 +79,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
     switch (update.status) {
       case TaskStatus.complete:
-        _downloadService.saveImage(update.task);
+        _downloadService.saveImageWithPath(update.task);
         _onDownloadComplete(update.task.taskId);
         break;
 
@@ -133,6 +136,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
           showProgress: false,
         );
       }
+      _albumService.refreshDeviceAlbums();
     });
   }
 
@@ -187,5 +191,6 @@ final downloadStateProvider =
   ((ref) => DownloadStateNotifier(
         ref.watch(downloadServiceProvider),
         ref.watch(shareServiceProvider),
+        ref.watch(albumServiceProvider),
       )),
 );
