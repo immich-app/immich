@@ -14,6 +14,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
+  deleteAssets,
   deleteStacks,
   getAssetInfo,
   getBaseUrl,
@@ -435,6 +436,32 @@ export const deleteStack = async (stackIds: string[]) => {
     return assets;
   } catch (error) {
     handleError(error, $t('errors.failed_to_unstack_assets'));
+  }
+};
+
+export const keepThisDeleteOthers = async (keepId: string, stackId: string) => {
+  const $t = get(t);
+
+  try {
+    const stack = await getStack({ id: stackId });
+    const assetToKeep = stack.assets.find(x => x.id === keepId);
+    const assetsToDeleteIds = stack.assets.filter(x => x.id !== keepId).map(x => x.id);
+    if (!assetToKeep) {
+      return;
+    }
+
+    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
+    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }),
+    });
+
+    assetToKeep.stack = null;
+    return assetToKeep;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
   }
 };
 
