@@ -4,7 +4,6 @@
   import { keepThisDeleteOthers } from '$lib/utils/asset-utils';
   import type { AssetResponseDto, StackResponseDto } from '@immich/sdk';
   import { mdiPinOutline } from '@mdi/js';
-  import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
   export let stack: StackResponseDto;
