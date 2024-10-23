@@ -23,6 +23,8 @@ import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
+import 'package:immich_mobile/repositories/sync.repository.dart';
+import 'package:immich_mobile/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
@@ -371,6 +373,8 @@ class BackgroundService {
     BackupRepository backupRepository = BackupRepository(db);
     ExifInfoRepository exifInfoRepository = ExifInfoRepository(db);
     ETagRepository eTagRepository = ETagRepository(db);
+    SyncApiRepository syncApiRepository = SyncApiRepository(apiService.syncApi);
+    SyncRepository syncRepository = SyncRepository(db, syncApiRepository);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
     FileMediaRepository fileMediaRepository = FileMediaRepository();
     AssetMediaRepository assetMediaRepository = AssetMediaRepository();
@@ -395,6 +399,7 @@ class BackgroundService {
       exifInfoRepository,
       userRepository,
       eTagRepository,
+      syncRepository,
     );
     UserService userService = UserService(
       partnerApiRepository,
