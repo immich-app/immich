@@ -33,6 +33,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
 ```
 
+If you already have an immich instance running, move all files (including hidden) from the old directories to the new directories.
+
 Restart Immich to register the changes.
 
 ```
