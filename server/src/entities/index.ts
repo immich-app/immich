@@ -16,6 +16,7 @@ import { MoveEntity } from 'src/entities/move.entity';
 import { NaturalEarthCountriesEntity } from 'src/entities/natural-earth-countries.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { SessionSyncStateEntity } from 'src/entities/session-sync-state.entity';
 import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
@@ -54,6 +55,7 @@ export const entities = [
   UserEntity,
   UserMetadataEntity,
   SessionEntity,
+  SessionSyncStateEntity,
   LibraryEntity,
   VersionHistoryEntity,
 ];

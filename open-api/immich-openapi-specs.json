@@ -5778,6 +5778,41 @@
         ]
       }
     },
+    "/sync/acknowledge": {
+      "post": {
+        "operationId": "ackSync",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncAcknowledgeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
     "/sync/delta-sync": {
       "post": {
         "operationId": "getDeltaSync",
@@ -5841,6 +5876,51 @@
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/sync/stream": {
+      "post": {
+        "operationId": "getSyncStream",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncStreamDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncStreamResponseDto"
                   },
                   "type": "array"
                 }
@@ -7578,6 +7658,23 @@
         },
         "required": [
           "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "AlbumAssetResponseDto": {
+        "properties": {
+          "albumId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
         ],
         "type": "object"
       },
@@ -11455,6 +11552,175 @@
           }
         },
         "type": "object"
+      },
+      "SyncAcknowledgeDto": {
+        "properties": {
+          "activity": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "album": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "albumAsset": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "albumUser": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "assetAlbum": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "assetPartner": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "memory": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "partner": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "person": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "sharedLink": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "stack": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "tag": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SyncCheckpointDto"
+          }
+        },
+        "type": "object"
+      },
+      "SyncAction": {
+        "enum": [
+          "upsert",
+          "delete"
+        ],
+        "type": "string"
+      },
+      "SyncCheckpointDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "timestamp"
+        ],
+        "type": "object"
+      },
+      "SyncStreamDto": {
+        "properties": {
+          "types": {
+            "items": {
+              "enum": [
+                "asset",
+                "asset.partner",
+                "assetAlbum",
+                "album",
+                "albumAsset",
+                "albumUser",
+                "activity",
+                "memory",
+                "partner",
+                "person",
+                "sharedLink",
+                "stack",
+                "tag",
+                "user"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "types"
+        ],
+        "type": "object"
+      },
+      "SyncStreamResponseDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/SyncAction"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/AlbumResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/AlbumAssetResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/ActivityResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/MemoryResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/PartnerResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/PersonResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/SharedLinkResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/StackResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/UserResponseDto"
+              }
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/SyncType"
+          }
+        },
+        "required": [
+          "action",
+          "data",
+          "type"
+        ],
+        "type": "object"
+      },
+      "SyncType": {
+        "enum": [
+          "asset",
+          "asset.partner",
+          "assetAlbum",
+          "album",
+          "albumAsset",
+          "albumUser",
+          "activity",
+          "memory",
+          "partner",
+          "person",
+          "sharedLink",
+          "stack",
+          "tag",
+          "user"
+        ],
+        "type": "string"
       },
       "SystemConfigDto": {
         "properties": {

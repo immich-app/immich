@@ -12,6 +12,7 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { AlbumAssetResponseDto } from 'src/dtos/album-asset.dto';
 import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 
@@ -219,6 +220,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    extraModels: [AlbumAssetResponseDto],
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);

@@ -16,6 +16,45 @@ class SyncApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'POST /sync/acknowledge' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [SyncAcknowledgeDto] syncAcknowledgeDto (required):
+  Future<Response> ackSyncWithHttpInfo(SyncAcknowledgeDto syncAcknowledgeDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/sync/acknowledge';
+
+    // ignore: prefer_final_locals
+    Object? postBody = syncAcknowledgeDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [SyncAcknowledgeDto] syncAcknowledgeDto (required):
+  Future<void> ackSync(SyncAcknowledgeDto syncAcknowledgeDto,) async {
+    final response = await ackSyncWithHttpInfo(syncAcknowledgeDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /sync/delta-sync' operation and returns the [Response].
   /// Parameters:
   ///
@@ -107,6 +146,56 @@ class SyncApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'POST /sync/stream' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [SyncStreamDto] syncStreamDto (required):
+  Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/sync/stream';
+
+    // ignore: prefer_final_locals
+    Object? postBody = syncStreamDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [SyncStreamDto] syncStreamDto (required):
+  Future<List<SyncStreamResponseDto>?> getSyncStream(SyncStreamDto syncStreamDto,) async {
+    final response = await getSyncStreamWithHttpInfo(syncStreamDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<SyncStreamResponseDto>') as List)
+        .cast<SyncStreamResponseDto>()
         .toList(growable: false);
 
     }

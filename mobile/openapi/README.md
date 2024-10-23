@@ -201,8 +201,10 @@ Class | Method | HTTP request | Description
 *StacksApi* | [**getStack**](doc//StacksApi.md#getstack) | **GET** /stacks/{id} | 
 *StacksApi* | [**searchStacks**](doc//StacksApi.md#searchstacks) | **GET** /stacks | 
 *StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | 
+*SyncApi* | [**ackSync**](doc//SyncApi.md#acksync) | **POST** /sync/acknowledge | 
 *SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | 
 *SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | 
+*SyncApi* | [**getSyncStream**](doc//SyncApi.md#getsyncstream) | **POST** /sync/stream | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
@@ -259,6 +261,7 @@ Class | Method | HTTP request | Description
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
+ - [AlbumAssetResponseDto](doc//AlbumAssetResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AlbumStatisticsResponseDto](doc//AlbumStatisticsResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
@@ -413,6 +416,13 @@ Class | Method | HTTP request | Description
  - [StackCreateDto](doc//StackCreateDto.md)
  - [StackResponseDto](doc//StackResponseDto.md)
  - [StackUpdateDto](doc//StackUpdateDto.md)
+ - [SyncAcknowledgeDto](doc//SyncAcknowledgeDto.md)
+ - [SyncAction](doc//SyncAction.md)
+ - [SyncCheckpointDto](doc//SyncCheckpointDto.md)
+ - [SyncStreamDto](doc//SyncStreamDto.md)
+ - [SyncStreamResponseDto](doc//SyncStreamResponseDto.md)
+ - [SyncStreamResponseDtoData](doc//SyncStreamResponseDtoData.md)
+ - [SyncType](doc//SyncType.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigFacesDto](doc//SystemConfigFacesDto.md)

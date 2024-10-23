@@ -28,6 +28,7 @@ import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISyncRepository } from 'src/interfaces/sync.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
@@ -65,6 +66,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
@@ -104,6 +106,7 @@ export const repositories = [
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: IStackRepository, useClass: StackRepository },
   { provide: IStorageRepository, useClass: StorageRepository },
+  { provide: ISyncRepository, useClass: SyncRepository },
   { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
   { provide: ITagRepository, useClass: TagRepository },
   { provide: ITelemetryRepository, useClass: TelemetryRepository },
