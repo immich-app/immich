@@ -14,7 +14,6 @@
   import { onMount } from 'svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
-  import { isAlbumsRoute } from '$lib/utils/navigation';
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
