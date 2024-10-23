@@ -1069,6 +1069,26 @@ export type StackCreateDto = {
 export type StackUpdateDto = {
     primaryAssetId?: string;
 };
+export type SyncCheckpointDto = {
+    id: string;
+    timestamp: string;
+};
+export type SyncAcknowledgeDto = {
+    activity?: SyncCheckpointDto;
+    album?: SyncCheckpointDto;
+    albumAsset?: SyncCheckpointDto;
+    albumUser?: SyncCheckpointDto;
+    asset?: SyncCheckpointDto;
+    assetAlbum?: SyncCheckpointDto;
+    assetPartner?: SyncCheckpointDto;
+    memory?: SyncCheckpointDto;
+    partner?: SyncCheckpointDto;
+    person?: SyncCheckpointDto;
+    sharedLink?: SyncCheckpointDto;
+    stack?: SyncCheckpointDto;
+    tag?: SyncCheckpointDto;
+    user?: SyncCheckpointDto;
+};
 export type AssetDeltaSyncDto = {
     updatedAfter: string;
     userIds: string[];
@@ -1083,6 +1103,18 @@ export type AssetFullSyncDto = {
     limit: number;
     updatedUntil: string;
     userId?: string;
+};
+export type SyncStreamDto = {
+    types: ("asset" | "asset.partner" | "assetAlbum" | "album" | "albumAsset" | "albumUser" | "activity" | "memory" | "partner" | "person" | "sharedLink" | "stack" | "tag" | "user")[];
+};
+export type AlbumAssetResponseDto = {
+    albumId: string;
+    assetId: string;
+};
+export type SyncStreamResponseDto = {
+    action: SyncAction;
+    data: AssetResponseDto | AlbumResponseDto | AlbumAssetResponseDto | ActivityResponseDto | MemoryResponseDto | PartnerResponseDto | PersonResponseDto | SharedLinkResponseDto | StackResponseDto | UserResponseDto;
+    "type": SyncType;
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -2852,6 +2884,15 @@ export function updateStack({ id, stackUpdateDto }: {
         body: stackUpdateDto
     })));
 }
+export function ackSync({ syncAcknowledgeDto }: {
+    syncAcknowledgeDto: SyncAcknowledgeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/sync/acknowledge", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: syncAcknowledgeDto
+    })));
+}
 export function getDeltaSync({ assetDeltaSyncDto }: {
     assetDeltaSyncDto: AssetDeltaSyncDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2874,6 +2915,18 @@ export function getFullSyncForUser({ assetFullSyncDto }: {
         ...opts,
         method: "POST",
         body: assetFullSyncDto
+    })));
+}
+export function getSyncStream({ syncStreamDto }: {
+    syncStreamDto: SyncStreamDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SyncStreamResponseDto[];
+    }>("/sync/stream", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: syncStreamDto
     })));
 }
 export function getConfig(opts?: Oazapfts.RequestOpts) {
@@ -3490,6 +3543,26 @@ export enum Error2 {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
     NotFound = "not_found"
+}
+export enum SyncAction {
+    Upsert = "upsert",
+    Delete = "delete"
+}
+export enum SyncType {
+    Asset = "asset",
+    AssetPartner = "asset.partner",
+    AssetAlbum = "assetAlbum",
+    Album = "album",
+    AlbumAsset = "albumAsset",
+    AlbumUser = "albumUser",
+    Activity = "activity",
+    Memory = "memory",
+    Partner = "partner",
+    Person = "person",
+    SharedLink = "sharedLink",
+    Stack = "stack",
+    Tag = "tag",
+    User = "user"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

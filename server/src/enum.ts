@@ -53,6 +53,28 @@ export enum DatabaseAction {
   DELETE = 'DELETE',
 }
 
+export enum SyncEntity {
+  ASSET = 'asset',
+  ASSET_PARTNER = 'asset.partner',
+  ASSET_ALBUM = 'assetAlbum',
+  ALBUM = 'album',
+  ALBUM_ASSET = 'albumAsset',
+  ALBUM_USER = 'albumUser',
+  ACTIVITY = 'activity',
+  MEMORY = 'memory',
+  PARTNER = 'partner',
+  PERSON = 'person',
+  SHARED_LINK = 'sharedLink',
+  STACK = 'stack',
+  TAG = 'tag',
+  USER = 'user',
+}
+
+export enum SyncAction {
+  UPSERT = 'upsert',
+  DELETE = 'delete',
+}
+
 export enum EntityType {
   ASSET = 'ASSET',
   ALBUM = 'ALBUM',

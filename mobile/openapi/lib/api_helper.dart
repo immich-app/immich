@@ -130,6 +130,12 @@ String parameterToString(dynamic value) {
   if (value is SourceType) {
     return SourceTypeTypeTransformer().encode(value).toString();
   }
+  if (value is SyncAction) {
+    return SyncActionTypeTransformer().encode(value).toString();
+  }
+  if (value is SyncType) {
+    return SyncTypeTypeTransformer().encode(value).toString();
+  }
   if (value is TimeBucketSize) {
     return TimeBucketSizeTypeTransformer().encode(value).toString();
   }
