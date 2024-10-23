@@ -13,6 +13,7 @@ import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
@@ -674,11 +675,11 @@ class SearchEmptyContent extends StatelessWidget {
   }
 }
 
-class QuickLinkList extends StatelessWidget {
+class QuickLinkList extends ConsumerWidget {
   const QuickLinkList({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -716,6 +717,12 @@ class QuickLinkList extends StatelessWidget {
             icon: Icons.favorite_border_rounded,
             isBottom: true,
             onTap: () => context.pushRoute(FavoritesRoute()),
+          ),
+          QuickLink(
+            title: 'test'.tr(),
+            icon: Icons.favorite_border_rounded,
+            isBottom: true,
+            onTap: () => ref.read(syncServiceProvider).incrementalSync(),
           ),
         ],
       ),

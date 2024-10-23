@@ -48,8 +48,11 @@ class SyncRepository extends DatabaseRepository implements ISyncRepository {
   @override
   Future<void> incrementalSync() async {
     _apiRepository.getChanges().listen((event) async {
+      print("event: $event");
       final type = jsonDecode(event)['type'];
       final data = jsonDecode(event)['data'];
+      print("type: $type");
+      print("data: $data");
 
       if (type == 'album_added') {
         final dto = AlbumResponseDto.fromJson(data);

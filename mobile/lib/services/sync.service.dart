@@ -872,9 +872,13 @@ class SyncService {
     }
   }
 
-  void incrementalSync() {}
+  void incrementalSync() async {
+    await _syncRepository.incrementalSync();
+  }
 
-  void fullSync() {}
+  void fullSync() async {
+    await _syncRepository.fullSync();
+  }
 }
 
 /// Returns a triple(toAdd, toUpdate, toRemove)
