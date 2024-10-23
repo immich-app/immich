@@ -29,8 +29,12 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
     final client = http.Client();
 
     try {
-      final request = http.Request('GET', url);
+      final request = http.Request('POST', url);
       request.headers['x-immich-user-token'] = accessToken;
+      final payload = {
+        'types': ["asset"],
+      };
+      request.body = jsonEncode(payload);
       final response = await client.send(request);
 
       // Read and print the chunks from the response stream

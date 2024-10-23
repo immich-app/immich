@@ -1,4 +1,6 @@
 import { DateTime } from 'luxon';
+import { Writable } from 'node:stream';
+import { setTimeout } from 'node:timers/promises';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -11,6 +13,24 @@ import { setIsEqual } from 'src/utils/set';
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 
 export class SyncService extends BaseService {
+  sync(stream: Writable) {
+    void this.streamWrites(stream);
+  }
+
+  async streamWrites(stream: Writable) {
+    for (let i = 0; i < 10; i++) {
+      const delay = 100;
+
+      console.log(`waiting ${delay}ms`);
+
+      await setTimeout(delay);
+
+      stream.write(JSON.stringify({ id: i, type: 'Test' }) + '\n');
+    }
+
+    stream.end();
+  }
+
   async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     // mobile implementation is faster if this is a single id
     const userId = dto.userId || auth.user.id;

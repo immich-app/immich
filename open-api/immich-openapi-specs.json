@@ -5778,6 +5778,20 @@
         ]
       }
     },
+    "/sync": {
+      "post": {
+        "operationId": "sync",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
     "/sync/delta-sync": {
       "post": {
         "operationId": "getDeltaSync",
