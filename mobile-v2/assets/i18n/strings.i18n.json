@@ -38,9 +38,17 @@
     },
     "logs": {
       "title": "Logs",
-      "no_logs": "No logs available"
+      "no_logs": "No logs available",
+      "detail": {
+        "title": "Log Detail",
+        "message_heading": "MESSAGE",
+        "context_heading": "CONTEXT",
+        "error_heading": "ERROR",
+        "stack_heading": "STACK TRACE"
+      }
     },
     "common": {
-      "loading": "Loading"
+      "loading": "Loading",
+      "copied_long": "Copied to clipboard"
     }
   }

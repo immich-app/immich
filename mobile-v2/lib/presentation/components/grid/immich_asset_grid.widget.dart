@@ -65,6 +65,8 @@ class _ImAssetGridState extends State<ImAssetGrid> {
       BlocBuilder<AssetGridCubit, AssetGridState>(
         builder: (_, state) {
           final elements = state.renderList.elements;
+
+          // Append padding if required
           if (widget.topPadding != null &&
               elements.firstOrNull is! RenderListPaddingElement) {
             elements.insert(
@@ -74,6 +76,9 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                 before: elements.firstOrNull,
               ),
             );
+          } else if (widget.topPadding == null &&
+              elements.firstOrNull is RenderListPaddingElement) {
+            elements.removeAt(0);
           }
 
           final grid = FlutterListView(

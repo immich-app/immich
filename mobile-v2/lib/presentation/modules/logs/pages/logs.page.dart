@@ -30,7 +30,6 @@ class LogsWrapperPage extends StatelessWidget {
     return ImAdaptiveRouteWrapper(
       primaryRoute: LogsRoute.name,
       primaryBody: (_) => const LogsPage(),
-      bodyRatio: RatioConstants.oneThird,
     );
   }
 }
@@ -151,6 +150,7 @@ class _LogList extends StatelessWidget {
           trailing: const Icon(Symbols.arrow_forward_ios_rounded, size: 18),
           dense: true,
           visualDensity: VisualDensity.compact,
+          onTap: () => unawaited(context.navigateTo(LogDetailsRoute(log: log))),
           tileColor: _getTileColor(context, log.level),
           minLeadingWidth: 10,
         );

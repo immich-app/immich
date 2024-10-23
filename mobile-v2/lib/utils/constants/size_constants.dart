@@ -14,6 +14,8 @@ abstract final class SizeConstants {
 abstract final class RatioConstants {
   const RatioConstants._();
 
+  // 0.5
+  static const oneHalf = 1 / 2;
   // 0.3
   static const oneThird = 1 / 3;
   // 0.25

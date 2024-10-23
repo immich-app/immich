@@ -64,6 +64,7 @@ enum AppTheme {
         closeButtonIconBuilder: (_) => Icon(Symbols.close_rounded),
       ),
       appBarTheme: AppBarTheme(
+        backgroundColor: color.surfaceContainerLowest,
         iconTheme: IconThemeData(size: 22, color: color.onSurface),
         titleTextStyle:
             AppTypography.titleLarge.copyWith(color: color.onSurface),

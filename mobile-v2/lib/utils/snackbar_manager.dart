@@ -10,4 +10,9 @@ abstract final class SnackbarManager {
     _s?.clearSnackBars();
     _s?.showSnackBar(SnackBar(content: Text(errorMsg)));
   }
+
+  static void showText({required String content, TextStyle? style}) {
+    _s?.clearSnackBars();
+    _s?.showSnackBar(SnackBar(content: Text(content, style: style)));
+  }
 }
