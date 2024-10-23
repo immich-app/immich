@@ -444,8 +444,8 @@ export const keepThisDeleteOthers = async (keepId: string, stackId: string) => {
 
   try {
     const stack = await getStack({ id: stackId });
-    const assetToKeep = stack.assets.find(x => x.id === keepId);
-    const assetsToDeleteIds = stack.assets.filter(x => x.id !== keepId).map(x => x.id);
+    const assetToKeep = stack.assets.find((asset) => asset.id === keepId);
+    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepId).map((asset) => asset.id);
     if (!assetToKeep) {
       return;
     }
