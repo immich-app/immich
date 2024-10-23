@@ -144,3 +144,11 @@ input:focus-visible {
     scrollbar-gutter: stable both-edges;
   }
 }
+
+google-cast-launcher {
+  float: right;
+  width: 40px;
+  height: 30px;
+
+  --disconnected-color: white;
+}

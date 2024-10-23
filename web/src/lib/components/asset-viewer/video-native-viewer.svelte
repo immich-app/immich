@@ -9,6 +9,8 @@
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import CastPlayer from '$lib/utils/cast-sender';
+  import { get } from 'svelte/store';
 
   export let assetId: string;
   export let loopVideo: boolean;
@@ -18,16 +20,37 @@
   export let onVideoEnded: () => void = () => {};
   export let onVideoStarted: () => void = () => {};
 
+  let castPlayer: CastPlayer | undefined;
+
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
   let assetFileUrl: string;
   let forceMuted = false;
 
+  let isConnected = false;
+
   $: if (element) {
     assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
     forceMuted = false;
     element.load();
+    cast(assetFileUrl);
   }
+
+  const cast = async (url: string) => {
+    castPlayer = await CastPlayer.getInstance();
+
+    if (!castPlayer) {
+      return;
+    }
+
+    isConnected = get(castPlayer.isConnected);
+    castPlayer.isConnected.subscribe((value) => {
+      isConnected = value;
+    });
+
+    const fullUrl = new URL(url, window.location.href);
+    await castPlayer.loadMedia(fullUrl.href);
+  };
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
@@ -65,32 +88,36 @@
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
-  <video
-    bind:this={element}
-    loop={$loopVideoPreference && loopVideo}
-    autoplay
-    playsinline
-    controls
-    class="h-full object-contain"
-    use:swipe
-    on:swipe={onSwipe}
-    on:canplay={(e) => handleCanPlay(e.currentTarget)}
-    on:ended={onVideoEnded}
-    on:volumechange={(e) => {
-      if (!forceMuted) {
-        $videoViewerMuted = e.currentTarget.muted;
-      }
-    }}
-    muted={forceMuted || $videoViewerMuted}
-    bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
-    src={assetFileUrl}
-  >
-  </video>
+  {#if isConnected}
+    abcd
+  {:else}
+    <video
+      bind:this={element}
+      loop={$loopVideoPreference && loopVideo}
+      autoplay
+      playsinline
+      controls
+      class="h-full object-contain"
+      use:swipe
+      on:swipe={onSwipe}
+      on:canplay={(e) => handleCanPlay(e.currentTarget)}
+      on:ended={onVideoEnded}
+      on:volumechange={(e) => {
+        if (!forceMuted) {
+          $videoViewerMuted = e.currentTarget.muted;
+        }
+      }}
+      muted={forceMuted || $videoViewerMuted}
+      bind:volume={$videoViewerVolume}
+      poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+      src={assetFileUrl}
+    >
+    </video>
 
-  {#if isVideoLoading}
-    <div class="absolute flex place-content-center place-items-center">
-      <LoadingSpinner />
-    </div>
+    {#if isVideoLoading}
+      <div class="absolute flex place-content-center place-items-center">
+        <LoadingSpinner />
+      </div>
+    {/if}
   {/if}
 </div>

@@ -72,6 +72,7 @@
     "@photo-sphere-viewer/core": "^5.7.1",
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.7.2",
     "@photo-sphere-viewer/video-plugin": "^5.7.2",
+    "@types/chromecast-caf-sender": "^1.0.10",
     "@zoom-image/svelte": "^0.2.6",
     "dom-to-image": "^2.6.0",
     "handlebars": "^4.7.8",

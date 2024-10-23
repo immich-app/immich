@@ -20,6 +20,7 @@
   import AccountInfoPanel from './account-info-panel.svelte';
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import { onMount } from 'svelte';
+  import CastButton from '$lib/components/cast/cast-button.svelte';
 
   export let showUploadButton = true;
   export let onUploadClick: () => void;
@@ -75,6 +76,8 @@
         {/if}
 
         <ThemeButton padding="2" />
+
+        <CastButton />
 
         <div
           use:clickOutside={{
