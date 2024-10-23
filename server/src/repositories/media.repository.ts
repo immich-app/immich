@@ -200,7 +200,7 @@ export class MediaRepository implements IMediaRepository {
 
         lastProgressFrame = progress.frames;
         const percent = ((progress.frames / frameCount) * 100).toFixed(2);
-        const ms = Math.floor((frameCount - progress.frames) / progress.currentFps) * 1000;
+        const ms = progress.currentFps ? Math.floor((frameCount - progress.frames) / progress.currentFps) * 1000 : 0;
         const duration = ms ? Duration.fromMillis(ms).rescale().toHuman({ unitDisplay: 'narrow' }) : '';
         const outputText = output instanceof Writable ? 'stream' : output.split('/').pop();
         this.logger.debug(
