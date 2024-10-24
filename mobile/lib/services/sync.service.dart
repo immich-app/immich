@@ -82,26 +82,32 @@ class SyncService {
 
   void _onAlbumAdded(Album album) {
     // Update record in database
+    // print("_onAlbumAdded: $album");
   }
 
   void _onAlbumDeleted(Album album) {
     // Update record in database
+    print("Album deleted: $album");
   }
 
   void _onAlbumUpdated(Album album) {
     // Update record in database
+    print("Album updated: $album");
   }
 
   void _onAssetAdded(Asset asset) {
     // Update record in database
+    // print("Asset added: $asset");
   }
 
   void _onAssetDeleted(Asset asset) {
     // Update record in database
+    print("Asset deleted: $asset");
   }
 
   void _onAssetUpdated(Asset asset) {
     // Update record in database
+    print("Asset updated: $asset");
   }
 
   // public methods:

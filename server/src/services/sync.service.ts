@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
 import { setTimeout } from 'node:timers/promises';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
+import { AlbumResponseDto, mapAlbum } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetDeltaSyncDto, AssetDeltaSyncResponseDto, AssetFullSyncDto } from 'src/dtos/sync.dto';
@@ -13,11 +14,23 @@ import { setIsEqual } from 'src/utils/set';
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 
 export class SyncService extends BaseService {
-  sync(stream: Writable) {
-    void this.streamWrites(stream);
+  async sync(stream: Writable) {
+    const a = await this.albumRepository.getById('7e98d5f4-5f21-4704-b3a7-1d001e3728d1', { withAssets: false });
+    if (!a) {
+      return;
+    }
+    const b = await this.assetRepository.getById('9901daee-90a2-4d97-811f-91d78d65bc6a');
+    if (!b) {
+      return;
+    }
+
+    const album = mapAlbum(a, false);
+    const asset = mapAsset(b);
+    void this.streamWrites(stream, album, 'album');
+    void this.streamWrites(stream, asset, 'asset');
   }
 
-  async streamWrites(stream: Writable) {
+  async streamWrites(stream: Writable, a: AlbumResponseDto | AssetResponseDto, type: 'asset' | 'album') {
     for (let i = 0; i < 10; i++) {
       const delay = 100;
 
@@ -25,7 +38,7 @@ export class SyncService extends BaseService {
 
       await setTimeout(delay);
 
-      stream.write(JSON.stringify({ id: i, type: 'Test' }) + '\n');
+      stream.write(JSON.stringify({ id: i, type, data: a }) + '\n');
     }
 
     stream.end();
