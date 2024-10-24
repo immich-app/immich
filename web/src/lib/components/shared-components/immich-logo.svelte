@@ -3,7 +3,7 @@
   import logoLightUrl from '$lib/assets/immich-logo-inline-light.svg';
   import logoNoText from '$lib/assets/immich-logo.svg';
   import { content as alternativeLogo } from '$lib/assets/immich-logo.json';
-  import { Theme } from '$lib/constants';
+  import { Theme } from '$lib/utils/theme';
   import { colorTheme } from '$lib/stores/preferences.store';
   import { DateTime } from 'luxon';
   import type { HTMLImgAttributes } from 'svelte/elements';

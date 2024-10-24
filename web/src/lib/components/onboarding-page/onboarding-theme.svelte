@@ -5,7 +5,7 @@
   import OnboardingCard from './onboarding-card.svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
-  import { Theme } from '$lib/constants';
+  import { Theme } from '$lib/utils/theme';
   import { t } from 'svelte-i18n';
 
   export let onDone: () => void;

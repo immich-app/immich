@@ -4,9 +4,9 @@
 
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { Theme } from '$lib/utils/theme';
   import { getServerConfig, type MapMarkerResponseDto } from '@immich/sdk';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
