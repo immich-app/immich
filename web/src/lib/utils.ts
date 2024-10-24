@@ -25,7 +25,6 @@ import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, md
 import { sortBy } from 'lodash-es';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
-import { ModuleKind, transpileModule } from 'typescript';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -338,10 +337,3 @@ export const suggestDuplicateByFileSize = (assets: AssetResponseDto[]): AssetRes
 
 // eslint-disable-next-line unicorn/prefer-code-point
 export const decodeBase64 = (data: string) => Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
-
-export const transpileFile = (content: string) => {
-  const result = transpileModule(content, {
-    compilerOptions: { module: ModuleKind.ES2020, removeComments: true },
-  });
-  return result.outputText;
-};

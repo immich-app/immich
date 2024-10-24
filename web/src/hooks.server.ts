@@ -1,7 +1,7 @@
 import overpass from '$lib/assets/fonts/overpass/Overpass.ttf?url';
 import overpassMono from '$lib/assets/fonts/overpass/OverpassMono.ttf?url';
-import { transpileFile } from '$lib/utils';
-import fouc from '$lib/utils/fouc?raw';
+import { transpileFile } from '$lib/utils/app-utils';
+import fouc from '$lib/utils/app?raw';
 import theme from '$lib/utils/theme?raw';
 import type { Handle } from '@sveltejs/kit';
 
