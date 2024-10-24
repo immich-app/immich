@@ -9,7 +9,6 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
 import { clsConfig, immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
-import { databaseConfig } from 'src/database.config';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -38,7 +37,7 @@ const middleware = [
 ];
 
 const configRepository = new ConfigRepository();
-const { bull, otel } = configRepository.getEnv();
+const { bull, database, otel } = configRepository.getEnv();
 
 const imports = [
   BullModule.forRoot(bull.config),
@@ -50,7 +49,7 @@ const imports = [
     inject: [ModuleRef],
     useFactory: (moduleRef: ModuleRef) => {
       return {
-        ...databaseConfig,
+        ...database.config,
         poolErrorHandler: (error) => {
           moduleRef.get(DatabaseService, { strict: false }).handleConnectionError(error);
         },
