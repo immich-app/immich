@@ -68,12 +68,14 @@ describe('getEnv', () => {
     it('should use defaults', () => {
       const { database } = getEnv();
       expect(database).toEqual({
-        url: undefined,
-        host: 'database',
-        port: 5432,
-        name: 'immich',
-        username: 'postgres',
-        password: 'postgres',
+        config: expect.objectContaining({
+          type: 'postgres',
+          host: 'database',
+          port: 5432,
+          database: 'immich',
+          username: 'postgres',
+          password: 'postgres',
+        }),
         skipMigrations: false,
         vectorExtension: 'vectors',
       });
