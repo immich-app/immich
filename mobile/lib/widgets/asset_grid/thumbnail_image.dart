@@ -138,10 +138,31 @@ class ThumbnailImage extends ConsumerWidget {
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
               : asset.id + heroOffset,
-          child: ImmichThumbnail(
-            asset: asset,
-            height: 250,
-            width: 250,
+          child: Stack(
+            children: [
+              ImmichThumbnail(
+                asset: asset,
+                height: 250,
+                width: 250,
+              ),
+              Container(
+                height: 250,
+                width: 250,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromRGBO(0, 0, 0, 0.1),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Color.fromRGBO(0, 0, 0, 0.1),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0, 0.3, 0.6, 1],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -153,11 +174,8 @@ class ThumbnailImage extends ConsumerWidget {
           color: canDeselect ? assetContainerColor : Colors.grey,
         ),
         child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(15.0),
-            bottomRight: Radius.circular(15.0),
-            bottomLeft: Radius.circular(15.0),
-            topLeft: Radius.zero,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(15.0),
           ),
           child: image,
         ),
@@ -177,7 +195,33 @@ class ThumbnailImage extends ConsumerWidget {
                   )
                 : const Border(),
           ),
-          child: buildImage(),
+          child: Stack(
+            children: [
+              buildImage(),
+              if (showStorageIndicator)
+                Positioned(
+                  right: 8,
+                  bottom: 5,
+                  child: Icon(
+                    storageIcon(asset),
+                    color: Colors.white.withOpacity(.8),
+                    size: 16,
+                  ),
+                ),
+              if (asset.isFavorite)
+                const Positioned(
+                  left: 8,
+                  bottom: 5,
+                  child: Icon(
+                    Icons.favorite,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              if (!asset.isImage) buildVideoIcon(),
+              if (asset.stackCount > 0) buildStackIcon(),
+            ],
+          ),
         ),
         if (multiselectEnabled)
           Padding(
@@ -187,28 +231,6 @@ class ThumbnailImage extends ConsumerWidget {
               child: buildSelectionIcon(asset),
             ),
           ),
-        if (showStorageIndicator)
-          Positioned(
-            right: 8,
-            bottom: 5,
-            child: Icon(
-              storageIcon(asset),
-              color: Colors.white.withOpacity(.8),
-              size: 16,
-            ),
-          ),
-        if (asset.isFavorite)
-          const Positioned(
-            left: 8,
-            bottom: 5,
-            child: Icon(
-              Icons.favorite,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-        if (!asset.isImage) buildVideoIcon(),
-        if (asset.stackCount > 0) buildStackIcon(),
       ],
     );
   }

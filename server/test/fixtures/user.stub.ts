@@ -7,6 +7,7 @@ export const userStub = {
     ...authStub.admin.user,
     password: 'admin_password',
     name: 'admin_name',
+    id: 'admin_id',
     storageLabel: 'admin',
     oauthId: '',
     shouldChangePassword: false,

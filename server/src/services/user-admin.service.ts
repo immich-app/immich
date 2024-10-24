@@ -26,6 +26,10 @@ export class UserAdminService extends BaseService {
 
   async create(dto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
     const { notify, ...rest } = dto;
+    const config = await this.getConfig({ withCache: false });
+    if (!config.oauth.enabled && !rest.password) {
+      throw new BadRequestException('password is required');
+    }
     const user = await createUser({ userRepo: this.userRepository, cryptoRepo: this.cryptoRepository }, rest);
 
     await this.eventRepository.emit('user.signup', {

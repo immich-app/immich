@@ -2,18 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
-import {
-  supportedDayTokens,
-  supportedHourTokens,
-  supportedMinuteTokens,
-  supportedMonthTokens,
-  supportedPresetTokens,
-  supportedSecondTokens,
-  supportedWeekTokens,
-  supportedYearTokens,
-} from 'src/constants';
 import { OnEvent } from 'src/decorators';
-import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
+import { SystemConfigDto, mapConfig } from 'src/dtos/system-config.dto';
 import { ArgOf } from 'src/interfaces/event.interface';
 import { BaseService } from 'src/services/base.service';
 import { clearConfigCache } from 'src/utils/config';
@@ -75,21 +65,6 @@ export class SystemConfigService extends BaseService {
     await this.eventRepository.emit('config.update', { newConfig, oldConfig });
 
     return mapConfig(newConfig);
-  }
-
-  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
-    const options = new SystemConfigTemplateStorageOptionDto();
-
-    options.dayOptions = supportedDayTokens;
-    options.weekOptions = supportedWeekTokens;
-    options.monthOptions = supportedMonthTokens;
-    options.yearOptions = supportedYearTokens;
-    options.hourOptions = supportedHourTokens;
-    options.secondOptions = supportedSecondTokens;
-    options.minuteOptions = supportedMinuteTokens;
-    options.presetOptions = supportedPresetTokens;
-
-    return options;
   }
 
   async getCustomCss(): Promise<string> {

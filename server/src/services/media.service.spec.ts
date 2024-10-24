@@ -1327,7 +1327,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-v verbose',
             '-vf scale=-2:720,format=yuv420p',
             '-preset 12',
@@ -1453,7 +1452,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-g 256',
             '-v verbose',
             '-vf format=nv12,hwupload_cuda,scale_cuda=-2:720',
@@ -1614,12 +1612,11 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-bf 7',
             '-refs 5',
             '-g 256',
             '-v verbose',
-            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720',
+            '-vf format=nv12,hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq',
             '-preset 7',
             '-global_quality:v 23',
             '-maxrate 10000k',
@@ -1800,10 +1797,9 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-g 256',
             '-v verbose',
-            '-vf format=nv12,hwupload,scale_vaapi=-2:720',
+            '-vf format=nv12,hwupload,scale_vaapi=-2:720:mode=hq:out_range=pc',
             '-compression_level 7',
             '-rc_mode 1',
           ]),
@@ -1946,6 +1942,79 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should use hardware decoding for vaapi if enabled', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining([
+            '-hwaccel vaapi',
+            '-hwaccel_output_format vaapi',
+            '-noautorotate',
+            '-threads 1',
+          ]),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12'),
+          ]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should use hardware tone-mapping for qsv if hardware decoding is enabled and should tone map', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_output_format vaapi', '-threads 1']),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:transfer=bt709,hwmap=derive_device=vaapi:reverse=1,format=vaapi',
+            ),
+          ]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should use preferred device for vaapi when hardware decoding', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128', 'renderD129', 'renderD130']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true, preferredHwDevice: 'renderD129' },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_device /dev/dri/renderD129']),
+          outputOptions: expect.any(Array),
+          twoPass: false,
+        }),
+      );
+    });
+
     it('should fallback to sw transcoding if hw transcoding fails', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
@@ -1998,7 +2067,6 @@ describe(MediaService.name, () => {
             '-fps_mode passthrough',
             '-map 0:0',
             '-map 0:1',
-            '-strict unofficial',
             '-g 256',
             '-v verbose',
             '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
@@ -2218,6 +2286,22 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
       expect(mediaMock.probe).toHaveBeenCalledWith(assetStub.video.originalPath, { countFrames: false });
+    });
+
+    it('should process unknown audio stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.audioStreamUnknown);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:a copy']),
+          twoPass: false,
+        }),
+      );
     });
   });
 

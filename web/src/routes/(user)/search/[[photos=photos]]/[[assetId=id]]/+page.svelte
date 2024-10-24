@@ -216,6 +216,11 @@
 
   const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
 
+  const onAddToAlbum = (assetIds: string[]) => {
+    const assetIdSet = new Set(assetIds);
+    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+  };
+
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
@@ -230,8 +235,8 @@
         <CreateSharedLink />
         <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-          <AddToAlbum />
-          <AddToAlbum shared />
+          <AddToAlbum {onAddToAlbum} />
+          <AddToAlbum shared {onAddToAlbum} />
         </ButtonContextMenu>
         <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 

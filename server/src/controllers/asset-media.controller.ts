@@ -32,8 +32,8 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
-import { AuthDto, ImmichHeader } from 'src/dtos/auth.dto';
-import { RouteKey } from 'src/enum';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { ImmichHeader, RouteKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';

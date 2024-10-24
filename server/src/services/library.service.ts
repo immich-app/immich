@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
-import path, { basename, parse } from 'node:path';
+import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
@@ -265,6 +265,11 @@ export class LibraryService extends BaseService {
 
     if (StorageCore.isImmichPath(importPath)) {
       validation.message = 'Cannot use media upload folder for external libraries';
+      return validation;
+    }
+
+    if (!isAbsolute(importPath)) {
+      validation.message = `Import path must be absolute, try ${path.resolve(importPath)}`;
       return validation;
     }
 

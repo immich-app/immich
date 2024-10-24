@@ -49,7 +49,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
@@ -339,41 +339,6 @@ describe(SystemConfigService.name, () => {
         }
       });
     }
-  });
-
-  describe('getStorageTemplateOptions', () => {
-    it('should send back the datetime variables', () => {
-      expect(sut.getStorageTemplateOptions()).toEqual({
-        dayOptions: ['d', 'dd'],
-        hourOptions: ['h', 'hh', 'H', 'HH'],
-        minuteOptions: ['m', 'mm'],
-        monthOptions: ['M', 'MM', 'MMM', 'MMMM'],
-        presetOptions: [
-          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{MM}}/{{filename}}',
-          '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
-          '{{y}}/{{MMM}}/{{filename}}',
-          '{{y}}/{{MMMM}}/{{filename}}',
-          '{{y}}/{{MM}}/{{dd}}/{{filename}}',
-          '{{y}}/{{MMMM}}/{{dd}}/{{filename}}',
-          '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}-{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
-          '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{y}}-{{MM}}/{{filename}}',
-          '{{y}}/{{y}}-{{WW}}/{{filename}}',
-          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
-          '{{y}}/{{y}}-{{MM}}/{{assetId}}',
-          '{{y}}/{{y}}-{{WW}}/{{assetId}}',
-          '{{album}}/{{filename}}',
-        ],
-        secondOptions: ['s', 'ss', 'SSS'],
-        weekOptions: ['W', 'WW'],
-        yearOptions: ['y', 'yy'],
-      });
-    });
   });
 
   describe('updateConfig', () => {
