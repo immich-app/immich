@@ -73,11 +73,7 @@ const envData: EnvData = {
   telemetry: {
     apiPort: 8081,
     microservicesPort: 8082,
-    enabled: false,
-    hostMetrics: false,
-    apiMetrics: false,
-    jobMetrics: false,
-    repoMetrics: false,
+    metrics: new Set(),
   },
 
   workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES],

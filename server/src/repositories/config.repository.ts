@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
 import { citiesFile, excludePaths } from 'src/constants';
 import { Telemetry } from 'src/decorators';
-import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
+import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { QueueName } from 'src/interfaces/job.interface';
@@ -25,18 +25,17 @@ const stagingKeys = {
 };
 
 const WORKER_TYPES = new Set(Object.values(ImmichWorker));
+const TELEMETRY_TYPES = new Set(Object.values(ImmichTelemetry));
 
-const asSet = (value: string | undefined, defaults: ImmichWorker[]) => {
+const asSet = <T>(value: string | undefined, defaults: T[]) => {
   const values = (value || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
-  return new Set(values.length === 0 ? defaults : (values as ImmichWorker[]));
+  return new Set(values.length === 0 ? defaults : (values as T[]));
 };
 
-const parseBoolean = (value: string | undefined, defaultValue: boolean) => (value ? value === 'true' : defaultValue);
-
 const getEnv = (): EnvData => {
-  const included = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
-  const excluded = asSet(process.env.IMMICH_WORKERS_EXCLUDE, []);
-  const workers = [...setDifference(included, excluded)];
+  const includedWorkers = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
+  const excludedWorkers = asSet(process.env.IMMICH_WORKERS_EXCLUDE, []);
+  const workers = [...setDifference(includedWorkers, excludedWorkers)];
   for (const worker of workers) {
     if (!WORKER_TYPES.has(worker)) {
       throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
@@ -69,12 +68,18 @@ const getEnv = (): EnvData => {
     }
   }
 
-  const globalEnabled = parseBoolean(process.env.IMMICH_METRICS, false);
-  const hostMetrics = parseBoolean(process.env.IMMICH_HOST_METRICS, globalEnabled);
-  const apiMetrics = parseBoolean(process.env.IMMICH_API_METRICS, globalEnabled);
-  const repoMetrics = parseBoolean(process.env.IMMICH_IO_METRICS, globalEnabled);
-  const jobMetrics = parseBoolean(process.env.IMMICH_JOB_METRICS, globalEnabled);
-  const telemetryEnabled = globalEnabled || hostMetrics || apiMetrics || repoMetrics || jobMetrics;
+  const includedTelemetries =
+    process.env.IMMICH_TELEMETRY_INCLUDE === 'all'
+      ? new Set(Object.values(ImmichTelemetry))
+      : asSet<ImmichTelemetry>(process.env.IMMICH_TELEMETRY_INCLUDE, []);
+
+  const excludedTelemetries = asSet<ImmichTelemetry>(process.env.IMMICH_TELEMETRY_EXCLUDE, []);
+  const telemetries = setDifference(includedTelemetries, excludedTelemetries);
+  for (const telemetry of telemetries) {
+    if (!TELEMETRY_TYPES.has(telemetry)) {
+      throw new Error(`Invalid telemetry found: ${telemetry}`);
+    }
+  }
 
   return {
     host: process.env.IMMICH_HOST,
@@ -136,9 +141,9 @@ const getEnv = (): EnvData => {
 
     otel: {
       metrics: {
-        hostMetrics,
+        hostMetrics: telemetries.has(ImmichTelemetry.HOST),
         apiMetrics: {
-          enable: apiMetrics,
+          enable: telemetries.has(ImmichTelemetry.API),
           ignoreRoutes: excludePaths,
         },
       },
@@ -168,11 +173,7 @@ const getEnv = (): EnvData => {
     telemetry: {
       apiPort: Number(process.env.IMMICH_API_METRICS_PORT || '') || 8081,
       microservicesPort: Number(process.env.IMMICH_MICROSERVICES_METRICS_PORT || '') || 8082,
-      enabled: telemetryEnabled,
-      hostMetrics,
-      apiMetrics,
-      repoMetrics,
-      jobMetrics,
+      metrics: telemetries,
     },
 
     workers,

@@ -11,7 +11,7 @@ import { isStartUpError } from 'src/services/storage.service';
 
 export async function bootstrap() {
   const { telemetry } = new ConfigRepository().getEnv();
-  if (telemetry.enabled) {
+  if (telemetry.metrics.size > 0) {
     bootstrapTelemetry(telemetry.microservicesPort);
   }
 
