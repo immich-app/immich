@@ -11,6 +11,7 @@ import {
   ModelPayload,
   ModelTask,
   ModelType,
+  TextEncodingOptions,
 } from 'src/interfaces/machine-learning.interface';
 
 const errorPrefix = 'Machine learning request';
@@ -53,8 +54,8 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
-  async encodeText(url: string, text: string, { modelName }: CLIPConfig) {
-    const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName } } };
+  async encodeText(url: string, text: string, { language, modelName }: TextEncodingOptions) {
+    const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, options: { language } } } };
     const response = await this.predict<ClipTextualResponse>(url, { text }, request);
     return response[ModelTask.SEARCH];
   }
