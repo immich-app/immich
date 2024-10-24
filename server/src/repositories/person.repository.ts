@@ -17,6 +17,7 @@ import {
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
+  PersonStatsOptions,
   UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
@@ -212,17 +213,33 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getStatistics(personId: string): Promise<PersonStatistics> {
-    const items = await this.assetFaceRepository
+  @GenerateSql({ params: [DummyValue.UUID, {}] })
+  async getStatistics(personId: string, options: PersonStatsOptions): Promise<PersonStatistics> {
+    /*
+     * withArchived: true -> Return the count of all assets for a given person
+     * withArchived: false -> Return the count of all unarchived assets for a given person
+     * withArchived: undefined ->
+     *  - If person.withArchived = true -> Return the count of all assets for a given person
+     *  - If person.withArchived = false -> Return the count of all unarchived assets for a given person
+     */
+
+    const queryBuilder = this.assetFaceRepository
       .createQueryBuilder('face')
       .leftJoin('face.asset', 'asset')
       .where('face.personId = :personId', { personId })
-      .andWhere('asset.isArchived = false')
       .andWhere('asset.deletedAt IS NULL')
       .andWhere('asset.livePhotoVideoId IS NULL')
-      .select('COUNT(DISTINCT(asset.id))', 'count')
-      .getRawOne();
+      .select('COUNT(DISTINCT(asset.id))', 'count');
+
+    if (options.withArchived === false) {
+      queryBuilder.andWhere('asset.isArchived = false');
+    } else if (options.withArchived === undefined) {
+      queryBuilder
+        .leftJoin('face.person', 'person')
+        .andWhere('((person.withArchived = false AND asset.isArchived = false) OR person.withArchived = true)');
+    }
+
+    const items = await queryBuilder.getRawOne();
     return {
       assets: items.count ?? 0,
     };

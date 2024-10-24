@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { DateTime } from 'luxon';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -41,6 +41,11 @@ export class PersonUpdateDto extends PersonCreateDto {
   @Optional()
   @IsString()
   featureFaceAssetId?: string;
+
+  @Optional()
+  @IsBoolean()
+  @PropertyLifecycle({ addedAt: 'v1.119.0' })
+  withArchived?: boolean;
 }
 
 export class PeopleUpdateDto {
@@ -93,6 +98,8 @@ export class PersonResponseDto {
   isHidden!: boolean;
   @PropertyLifecycle({ addedAt: 'v1.107.0' })
   updatedAt?: Date;
+  @PropertyLifecycle({ addedAt: 'v1.119.0' })
+  withArchived?: boolean;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -147,6 +154,11 @@ export class PersonStatisticsResponseDto {
   assets!: number;
 }
 
+export class PersonStatsDto {
+  @ValidateBoolean({ optional: true })
+  withArchived?: boolean;
+}
+
 export class PeopleResponseDto {
   @ApiProperty({ type: 'integer' })
   total!: number;
@@ -167,6 +179,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     updatedAt: person.updatedAt,
+    withArchived: person.withArchived,
   };
 }
 
