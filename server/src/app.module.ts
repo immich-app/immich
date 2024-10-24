@@ -26,7 +26,7 @@ import { teardownTelemetry } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
 import { DatabaseService } from 'src/services/database.service';
 
-const common = [...services, ...repositories];
+const common = [...services, ...repositories, GlobalExceptionFilter];
 
 const middleware = [
   FileUploadInterceptor,

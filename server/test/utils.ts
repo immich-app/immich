@@ -31,6 +31,7 @@ import { newSessionRepositoryMock } from 'test/repositories/session.repository.m
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
 import { newStackRepositoryMock } from 'test/repositories/stack.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSyncRepositoryMock } from 'test/repositories/sync.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
@@ -84,6 +85,7 @@ export const newTestService = <T extends BaseService>(
   const sharedLinkMock = newSharedLinkRepositoryMock();
   const stackMock = newStackRepositoryMock();
   const storageMock = newStorageRepositoryMock();
+  const syncMock = newSyncRepositoryMock();
   const systemMock = newSystemMetadataRepositoryMock();
   const tagMock = newTagRepositoryMock();
   const telemetryMock = newTelemetryRepositoryMock();
@@ -123,6 +125,7 @@ export const newTestService = <T extends BaseService>(
     sharedLinkMock,
     stackMock,
     storageMock,
+    syncMock,
     systemMock,
     tagMock,
     telemetryMock,
@@ -164,6 +167,7 @@ export const newTestService = <T extends BaseService>(
     sharedLinkMock,
     stackMock,
     storageMock,
+    syncMock,
     systemMock,
     tagMock,
     telemetryMock,

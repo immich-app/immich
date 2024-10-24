@@ -1,44 +1,179 @@
+import { ForbiddenException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
-import { setTimeout } from 'node:timers/promises';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { AlbumResponseDto, mapAlbum } from 'src/dtos/album.dto';
+import { AlbumAssetResponseDto } from 'src/dtos/album-asset.dto';
+import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetDeltaSyncDto, AssetDeltaSyncResponseDto, AssetFullSyncDto } from 'src/dtos/sync.dto';
-import { DatabaseAction, EntityType, Permission } from 'src/enum';
+import {
+  AssetDeltaSyncDto,
+  AssetDeltaSyncResponseDto,
+  AssetFullSyncDto,
+  SyncAcknowledgeDto,
+  SyncStreamDto,
+} from 'src/dtos/sync.dto';
+import { AlbumEntity } from 'src/entities/album.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { SyncCheckpoint } from 'src/entities/session-sync-state.entity';
+import { DatabaseAction, EntityType, Permission, SyncAction, SyncEntity as SyncEntityType } from 'src/enum';
+import { AlbumAssetEntity, DeletedEntity, SyncOptions } from 'src/interfaces/sync.interface';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
+import { Paginated, usePagination } from 'src/utils/pagination';
 import { setIsEqual } from 'src/utils/set';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
+const SYNC_PAGE_SIZE = 5000;
 
-export class SyncService extends BaseService {
-  async sync(stream: Writable) {
-    const a = await this.albumRepository.getById('7e98d5f4-5f21-4704-b3a7-1d001e3728d1', { withAssets: false });
-    if (!a) {
-      return;
-    }
-    const b = await this.assetRepository.getById('9901daee-90a2-4d97-811f-91d78d65bc6a');
-    if (!b) {
-      return;
-    }
+const asJsonLine = (item: unknown) => JSON.stringify(item) + '\n';
 
-    const album = mapAlbum(a, false);
-    const asset = mapAsset(b);
-    void this.streamWrites(stream, album, 'album');
-    void this.streamWrites(stream, asset, 'asset');
+type Loader<T> = (options: SyncOptions) => Paginated<T>;
+type Mapper<T, R> = (item: T) => R;
+type StreamerArgs<T, R> = {
+  type: SyncEntityType;
+  action: SyncAction;
+  lastAck?: string;
+  load: Loader<T>;
+  map?: Mapper<T, R>;
+  ack: Mapper<T, SyncCheckpoint>;
+};
+
+class Streamer<T = any, R = any> {
+  constructor(private args: StreamerArgs<T, R>) {}
+
+  getEntityType() {
+    return this.args.type;
   }
 
-  async streamWrites(stream: Writable, a: AlbumResponseDto | AssetResponseDto, type: 'asset' | 'album') {
-    for (let i = 0; i < 10; i++) {
-      const delay = 100;
+  async write({ stream, userId, checkpoint }: { stream: Writable; userId: string; checkpoint?: SyncCheckpoint }) {
+    const { type, action, load, map, ack } = this.args;
+    const pagination = usePagination(SYNC_PAGE_SIZE, (options) => load({ ...options, userId, checkpoint }));
+    for await (const items of pagination) {
+      for (const item of items) {
+        stream.write(asJsonLine({ type, action, data: map?.(item) || (item as unknown as R), ack: ack(item) }));
+      }
+    }
+  }
+}
 
-      console.log(`waiting ${delay}ms`);
+export class SyncService extends BaseService {
+  async acknowledge(auth: AuthDto, dto: SyncAcknowledgeDto) {
+    const { id: sessionId } = this.assertSession(auth);
+    await this.syncRepository.upsert({
+      ...dto,
+      sessionId,
+    });
+  }
 
-      await setTimeout(delay);
+  async stream(auth: AuthDto, stream: Writable, dto: SyncStreamDto) {
+    const { id: sessionId, userId } = this.assertSession(auth);
+    const syncState = await this.syncRepository.get(sessionId);
+    const state = syncState?.state;
+    const checkpoints: Record<SyncEntityType, SyncCheckpoint | undefined> = {
+      [SyncEntityType.ACTIVITY]: state?.activity,
+      [SyncEntityType.ASSET]: state?.asset,
+      [SyncEntityType.ASSET_ALBUM]: state?.assetAlbum,
+      [SyncEntityType.ASSET_PARTNER]: state?.assetPartner,
+      [SyncEntityType.ALBUM]: state?.album,
+      [SyncEntityType.ALBUM_ASSET]: state?.albumAsset,
+      [SyncEntityType.ALBUM_USER]: state?.albumUser,
+      [SyncEntityType.MEMORY]: state?.memory,
+      [SyncEntityType.PARTNER]: state?.partner,
+      [SyncEntityType.PERSON]: state?.partner,
+      [SyncEntityType.SHARED_LINK]: state?.sharedLink,
+      [SyncEntityType.STACK]: state?.stack,
+      [SyncEntityType.TAG]: state?.tag,
+      [SyncEntityType.USER]: state?.user,
+    };
+    const streamers: Streamer[] = [];
 
-      stream.write(JSON.stringify({ id: i, type, data: a }) + '\n');
+    for (const type of dto.types) {
+      switch (type) {
+        case SyncEntityType.ASSET: {
+          streamers.push(
+            new Streamer<AssetEntity, AssetResponseDto>({
+              type: SyncEntityType.ASSET,
+              action: SyncAction.UPSERT,
+              load: (options) => this.syncRepository.getAssets(options),
+              map: (item) => mapAsset(item, { auth, stripMetadata: false }),
+              ack: (item) => ({ id: item.id, timestamp: item.updatedAt.toISOString() }),
+            }),
+            new Streamer<DeletedEntity, DeletedEntity>({
+              type: SyncEntityType.ASSET,
+              action: SyncAction.DELETE,
+              load: (options) => this.syncRepository.getDeletedAssets(options),
+              map: (entity) => entity,
+              ack: (item) => ({ id: item.id, timestamp: item.deletedAt.toISOString() }),
+            }),
+          );
+          break;
+        }
+
+        case SyncEntityType.ASSET_PARTNER: {
+          const partnerIds = await getMyPartnerIds({ userId, repository: this.partnerRepository });
+          streamers.push(
+            new Streamer<AssetEntity, AssetResponseDto>({
+              type: SyncEntityType.ASSET_PARTNER,
+              action: SyncAction.UPSERT,
+              load: (options) => this.syncRepository.getAssetsPartner({ ...options, partnerIds }),
+              map: (item) => mapAsset(item, { auth, stripMetadata: false }),
+              ack: (item) => ({ id: item.id, timestamp: item.updatedAt.toISOString() }),
+            }),
+            new Streamer<DeletedEntity, DeletedEntity>({
+              type: SyncEntityType.ASSET_PARTNER,
+              action: SyncAction.DELETE,
+              load: (options) => this.syncRepository.getDeletedAssetsPartner({ ...options, partnerIds }),
+              ack: (item) => ({ id: item.id, timestamp: item.deletedAt.toISOString() }),
+            }),
+          );
+          break;
+        }
+
+        case SyncEntityType.ALBUM: {
+          streamers.push(
+            new Streamer<AlbumEntity, AlbumResponseDto>({
+              type: SyncEntityType.ALBUM,
+              action: SyncAction.UPSERT,
+              load: (options) => this.syncRepository.getAlbums(options),
+              map: (item) => mapAlbumWithoutAssets(item),
+              ack: (item) => ({ id: item.id, timestamp: item.updatedAt.toISOString() }),
+            }),
+            new Streamer<DeletedEntity, DeletedEntity>({
+              type: SyncEntityType.ALBUM,
+              action: SyncAction.DELETE,
+              load: (options) => this.syncRepository.getDeletedAlbums(options),
+              ack: (item) => ({ id: item.id, timestamp: item.deletedAt.toISOString() }),
+            }),
+          );
+        }
+
+        case SyncEntityType.ALBUM_ASSET: {
+          streamers.push(
+            new Streamer<AlbumAssetEntity, AlbumAssetResponseDto>({
+              type: SyncEntityType.ALBUM_ASSET,
+              action: SyncAction.UPSERT,
+              load: (options) => this.syncRepository.getAlbumAssets(options),
+              ack: (item) => ({ id: item.assetId, timestamp: item.createdAt.toISOString() }),
+            }),
+            new Streamer<DeletedEntity, DeletedEntity>({
+              type: SyncEntityType.ALBUM_ASSET,
+              action: SyncAction.DELETE,
+              load: (options) => this.syncRepository.getDeletedAlbums(options),
+              ack: (item) => ({ id: item.id, timestamp: item.deletedAt.toISOString() }),
+            }),
+          );
+        }
+
+        default: {
+          this.logger.warn(`Unsupported sync type: ${type}`);
+          break;
+        }
+      }
+    }
+
+    for (const streamer of streamers) {
+      await streamer.write({ stream, userId, checkpoint: checkpoints[streamer.getEntityType()] });
     }
 
     stream.end();
@@ -103,5 +238,13 @@ export class SyncService extends BaseService {
       deleted,
     };
     return result;
+  }
+
+  private assertSession(auth: AuthDto) {
+    if (!auth.session?.id) {
+      throw new ForbiddenException('This endpoint requires session-based authentication');
+    }
+
+    return auth.session;
   }
 }

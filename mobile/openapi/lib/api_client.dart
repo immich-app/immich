@@ -200,6 +200,8 @@ class ApiClient {
           return AddUsersDto.fromJson(value);
         case 'AdminOnboardingUpdateDto':
           return AdminOnboardingUpdateDto.fromJson(value);
+        case 'AlbumAssetResponseDto':
+          return AlbumAssetResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
         case 'AlbumStatisticsResponseDto':
@@ -508,6 +510,20 @@ class ApiClient {
           return StackResponseDto.fromJson(value);
         case 'StackUpdateDto':
           return StackUpdateDto.fromJson(value);
+        case 'SyncAcknowledgeDto':
+          return SyncAcknowledgeDto.fromJson(value);
+        case 'SyncAction':
+          return SyncActionTypeTransformer().decode(value);
+        case 'SyncCheckpointDto':
+          return SyncCheckpointDto.fromJson(value);
+        case 'SyncStreamDto':
+          return SyncStreamDto.fromJson(value);
+        case 'SyncStreamResponseDto':
+          return SyncStreamResponseDto.fromJson(value);
+        case 'SyncStreamResponseDtoData':
+          return SyncStreamResponseDtoData.fromJson(value);
+        case 'SyncType':
+          return SyncTypeTypeTransformer().decode(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':

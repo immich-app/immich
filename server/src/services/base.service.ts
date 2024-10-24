@@ -31,6 +31,7 @@ import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { ISyncRepository } from 'src/interfaces/sync.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
@@ -75,6 +76,7 @@ export class BaseService {
     @Inject(ISharedLinkRepository) protected sharedLinkRepository: ISharedLinkRepository,
     @Inject(IStackRepository) protected stackRepository: IStackRepository,
     @Inject(IStorageRepository) protected storageRepository: IStorageRepository,
+    @Inject(ISyncRepository) protected syncRepository: ISyncRepository,
     @Inject(ISystemMetadataRepository) protected systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) protected tagRepository: ITagRepository,
     @Inject(ITelemetryRepository) protected telemetryRepository: ITelemetryRepository,

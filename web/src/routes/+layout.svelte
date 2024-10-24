@@ -29,6 +29,34 @@
 
   $: if ($user) {
     openWebsocketConnection();
+
+    void fetch('/api/sync/stream', {
+      method: 'POST',
+      body: JSON.stringify({ types: ['asset'] }),
+      headers: { 'Content-Type': 'application/json' },
+    }).then(async (response) => {
+      if (response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let done = false;
+        while (!done) {
+          const chunk = await reader.read();
+          done = chunk.done;
+          const data = chunk.value;
+
+          if (data) {
+            const parts = decoder.decode(data).split('\n');
+            for (const part of parts) {
+              if (!part.trim()) {
+                continue;
+              }
+              console.log(JSON.parse(part));
+            }
+          }
+        }
+      }
+    });
   } else {
     closeWebsocketConnection();
   }

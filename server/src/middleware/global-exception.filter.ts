@@ -1,9 +1,10 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject, Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { logGlobalError } from 'src/utils/logger';
 
+@Injectable()
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   constructor(
@@ -15,10 +16,13 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
 
   catch(error: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    this.handleError(ctx.getResponse(), error);
+  }
+
+  handleError(res: Response, error: Error) {
     const { status, body } = this.fromError(error);
-    if (!response.headersSent) {
-      response.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
+    if (!res.headersSent) {
+      res.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
     }
   }
 
