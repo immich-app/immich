@@ -48,34 +48,34 @@ class SyncRepository extends DatabaseRepository implements ISyncRepository {
   @override
   Future<void> incrementalSync() async {
     _apiRepository.getChanges().listen((event) async {
-      final type = jsonDecode(event)['type'];
-      final data = jsonDecode(event)['data'];
+      // final type = jsonDecode(event)['type'];
+      // final data = jsonDecode(event)['data'];
 
-      if (type == 'album_added') {
-        final dto = AlbumResponseDto.fromJson(data);
-        final album = await Album.remote(dto!);
-        onAlbumAdded?.call(album);
-      } else if (type == 'album_deleted') {
-        final dto = AlbumResponseDto.fromJson(data);
-        final album = await Album.remote(dto!);
-        onAlbumDeleted?.call(album);
-      } else if (type == 'album_updated') {
-        final dto = AlbumResponseDto.fromJson(data);
-        final album = await Album.remote(dto!);
-        onAlbumUpdated?.call(album);
-      } else if (type == 'asset_added') {
-        final dto = AssetResponseDto.fromJson(data);
-        final asset = Asset.remote(dto!);
-        onAssetAdded?.call(asset);
-      } else if (type == 'asset_deleted') {
-        final dto = AssetResponseDto.fromJson(data);
-        final asset = Asset.remote(dto!);
-        onAssetDeleted?.call(asset);
-      } else if (type == 'asset_updated') {
-        final dto = AssetResponseDto.fromJson(data);
-        final asset = Asset.remote(dto!);
-        onAssetUpdated?.call(asset);
-      }
+      // if (type == 'album_added') {
+      //   final dto = AlbumResponseDto.fromJson(data);
+      //   final album = await Album.remote(dto!);
+      //   onAlbumAdded?.call(album);
+      // } else if (type == 'album_deleted') {
+      //   final dto = AlbumResponseDto.fromJson(data);
+      //   final album = await Album.remote(dto!);
+      //   onAlbumDeleted?.call(album);
+      // } else if (type == 'album_updated') {
+      //   final dto = AlbumResponseDto.fromJson(data);
+      //   final album = await Album.remote(dto!);
+      //   onAlbumUpdated?.call(album);
+      // } else if (type == 'asset_added') {
+      //   final dto = AssetResponseDto.fromJson(data);
+      //   final asset = Asset.remote(dto!);
+      //   onAssetAdded?.call(asset);
+      // } else if (type == 'asset_deleted') {
+      //   final dto = AssetResponseDto.fromJson(data);
+      //   final asset = Asset.remote(dto!);
+      //   onAssetDeleted?.call(asset);
+      // } else if (type == 'asset_updated') {
+      //   final dto = AssetResponseDto.fromJson(data);
+      //   final asset = Asset.remote(dto!);
+      //   onAssetUpdated?.call(asset);
+      // }
     });
   }
 }

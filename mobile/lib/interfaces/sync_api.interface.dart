@@ -1,4 +1,4 @@
 abstract interface class ISyncApiRepository {
-  Stream<String> getChanges();
+  Stream<Map<String, dynamic>> getChanges();
   Future<void> confirmChages(String changeId);
 }

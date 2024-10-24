@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/sync_api.interface.dart';
@@ -23,27 +21,37 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
   SyncApiRepository(this._api);
 
   @override
-  Stream<String> getChanges() async* {
+  Stream<Map<String, dynamic>> getChanges() async* {
     final serverUrl = Store.get(StoreKey.serverUrl);
     final accessToken = Store.get(StoreKey.accessToken);
 
-    final url = Uri.parse('$serverUrl/sync');
+    final url = Uri.parse('$serverUrl/sync/stream');
     final client = http.Client();
     final request = http.Request('POST', url);
 
-    request.headers['x-immich-user-token'] = accessToken;
-    request.body = jsonEncode({
-      'types': ["asset"],
+    final headers = {
+      'Content-Type': 'application/json',
+      'x-immich-user-token': accessToken,
+    };
+
+    request.headers.addAll(headers);
+    request.body = json.encode({
+      "types": ["asset"],
     });
 
     try {
       final response = await client.send(request);
-
+      String previousChunk = '';
       await for (var chunk in response.stream.transform(utf8.decoder)) {
-        // final data = await compute(_parseSyncReponse, chunk);
-        final data = _parseSyncReponse(chunk);
-        print("Data: $data");
-        yield chunk;
+        final isComplete = chunk.endsWith('\n');
+
+        if (isComplete) {
+          final jsonString = previousChunk + chunk;
+          yield await compute(_parseSyncReponse, jsonString);
+          previousChunk = '';
+        } else {
+          previousChunk += chunk;
+        }
       }
     } catch (e, stack) {
       print(stack);
@@ -61,53 +69,59 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
   }
 
   Map<String, dynamic> _parseSyncReponse(String jsonString) {
-    final type = jsonDecode(jsonString)['type'];
-    final data = jsonDecode(jsonString)['data'];
-    final action = jsonDecode(jsonString)['action'];
+    try {
+      jsonString = jsonString.trim();
+      final type = jsonDecode(jsonString)['type'];
+      final data = jsonDecode(jsonString)['data'];
+      final action = jsonDecode(jsonString)['action'];
 
-    switch (type) {
-      case 'asset':
-        if (action == 'upsert') {
-          return {type: AssetResponseDto.fromJson(data)};
-        }
+      switch (type) {
+        case 'asset':
+          if (action == 'upsert') {
+            return {type: AssetResponseDto.fromJson(data)};
+          }
 
-        if (action == 'delete') {
-          return {type: data};
-        }
+          if (action == 'delete') {
+            return {type: data};
+          }
 
-      case 'album':
-        final dto = AlbumResponseDto.fromJson(data);
-        if (dto == null) {
-          return {};
-        }
+        case 'album':
+          final dto = AlbumResponseDto.fromJson(data);
+          if (dto == null) {
+            return {};
+          }
 
-        final album = Album.remote(dto);
-        return {type: album};
+          final album = Album.remote(dto);
+          return {type: album};
 
-      case 'albumAsset': //AlbumAssetResponseDto
-        // final dto = AlbumAssetResponseDto.fromJson(data);
-        // final album = Album.remote(dto!);
-        break;
+        case 'albumAsset': //AlbumAssetResponseDto
+          // final dto = AlbumAssetResponseDto.fromJson(data);
+          // final album = Album.remote(dto!);
+          break;
 
-      case 'user':
-        final dto = UserResponseDto.fromJson(data);
-        if (dto == null) {
-          return {};
-        }
+        case 'user':
+          final dto = UserResponseDto.fromJson(data);
+          if (dto == null) {
+            return {};
+          }
 
-        final user = User.fromSimpleUserDto(dto);
-        return {type: user};
+          final user = User.fromSimpleUserDto(dto);
+          return {type: user};
 
-      case 'partner':
-        final dto = PartnerResponseDto.fromJson(data);
-        if (dto == null) {
-          return {};
-        }
+        case 'partner':
+          final dto = PartnerResponseDto.fromJson(data);
+          if (dto == null) {
+            return {};
+          }
 
-        final partner = User.fromPartnerDto(dto);
-        return {type: partner};
+          final partner = User.fromPartnerDto(dto);
+          return {type: partner};
+      }
+
+      return {"invalid": null};
+    } catch (e) {
+      print("error parsing json $e");
+      return {"invalid": null};
     }
-
-    return {"invalid": null};
   }
 }
