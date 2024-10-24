@@ -55,7 +55,7 @@
     "prettier-plugin-sort-json": "^4.0.0",
     "prettier-plugin-svelte": "^3.2.6",
     "rollup-plugin-visualizer": "^5.12.0",
-    "svelte": "^4.2.19",
+    "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "tailwindcss": "^3.4.1",
     "tslib": "^2.6.2",
