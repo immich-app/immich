@@ -1,6 +1,9 @@
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
+import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
+import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -118,5 +121,29 @@ export class BaseService {
 
   checkAccess(request: AccessRequest) {
     return checkAccess(this.accessRepository, request);
+  }
+
+  async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
+    const user = await this.userRepository.getByEmail(dto.email);
+    if (user) {
+      throw new BadRequestException('User exists');
+    }
+
+    if (!dto.isAdmin) {
+      const localAdmin = await this.userRepository.getAdmin();
+      if (!localAdmin) {
+        throw new BadRequestException('The first registered account must the administrator.');
+      }
+    }
+
+    const payload: Partial<UserEntity> = { ...dto };
+    if (payload.password) {
+      payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
+    }
+    if (payload.storageLabel) {
+      payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
+    }
+
+    return this.userRepository.create(payload);
   }
 }
