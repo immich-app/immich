@@ -75,7 +75,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Activities"]
+        "tags": [
+          "Activities"
+        ]
       },
       "post": {
         "operationId": "createActivity",
@@ -113,7 +115,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Activities"]
+        "tags": [
+          "Activities"
+        ]
       }
     },
     "/activities/statistics": {
@@ -162,7 +166,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Activities"]
+        "tags": [
+          "Activities"
+        ]
       }
     },
     "/activities/{id}": {
@@ -195,7 +201,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Activities"]
+        "tags": [
+          "Activities"
+        ]
       }
     },
     "/admin/users": {
@@ -237,7 +245,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       },
       "post": {
         "operationId": "createUserAdmin",
@@ -275,7 +285,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       }
     },
     "/admin/users/{id}": {
@@ -325,7 +337,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       },
       "get": {
         "operationId": "getUserAdmin",
@@ -363,7 +377,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       },
       "put": {
         "operationId": "updateUserAdmin",
@@ -411,7 +427,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       }
     },
     "/admin/users/{id}/preferences": {
@@ -451,7 +469,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       },
       "put": {
         "operationId": "updateUserPreferencesAdmin",
@@ -499,7 +519,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       }
     },
     "/admin/users/{id}/restore": {
@@ -539,7 +561,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users (admin)"]
+        "tags": [
+          "Users (admin)"
+        ]
       }
     },
     "/albums": {
@@ -591,7 +615,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       },
       "post": {
         "operationId": "createAlbum",
@@ -629,7 +655,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       }
     },
     "/albums/statistics": {
@@ -659,7 +687,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       }
     },
     "/albums/{id}": {
@@ -692,7 +722,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       },
       "get": {
         "operationId": "getAlbumInfo",
@@ -746,7 +778,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       },
       "patch": {
         "operationId": "updateAlbumInfo",
@@ -794,7 +828,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       }
     },
     "/albums/{id}/assets": {
@@ -847,7 +883,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       },
       "put": {
         "operationId": "addAssetsToAlbum",
@@ -906,7 +944,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       }
     },
     "/albums/{id}/user/{userId}": {
@@ -947,7 +987,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       },
       "put": {
         "operationId": "updateAlbumUser",
@@ -996,7 +1038,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       }
     },
     "/albums/{id}/users": {
@@ -1046,7 +1090,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Albums"]
+        "tags": [
+          "Albums"
+        ]
       }
     },
     "/api-keys": {
@@ -1079,7 +1125,9 @@
             "api_key": []
           }
         ],
-        "tags": ["API Keys"]
+        "tags": [
+          "API Keys"
+        ]
       },
       "post": {
         "operationId": "createApiKey",
@@ -1117,7 +1165,9 @@
             "api_key": []
           }
         ],
-        "tags": ["API Keys"]
+        "tags": [
+          "API Keys"
+        ]
       }
     },
     "/api-keys/{id}": {
@@ -1150,7 +1200,9 @@
             "api_key": []
           }
         ],
-        "tags": ["API Keys"]
+        "tags": [
+          "API Keys"
+        ]
       },
       "get": {
         "operationId": "getApiKey",
@@ -1188,7 +1240,9 @@
             "api_key": []
           }
         ],
-        "tags": ["API Keys"]
+        "tags": [
+          "API Keys"
+        ]
       },
       "put": {
         "operationId": "updateApiKey",
@@ -1236,7 +1290,9 @@
             "api_key": []
           }
         ],
-        "tags": ["API Keys"]
+        "tags": [
+          "API Keys"
+        ]
       }
     },
     "/assets": {
@@ -1269,7 +1325,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       },
       "post": {
         "operationId": "uploadAsset",
@@ -1326,7 +1384,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       },
       "put": {
         "operationId": "updateAssets",
@@ -1357,7 +1417,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/bulk-upload-check": {
@@ -1398,7 +1460,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/device/{deviceId}": {
@@ -1441,7 +1505,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/exist": {
@@ -1482,7 +1548,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/jobs": {
@@ -1515,7 +1583,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/memory-lane": {
@@ -1569,7 +1639,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/random": {
@@ -1614,7 +1686,10 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets", "Deprecated"],
+        "tags": [
+          "Assets",
+          "Deprecated"
+        ],
         "x-immich-lifecycle": {
           "deprecatedAt": "v1.116.0"
         }
@@ -1672,7 +1747,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/{id}": {
@@ -1720,7 +1797,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       },
       "put": {
         "operationId": "updateAsset",
@@ -1768,7 +1847,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/{id}/original": {
@@ -1817,7 +1898,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       },
       "put": {
         "description": "Replace the asset with new file, without changing its id",
@@ -1874,7 +1957,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"],
+        "tags": [
+          "Assets"
+        ],
         "x-immich-lifecycle": {
           "addedAt": "v1.106.0"
         }
@@ -1934,7 +2019,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/assets/{id}/video/playback": {
@@ -1983,7 +2070,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Assets"]
+        "tags": [
+          "Assets"
+        ]
       }
     },
     "/audit/deletes": {
@@ -2040,7 +2129,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Audit"]
+        "tags": [
+          "Audit"
+        ]
       }
     },
     "/auth/admin-sign-up": {
@@ -2069,7 +2160,9 @@
             "description": ""
           }
         },
-        "tags": ["Authentication"]
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/auth/change-password": {
@@ -2109,7 +2202,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Authentication"]
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/auth/login": {
@@ -2138,7 +2233,9 @@
             "description": ""
           }
         },
-        "tags": ["Authentication"]
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/auth/logout": {
@@ -2168,7 +2265,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Authentication"]
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/auth/validateToken": {
@@ -2198,7 +2297,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Authentication"]
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/download/archive": {
@@ -2248,7 +2349,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Download"]
+        "tags": [
+          "Download"
+        ]
       }
     },
     "/download/info": {
@@ -2297,7 +2400,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Download"]
+        "tags": [
+          "Download"
+        ]
       }
     },
     "/duplicates": {
@@ -2330,7 +2435,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Duplicates"]
+        "tags": [
+          "Duplicates"
+        ]
       }
     },
     "/faces": {
@@ -2373,7 +2480,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Faces"]
+        "tags": [
+          "Faces"
+        ]
       }
     },
     "/faces/{id}": {
@@ -2423,7 +2532,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Faces"]
+        "tags": [
+          "Faces"
+        ]
       }
     },
     "/jobs": {
@@ -2453,7 +2564,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Jobs"]
+        "tags": [
+          "Jobs"
+        ]
       },
       "post": {
         "operationId": "createJob",
@@ -2484,7 +2597,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Jobs"]
+        "tags": [
+          "Jobs"
+        ]
       }
     },
     "/jobs/{id}": {
@@ -2533,7 +2648,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Jobs"]
+        "tags": [
+          "Jobs"
+        ]
       }
     },
     "/libraries": {
@@ -2566,7 +2683,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       },
       "post": {
         "operationId": "createLibrary",
@@ -2604,7 +2723,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       }
     },
     "/libraries/{id}": {
@@ -2637,7 +2758,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       },
       "get": {
         "operationId": "getLibrary",
@@ -2675,7 +2798,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       },
       "put": {
         "operationId": "updateLibrary",
@@ -2723,7 +2848,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       }
     },
     "/libraries/{id}/scan": {
@@ -2756,7 +2883,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       }
     },
     "/libraries/{id}/statistics": {
@@ -2796,7 +2925,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       }
     },
     "/libraries/{id}/validate": {
@@ -2846,7 +2977,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Libraries"]
+        "tags": [
+          "Libraries"
+        ]
       }
     },
     "/map/markers": {
@@ -2930,7 +3063,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Map"]
+        "tags": [
+          "Map"
+        ]
       }
     },
     "/map/reverse-geocode": {
@@ -2982,7 +3117,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Map"]
+        "tags": [
+          "Map"
+        ]
       }
     },
     "/memories": {
@@ -3015,7 +3152,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Memories"]
+        "tags": [
+          "Memories"
+        ]
       },
       "post": {
         "operationId": "createMemory",
@@ -3053,7 +3192,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Memories"]
+        "tags": [
+          "Memories"
+        ]
       }
     },
     "/memories/{id}": {
@@ -3086,7 +3227,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Memories"]
+        "tags": [
+          "Memories"
+        ]
       },
       "get": {
         "operationId": "getMemory",
@@ -3124,7 +3267,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Memories"]
+        "tags": [
+          "Memories"
+        ]
       },
       "put": {
         "operationId": "updateMemory",
@@ -3172,7 +3317,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Memories"]
+        "tags": [
+          "Memories"
+        ]
       }
     },
     "/memories/{id}/assets": {
@@ -3225,7 +3372,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Memories"]
+        "tags": [
+          "Memories"
+        ]
       },
       "put": {
         "operationId": "addMemoryAssets",
@@ -3276,7 +3425,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Memories"]
+        "tags": [
+          "Memories"
+        ]
       }
     },
     "/notifications/test-email": {
@@ -3316,7 +3467,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Notifications"]
+        "tags": [
+          "Notifications"
+        ]
       }
     },
     "/oauth/authorize": {
@@ -3345,7 +3498,9 @@
             "description": ""
           }
         },
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/oauth/callback": {
@@ -3374,7 +3529,9 @@
             "description": ""
           }
         },
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/oauth/link": {
@@ -3414,7 +3571,9 @@
             "api_key": []
           }
         ],
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/oauth/mobile-redirect": {
@@ -3426,7 +3585,9 @@
             "description": ""
           }
         },
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/oauth/unlink": {
@@ -3456,7 +3617,9 @@
             "api_key": []
           }
         ],
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/partners": {
@@ -3498,7 +3661,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Partners"]
+        "tags": [
+          "Partners"
+        ]
       }
     },
     "/partners/{id}": {
@@ -3531,7 +3696,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Partners"]
+        "tags": [
+          "Partners"
+        ]
       },
       "post": {
         "operationId": "createPartner",
@@ -3569,7 +3736,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Partners"]
+        "tags": [
+          "Partners"
+        ]
       },
       "put": {
         "operationId": "updatePartner",
@@ -3617,7 +3786,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Partners"]
+        "tags": [
+          "Partners"
+        ]
       }
     },
     "/people": {
@@ -3679,7 +3850,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       },
       "post": {
         "operationId": "createPerson",
@@ -3717,7 +3890,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       },
       "put": {
         "operationId": "updatePeople",
@@ -3758,7 +3933,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       }
     },
     "/people/{id}": {
@@ -3798,7 +3975,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       },
       "put": {
         "operationId": "updatePerson",
@@ -3846,7 +4025,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       }
     },
     "/people/{id}/merge": {
@@ -3899,7 +4080,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       }
     },
     "/people/{id}/reassign": {
@@ -3952,7 +4135,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       }
     },
     "/people/{id}/statistics": {
@@ -3992,7 +4177,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       }
     },
     "/people/{id}/thumbnail": {
@@ -4033,7 +4220,9 @@
             "api_key": []
           }
         ],
-        "tags": ["People"]
+        "tags": [
+          "People"
+        ]
       }
     },
     "/reports": {
@@ -4063,7 +4252,9 @@
             "api_key": []
           }
         ],
-        "tags": ["File Reports"]
+        "tags": [
+          "File Reports"
+        ]
       }
     },
     "/reports/checksum": {
@@ -4106,7 +4297,9 @@
             "api_key": []
           }
         ],
-        "tags": ["File Reports"]
+        "tags": [
+          "File Reports"
+        ]
       }
     },
     "/reports/fix": {
@@ -4139,7 +4332,9 @@
             "api_key": []
           }
         ],
-        "tags": ["File Reports"]
+        "tags": [
+          "File Reports"
+        ]
       }
     },
     "/search/cities": {
@@ -4172,7 +4367,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/search/explore": {
@@ -4205,7 +4402,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/search/metadata": {
@@ -4245,7 +4444,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/search/person": {
@@ -4295,7 +4496,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/search/places": {
@@ -4337,7 +4540,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/search/random": {
@@ -4380,7 +4585,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/search/smart": {
@@ -4420,7 +4627,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/search/suggestions": {
@@ -4503,7 +4712,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Search"]
+        "tags": [
+          "Search"
+        ]
       }
     },
     "/server/about": {
@@ -4533,7 +4744,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/config": {
@@ -4552,7 +4765,9 @@
             "description": ""
           }
         },
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/features": {
@@ -4571,7 +4786,9 @@
             "description": ""
           }
         },
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/license": {
@@ -4594,7 +4811,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       },
       "get": {
         "operationId": "getServerLicense",
@@ -4625,7 +4844,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       },
       "put": {
         "operationId": "setServerLicense",
@@ -4663,7 +4884,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/media-types": {
@@ -4682,7 +4905,9 @@
             "description": ""
           }
         },
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/ping": {
@@ -4701,7 +4926,9 @@
             "description": ""
           }
         },
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/statistics": {
@@ -4731,7 +4958,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/storage": {
@@ -4761,7 +4990,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/theme": {
@@ -4780,7 +5011,9 @@
             "description": ""
           }
         },
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/version": {
@@ -4799,7 +5032,9 @@
             "description": ""
           }
         },
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/server/version-history": {
@@ -4821,7 +5056,9 @@
             "description": ""
           }
         },
-        "tags": ["Server"]
+        "tags": [
+          "Server"
+        ]
       }
     },
     "/sessions": {
@@ -4844,7 +5081,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Sessions"]
+        "tags": [
+          "Sessions"
+        ]
       },
       "get": {
         "operationId": "getSessions",
@@ -4875,7 +5114,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Sessions"]
+        "tags": [
+          "Sessions"
+        ]
       }
     },
     "/sessions/{id}": {
@@ -4908,7 +5149,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Sessions"]
+        "tags": [
+          "Sessions"
+        ]
       }
     },
     "/shared-links": {
@@ -4941,7 +5184,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       },
       "post": {
         "operationId": "createSharedLink",
@@ -4979,7 +5224,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       }
     },
     "/shared-links/me": {
@@ -5035,7 +5282,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       }
     },
     "/shared-links/{id}": {
@@ -5068,7 +5317,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       },
       "get": {
         "operationId": "getSharedLinkById",
@@ -5106,7 +5357,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       },
       "patch": {
         "operationId": "updateSharedLink",
@@ -5154,7 +5407,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       }
     },
     "/shared-links/{id}/assets": {
@@ -5215,7 +5470,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       },
       "put": {
         "operationId": "addSharedLinkAssets",
@@ -5274,7 +5531,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Shared Links"]
+        "tags": [
+          "Shared Links"
+        ]
       }
     },
     "/stacks": {
@@ -5307,7 +5566,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Stacks"]
+        "tags": [
+          "Stacks"
+        ]
       },
       "get": {
         "operationId": "searchStacks",
@@ -5347,7 +5608,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Stacks"]
+        "tags": [
+          "Stacks"
+        ]
       },
       "post": {
         "operationId": "createStack",
@@ -5385,7 +5648,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Stacks"]
+        "tags": [
+          "Stacks"
+        ]
       }
     },
     "/stacks/{id}": {
@@ -5418,7 +5683,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Stacks"]
+        "tags": [
+          "Stacks"
+        ]
       },
       "get": {
         "operationId": "getStack",
@@ -5456,7 +5723,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Stacks"]
+        "tags": [
+          "Stacks"
+        ]
       },
       "put": {
         "operationId": "updateStack",
@@ -5504,7 +5773,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Stacks"]
+        "tags": [
+          "Stacks"
+        ]
       }
     },
     "/sync/acknowledge": {
@@ -5537,7 +5808,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Sync"]
+        "tags": [
+          "Sync"
+        ]
       }
     },
     "/sync/delta-sync": {
@@ -5577,7 +5850,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Sync"]
+        "tags": [
+          "Sync"
+        ]
       }
     },
     "/sync/full-sync": {
@@ -5620,7 +5895,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Sync"]
+        "tags": [
+          "Sync"
+        ]
       }
     },
     "/sync/stream": {
@@ -5663,7 +5940,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Sync"]
+        "tags": [
+          "Sync"
+        ]
       }
     },
     "/system-config": {
@@ -5693,7 +5972,9 @@
             "api_key": []
           }
         ],
-        "tags": ["System Config"]
+        "tags": [
+          "System Config"
+        ]
       },
       "put": {
         "operationId": "updateConfig",
@@ -5731,7 +6012,9 @@
             "api_key": []
           }
         ],
-        "tags": ["System Config"]
+        "tags": [
+          "System Config"
+        ]
       }
     },
     "/system-config/defaults": {
@@ -5761,7 +6044,9 @@
             "api_key": []
           }
         ],
-        "tags": ["System Config"]
+        "tags": [
+          "System Config"
+        ]
       }
     },
     "/system-config/storage-template-options": {
@@ -5791,7 +6076,9 @@
             "api_key": []
           }
         ],
-        "tags": ["System Config"]
+        "tags": [
+          "System Config"
+        ]
       }
     },
     "/system-metadata/admin-onboarding": {
@@ -5821,7 +6108,9 @@
             "api_key": []
           }
         ],
-        "tags": ["System Metadata"]
+        "tags": [
+          "System Metadata"
+        ]
       },
       "post": {
         "operationId": "updateAdminOnboarding",
@@ -5852,7 +6141,9 @@
             "api_key": []
           }
         ],
-        "tags": ["System Metadata"]
+        "tags": [
+          "System Metadata"
+        ]
       }
     },
     "/system-metadata/reverse-geocoding-state": {
@@ -5882,7 +6173,9 @@
             "api_key": []
           }
         ],
-        "tags": ["System Metadata"]
+        "tags": [
+          "System Metadata"
+        ]
       }
     },
     "/tags": {
@@ -5915,7 +6208,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       },
       "post": {
         "operationId": "createTag",
@@ -5953,7 +6248,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       },
       "put": {
         "operationId": "upsertTags",
@@ -5994,7 +6291,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       }
     },
     "/tags/assets": {
@@ -6034,7 +6333,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       }
     },
     "/tags/{id}": {
@@ -6067,7 +6368,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       },
       "get": {
         "operationId": "getTagById",
@@ -6105,7 +6408,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       },
       "put": {
         "operationId": "updateTag",
@@ -6153,7 +6458,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       }
     },
     "/tags/{id}/assets": {
@@ -6206,7 +6513,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       },
       "put": {
         "operationId": "tagAssets",
@@ -6257,7 +6566,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Tags"]
+        "tags": [
+          "Tags"
+        ]
       }
     },
     "/timeline/bucket": {
@@ -6399,7 +6710,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Timeline"]
+        "tags": [
+          "Timeline"
+        ]
       }
     },
     "/timeline/buckets": {
@@ -6533,7 +6846,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Timeline"]
+        "tags": [
+          "Timeline"
+        ]
       }
     },
     "/trash/empty": {
@@ -6563,7 +6878,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Trash"]
+        "tags": [
+          "Trash"
+        ]
       }
     },
     "/trash/restore": {
@@ -6593,7 +6910,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Trash"]
+        "tags": [
+          "Trash"
+        ]
       }
     },
     "/trash/restore/assets": {
@@ -6633,7 +6952,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Trash"]
+        "tags": [
+          "Trash"
+        ]
       }
     },
     "/users": {
@@ -6666,7 +6987,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/users/me": {
@@ -6696,7 +7019,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       },
       "put": {
         "operationId": "updateMyUser",
@@ -6734,7 +7059,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/users/me/license": {
@@ -6757,7 +7084,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       },
       "get": {
         "operationId": "getUserLicense",
@@ -6785,7 +7114,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       },
       "put": {
         "operationId": "setUserLicense",
@@ -6823,7 +7154,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/users/me/preferences": {
@@ -6853,7 +7186,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       },
       "put": {
         "operationId": "updateMyPreferences",
@@ -6891,7 +7226,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/users/profile-image": {
@@ -6914,7 +7251,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       },
       "post": {
         "operationId": "createProfileImage",
@@ -6953,7 +7292,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/users/{id}": {
@@ -6993,7 +7334,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/users/{id}/profile-image": {
@@ -7034,7 +7377,9 @@
             "api_key": []
           }
         ],
-        "tags": ["Users"]
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/view/folder": {
@@ -7076,7 +7421,9 @@
             "api_key": []
           }
         ],
-        "tags": ["View"]
+        "tags": [
+          "View"
+        ]
       }
     },
     "/view/folder/unique-paths": {
@@ -7109,7 +7456,9 @@
             "api_key": []
           }
         ],
-        "tags": ["View"]
+        "tags": [
+          "View"
+        ]
       }
     }
   },
@@ -7157,7 +7506,9 @@
             "type": "array"
           }
         },
-        "required": ["permissions"],
+        "required": [
+          "permissions"
+        ],
         "type": "object"
       },
       "APIKeyCreateResponseDto": {
@@ -7169,7 +7520,10 @@
             "type": "string"
           }
         },
-        "required": ["apiKey", "secret"],
+        "required": [
+          "apiKey",
+          "secret"
+        ],
         "type": "object"
       },
       "APIKeyResponseDto": {
@@ -7195,7 +7549,13 @@
             "type": "string"
           }
         },
-        "required": ["createdAt", "id", "name", "permissions", "updatedAt"],
+        "required": [
+          "createdAt",
+          "id",
+          "name",
+          "permissions",
+          "updatedAt"
+        ],
         "type": "object"
       },
       "APIKeyUpdateDto": {
@@ -7204,7 +7564,9 @@
             "type": "string"
           }
         },
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object"
       },
       "ActivityCreateDto": {
@@ -7224,7 +7586,10 @@
             "$ref": "#/components/schemas/ReactionType"
           }
         },
-        "required": ["albumId", "type"],
+        "required": [
+          "albumId",
+          "type"
+        ],
         "type": "object"
       },
       "ActivityResponseDto": {
@@ -7251,7 +7616,13 @@
             "$ref": "#/components/schemas/UserResponseDto"
           }
         },
-        "required": ["assetId", "createdAt", "id", "type", "user"],
+        "required": [
+          "assetId",
+          "createdAt",
+          "id",
+          "type",
+          "user"
+        ],
         "type": "object"
       },
       "ActivityStatisticsResponseDto": {
@@ -7260,7 +7631,9 @@
             "type": "integer"
           }
         },
-        "required": ["comments"],
+        "required": [
+          "comments"
+        ],
         "type": "object"
       },
       "AddUsersDto": {
@@ -7272,7 +7645,9 @@
             "type": "array"
           }
         },
-        "required": ["albumUsers"],
+        "required": [
+          "albumUsers"
+        ],
         "type": "object"
       },
       "AdminOnboardingUpdateDto": {
@@ -7281,7 +7656,9 @@
             "type": "boolean"
           }
         },
-        "required": ["isOnboarded"],
+        "required": [
+          "isOnboarded"
+        ],
         "type": "object"
       },
       "AlbumAssetResponseDto": {
@@ -7295,7 +7672,10 @@
             "type": "string"
           }
         },
-        "required": ["albumId", "assetId"],
+        "required": [
+          "albumId",
+          "assetId"
+        ],
         "type": "object"
       },
       "AlbumResponseDto": {
@@ -7397,7 +7777,11 @@
             "type": "integer"
           }
         },
-        "required": ["notShared", "owned", "shared"],
+        "required": [
+          "notShared",
+          "owned",
+          "shared"
+        ],
         "type": "object"
       },
       "AlbumUserAddDto": {
@@ -7410,7 +7794,9 @@
             "type": "string"
           }
         },
-        "required": ["userId"],
+        "required": [
+          "userId"
+        ],
         "type": "object"
       },
       "AlbumUserCreateDto": {
@@ -7423,7 +7809,10 @@
             "type": "string"
           }
         },
-        "required": ["role", "userId"],
+        "required": [
+          "role",
+          "userId"
+        ],
         "type": "object"
       },
       "AlbumUserResponseDto": {
@@ -7435,11 +7824,17 @@
             "$ref": "#/components/schemas/UserResponseDto"
           }
         },
-        "required": ["role", "user"],
+        "required": [
+          "role",
+          "user"
+        ],
         "type": "object"
       },
       "AlbumUserRole": {
-        "enum": ["editor", "viewer"],
+        "enum": [
+          "editor",
+          "viewer"
+        ],
         "type": "string"
       },
       "AllJobStatusResponseDto": {
@@ -7518,7 +7913,9 @@
             "type": "array"
           }
         },
-        "required": ["ids"],
+        "required": [
+          "ids"
+        ],
         "type": "object"
       },
       "AssetBulkUpdateDto": {
@@ -7555,7 +7952,9 @@
             "type": "number"
           }
         },
-        "required": ["ids"],
+        "required": [
+          "ids"
+        ],
         "type": "object"
       },
       "AssetBulkUploadCheckDto": {
@@ -7567,7 +7966,9 @@
             "type": "array"
           }
         },
-        "required": ["assets"],
+        "required": [
+          "assets"
+        ],
         "type": "object"
       },
       "AssetBulkUploadCheckItem": {
@@ -7580,7 +7981,10 @@
             "type": "string"
           }
         },
-        "required": ["checksum", "id"],
+        "required": [
+          "checksum",
+          "id"
+        ],
         "type": "object"
       },
       "AssetBulkUploadCheckResponseDto": {
@@ -7592,13 +7996,18 @@
             "type": "array"
           }
         },
-        "required": ["results"],
+        "required": [
+          "results"
+        ],
         "type": "object"
       },
       "AssetBulkUploadCheckResult": {
         "properties": {
           "action": {
-            "enum": ["accept", "reject"],
+            "enum": [
+              "accept",
+              "reject"
+            ],
             "type": "string"
           },
           "assetId": {
@@ -7611,11 +8020,17 @@
             "type": "boolean"
           },
           "reason": {
-            "enum": ["duplicate", "unsupported-format"],
+            "enum": [
+              "duplicate",
+              "unsupported-format"
+            ],
             "type": "string"
           }
         },
-        "required": ["action", "id"],
+        "required": [
+          "action",
+          "id"
+        ],
         "type": "object"
       },
       "AssetDeltaSyncDto": {
@@ -7632,7 +8047,10 @@
             "type": "array"
           }
         },
-        "required": ["updatedAfter", "userIds"],
+        "required": [
+          "updatedAfter",
+          "userIds"
+        ],
         "type": "object"
       },
       "AssetDeltaSyncResponseDto": {
@@ -7653,7 +8071,11 @@
             "type": "array"
           }
         },
-        "required": ["deleted", "needsFullSync", "upserted"],
+        "required": [
+          "deleted",
+          "needsFullSync",
+          "upserted"
+        ],
         "type": "object"
       },
       "AssetFaceResponseDto": {
@@ -7713,7 +8135,9 @@
             "type": "array"
           }
         },
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object"
       },
       "AssetFaceUpdateItem": {
@@ -7727,7 +8151,10 @@
             "type": "string"
           }
         },
-        "required": ["assetId", "personId"],
+        "required": [
+          "assetId",
+          "personId"
+        ],
         "type": "object"
       },
       "AssetFaceWithoutPersonResponseDto": {
@@ -7788,7 +8215,10 @@
             "type": "string"
           }
         },
-        "required": ["limit", "updatedUntil"],
+        "required": [
+          "limit",
+          "updatedUntil"
+        ],
         "type": "object"
       },
       "AssetIdsDto": {
@@ -7801,7 +8231,9 @@
             "type": "array"
           }
         },
-        "required": ["assetIds"],
+        "required": [
+          "assetIds"
+        ],
         "type": "object"
       },
       "AssetIdsResponseDto": {
@@ -7810,14 +8242,21 @@
             "type": "string"
           },
           "error": {
-            "enum": ["duplicate", "no_permission", "not_found"],
+            "enum": [
+              "duplicate",
+              "no_permission",
+              "not_found"
+            ],
             "type": "string"
           },
           "success": {
             "type": "boolean"
           }
         },
-        "required": ["assetId", "success"],
+        "required": [
+          "assetId",
+          "success"
+        ],
         "type": "object"
       },
       "AssetJobName": {
@@ -7842,7 +8281,10 @@
             "$ref": "#/components/schemas/AssetJobName"
           }
         },
-        "required": ["assetIds", "name"],
+        "required": [
+          "assetIds",
+          "name"
+        ],
         "type": "object"
       },
       "AssetMediaCreateDto": {
@@ -7937,19 +8379,32 @@
             "$ref": "#/components/schemas/AssetMediaStatus"
           }
         },
-        "required": ["id", "status"],
+        "required": [
+          "id",
+          "status"
+        ],
         "type": "object"
       },
       "AssetMediaSize": {
-        "enum": ["preview", "thumbnail"],
+        "enum": [
+          "preview",
+          "thumbnail"
+        ],
         "type": "string"
       },
       "AssetMediaStatus": {
-        "enum": ["created", "replaced", "duplicate"],
+        "enum": [
+          "created",
+          "replaced",
+          "duplicate"
+        ],
         "type": "string"
       },
       "AssetOrder": {
-        "enum": ["asc", "desc"],
+        "enum": [
+          "asc",
+          "desc"
+        ],
         "type": "string"
       },
       "AssetResponseDto": {
@@ -8110,7 +8565,11 @@
             "type": "string"
           }
         },
-        "required": ["assetCount", "id", "primaryAssetId"],
+        "required": [
+          "assetCount",
+          "id",
+          "primaryAssetId"
+        ],
         "type": "object"
       },
       "AssetStatsResponseDto": {
@@ -8125,15 +8584,29 @@
             "type": "integer"
           }
         },
-        "required": ["images", "total", "videos"],
+        "required": [
+          "images",
+          "total",
+          "videos"
+        ],
         "type": "object"
       },
       "AssetTypeEnum": {
-        "enum": ["IMAGE", "VIDEO", "AUDIO", "OTHER"],
+        "enum": [
+          "IMAGE",
+          "VIDEO",
+          "AUDIO",
+          "OTHER"
+        ],
         "type": "string"
       },
       "AudioCodec": {
-        "enum": ["mp3", "aac", "libopus", "pcm_s16le"],
+        "enum": [
+          "mp3",
+          "aac",
+          "libopus",
+          "pcm_s16le"
+        ],
         "type": "string"
       },
       "AuditDeletesResponseDto": {
@@ -8148,7 +8621,10 @@
             "type": "boolean"
           }
         },
-        "required": ["ids", "needsFullSync"],
+        "required": [
+          "ids",
+          "needsFullSync"
+        ],
         "type": "object"
       },
       "AvatarResponse": {
@@ -8157,7 +8633,9 @@
             "$ref": "#/components/schemas/UserAvatarColor"
           }
         },
-        "required": ["color"],
+        "required": [
+          "color"
+        ],
         "type": "object"
       },
       "AvatarUpdate": {
@@ -8171,7 +8649,12 @@
       "BulkIdResponseDto": {
         "properties": {
           "error": {
-            "enum": ["duplicate", "no_permission", "not_found", "unknown"],
+            "enum": [
+              "duplicate",
+              "no_permission",
+              "not_found",
+              "unknown"
+            ],
             "type": "string"
           },
           "id": {
@@ -8181,7 +8664,10 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "success"],
+        "required": [
+          "id",
+          "success"
+        ],
         "type": "object"
       },
       "BulkIdsDto": {
@@ -8194,7 +8680,9 @@
             "type": "array"
           }
         },
-        "required": ["ids"],
+        "required": [
+          "ids"
+        ],
         "type": "object"
       },
       "CLIPConfig": {
@@ -8206,11 +8694,18 @@
             "type": "string"
           }
         },
-        "required": ["enabled", "modelName"],
+        "required": [
+          "enabled",
+          "modelName"
+        ],
         "type": "object"
       },
       "CQMode": {
-        "enum": ["auto", "cqp", "icq"],
+        "enum": [
+          "auto",
+          "cqp",
+          "icq"
+        ],
         "type": "string"
       },
       "ChangePasswordDto": {
@@ -8225,7 +8720,10 @@
             "type": "string"
           }
         },
-        "required": ["newPassword", "password"],
+        "required": [
+          "newPassword",
+          "password"
+        ],
         "type": "object"
       },
       "CheckExistingAssetsDto": {
@@ -8240,7 +8738,10 @@
             "type": "string"
           }
         },
-        "required": ["deviceAssetIds", "deviceId"],
+        "required": [
+          "deviceAssetIds",
+          "deviceId"
+        ],
         "type": "object"
       },
       "CheckExistingAssetsResponseDto": {
@@ -8252,11 +8753,16 @@
             "type": "array"
           }
         },
-        "required": ["existingIds"],
+        "required": [
+          "existingIds"
+        ],
         "type": "object"
       },
       "Colorspace": {
-        "enum": ["srgb", "p3"],
+        "enum": [
+          "srgb",
+          "p3"
+        ],
         "type": "string"
       },
       "CreateAlbumDto": {
@@ -8281,7 +8787,9 @@
             "type": "string"
           }
         },
-        "required": ["albumName"],
+        "required": [
+          "albumName"
+        ],
         "type": "object"
       },
       "CreateLibraryDto": {
@@ -8306,7 +8814,9 @@
             "type": "string"
           }
         },
-        "required": ["ownerId"],
+        "required": [
+          "ownerId"
+        ],
         "type": "object"
       },
       "CreateProfileImageDto": {
@@ -8316,7 +8826,9 @@
             "type": "string"
           }
         },
-        "required": ["file"],
+        "required": [
+          "file"
+        ],
         "type": "object"
       },
       "CreateProfileImageResponseDto": {
@@ -8332,7 +8844,11 @@
             "type": "string"
           }
         },
-        "required": ["profileChangedAt", "profileImagePath", "userId"],
+        "required": [
+          "profileChangedAt",
+          "profileImagePath",
+          "userId"
+        ],
         "type": "object"
       },
       "DownloadArchiveInfo": {
@@ -8347,7 +8863,10 @@
             "type": "integer"
           }
         },
-        "required": ["assetIds", "size"],
+        "required": [
+          "assetIds",
+          "size"
+        ],
         "type": "object"
       },
       "DownloadInfoDto": {
@@ -8384,7 +8903,10 @@
             "type": "boolean"
           }
         },
-        "required": ["archiveSize", "includeEmbeddedVideos"],
+        "required": [
+          "archiveSize",
+          "includeEmbeddedVideos"
+        ],
         "type": "object"
       },
       "DownloadResponseDto": {
@@ -8399,7 +8921,10 @@
             "type": "integer"
           }
         },
-        "required": ["archives", "totalSize"],
+        "required": [
+          "archives",
+          "totalSize"
+        ],
         "type": "object"
       },
       "DownloadUpdate": {
@@ -8426,7 +8951,10 @@
             "type": "number"
           }
         },
-        "required": ["enabled", "maxDistance"],
+        "required": [
+          "enabled",
+          "maxDistance"
+        ],
         "type": "object"
       },
       "DuplicateResponseDto": {
@@ -8441,7 +8969,10 @@
             "type": "string"
           }
         },
-        "required": ["assets", "duplicateId"],
+        "required": [
+          "assets",
+          "duplicateId"
+        ],
         "type": "object"
       },
       "EmailNotificationsResponse": {
@@ -8456,7 +8987,11 @@
             "type": "boolean"
           }
         },
-        "required": ["albumInvite", "albumUpdate", "enabled"],
+        "required": [
+          "albumInvite",
+          "albumUpdate",
+          "enabled"
+        ],
         "type": "object"
       },
       "EmailNotificationsUpdate": {
@@ -8474,7 +9009,10 @@
         "type": "object"
       },
       "EntityType": {
-        "enum": ["ASSET", "ALBUM"],
+        "enum": [
+          "ASSET",
+          "ALBUM"
+        ],
         "type": "string"
       },
       "ExifResponseDto": {
@@ -8602,7 +9140,9 @@
             "type": "string"
           }
         },
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object"
       },
       "FacialRecognitionConfig": {
@@ -8648,7 +9188,9 @@
             "type": "array"
           }
         },
-        "required": ["filenames"],
+        "required": [
+          "filenames"
+        ],
         "type": "object"
       },
       "FileChecksumResponseDto": {
@@ -8660,7 +9202,10 @@
             "type": "string"
           }
         },
-        "required": ["checksum", "filename"],
+        "required": [
+          "checksum",
+          "filename"
+        ],
         "type": "object"
       },
       "FileReportDto": {
@@ -8678,7 +9223,10 @@
             "type": "array"
           }
         },
-        "required": ["extras", "orphans"],
+        "required": [
+          "extras",
+          "orphans"
+        ],
         "type": "object"
       },
       "FileReportFixDto": {
@@ -8690,7 +9238,9 @@
             "type": "array"
           }
         },
-        "required": ["items"],
+        "required": [
+          "items"
+        ],
         "type": "object"
       },
       "FileReportItemDto": {
@@ -8712,7 +9262,12 @@
             "type": "string"
           }
         },
-        "required": ["entityId", "entityType", "pathType", "pathValue"],
+        "required": [
+          "entityId",
+          "entityType",
+          "pathType",
+          "pathValue"
+        ],
         "type": "object"
       },
       "FoldersResponse": {
@@ -8726,7 +9281,10 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled", "sidebarWeb"],
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
         "type": "object"
       },
       "FoldersUpdate": {
@@ -8741,11 +9299,20 @@
         "type": "object"
       },
       "ImageFormat": {
-        "enum": ["jpeg", "webp"],
+        "enum": [
+          "jpeg",
+          "webp"
+        ],
         "type": "string"
       },
       "JobCommand": {
-        "enum": ["start", "pause", "resume", "empty", "clear-failed"],
+        "enum": [
+          "start",
+          "pause",
+          "resume",
+          "empty",
+          "clear-failed"
+        ],
         "type": "string"
       },
       "JobCommandDto": {
@@ -8757,7 +9324,9 @@
             "type": "boolean"
           }
         },
-        "required": ["command"],
+        "required": [
+          "command"
+        ],
         "type": "object"
       },
       "JobCountsDto": {
@@ -8797,7 +9366,9 @@
             "$ref": "#/components/schemas/ManualJobName"
           }
         },
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object"
       },
       "JobName": {
@@ -8826,7 +9397,9 @@
             "type": "integer"
           }
         },
-        "required": ["concurrency"],
+        "required": [
+          "concurrency"
+        ],
         "type": "object"
       },
       "JobStatusDto": {
@@ -8838,7 +9411,10 @@
             "$ref": "#/components/schemas/QueueStatusDto"
           }
         },
-        "required": ["jobCounts", "queueStatus"],
+        "required": [
+          "jobCounts",
+          "queueStatus"
+        ],
         "type": "object"
       },
       "LibraryResponseDto": {
@@ -8914,7 +9490,12 @@
             "type": "integer"
           }
         },
-        "required": ["photos", "total", "usage", "videos"],
+        "required": [
+          "photos",
+          "total",
+          "usage",
+          "videos"
+        ],
         "type": "object"
       },
       "LicenseKeyDto": {
@@ -8927,7 +9508,10 @@
             "type": "string"
           }
         },
-        "required": ["activationKey", "licenseKey"],
+        "required": [
+          "activationKey",
+          "licenseKey"
+        ],
         "type": "object"
       },
       "LicenseResponseDto": {
@@ -8944,11 +9528,22 @@
             "type": "string"
           }
         },
-        "required": ["activatedAt", "activationKey", "licenseKey"],
+        "required": [
+          "activatedAt",
+          "activationKey",
+          "licenseKey"
+        ],
         "type": "object"
       },
       "LogLevel": {
-        "enum": ["verbose", "debug", "log", "warn", "error", "fatal"],
+        "enum": [
+          "verbose",
+          "debug",
+          "log",
+          "warn",
+          "error",
+          "fatal"
+        ],
         "type": "string"
       },
       "LoginCredentialDto": {
@@ -8962,7 +9557,10 @@
             "type": "string"
           }
         },
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "type": "object"
       },
       "LoginResponseDto": {
@@ -9009,11 +9607,18 @@
             "type": "boolean"
           }
         },
-        "required": ["redirectUri", "successful"],
+        "required": [
+          "redirectUri",
+          "successful"
+        ],
         "type": "object"
       },
       "ManualJobName": {
-        "enum": ["person-cleanup", "tag-cleanup", "user-cleanup"],
+        "enum": [
+          "person-cleanup",
+          "tag-cleanup",
+          "user-cleanup"
+        ],
         "type": "string"
       },
       "MapMarkerResponseDto": {
@@ -9042,7 +9647,14 @@
             "type": "string"
           }
         },
-        "required": ["city", "country", "id", "lat", "lon", "state"],
+        "required": [
+          "city",
+          "country",
+          "id",
+          "lat",
+          "lon",
+          "state"
+        ],
         "type": "object"
       },
       "MapReverseGeocodeResponseDto": {
@@ -9060,7 +9672,11 @@
             "type": "string"
           }
         },
-        "required": ["city", "country", "state"],
+        "required": [
+          "city",
+          "country",
+          "state"
+        ],
         "type": "object"
       },
       "MemoriesResponse": {
@@ -9070,7 +9686,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"],
+        "required": [
+          "enabled"
+        ],
         "type": "object"
       },
       "MemoriesUpdate": {
@@ -9108,7 +9726,11 @@
             "$ref": "#/components/schemas/MemoryType"
           }
         },
-        "required": ["data", "memoryAt", "type"],
+        "required": [
+          "data",
+          "memoryAt",
+          "type"
+        ],
         "type": "object"
       },
       "MemoryLaneResponseDto": {
@@ -9123,7 +9745,10 @@
             "type": "integer"
           }
         },
-        "required": ["assets", "yearsAgo"],
+        "required": [
+          "assets",
+          "yearsAgo"
+        ],
         "type": "object"
       },
       "MemoryResponseDto": {
@@ -9184,7 +9809,9 @@
         "type": "object"
       },
       "MemoryType": {
-        "enum": ["on_this_day"],
+        "enum": [
+          "on_this_day"
+        ],
         "type": "string"
       },
       "MemoryUpdateDto": {
@@ -9213,7 +9840,9 @@
             "type": "array"
           }
         },
-        "required": ["ids"],
+        "required": [
+          "ids"
+        ],
         "type": "object"
       },
       "MetadataSearchDto": {
@@ -9374,7 +10003,9 @@
             "type": "string"
           }
         },
-        "required": ["url"],
+        "required": [
+          "url"
+        ],
         "type": "object"
       },
       "OAuthCallbackDto": {
@@ -9383,7 +10014,9 @@
             "type": "string"
           }
         },
-        "required": ["url"],
+        "required": [
+          "url"
+        ],
         "type": "object"
       },
       "OAuthConfigDto": {
@@ -9392,7 +10025,9 @@
             "type": "string"
           }
         },
-        "required": ["redirectUri"],
+        "required": [
+          "redirectUri"
+        ],
         "type": "object"
       },
       "OnThisDayDto": {
@@ -9402,11 +10037,16 @@
             "type": "number"
           }
         },
-        "required": ["year"],
+        "required": [
+          "year"
+        ],
         "type": "object"
       },
       "PartnerDirection": {
-        "enum": ["shared-by", "shared-with"],
+        "enum": [
+          "shared-by",
+          "shared-with"
+        ],
         "type": "string"
       },
       "PartnerResponseDto": {
@@ -9445,7 +10085,11 @@
         "type": "object"
       },
       "PathEntityType": {
-        "enum": ["asset", "person", "user"],
+        "enum": [
+          "asset",
+          "person",
+          "user"
+        ],
         "type": "string"
       },
       "PathType": {
@@ -9471,7 +10115,10 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled", "sidebarWeb"],
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
         "type": "object"
       },
       "PeopleResponseDto": {
@@ -9493,7 +10140,11 @@
             "type": "integer"
           }
         },
-        "required": ["hidden", "people", "total"],
+        "required": [
+          "hidden",
+          "people",
+          "total"
+        ],
         "type": "object"
       },
       "PeopleUpdate": {
@@ -9516,7 +10167,9 @@
             "type": "array"
           }
         },
-        "required": ["people"],
+        "required": [
+          "people"
+        ],
         "type": "object"
       },
       "PeopleUpdateItem": {
@@ -9544,7 +10197,9 @@
             "type": "string"
           }
         },
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object"
       },
       "Permission": {
@@ -9674,7 +10329,13 @@
             "type": "string"
           }
         },
-        "required": ["birthDate", "id", "isHidden", "name", "thumbnailPath"],
+        "required": [
+          "birthDate",
+          "id",
+          "isHidden",
+          "name",
+          "thumbnailPath"
+        ],
         "type": "object"
       },
       "PersonStatisticsResponseDto": {
@@ -9683,7 +10344,9 @@
             "type": "integer"
           }
         },
-        "required": ["assets"],
+        "required": [
+          "assets"
+        ],
         "type": "object"
       },
       "PersonUpdateDto": {
@@ -9768,7 +10431,11 @@
             "type": "string"
           }
         },
-        "required": ["latitude", "longitude", "name"],
+        "required": [
+          "latitude",
+          "longitude",
+          "name"
+        ],
         "type": "object"
       },
       "PurchaseResponse": {
@@ -9780,7 +10447,10 @@
             "type": "boolean"
           }
         },
-        "required": ["hideBuyButtonUntil", "showSupportBadge"],
+        "required": [
+          "hideBuyButtonUntil",
+          "showSupportBadge"
+        ],
         "type": "object"
       },
       "PurchaseUpdate": {
@@ -9803,7 +10473,10 @@
             "type": "boolean"
           }
         },
-        "required": ["isActive", "isPaused"],
+        "required": [
+          "isActive",
+          "isPaused"
+        ],
         "type": "object"
       },
       "RandomSearchDto": {
@@ -9933,7 +10606,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"],
+        "required": [
+          "enabled"
+        ],
         "type": "object"
       },
       "RatingsUpdate": {
@@ -9945,11 +10620,17 @@
         "type": "object"
       },
       "ReactionLevel": {
-        "enum": ["album", "asset"],
+        "enum": [
+          "album",
+          "asset"
+        ],
         "type": "string"
       },
       "ReactionType": {
-        "enum": ["comment", "like"],
+        "enum": [
+          "comment",
+          "like"
+        ],
         "type": "string"
       },
       "ReverseGeocodingStateResponseDto": {
@@ -9963,7 +10644,10 @@
             "type": "string"
           }
         },
-        "required": ["lastImportFileName", "lastUpdate"],
+        "required": [
+          "lastImportFileName",
+          "lastUpdate"
+        ],
         "type": "object"
       },
       "SearchAlbumResponseDto": {
@@ -9987,7 +10671,12 @@
             "type": "integer"
           }
         },
-        "required": ["count", "facets", "items", "total"],
+        "required": [
+          "count",
+          "facets",
+          "items",
+          "total"
+        ],
         "type": "object"
       },
       "SearchAssetResponseDto": {
@@ -10015,7 +10704,13 @@
             "type": "integer"
           }
         },
-        "required": ["count", "facets", "items", "nextPage", "total"],
+        "required": [
+          "count",
+          "facets",
+          "items",
+          "nextPage",
+          "total"
+        ],
         "type": "object"
       },
       "SearchExploreItem": {
@@ -10027,7 +10722,10 @@
             "type": "string"
           }
         },
-        "required": ["data", "value"],
+        "required": [
+          "data",
+          "value"
+        ],
         "type": "object"
       },
       "SearchExploreResponseDto": {
@@ -10042,7 +10740,10 @@
             "type": "array"
           }
         },
-        "required": ["fieldName", "items"],
+        "required": [
+          "fieldName",
+          "items"
+        ],
         "type": "object"
       },
       "SearchFacetCountResponseDto": {
@@ -10054,7 +10755,10 @@
             "type": "string"
           }
         },
-        "required": ["count", "value"],
+        "required": [
+          "count",
+          "value"
+        ],
         "type": "object"
       },
       "SearchFacetResponseDto": {
@@ -10069,7 +10773,10 @@
             "type": "string"
           }
         },
-        "required": ["counts", "fieldName"],
+        "required": [
+          "counts",
+          "fieldName"
+        ],
         "type": "object"
       },
       "SearchResponseDto": {
@@ -10081,11 +10788,20 @@
             "$ref": "#/components/schemas/SearchAssetResponseDto"
           }
         },
-        "required": ["albums", "assets"],
+        "required": [
+          "albums",
+          "assets"
+        ],
         "type": "object"
       },
       "SearchSuggestionType": {
-        "enum": ["country", "state", "city", "camera-make", "camera-model"],
+        "enum": [
+          "country",
+          "state",
+          "city",
+          "camera-make",
+          "camera-model"
+        ],
         "type": "string"
       },
       "ServerAboutResponseDto": {
@@ -10154,7 +10870,11 @@
             "type": "string"
           }
         },
-        "required": ["licensed", "version", "versionUrl"],
+        "required": [
+          "licensed",
+          "version",
+          "versionUrl"
+        ],
         "type": "object"
       },
       "ServerConfigDto": {
@@ -10284,7 +11004,11 @@
             "type": "array"
           }
         },
-        "required": ["image", "sidecar", "video"],
+        "required": [
+          "image",
+          "sidecar",
+          "video"
+        ],
         "type": "object"
       },
       "ServerPingResponse": {
@@ -10295,7 +11019,9 @@
             "type": "string"
           }
         },
-        "required": ["res"],
+        "required": [
+          "res"
+        ],
         "type": "object"
       },
       "ServerStatsResponseDto": {
@@ -10329,7 +11055,12 @@
             "type": "integer"
           }
         },
-        "required": ["photos", "usage", "usageByUser", "videos"],
+        "required": [
+          "photos",
+          "usage",
+          "usageByUser",
+          "videos"
+        ],
         "type": "object"
       },
       "ServerStorageResponseDto": {
@@ -10377,7 +11108,9 @@
             "type": "string"
           }
         },
-        "required": ["customCss"],
+        "required": [
+          "customCss"
+        ],
         "type": "object"
       },
       "ServerVersionHistoryResponseDto": {
@@ -10393,7 +11126,11 @@
             "type": "string"
           }
         },
-        "required": ["createdAt", "id", "version"],
+        "required": [
+          "createdAt",
+          "id",
+          "version"
+        ],
         "type": "object"
       },
       "ServerVersionResponseDto": {
@@ -10408,7 +11145,11 @@
             "type": "integer"
           }
         },
-        "required": ["major", "minor", "patch"],
+        "required": [
+          "major",
+          "minor",
+          "patch"
+        ],
         "type": "object"
       },
       "SessionResponseDto": {
@@ -10482,7 +11223,9 @@
             "$ref": "#/components/schemas/SharedLinkType"
           }
         },
-        "required": ["type"],
+        "required": [
+          "type"
+        ],
         "type": "object"
       },
       "SharedLinkEditDto": {
@@ -10585,7 +11328,10 @@
         "type": "object"
       },
       "SharedLinkType": {
-        "enum": ["ALBUM", "INDIVIDUAL"],
+        "enum": [
+          "ALBUM",
+          "INDIVIDUAL"
+        ],
         "type": "string"
       },
       "SignUpDto": {
@@ -10603,7 +11349,11 @@
             "type": "string"
           }
         },
-        "required": ["email", "name", "password"],
+        "required": [
+          "email",
+          "name",
+          "password"
+        ],
         "type": "object"
       },
       "SmartInfoResponseDto": {
@@ -10744,11 +11494,16 @@
             "type": "boolean"
           }
         },
-        "required": ["query"],
+        "required": [
+          "query"
+        ],
         "type": "object"
       },
       "SourceType": {
-        "enum": ["machine-learning", "exif"],
+        "enum": [
+          "machine-learning",
+          "exif"
+        ],
         "type": "string"
       },
       "StackCreateDto": {
@@ -10762,7 +11517,9 @@
             "type": "array"
           }
         },
-        "required": ["assetIds"],
+        "required": [
+          "assetIds"
+        ],
         "type": "object"
       },
       "StackResponseDto": {
@@ -10780,7 +11537,11 @@
             "type": "string"
           }
         },
-        "required": ["assets", "id", "primaryAssetId"],
+        "required": [
+          "assets",
+          "id",
+          "primaryAssetId"
+        ],
         "type": "object"
       },
       "StackUpdateDto": {
@@ -10840,7 +11601,10 @@
         "type": "object"
       },
       "SyncAction": {
-        "enum": ["upsert", "delete"],
+        "enum": [
+          "upsert",
+          "delete"
+        ],
         "type": "string"
       },
       "SyncCheckpointDto": {
@@ -10853,7 +11617,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "timestamp"],
+        "required": [
+          "id",
+          "timestamp"
+        ],
         "type": "object"
       },
       "SyncStreamDto": {
@@ -10881,7 +11648,9 @@
             "type": "array"
           }
         },
-        "required": ["types"],
+        "required": [
+          "types"
+        ],
         "type": "object"
       },
       "SyncStreamResponseDto": {
@@ -10927,7 +11696,11 @@
             "$ref": "#/components/schemas/SyncType"
           }
         },
-        "required": ["action", "data", "type"],
+        "required": [
+          "action",
+          "data",
+          "type"
+        ],
         "type": "object"
       },
       "SyncType": {
@@ -11147,7 +11920,9 @@
             "type": "boolean"
           }
         },
-        "required": ["import"],
+        "required": [
+          "import"
+        ],
         "type": "object"
       },
       "SystemConfigGeneratedImageDto": {
@@ -11165,7 +11940,11 @@
             "type": "integer"
           }
         },
-        "required": ["format", "quality", "size"],
+        "required": [
+          "format",
+          "quality",
+          "size"
+        ],
         "type": "object"
       },
       "SystemConfigImageDto": {
@@ -11183,7 +11962,12 @@
             "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
           }
         },
-        "required": ["colorspace", "extractEmbedded", "preview", "thumbnail"],
+        "required": [
+          "colorspace",
+          "extractEmbedded",
+          "preview",
+          "thumbnail"
+        ],
         "type": "object"
       },
       "SystemConfigJobDto": {
@@ -11246,7 +12030,10 @@
             "$ref": "#/components/schemas/SystemConfigLibraryWatchDto"
           }
         },
-        "required": ["scan", "watch"],
+        "required": [
+          "scan",
+          "watch"
+        ],
         "type": "object"
       },
       "SystemConfigLibraryScanDto": {
@@ -11258,7 +12045,10 @@
             "type": "boolean"
           }
         },
-        "required": ["cronExpression", "enabled"],
+        "required": [
+          "cronExpression",
+          "enabled"
+        ],
         "type": "object"
       },
       "SystemConfigLibraryWatchDto": {
@@ -11267,7 +12057,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"],
+        "required": [
+          "enabled"
+        ],
         "type": "object"
       },
       "SystemConfigLoggingDto": {
@@ -11279,7 +12071,10 @@
             "$ref": "#/components/schemas/LogLevel"
           }
         },
-        "required": ["enabled", "level"],
+        "required": [
+          "enabled",
+          "level"
+        ],
         "type": "object"
       },
       "SystemConfigMachineLearningDto": {
@@ -11321,7 +12116,11 @@
             "type": "string"
           }
         },
-        "required": ["darkStyle", "enabled", "lightStyle"],
+        "required": [
+          "darkStyle",
+          "enabled",
+          "lightStyle"
+        ],
         "type": "object"
       },
       "SystemConfigMetadataDto": {
@@ -11330,7 +12129,9 @@
             "$ref": "#/components/schemas/SystemConfigFacesDto"
           }
         },
-        "required": ["faces"],
+        "required": [
+          "faces"
+        ],
         "type": "object"
       },
       "SystemConfigNewVersionCheckDto": {
@@ -11339,7 +12140,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"],
+        "required": [
+          "enabled"
+        ],
         "type": "object"
       },
       "SystemConfigNotificationsDto": {
@@ -11348,7 +12151,9 @@
             "$ref": "#/components/schemas/SystemConfigSmtpDto"
           }
         },
-        "required": ["smtp"],
+        "required": [
+          "smtp"
+        ],
         "type": "object"
       },
       "SystemConfigOAuthDto": {
@@ -11425,7 +12230,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"],
+        "required": [
+          "enabled"
+        ],
         "type": "object"
       },
       "SystemConfigReverseGeocodingDto": {
@@ -11434,7 +12241,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"],
+        "required": [
+          "enabled"
+        ],
         "type": "object"
       },
       "SystemConfigServerDto": {
@@ -11446,7 +12255,10 @@
             "type": "string"
           }
         },
-        "required": ["externalDomain", "loginPageMessage"],
+        "required": [
+          "externalDomain",
+          "loginPageMessage"
+        ],
         "type": "object"
       },
       "SystemConfigSmtpDto": {
@@ -11464,7 +12276,12 @@
             "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
           }
         },
-        "required": ["enabled", "from", "replyTo", "transport"],
+        "required": [
+          "enabled",
+          "from",
+          "replyTo",
+          "transport"
+        ],
         "type": "object"
       },
       "SystemConfigSmtpTransportDto": {
@@ -11487,7 +12304,13 @@
             "type": "string"
           }
         },
-        "required": ["host", "ignoreCert", "password", "port", "username"],
+        "required": [
+          "host",
+          "ignoreCert",
+          "password",
+          "port",
+          "username"
+        ],
         "type": "object"
       },
       "SystemConfigStorageTemplateDto": {
@@ -11502,7 +12325,11 @@
             "type": "string"
           }
         },
-        "required": ["enabled", "hashVerificationEnabled", "template"],
+        "required": [
+          "enabled",
+          "hashVerificationEnabled",
+          "template"
+        ],
         "type": "object"
       },
       "SystemConfigTemplateStorageOptionDto": {
@@ -11574,7 +12401,9 @@
             "type": "string"
           }
         },
-        "required": ["customCss"],
+        "required": [
+          "customCss"
+        ],
         "type": "object"
       },
       "SystemConfigTrashDto": {
@@ -11587,7 +12416,10 @@
             "type": "boolean"
           }
         },
-        "required": ["days", "enabled"],
+        "required": [
+          "days",
+          "enabled"
+        ],
         "type": "object"
       },
       "SystemConfigUserDto": {
@@ -11597,7 +12429,9 @@
             "type": "integer"
           }
         },
-        "required": ["deleteDelay"],
+        "required": [
+          "deleteDelay"
+        ],
         "type": "object"
       },
       "TagBulkAssetsDto": {
@@ -11617,7 +12451,10 @@
             "type": "array"
           }
         },
-        "required": ["assetIds", "tagIds"],
+        "required": [
+          "assetIds",
+          "tagIds"
+        ],
         "type": "object"
       },
       "TagBulkAssetsResponseDto": {
@@ -11626,7 +12463,9 @@
             "type": "integer"
           }
         },
-        "required": ["count"],
+        "required": [
+          "count"
+        ],
         "type": "object"
       },
       "TagCreateDto": {
@@ -11643,7 +12482,9 @@
             "type": "string"
           }
         },
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object"
       },
       "TagResponseDto": {
@@ -11672,7 +12513,13 @@
             "type": "string"
           }
         },
-        "required": ["createdAt", "id", "name", "updatedAt", "value"],
+        "required": [
+          "createdAt",
+          "id",
+          "name",
+          "updatedAt",
+          "value"
+        ],
         "type": "object"
       },
       "TagUpdateDto": {
@@ -11693,7 +12540,9 @@
             "type": "array"
           }
         },
-        "required": ["tags"],
+        "required": [
+          "tags"
+        ],
         "type": "object"
       },
       "TagsResponse": {
@@ -11707,7 +12556,10 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled", "sidebarWeb"],
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
         "type": "object"
       },
       "TagsUpdate": {
@@ -11727,7 +12579,9 @@
             "type": "string"
           }
         },
-        "required": ["messageId"],
+        "required": [
+          "messageId"
+        ],
         "type": "object"
       },
       "TimeBucketResponseDto": {
@@ -11739,23 +12593,46 @@
             "type": "string"
           }
         },
-        "required": ["count", "timeBucket"],
+        "required": [
+          "count",
+          "timeBucket"
+        ],
         "type": "object"
       },
       "TimeBucketSize": {
-        "enum": ["DAY", "MONTH"],
+        "enum": [
+          "DAY",
+          "MONTH"
+        ],
         "type": "string"
       },
       "ToneMapping": {
-        "enum": ["hable", "mobius", "reinhard", "disabled"],
+        "enum": [
+          "hable",
+          "mobius",
+          "reinhard",
+          "disabled"
+        ],
         "type": "string"
       },
       "TranscodeHWAccel": {
-        "enum": ["nvenc", "qsv", "vaapi", "rkmpp", "disabled"],
+        "enum": [
+          "nvenc",
+          "qsv",
+          "vaapi",
+          "rkmpp",
+          "disabled"
+        ],
         "type": "string"
       },
       "TranscodePolicy": {
-        "enum": ["all", "optimal", "bitrate", "required", "disabled"],
+        "enum": [
+          "all",
+          "optimal",
+          "bitrate",
+          "required",
+          "disabled"
+        ],
         "type": "string"
       },
       "TrashResponseDto": {
@@ -11764,7 +12641,9 @@
             "type": "integer"
           }
         },
-        "required": ["count"],
+        "required": [
+          "count"
+        ],
         "type": "object"
       },
       "UpdateAlbumDto": {
@@ -11794,7 +12673,9 @@
             "$ref": "#/components/schemas/AlbumUserRole"
           }
         },
-        "required": ["role"],
+        "required": [
+          "role"
+        ],
         "type": "object"
       },
       "UpdateAssetDto": {
@@ -11856,7 +12737,9 @@
             "type": "boolean"
           }
         },
-        "required": ["inTimeline"],
+        "required": [
+          "inTimeline"
+        ],
         "type": "object"
       },
       "UsageByUserDto": {
@@ -11921,7 +12804,11 @@
             "type": "string"
           }
         },
-        "required": ["email", "name", "password"],
+        "required": [
+          "email",
+          "name",
+          "password"
+        ],
         "type": "object"
       },
       "UserAdminDeleteDto": {
@@ -12077,7 +12964,11 @@
             "type": "string"
           }
         },
-        "required": ["activatedAt", "activationKey", "licenseKey"],
+        "required": [
+          "activatedAt",
+          "activationKey",
+          "licenseKey"
+        ],
         "type": "object"
       },
       "UserPreferencesResponseDto": {
@@ -12188,7 +13079,11 @@
         "type": "object"
       },
       "UserStatus": {
-        "enum": ["active", "removing", "deleted"],
+        "enum": [
+          "active",
+          "removing",
+          "deleted"
+        ],
         "type": "string"
       },
       "UserUpdateMeDto": {
@@ -12211,7 +13106,9 @@
             "type": "boolean"
           }
         },
-        "required": ["authStatus"],
+        "required": [
+          "authStatus"
+        ],
         "type": "object"
       },
       "ValidateLibraryDto": {
@@ -12244,7 +13141,10 @@
             "type": "string"
           }
         },
-        "required": ["importPath", "isValid"],
+        "required": [
+          "importPath",
+          "isValid"
+        ],
         "type": "object"
       },
       "ValidateLibraryResponseDto": {
@@ -12259,11 +13159,21 @@
         "type": "object"
       },
       "VideoCodec": {
-        "enum": ["h264", "hevc", "vp9", "av1"],
+        "enum": [
+          "h264",
+          "hevc",
+          "vp9",
+          "av1"
+        ],
         "type": "string"
       },
       "VideoContainer": {
-        "enum": ["mov", "mp4", "ogg", "webm"],
+        "enum": [
+          "mov",
+          "mp4",
+          "ogg",
+          "webm"
+        ],
         "type": "string"
       }
     }
