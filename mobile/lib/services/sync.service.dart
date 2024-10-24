@@ -12,6 +12,7 @@ import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
+import 'package:immich_mobile/interfaces/sync.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
@@ -19,6 +20,7 @@ import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
+import 'package:immich_mobile/repositories/sync.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
@@ -39,6 +41,7 @@ final syncServiceProvider = Provider(
     ref.watch(exifInfoRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
+    ref.watch(syncRepositoryProvider),
   ),
 );
 
@@ -52,6 +55,7 @@ class SyncService {
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
   final IETagRepository _eTagRepository;
+  final ISyncRepository _syncRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
 
@@ -65,7 +69,46 @@ class SyncService {
     this._exifInfoRepository,
     this._userRepository,
     this._eTagRepository,
-  );
+    this._syncRepository,
+  ) {
+    _syncRepository.onAlbumAdded = _onAlbumAdded;
+    _syncRepository.onAlbumDeleted = _onAlbumDeleted;
+    _syncRepository.onAlbumUpdated = _onAlbumUpdated;
+
+    _syncRepository.onAssetAdded = _onAssetAdded;
+    _syncRepository.onAssetDeleted = _onAssetDeleted;
+    _syncRepository.onAssetUpdated = _onAssetUpdated;
+  }
+
+  void _onAlbumAdded(Album album) {
+    // Update record in database
+    // print("_onAlbumAdded: $album");
+  }
+
+  void _onAlbumDeleted(Album album) {
+    // Update record in database
+    print("Album deleted: $album");
+  }
+
+  void _onAlbumUpdated(Album album) {
+    // Update record in database
+    print("Album updated: $album");
+  }
+
+  void _onAssetAdded(Asset asset) {
+    // Update record in database
+    // print("Asset added: $asset");
+  }
+
+  void _onAssetDeleted(Asset asset) {
+    // Update record in database
+    print("Asset deleted: $asset");
+  }
+
+  void _onAssetUpdated(Asset asset) {
+    // Update record in database
+    print("Asset updated: $asset");
+  }
 
   // public methods:
 
@@ -833,6 +876,14 @@ class SyncService {
       _log.severe("Failed to remove all local albums and assets", e);
       return false;
     }
+  }
+
+  void incrementalSync() async {
+    await _syncRepository.incrementalSync();
+  }
+
+  void fullSync() async {
+    await _syncRepository.fullSync();
   }
 }
 

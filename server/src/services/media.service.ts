@@ -147,10 +147,10 @@ export class MediaService extends BaseService {
     }
 
     let generated: { previewPath: string; thumbnailPath: string; thumbhash: Buffer };
-    if (asset.type === AssetType.IMAGE) {
-      generated = await this.generateImageThumbnails(asset);
-    } else if (asset.type === AssetType.VIDEO) {
+    if (asset.type === AssetType.VIDEO || asset.originalFileName.toLowerCase().endsWith('.gif')) {
       generated = await this.generateVideoThumbnails(asset);
+    } else if (asset.type === AssetType.IMAGE) {
+      generated = await this.generateImageThumbnails(asset);
     } else {
       this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
       return JobStatus.SKIPPED;

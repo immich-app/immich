@@ -66,13 +66,17 @@
   };
 
   const onFocusOut = () => {
-    if ($isSearchEnabled) {
-      $preventRaceConditionSearchBar = true;
-    }
+    const focusOutTimer = setTimeout(() => {
+      if ($isSearchEnabled) {
+        $preventRaceConditionSearchBar = true;
+      }
 
-    closeDropdown();
-    $isSearchEnabled = false;
-    showFilter = false;
+      closeDropdown();
+      $isSearchEnabled = false;
+      showFilter = false;
+    }, 100);
+
+    clearTimeout(focusOutTimer);
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {

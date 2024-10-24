@@ -52,7 +52,7 @@ export class AlbumEntity {
   albumUsers!: AlbumUserEntity[];
 
   @ManyToMany(() => AssetEntity, (asset) => asset.albums)
-  @JoinTable()
+  @JoinTable({ synchronize: false })
   assets!: AssetEntity[];
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)

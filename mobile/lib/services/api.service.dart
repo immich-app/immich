@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
-import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
@@ -38,7 +37,6 @@ class ApiService implements Authentication {
     }
   }
   String? _accessToken;
-  final _log = Logger("ApiService");
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint, authentication: this);
@@ -108,12 +106,7 @@ class ApiService implements Authentication {
       return false;
     } on SocketException catch (_) {
       return false;
-    } catch (error, stackTrace) {
-      _log.severe(
-        "Error while checking server availability",
-        error,
-        stackTrace,
-      );
+    } catch (error) {
       return false;
     }
     return true;

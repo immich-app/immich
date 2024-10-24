@@ -19,6 +19,10 @@ class PreloadModelData(BaseModel):
     facial_recognition: str | None = None
 
 
+class MaxBatchSize(BaseModel):
+    facial_recognition: int | None = None
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="MACHINE_LEARNING_",
@@ -41,6 +45,7 @@ class Settings(BaseSettings):
     ann_fp16_turbo: bool = False
     ann_tuning_level: int = 2
     preload: PreloadModelData | None = None
+    max_batch_size: MaxBatchSize | None = None
 
     @property
     def device_id(self) -> str:

@@ -7,6 +7,7 @@ import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
+import 'package:immich_mobile/interfaces/sync.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -29,3 +30,5 @@ class MockAssetMediaRepository extends Mock implements IAssetMediaRepository {}
 class MockFileMediaRepository extends Mock implements IFileMediaRepository {}
 
 class MockAlbumApiRepository extends Mock implements IAlbumApiRepository {}
+
+class MockSyncRepository extends Mock implements ISyncRepository {}

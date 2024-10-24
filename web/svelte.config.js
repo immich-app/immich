@@ -19,6 +19,7 @@ const config = {
       $lib: 'src/lib',
       '$lib/*': 'src/lib/*',
       '@test-data': 'src/test-data',
+      $i18n: '../i18n',
     },
   },
 };
