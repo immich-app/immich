@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { citiesFile, excludePaths } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
@@ -46,9 +46,13 @@ const getEnv = (): EnvData => {
   const isProd = environment === ImmichEnvironment.PRODUCTION;
   const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
   const folders = {
+    // eslint-disable-next-line unicorn/prefer-module
+    dist: resolve(`${__dirname}/..`),
     geodata: join(buildFolder, 'geodata'),
     web: join(buildFolder, 'www'),
   };
+
+  const databaseUrl = process.env.DB_URL;
 
   let redisConfig = {
     host: process.env.REDIS_HOSTNAME || 'redis',
@@ -118,12 +122,25 @@ const getEnv = (): EnvData => {
     },
 
     database: {
-      url: process.env.DB_URL,
-      host: process.env.DB_HOSTNAME || 'database',
-      port: Number(process.env.DB_PORT) || 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      name: process.env.DB_DATABASE_NAME || 'immich',
+      config: {
+        type: 'postgres',
+        entities: [`${folders.dist}/entities` + '/*.entity.{js,ts}'],
+        migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
+        subscribers: [`${folders.dist}/subscribers` + '/*.{js,ts}'],
+        migrationsRun: false,
+        synchronize: false,
+        connectTimeoutMS: 10_000, // 10 seconds
+        parseInt8: true,
+        ...(databaseUrl
+          ? { url: databaseUrl }
+          : {
+              host: process.env.DB_HOSTNAME || 'database',
+              port: Number(process.env.DB_PORT) || 5432,
+              username: process.env.DB_USERNAME || 'postgres',
+              password: process.env.DB_PASSWORD || 'postgres',
+              database: process.env.DB_DATABASE_NAME || 'immich',
+            }),
+      },
 
       skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
       vectorExtension:

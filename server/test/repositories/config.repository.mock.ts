@@ -16,11 +16,16 @@ const envData: EnvData = {
   },
 
   database: {
-    host: 'database',
-    port: 5432,
-    username: 'postgres',
-    password: 'postgres',
-    name: 'immich',
+    config: {
+      type: 'postgres',
+      host: 'database',
+      port: 5432,
+      username: 'postgres',
+      password: 'postgres',
+      name: 'immich',
+      synchronize: false,
+      migrationsRun: true,
+    },
 
     skipMigrations: false,
     vectorExtension: DatabaseExtension.VECTORS,
