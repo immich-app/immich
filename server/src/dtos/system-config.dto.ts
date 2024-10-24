@@ -47,6 +47,24 @@ const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 
+export class DatabaseConfig {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isLibraryScanEnabled)
+  @IsNotEmpty()
+  @Validate(CronValidator, { message: 'Invalid cron expression' })
+  @IsString()
+  cronExpression!: string;
+}
+
+export class SystemConfigBackupsDto {
+  @Type(() => DatabaseConfig)
+  @ValidateNested()
+  @IsObject()
+  database!: DatabaseConfig;
+}
+
 export class SystemConfigFFmpegDto {
   @IsInt()
   @Min(0)
@@ -531,6 +549,11 @@ class SystemConfigUserDto {
 }
 
 export class SystemConfigDto implements SystemConfig {
+  @Type(() => SystemConfigBackupsDto)
+  @ValidateNested()
+  @IsObject()
+  backups!: SystemConfigBackupsDto;
+
   @Type(() => SystemConfigFFmpegDto)
   @ValidateNested()
   @IsObject()

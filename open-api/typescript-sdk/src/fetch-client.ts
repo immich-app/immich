@@ -1084,6 +1084,13 @@ export type AssetFullSyncDto = {
     updatedUntil: string;
     userId?: string;
 };
+export type DatabaseConfig = {
+    cronExpression: string;
+    enabled: boolean;
+};
+export type SystemConfigBackupsDto = {
+    database: DatabaseConfig;
+};
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     accelDecode: boolean;
@@ -1232,6 +1239,7 @@ export type SystemConfigUserDto = {
     deleteDelay: number;
 };
 export type SystemConfigDto = {
+    backups: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
     job: SystemConfigJobDto;

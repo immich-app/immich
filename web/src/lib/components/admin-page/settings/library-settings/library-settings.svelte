@@ -64,7 +64,7 @@
                 class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm"
                 for="expression-select"
               >
-                {$t('admin.library_cron_expression_presets')}
+                {$t('admin.cron_expression_presets')}
               </label>
               <select
                 class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
@@ -83,13 +83,13 @@
               inputType={SettingInputFieldType.TEXT}
               required={true}
               disabled={disabled || !config.library.scan.enabled}
-              label={$t('admin.library_cron_expression')}
+              label={$t('admin.cron_expression')}
               bind:value={config.library.scan.cronExpression}
               isEdited={config.library.scan.cronExpression !== savedConfig.library.scan.cronExpression}
             >
               <svelte:fragment slot="desc">
                 <p class="text-sm dark:text-immich-dark-fg">
-                  <FormatMessage key="admin.library_cron_expression_description" let:message>
+                  <FormatMessage key="admin.cron_expression_description" let:message>
                     <a href="https://crontab.guru" class="underline" target="_blank" rel="noreferrer">
                       {message}
                     </a>

@@ -181,6 +181,7 @@ export enum StorageFolder {
   UPLOAD = 'upload',
   PROFILE = 'profile',
   THUMBNAILS = 'thumbs',
+  BACKUPS = 'backups',
 }
 
 export enum SystemMetadataKey {

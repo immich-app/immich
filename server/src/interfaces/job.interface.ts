@@ -15,11 +15,15 @@ export enum QueueName {
   SIDECAR = 'sidecar',
   LIBRARY = 'library',
   NOTIFICATION = 'notifications',
+  BACKUP_DATABASE = 'backupDatabase',
 }
 
 export type ConcurrentQueueName = Exclude<
   QueueName,
-  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION | QueueName.DUPLICATE_DETECTION
+  | QueueName.STORAGE_TEMPLATE_MIGRATION
+  | QueueName.FACIAL_RECOGNITION
+  | QueueName.DUPLICATE_DETECTION
+  | QueueName.BACKUP_DATABASE
 >;
 
 export enum JobCommand {
@@ -31,6 +35,9 @@ export enum JobCommand {
 }
 
 export enum JobName {
+  //backups
+  BACKUP_DATABASE = 'database-backup',
+
   // conversion
   QUEUE_VIDEO_CONVERSION = 'queue-video-conversion',
   VIDEO_CONVERSION = 'video-conversion',
@@ -209,6 +216,9 @@ export enum QueueCleanType {
 }
 
 export type JobItem =
+  // Backups
+  | { name: JobName.BACKUP_DATABASE; data?: IBaseJob }
+
   // Transcoding
   | { name: JobName.QUEUE_VIDEO_CONVERSION; data: IBaseJob }
   | { name: JobName.VIDEO_CONVERSION; data: IEntityJob }

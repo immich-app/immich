@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
+import { SystemFlags } from 'src/entities/system-metadata.entity';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
@@ -19,25 +20,32 @@ export class StorageService extends BaseService {
     const envData = this.configRepository.getEnv();
 
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
-      const flags = (await this.systemMetadataRepository.get(SystemMetadataKey.SYSTEM_FLAGS)) || { mountFiles: false };
-      const enabled = flags.mountFiles ?? false;
+      const flags =
+        (await this.systemMetadataRepository.get(SystemMetadataKey.SYSTEM_FLAGS)) ||
+        ({ mountChecks: {} } as SystemFlags);
 
-      this.logger.log(`Verifying system mount folder checks (enabled=${enabled})`);
+      let updated = false;
+
+      this.logger.log(`Verifying system mount folder checks, current state: ${JSON.stringify(flags)}`);
 
       try {
         // check each folder exists and is writable
         for (const folder of Object.values(StorageFolder)) {
-          if (!enabled) {
+          if (!flags?.mountChecks?.[folder]) {
             this.logger.log(`Writing initial mount file for the ${folder} folder`);
             await this.createMountFile(folder);
           }
 
           await this.verifyReadAccess(folder);
           await this.verifyWriteAccess(folder);
+
+          if (!flags.mountChecks[folder]) {
+            flags.mountChecks[folder] = true;
+            updated = true;
+          }
         }
 
-        if (!flags.mountFiles) {
-          flags.mountFiles = true;
+        if (updated) {
           await this.systemMetadataRepository.set(SystemMetadataKey.SYSTEM_FLAGS, flags);
           this.logger.log('Successfully enabled system mount folders checks');
         }

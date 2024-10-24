@@ -13,6 +13,7 @@ part of openapi.api;
 class SystemConfigDto {
   /// Returns a new [SystemConfigDto] instance.
   SystemConfigDto({
+    required this.backups,
     required this.ffmpeg,
     required this.image,
     required this.job,
@@ -32,6 +33,8 @@ class SystemConfigDto {
     required this.trash,
     required this.user,
   });
+
+  SystemConfigBackupsDto backups;
 
   SystemConfigFFmpegDto ffmpeg;
 
@@ -71,6 +74,7 @@ class SystemConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
+    other.backups == backups &&
     other.ffmpeg == ffmpeg &&
     other.image == image &&
     other.job == job &&
@@ -93,6 +97,7 @@ class SystemConfigDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (backups.hashCode) +
     (ffmpeg.hashCode) +
     (image.hashCode) +
     (job.hashCode) +
@@ -113,10 +118,11 @@ class SystemConfigDto {
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[backups=$backups, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'backups'] = this.backups;
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'image'] = this.image;
       json[r'job'] = this.job;
@@ -147,6 +153,7 @@ class SystemConfigDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigDto(
+        backups: SystemConfigBackupsDto.fromJson(json[r'backups'])!,
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         image: SystemConfigImageDto.fromJson(json[r'image'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
@@ -212,6 +219,7 @@ class SystemConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'backups',
     'ffmpeg',
     'image',
     'job',
