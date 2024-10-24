@@ -15,7 +15,6 @@ import { JobName } from 'src/interfaces/job.interface';
 import { UserFindOptions } from 'src/interfaces/user.interface';
 import { BaseService } from 'src/services/base.service';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
-import { createUser } from 'src/utils/user';
 
 @Injectable()
 export class UserAdminService extends BaseService {
@@ -25,17 +24,18 @@ export class UserAdminService extends BaseService {
   }
 
   async create(dto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
-    const { notify, ...rest } = dto;
+    const { notify, ...userDto } = dto;
     const config = await this.getConfig({ withCache: false });
-    if (!config.oauth.enabled && !rest.password) {
+    if (!config.oauth.enabled && !userDto.password) {
       throw new BadRequestException('password is required');
     }
-    const user = await createUser({ userRepo: this.userRepository, cryptoRepo: this.cryptoRepository }, rest);
+
+    const user = await this.createUser(userDto);
 
     await this.eventRepository.emit('user.signup', {
       notify: !!notify,
       id: user.id,
-      tempPassword: user.shouldChangePassword ? rest.password : undefined,
+      tempPassword: user.shouldChangePassword ? userDto.password : undefined,
     });
 
     return mapUserAdmin(user);
