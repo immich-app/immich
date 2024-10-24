@@ -6,6 +6,8 @@
     type AlbumResponseDto,
     type UserResponseDto,
     AssetOrder,
+    AlbumUserRole,
+    updateAlbumUser,
   } from '@immich/sdk';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus, mdiDotsVertical } from '@mdi/js';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -29,6 +31,7 @@
   export let onToggleEnabledActivity: () => void;
   export let onShowSelectSharedUser: () => void;
   export let onRemove: (userId: string) => void;
+  export let onRefreshAlbum: () => void;
 
   let selectedRemoveUser: UserResponseDto | null = null;
 
@@ -80,6 +83,21 @@
       selectedRemoveUser = null;
     }
   };
+
+  const handleUpdateSharedUserRole = async (user: UserResponseDto, role: AlbumUserRole) => {
+    try {
+      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
+      const message = $t('user_role_set', {
+        values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
+      });
+      onRefreshAlbum();
+      notificationController.show({ type: NotificationType.Info, message });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_change_album_user_role'));
+    } finally {
+      selectedRemoveUser = null;
+    }
+  };
 </script>
 
 {#if !selectedRemoveUser}
@@ -122,15 +140,31 @@
             <div>{$t('owner')}</div>
           </div>
 
-          {#each album.albumUsers as { user } (user.id)}
+          {#each album.albumUsers as { user, role } (user.id)}
             <div class="flex items-center gap-2 py-2">
               <div>
                 <UserAvatar {user} size="md" />
               </div>
               <div class="w-full">{user.name}</div>
+              {#if role === AlbumUserRole.Viewer}
+                {$t('role_viewer')}
+              {:else}
+                {$t('role_editor')}
+              {/if}
               {#if user.id !== album.ownerId}
-                <!-- Allow deletion for non-owners -->
                 <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
+                  {#if role === AlbumUserRole.Viewer}
+                    <MenuOption
+                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Editor)}
+                      text={$t('allow_edits')}
+                    />
+                  {:else}
+                    <MenuOption
+                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Viewer)}
+                      text={$t('disallow_edits')}
+                    />
+                  {/if}
+                  <!-- Allow deletion for non-owners -->
                   <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
                 </ButtonContextMenu>
               {/if}

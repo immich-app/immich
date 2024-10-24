@@ -40,7 +40,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
+  import { downloadAlbum, cancelMultiselect } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -270,7 +270,7 @@
       return;
     }
     if ($isMultiSelectState) {
-      assetInteractionStore.clearMultiselect();
+      cancelMultiselect(assetInteractionStore);
       return;
     }
     await goto(backUrl);
@@ -747,6 +747,7 @@
       await setModeToView();
     }}
     onRemove={(userId) => handleRemoveUser(userId, ViewMode.OPTIONS)}
+    onRefreshAlbum={refreshAlbum}
     onClose={() => (viewMode = ViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
     onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

@@ -907,7 +907,9 @@ describe(LibraryService.name, () => {
       storageMock.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       storageMock.checkFileExists.mockResolvedValue(true);
 
-      await expect(sut.update('library-id', { importPaths: ['foo/bar'] })).resolves.toEqual(
+      const cwd = process.cwd();
+
+      await expect(sut.update('library-id', { importPaths: [`${cwd}/foo/bar`] })).resolves.toEqual(
         mapLibrary(libraryStub.externalLibrary1),
       );
       expect(libraryMock.update).toHaveBeenCalledWith(expect.objectContaining({ id: 'library-id' }));
@@ -1300,14 +1302,31 @@ describe(LibraryService.name, () => {
       });
     });
 
+    it('should detect when import path is not absolute', async () => {
+      const cwd = process.cwd();
+
+      await expect(sut.validate('library-id', { importPaths: ['relative/path'] })).resolves.toEqual({
+        importPaths: [
+          {
+            importPath: 'relative/path',
+            isValid: false,
+            message: `Import path must be absolute, try ${cwd}/relative/path`,
+          },
+        ],
+      });
+    });
+
     it('should detect when import path is in immich media folder', async () => {
       storageMock.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
-      const validImport = libraryStub.hasImmichPaths.importPaths[1];
+      const cwd = process.cwd();
+
+      const validImport = `${cwd}/${libraryStub.hasImmichPaths.importPaths[1]}`;
       storageMock.checkFileExists.mockImplementation((importPath) => Promise.resolve(importPath === validImport));
 
-      await expect(
-        sut.validate('library-id', { importPaths: libraryStub.hasImmichPaths.importPaths }),
-      ).resolves.toEqual({
+      const pathStubs = libraryStub.hasImmichPaths.importPaths;
+      const importPaths = [pathStubs[0], validImport, pathStubs[2]];
+
+      await expect(sut.validate('library-id', { importPaths })).resolves.toEqual({
         importPaths: [
           {
             importPath: libraryStub.hasImmichPaths.importPaths[0],

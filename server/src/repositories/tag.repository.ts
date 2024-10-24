@@ -4,10 +4,8 @@ import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { TagEntity } from 'src/entities/tag.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, Repository, TreeRepository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class TagRepository implements ITagRepository {
   constructor(

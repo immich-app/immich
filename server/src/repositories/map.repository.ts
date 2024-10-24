@@ -20,11 +20,9 @@ import {
 } from 'src/interfaces/map.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { OptionalBetween } from 'src/utils/database';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, IsNull, Not, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
-@Instrumentation()
 @Injectable()
 export class MapRepository implements IMapRepository {
   constructor(

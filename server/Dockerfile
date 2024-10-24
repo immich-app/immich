@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20241016@sha256:00ea9ef1c9aed4499353d5cccbd63f52d125c18e264aac54d1139b6da6715a62 AS dev
+FROM ghcr.io/immich-app/base-server-dev:20241024@sha256:b15c96837d2da805fd54ac305926f9cbe33317bdafb1d46618133d34ee184af4 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -37,11 +37,12 @@ WORKDIR /usr/src/app
 COPY web/package*.json web/svelte.config.js ./
 RUN npm ci
 COPY web ./
+COPY i18n ../i18n
 RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20241016@sha256:063563dc3a1d9e7a105b1847f93eb82a8dad808b03e7acae8e7c5007fb732cee
+FROM ghcr.io/immich-app/base-server-prod:20241024@sha256:5cf70de565d3a4a469c62b0c1b312fe6ed9b41e8a97febec48c2da0e1cd8d077
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

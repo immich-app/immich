@@ -14,10 +14,8 @@ import {
   ImmichZipStream,
   WatchEvents,
 } from 'src/interfaces/storage.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { mimeTypes } from 'src/utils/mime-types';
 
-@Instrumentation()
 @Injectable()
 export class StorageRepository implements IStorageRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
