@@ -23,7 +23,7 @@
   "add_to": "앨범에 추가...",
   "add_to_album": "앨범에 추가",
   "add_to_shared_album": "공유 앨범에 추가",
-  "added_to_archive": "보관함으로 이동되었습니다.",
+  "added_to_archive": "보관함에 추가되었습니다.",
   "added_to_favorites": "즐겨찾기에 추가되었습니다.",
   "added_to_favorites_count": "즐겨찾기에 항목 {count, number}개 추가됨",
   "admin": {
@@ -190,7 +190,7 @@
     "oauth_issuer_url": "발급자 URL",
     "oauth_mobile_redirect_uri": "모바일 리다이렉트 URI",
     "oauth_mobile_redirect_uri_override": "모바일 리다이렉트 URI 재정의",
-    "oauth_mobile_redirect_uri_override_description": "OAuth 공급자가 '{callback}' 과 같은 모바일 URI를 제공하지 않는 경우 활성화하세요.",
+    "oauth_mobile_redirect_uri_override_description": "OAuth 공급자가 '{callback}'과 같은 모바일 URI를 제공하지 않는 경우 활성화하세요.",
     "oauth_profile_signing_algorithm": "사용자 정보 서명 알고리즘",
     "oauth_profile_signing_algorithm_description": "사용자 정보 서명에 사용되는 알고리즘을 선택합니다.",
     "oauth_scope": "스코프",
