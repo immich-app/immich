@@ -66,37 +66,8 @@
         background-color: black;
       }
     </style>
-    <script>
-      /**
-       * Prevent FOUC on page load.
-       */
-      const colorThemeKeyName = 'color-theme';
 
-      let theme = localStorage.getItem(colorThemeKeyName);
-      if (!theme) {
-        theme = { value: 'light', system: true };
-      } else if (theme === 'dark' || theme === 'light') {
-        theme = { value: theme, system: false };
-        localStorage.setItem(colorThemeKeyName, JSON.stringify(theme));
-      } else {
-        theme = JSON.parse(theme);
-      }
-
-      let themeValue = theme.value;
-      if (theme.system) {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          themeValue = 'dark';
-        } else {
-          themeValue = 'light';
-        }
-      }
-
-      if (themeValue === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
-    </script>
+    %app.fouc%
 
     <link rel="stylesheet" href="/custom.css" />
   </head>
