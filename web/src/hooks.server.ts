@@ -5,7 +5,7 @@ import theme from '$lib/utils/theme?raw';
 import type { Handle } from '@sveltejs/kit';
 import { ModuleKind, transpileModule } from 'typescript';
 
-export const transpileFile = (content: string) => {
+const transpileFile = (content: string) => {
   const result = transpileModule(content, {
     compilerOptions: { module: ModuleKind.ES2020, removeComments: true },
   });
