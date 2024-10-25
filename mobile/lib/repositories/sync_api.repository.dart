@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/sync_api.interface.dart';
+import 'package:immich_mobile/models/sync/sync_event.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
@@ -22,7 +21,7 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
   SyncApiRepository(this._api);
 
   @override
-  Stream<List<Map<SyncStreamDtoTypesEnum, dynamic>>> getChanges(
+  Stream<List<SyncEvent>> getChanges(
     SyncStreamDtoTypesEnum type,
   ) async* {
     final batchSize = 1000;
@@ -74,43 +73,49 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
     throw UnimplementedError();
   }
 
-  List<Map<SyncStreamDtoTypesEnum, dynamic>> _parseSyncReponse(
+  List<SyncEvent> _parseSyncReponse(
     List<String> lines,
   ) {
-    final data = lines.map<Map<SyncStreamDtoTypesEnum, dynamic>>((line) {
+    final List<SyncEvent> data = [];
+
+    for (var line in lines) {
       try {
         final type = SyncStreamDtoTypesEnum.fromJson(jsonDecode(line)['type'])!;
         final action = SyncAction.fromJson(jsonDecode(line)['action']);
-        final data = jsonDecode(line)['data'];
+        final dataJson = jsonDecode(line)['data'];
 
         switch (type) {
           case SyncStreamDtoTypesEnum.asset:
             if (action == SyncAction.upsert) {
-              final dto = AssetResponseDto.fromJson(data);
-              if (dto == null) {
-                return {};
-              }
-
+              final dto = AssetResponseDto.fromJson(dataJson)!;
               final asset = Asset.remote(dto);
-              return {type: asset};
-            }
 
-            // Data is the id of the asset if type is delete
-            if (action == SyncAction.delete) {
-              return {type: data};
+              data.add(
+                SyncEvent(
+                  type: type,
+                  action: SyncAction.upsert,
+                  data: asset,
+                ),
+              );
+            } else if (action == SyncAction.delete) {
+              data.add(
+                SyncEvent(
+                  type: type,
+                  action: SyncAction.delete,
+                  data: dataJson.toString(),
+                ),
+              );
             }
+            break;
 
           default:
-            return {};
+            break;
         }
-
-        return {};
       } catch (error) {
         debugPrint("[_parseSyncReponse] Error parsing json $error");
-        return {};
       }
-    });
+    }
 
-    return data.toList();
+    return data;
   }
 }

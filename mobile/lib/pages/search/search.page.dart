@@ -722,7 +722,7 @@ class QuickLinkList extends ConsumerWidget {
             title: 'test'.tr(),
             icon: Icons.favorite_border_rounded,
             isBottom: true,
-            onTap: () => ref.read(syncServiceProvider).incrementalSync(),
+            onTap: () => ref.read(syncServiceProvider).syncAssets(),
           ),
         ],
       ),

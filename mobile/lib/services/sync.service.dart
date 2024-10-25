@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/sync.interface.dart';
+import 'package:immich_mobile/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
@@ -21,6 +23,7 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/sync.repository.dart';
+import 'package:immich_mobile/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
@@ -43,6 +46,7 @@ final syncServiceProvider = Provider(
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
     ref.watch(syncRepositoryProvider),
+    ref.watch(syncApiRepositoryProvider),
   ),
 );
 
@@ -57,6 +61,7 @@ class SyncService {
   final IUserRepository _userRepository;
   final IETagRepository _eTagRepository;
   final ISyncRepository _syncRepository;
+  final ISyncApiRepository _syncApiRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
 
@@ -71,19 +76,56 @@ class SyncService {
     this._userRepository,
     this._eTagRepository,
     this._syncRepository,
-  ) {
-    _syncRepository.onAssetUpserted = onAssetUpserted;
-    _syncRepository.onAssetDeleted = _onAssetDeleted;
+    this._syncApiRepository,
+  );
+
+  void syncAssets() {
+    final sw = Stopwatch()..start();
+    final batchSize = 200;
+    int batchCount = 0;
+    final List<Asset> toUpsert = [];
+    final List<String> toDelete = [];
+
+    _syncApiRepository.getChanges(SyncStreamDtoTypesEnum.asset).listen(
+      (event) async {
+        for (final e in event) {
+          batchCount++;
+
+          if (e.action == SyncAction.upsert) {
+            final asset = e.data as Asset;
+            toUpsert.add(asset);
+          } else if (e.action == SyncAction.delete) {
+            final id = e.data as String;
+            toDelete.add(id);
+          }
+
+          if (batchCount >= batchSize) {
+            await _syncAssetsBatch(toUpsert, toDelete);
+            toUpsert.clear();
+            toDelete.clear();
+            batchCount = 0;
+          }
+        }
+
+        // Process any remaining events
+        if (toUpsert.isNotEmpty || toDelete.isNotEmpty) {
+          await _syncAssetsBatch(toUpsert, toDelete);
+          toUpsert.clear();
+          toDelete.clear();
+        }
+      },
+      onDone: () {
+        debugPrint("Syncing assets took ${sw.elapsedMilliseconds}ms");
+      },
+    );
   }
 
-  void onAssetUpserted(List<Asset> assets) {
-    // Update record in database
-    print("insert assets into database: ${assets.length}");
-  }
-
-  void _onAssetDeleted(List<String> ids) {
-    // Update record in database
-    print("remove assets in database: $ids");
+  Future<void> _syncAssetsBatch(
+    List<Asset> toUpsert,
+    List<String> toDelete,
+  ) async {
+    print("Syncing ${toUpsert.length} assets and deleting ${toDelete.length}");
+    await _assetRepository.updateAll(toUpsert);
   }
 
   // public methods:
@@ -797,7 +839,7 @@ class SyncService {
           }
         } else if (a.id != b.id) {
           _log.warning(
-            "Trying to insert another asset with the same checksum+owner. In DB:\n$b\nTo insert:\n$a",
+            "Trying to insert another asset with the same checksum+owner",
           );
         }
       }
@@ -852,17 +894,6 @@ class SyncService {
       _log.severe("Failed to remove all local albums and assets", e);
       return false;
     }
-  }
-
-  void incrementalSync() async {
-    await _syncRepository.incrementalSync(
-      type: SyncStreamDtoTypesEnum.asset,
-      batchSize: 50,
-    );
-  }
-
-  void fullSync() async {
-    await _syncRepository.fullSync();
   }
 }
 

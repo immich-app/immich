@@ -374,7 +374,7 @@ class BackgroundService {
     ExifInfoRepository exifInfoRepository = ExifInfoRepository(db);
     ETagRepository eTagRepository = ETagRepository(db);
     SyncApiRepository syncApiRepository = SyncApiRepository(apiService.syncApi);
-    SyncRepository syncRepository = SyncRepository(db, syncApiRepository);
+    SyncRepository syncRepository = SyncRepository(db);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
     FileMediaRepository fileMediaRepository = FileMediaRepository();
     AssetMediaRepository assetMediaRepository = AssetMediaRepository();
@@ -400,6 +400,7 @@ class BackgroundService {
       userRepository,
       eTagRepository,
       syncRepository,
+      syncApiRepository,
     );
     UserService userService = UserService(
       partnerApiRepository,

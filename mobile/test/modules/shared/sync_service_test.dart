@@ -49,6 +49,7 @@ void main() {
     final MockExifInfoRepository exifInfoRepository = MockExifInfoRepository();
     final MockUserRepository userRepository = MockUserRepository();
     final MockSyncRepository syncRepository = MockSyncRepository();
+    final MockSyncApiRepository syncApiRepository = MockSyncApiRepository();
     final MockETagRepository eTagRepository = MockETagRepository();
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
@@ -88,6 +89,7 @@ void main() {
         userRepository,
         eTagRepository,
         syncRepository,
+        syncApiRepository,
       );
       when(() => eTagRepository.get(owner.isarId))
           .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
