@@ -25,6 +25,7 @@
 
   let sharedLink: string | null = null;
   let showQRCode: boolean;
+  let QRCodeGenerated: boolean;
   let QRCodeWidth: number = 376;
   let description = '';
   let allowDownload = true;
@@ -102,6 +103,10 @@
       handleError(error, $t('errors.failed_to_create_shared_link'));
     }
   };
+
+  const generateQRCode = async () => {
+    QRCodeGenerated = true;
+  }
 
   const handleEditLink = async () => {
     if (!editingLink) {
@@ -223,10 +228,14 @@
           />
         </div>
         <div class="mt-3" id="qrcode">
-          {#if showQRCode && sharedLink}
+          {#if sharedLink}
+            {#if !QRCodeGenerated}
+            <Button size="sm" fullwidth on:click={generateQRCode}>Generate QR Code</Button>
+            {:else}
             <div class="container">
               <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;" displayWidth={QRCodeWidth} />
             </div>
+            {/if}
           {/if}
         </div>
       </div>
