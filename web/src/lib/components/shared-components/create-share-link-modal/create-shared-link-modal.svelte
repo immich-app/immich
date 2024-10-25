@@ -230,7 +230,7 @@
         <div class="mt-3" id="qrcode">
           {#if sharedLink}
             {#if !QRCodeGenerated}
-            <Button size="sm" fullwidth on:click={generateQRCode}>Generate QR Code</Button>
+            <Button size="sm" fullwidth on:click={generateQRCode}>{$t('generate_qr_code')}</Button>
             {:else}
             <div class="container">
               <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;" displayWidth={QRCodeWidth} />

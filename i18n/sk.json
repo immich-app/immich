@@ -580,6 +580,7 @@
   "force_re-scan_library_files": "",
   "forward": "",
   "general": "Všeobecné",
+  "generate_qr_code": "Vygenerovat QR kod",
   "get_help": "",
   "getting_started": "",
   "go_back": "",
