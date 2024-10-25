@@ -1,5 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
@@ -432,7 +433,11 @@
   });
 </script>
 
-<div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
+<div
+  class="flex overflow-hidden"
+  bind:clientWidth={globalWidth}
+  use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}
+>
   <div class="relative w-full shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
