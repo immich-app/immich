@@ -242,7 +242,7 @@
               <th class="text-center text-sm font-medium">{$t('owner')}</th>
               <th class="text-center text-sm font-medium">{$t('assets')}</th>
               <th class="text-center text-sm font-medium">{$t('size')}</th>
-              <th class="text-center text-sm font-medium" />
+              <th class="text-center text-sm font-medium"></th>
             </tr>
           </thead>
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
@@ -309,16 +309,19 @@
                 </td>
               </tr>
               {#if renameLibrary === index}
+                <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }}>
                   <LibraryRenameForm {library} onSubmit={handleUpdate} onCancel={() => (renameLibrary = null)} />
                 </div>
               {/if}
               {#if editImportPaths === index}
+                <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }}>
                   <LibraryImportPathsForm {library} onSubmit={handleUpdate} onCancel={() => (editImportPaths = null)} />
                 </div>
               {/if}
               {#if editScanSettings === index}
+                <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryScanSettingsForm
                     {library}

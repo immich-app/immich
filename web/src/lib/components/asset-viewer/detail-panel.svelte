@@ -154,7 +154,7 @@
         <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
             {#if $user?.isAdmin}
-              <p>{$t('admin.asset_offline_description')}</p>
+              {$t('admin.asset_offline_description')}
             {:else}
               {$t('asset_offline_description')}
             {/if}

@@ -57,6 +57,7 @@
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: style = (async () => {
     const config = await getServerConfig();
     const theme = $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT;

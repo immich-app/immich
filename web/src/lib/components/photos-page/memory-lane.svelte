@@ -86,7 +86,7 @@
             </p>
             <div
               class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
-            />
+            ></div>
           </a>
         {/if}
       {/each}

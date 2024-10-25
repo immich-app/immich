@@ -218,6 +218,7 @@
           href={currentUrlReplaceAssetId(asset.id)}
           on:click={(evt) => evt.preventDefault()}
           tabindex={0}
+          aria-label="Thumbnail URL"
         >
         </a>
       {/if}
@@ -255,12 +256,12 @@
         <div
           class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
           class:rounded-xl={selected}
-        />
+        ></div>
 
         <!-- Outline on focus -->
         <div
           class="absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary"
-        />
+        ></div>
 
         <!-- Favorite asset star -->
         {#if !isSharedLink() && asset.isFavorite}
@@ -339,7 +340,7 @@
           class="absolute top-0 h-full w-full bg-immich-primary opacity-40"
           in:fade={{ duration: 100 }}
           out:fade={{ duration: 100 }}
-        />
+        ></div>
       {/if}
     </div>
   {/if}
