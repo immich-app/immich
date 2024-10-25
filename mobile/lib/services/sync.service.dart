@@ -29,6 +29,7 @@ import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 final syncServiceProvider = Provider(
   (ref) => SyncService(
@@ -75,9 +76,18 @@ class SyncService {
     _syncRepository.onAlbumDeleted = _onAlbumDeleted;
     _syncRepository.onAlbumUpdated = _onAlbumUpdated;
 
-    _syncRepository.onAssetAdded = _onAssetAdded;
+    _syncRepository.onAssetUpserted = onAssetUpserted;
     _syncRepository.onAssetDeleted = _onAssetDeleted;
-    _syncRepository.onAssetUpdated = _onAssetUpdated;
+  }
+
+  void onAssetUpserted(List<Asset> assets) {
+    // Update record in database
+    print("insert assets into database: ${assets.length}");
+  }
+
+  void _onAssetDeleted(List<String> ids) {
+    // Update record in database
+    print("remove assets in database: $ids");
   }
 
   void _onAlbumAdded(Album album) {
@@ -93,21 +103,6 @@ class SyncService {
   void _onAlbumUpdated(Album album) {
     // Update record in database
     print("Album updated: $album");
-  }
-
-  void _onAssetAdded(Asset asset) {
-    // Update record in database
-    // print("Asset added: $asset");
-  }
-
-  void _onAssetDeleted(Asset asset) {
-    // Update record in database
-    print("Asset deleted: $asset");
-  }
-
-  void _onAssetUpdated(Asset asset) {
-    // Update record in database
-    print("Asset updated: $asset");
   }
 
   // public methods:
@@ -879,7 +874,10 @@ class SyncService {
   }
 
   void incrementalSync() async {
-    await _syncRepository.incrementalSync();
+    await _syncRepository.incrementalSync(
+      types: [SyncStreamDtoTypesEnum.asset],
+      batchSize: 50,
+    );
   }
 
   void fullSync() async {

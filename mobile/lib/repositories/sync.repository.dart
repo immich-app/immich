@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/sync.interface.dart';
@@ -27,13 +25,10 @@ class SyncRepository extends DatabaseRepository implements ISyncRepository {
   void Function(Album)? onAlbumUpdated;
 
   @override
-  void Function(Asset)? onAssetAdded;
+  void Function(List<Asset>)? onAssetUpserted;
 
   @override
-  void Function(Asset)? onAssetDeleted;
-
-  @override
-  void Function(Asset)? onAssetUpdated;
+  void Function(List<String>)? onAssetDeleted;
 
   final SyncApiRepository _apiRepository;
 
@@ -46,36 +41,75 @@ class SyncRepository extends DatabaseRepository implements ISyncRepository {
   }
 
   @override
-  Future<void> incrementalSync() async {
-    _apiRepository.getChanges().listen((event) async {
-      // final type = jsonDecode(event)['type'];
-      // final data = jsonDecode(event)['data'];
+  Future<void> incrementalSync({
+    required List<SyncStreamDtoTypesEnum> types,
+    required int batchSize,
+  }) async {
+    List<Map<SyncAction, dynamic>> batch = [];
+    SyncStreamDtoTypesEnum type = SyncStreamDtoTypesEnum.asset;
 
-      // if (type == 'album_added') {
-      //   final dto = AlbumResponseDto.fromJson(data);
-      //   final album = await Album.remote(dto!);
-      //   onAlbumAdded?.call(album);
-      // } else if (type == 'album_deleted') {
-      //   final dto = AlbumResponseDto.fromJson(data);
-      //   final album = await Album.remote(dto!);
-      //   onAlbumDeleted?.call(album);
-      // } else if (type == 'album_updated') {
-      //   final dto = AlbumResponseDto.fromJson(data);
-      //   final album = await Album.remote(dto!);
-      //   onAlbumUpdated?.call(album);
-      // } else if (type == 'asset_added') {
-      //   final dto = AssetResponseDto.fromJson(data);
-      //   final asset = Asset.remote(dto!);
-      //   onAssetAdded?.call(asset);
-      // } else if (type == 'asset_deleted') {
-      //   final dto = AssetResponseDto.fromJson(data);
-      //   final asset = Asset.remote(dto!);
-      //   onAssetDeleted?.call(asset);
-      // } else if (type == 'asset_updated') {
-      //   final dto = AssetResponseDto.fromJson(data);
-      //   final asset = Asset.remote(dto!);
-      //   onAssetUpdated?.call(asset);
-      // }
-    });
+    _apiRepository.getChanges(types).listen(
+      (event) async {
+        type = event.keys.first;
+        final data = event.values.first;
+
+        switch (type) {
+          case SyncStreamDtoTypesEnum.asset:
+            if (data is Asset) {
+              batch.add({
+                SyncAction.upsert: data,
+              });
+            }
+
+            if (data is String) {
+              batch.add({
+                SyncAction.delete: data,
+              });
+            }
+
+            if (batch.length >= batchSize) {
+              _processBatch(batch, type);
+              batch.clear();
+            }
+            break;
+
+          default:
+            break;
+        }
+      },
+      onDone: () {
+        _processBatch(batch, type);
+      },
+    );
+  }
+
+  void _processBatch(
+    List<Map<SyncAction, dynamic>> batch,
+    SyncStreamDtoTypesEnum type,
+  ) {
+    switch (type) {
+      case SyncStreamDtoTypesEnum.asset:
+        final upserts = batch
+            .where((element) => element.keys.first == SyncAction.upsert)
+            .map((e) => e.values.first as Asset)
+            .toList();
+
+        final deletes = batch
+            .where((element) => element.keys.first == SyncAction.delete)
+            .map((e) => e.values.first as String)
+            .toList();
+
+        if (upserts.isNotEmpty) {
+          onAssetUpserted?.call(upserts);
+        }
+
+        if (deletes.isNotEmpty) {
+          onAssetDeleted?.call(deletes);
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 }

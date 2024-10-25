@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/sync_api.interface.dart';
@@ -21,14 +22,15 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
   SyncApiRepository(this._api);
 
   @override
-  Stream<Map<String, dynamic>> getChanges() async* {
+  Stream<Map<SyncStreamDtoTypesEnum, dynamic>> getChanges(
+    List<SyncStreamDtoTypesEnum> types,
+  ) async* {
     final serverUrl = Store.get(StoreKey.serverUrl);
     final accessToken = Store.get(StoreKey.accessToken);
 
     final url = Uri.parse('$serverUrl/sync/stream');
     final client = http.Client();
     final request = http.Request('POST', url);
-
     final headers = {
       'Content-Type': 'application/json',
       'x-immich-user-token': accessToken,
@@ -36,7 +38,7 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
 
     request.headers.addAll(headers);
     request.body = json.encode({
-      "types": ["asset"],
+      "types": types,
     });
 
     try {
@@ -68,60 +70,39 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
     throw UnimplementedError();
   }
 
-  Map<String, dynamic> _parseSyncReponse(String jsonString) {
+  Map<SyncStreamDtoTypesEnum, dynamic> _parseSyncReponse(String jsonString) {
     try {
       jsonString = jsonString.trim();
-      final type = jsonDecode(jsonString)['type'];
+      final type =
+          SyncStreamDtoTypesEnum.fromJson(jsonDecode(jsonString)['type'])!;
+      final action = SyncAction.fromJson(jsonDecode(jsonString)['action']);
       final data = jsonDecode(jsonString)['data'];
-      final action = jsonDecode(jsonString)['action'];
 
       switch (type) {
-        case 'asset':
-          if (action == 'upsert') {
-            return {type: AssetResponseDto.fromJson(data)};
+        case SyncStreamDtoTypesEnum.asset:
+          if (action == SyncAction.upsert) {
+            final dto = AssetResponseDto.fromJson(data);
+            if (dto == null) {
+              return {};
+            }
+
+            final asset = Asset.remote(dto);
+            return {type: asset};
           }
 
-          if (action == 'delete') {
+          // Data is the id of the asset if type is delete
+          if (action == SyncAction.delete) {
             return {type: data};
           }
 
-        case 'album':
-          final dto = AlbumResponseDto.fromJson(data);
-          if (dto == null) {
-            return {};
-          }
-
-          final album = Album.remote(dto);
-          return {type: album};
-
-        case 'albumAsset': //AlbumAssetResponseDto
-          // final dto = AlbumAssetResponseDto.fromJson(data);
-          // final album = Album.remote(dto!);
-          break;
-
-        case 'user':
-          final dto = UserResponseDto.fromJson(data);
-          if (dto == null) {
-            return {};
-          }
-
-          final user = User.fromSimpleUserDto(dto);
-          return {type: user};
-
-        case 'partner':
-          final dto = PartnerResponseDto.fromJson(data);
-          if (dto == null) {
-            return {};
-          }
-
-          final partner = User.fromPartnerDto(dto);
-          return {type: partner};
+        default:
+          return {};
       }
 
-      return {"invalid": null};
-    } catch (e) {
-      print("error parsing json $e");
-      return {"invalid": null};
+      return {};
+    } catch (error) {
+      debugPrint("[_parseSyncReponse] Error parsing json $error");
+      return {};
     }
   }
 }
