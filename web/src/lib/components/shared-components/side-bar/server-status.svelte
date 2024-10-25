@@ -10,11 +10,14 @@
     type ServerAboutResponseDto,
     type ServerVersionHistoryResponseDto,
   } from '@immich/sdk';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiAlert } from '@mdi/js';
 
   const { serverVersion, connected } = websocketStore;
 
   let isOpen = false;
 
+  $: isMain = info?.sourceRef === 'main' && info.repository === 'immich-app/immich';
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
 
   let info: ServerAboutResponseDto;
@@ -47,7 +50,13 @@
 
   <div class="flex justify-between justify-items-center">
     {#if $connected && version}
-      <button type="button" on:click={() => (isOpen = true)} class="dark:text-immich-gray">{version}</button>
+      <button type="button" on:click={() => (isOpen = true)} class="dark:text-immich-gray flex gap-1">
+        {#if isMain}
+          <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info.sourceRef}
+        {:else}
+          {version}
+        {/if}
+      </button>
     {:else}
       <p class="text-red-500">{$t('unknown')}</p>
     {/if}

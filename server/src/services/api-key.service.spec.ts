@@ -46,6 +46,15 @@ describe(APIKeyService.name, () => {
       expect(cryptoMock.newPassword).toHaveBeenCalled();
       expect(cryptoMock.hashSha256).toHaveBeenCalled();
     });
+
+    it('should throw an error if the api key does not have sufficient permissions', async () => {
+      await expect(
+        sut.create(
+          { ...authStub.admin, apiKey: { ...keyStub.admin, permissions: [] } },
+          { permissions: [Permission.ASSET_READ] },
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe('update', () => {

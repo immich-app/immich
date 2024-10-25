@@ -5,7 +5,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -27,13 +26,11 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final albumService = ref.watch(albumServiceProvider);
-    final sharedAlbums = ref.watch(sharedAlbumProvider);
 
     useEffect(
       () {
         // Fetch album updates, e.g., cover image
-        ref.read(albumProvider.notifier).getAllAlbums();
-        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        ref.read(albumProvider.notifier).refreshRemoteAlbums();
 
         return null;
       },
@@ -41,9 +38,9 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
     );
 
     void addToAlbum(Album album) async {
-      final result = await albumService.addAdditionalAssetToAlbum(
-        assets,
+      final result = await albumService.addAssets(
         album,
+        assets,
       );
 
       if (result != null) {
@@ -107,8 +104,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                         onPressed: () {
                           context.pushRoute(
                             CreateAlbumRoute(
-                              isSharedAlbum: false,
-                              initialAssets: assets,
+                              assets: assets,
                             ),
                           );
                         },
@@ -123,7 +119,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: AddToAlbumSliverList(
               albums: albums,
-              sharedAlbums: sharedAlbums,
+              sharedAlbums: albums.where((a) => a.shared).toList(),
               onAddToAlbum: addToAlbum,
             ),
           ),

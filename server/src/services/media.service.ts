@@ -147,10 +147,10 @@ export class MediaService extends BaseService {
     }
 
     let generated: { previewPath: string; thumbnailPath: string; thumbhash: Buffer };
-    if (asset.type === AssetType.IMAGE) {
-      generated = await this.generateImageThumbnails(asset);
-    } else if (asset.type === AssetType.VIDEO) {
+    if (asset.type === AssetType.VIDEO || asset.originalFileName.toLowerCase().endsWith('.gif')) {
       generated = await this.generateVideoThumbnails(asset);
+    } else if (asset.type === AssetType.IMAGE) {
+      generated = await this.generateImageThumbnails(asset);
     } else {
       this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
       return JobStatus.SKIPPED;
@@ -349,18 +349,16 @@ export class MediaService extends BaseService {
   }
 
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
-    return streams.sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
+    return streams
+      .filter((stream) => stream.codecName !== 'unknown')
+      .sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
   }
 
   private getTranscodeTarget(
     config: SystemConfigFFmpegDto,
-    videoStream?: VideoStreamInfo,
+    videoStream: VideoStreamInfo,
     audioStream?: AudioStreamInfo,
   ): TranscodeTarget {
-    if (!videoStream && !audioStream) {
-      return TranscodeTarget.NONE;
-    }
-
     const isAudioTranscodeRequired = this.isAudioTranscodeRequired(config, audioStream);
     const isVideoTranscodeRequired = this.isVideoTranscodeRequired(config, videoStream);
 
@@ -402,11 +400,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: VideoStreamInfo): boolean {
-    if (!stream) {
-      return false;
-    }
-
+  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo): boolean {
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;

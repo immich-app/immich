@@ -500,12 +500,12 @@ describe('/libraries', () => {
     });
 
     it('should set an asset offline its file is not in any import path', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
-
-      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
@@ -630,6 +630,29 @@ describe('/libraries', () => {
         importPath: pathToTest,
         isValid: false,
         message: `Path does not exist (ENOENT)`,
+      });
+    });
+
+    it("should fail if path isn't absolute", async () => {
+      const pathToTest = `relative/path`;
+
+      const cwd = process.cwd();
+      // Create directory in cwd
+      utils.createDirectory(`${cwd}/${pathToTest}`);
+
+      const response = await utils.validateLibrary(admin.accessToken, library.id, {
+        importPaths: [pathToTest],
+      });
+
+      utils.removeDirectory(`${cwd}/${pathToTest}`);
+
+      expect(response.importPaths?.length).toEqual(1);
+      const pathResponse = response?.importPaths?.at(0);
+
+      expect(pathResponse).toEqual({
+        importPath: pathToTest,
+        isValid: false,
+        message: expect.stringMatching('Import path must be absolute, try /usr/src/app/relative/path'),
       });
     });
 

@@ -20,11 +20,9 @@ import {
   UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -61,10 +59,6 @@ export class PersonRepository implements IPersonRepository {
 
   async delete(entities: PersonEntity[]): Promise<void> {
     await this.personRepository.remove(entities);
-  }
-
-  async deleteAll(): Promise<void> {
-    await this.personRepository.clear();
   }
 
   async deleteFaces({ sourceType }: DeleteFacesOptions): Promise<void> {
@@ -269,17 +263,12 @@ export class PersonRepository implements IPersonRepository {
     return results.map((person) => person.id);
   }
 
-  async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
-    const res = await this.assetFaceRepository.save(entities);
-    return res.map((row) => row.id);
-  }
-
   async refreshFaces(
     facesToAdd: Partial<AssetFaceEntity>[],
     faceIdsToRemove: string[],
     embeddingsToAdd?: FaceSearchEntity[],
   ): Promise<void> {
-    const query = this.faceSearchRepository.createQueryBuilder().select('1');
+    const query = this.faceSearchRepository.createQueryBuilder().select('1').fromDummy();
     if (facesToAdd.length > 0) {
       const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
       query.addCommonTableExpression(insertCte, 'added');
@@ -296,6 +285,7 @@ export class PersonRepository implements IPersonRepository {
     if (embeddingsToAdd?.length) {
       const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
       query.addCommonTableExpression(embeddingCte, 'embeddings');
+      query.getQuery(); // typeorm mixes up parameters without this
     }
 
     await query.execute();

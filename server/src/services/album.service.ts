@@ -19,7 +19,6 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/interfaces/album.interface';
 import { BaseService } from 'src/services/base.service';
-import { checkAccess, requireAccess } from 'src/utils/access';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
 @Injectable()
@@ -82,7 +81,7 @@ export class AlbumService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [id] });
     await this.albumRepository.updateThumbnails();
     const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
     const album = await this.findOrFail(id, { withAssets });
@@ -106,7 +105,7 @@ export class AlbumService extends BaseService {
       }
     }
 
-    const allowedAssetIdsSet = await checkAccess(this.accessRepository, {
+    const allowedAssetIdsSet = await this.checkAccess({
       auth,
       permission: Permission.ASSET_SHARE,
       ids: dto.assetIds || [],
@@ -130,7 +129,7 @@ export class AlbumService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_UPDATE, ids: [id] });
 
     const album = await this.findOrFail(id, { withAssets: true });
 
@@ -153,13 +152,13 @@ export class AlbumService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_DELETE, ids: [id] });
     await this.albumRepository.delete(id);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id, { withAssets: false });
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_ADD_ASSET, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_ADD_ASSET, ids: [id] });
 
     const results = await addAssets(
       auth,
@@ -175,14 +174,20 @@ export class AlbumService extends BaseService {
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
       });
 
-      await this.eventRepository.emit('album.update', { id, updatedBy: auth.user.id });
+      const allUsersExceptUs = [...album.albumUsers.map(({ user }) => user.id), album.owner.id].filter(
+        (userId) => userId !== auth.user.id,
+      );
+
+      if (allUsersExceptUs.length > 0) {
+        await this.eventRepository.emit('album.update', { id, recipientIds: allUsersExceptUs });
+      }
     }
 
     return results;
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_REMOVE_ASSET, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_REMOVE_ASSET, ids: [id] });
 
     const album = await this.findOrFail(id, { withAssets: false });
     const results = await removeAssets(
@@ -203,7 +208,7 @@ export class AlbumService extends BaseService {
   }
 
   async addUsers(auth: AuthDto, id: string, { albumUsers }: AddUsersDto): Promise<AlbumResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_SHARE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [id] });
 
     const album = await this.findOrFail(id, { withAssets: false });
 
@@ -247,14 +252,14 @@ export class AlbumService extends BaseService {
 
     // non-admin can remove themselves
     if (auth.user.id !== userId) {
-      await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_SHARE, ids: [id] });
+      await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [id] });
     }
 
     await this.albumUserRepository.delete({ albumId: id, userId });
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_SHARE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [id] });
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 

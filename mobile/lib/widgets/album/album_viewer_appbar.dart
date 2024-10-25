@@ -7,7 +7,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -46,10 +45,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
 
       final bool success;
       if (album.shared) {
-        success =
-            await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(album);
-        context
-            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
+        success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
+        context.navigateTo(TabControllerRoute(children: [AlbumsRoute()]));
       } else {
         success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
         context
@@ -113,11 +110,10 @@ class AlbumViewerAppbar extends HookConsumerWidget
       isProcessing.value = true;
 
       bool isSuccess =
-          await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(album);
+          await ref.watch(albumProvider.notifier).leaveAlbum(album);
 
       if (isSuccess) {
-        context
-            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
+        context.navigateTo(TabControllerRoute(children: [AlbumsRoute()]));
       } else {
         context.pop();
         ImmichToast.show(

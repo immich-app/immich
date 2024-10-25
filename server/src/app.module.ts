@@ -7,22 +7,23 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
-import { bullConfig, bullQueues, clsConfig, immichAppConfig } from 'src/config';
+import { clsConfig, immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
-import { databaseConfig } from 'src/database.config';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { teardownTelemetry } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
 import { DatabaseService } from 'src/services/database.service';
-import { otelConfig } from 'src/utils/instrumentation';
 
 const common = [...services, ...repositories];
 
@@ -35,17 +36,20 @@ const middleware = [
   { provide: APP_GUARD, useClass: AuthGuard },
 ];
 
+const configRepository = new ConfigRepository();
+const { bull, database, otel } = configRepository.getEnv();
+
 const imports = [
-  BullModule.forRoot(bullConfig),
-  BullModule.registerQueue(...bullQueues),
+  BullModule.forRoot(bull.config),
+  BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(clsConfig),
   ConfigModule.forRoot(immichAppConfig),
-  OpenTelemetryModule.forRoot(otelConfig),
+  OpenTelemetryModule.forRoot(otel),
   TypeOrmModule.forRootAsync({
     inject: [ModuleRef],
     useFactory: (moduleRef: ModuleRef) => {
       return {
-        ...databaseConfig,
+        ...database.config,
         poolErrorHandler: (error) => {
           moduleRef.get(DatabaseService, { strict: false }).handleConnectionError(error);
         },
@@ -63,6 +67,7 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(ITelemetryRepository) private telemetryRepository: ITelemetryRepository,
   ) {
     logger.setAppName(this.worker);
   }
@@ -70,12 +75,14 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
   abstract getWorker(): ImmichWorker;
 
   async onModuleInit() {
+    this.telemetryRepository.setup({ repositories: repositories.map(({ useClass }) => useClass) });
     this.eventRepository.setup({ services });
     await this.eventRepository.emit('app.bootstrap', this.worker);
   }
 
   async onModuleDestroy() {
     await this.eventRepository.emit('app.shutdown', this.worker);
+    await teardownTelemetry();
   }
 }
 

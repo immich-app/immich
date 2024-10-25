@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
 import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -103,6 +104,11 @@ describe(VersionService.name, () => {
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
     });
 
+    it('should not run if version check is disabled', async () => {
+      systemMock.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
+    });
+
     it('should run if it has been > 60 minutes', async () => {
       serverInfoMock.getGitHubRelease.mockResolvedValue(mockRelease('v100.0.0'));
       systemMock.get.mockResolvedValue({
@@ -131,6 +137,21 @@ describe(VersionService.name, () => {
       expect(systemMock.set).not.toHaveBeenCalled();
       expect(eventMock.clientBroadcast).not.toHaveBeenCalled();
       expect(loggerMock.warn).toHaveBeenCalled();
+    });
+  });
+
+  describe('onWebsocketConnectionEvent', () => {
+    it('should send on_server_version client event', async () => {
+      await sut.onWebsocketConnection({ userId: '42' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(eventMock.clientSend).toHaveBeenCalledTimes(1);
+    });
+
+    it('should also send a new release notification', async () => {
+      systemMock.get.mockResolvedValue({ checkedAt: '2024-01-01', releaseVersion: 'v1.42.0' });
+      await sut.onWebsocketConnection({ userId: '42' });
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
   });
 });

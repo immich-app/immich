@@ -15,9 +15,8 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { mdiAccountOff } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowLeftThin, mdiMinus, mdiRestart } from '@mdi/js';
+  import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart } from '@mdi/js';
   import { onMount } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -297,7 +296,7 @@
                 {:else}
                   <CircleIconButton
                     color="primary"
-                    icon={mdiMinus}
+                    icon={mdiPencil}
                     title={$t('select_new_face')}
                     size="18"
                     padding="1"

@@ -1,6 +1,9 @@
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
+import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
+import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -20,7 +23,6 @@ import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
-import { IMetricRepository } from 'src/interfaces/metric.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
@@ -34,10 +36,12 @@ import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
+import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { IViewRepository } from 'src/interfaces/view.interface';
+import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
 export class BaseService {
@@ -63,7 +67,6 @@ export class BaseService {
     @Inject(IMediaRepository) protected mediaRepository: IMediaRepository,
     @Inject(IMemoryRepository) protected memoryRepository: IMemoryRepository,
     @Inject(IMetadataRepository) protected metadataRepository: IMetadataRepository,
-    @Inject(IMetricRepository) protected metricRepository: IMetricRepository,
     @Inject(IMoveRepository) protected moveRepository: IMoveRepository,
     @Inject(INotificationRepository) protected notificationRepository: INotificationRepository,
     @Inject(IOAuthRepository) protected oauthRepository: IOAuthRepository,
@@ -77,6 +80,7 @@ export class BaseService {
     @Inject(IStorageRepository) protected storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) protected systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) protected tagRepository: ITagRepository,
+    @Inject(ITelemetryRepository) protected telemetryRepository: ITelemetryRepository,
     @Inject(ITrashRepository) protected trashRepository: ITrashRepository,
     @Inject(IUserRepository) protected userRepository: IUserRepository,
     @Inject(IVersionHistoryRepository) protected versionRepository: IVersionHistoryRepository,
@@ -95,7 +99,7 @@ export class BaseService {
     );
   }
 
-  private get repos() {
+  private get configRepos() {
     return {
       configRepo: this.configRepository,
       metadataRepo: this.systemMetadataRepository,
@@ -104,10 +108,42 @@ export class BaseService {
   }
 
   getConfig(options: { withCache: boolean }) {
-    return getConfig(this.repos, options);
+    return getConfig(this.configRepos, options);
   }
 
   updateConfig(newConfig: SystemConfig) {
-    return updateConfig(this.repos, newConfig);
+    return updateConfig(this.configRepos, newConfig);
+  }
+
+  requireAccess(request: AccessRequest) {
+    return requireAccess(this.accessRepository, request);
+  }
+
+  checkAccess(request: AccessRequest) {
+    return checkAccess(this.accessRepository, request);
+  }
+
+  async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
+    const user = await this.userRepository.getByEmail(dto.email);
+    if (user) {
+      throw new BadRequestException('User exists');
+    }
+
+    if (!dto.isAdmin) {
+      const localAdmin = await this.userRepository.getAdmin();
+      if (!localAdmin) {
+        throw new BadRequestException('The first registered account must the administrator.');
+      }
+    }
+
+    const payload: Partial<UserEntity> = { ...dto };
+    if (payload.password) {
+      payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
+    }
+    if (payload.storageLabel) {
+      payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
+    }
+
+    return this.userRepository.create(payload);
   }
 }

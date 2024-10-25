@@ -15,11 +15,9 @@ import {
   VectorUpdateResult,
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
   private vectorExtension: VectorExtension;
@@ -72,10 +70,6 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
-  }
-
-  async updateExtension(extension: DatabaseExtension, version?: string): Promise<void> {
-    await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
   async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {

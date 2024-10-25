@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
@@ -115,7 +114,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.delete(StoreKey.accessToken),
       ]);
       _ref.invalidate(albumProvider);
-      _ref.invalidate(sharedAlbumProvider);
 
       state = state.copyWith(
         deviceId: "",

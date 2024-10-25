@@ -29,7 +29,6 @@ import {
 } from 'src/interfaces/asset.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { searchAssetBuilder } from 'src/utils/database';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
@@ -54,7 +53,6 @@ const dateTrunc = (options: TimeBucketOptions) =>
     truncateMap[options.size]
   }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
-@Instrumentation()
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
@@ -492,39 +490,6 @@ export class AssetRepository implements IAssetRepository {
     return paginate(this.repository, pagination, {
       relations,
       where,
-      order: {
-        // Ensures correct order when paginating
-        createdAt: 'ASC',
-      },
-    });
-  }
-
-  getWith(
-    pagination: PaginationOptions,
-    property: WithProperty,
-    libraryId?: string,
-    withDeleted = false,
-  ): Paginated<AssetEntity> {
-    let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
-
-    switch (property) {
-      case WithProperty.SIDECAR: {
-        where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
-        break;
-      }
-
-      default: {
-        throw new Error(`Invalid getWith property: ${property}`);
-      }
-    }
-
-    if (libraryId) {
-      where = [{ ...where, libraryId }];
-    }
-
-    return paginate(this.repository, pagination, {
-      where,
-      withDeleted,
       order: {
         // Ensures correct order when paginating
         createdAt: 'ASC',

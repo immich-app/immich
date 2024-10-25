@@ -22,7 +22,7 @@ Copy the entire `immich-server` block as a new service and make the following ch
 -   container_name: immich_server
 ...
 -   ports:
--     - 2283:3001
+-     - 2283:2283
 + immich-microservices:
 +   container_name: immich_microservices
 ```

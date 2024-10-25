@@ -44,6 +44,12 @@ describe(MetadataService.name, () => {
   let tagMock: Mocked<ITagRepository>;
   let userMock: Mocked<IUserRepository>;
 
+  const mockReadTags = (exifData?: Partial<ImmichTags>, sidecarData?: Partial<ImmichTags>) => {
+    metadataMock.readTags.mockReset();
+    metadataMock.readTags.mockResolvedValueOnce(exifData ?? {});
+    metadataMock.readTags.mockResolvedValueOnce(sidecarData ?? {});
+  };
+
   beforeEach(() => {
     ({
       sut,
@@ -61,6 +67,10 @@ describe(MetadataService.name, () => {
       tagMock,
       userMock,
     } = newTestService(MetadataService));
+
+    mockReadTags();
+
+    delete process.env.TZ;
   });
 
   afterEach(async () => {
@@ -256,13 +266,7 @@ describe(MetadataService.name, () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
       assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
-      metadataMock.readTags.mockImplementation((path) => {
-        const map = {
-          [assetStub.sidecar.originalPath]: originalDate.toISOString(),
-          [assetStub.sidecar.sidecarPath as string]: sidecarDate.toISOString(),
-        };
-        return Promise.resolve({ CreationDate: map[path] ?? new Date().toISOString() });
-      });
+      mockReadTags({ CreationDate: originalDate.toISOString() }, { CreationDate: sidecarDate.toISOString() });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id], { faces: { person: false } });
@@ -275,9 +279,28 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should account for the server being in a non-UTC timezone', async () => {
+      process.env.TZ = 'America/Los_Angeles';
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      mockReadTags({ DateTimeOriginal: '2022:01:01 00:00:00' });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dateTimeOriginal: new Date('2022-01-01T08:00:00.000Z'),
+        }),
+      );
+
+      expect(assetMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          localDateTime: new Date('2022-01-01T00:00:00.000Z'),
+        }),
+      );
+    });
+
     it('should handle lists of numbers', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ ISO: [160] });
+      mockReadTags({ ISO: [160] });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
@@ -294,7 +317,7 @@ describe(MetadataService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
       systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: true } });
       mapMock.reverseGeocode.mockResolvedValue({ city: 'City', state: 'State', country: 'Country' });
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         GPSLatitude: assetStub.withLocation.exifInfo!.latitude!,
         GPSLongitude: assetStub.withLocation.exifInfo!.longitude!,
       });
@@ -314,7 +337,7 @@ describe(MetadataService.name, () => {
 
     it('should discard latitude and longitude on null island', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         GPSLatitude: 0,
         GPSLongitude: 0,
       });
@@ -326,7 +349,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from TagsList', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent'] });
+      mockReadTags({ TagsList: ['Parent'] });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -336,7 +359,7 @@ describe(MetadataService.name, () => {
 
     it('should extract hierarchy from TagsList', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ TagsList: ['Parent/Child'] });
+      mockReadTags({ TagsList: ['Parent/Child'] });
       tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
       tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
 
@@ -352,7 +375,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from Keywords as a string', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent' });
+      mockReadTags({ Keywords: 'Parent' });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -362,7 +385,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from Keywords as a list', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Keywords: ['Parent'] });
+      mockReadTags({ Keywords: ['Parent'] });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -372,7 +395,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from Keywords as a list with a number', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Keywords: ['Parent', 2024] });
+      mockReadTags({ Keywords: ['Parent', 2024] });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -383,7 +406,7 @@ describe(MetadataService.name, () => {
 
     it('should extract hierarchal tags from Keywords', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Keywords: 'Parent/Child' });
+      mockReadTags({ Keywords: 'Parent/Child' });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -398,7 +421,7 @@ describe(MetadataService.name, () => {
 
     it('should ignore Keywords when TagsList is present', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Keywords: 'Child', TagsList: ['Parent/Child'] });
+      mockReadTags({ Keywords: 'Child', TagsList: ['Parent/Child'] });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -413,7 +436,7 @@ describe(MetadataService.name, () => {
 
     it('should extract hierarchy from HierarchicalSubject', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Parent|Child', 'TagA'] });
+      mockReadTags({ HierarchicalSubject: ['Parent|Child', 'TagA'] });
       tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
       tagMock.upsertValue.mockResolvedValueOnce(tagStub.child);
 
@@ -430,7 +453,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from HierarchicalSubject as a list with a number', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Parent', 2024] });
+      mockReadTags({ HierarchicalSubject: ['Parent', 2024] });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -441,7 +464,7 @@ describe(MetadataService.name, () => {
 
     it('should extract ignore / characters in a HierarchicalSubject tag', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Mom/Dad'] });
+      mockReadTags({ HierarchicalSubject: ['Mom/Dad'] });
       tagMock.upsertValue.mockResolvedValueOnce(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -455,7 +478,7 @@ describe(MetadataService.name, () => {
 
     it('should ignore HierarchicalSubject when TagsList is present', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ HierarchicalSubject: ['Parent2|Child2'], TagsList: ['Parent/Child'] });
+      mockReadTags({ HierarchicalSubject: ['Parent2|Child2'], TagsList: ['Parent/Child'] });
       tagMock.upsertValue.mockResolvedValue(tagStub.parent);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -470,7 +493,7 @@ describe(MetadataService.name, () => {
 
     it('should remove existing tags', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({});
+      mockReadTags({});
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -495,7 +518,7 @@ describe(MetadataService.name, () => {
 
     it('should handle an invalid Directory Item', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         MotionPhoto: 1,
         ContainerDirectory: [{ Foo: 100 }],
       });
@@ -506,7 +529,7 @@ describe(MetadataService.name, () => {
     it('should extract the correct video orientation', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
-      metadataMock.readTags.mockResolvedValue({});
+      mockReadTags({});
 
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
@@ -518,7 +541,7 @@ describe(MetadataService.name, () => {
 
     it('should extract the MotionPhotoVideo tag from Samsung HEIC motion photos', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         Directory: 'foo/bar/',
         MotionPhotoVideo: new BinaryField(0, ''),
         // The below two are included to ensure that the MotionPhotoVideo tag is extracted
@@ -566,7 +589,7 @@ describe(MetadataService.name, () => {
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         Directory: 'foo/bar/',
         EmbeddedVideoFile: new BinaryField(0, ''),
         EmbeddedVideoType: 'MotionPhoto_Data',
@@ -611,7 +634,7 @@ describe(MetadataService.name, () => {
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
@@ -657,7 +680,7 @@ describe(MetadataService.name, () => {
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.livePhotoWithOriginalFileName]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
@@ -682,7 +705,7 @@ describe(MetadataService.name, () => {
 
     it('should not create a new motion photo video asset if the hash of the extracted video matches an existing asset', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
@@ -704,7 +727,7 @@ describe(MetadataService.name, () => {
 
     it('should link and hide motion video asset to still asset if the hash of the extracted video matches an existing asset', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
@@ -730,7 +753,7 @@ describe(MetadataService.name, () => {
       assetMock.getByIds.mockResolvedValue([
         { ...assetStub.livePhotoStillAsset, livePhotoVideoId: null, isExternal: true },
       ]);
-      metadataMock.readTags.mockResolvedValue({
+      mockReadTags({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
@@ -773,7 +796,7 @@ describe(MetadataService.name, () => {
         Rating: 3,
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue(tags);
+      mockReadTags(tags);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
@@ -831,7 +854,7 @@ describe(MetadataService.name, () => {
         tz: undefined,
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue(tags);
+      mockReadTags(tags);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
@@ -864,7 +887,7 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('only extracts duration for videos', async () => {
+    it('should only extract duration for videos', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.image }]);
       mediaMock.probe.mockResolvedValue({
         ...probeStub.videoStreamH264,
@@ -885,7 +908,7 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('omits duration of zero', async () => {
+    it('should omit duration of zero', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.video }]);
       mediaMock.probe.mockResolvedValue({
         ...probeStub.videoStreamH264,
@@ -907,7 +930,7 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('handles duration of 1 week', async () => {
+    it('should a handle duration of 1 week', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.video }]);
       mediaMock.probe.mockResolvedValue({
         ...probeStub.videoStreamH264,
@@ -929,9 +952,17 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('trims whitespace from description', async () => {
+    it('should ignore duration from exif data', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Description: '\t \v \f \n \r' });
+      mockReadTags({}, { Duration: { Value: 123 } });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.update).toHaveBeenCalledWith(expect.objectContaining({ duration: null }));
+    });
+
+    it('should trim whitespace from description', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      mockReadTags({ Description: '\t \v \f \n \r' });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
@@ -940,7 +971,7 @@ describe(MetadataService.name, () => {
         }),
       );
 
-      metadataMock.readTags.mockResolvedValue({ ImageDescription: ' my\n description' });
+      mockReadTags({ ImageDescription: ' my\n description' });
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -949,9 +980,9 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('handles a numeric description', async () => {
+    it('should handle a numeric description', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Description: 1000 });
+      mockReadTags({ Description: 1000 });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
@@ -964,7 +995,7 @@ describe(MetadataService.name, () => {
     it('should skip importing metadata when the feature is disabled', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
       systemMock.get.mockResolvedValue({ metadata: { faces: { import: false } } });
-      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      mockReadTags(metadataStub.withFace);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(personMock.getDistinctNames).not.toHaveBeenCalled();
     });
@@ -972,7 +1003,7 @@ describe(MetadataService.name, () => {
     it('should skip importing metadata face for assets without tags.RegionInfo', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
       systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      metadataMock.readTags.mockResolvedValue(metadataStub.empty);
+      mockReadTags(metadataStub.empty);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(personMock.getDistinctNames).not.toHaveBeenCalled();
     });
@@ -980,7 +1011,7 @@ describe(MetadataService.name, () => {
     it('should skip importing faces without name', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
       systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      metadataMock.readTags.mockResolvedValue(metadataStub.withFaceNoName);
+      mockReadTags(metadataStub.withFaceNoName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.createAll.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -992,7 +1023,7 @@ describe(MetadataService.name, () => {
     it('should skip importing faces with empty name', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
       systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      metadataMock.readTags.mockResolvedValue(metadataStub.withFaceEmptyName);
+      mockReadTags(metadataStub.withFaceEmptyName);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.createAll.mockResolvedValue([]);
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -1004,7 +1035,7 @@ describe(MetadataService.name, () => {
     it('should apply metadata face tags creating new persons', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
       systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      mockReadTags(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([]);
       personMock.createAll.mockResolvedValue([personStub.withName.id]);
       personMock.update.mockResolvedValue(personStub.withName);
@@ -1041,7 +1072,7 @@ describe(MetadataService.name, () => {
     it('should assign metadata face tags to existing persons', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
       systemMock.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      metadataMock.readTags.mockResolvedValue(metadataStub.withFace);
+      mockReadTags(metadataStub.withFace);
       personMock.getDistinctNames.mockResolvedValue([{ id: personStub.withName.id, name: personStub.withName.name }]);
       personMock.createAll.mockResolvedValue([]);
       personMock.update.mockResolvedValue(personStub.withName);
@@ -1072,7 +1103,7 @@ describe(MetadataService.name, () => {
 
     it('should handle invalid modify date', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ ModifyDate: '00:00:00.000' });
+      mockReadTags({ ModifyDate: '00:00:00.000' });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
@@ -1084,7 +1115,7 @@ describe(MetadataService.name, () => {
 
     it('should handle invalid rating value', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Rating: 6 });
+      mockReadTags({ Rating: 6 });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
@@ -1096,7 +1127,7 @@ describe(MetadataService.name, () => {
 
     it('should handle valid rating value', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.readTags.mockResolvedValue({ Rating: 5 });
+      mockReadTags({ Rating: 5 });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
