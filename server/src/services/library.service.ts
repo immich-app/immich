@@ -16,7 +16,7 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { AssetType } from 'src/enum';
+import { AssetType, ImmichWorker } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
@@ -36,27 +36,32 @@ import { validateCronExpression } from 'src/validation';
 @Injectable()
 export class LibraryService extends BaseService {
   private watchLibraries = false;
-  private watchLock = false;
+  private lock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
   @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap() {
+  async onBootstrap(workerType: ImmichWorker) {
+    if (workerType !== ImmichWorker.MICROSERVICES) {
+      return;
+    }
+
     const config = await this.getConfig({ withCache: false });
 
     const { watch, scan } = config.library;
 
     // This ensures that library watching only occurs in one microservice
-    // TODO: we could make the lock be per-library instead of global
-    this.watchLock = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
+    this.lock = await this.databaseRepository.tryLock(DatabaseLock.Library);
 
-    this.watchLibraries = this.watchLock && watch.enabled;
+    this.watchLibraries = this.lock && watch.enabled;
 
-    this.jobRepository.addCronJob(
-      'libraryScan',
-      scan.cronExpression,
-      () => handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
-      scan.enabled,
-    );
+    if (this.lock) {
+      this.jobRepository.addCronJob(
+        'libraryScan',
+        scan.cronExpression,
+        () => handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
+        scan.enabled,
+      );
+    }
 
     if (this.watchLibraries) {
       await this.watchAll();
@@ -65,7 +70,7 @@ export class LibraryService extends BaseService {
 
   @OnEvent({ name: 'config.update', server: true })
   async onConfigUpdate({ newConfig: { library }, oldConfig }: ArgOf<'config.update'>) {
-    if (!oldConfig || !this.watchLock) {
+    if (!oldConfig || !this.lock) {
       return;
     }
 
@@ -180,7 +185,7 @@ export class LibraryService extends BaseService {
   }
 
   private async unwatchAll() {
-    if (!this.watchLock) {
+    if (!this.lock) {
       return false;
     }
 
@@ -190,7 +195,7 @@ export class LibraryService extends BaseService {
   }
 
   async watchAll() {
-    if (!this.watchLock) {
+    if (!this.lock) {
       return false;
     }
 
