@@ -81,7 +81,7 @@
   $: thumbnailData = getPeopleThumbnailUrl(person);
   $: if (person) {
     handlePromiseError(updateAssetCount());
-    handlePromiseError(assetStore.updateOptions({ personId: person.id }));
+    handlePromiseError(assetStore.updateOptions({ personId: person.id, isArchived: false }));
   }
 
   const assetInteractionStore = createAssetInteractionStore();
