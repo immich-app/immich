@@ -13,7 +13,7 @@ abstract interface class ISyncRepository implements IDatabaseRepository {
 
   Future<void> fullSync();
   Future<void> incrementalSync({
-    required List<SyncStreamDtoTypesEnum> types,
+    required SyncStreamDtoTypesEnum type,
     required int batchSize,
   });
 }

@@ -72,10 +72,6 @@ class SyncService {
     this._eTagRepository,
     this._syncRepository,
   ) {
-    _syncRepository.onAlbumAdded = _onAlbumAdded;
-    _syncRepository.onAlbumDeleted = _onAlbumDeleted;
-    _syncRepository.onAlbumUpdated = _onAlbumUpdated;
-
     _syncRepository.onAssetUpserted = onAssetUpserted;
     _syncRepository.onAssetDeleted = _onAssetDeleted;
   }
@@ -88,21 +84,6 @@ class SyncService {
   void _onAssetDeleted(List<String> ids) {
     // Update record in database
     print("remove assets in database: $ids");
-  }
-
-  void _onAlbumAdded(Album album) {
-    // Update record in database
-    // print("_onAlbumAdded: $album");
-  }
-
-  void _onAlbumDeleted(Album album) {
-    // Update record in database
-    print("Album deleted: $album");
-  }
-
-  void _onAlbumUpdated(Album album) {
-    // Update record in database
-    print("Album updated: $album");
   }
 
   // public methods:
@@ -875,7 +856,7 @@ class SyncService {
 
   void incrementalSync() async {
     await _syncRepository.incrementalSync(
-      types: [SyncStreamDtoTypesEnum.asset],
+      type: SyncStreamDtoTypesEnum.asset,
       batchSize: 50,
     );
   }

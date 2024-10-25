@@ -22,9 +22,10 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
   SyncApiRepository(this._api);
 
   @override
-  Stream<Map<SyncStreamDtoTypesEnum, dynamic>> getChanges(
-    List<SyncStreamDtoTypesEnum> types,
+  Stream<List<Map<SyncStreamDtoTypesEnum, dynamic>>> getChanges(
+    SyncStreamDtoTypesEnum type,
   ) async* {
+    final batchSize = 1000;
     final serverUrl = Store.get(StoreKey.serverUrl);
     final accessToken = Store.get(StoreKey.accessToken);
 
@@ -38,28 +39,31 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
 
     request.headers.addAll(headers);
     request.body = json.encode({
-      "types": types,
+      "types": [type],
     });
+    String previousChunk = '';
+    List<String> lines = [];
 
     try {
       final response = await client.send(request);
-      String previousChunk = '';
-      await for (var chunk in response.stream.transform(utf8.decoder)) {
-        final isComplete = chunk.endsWith('\n');
 
-        if (isComplete) {
-          final jsonString = previousChunk + chunk;
-          yield await compute(_parseSyncReponse, jsonString);
-          previousChunk = '';
-        } else {
-          previousChunk += chunk;
+      await for (var chunk in response.stream.transform(utf8.decoder)) {
+        previousChunk += chunk;
+        final parts = previousChunk.split('\n');
+        previousChunk = parts.removeLast();
+        lines.addAll(parts);
+
+        if (lines.length < batchSize) {
+          continue;
         }
+
+        yield await compute(_parseSyncReponse, lines);
+        lines.clear();
       }
-    } catch (e, stack) {
-      print(stack);
-      debugPrint("Error: $e");
+    } catch (error, stack) {
+      debugPrint("[getChanges] Error getChangeStream $error $stack");
     } finally {
-      debugPrint("Closing client");
+      yield await compute(_parseSyncReponse, lines);
       client.close();
     }
   }
@@ -70,39 +74,43 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
     throw UnimplementedError();
   }
 
-  Map<SyncStreamDtoTypesEnum, dynamic> _parseSyncReponse(String jsonString) {
-    try {
-      jsonString = jsonString.trim();
-      final type =
-          SyncStreamDtoTypesEnum.fromJson(jsonDecode(jsonString)['type'])!;
-      final action = SyncAction.fromJson(jsonDecode(jsonString)['action']);
-      final data = jsonDecode(jsonString)['data'];
+  List<Map<SyncStreamDtoTypesEnum, dynamic>> _parseSyncReponse(
+    List<String> lines,
+  ) {
+    final data = lines.map<Map<SyncStreamDtoTypesEnum, dynamic>>((line) {
+      try {
+        final type = SyncStreamDtoTypesEnum.fromJson(jsonDecode(line)['type'])!;
+        final action = SyncAction.fromJson(jsonDecode(line)['action']);
+        final data = jsonDecode(line)['data'];
 
-      switch (type) {
-        case SyncStreamDtoTypesEnum.asset:
-          if (action == SyncAction.upsert) {
-            final dto = AssetResponseDto.fromJson(data);
-            if (dto == null) {
-              return {};
+        switch (type) {
+          case SyncStreamDtoTypesEnum.asset:
+            if (action == SyncAction.upsert) {
+              final dto = AssetResponseDto.fromJson(data);
+              if (dto == null) {
+                return {};
+              }
+
+              final asset = Asset.remote(dto);
+              return {type: asset};
             }
 
-            final asset = Asset.remote(dto);
-            return {type: asset};
-          }
+            // Data is the id of the asset if type is delete
+            if (action == SyncAction.delete) {
+              return {type: data};
+            }
 
-          // Data is the id of the asset if type is delete
-          if (action == SyncAction.delete) {
-            return {type: data};
-          }
+          default:
+            return {};
+        }
 
-        default:
-          return {};
+        return {};
+      } catch (error) {
+        debugPrint("[_parseSyncReponse] Error parsing json $error");
+        return {};
       }
+    });
 
-      return {};
-    } catch (error) {
-      debugPrint("[_parseSyncReponse] Error parsing json $error");
-      return {};
-    }
+    return data.toList();
   }
 }

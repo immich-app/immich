@@ -1,8 +1,8 @@
 import 'package:openapi/api.dart';
 
 abstract interface class ISyncApiRepository {
-  Stream<Map<SyncStreamDtoTypesEnum, dynamic>> getChanges(
-    List<SyncStreamDtoTypesEnum> types,
+  Stream<List<Map<SyncStreamDtoTypesEnum, dynamic>>> getChanges(
+    SyncStreamDtoTypesEnum type,
   );
   Future<void> confirmChages(String changeId);
 }

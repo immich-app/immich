@@ -42,44 +42,16 @@ class SyncRepository extends DatabaseRepository implements ISyncRepository {
 
   @override
   Future<void> incrementalSync({
-    required List<SyncStreamDtoTypesEnum> types,
+    required SyncStreamDtoTypesEnum type,
     required int batchSize,
   }) async {
     List<Map<SyncAction, dynamic>> batch = [];
-    SyncStreamDtoTypesEnum type = SyncStreamDtoTypesEnum.asset;
 
-    _apiRepository.getChanges(types).listen(
+    _apiRepository.getChanges(type).listen(
       (event) async {
-        type = event.keys.first;
-        final data = event.values.first;
-
-        switch (type) {
-          case SyncStreamDtoTypesEnum.asset:
-            if (data is Asset) {
-              batch.add({
-                SyncAction.upsert: data,
-              });
-            }
-
-            if (data is String) {
-              batch.add({
-                SyncAction.delete: data,
-              });
-            }
-
-            if (batch.length >= batchSize) {
-              _processBatch(batch, type);
-              batch.clear();
-            }
-            break;
-
-          default:
-            break;
-        }
+        print("Received batch of ${event.length} changes");
       },
-      onDone: () {
-        _processBatch(batch, type);
-      },
+      onDone: () {},
     );
   }
 
