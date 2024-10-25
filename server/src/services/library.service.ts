@@ -51,12 +51,14 @@ export class LibraryService extends BaseService {
 
     this.watchLibraries = this.watchLock && watch.enabled;
 
-    this.jobRepository.addCronJob(
-      'libraryScan',
-      scan.cronExpression,
-      () => handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
-      scan.enabled,
-    );
+    if (this.watchLock) {
+      this.jobRepository.addCronJob(
+        'libraryScan',
+        scan.cronExpression,
+        () => handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
+        scan.enabled,
+      );
+    }
 
     if (this.watchLibraries) {
       await this.watchAll();

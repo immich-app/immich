@@ -117,6 +117,15 @@ describe(LibraryService.name, () => {
 
       expect(storageMock.watch).not.toHaveBeenCalled();
     });
+
+    it('should not initialize library scan cron job when lock is taken', async () => {
+      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      databaseMock.tryLock.mockResolvedValue(false);
+
+      await sut.onBootstrap();
+
+      expect(jobMock.addCronJob).not.toHaveBeenCalled();
+    });
   });
 
   describe('onConfigUpdateEvent', () => {
