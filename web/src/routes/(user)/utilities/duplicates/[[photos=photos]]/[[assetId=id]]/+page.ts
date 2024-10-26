@@ -6,12 +6,12 @@ import type { PageLoad } from './$types';
 
 const rectifyDuplicate = (uniqueAssetIds: string[]) => {
   if (uniqueAssetIds.length > 0) {
-    updateAssets({ assetBulkUpdateDto: { ids: uniqueAssetIds, duplicateId: null } });
+    void updateAssets({ assetBulkUpdateDto: { ids: uniqueAssetIds, duplicateId: null } });
   }
 };
 
 const processDuplicates = (duplicates: DuplicateResponseDto[]) => {
-  let uniqueAssetIds: string[] = [];
+  const uniqueAssetIds: string[] = [];
   const validDuplicates = duplicates.filter((duplicate) => {
     if (duplicate.assets.length <= 1) {
       uniqueAssetIds.push(duplicate.assets[0].id);
