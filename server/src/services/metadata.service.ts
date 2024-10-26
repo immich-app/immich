@@ -596,7 +596,10 @@ export class MetadataService extends BaseService {
     }
 
     let dateTimeOriginal = dateTime?.toDate();
-    let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
+    let localDateTime = dateTime
+      ?.toDateTime()
+      .setZone(timeZone || 'UTC', { keepLocalTime: true })
+      .toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
       this.logger.warn(`Asset ${asset.id} has no valid date, falling back to asset.fileCreatedAt`);
       dateTimeOriginal = asset.fileCreatedAt;
