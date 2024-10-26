@@ -1,7 +1,6 @@
 import overpass from '$lib/assets/fonts/overpass/Overpass.ttf?url';
 import overpassMono from '$lib/assets/fonts/overpass/OverpassMono.ttf?url';
 import fouc from '$lib/utils/app?raw';
-import theme from '$lib/utils/theme?raw';
 import type { Handle } from '@sveltejs/kit';
 import { ModuleKind, transpileModule } from 'typescript';
 
@@ -16,9 +15,7 @@ const transpileFile = (content: string) => {
 export const handle = (async ({ event, resolve }) => {
   return resolve(event, {
     transformPageChunk: ({ html }) => {
-      const themePrepared = theme.replaceAll(/^export\s+/gm, '');
-      const foucPrepared = fouc.replaceAll(/^import.*$/gm, themePrepared);
-      const scriptFouc = `<script>${transpileFile(foucPrepared)}</script>`;
+      const scriptFouc = `<script>${transpileFile(fouc)}</script>`;
 
       return html
         .replace('%app.font%', overpass)

@@ -1,11 +1,17 @@
-/*
- * we don't want to deal with imports so that import should be
- * replaced by the actual content of the file before fouc.ts is transpiled
- *
- */
-import { colorThemeKeyName, Theme, type ThemeSetting } from '$lib/utils/theme';
+// should be the same values as the one in perferences.store.ts
+interface ThemeSetting {
+  value: Theme;
+  system: boolean;
+}
 
-const storedTheme = localStorage.getItem(colorThemeKeyName);
+// should be the same values as the ones in constants.ts
+enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+}
+
+// should be the same key as the one in preferences.store.ts
+const storedTheme = localStorage.getItem('color-theme');
 const theme: ThemeSetting = storedTheme ? JSON.parse(storedTheme) : { value: Theme.LIGHT, system: true };
 const themeValue = theme.system && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : theme.value;
 

@@ -1,9 +1,13 @@
 import { browser } from '$app/environment';
-import { defaultLang } from '$lib/constants';
+import { defaultLang, Theme } from '$lib/constants';
 import { getPreferredLocale } from '$lib/utils/i18n';
-import { colorThemeKeyName, Theme, type ThemeSetting } from '$lib/utils/theme';
 import { persisted } from 'svelte-local-storage-store';
 import { get } from 'svelte/store';
+
+export interface ThemeSetting {
+  value: Theme;
+  system: boolean;
+}
 
 export const handleToggleTheme = () => {
   const theme = get(colorTheme);
@@ -20,7 +24,8 @@ const initTheme = (): ThemeSetting => {
 
 const initialTheme = initTheme();
 
-export const colorTheme = persisted<ThemeSetting>(colorThemeKeyName, initialTheme, {
+// The 'color-theme' key is also used by app.ts to prevent FOUC on page load.
+export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
   serializer: {
     parse: (text: string): ThemeSetting => {
       const parsedText: ThemeSetting = JSON.parse(text);

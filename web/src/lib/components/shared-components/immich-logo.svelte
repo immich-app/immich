@@ -3,11 +3,11 @@
   import logoLightUrl from '$lib/assets/immich-logo-inline-light.svg';
   import logoNoText from '$lib/assets/immich-logo.svg';
   import { content as alternativeLogo } from '$lib/assets/immich-logo.json';
-  import { Theme } from '$lib/utils/theme';
   import { colorTheme } from '$lib/stores/preferences.store';
   import { DateTime } from 'luxon';
   import type { HTMLImgAttributes } from 'svelte/elements';
   import { t } from 'svelte-i18n';
+  import { Theme } from '$lib/constants';
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface $$Props extends HTMLImgAttributes {

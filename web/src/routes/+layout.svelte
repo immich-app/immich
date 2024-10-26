@@ -8,8 +8,8 @@
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-  import { Theme, type ThemeSetting } from '$lib/utils/theme';
-  import { colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
+  import { Theme } from '$lib/constants';
+  import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
