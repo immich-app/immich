@@ -31,10 +31,22 @@ describe(SearchService.name, () => {
 
   describe('getDuplicates', () => {
     it('should get duplicates', async () => {
-      assetMock.getDuplicates.mockResolvedValue([assetStub.hasDupe]);
+      assetMock.getDuplicates.mockResolvedValue([assetStub.hasDupe, assetStub.hasDupe]);
       await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([
-        { duplicateId: assetStub.hasDupe.duplicateId, assets: [expect.objectContaining({ id: assetStub.hasDupe.id })] },
+        {
+          duplicateId: assetStub.hasDupe.duplicateId,
+          assets: [
+            expect.objectContaining({ id: assetStub.hasDupe.id }),
+            expect.objectContaining({ id: assetStub.hasDupe.id }),
+          ],
+        },
       ]);
+    });
+
+    it('should update assets with duplicateId', async () => {
+      assetMock.getDuplicates.mockResolvedValue([assetStub.hasDupe]);
+      await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([]);
+      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasDupe.id], { duplicateId: null });
     });
   });
 
