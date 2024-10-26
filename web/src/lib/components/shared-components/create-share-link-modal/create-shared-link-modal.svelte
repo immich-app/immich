@@ -24,7 +24,6 @@
   export let onCreated: () => void = () => {};
 
   let sharedLink: string | null = null;
-  let showQRCode: boolean;
   let QRCodeGenerated: boolean;
   let QRCodeWidth: number = 376;
   let description = '';
@@ -98,7 +97,6 @@
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
       onCreated();
-      showQRCode = true;
     } catch (error) {
       handleError(error, $t('errors.failed_to_create_shared_link'));
     }
@@ -106,7 +104,7 @@
 
   const generateQRCode = async () => {
     QRCodeGenerated = true;
-  }
+  };
 
   const handleEditLink = async () => {
     if (!editingLink) {
@@ -230,11 +228,11 @@
         <div class="mt-3" id="qrcode">
           {#if sharedLink}
             {#if !QRCodeGenerated}
-            <Button size="sm" fullwidth on:click={generateQRCode}>{$t('generate_qr_code')}</Button>
+              <Button size="sm" fullwidth on:click={generateQRCode}>{$t('generate_qr_code')}</Button>
             {:else}
-            <div class="container">
-              <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;" displayWidth={QRCodeWidth} />
-            </div>
+              <div class="container">
+                <QRCodeImage text={sharedLink} displayStyle="border-style: dotted;" displayWidth={QRCodeWidth} />
+              </div>
             {/if}
           {/if}
         </div>
