@@ -835,7 +835,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: dateForTest,
-        localDateTime: dateForTest,
+        localDateTime: new Date('1970-01-01T23:00:00.000Z'),
       });
     });
 
