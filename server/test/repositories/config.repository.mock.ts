@@ -16,11 +16,16 @@ const envData: EnvData = {
   },
 
   database: {
-    host: 'database',
-    port: 5432,
-    username: 'postgres',
-    password: 'postgres',
-    name: 'immich',
+    config: {
+      type: 'postgres',
+      host: 'database',
+      port: 5432,
+      username: 'postgres',
+      password: 'postgres',
+      name: 'immich',
+      synchronize: false,
+      migrationsRun: true,
+    },
 
     skipMigrations: false,
     vectorExtension: DatabaseExtension.VECTORS,
@@ -73,11 +78,7 @@ const envData: EnvData = {
   telemetry: {
     apiPort: 8081,
     microservicesPort: 8082,
-    enabled: false,
-    hostMetrics: false,
-    apiMetrics: false,
-    jobMetrics: false,
-    repoMetrics: false,
+    metrics: new Set(),
   },
 
   workers: [ImmichWorker.API, ImmichWorker.MICROSERVICES],

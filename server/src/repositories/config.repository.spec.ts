@@ -1,3 +1,4 @@
+import { ImmichTelemetry } from 'src/enum';
 import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
 
 const getEnv = () => {
@@ -12,11 +13,8 @@ const resetEnv = () => {
     'IMMICH_TRUSTED_PROXIES',
     'IMMICH_API_METRICS_PORT',
     'IMMICH_MICROSERVICES_METRICS_PORT',
-    'IMMICH_METRICS',
-    'IMMICH_API_METRICS',
-    'IMMICH_HOST_METRICS',
-    'IMMICH_IO_METRICS',
-    'IMMICH_JOB_METRICS',
+    'IMMICH_TELEMETRY_INCLUDE',
+    'IMMICH_TELEMETRY_EXCLUDE',
 
     'DB_URL',
     'DB_HOSTNAME',
@@ -68,12 +66,14 @@ describe('getEnv', () => {
     it('should use defaults', () => {
       const { database } = getEnv();
       expect(database).toEqual({
-        url: undefined,
-        host: 'database',
-        port: 5432,
-        name: 'immich',
-        username: 'postgres',
-        password: 'postgres',
+        config: expect.objectContaining({
+          type: 'postgres',
+          host: 'database',
+          port: 5432,
+          database: 'immich',
+          username: 'postgres',
+          password: 'postgres',
+        }),
         skipMigrations: false,
         vectorExtension: 'vectors',
       });
@@ -210,11 +210,7 @@ describe('getEnv', () => {
       expect(telemetry).toEqual({
         apiPort: 8081,
         microservicesPort: 8082,
-        enabled: false,
-        apiMetrics: false,
-        hostMetrics: false,
-        jobMetrics: false,
-        repoMetrics: false,
+        metrics: new Set([]),
       });
     });
 
@@ -225,32 +221,29 @@ describe('getEnv', () => {
       expect(telemetry).toMatchObject({
         apiPort: 2001,
         microservicesPort: 2002,
+        metrics: expect.any(Set),
       });
     });
 
     it('should run with telemetry enabled', () => {
-      process.env.IMMICH_METRICS = 'true';
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'all';
       const { telemetry } = getEnv();
-      expect(telemetry).toMatchObject({
-        enabled: true,
-        apiMetrics: true,
-        hostMetrics: true,
-        jobMetrics: true,
-        repoMetrics: true,
-      });
+      expect(telemetry.metrics).toEqual(new Set(Object.values(ImmichTelemetry)));
     });
 
     it('should run with telemetry enabled and jobs disabled', () => {
-      process.env.IMMICH_METRICS = 'true';
-      process.env.IMMICH_JOB_METRICS = 'false';
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'all';
+      process.env.IMMICH_TELEMETRY_EXCLUDE = 'job';
       const { telemetry } = getEnv();
-      expect(telemetry).toMatchObject({
-        enabled: true,
-        apiMetrics: true,
-        hostMetrics: true,
-        jobMetrics: false,
-        repoMetrics: true,
-      });
+      expect(telemetry.metrics).toEqual(
+        new Set([ImmichTelemetry.API, ImmichTelemetry.HOST, ImmichTelemetry.IO, ImmichTelemetry.REPO]),
+      );
+    });
+
+    it('should run with specific telemetry metrics', () => {
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'io, host, api';
+      const { telemetry } = getEnv();
+      expect(telemetry.metrics).toEqual(new Set([ImmichTelemetry.API, ImmichTelemetry.HOST, ImmichTelemetry.IO]));
     });
   });
 });

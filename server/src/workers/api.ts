@@ -20,7 +20,7 @@ async function bootstrap() {
   process.title = 'immich-api';
 
   const { telemetry, network } = new ConfigRepository().getEnv();
-  if (telemetry.enabled) {
+  if (telemetry.metrics.size > 0) {
     bootstrapTelemetry(telemetry.apiPort);
   }
 
