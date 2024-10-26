@@ -16,13 +16,15 @@ export class DuplicateService extends BaseService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
     const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
     const uniqueAssetIds: string[] = [];
-    const duplicates = mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true }))).filter((duplicate) => {
-      if (duplicate.assets.length === 1) {
-        uniqueAssetIds.push(duplicate.assets[0].id);
-        return false;
-      }
-      return true;
-    });
+    const duplicates = mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true }))).filter(
+      (duplicate) => {
+        if (duplicate.assets.length === 1) {
+          uniqueAssetIds.push(duplicate.assets[0].id);
+          return false;
+        }
+        return true;
+      },
+    );
     if (uniqueAssetIds.length > 0) {
       void this.assetRepository.updateAll(uniqueAssetIds, { duplicateId: null });
     }
