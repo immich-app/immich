@@ -54,7 +54,17 @@ export class SyncRepository implements ISyncRepository {
 
   getAssets({ checkpoint, userId, ...options }: AssetPartnerSyncOptions): Paginated<AssetEntity> {
     return paginate(this.assetRepository, options, {
-      where: withCheckpoint<AssetEntity>({ ownerId: userId }, 'updatedAt', checkpoint),
+      where: withCheckpoint<AssetEntity>(
+        {
+          ownerId: userId,
+          isVisible: true,
+        },
+        'updatedAt',
+        checkpoint,
+      ),
+      relations: {
+        exifInfo: true,
+      },
       order: {
         updatedAt: 'ASC',
         id: 'ASC',
