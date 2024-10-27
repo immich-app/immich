@@ -48,7 +48,7 @@ location ~ /.well-known {
 }
 ```
 
-This particular `location` directive can inadvertently prevent mobile clients from reaching the `/.well-known/immich` path, which is crucial for authentication. Usual error message for this case is: "Your app major version is not compatible with the server". To remedy this, you should introduce an additional location block specifically for this path, ensuring that requests are correctly proxied to the Immich server:
+This particular `location` directive can inadvertently prevent mobile clients from reaching the `/.well-known/immich` path, which is crucial for discovery. Usual error message for this case is: "Your app major version is not compatible with the server". To remedy this, you should introduce an additional location block specifically for this path, ensuring that requests are correctly proxied to the Immich server:
 
 ```nginx
 location /.well-known/immich {
