@@ -41,7 +41,9 @@ server {
 ```
 
 #### Compatibility with Let's Encrypt
+
 In the event that your nginx configuration includes a section for Let's Encrypt, it's likely that you have a segment similar to the following:
+
 ```nginx
 location ~ /.well-known {
     ...
