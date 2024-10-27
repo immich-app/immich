@@ -26,7 +26,11 @@ export class DuplicateService extends BaseService {
       },
     );
     if (uniqueAssetIds.length > 0) {
-      void this.assetRepository.updateAll(uniqueAssetIds, { duplicateId: null });
+      try {
+        await this.assetRepository.updateAll(uniqueAssetIds, { duplicateId: null });
+      } catch (error: any) {
+        this.logger.error(`Failed to remove duplicateId from assets: ${error.message}`);
+      }
     }
     return duplicates;
   }
