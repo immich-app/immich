@@ -5,16 +5,24 @@ import 'package:immich_mobile/utils/extensions/material_state.extension.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 enum AppTheme {
-  blue._(AppColors.blueLight, AppColors.blueDark),
-  // Fallback color for dynamic theme for non-supported platforms
-  dynamic._(AppColors.blueLight, AppColors.blueDark);
+  blue,
+  dynamic;
 
-  final ColorScheme lightSchema;
-  final ColorScheme darkSchema;
+  ColorScheme getColorScheme({Brightness brightness = Brightness.light}) {
+    if (brightness == Brightness.dark) {
+      return switch (this) {
+        blue || dynamic => AppColors.blueDark,
+      };
+    }
+    return switch (this) {
+      blue || dynamic => AppColors.blueLight,
+    };
+  }
 
-  const AppTheme._(this.lightSchema, this.darkSchema);
-
-  static ThemeData generateThemeData(ColorScheme color) {
+  static ThemeData generateThemeDataForColorScheme(
+    ColorScheme color, {
+    Brightness brightness = Brightness.light,
+  }) {
     return ThemeData(
       inputDecorationTheme: InputDecorationTheme(
         hintStyle: const TextStyle(
@@ -39,9 +47,16 @@ enum AppTheme {
         ),
       ),
       colorScheme: color,
+      brightness: brightness,
+      dialogBackgroundColor: color.surfaceContainer,
       primaryColor: color.primary,
       scaffoldBackgroundColor: color.surface,
-      iconTheme: const IconThemeData(size: 24, weight: 500, opticalSize: 24),
+      iconTheme: IconThemeData(
+        size: 24,
+        weight: 500,
+        opticalSize: 24,
+        color: color.onSurface,
+      ),
       textTheme: TextTheme(
         displayLarge: AppTypography.displayLarge,
         displayMedium: AppTypography.displayMedium,
@@ -64,13 +79,13 @@ enum AppTheme {
         closeButtonIconBuilder: (_) => Icon(Symbols.close_rounded),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: color.surfaceContainerLowest,
+        backgroundColor: color.surface,
         iconTheme: IconThemeData(size: 22, color: color.onSurface),
         titleTextStyle:
             AppTypography.titleLarge.copyWith(color: color.onSurface),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: color.surfaceContainer,
+        backgroundColor: color.surfaceContainerLow,
         indicatorColor: color.primary,
         iconTheme: WidgetStateProperty.resolveWith(
           (Set<WidgetState> states) {
@@ -82,7 +97,7 @@ enum AppTheme {
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: color.surfaceContainer,
+        backgroundColor: color.surfaceContainerLow,
         elevation: 3,
         unselectedIconTheme: IconThemeData(
           weight: 500,
@@ -113,6 +128,15 @@ enum AppTheme {
         closeIconColor: color.onInverseSurface,
       ),
       textSelectionTheme: TextSelectionThemeData(cursorColor: color.primary),
+    );
+  }
+
+  ThemeData generateThemeData({Brightness brightness = Brightness.light}) {
+    final color = getColorScheme(brightness: brightness);
+
+    return AppTheme.generateThemeDataForColorScheme(
+      color,
+      brightness: brightness,
     );
   }
 }

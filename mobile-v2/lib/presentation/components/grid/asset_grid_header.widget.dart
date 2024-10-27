@@ -1,4 +1,4 @@
-part of 'immich_asset_grid.widget.dart';
+part of 'asset_grid.widget.dart';
 
 class _HeaderText extends StatelessWidget {
   final String text;
@@ -22,7 +22,8 @@ class _HeaderText extends StatelessWidget {
           const Spacer(),
           Icon(
             Symbols.check_circle_rounded,
-            color: context.colorScheme.onSurface,
+            color: context.colorScheme.onSurface
+                .darken(amount: RatioConstants.oneThird),
           ),
         ],
       ),

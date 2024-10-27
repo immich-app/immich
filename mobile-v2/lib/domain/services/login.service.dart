@@ -19,7 +19,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/album_sync.service.dart';
 import 'package:immich_mobile/domain/services/asset_sync.service.dart';
 import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
-import 'package:immich_mobile/presentation/states/server_feature_config.state.dart';
+import 'package:immich_mobile/presentation/states/server_info.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
@@ -115,7 +115,7 @@ class LoginService with LogMixin {
     ServiceLocator.registerPostGlobalStates();
 
     // Fetch server features
-    await di<ServerFeatureConfigProvider>().getFeatures();
+    await di<ServerInfoProvider>().fetchFeatures();
   }
 
   Future<User?> handlePostLogin() async {
@@ -132,6 +132,7 @@ class LoginService with LogMixin {
     }
 
     ServiceLocator.registerCurrentUser(user);
+    await di<ServerInfoProvider>().fetchServerDisk();
 
     // sync assets in background
     unawaited(di<AssetSyncService>().performFullRemoteSyncIsolate(user));

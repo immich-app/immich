@@ -11,7 +11,7 @@ import 'package:immich_mobile/presentation/components/input/text_button.widget.d
 import 'package:immich_mobile/presentation/components/input/text_form_field.widget.dart';
 import 'package:immich_mobile/presentation/modules/login/models/login_page.model.dart';
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
-import 'package:immich_mobile/presentation/states/server_feature_config.state.dart';
+import 'package:immich_mobile/presentation/states/server_info.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -132,7 +132,7 @@ class _CredentialsFormState extends State<_CredentialsForm> {
       builder: (_, isValidationInProgress) => isValidationInProgress
           ? const ImLoadingIndicator()
           : ValueListenableBuilder(
-              valueListenable: di<ServerFeatureConfigProvider>(),
+              valueListenable: di<ServerInfoProvider>(),
               builder: (_, state, __) => Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

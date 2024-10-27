@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/interfaces/log.interface.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
-import 'package:immich_mobile/presentation/components/common/gap.widget.dart';
+import 'package:immich_mobile/presentation/components/common/page_empty.widget.dart';
 import 'package:immich_mobile/presentation/components/common/skeletonized_future_builder.widget.dart';
 import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_appbar.widget.dart';
 import 'package:immich_mobile/presentation/components/scaffold/adaptive_route_wrapper.widget.dart';
@@ -183,19 +183,9 @@ class _LogListEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Symbols.comments_disabled_rounded,
-            size: 50,
-            color: context.colorScheme.primary,
-          ),
-          const SizedGap.mh(),
-          Text(context.t.logs.no_logs),
-        ],
-      ),
+    return ImPageEmptyIndicator(
+      icon: Symbols.comments_disabled_rounded,
+      message: context.t.logs.no_logs_message,
     );
   }
 }

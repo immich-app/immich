@@ -21,6 +21,7 @@ dart_code_metrics:
     - arguments-ordering:
         last:
           - child
+          - children
     - avoid-accessing-other-classes-private-members
     - avoid-assigning-to-static-field
     - avoid-assignments-as-conditions

@@ -1,10 +1,20 @@
-part of 'immich_asset_grid.widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:immich_mobile/domain/models/render_list_element.model.dart';
+import 'package:immich_mobile/presentation/components/grid/asset_grid.state.dart';
+import 'package:immich_mobile/presentation/components/image/immich_image.widget.dart';
+import 'package:immich_mobile/presentation/components/image/immich_thumbnail.widget.dart';
+import 'package:immich_mobile/utils/extensions/async_snapshot.extension.dart';
 
-class _StaticGrid extends StatelessWidget {
+class ImStaticGrid extends StatelessWidget {
   final RenderListAssetElement section;
   final bool isDragging;
 
-  const _StaticGrid({required this.section, required this.isDragging});
+  const ImStaticGrid({
+    super.key,
+    required this.section,
+    required this.isDragging,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -39,10 +39,11 @@ import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/platform/messages.g.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
+import 'package:immich_mobile/presentation/states/app_info.state.dart';
 import 'package:immich_mobile/presentation/states/app_theme.state.dart';
 import 'package:immich_mobile/presentation/states/current_user.state.dart';
 import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
-import 'package:immich_mobile/presentation/states/server_feature_config.state.dart';
+import 'package:immich_mobile/presentation/states/server_info.state.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
 
 final di = GetIt.I;
@@ -156,11 +157,12 @@ abstract final class ServiceLocator {
       () => AppThemeProvider(settingsService: di()),
     );
     _registerSingleton(GalleryPermissionProvider());
+    _registerSingleton(AppInfoProvider());
   }
 
   static void registerPostGlobalStates() {
-    _registerLazySingleton<ServerFeatureConfigProvider>(
-      () => ServerFeatureConfigProvider(serverApiRepo: di()),
+    _registerLazySingleton<ServerInfoProvider>(
+      () => ServerInfoProvider(serverApiRepo: di()),
     );
   }
 

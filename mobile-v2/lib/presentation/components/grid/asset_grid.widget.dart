@@ -3,17 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:immich_mobile/domain/models/render_list_element.model.dart';
+import 'package:immich_mobile/i18n/strings.g.dart';
+import 'package:immich_mobile/presentation/components/common/page_empty.widget.dart';
+import 'package:immich_mobile/presentation/components/grid/asset_grid.state.dart';
+import 'package:immich_mobile/presentation/components/grid/asset_render_grid.widget.dart';
 import 'package:immich_mobile/presentation/components/grid/draggable_scrollbar.dart';
-import 'package:immich_mobile/presentation/components/grid/immich_asset_grid.state.dart';
-import 'package:immich_mobile/presentation/components/image/immich_image.widget.dart';
-import 'package:immich_mobile/presentation/components/image/immich_thumbnail.widget.dart';
-import 'package:immich_mobile/utils/extensions/async_snapshot.extension.dart';
+import 'package:immich_mobile/utils/constants/size_constants.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
+import 'package:immich_mobile/utils/extensions/color.extension.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-part 'immich_asset_grid_header.widget.dart';
-part 'immich_asset_render_grid.widget.dart';
+part 'asset_grid_header.widget.dart';
 
 class ImAssetGrid extends StatefulWidget {
   /// The padding for the grid
@@ -66,6 +67,10 @@ class _ImAssetGridState extends State<ImAssetGrid> {
         builder: (_, state) {
           final elements = state.renderList.elements;
 
+          if (state.renderList.totalCount == 0) {
+            return const _ImGridEmpty();
+          }
+
           // Append padding if required
           if (widget.topPadding != null &&
               elements.firstOrNull is! RenderListPaddingElement) {
@@ -94,7 +99,7 @@ class _ImAssetGridState extends State<ImAssetGrid> {
                   RenderListMonthHeaderElement() =>
                     _MonthHeader(text: section.header),
                   RenderListDayHeaderElement() => Text(section.header),
-                  RenderListAssetElement() => _StaticGrid(
+                  RenderListAssetElement() => ImStaticGrid(
                       section: section,
                       isDragging: state.isDragScrolling,
                     ),
@@ -136,4 +141,22 @@ class _ImAssetGridState extends State<ImAssetGrid> {
             !previous.renderList.modifiedTime
                 .isAtSameMomentAs(current.renderList.modifiedTime),
       );
+}
+
+class _ImGridEmpty extends StatelessWidget {
+  const _ImGridEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return ImPageEmptyIndicator(
+      icon: Symbols.photo_camera_rounded,
+      subtitle: SizedBox(
+        width: context.width * RatioConstants.twoThird,
+        child: Text(
+          context.t.common.components.grid_empty_message,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
 }

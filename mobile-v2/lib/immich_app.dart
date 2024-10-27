@@ -59,20 +59,41 @@ class _AppThemeBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     // Static colors
     if (theme != AppTheme.dynamic) {
-      final lightTheme = AppTheme.generateThemeData(theme.lightSchema);
-      final darkTheme = AppTheme.generateThemeData(theme.darkSchema);
-
-      return builder(context, lightTheme, darkTheme);
+      return builder(
+        context,
+        theme.generateThemeData(),
+        theme.generateThemeData(brightness: Brightness.dark),
+      );
     }
 
     // Dynamic color builder
     return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
-      final lightTheme =
-          AppTheme.generateThemeData(lightDynamic ?? theme.lightSchema);
-      final darkTheme =
-          AppTheme.generateThemeData(darkDynamic ?? theme.darkSchema);
+      if (lightDynamic == null || darkDynamic == null) {
+        final defaultTheme = AppTheme.blue;
+        return builder(
+          context,
+          defaultTheme.generateThemeData(),
+          defaultTheme.generateThemeData(brightness: Brightness.dark),
+        );
+      }
 
-      return builder(context, lightTheme, darkTheme);
+      final primaryLight = lightDynamic.primary;
+      final primaryDark = darkDynamic.primary;
+
+      final lightColor = ColorScheme.fromSeed(seedColor: primaryLight);
+      final darkColor = ColorScheme.fromSeed(
+        seedColor: primaryDark,
+        brightness: Brightness.dark,
+      );
+
+      return builder(
+        context,
+        AppTheme.generateThemeDataForColorScheme(lightColor),
+        AppTheme.generateThemeDataForColorScheme(
+          darkColor,
+          brightness: Brightness.dark,
+        ),
+      );
     });
   }
 }

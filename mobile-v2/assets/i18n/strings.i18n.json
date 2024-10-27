@@ -38,7 +38,7 @@
     },
     "logs": {
       "title": "Logs",
-      "no_logs": "No logs available",
+      "no_logs_message": "No logs available",
       "detail": {
         "title": "Log Detail",
         "message_heading": "MESSAGE",
@@ -49,6 +49,27 @@
     },
     "common": {
       "loading": "Loading",
-      "copied_long": "Copied to clipboard"
+      "copied_long": "Copied to clipboard",
+      "components": {
+        "grid_empty_message": "Capture memories to start populating the timeline",
+        "appbar": {
+          "server_storage": "Server Storage",
+          "storage_used": "{used: String} of {total: String} used",
+          "action_logs": "Logs",
+          "action_settings": "Settings",
+          "action_signout": "Sign Out",
+          "footer_documentation": "Documentation",
+          "footer_github": "Github",
+          "server_version_label": "Server Version",
+          "server_url_label": "Server URL",
+          "server_version_common_error": "Please check your network connection, make sure the server is reachable and app/server versions are compatible.",
+          "server_version_major_error": "Server is out of date. Please update to the latest major version.",
+          "server_version_minor_error": "Server is out of date. Please update to the latest minor version.",
+          "app_version_major_error": "Mobile App is out of date. Please update to the latest major version.",
+          "app_version_minor_error": "Mobile App is out of date. Please update to the latest minor version.",
+          "app_version_ok": "Client and Server are up-to-date",
+          "app_version_label": "App Version"
+        }
+      }
     }
   }

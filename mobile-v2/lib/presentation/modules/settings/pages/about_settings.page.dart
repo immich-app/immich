@@ -19,7 +19,10 @@ class AboutSettingsPage extends StatelessWidget {
         onTap: () => showLicensePage(
           context: context,
           applicationName: context.t.immich,
-          applicationIcon: const ImLogo(dimension: SizeConstants.xl),
+          applicationIcon: const Padding(
+            padding: EdgeInsets.only(top: SizeConstants.s),
+            child: ImLogo(dimension: SizeConstants.xl),
+          ),
         ),
       ),
     );

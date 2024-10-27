@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/presentation/components/appbar/app_bar_dialog.widget.dart';
 import 'package:immich_mobile/presentation/components/common/gap.widget.dart';
 import 'package:immich_mobile/presentation/components/common/user_avatar.widget.dart';
 import 'package:immich_mobile/presentation/components/image/immich_logo.widget.dart';
@@ -13,6 +16,11 @@ class ImAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
+  static void showAppBarDialog(BuildContext context) => unawaited(showDialog(
+        context: context,
+        builder: (_) => const ImAppBarDialog(),
+      ));
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -20,7 +28,7 @@ class ImAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ImLogo(dimension: SizeConstants.xm),
+          ImLogo(dimension: SizeConstants.xxm),
           SizedGap.sw(),
           ImLogoText(fontSize: 20),
         ],
@@ -28,9 +36,12 @@ class ImAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: SizeConstants.m),
-          child: ImUserAvatar(
-            user: di<CurrentUserProvider>().value,
-            radius: SizeConstants.m,
+          child: InkWell(
+            onTap: () => showAppBarDialog(context),
+            child: ImUserAvatar(
+              user: di<CurrentUserProvider>().value,
+              radius: SizeConstants.m,
+            ),
           ),
         ),
       ],

@@ -32,11 +32,11 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
         AutoRoute(
           page: SplashScreenWrapperRoute.page,
+          initial: true,
           children: [
             AutoRoute(page: SplashScreenRoute.page, initial: true),
             AutoRoute(page: LoginRoute.page),
           ],
-          initial: true,
         ),
         AutoRoute(page: LogsWrapperRoute.page, children: [
           AutoRoute(page: LogsRoute.page),

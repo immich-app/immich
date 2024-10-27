@@ -10,10 +10,11 @@ import 'package:immich_mobile/presentation/modules/login/models/login_page.model
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
 import 'package:immich_mobile/presentation/modules/login/widgets/login_form.widget.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
+import 'package:immich_mobile/presentation/states/app_info.state.dart';
+import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/constants/size_constants.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
@@ -93,17 +94,16 @@ class _LoginPageState extends State<LoginPage>
       ),
     );
 
+    final version = di<AppInfoProvider>().value.versionString;
+
     final Widget bottom = Padding(
       padding: const EdgeInsets.only(bottom: SizeConstants.s),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FutureBuilder(
-            future: PackageInfo.fromPlatform(),
-            builder: (_, snap) => DefaultTextStyle.merge(
-              style: TextStyle(color: context.theme.colorScheme.outline),
-              child: Text(snap.data?.version ?? ''),
-            ),
+          DefaultTextStyle.merge(
+            style: TextStyle(color: context.theme.colorScheme.outline),
+            child: Text(version),
           ),
           TextButton(
             onPressed: () => unawaited(context.navigateRoot(const LogsRoute())),

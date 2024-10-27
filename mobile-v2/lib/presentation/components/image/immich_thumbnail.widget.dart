@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
 import 'package:immich_mobile/presentation/components/image/immich_image.widget.dart';
+import 'package:immich_mobile/utils/constants/size_constants.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 IconData _getStorageIcon(Asset asset) {
@@ -77,7 +78,7 @@ class _PadAlignedIcon extends StatelessWidget {
         alignment: alignment,
         child: Icon(
           icon,
-          size: 20,
+          size: SizeConstants.xm,
           fill: (filled != null && filled!) ? 1 : null,
           color: Colors.white,
         ),

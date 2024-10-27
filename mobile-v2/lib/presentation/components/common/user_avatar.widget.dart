@@ -45,7 +45,7 @@ class ImUserAvatar extends StatelessWidget {
                 fit: BoxFit.cover,
                 placeholder: (_, __) => Image.memory(
                   kTransparentImage,
-                  semanticLabel: 'Transparent',
+                  semanticLabel: 'Transparent Image',
                 ),
                 fadeInDuration: const Duration(milliseconds: 300),
                 errorWidget: (_, error, stackTrace) => SizedBox.square(),
