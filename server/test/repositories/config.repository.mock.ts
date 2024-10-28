@@ -17,6 +17,8 @@ const envData: EnvData = {
 
   database: {
     config: {
+      connectionType: 'parts',
+      database: 'immich',
       type: 'postgres',
       host: 'database',
       port: 5432,

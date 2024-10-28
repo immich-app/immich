@@ -3,7 +3,7 @@ import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
-import { VectorExtension } from 'src/interfaces/database.interface';
+import { DatabaseConnectionParams, VectorExtension } from 'src/interfaces/database.interface';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
 export const IConfigRepository = 'IConfigRepository';
@@ -37,7 +37,7 @@ export interface EnvData {
   };
 
   database: {
-    config: PostgresConnectionOptions;
+    config: PostgresConnectionOptions & DatabaseConnectionParams;
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
   };
