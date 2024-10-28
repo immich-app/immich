@@ -81,13 +81,17 @@ class SyncService {
 
   void syncAssets() {
     final stopWatch = Stopwatch()..start();
-    final batchSize = 500;
+    final batchSize = 1000;
     final List<Asset> toUpsert = [];
     final List<String> toDelete = [];
-
+    String ackTimestamp = "";
+    String ackId = "";
     _syncApiRepository.getChanges(SyncStreamDtoTypesEnum.asset).listen(
       (event) async {
         for (final e in event) {
+          ackTimestamp = e.timestamp;
+          ackId = e.id;
+
           if (e.action == SyncAction.upsert) {
             toUpsert.add(e.data as Asset);
           }
@@ -99,21 +103,25 @@ class SyncService {
           if (toUpsert.length >= batchSize) {
             await _upsertAssets(toUpsert);
             toUpsert.clear();
+            await _confirmAssetsChanges(ackId, ackTimestamp);
           }
 
           if (toDelete.length >= batchSize) {
             await _deleteAssets(toDelete);
             toDelete.clear();
+            await _confirmAssetsChanges(ackId, ackTimestamp);
           }
         }
 
         // Process any remaining events
         if (toUpsert.isNotEmpty) {
-          await _upsertAssets(toUpsert);
+          await _upsertAssets(toUpsert); // Maybe try/catch
+          await _confirmAssetsChanges(ackId, ackTimestamp);
         }
 
         if (toDelete.isNotEmpty) {
           await _deleteAssets(toDelete);
+          await _confirmAssetsChanges(ackId, ackTimestamp);
         }
       },
       onDone: () {
@@ -122,30 +130,27 @@ class SyncService {
     );
   }
 
+  Future<void> _confirmAssetsChanges(String id, String timestamp) async {
+    await _syncApiRepository.confirmChanges(
+      SyncStreamDtoTypesEnum.asset,
+      id,
+      timestamp,
+    );
+  }
+
   Future<void> _upsertAssets(
     List<Asset> toUpsert,
   ) async {
-    print("upsert ${toUpsert.length}");
-    final List<Asset?> all =
-        await _assetRepository.getAll(ownerId: 4260823638590045786);
-    print("all ${all.length}");
-    // await upsertAssetsWithExif(updated);
-
-    // await _assetRepository.transaction(() async {
-    //   await _assetRepository.updateAll(toUpsert);
-    // });
-    final List<Asset?> inDb = await _assetRepository.getAllByOwnerIdChecksum(
-      toUpsert.map((a) => a.ownerId).toInt64List(),
-      toUpsert.map((a) => a.checksum).toList(growable: false),
-    );
-
-    print("inDb ${inDb.length}");
+    print("process ${toUpsert.length} assets");
+    final (updateAssets, newAssets) = await _getAssetsFromDb(toUpsert);
+    await upsertAssetsWithExif(newAssets);
+    await _assetRepository.updateAll(updateAssets);
   }
 
   Future<void> _deleteAssets(
     List<String> toDelete,
   ) async {
-    /// TODO: Implement deleteAssets
+    await _assetRepository.deleteAllByRemoteId(toDelete);
   }
 
   // public methods:
@@ -825,6 +830,35 @@ class SyncService {
     }
     assert(existing.length + toUpsert.length == assets.length);
     return (existing, toUpsert);
+  }
+
+  /// !TODO: to replace _linkWithExistingFromDb above
+  Future<(List<Asset> updateAssets, List<Asset> newAssets)> _getAssetsFromDb(
+    List<Asset> assets,
+  ) async {
+    if (assets.isEmpty) return ([].cast<Asset>(), [].cast<Asset>());
+
+    final List<Asset?> inDb = await _assetRepository.getAllByOwnerIdChecksum(
+      assets.map((a) => a.ownerId).toInt64List(),
+      assets.map((a) => a.checksum).toList(growable: false),
+    );
+    assert(inDb.length == assets.length);
+
+    final List<Asset> updateAssets = [];
+    final List<Asset> newAssets = [];
+
+    for (int i = 0; i < assets.length; i++) {
+      final Asset? b = inDb[i];
+      if (b == null) {
+        newAssets.add(assets[i]);
+        continue;
+      } else {
+        updateAssets.add(b);
+      }
+    }
+
+    assert(updateAssets.length + newAssets.length == assets.length);
+    return (updateAssets, newAssets);
   }
 
   /// Inserts or updates the assets in the database with their ExifInfo (if any)

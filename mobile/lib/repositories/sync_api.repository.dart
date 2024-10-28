@@ -68,9 +68,49 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
   }
 
   @override
-  Future<void> confirmChages(String changeId) async {
-    // TODO: implement confirmChages
-    throw UnimplementedError();
+  Future<void> confirmChanges(
+    SyncStreamDtoTypesEnum type,
+    String id,
+    String timestamp,
+  ) async {
+    try {
+      switch (type) {
+        case SyncStreamDtoTypesEnum.asset:
+          await _api.ackSync(
+            SyncAcknowledgeDto(
+              asset: SyncCheckpointDto(id: id, timestamp: timestamp),
+            ),
+          );
+          break;
+
+        case SyncStreamDtoTypesEnum.album:
+          await _api.ackSync(
+            SyncAcknowledgeDto(
+              album: SyncCheckpointDto(id: id, timestamp: timestamp),
+            ),
+          );
+
+        case SyncStreamDtoTypesEnum.user:
+          await _api.ackSync(
+            SyncAcknowledgeDto(
+              user: SyncCheckpointDto(id: id, timestamp: timestamp),
+            ),
+          );
+
+        case SyncStreamDtoTypesEnum.partner:
+          await _api.ackSync(
+            SyncAcknowledgeDto(
+              partner: SyncCheckpointDto(id: id, timestamp: timestamp),
+            ),
+          );
+          break;
+
+        default:
+          break;
+      }
+    } catch (error) {
+      debugPrint("[acknowledge] Error acknowledging sync $error");
+    }
   }
 
   List<SyncEvent> _parseSyncReponse(
@@ -83,6 +123,8 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
         final type = SyncStreamDtoTypesEnum.fromJson(jsonDecode(line)['type'])!;
         final action = SyncAction.fromJson(jsonDecode(line)['action']);
         final dataJson = jsonDecode(line)['data'];
+        final id = jsonDecode(line)['ack']['id'];
+        final timestamp = jsonDecode(line)['ack']['timestamp'];
 
         switch (type) {
           case SyncStreamDtoTypesEnum.asset:
@@ -95,6 +137,8 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
                   type: type,
                   action: SyncAction.upsert,
                   data: asset,
+                  id: id,
+                  timestamp: timestamp,
                 ),
               );
             } else if (action == SyncAction.delete) {
@@ -103,6 +147,8 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
                   type: type,
                   action: SyncAction.delete,
                   data: dataJson.toString(),
+                  id: id,
+                  timestamp: timestamp,
                 ),
               );
             }

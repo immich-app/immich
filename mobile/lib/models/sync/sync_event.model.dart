@@ -13,21 +13,32 @@ class SyncEvent {
 
   // dynamic
   final dynamic data;
+
+  // Acknowledge info
+  final String id;
+  final String timestamp;
+
   SyncEvent({
     required this.type,
     required this.action,
     required this.data,
+    required this.id,
+    required this.timestamp,
   });
 
   SyncEvent copyWith({
     SyncStreamDtoTypesEnum? type,
     SyncAction? action,
     dynamic data,
+    String? id,
+    String? timestamp,
   }) {
     return SyncEvent(
       type: type ?? this.type,
       action: action ?? this.action,
       data: data ?? this.data,
+      id: id ?? this.id,
+      timestamp: timestamp ?? this.timestamp,
     );
   }
 
@@ -36,6 +47,8 @@ class SyncEvent {
       'type': type,
       'action': action,
       'data': data,
+      'id': id,
+      'timestamp': timestamp,
     };
   }
 
@@ -44,6 +57,8 @@ class SyncEvent {
       type: SyncStreamDtoTypesEnum.values[map['type'] as int],
       action: SyncAction.values[map['action'] as int],
       data: map['data'] as dynamic,
+      id: map['id'] as String,
+      timestamp: map['timestamp'] as String,
     );
   }
 
@@ -53,15 +68,27 @@ class SyncEvent {
       SyncEvent.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() => 'SyncEvent(type: $type, action: $action, data: $data)';
+  String toString() {
+    return 'SyncEvent(type: $type, action: $action, data: $data, id: $id, timestamp: $timestamp)';
+  }
 
   @override
   bool operator ==(covariant SyncEvent other) {
     if (identical(this, other)) return true;
 
-    return other.type == type && other.action == action && other.data == data;
+    return other.type == type &&
+        other.action == action &&
+        other.data == data &&
+        other.id == id &&
+        other.timestamp == timestamp;
   }
 
   @override
-  int get hashCode => type.hashCode ^ action.hashCode ^ data.hashCode;
+  int get hashCode {
+    return type.hashCode ^
+        action.hashCode ^
+        data.hashCode ^
+        id.hashCode ^
+        timestamp.hashCode;
+  }
 }

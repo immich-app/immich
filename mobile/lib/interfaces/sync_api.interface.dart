@@ -5,5 +5,9 @@ abstract interface class ISyncApiRepository {
   Stream<List<SyncEvent>> getChanges(
     SyncStreamDtoTypesEnum type,
   );
-  Future<void> confirmChages(String changeId);
+  Future<void> confirmChanges(
+    SyncStreamDtoTypesEnum type,
+    String id,
+    String timestamp,
+  );
 }
