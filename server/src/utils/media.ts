@@ -150,7 +150,7 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
 
     options.push(...this.getToneMapping(videoStream));
-    if (options.length === 0 && videoStream.pixelFormat !== 'yuv420p') {
+    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
       options.push(`format=yuv420p`);
     }
 
@@ -596,7 +596,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     options.push(...this.getToneMapping(videoStream));
     if (options.length > 0) {
       options[options.length - 1] += ':format=nv12';
-    } else if (videoStream.pixelFormat !== 'yuv420p') {
+    } else if (!videoStream.pixelFormat.endsWith('420p')) {
       options.push('format=nv12');
     }
     return options;
@@ -743,7 +743,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       options.push(scaling);
     }
     options.push(...tonemapOptions);
-    if (options.length === 0 && videoStream.pixelFormat !== 'yuv420p') {
+    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
       options.push('format=nv12');
     }
     return options;
@@ -877,7 +877,7 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
       options.push(scaling);
     }
     options.push(...tonemapOptions);
-    if (options.length === 0 && videoStream.pixelFormat !== 'yuv420p') {
+    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
       options.push('format=nv12');
     }
     return options;
