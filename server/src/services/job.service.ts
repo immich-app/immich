@@ -220,6 +220,7 @@ export class JobService extends BaseService {
       QueueName.FACIAL_RECOGNITION,
       QueueName.STORAGE_TEMPLATE_MIGRATION,
       QueueName.DUPLICATE_DETECTION,
+      QueueName.BACKUP_DATABASE,
     ].includes(name);
   }
 

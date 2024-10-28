@@ -15,6 +15,13 @@ import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ImageOptions } from 'src/interfaces/media.interface';
 
 export interface SystemConfig {
+  backup: {
+    database: {
+      enabled: boolean;
+      cronExpression: string;
+      keepLastAmount: number;
+    };
+  };
   ffmpeg: {
     crf: number;
     threads: number;
@@ -150,6 +157,13 @@ export interface SystemConfig {
 }
 
 export const defaults = Object.freeze<SystemConfig>({
+  backup: {
+    database: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_2AM,
+      keepLastAmount: 14,
+    },
+  },
   ffmpeg: {
     crf: 23,
     threads: 0,
