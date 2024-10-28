@@ -9,7 +9,6 @@ import {
   AudioCodec,
   Colorspace,
   ImageFormat,
-  ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
