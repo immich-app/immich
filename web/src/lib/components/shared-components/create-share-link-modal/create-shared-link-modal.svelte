@@ -102,7 +102,7 @@
     }
   };
 
-  const generateQRCode = async () => {
+  const generateQRCode = () => {
     QRCodeGenerated = true;
   };
 
