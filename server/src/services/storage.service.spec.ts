@@ -30,11 +30,20 @@ describe(StorageService.name, () => {
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, { mountFiles: true });
+      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
+        mountChecks: {
+          'encoded-video': true,
+          library: true,
+          profile: true,
+          thumbs: true,
+          upload: true,
+        },
+      });
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/encoded-video');
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/library');
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/profile');
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload');
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/encoded-video/.immich', expect.any(Buffer));
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/profile/.immich', expect.any(Buffer));
@@ -42,8 +51,36 @@ describe(StorageService.name, () => {
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/upload/.immich', expect.any(Buffer));
     });
 
+    it('should enable mount folder checking for a new folder type', async () => {
+      systemMock.get.mockResolvedValue({
+        mountChecks: {
+          'encoded-video': true,
+          library: false,
+          profile: true,
+          thumbs: true,
+          upload: true,
+        },
+      });
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
+        mountChecks: {
+          'encoded-video': true,
+          library: true,
+          profile: true,
+          thumbs: true,
+          upload: true,
+        },
+      });
+      expect(storageMock.mkdirSync).toHaveBeenCalledTimes(1);
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/library');
+      expect(storageMock.createFile).toHaveBeenCalledTimes(1);
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
+    });
+
     it('should throw an error if .immich is missing', async () => {
-      systemMock.get.mockResolvedValue({ mountFiles: true });
+      systemMock.get.mockResolvedValue({ mountChecks: { upload: true } });
       storageMock.readFile.mockRejectedValue(new Error("ENOENT: no such file or directory, open '/app/.immich'"));
 
       await expect(sut.onBootstrap()).rejects.toThrow('Failed to read');
@@ -53,7 +90,7 @@ describe(StorageService.name, () => {
     });
 
     it('should throw an error if .immich is present but read-only', async () => {
-      systemMock.get.mockResolvedValue({ mountFiles: true });
+      systemMock.get.mockResolvedValue({ mountChecks: { upload: true } });
       storageMock.overwriteFile.mockRejectedValue(new Error("ENOENT: no such file or directory, open '/app/.immich'"));
 
       await expect(sut.onBootstrap()).rejects.toThrow('Failed to write');
@@ -64,7 +101,7 @@ describe(StorageService.name, () => {
     it('should skip mount file creation if file already exists', async () => {
       const error = new Error('Error creating file') as any;
       error.code = 'EEXIST';
-      systemMock.get.mockResolvedValue({ mountFiles: false });
+      systemMock.get.mockResolvedValue({ mountChecks: {} });
       storageMock.createFile.mockRejectedValue(error);
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
@@ -73,7 +110,7 @@ describe(StorageService.name, () => {
     });
 
     it('should throw an error if mount file could not be created', async () => {
-      systemMock.get.mockResolvedValue({ mountFiles: false });
+      systemMock.get.mockResolvedValue({ mountChecks: {} });
       storageMock.createFile.mockRejectedValue(new Error('Error creating file'));
 
       await expect(sut.onBootstrap()).rejects.toBeInstanceOf(ImmichStartupError);
@@ -81,7 +118,7 @@ describe(StorageService.name, () => {
     });
 
     it('should startup if checks are disabled', async () => {
-      systemMock.get.mockResolvedValue({ mountFiles: true });
+      systemMock.get.mockResolvedValue({ mountChecks: { upload: true } });
       configMock.getEnv.mockReturnValue(
         mockEnvData({
           storage: { ignoreMountCheckErrors: true },
