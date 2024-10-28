@@ -1095,7 +1095,6 @@ export type SystemConfigFFmpegDto = {
     crf: number;
     gopSize: number;
     maxBitrate: string;
-    npl: number;
     preferredHwDevice: string;
     preset: string;
     refs: number;
