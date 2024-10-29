@@ -34,12 +34,12 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
-    mdiLabelMultiple,
-    mdiLabelOff,
+    mdiFaceRecognition,
+    mdiFaceMan,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -48,7 +48,6 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { websocketEvents } from '$lib/stores/websocket';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -102,7 +101,7 @@
 
   $: people = asset.people || [];
 
-  $: allFaces = markingAllFaces
+  $: faces = showFaceBoundingBox
     ? people
         .filter((person) => showingHiddenPeople || !person.isHidden)
         .flatMap((person) =>
@@ -112,11 +111,11 @@
     : [];
 
   $: {
-    $boundingBoxesArray = allFaces || [];
+    $boundingBoxesArray = faces || [];
   }
 
-  $: showingHiddenPeople = false;
-  $: markingAllFaces = false;
+  let showingHiddenPeople = false;
+  let showFaceBoundingBox = false;
 
   $: unassignedFaces = asset.unassignedFaces || [];
 
@@ -125,21 +124,10 @@
     timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
       : fromLocalDateTime(asset.localDateTime);
-  onMount(() => {
-    return websocketEvents.on('on_asset_update', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
-  });
 
   onDestroy(() => {
     $boundingBoxesArray = [];
   });
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -157,7 +145,7 @@
       unassignedFaces = data?.unassignedFaces || [];
     });
     showEditFaces = false;
-    $boundingBoxesArray = allFaces || [];
+    $boundingBoxesArray = faces || [];
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -219,7 +207,7 @@
               size="24"
             />
           {/if}
-          {#if markingAllFaces || people.some((person) => person.isHidden)}
+          {#if showFaceBoundingBox || people.some((person) => person.isHidden)}
             <CircleIconButton
               title={$t('show_hidden_people')}
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
@@ -230,10 +218,10 @@
           {/if}
           <CircleIconButton
             title={$t('mark_all_faces')}
-            icon={markingAllFaces ? mdiLabelOff : mdiLabelMultiple}
+            icon={showFaceBoundingBox ? mdiFaceMan : mdiFaceRecognition}
             padding="1"
             buttonSize="32"
-            on:click={() => (markingAllFaces = !markingAllFaces)}
+            on:click={() => (showFaceBoundingBox = !showFaceBoundingBox)}
           />
           <CircleIconButton
             title={$t('edit_people')}
@@ -259,11 +247,11 @@
               on:blur={() => ($boundingBoxesArray = [])}
               on:mouseover={() =>
                 ($boundingBoxesArray = people[index].faces.map((face) => createBoundingBoxType(face, person.id, true)))}
-              on:mouseleave={() => ($boundingBoxesArray = allFaces)}
+              on:mouseleave={() => ($boundingBoxesArray = faces)}
             >
               <div
-                class="relative {markingAllFaces ? ' border-solid border-[3px] rounded-lg' : ''}"
-                style:border-color={markingAllFaces ? `${getBorderColor(person.id)}` : ''}
+                class="relative border-solid border-[3px] rounded-lg border-transparent"
+                style:border-color={showFaceBoundingBox ? `${getBorderColor(person.id)}` : ''}
               >
                 <ImageThumbnail
                   curve

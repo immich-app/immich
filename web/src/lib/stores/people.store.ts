@@ -24,11 +24,11 @@ export function getBorderColor(personId: string): string {
 }
 
 function createBoundingBoxStyle(personId: string, isSelected: boolean): BoundingBoxStyle {
-  return { color: getBorderColor(personId), isSelected: isSelected };
+  return { color: getBorderColor(personId), isSelected };
 }
 
 export function createBoundingBoxType(faces: Faces, personId: string, isSelected: boolean): BoundingBoxType {
-  return { boundingBoxStyle: createBoundingBoxStyle(personId, isSelected), faces: faces };
+  return { boundingBoxStyle: createBoundingBoxStyle(personId, isSelected), faces };
 }
 
 export const boundingBoxesArray = writable<BoundingBoxType[]>([]);

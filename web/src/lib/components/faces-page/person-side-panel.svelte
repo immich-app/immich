@@ -90,10 +90,6 @@
     return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 
-  $: {
-    $boundingBoxesArray = [];
-  }
-
   const isEqual = (a: string[], b: string[]): boolean => {
     return b.every((valueB) => a.includes(valueB));
   };
