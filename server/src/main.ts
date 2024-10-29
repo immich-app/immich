@@ -12,29 +12,39 @@ if (immichApp) {
 
 let apiProcess: ChildProcess | undefined;
 
+const onError = (name: string, error: Error) => {
+  console.error(`${name} worker error: ${error}`);
+};
+
+const onExit = (name: string, exitCode: number | null) => {
+  if (exitCode !== 0) {
+    console.error(`${name} worker exited with code ${exitCode}`);
+
+    if (apiProcess && name !== ImmichWorker.API) {
+      console.error('Killing api process');
+      apiProcess.kill('SIGTERM');
+      apiProcess = undefined;
+    }
+  }
+
+  process.exit(exitCode);
+};
+
 function bootstrapWorker(name: ImmichWorker) {
   console.log(`Starting ${name} worker`);
 
-  const execArgv = process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg));
-  const worker =
-    name === ImmichWorker.API
-      ? (apiProcess = fork(`./dist/workers/${name}.js`, [], { execArgv }))
-      : new Worker(`./dist/workers/${name}.js`);
+  let worker: Worker | ChildProcess;
+  if (name === ImmichWorker.API) {
+    worker = fork(`./dist/workers/${name}.js`, [], {
+      execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
+    });
+    apiProcess = worker;
+  } else {
+    worker = new Worker(`./dist/workers/${name}.js`);
+  }
 
-  worker.on('error', (error) => {
-    console.error(`${name} worker error: ${error}`);
-  });
-
-  worker.on('exit', (exitCode) => {
-    if (exitCode !== 0) {
-      console.error(`${name} worker exited with code ${exitCode}`);
-      if (apiProcess && name !== ImmichWorker.API) {
-        console.error('Killing api process');
-        apiProcess.kill('SIGTERM');
-      }
-      process.exit(exitCode);
-    }
-  });
+  worker.on('error', (error) => onError(name, error));
+  worker.on('exit', (exitCode) => onExit(name, exitCode));
 }
 
 function bootstrap() {
