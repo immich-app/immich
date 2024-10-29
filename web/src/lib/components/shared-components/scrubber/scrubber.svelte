@@ -245,7 +245,7 @@
     >
       {#if $isTimelineScrolling && formatedDate !== 'Invalid DateTime'}
         <p
-          transition:fly={{ y: -20, duration: 500 }}
+          transition:fly={{ y: -10, duration: 250 }}
           class="truncate opacity-85 pointer-events-none absolute right-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
         >
           {formatedDate}
