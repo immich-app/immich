@@ -131,9 +131,7 @@ class ThumbnailImage extends ConsumerWidget {
     }
 
     Widget buildImage() {
-      final image = SizedBox(
-        width: 300,
-        height: 300,
+      final image = SizedBox.expand(
         child: Hero(
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
