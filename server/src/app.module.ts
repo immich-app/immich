@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
-import { clsConfig, immichAppConfig } from 'src/config';
+import { immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
@@ -37,12 +37,12 @@ const middleware = [
 ];
 
 const configRepository = new ConfigRepository();
-const { bull, database, otel } = configRepository.getEnv();
+const { bull, cls, database, otel } = configRepository.getEnv();
 
 const imports = [
   BullModule.forRoot(bull.config),
   BullModule.registerQueue(...bull.queues),
-  ClsModule.forRoot(clsConfig),
+  ClsModule.forRoot(cls.config),
   ConfigModule.forRoot(immichAppConfig),
   OpenTelemetryModule.forRoot(otel),
   TypeOrmModule.forRootAsync({
