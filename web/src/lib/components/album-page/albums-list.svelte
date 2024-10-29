@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { groupBy, orderBy } from 'lodash-es';
+  import { groupBy } from 'lodash-es';
   import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
@@ -17,7 +17,13 @@
   import { handleError } from '$lib/utils/handle-error';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { getSelectedAlbumGroupOption, type AlbumGroup } from '$lib/utils/album-utils';
+  import {
+    getSelectedAlbumGroupOption,
+    type AlbumGroup,
+    confirmAlbumDelete,
+    sortAlbums,
+    stringToSortOrder,
+  } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { user } from '$lib/stores/user.store';
   import {
@@ -31,7 +37,6 @@
   } from '$lib/stores/preferences.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
   export let ownedAlbums: AlbumResponseDto[] = [];
@@ -44,10 +49,6 @@
 
   interface AlbumGroupOption {
     [option: string]: (order: SortOrder, albums: AlbumResponseDto[]) => AlbumGroup[];
-  }
-
-  interface AlbumSortOption {
-    [option: string]: (order: SortOrder, albums: AlbumResponseDto[]) => AlbumResponseDto[];
   }
 
   const groupOptions: AlbumGroupOption = {
@@ -117,41 +118,6 @@
     },
   };
 
-  const sortOptions: AlbumSortOption = {
-    /** Sort by album title */
-    [AlbumSortBy.Title]: (order, albums) => {
-      const sortSign = order === SortOrder.Desc ? -1 : 1;
-      return albums.slice().sort((a, b) => a.albumName.localeCompare(b.albumName, $locale) * sortSign);
-    },
-
-    /** Sort by asset count */
-    [AlbumSortBy.ItemCount]: (order, albums) => {
-      return orderBy(albums, 'assetCount', [order]);
-    },
-
-    /** Sort by last modified */
-    [AlbumSortBy.DateModified]: (order, albums) => {
-      return orderBy(albums, [({ updatedAt }) => new Date(updatedAt)], [order]);
-    },
-
-    /** Sort by creation date */
-    [AlbumSortBy.DateCreated]: (order, albums) => {
-      return orderBy(albums, [({ createdAt }) => new Date(createdAt)], [order]);
-    },
-
-    /** Sort by the most recent photo date */
-    [AlbumSortBy.MostRecentPhoto]: (order, albums) => {
-      albums = orderBy(albums, [({ endDate }) => (endDate ? new Date(endDate) : '')], [order]);
-      return albums.sort(sortUnknownYearAlbums);
-    },
-
-    /** Sort by the oldest photo date */
-    [AlbumSortBy.OldestPhoto]: (order, albums) => {
-      albums = orderBy(albums, [({ startDate }) => (startDate ? new Date(startDate) : '')], [order]);
-      return albums.sort(sortUnknownYearAlbums);
-    },
-  };
-
   let albums: AlbumResponseDto[] = [];
   let filteredAlbums: AlbumResponseDto[] = [];
   let groupedAlbums: AlbumGroup[] = [];
@@ -209,16 +175,10 @@
 
   // Step 4: Sort albums amongst each group.
   $: {
-    const defaultSortOption = AlbumSortBy.DateModified;
-    const selectedSortOption = userSettings.sortBy ?? defaultSortOption;
-
-    const sortFunc = sortOptions[selectedSortOption] ?? sortOptions[defaultSortOption];
-    const sortOrder = stringToSortOrder(userSettings.sortOrder);
-
     groupedAlbums = groupedAlbums.map((group) => ({
       id: group.id,
       name: group.name,
-      albums: sortFunc(sortOrder, group.albums),
+      albums: sortAlbums(group.albums, { sortBy: userSettings.sortBy, orderBy: userSettings.sortOrder }),
     }));
 
     albumGroupIds = groupedAlbums.map(({ id }) => id);
@@ -231,20 +191,6 @@
       await removeAlbumsIfEmpty();
     }
   });
-
-  const sortUnknownYearAlbums = (a: AlbumResponseDto, b: AlbumResponseDto) => {
-    if (!a.endDate) {
-      return 1;
-    }
-    if (!b.endDate) {
-      return -1;
-    }
-    return 0;
-  };
-
-  const stringToSortOrder = (order: string) => {
-    return order === 'desc' ? SortOrder.Desc : SortOrder.Asc;
-  };
 
   const showAlbumContextMenu = (contextMenuDetail: ContextMenuPosition, album: AlbumResponseDto) => {
     contextMenuTargetAlbum = album;
@@ -302,10 +248,7 @@
       return;
     }
 
-    const isConfirmed = await dialogController.show({
-      id: 'delete-album',
-      prompt: `Are you sure you want to delete the album ${albumToDelete.albumName}?\nIf this album is shared, other users will not be able to access it anymore.`,
-    });
+    const isConfirmed = await confirmAlbumDelete(albumToDelete);
 
     if (!isConfirmed) {
       return;
@@ -340,7 +283,7 @@
       message: $t('album_info_updated'),
       type: NotificationType.Info,
       button: {
-        text: 'View Album',
+        text: $t('view_album'),
         onClick() {
           return goto(`${AppRoute.ALBUMS}/${album.id}`);
         },
@@ -424,13 +367,13 @@
     <MenuOption
       icon={mdiRenameOutline}
       text={$t('edit_album')}
-      on:click={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}
+      onClick={() => contextMenuTargetAlbum && handleEdit(contextMenuTargetAlbum)}
     />
-    <MenuOption icon={mdiShareVariantOutline} text={$t('share')} on:click={() => openShareModal()} />
+    <MenuOption icon={mdiShareVariantOutline} text={$t('share')} onClick={() => openShareModal()} />
   {/if}
-  <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} on:click={() => handleDownloadAlbum()} />
+  <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} onClick={() => handleDownloadAlbum()} />
   {#if showFullContextMenu}
-    <MenuOption icon={mdiDeleteOutline} text={$t('delete')} on:click={() => setAlbumToDelete()} />
+    <MenuOption icon={mdiDeleteOutline} text={$t('delete')} onClick={() => setAlbumToDelete()} />
   {/if}
 </RightClickContextMenu>
 
@@ -451,13 +394,13 @@
       <CreateSharedLinkModal
         albumId={albumToShare.id}
         onClose={() => closeShareModal()}
-        on:created={() => albumToShare && handleSharedLinkCreated(albumToShare)}
+        onCreated={() => albumToShare && handleSharedLinkCreated(albumToShare)}
       />
     {:else}
       <UserSelectionModal
         album={albumToShare}
-        on:select={({ detail: users }) => handleAddUsers(users)}
-        on:share={() => (showShareByURLModal = true)}
+        onSelect={handleAddUsers}
+        onShare={() => (showShareByURLModal = true)}
         onClose={() => closeShareModal()}
       />
     {/if}

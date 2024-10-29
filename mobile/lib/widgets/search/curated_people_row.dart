@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
@@ -26,16 +26,14 @@ class CuratedPeopleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: imageSize + 30,
+      height: imageSize + 50,
       child: ListView.separated(
         padding: padding,
         scrollDirection: Axis.horizontal,
         separatorBuilder: (context, index) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
           final person = content[index];
-          final headers = {
-            "x-immich-user-token": Store.get(StoreKey.accessToken),
-          };
+          final headers = ApiService.getRequestHeaders();
           return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -57,7 +55,10 @@ class CuratedPeopleRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              _buildPersonLabel(context, person, index),
+              SizedBox(
+                width: imageSize,
+                child: _buildPersonLabel(context, person, index),
+              ),
             ],
           );
         },
@@ -79,6 +80,9 @@ class CuratedPeopleRow extends StatelessWidget {
           style: context.textTheme.labelLarge?.copyWith(
             color: context.primaryColor,
           ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ).tr(),
       );
     }
@@ -87,6 +91,7 @@ class CuratedPeopleRow extends StatelessWidget {
       textAlign: TextAlign.center,
       overflow: TextOverflow.ellipsis,
       style: context.textTheme.labelLarge,
+      maxLines: 2,
     );
   }
 }

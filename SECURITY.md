@@ -2,4 +2,4 @@
 
 ## Reporting a Vulnerability
 
-Please report security issues to `alex.tran1502@gmail.com`
+Please report security issues to `security@immich.app`

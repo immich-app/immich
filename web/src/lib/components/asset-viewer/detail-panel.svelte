@@ -1,15 +1,21 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
+  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { boundingBoxesArray, createBoundingBoxType, getBorderColor } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { user } from '$lib/stores/user.store';
-  import { websocketEvents } from '$lib/stores/websocket';
+  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
+  import { getByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
+  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
   import {
     AssetMediaSize,
     getAssetInfo,
@@ -19,6 +25,7 @@
     type ExifResponseDto,
   } from '@immich/sdk';
   import {
+    mdiAccountOff,
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
@@ -27,27 +34,26 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
-    mdiAccountOff,
     mdiLabelMultiple,
     mdiLabelOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
-  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
-  import { t } from 'svelte-i18n';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { websocketEvents } from '$lib/stores/websocket';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
   export let currentAlbum: AlbumResponseDto | null = null;
+  export let onClose: () => void;
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -114,6 +120,11 @@
 
   $: unassignedFaces = asset.unassignedFaces || [];
 
+  $: timeZone = asset.exifInfo?.timeZone;
+  $: dateTime =
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromLocalDateTime(asset.localDateTime);
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
       if (assetUpdate.id === asset.id) {
@@ -165,35 +176,44 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={() => dispatch('close')} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
   {#if asset.isOffline}
     <section class="px-4 py-4">
       <div role="alert">
-        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">{$t('asset_offline')}</div>
-        <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
+        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">
+          {$t('asset_offline')}
+        </div>
+        <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            This asset is offline. Immich can not access its file location. Please ensure the asset is available and
-            then rescan the library.
+            {#if $user?.isAdmin}
+              <p>{$t('admin.asset_offline_description')}</p>
+            {:else}
+              {$t('asset_offline_description')}
+            {/if}
           </p>
+        </div>
+        <div class="rounded-b bg-red-500 px-4 py-2 text-white text-sm">
+          <p>{asset.originalPath}</p>
         </div>
       </div>
     </section>
   {/if}
 
   <DetailPanelDescription {asset} {isOwner} />
+  <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
-    <section class="px-4 py-4 text-sm">
+    <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
           {#if unassignedFaces.length > 0}
             <Icon
-              ariaLabel="Asset has unassigned faces"
-              title="Asset has unassigned faces"
+              ariaLabel={$t('asset_has_unassigned_faces')}
+              title={$t('asset_has_unassigned_faces')}
               color="currentColor"
               path={mdiAccountOff}
               size="24"
@@ -243,25 +263,25 @@
             >
               <div
                 class="relative {markingAllFaces ? ' border-solid border-[3px] rounded-lg' : ''}"
-                style:border-color={markingAllFaces ? `${getBorderColor(person.id)}` : ''}>
+                style:border-color={markingAllFaces ? `${getBorderColor(person.id)}` : ''}
+              >
                 <ImageThumbnail
                   curve
                   shadow
-                  url={getPeopleThumbnailUrl(person.id)}
+                  url={getPeopleThumbnailUrl(person)}
                   altText={person.name}
                   title={person.name}
                   widthStyle="90px"
                   heightStyle="90px"
-                  thumbhash={null}
                   hidden={person.isHidden}
                 />
               </div>
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
               {#if person.birthDate}
                 {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const age = Math.floor(DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'years').years)}
                 {@const ageInMonths = Math.floor(
-                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'months').months,
                 )}
                 {#if age >= 0}
                   <p
@@ -276,11 +296,11 @@
                     )}
                   >
                     {#if ageInMonths <= 11}
-                      Age {ageInMonths} months
+                      {$t('age_months', { values: { months: ageInMonths } })}
                     {:else if ageInMonths > 12 && ageInMonths <= 23}
-                      Age 1 year, {ageInMonths - 12} months
+                      {$t('age_year_months', { values: { months: ageInMonths - 12 } })}
                     {:else}
-                      Age {age}
+                      {$t('age_years', { values: { years: age } })}
                     {/if}
                   </p>
                 {/if}
@@ -301,10 +321,7 @@
       <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
+    {#if dateTime}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
@@ -320,7 +337,7 @@
 
           <div>
             <p>
-              {assetDateTimeOriginal.toLocaleString(
+              {dateTime.toLocaleString(
                 {
                   month: 'short',
                   day: 'numeric',
@@ -331,12 +348,12 @@
             </p>
             <div class="flex gap-2 text-sm">
               <p>
-                {assetDateTimeOriginal.toLocaleString(
+                {dateTime.toLocaleString(
                   {
                     weekday: 'short',
                     hour: 'numeric',
                     minute: '2-digit',
-                    timeZoneName: 'longOffset',
+                    timeZoneName: timeZone ? 'longOffset' : undefined,
                   },
                   { locale: $locale },
                 )}
@@ -351,7 +368,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
+    {:else if !dateTime && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -365,17 +382,14 @@
     {/if}
 
     {#if isShowChangeDate}
-      {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
-        ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-            zone: asset.exifInfo.timeZone ?? undefined,
-            locale: $locale,
-          })
-        : DateTime.now()}
-      <ChangeDate
-        initialDate={assetDateTimeOriginal}
-        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
-        on:cancel={() => (isShowChangeDate = false)}
-      />
+      <Portal>
+        <ChangeDate
+          initialDate={dateTime}
+          initialTimeZone={timeZone ?? ''}
+          onConfirm={handleConfirmChangeDate}
+          onCancel={() => (isShowChangeDate = false)}
+        />
+      </Portal>
     {/if}
 
     {#if asset.exifInfo?.fileSizeInByte}
@@ -424,7 +438,7 @@
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
-              <p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
+              <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
             {/if}
 
             {#if asset.exifInfo.exposureTime}
@@ -472,20 +486,21 @@
           },
         ]}
         center={latlng}
-        zoom={15}
+        zoom={12.5}
         simplified
         useLocationPin
+        onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
         <svelte:fragment slot="popup" let:marker>
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
             <a
-              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
               class="font-medium text-immich-primary"
             >
-              Open in OpenStreetMap
+              {$t('open_in_openstreetmap')}
             </a>
           </div>
         </svelte:fragment>
@@ -512,11 +527,11 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="p-6 dark:text-immich-dark-fg">
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
-      <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <div class="flex gap-4 py-2 hover:cursor-pointer items-center">
+      <a href="{AppRoute.ALBUMS}/{album.id}">
+        <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
@@ -541,13 +556,17 @@
   </section>
 {/if}
 
+{#if $preferences?.tags?.enabled}
+  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+    <DetailPanelTags {asset} {isOwner} />
+  </section>
+{/if}
+
 {#if showEditFaces}
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    on:close={() => {
-      showEditFaces = false;
-    }}
-    on:refresh={handleRefreshPeople}
+    onClose={() => (showEditFaces = false)}
+    onRefresh={handleRefreshPeople}
   />
 {/if}

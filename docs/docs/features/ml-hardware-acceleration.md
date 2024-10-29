@@ -32,6 +32,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - Where and how you can get this file depends on device and vendor, but typically, the device vendor also supplies these
   - The `hwaccel.ml.yml` file assumes the path to it is `/usr/lib/libmali.so`, so update accordingly if it is elsewhere
   - The `hwaccel.ml.yml` file assumes an additional file `/lib/firmware/mali_csffw.bin`, so update accordingly if your device's driver does not require this file
+- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for ARM NN specific settings
 
 #### CUDA
 
@@ -51,6 +52,12 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 2. In the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
 3. Still in `immich-machine-learning`, add one of -[armnn, cuda, openvino] to the `image` section's tag at the end of the line.
 4. Redeploy the `immich-machine-learning` container with these updated settings.
+
+### Confirming Device Usage
+
+You can confirm the device is being recognized and used by checking its utilization. There are many tools to display this, such as `nvtop` for NVIDIA or Intel and `intel_gpu_top` for Intel.
+
+You can also check the logs of the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, or when you search with text in Immich, you should either see a log for `Available ORT providers` containing the relevant provider (e.g. `CUDAExecutionProvider` in the case of CUDA), or a `Loaded ANN model` log entry without errors in the case of ARM NN.
 
 #### Single Compose File
 
@@ -94,9 +101,22 @@ immich-machine-learning:
 
 Once this is done, you can redeploy the `immich-machine-learning` container.
 
-:::info
-You can confirm the device is being recognized and used by checking its utilization (via `nvtop` for CUDA, `intel_gpu_top` for OpenVINO, etc.). You can also enable debug logging by setting `IMMICH_LOG_LEVEL=debug` in the `.env` file and restarting the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, you should see a log for `Available ORT providers` containing the relevant provider. In the case of ARM NN, the absence of a `Could not load ANN shared libraries` log entry means it loaded successfully.
-:::
+#### Multi-GPU
+
+If you want to utilize multiple NVIDIA or Intel GPUs, you can set the `MACHINE_LEARNING_DEVICE_IDS` environmental variable to a comma-separated list of device IDs and set `MACHINE_LEARNING_WORKERS` to the number of listed devices. You can run a command such as `nvidia-smi -L` or `glxinfo -B` to see the currently available devices and their corresponding IDs.
+
+For example, if you have devices 0 and 1, set the values as follows:
+
+```
+MACHINE_LEARNING_DEVICE_IDS=0,1
+MACHINE_LEARNING_WORKERS=2
+```
+
+In this example, the machine learning service will spawn two workers, one of which will allocate models to device 0 and the other to device 1. Different requests will be processed by one worker or the other.
+
+This approach can be used to simply specify a particular device as well. For example, setting `MACHINE_LEARNING_DEVICE_IDS=1` will ensure device 1 is always used instead of device 0.
+
+Note that you should increase job concurrencies to increase overall utilization and more effectively distribute work across multiple GPUs. Additionally, each GPU must be able to load all models. It is not possible to distribute a single model to multiple GPUs that individually have insufficient VRAM, or to delegate a specific model to one GPU.
 
 [hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
 [nvct]: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html

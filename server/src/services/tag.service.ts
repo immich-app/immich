@@ -1,102 +1,143 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { AssetIdsDto } from 'src/dtos/asset.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { CreateTagDto, TagResponseDto, UpdateTagDto, mapTag } from 'src/dtos/tag.dto';
-import { ITagRepository } from 'src/interfaces/tag.interface';
+import {
+  TagBulkAssetsDto,
+  TagBulkAssetsResponseDto,
+  TagCreateDto,
+  TagResponseDto,
+  TagUpdateDto,
+  TagUpsertDto,
+  mapTag,
+} from 'src/dtos/tag.dto';
+import { TagEntity } from 'src/entities/tag.entity';
+import { Permission } from 'src/enum';
+import { JobStatus } from 'src/interfaces/job.interface';
+import { AssetTagItem } from 'src/interfaces/tag.interface';
+import { BaseService } from 'src/services/base.service';
+import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { upsertTags } from 'src/utils/tag';
 
 @Injectable()
-export class TagService {
-  constructor(@Inject(ITagRepository) private repository: ITagRepository) {}
-
-  getAll(auth: AuthDto) {
-    return this.repository.getAll(auth.user.id).then((tags) => tags.map((tag) => mapTag(tag)));
+export class TagService extends BaseService {
+  async getAll(auth: AuthDto) {
+    const tags = await this.tagRepository.getAll(auth.user.id);
+    return tags.map((tag) => mapTag(tag));
   }
 
-  async getById(auth: AuthDto, id: string): Promise<TagResponseDto> {
-    const tag = await this.findOrFail(auth, id);
+  async get(auth: AuthDto, id: string): Promise<TagResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [id] });
+    const tag = await this.findOrFail(id);
     return mapTag(tag);
   }
 
-  async create(auth: AuthDto, dto: CreateTagDto) {
-    const duplicate = await this.repository.hasName(auth.user.id, dto.name);
+  async create(auth: AuthDto, dto: TagCreateDto) {
+    let parent: TagEntity | undefined;
+    if (dto.parentId) {
+      await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [dto.parentId] });
+      parent = (await this.tagRepository.get(dto.parentId)) || undefined;
+      if (!parent) {
+        throw new BadRequestException('Tag not found');
+      }
+    }
+
+    const userId = auth.user.id;
+    const value = parent ? `${parent.value}/${dto.name}` : dto.name;
+    const duplicate = await this.tagRepository.getByValue(userId, value);
     if (duplicate) {
       throw new BadRequestException(`A tag with that name already exists`);
     }
 
-    const tag = await this.repository.create({
-      userId: auth.user.id,
-      name: dto.name,
-      type: dto.type,
-    });
+    const tag = await this.tagRepository.create({ userId, value, parent });
 
     return mapTag(tag);
   }
 
-  async update(auth: AuthDto, id: string, dto: UpdateTagDto): Promise<TagResponseDto> {
-    await this.findOrFail(auth, id);
-    const tag = await this.repository.update({ id, name: dto.name });
+  async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.TAG_UPDATE, ids: [id] });
+
+    const { color } = dto;
+    const tag = await this.tagRepository.update({ id, color });
     return mapTag(tag);
+  }
+
+  async upsert(auth: AuthDto, dto: TagUpsertDto) {
+    const tags = await upsertTags(this.tagRepository, { userId: auth.user.id, tags: dto.tags });
+    return tags.map((tag) => mapTag(tag));
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    const tag = await this.findOrFail(auth, id);
-    await this.repository.remove(tag);
+    await this.requireAccess({ auth, permission: Permission.TAG_DELETE, ids: [id] });
+
+    // TODO sync tag changes for affected assets
+
+    await this.tagRepository.delete(id);
   }
 
-  async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
-    await this.findOrFail(auth, id);
-    const assets = await this.repository.getAssets(auth.user.id, id);
-    return assets.map((asset) => mapAsset(asset));
-  }
+  async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    const [tagIds, assetIds] = await Promise.all([
+      this.checkAccess({ auth, permission: Permission.TAG_ASSET, ids: dto.tagIds }),
+      this.checkAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds }),
+    ]);
 
-  async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
-    await this.findOrFail(auth, id);
-
-    const results: AssetIdsResponseDto[] = [];
-    for (const assetId of dto.assetIds) {
-      const hasAsset = await this.repository.hasAsset(auth.user.id, id, assetId);
-      if (hasAsset) {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.DUPLICATE });
-      } else {
-        results.push({ assetId, success: true });
+    const items: AssetTagItem[] = [];
+    for (const tagId of tagIds) {
+      for (const assetId of assetIds) {
+        items.push({ tagId, assetId });
       }
     }
 
-    await this.repository.addAssets(
-      auth.user.id,
-      id,
-      results.filter((result) => result.success).map((result) => result.assetId),
+    const results = await this.tagRepository.upsertAssetIds(items);
+    for (const assetId of new Set(results.map((item) => item.assetId))) {
+      await this.eventRepository.emit('asset.tag', { assetId });
+    }
+
+    return { count: results.length };
+  }
+
+  async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.TAG_ASSET, ids: [id] });
+
+    const results = await addAssets(
+      auth,
+      { access: this.accessRepository, bulk: this.tagRepository },
+      { parentId: id, assetIds: dto.ids },
     );
+
+    for (const { id: assetId, success } of results) {
+      if (success) {
+        await this.eventRepository.emit('asset.tag', { assetId });
+      }
+    }
 
     return results;
   }
 
-  async removeAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
-    await this.findOrFail(auth, id);
+  async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.TAG_ASSET, ids: [id] });
 
-    const results: AssetIdsResponseDto[] = [];
-    for (const assetId of dto.assetIds) {
-      const hasAsset = await this.repository.hasAsset(auth.user.id, id, assetId);
-      if (hasAsset) {
-        results.push({ assetId, success: true });
-      } else {
-        results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
+    const results = await removeAssets(
+      auth,
+      { access: this.accessRepository, bulk: this.tagRepository },
+      { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.TAG_DELETE },
+    );
+
+    for (const { id: assetId, success } of results) {
+      if (success) {
+        await this.eventRepository.emit('asset.untag', { assetId });
       }
     }
-
-    await this.repository.removeAssets(
-      auth.user.id,
-      id,
-      results.filter((result) => result.success).map((result) => result.assetId),
-    );
 
     return results;
   }
 
-  private async findOrFail(auth: AuthDto, id: string) {
-    const tag = await this.repository.getById(auth.user.id, id);
+  async handleTagCleanup() {
+    await this.tagRepository.deleteEmptyTags();
+    return JobStatus.SUCCESS;
+  }
+
+  private async findOrFail(id: string) {
+    const tag = await this.tagRepository.get(id);
     if (!tag) {
       throw new BadRequestException('Tag not found');
     }

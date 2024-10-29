@@ -10,20 +10,18 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/widgets/album/album_action_outlined_button.dart';
+import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_title_text_field.dart';
 import 'package:immich_mobile/widgets/album/shared_album_thumbnail_image.dart';
 
 @RoutePage()
 // ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
-  final bool isSharedAlbum;
-  final List<Asset>? initialAssets;
+  final List<Asset>? assets;
 
   const CreateAlbumPage({
     super.key,
-    required this.isSharedAlbum,
-    this.initialAssets,
+    this.assets,
   });
 
   @override
@@ -34,17 +32,8 @@ class CreateAlbumPage extends HookConsumerWidget {
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
     final selectedAssets = useState<Set<Asset>>(
-      initialAssets != null ? Set.from(initialAssets!) : const {},
+      assets != null ? Set.from(assets!) : const {},
     );
-
-    showSelectUserPage() async {
-      final bool? ok = await context.pushRoute<bool?>(
-        AlbumSharedUserSelectionRoute(assets: selectedAssets.value),
-      );
-      if (ok == true) {
-        selectedAssets.value = {};
-      }
-    }
 
     void onBackgroundTapped() {
       albumTitleTextFieldFocusNode.unfocus();
@@ -52,6 +41,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
       if (albumTitleController.text.isEmpty) {
         albumTitleController.text = 'create_album_page_untitled'.tr();
+        isAlbumTitleEmpty.value = false;
         ref
             .watch(albumTitleProvider.notifier)
             .setAlbumTitle('create_album_page_untitled'.tr());
@@ -109,20 +99,16 @@ class CreateAlbumPage extends HookConsumerWidget {
       if (selectedAssets.value.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.only(top: 16, left: 18, right: 18),
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
                 alignment: Alignment.centerLeft,
                 padding:
-                    const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
-                side: BorderSide(
-                  color: context.isDarkTheme
-                      ? const Color.fromARGB(255, 63, 63, 63)
-                      : const Color.fromARGB(255, 129, 129, 129),
-                ),
+                    const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                backgroundColor: context.colorScheme.surfaceContainerHigh,
               ),
               onPressed: onSelectPhotosButtonPressed,
               icon: Icon(
@@ -134,6 +120,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 child: Text(
                   'create_shared_album_page_share_select_photos',
                   style: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                     color: context.primaryColor,
                   ),
                 ).tr(),
@@ -150,11 +137,11 @@ class CreateAlbumPage extends HookConsumerWidget {
       return Padding(
         padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
         child: SizedBox(
-          height: 30,
+          height: 42,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              AlbumActionOutlinedButton(
+              AlbumActionFilledButton(
                 iconData: Icons.add_photo_alternate_outlined,
                 onPressed: onSelectPhotosButtonPressed,
                 labelText: "share_add_photos".tr(),
@@ -194,13 +181,14 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     createNonSharedAlbum() async {
+      onBackgroundTapped();
       var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
             ref.watch(albumTitleProvider),
             selectedAssets.value,
           );
 
       if (newAlbum != null) {
-        ref.watch(albumProvider.notifier).getAllAlbums();
+        ref.watch(albumProvider.notifier).refreshRemoteAlbums();
         selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
@@ -224,35 +212,20 @@ class CreateAlbumPage extends HookConsumerWidget {
           'share_create_album',
         ).tr(),
         actions: [
-          if (isSharedAlbum)
-            TextButton(
-              onPressed: albumTitleController.text.isNotEmpty
-                  ? showSelectUserPage
-                  : null,
-              child: Text(
-                'create_shared_album_page_share'.tr(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: albumTitleController.text.isEmpty
-                      ? context.themeData.disabledColor
-                      : context.primaryColor,
-                ),
+          TextButton(
+            onPressed: albumTitleController.text.isNotEmpty
+                ? createNonSharedAlbum
+                : null,
+            child: Text(
+              'create_shared_album_page_create'.tr(),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: albumTitleController.text.isNotEmpty
+                    ? context.primaryColor
+                    : context.themeData.disabledColor,
               ),
             ),
-          if (!isSharedAlbum)
-            TextButton(
-              onPressed: albumTitleController.text.isNotEmpty &&
-                      selectedAssets.value.isNotEmpty
-                  ? createNonSharedAlbum
-                  : null,
-              child: Text(
-                'create_shared_album_page_create'.tr(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
-                ),
-              ),
-            ),
+          ),
         ],
       ),
       body: GestureDetector(
@@ -266,7 +239,7 @@ class CreateAlbumPage extends HookConsumerWidget {
               pinned: true,
               floating: false,
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(66.0),
+                preferredSize: const Size.fromHeight(96.0),
                 child: Column(
                   children: [
                     buildTitleInputField(),

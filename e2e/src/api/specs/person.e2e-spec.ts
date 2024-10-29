@@ -6,10 +6,19 @@ import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const invalidBirthday = [
-  { birthDate: 'false', response: 'birthDate must be a date string' },
-  { birthDate: '123567', response: 'birthDate must be a date string' },
-  { birthDate: 123_567, response: 'birthDate must be a date string' },
-  { birthDate: new Date(9999, 0, 0).toISOString(), response: ['Birth date cannot be in the future'] },
+  {
+    birthDate: 'false',
+    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
+  },
+  {
+    birthDate: '123567',
+    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
+  },
+  {
+    birthDate: 123_567,
+    response: ['birthDate must be a string in the format yyyy-MM-dd', 'Birth date cannot be in the future'],
+  },
+  { birthDate: '9999-01-01', response: ['Birth date cannot be in the future'] },
 ];
 
 describe('/people', () => {
@@ -65,6 +74,7 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
+        hasNextPage: false,
         total: 3,
         hidden: 1,
         people: [
@@ -80,12 +90,28 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
+        hasNextPage: false,
         total: 3,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'multiple_assets_person' }),
           expect.objectContaining({ name: 'visible_person' }),
         ],
+      });
+    });
+
+    it('should support pagination', async () => {
+      const { status, body } = await request(app)
+        .get('/people')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .query({ withHidden: true, page: 2, size: 1 });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        hasNextPage: true,
+        total: 3,
+        hidden: 1,
+        people: [expect.objectContaining({ name: 'visible_person' })],
       });
     });
   });
@@ -168,13 +194,13 @@ describe('/people', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           name: 'New Person',
-          birthDate: '1990-01-01T05:00:00.000Z',
+          birthDate: '1990-01-01',
         });
       expect(status).toBe(201);
       expect(body).toMatchObject({
         id: expect.any(String),
         name: 'New Person',
-        birthDate: '1990-01-01T05:00:00.000Z',
+        birthDate: '1990-01-01',
       });
     });
   });
@@ -216,7 +242,7 @@ describe('/people', () => {
       const { status, body } = await request(app)
         .put(`/people/${visiblePerson.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ birthDate: '1990-01-01T05:00:00.000Z' });
+        .send({ birthDate: '1990-01-01' });
       expect(status).toBe(200);
       expect(body).toMatchObject({ birthDate: '1990-01-01' });
     });
@@ -228,6 +254,23 @@ describe('/people', () => {
         .send({ birthDate: null });
       expect(status).toBe(200);
       expect(body).toMatchObject({ birthDate: null });
+    });
+  });
+
+  describe('POST /people/:id/merge', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).post(`/people/${uuidDto.notFound}/merge`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should not supporting merging a person into themselves', async () => {
+      const { status, body } = await request(app)
+        .post(`/people/${visiblePerson.id}/merge`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ ids: [visiblePerson.id] });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Cannot merge a person into themselves'));
     });
   });
 });

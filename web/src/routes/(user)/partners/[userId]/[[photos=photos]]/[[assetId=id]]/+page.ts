@@ -1,8 +1,7 @@
 import { authenticate } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getUser } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
@@ -10,7 +9,7 @@ export const load = (async ({ params }) => {
 
   const partner = await getUser({ id: params.userId });
   const asset = await getAssetInfoFromParam(params);
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     asset,

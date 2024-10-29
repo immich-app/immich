@@ -5,7 +5,7 @@ import { escapePath, glob, globStream } from 'fast-glob';
 import { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DiskUsage,
@@ -14,14 +14,16 @@ import {
   ImmichZipStream,
   WatchEvents,
 } from 'src/interfaces/storage.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { mimeTypes } from 'src/utils/mime-types';
 
-@Instrumentation()
 @Injectable()
 export class StorageRepository implements IStorageRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(StorageRepository.name);
+  }
+
+  realpath(filepath: string) {
+    return fs.realpath(filepath);
   }
 
   readdir(folder: string): Promise<string[]> {
@@ -36,8 +38,16 @@ export class StorageRepository implements IStorageRepository {
     return fs.stat(filepath);
   }
 
-  writeFile(filepath: string, buffer: Buffer) {
-    return fs.writeFile(filepath, buffer);
+  createFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'wx' });
+  }
+
+  createOrOverwriteFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'w' });
+  }
+
+  overwriteFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'r+' });
   }
 
   rename(source: string, target: string) {
@@ -52,7 +62,7 @@ export class StorageRepository implements IStorageRepository {
     const archive = archiver('zip', { store: true });
 
     const addFile = (input: string, filename: string) => {
-      archive.file(input, { name: filename });
+      archive.file(input, { name: filename, mode: 0o644 });
     };
 
     const finalize = () => archive.finalize();
@@ -144,7 +154,9 @@ export class StorageRepository implements IStorageRepository {
       return Promise.resolve([]);
     }
 
-    return glob(this.asGlob(pathsToCrawl), {
+    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
+
+    return glob(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -153,14 +165,16 @@ export class StorageRepository implements IStorageRepository {
     });
   }
 
-  async *walk(crawlOptions: CrawlOptionsDto): AsyncGenerator<string> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
+  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
+    const { pathsToCrawl, exclusionPatterns, includeHidden } = walkOptions;
     if (pathsToCrawl.length === 0) {
       async function* emptyGenerator() {}
       return emptyGenerator();
     }
 
-    const stream = globStream(this.asGlob(pathsToCrawl), {
+    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
+
+    const stream = globStream(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -168,8 +182,17 @@ export class StorageRepository implements IStorageRepository {
       ignore: exclusionPatterns,
     });
 
+    let batch: string[] = [];
     for await (const value of stream) {
-      yield value as string;
+      batch.push(value.toString());
+      if (batch.length === walkOptions.take) {
+        yield batch;
+        batch = [];
+      }
+    }
+
+    if (batch.length > 0) {
+      yield batch;
     }
   }
 
@@ -185,10 +208,9 @@ export class StorageRepository implements IStorageRepository {
     return () => watcher.close();
   }
 
-  private asGlob(pathsToCrawl: string[]): string {
-    const escapedPaths = pathsToCrawl.map((path) => escapePath(path));
-    const base = escapedPaths.length === 1 ? escapedPaths[0] : `{${escapedPaths.join(',')}}`;
+  private asGlob(pathToCrawl: string): string {
+    const escapedPath = escapePath(pathToCrawl);
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-    return `${base}/**/${extensions}`;
+    return `${escapedPath}/**/${extensions}`;
   }
 }

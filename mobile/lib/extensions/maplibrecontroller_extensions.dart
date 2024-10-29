@@ -6,7 +6,7 @@ import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-extension MapMarkers on MapLibreMapController {
+extension MapMarkers on MaplibreMapController {
   static var _completer = Completer()..complete();
 
   Future<void> addGeoJSONSourceForMarkers(List<MapMarker> markers) async {

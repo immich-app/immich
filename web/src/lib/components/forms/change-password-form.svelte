@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
   import { updateMyUser } from '@immich/sdk';
   import { t } from 'svelte-i18n';
+
+  export let onSuccess: () => void;
 
   let errorMessage: string;
   let success: string;
@@ -23,17 +24,13 @@
     }
   }
 
-  const dispatch = createEventDispatcher<{
-    success: void;
-  }>();
-
   async function changePassword() {
     if (valid) {
       errorMessage = '';
 
       await updateMyUser({ userUpdateMeDto: { password: String(password) } });
 
-      dispatch('success');
+      onSuccess();
     }
   }
 </script>
@@ -57,6 +54,6 @@
     <p class="text-sm text-immich-primary">{success}</p>
   {/if}
   <div class="my-5 flex w-full">
-    <Button type="submit" size="lg" fullwidth>{$t('change_password')}</Button>
+    <Button type="submit" size="lg" fullwidth>{$t('to_change_password')}</Button>
   </div>
 </form>

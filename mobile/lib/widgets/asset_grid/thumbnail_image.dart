@@ -1,49 +1,52 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
-import 'package:isar/isar.dart';
 
 class ThumbnailImage extends ConsumerWidget {
+  /// The asset to show the thumbnail image for
   final Asset asset;
-  final int index;
-  final Asset Function(int index) loadAsset;
-  final int totalAssets;
+
+  /// Whether to show the storage indicator icont over the image or not
   final bool showStorageIndicator;
+
+  /// Whether to show the show stack icon over the image or not
   final bool showStack;
+
+  /// Whether to show the checkmark indicating that this image is selected
   final bool isSelected;
+
+  /// Can override [isSelected] and never show the selection indicator
   final bool multiselectEnabled;
-  final Function? onSelect;
-  final Function? onDeselect;
+
+  /// If we are allowed to deselect this image
+  final bool canDeselect;
+
+  /// The offset index to apply to this hero tag for animation
   final int heroOffset;
 
   const ThumbnailImage({
     super.key,
     required this.asset,
-    required this.index,
-    required this.loadAsset,
-    required this.totalAssets,
     this.showStorageIndicator = true,
     this.showStack = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
-    this.onDeselect,
-    this.onSelect,
     this.heroOffset = 0,
+    this.canDeselect = true,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetContainerColor = context.isDarkTheme
-        ? Colors.blueGrey
-        : context.themeData.primaryColorLight;
+        ? context.primaryColor.darken(amount: 0.6)
+        : context.primaryColor.lighten(amount: 0.8);
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
-    final isFromDto = asset.id == Isar.autoIncrement;
+    final isFromDto = asset.id == noDbId;
 
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
@@ -104,16 +107,16 @@ class ThumbnailImage extends ConsumerWidget {
         right: 8,
         child: Row(
           children: [
-            if (asset.stackChildrenCount > 1)
+            if (asset.stackCount > 1)
               Text(
-                "${asset.stackChildrenCount}",
+                "${asset.stackCount}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            if (asset.stackChildrenCount > 1)
+            if (asset.stackCount > 1)
               const SizedBox(
                 width: 3,
               ),
@@ -135,10 +138,31 @@ class ThumbnailImage extends ConsumerWidget {
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
               : asset.id + heroOffset,
-          child: ImmichThumbnail(
-            asset: asset,
-            height: 250,
-            width: 250,
+          child: Stack(
+            children: [
+              ImmichThumbnail(
+                asset: asset,
+                height: 250,
+                width: 250,
+              ),
+              Container(
+                height: 250,
+                width: 250,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromRGBO(0, 0, 0, 0.1),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Color.fromRGBO(0, 0, 0, 0.1),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0, 0.3, 0.6, 1],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -147,97 +171,67 @@ class ThumbnailImage extends ConsumerWidget {
       }
       return Container(
         decoration: BoxDecoration(
-          border: Border.all(
-            width: 0,
-            color: onDeselect == null ? Colors.grey : assetContainerColor,
-          ),
-          color: onDeselect == null ? Colors.grey : assetContainerColor,
+          color: canDeselect ? assetContainerColor : Colors.grey,
         ),
         child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(15.0),
-            bottomRight: Radius.circular(15.0),
-            bottomLeft: Radius.circular(15.0),
-            topLeft: Radius.zero,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(15.0),
           ),
           child: image,
         ),
       );
     }
 
-    return GestureDetector(
-      onTap: () {
-        if (multiselectEnabled) {
-          if (isSelected) {
-            onDeselect?.call();
-          } else {
-            onSelect?.call();
-          }
-        } else {
-          context.pushRoute(
-            GalleryViewerRoute(
-              initialIndex: index,
-              loadAsset: loadAsset,
-              totalAssets: totalAssets,
-              heroOffset: heroOffset,
-              showStack: showStack,
-            ),
-          );
-        }
-      },
-      onLongPress: () {
-        onSelect?.call();
-        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-      },
-      child: Stack(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.decelerate,
-            decoration: BoxDecoration(
-              border: multiselectEnabled && isSelected
-                  ? Border.all(
-                      color: onDeselect == null
-                          ? Colors.grey
-                          : assetContainerColor,
-                      width: 8,
-                    )
-                  : const Border(),
-            ),
-            child: buildImage(),
+    return Stack(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.decelerate,
+          decoration: BoxDecoration(
+            border: multiselectEnabled && isSelected
+                ? Border.all(
+                    color: canDeselect ? assetContainerColor : Colors.grey,
+                    width: 8,
+                  )
+                : const Border(),
           ),
-          if (multiselectEnabled)
-            Padding(
-              padding: const EdgeInsets.all(3.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: buildSelectionIcon(asset),
-              ),
+          child: Stack(
+            children: [
+              buildImage(),
+              if (showStorageIndicator)
+                Positioned(
+                  right: 8,
+                  bottom: 5,
+                  child: Icon(
+                    storageIcon(asset),
+                    color: Colors.white.withOpacity(.8),
+                    size: 16,
+                  ),
+                ),
+              if (asset.isFavorite)
+                const Positioned(
+                  left: 8,
+                  bottom: 5,
+                  child: Icon(
+                    Icons.favorite,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              if (!asset.isImage) buildVideoIcon(),
+              if (asset.stackCount > 0) buildStackIcon(),
+            ],
+          ),
+        ),
+        if (multiselectEnabled)
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: buildSelectionIcon(asset),
             ),
-          if (showStorageIndicator)
-            Positioned(
-              right: 8,
-              bottom: 5,
-              child: Icon(
-                storageIcon(asset),
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-          if (asset.isFavorite)
-            const Positioned(
-              left: 8,
-              bottom: 5,
-              child: Icon(
-                Icons.favorite,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-          if (!asset.isImage) buildVideoIcon(),
-          if (asset.stackChildrenCount > 0) buildStackIcon(),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

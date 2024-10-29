@@ -50,19 +50,20 @@
       if (await hasTransparentPixels(blob)) {
         notificationController.show({
           type: NotificationType.Error,
-          message: 'Profile pictures cannot have transparent pixels. Please zoom in and/or move the image.',
+          message: $t('errors.profile_picture_transparent_pixels'),
           timeout: 3000,
         });
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      const { profileImagePath } = await createProfileImage({ createProfileImageDto: { file } });
+      const { profileImagePath, profileChangedAt } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
         message: $t('profile_picture_set'),
         timeout: 3000,
       });
       $user.profileImagePath = profileImagePath;
+      $user.profileChangedAt = profileChangedAt;
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_profile_picture'));
     }

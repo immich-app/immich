@@ -10,8 +10,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pre-job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.found_paths.outputs.mobile == 'true' || steps.should_force.outputs.should_force == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: found_paths
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            mobile:
+              - 'mobile/**'
+      - name: Check if we should force jobs to run
+        id: should_force
+        run: echo "should_force=${{ github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+
   mobile-dart-analyze:
     name: Run Dart Code Analysis
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run == 'true' }}
 
     runs-on: ubuntu-latest
 
@@ -35,6 +54,10 @@ jobs:
 
       - name: Run dart format
         run: dart format lib/ --set-exit-if-changed
+        working-directory: ./mobile
+
+      - name: Run dart custom_lint
+        run: dart run custom_lint
         working-directory: ./mobile
 
       # Enable after riverpod generator migration is completed

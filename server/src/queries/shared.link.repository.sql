@@ -27,9 +27,8 @@ FROM
       "SharedLinkEntity__SharedLinkEntity_assets"."libraryId" AS "SharedLinkEntity__SharedLinkEntity_assets_libraryId",
       "SharedLinkEntity__SharedLinkEntity_assets"."deviceId" AS "SharedLinkEntity__SharedLinkEntity_assets_deviceId",
       "SharedLinkEntity__SharedLinkEntity_assets"."type" AS "SharedLinkEntity__SharedLinkEntity_assets_type",
+      "SharedLinkEntity__SharedLinkEntity_assets"."status" AS "SharedLinkEntity__SharedLinkEntity_assets_status",
       "SharedLinkEntity__SharedLinkEntity_assets"."originalPath" AS "SharedLinkEntity__SharedLinkEntity_assets_originalPath",
-      "SharedLinkEntity__SharedLinkEntity_assets"."previewPath" AS "SharedLinkEntity__SharedLinkEntity_assets_previewPath",
-      "SharedLinkEntity__SharedLinkEntity_assets"."thumbnailPath" AS "SharedLinkEntity__SharedLinkEntity_assets_thumbnailPath",
       "SharedLinkEntity__SharedLinkEntity_assets"."thumbhash" AS "SharedLinkEntity__SharedLinkEntity_assets_thumbhash",
       "SharedLinkEntity__SharedLinkEntity_assets"."encodedVideoPath" AS "SharedLinkEntity__SharedLinkEntity_assets_encodedVideoPath",
       "SharedLinkEntity__SharedLinkEntity_assets"."createdAt" AS "SharedLinkEntity__SharedLinkEntity_assets_createdAt",
@@ -77,6 +76,7 @@ FROM
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."profileDescription" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_profileDescription",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."colorspace" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_colorspace",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."bitsPerSample" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_bitsPerSample",
+      "9b1d35b344d838023994a3233afd6ffe098be6d8"."rating" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_rating",
       "9b1d35b344d838023994a3233afd6ffe098be6d8"."fps" AS "9b1d35b344d838023994a3233afd6ffe098be6d8_fps",
       "SharedLinkEntity__SharedLinkEntity_album"."id" AS "SharedLinkEntity__SharedLinkEntity_album_id",
       "SharedLinkEntity__SharedLinkEntity_album"."ownerId" AS "SharedLinkEntity__SharedLinkEntity_album_ownerId",
@@ -94,9 +94,8 @@ FROM
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."libraryId" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_libraryId",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."deviceId" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_deviceId",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."type" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_type",
+      "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."status" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_status",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."originalPath" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_originalPath",
-      "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."previewPath" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_previewPath",
-      "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."thumbnailPath" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_thumbnailPath",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."thumbhash" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_thumbhash",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."encodedVideoPath" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_encodedVideoPath",
       "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6"."createdAt" AS "4a35f463ae8c5544ede95c4b6d9ce8c686b6bfe6_createdAt",
@@ -144,6 +143,7 @@ FROM
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."profileDescription" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_profileDescription",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."colorspace" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_colorspace",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."bitsPerSample" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_bitsPerSample",
+      "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."rating" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_rating",
       "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f"."fps" AS "d9f2f4dd8920bad1d6907cdb1d699732daff3c2f_fps",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."id" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_id",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."name" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_name",
@@ -158,7 +158,8 @@ FROM
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."status" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_status",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."updatedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_updatedAt",
       "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaSizeInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaSizeInBytes",
-      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes"
+      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes",
+      "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."profileChangedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_profileChangedAt"
     FROM
       "shared_links" "SharedLinkEntity"
       LEFT JOIN "shared_link__asset" "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity" ON "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."sharedLinksId" = "SharedLinkEntity"."id"
@@ -215,9 +216,8 @@ SELECT
   "SharedLinkEntity__SharedLinkEntity_assets"."libraryId" AS "SharedLinkEntity__SharedLinkEntity_assets_libraryId",
   "SharedLinkEntity__SharedLinkEntity_assets"."deviceId" AS "SharedLinkEntity__SharedLinkEntity_assets_deviceId",
   "SharedLinkEntity__SharedLinkEntity_assets"."type" AS "SharedLinkEntity__SharedLinkEntity_assets_type",
+  "SharedLinkEntity__SharedLinkEntity_assets"."status" AS "SharedLinkEntity__SharedLinkEntity_assets_status",
   "SharedLinkEntity__SharedLinkEntity_assets"."originalPath" AS "SharedLinkEntity__SharedLinkEntity_assets_originalPath",
-  "SharedLinkEntity__SharedLinkEntity_assets"."previewPath" AS "SharedLinkEntity__SharedLinkEntity_assets_previewPath",
-  "SharedLinkEntity__SharedLinkEntity_assets"."thumbnailPath" AS "SharedLinkEntity__SharedLinkEntity_assets_thumbnailPath",
   "SharedLinkEntity__SharedLinkEntity_assets"."thumbhash" AS "SharedLinkEntity__SharedLinkEntity_assets_thumbhash",
   "SharedLinkEntity__SharedLinkEntity_assets"."encodedVideoPath" AS "SharedLinkEntity__SharedLinkEntity_assets_encodedVideoPath",
   "SharedLinkEntity__SharedLinkEntity_assets"."createdAt" AS "SharedLinkEntity__SharedLinkEntity_assets_createdAt",
@@ -261,7 +261,8 @@ SELECT
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."status" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_status",
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."updatedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_updatedAt",
   "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaSizeInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaSizeInBytes",
-  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes"
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."profileChangedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_profileChangedAt"
 FROM
   "shared_links" "SharedLinkEntity"
   LEFT JOIN "shared_link__asset" "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity" ON "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."sharedLinksId" = "SharedLinkEntity"."id"
@@ -313,7 +314,8 @@ FROM
       "SharedLinkEntity__SharedLinkEntity_user"."status" AS "SharedLinkEntity__SharedLinkEntity_user_status",
       "SharedLinkEntity__SharedLinkEntity_user"."updatedAt" AS "SharedLinkEntity__SharedLinkEntity_user_updatedAt",
       "SharedLinkEntity__SharedLinkEntity_user"."quotaSizeInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaSizeInBytes",
-      "SharedLinkEntity__SharedLinkEntity_user"."quotaUsageInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaUsageInBytes"
+      "SharedLinkEntity__SharedLinkEntity_user"."quotaUsageInBytes" AS "SharedLinkEntity__SharedLinkEntity_user_quotaUsageInBytes",
+      "SharedLinkEntity__SharedLinkEntity_user"."profileChangedAt" AS "SharedLinkEntity__SharedLinkEntity_user_profileChangedAt"
     FROM
       "shared_links" "SharedLinkEntity"
       LEFT JOIN "users" "SharedLinkEntity__SharedLinkEntity_user" ON "SharedLinkEntity__SharedLinkEntity_user"."id" = "SharedLinkEntity"."userId"

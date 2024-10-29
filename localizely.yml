@@ -52,7 +52,7 @@ download:
       locale_code: nb-NO
     - file: mobile/assets/i18n/sv-SE.json
       locale_code: sv-SE
-    - file: mobile/assets/i18n/mn.json
+    - file: mobile/assets/i18n/mn-MN.json
       locale_code: mn
     - file: mobile/assets/i18n/ko-KR.json
       locale_code: ko-KR

@@ -1,3 +1,7 @@
+<script lang="ts" context="module">
+  export const headerId = 'user-page-header';
+</script>
+
 <script lang="ts">
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
@@ -17,7 +21,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+    <NavigationBar {showUploadButton} onUploadClick={() => openFileUploadDialog()} />
   {/if}
 
   <slot name="header" />
@@ -35,12 +39,14 @@
   </slot>
 
   <section class="relative">
-    {#if title}
+    {#if title || $$slots.buttons}
       <div
         class="absolute flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="flex gap-2 items-center">
-          <div class="font-medium">{title}</div>
+          {#if title}
+            <div class="font-medium" tabindex="-1" id={headerId}>{title}</div>
+          {/if}
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
           {/if}

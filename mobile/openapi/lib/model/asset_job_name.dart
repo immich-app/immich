@@ -23,14 +23,16 @@ class AssetJobName {
 
   String toJson() => value;
 
-  static const regenerateThumbnail = AssetJobName._(r'regenerate-thumbnail');
+  static const refreshFaces = AssetJobName._(r'refresh-faces');
   static const refreshMetadata = AssetJobName._(r'refresh-metadata');
+  static const regenerateThumbnail = AssetJobName._(r'regenerate-thumbnail');
   static const transcodeVideo = AssetJobName._(r'transcode-video');
 
   /// List of all possible values in this [enum][AssetJobName].
   static const values = <AssetJobName>[
-    regenerateThumbnail,
+    refreshFaces,
     refreshMetadata,
+    regenerateThumbnail,
     transcodeVideo,
   ];
 
@@ -70,8 +72,9 @@ class AssetJobNameTypeTransformer {
   AssetJobName? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'regenerate-thumbnail': return AssetJobName.regenerateThumbnail;
+        case r'refresh-faces': return AssetJobName.refreshFaces;
         case r'refresh-metadata': return AssetJobName.refreshMetadata;
+        case r'regenerate-thumbnail': return AssetJobName.regenerateThumbnail;
         case r'transcode-video': return AssetJobName.transcodeVideo;
         default:
           if (!allowNull) {

@@ -24,7 +24,7 @@ This environment includes the services below. Additional details are available i
 - Web app - [`/web`](https://github.com/immich-app/immich/tree/main/web)
 - Machine learning - [`/machine-learning`](https://github.com/immich-app/immich/tree/main/machine-learning)
 - Redis
-- PostgreSQL development database with exposed port `5432` so you can use any database client to acess it
+- PostgreSQL development database with exposed port `5432` so you can use any database client to access it
 
 All the services are packaged to run as with single Docker Compose command.
 
@@ -106,7 +106,7 @@ in User `settings.json` (`cmd + shift + p` and search for `Open User Settings JS
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": false,
+    "editor.wordBasedSuggestions": "off",
     "editor.defaultFormatter": "Dart-Code.dart-code"
   }
 }

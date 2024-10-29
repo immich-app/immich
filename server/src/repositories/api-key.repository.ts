@@ -3,10 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { APIKeyEntity } from 'src/entities/api-key.entity';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class ApiKeyRepository implements IKeyRepository {
   constructor(@InjectRepository(APIKeyEntity) private repository: Repository<APIKeyEntity>) {}
@@ -31,6 +29,7 @@ export class ApiKeyRepository implements IKeyRepository {
         id: true,
         key: true,
         userId: true,
+        permissions: true,
       },
       where: { key: hashedToken },
       relations: {

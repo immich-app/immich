@@ -2,6 +2,7 @@
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
   import { onDestroy } from 'svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   const accordionState = getAccordionState();
 
@@ -9,12 +10,25 @@
   export let subtitle = '';
   export let key: string;
   export let isOpen = $accordionState.has(key);
+  export let autoScrollTo = false;
+  export let icon = '';
+
+  let accordionElement: HTMLDivElement;
 
   $: setIsOpen(isOpen);
 
   const setIsOpen = (isOpen: boolean) => {
     if (isOpen) {
       $accordionState = $accordionState.add(key);
+
+      if (autoScrollTo) {
+        setTimeout(() => {
+          accordionElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 200);
+      }
     } else {
       $accordionState.delete(key);
       $accordionState = $accordionState;
@@ -26,7 +40,12 @@
   });
 </script>
 
-<div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
+<div
+  class="border rounded-2xl my-4 px-6 py-4 transition-all {isOpen
+    ? 'border-immich-primary/40 dark:border-immich-dark-primary/50 shadow-md'
+    : 'dark:border-gray-800'}"
+  bind:this={accordionElement}
+>
   <button
     type="button"
     aria-expanded={isOpen}
@@ -34,12 +53,17 @@
     class="flex w-full place-items-center justify-between text-left"
   >
     <div>
-      <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
-        {title}
-      </h2>
+      <div class="flex gap-2 place-items-center">
+        {#if icon}
+          <Icon path={icon} class="text-immich-primary dark:text-immich-dark-primary" size="24" ariaHidden />
+        {/if}
+        <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
+          {title}
+        </h2>
+      </div>
 
       <slot name="subtitle">
-        <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+        <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitle}</p>
       </slot>
     </div>
 
@@ -63,7 +87,7 @@
   </button>
 
   {#if isOpen}
-    <ul transition:slide={{ duration: 250 }} class="mb-2 ml-4">
+    <ul transition:slide={{ duration: 150 }} class="mb-2 ml-4">
       <slot />
     </ul>
   {/if}

@@ -10,7 +10,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiMerge, mdiPlus } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -19,10 +19,12 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
-  import { s } from '$lib/utils';
+  import { t } from 'svelte-i18n';
 
   export let assetIds: string[];
   export let personAssets: PersonResponseDto;
+  export let onConfirm: () => void;
+  export let onClose: () => void;
 
   let people: PersonResponseDto[] = [];
   let selectedPerson: PersonResponseDto | null = null;
@@ -34,11 +36,6 @@
 
   $: peopleToNotShow = selectedPerson ? [personAssets, selectedPerson] : [personAssets];
 
-  let dispatch = createEventDispatcher<{
-    confirm: void;
-    close: void;
-  }>();
-
   const selectedPeople: AssetFaceUpdateItem[] = [];
 
   for (const assetId of assetIds) {
@@ -49,10 +46,6 @@
     const data = await getAllPeople({ withHidden: false });
     people = data.people;
   });
-
-  const onClose = () => {
-    dispatch('close');
-  };
 
   const handleSelectedPerson = (person: PersonResponseDto) => {
     if (selectedPerson && selectedPerson.id === person.id) {
@@ -77,17 +70,17 @@
       await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
 
       notificationController.show({
-        message: `Re-assigned ${assetIds.length} asset${s(assetIds.length)} to a new person`,
+        message: $t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }),
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to reassign assets to a new person');
+      handleError(error, $t('errors.unable_to_reassign_assets_new_person'));
     } finally {
       clearTimeout(timeout);
     }
 
     showLoadingSpinnerCreate = false;
-    dispatch('confirm');
+    onConfirm();
   };
 
   const handleReassign = async () => {
@@ -97,20 +90,23 @@
       if (selectedPerson) {
         await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
         notificationController.show({
-          message: `Re-assigned ${assetIds.length} asset${s(assetIds.length)} to ${
-            selectedPerson.name || 'an existing person'
-          }`,
+          message: $t('reassigned_assets_to_existing_person', {
+            values: { count: assetIds.length, name: selectedPerson.name || null },
+          }),
           type: NotificationType.Info,
         });
       }
     } catch (error) {
-      handleError(error, `Unable to reassign assets to ${selectedPerson?.name || 'an existing person'}`);
+      handleError(
+        error,
+        $t('errors.unable_to_reassign_assets_existing_person', { values: { name: selectedPerson?.name || null } }),
+      );
     } finally {
       clearTimeout(timeout);
     }
 
     showLoadingSpinnerReassign = false;
-    dispatch('confirm');
+    onConfirm();
   };
 </script>
 
@@ -120,7 +116,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close={onClose}>
+  <ControlAppBar {onClose}>
     <svelte:fragment slot="leading">
       <slot name="header" />
       <div />
@@ -128,7 +124,7 @@
     <svelte:fragment slot="trailing">
       <div class="flex gap-4">
         <Button
-          title={'Assign selected assets to a new person'}
+          title={$t('create_new_person_hint')}
           size={'sm'}
           disabled={disableButtons || hasSelection}
           on:click={handleCreate}
@@ -138,11 +134,11 @@
           {:else}
             <LoadingSpinner />
           {/if}
-          <span class="ml-2"> Create new Person</span></Button
+          <span class="ml-2"> {$t('create_new_person')}</span></Button
         >
         <Button
           size={'sm'}
-          title={'Assign selected assets to an existing person'}
+          title={$t('reassing_hint')}
           disabled={disableButtons || !hasSelection}
           on:click={handleReassign}
         >
@@ -153,7 +149,7 @@
           {:else}
             <LoadingSpinner />
           {/if}
-          <span class="ml-2"> Reassign</span></Button
+          <span class="ml-2"> {$t('reassign')}</span></Button
         >
       </div>
     </svelte:fragment>
@@ -172,12 +168,12 @@
               circle
               selectable
               thumbnailSize={180}
-              on:click={handleRemoveSelectedPerson}
+              onClick={handleRemoveSelectedPerson}
             />
           </div>
         </div>
       {/if}
-      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => handleSelectedPerson(detail)} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} onSelect={handleSelectedPerson} />
     </section>
   </section>
 </section>

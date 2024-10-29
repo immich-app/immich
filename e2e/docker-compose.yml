@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: immich-e2e
 
 services:
@@ -10,6 +8,11 @@ services:
     build:
       context: ../
       dockerfile: server/Dockerfile
+      args:
+        - BUILD_ID=1234567890
+        - BUILD_IMAGE=e2e
+        - BUILD_SOURCE_REF=e2e
+        - BUILD_SOURCE_COMMIT=e2eeeeeeeeeeeeeeeeee
     environment:
       - DB_HOSTNAME=database
       - DB_USERNAME=postgres
@@ -17,17 +20,21 @@ services:
       - DB_DATABASE_NAME=immich
       - IMMICH_MACHINE_LEARNING_ENABLED=false
       - IMMICH_METRICS=true
+      - IMMICH_ENV=testing
+      - IMMICH_PORT=2285
+      - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
     volumes:
-      - upload:/usr/src/app/upload
       - ./test-assets:/test-assets
+    extra_hosts:
+      - 'auth-server:host-gateway'
     depends_on:
       - redis
       - database
     ports:
-      - 2283:3001
+      - 2285:2285
 
   redis:
-    image: redis:6.2-alpine@sha256:d6c2911ac51b289db208767581a5d154544f2b2fe4914ea5056443f62dc6e900
+    image: redis:6.2-alpine@sha256:2ba50e1ac3a0ea17b736ce9db2b0a9f6f8b85d4c27d5f5accc6a416d8f42c6d5
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
@@ -37,8 +44,4 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: immich
     ports:
-      - 5433:5432
-
-volumes:
-  model-cache:
-  upload:
+      - 5435:5432

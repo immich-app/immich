@@ -10,7 +10,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
-@RoutePage<List<String>?>()
+@RoutePage()
 class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
   final Album album;
 

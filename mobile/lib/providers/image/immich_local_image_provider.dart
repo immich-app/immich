@@ -7,7 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager/photo_manager.dart' show ThumbnailSize;
 
 /// The local image provider for an asset
 class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
@@ -60,31 +60,16 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
     }
 
     if (asset.isImage) {
-      /// Using 2K thumbnail for local iOS image to avoid double swiping issue
-      if (Platform.isIOS) {
-        final largeImageBytes = await asset.local
-            ?.thumbnailDataWithSize(const ThumbnailSize(3840, 2160));
-        if (largeImageBytes == null) {
-          throw StateError(
-            "Loading thumb for local photo ${asset.fileName} failed",
-          );
-        }
-        final buffer = await ui.ImmutableBuffer.fromUint8List(largeImageBytes);
+      final File? file = await asset.local?.originFile;
+      if (file == null) {
+        throw StateError("Opening file for asset ${asset.fileName} failed");
+      }
+      try {
+        final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
         final codec = await decode(buffer);
         yield codec;
-      } else {
-        // Use the original file for Android
-        final File? file = await asset.local?.originFile;
-        if (file == null) {
-          throw StateError("Opening file for asset ${asset.fileName} failed");
-        }
-        try {
-          final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
-          final codec = await decode(buffer);
-          yield codec;
-        } catch (error) {
-          throw StateError("Loading asset ${asset.fileName} failed");
-        }
+      } catch (error) {
+        throw StateError("Loading asset ${asset.fileName} failed");
       }
     }
 

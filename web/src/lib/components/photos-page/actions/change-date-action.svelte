@@ -28,12 +28,8 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text={$t('change_date')} icon={mdiCalendarEditOutline} on:click={() => (isShowChangeDate = true)} />
+  <MenuOption text={$t('change_date')} icon={mdiCalendarEditOutline} onClick={() => (isShowChangeDate = true)} />
 {/if}
 {#if isShowChangeDate}
-  <ChangeDate
-    initialDate={DateTime.now()}
-    on:confirm={({ detail: date }) => handleConfirm(date)}
-    on:cancel={() => (isShowChangeDate = false)}
-  />
+  <ChangeDate initialDate={DateTime.now()} onConfirm={handleConfirm} onCancel={() => (isShowChangeDate = false)} />
 {/if}

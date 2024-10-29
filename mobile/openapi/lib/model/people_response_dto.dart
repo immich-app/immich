@@ -13,10 +13,20 @@ part of openapi.api;
 class PeopleResponseDto {
   /// Returns a new [PeopleResponseDto] instance.
   PeopleResponseDto({
+    this.hasNextPage,
     required this.hidden,
     this.people = const [],
     required this.total,
   });
+
+  /// This property was added in v1.110.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? hasNextPage;
 
   int hidden;
 
@@ -26,6 +36,7 @@ class PeopleResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
+    other.hasNextPage == hasNextPage &&
     other.hidden == hidden &&
     _deepEquality.equals(other.people, people) &&
     other.total == total;
@@ -33,15 +44,21 @@ class PeopleResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (hasNextPage == null ? 0 : hasNextPage!.hashCode) +
     (hidden.hashCode) +
     (people.hashCode) +
     (total.hashCode);
 
   @override
-  String toString() => 'PeopleResponseDto[hidden=$hidden, people=$people, total=$total]';
+  String toString() => 'PeopleResponseDto[hasNextPage=$hasNextPage, hidden=$hidden, people=$people, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.hasNextPage != null) {
+      json[r'hasNextPage'] = this.hasNextPage;
+    } else {
+    //  json[r'hasNextPage'] = null;
+    }
       json[r'hidden'] = this.hidden;
       json[r'people'] = this.people;
       json[r'total'] = this.total;
@@ -52,10 +69,12 @@ class PeopleResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PeopleResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "PeopleResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return PeopleResponseDto(
+        hasNextPage: mapValueOfType<bool>(json, r'hasNextPage'),
         hidden: mapValueOfType<int>(json, r'hidden')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
         total: mapValueOfType<int>(json, r'total')!,

@@ -1,11 +1,11 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
+  RandomSearchDto,
   SearchPeopleDto,
   SearchPlacesDto,
   SearchResponseDto,
@@ -14,37 +14,15 @@ import {
   SmartSearchDto,
   mapPlaces,
 } from 'src/dtos/search.dto';
-import { AssetOrder } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { ISearchRepository, SearchExploreItem } from 'src/interfaces/search.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { AssetOrder } from 'src/enum';
+import { SearchExploreItem } from 'src/interfaces/search.interface';
+import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class SearchService {
-  private configCore: SystemConfigCore;
-
-  constructor(
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(IMetadataRepository) private metadataRepository: IMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(SearchService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
-  }
-
+export class SearchService extends BaseService {
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
     return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
   }
@@ -92,18 +70,28 @@ export class SearchService {
       },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+  }
+
+  async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
+    const userIds = await this.getUserIdsToSearch(auth);
+    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    return items.map((item) => mapAsset(item, { auth }));
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       throw new BadRequestException('Smart search is not enabled');
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
 
-    const embedding = await this.machineLearning.encodeText(machineLearning.url, dto.query, machineLearning.clip);
+    const embedding = await this.machineLearningRepository.encodeText(
+      machineLearning.url,
+      dto.query,
+      machineLearning.clip,
+    );
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
@@ -111,7 +99,7 @@ export class SearchService {
       { ...dto, userIds, embedding },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null);
+    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
@@ -120,22 +108,31 @@ export class SearchService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<string[]> {
+  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
+    const userIds = await this.getUserIdsToSearch(auth);
+    const results = await this.getSuggestions(userIds, dto);
+    return results.filter((result) => (dto.includeNull ? true : result !== null));
+  }
+
+  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.metadataRepository.getCountries(auth.user.id);
+        return this.searchRepository.getCountries(userIds);
       }
       case SearchSuggestionType.STATE: {
-        return this.metadataRepository.getStates(auth.user.id, dto.country);
+        return this.searchRepository.getStates(userIds, dto.country);
       }
       case SearchSuggestionType.CITY: {
-        return this.metadataRepository.getCities(auth.user.id, dto.country, dto.state);
+        return this.searchRepository.getCities(userIds, dto.country, dto.state);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.metadataRepository.getCameraMakes(auth.user.id, dto.model);
+        return this.searchRepository.getCameraMakes(userIds, dto.model);
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.metadataRepository.getCameraModels(auth.user.id, dto.make);
+        return this.searchRepository.getCameraModels(userIds, dto.make);
+      }
+      default: {
+        return [];
       }
     }
   }
@@ -149,13 +146,13 @@ export class SearchService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: AssetEntity[], nextPage: string | null): SearchResponseDto {
+  private mapResponse(assets: AssetEntity[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
         total: assets.length,
         count: assets.length,
-        items: assets.map((asset) => mapAsset(asset)),
+        items: assets.map((asset) => mapAsset(asset, options)),
         facets: [],
         nextPage,
       },

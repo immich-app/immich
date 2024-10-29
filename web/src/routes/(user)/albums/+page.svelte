@@ -24,6 +24,7 @@
   <div class="xl:hidden">
     <div class="w-fit h-14 dark:text-immich-dark-fg py-2">
       <GroupTab
+        label={$t('show_albums')}
         filters={Object.keys(AlbumFilter)}
         selected={$albumViewSettings.filter}
         onSelect={(selected) => ($albumViewSettings.filter = selected)}

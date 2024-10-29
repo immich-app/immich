@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import ImmichLogo from './immich-logo.svelte';
   import { page } from '$app/stores';
+  import { shouldIgnoreEvent } from '$lib/actions/shortcut';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isSharedLinkRoute } from '$lib/utils/navigation';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import ImmichLogo from './immich-logo.svelte';
 
   $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
   $: isShare = isSharedLinkRoute($page.route?.id);
@@ -25,12 +27,85 @@
 
   const onDrop = async (e: DragEvent) => {
     dragStartTarget = null;
-    await handleFiles(e.dataTransfer?.files);
+    await handleDataTransfer(e.dataTransfer);
   };
 
-  const onPaste = ({ clipboardData }: ClipboardEvent) => handleFiles(clipboardData?.files);
+  const onPaste = (event: ClipboardEvent) => {
+    if (shouldIgnoreEvent(event)) {
+      return;
+    }
 
-  const handleFiles = async (files?: FileList) => {
+    return handleDataTransfer(event.clipboardData);
+  };
+
+  const handleDataTransfer = async (dataTransfer?: DataTransfer | null) => {
+    if (!dataTransfer) {
+      return;
+    }
+
+    if (!browserSupportsDirectoryUpload()) {
+      return handleFiles(dataTransfer.files);
+    }
+
+    const entries: FileSystemEntry[] = [];
+    const files: File[] = [];
+    for (const item of dataTransfer.items) {
+      const entry = item.webkitGetAsEntry();
+      if (entry) {
+        entries.push(entry);
+        continue;
+      }
+
+      const file = item.getAsFile();
+      if (file) {
+        files.push(file);
+      }
+    }
+
+    const directoryFiles = await getAllFilesFromTransferEntries(entries);
+    return handleFiles([...files, ...directoryFiles]);
+  };
+
+  const browserSupportsDirectoryUpload = () => typeof DataTransferItem.prototype.webkitGetAsEntry === 'function';
+
+  const getAllFilesFromTransferEntries = async (transferEntries: FileSystemEntry[]): Promise<File[]> => {
+    const allFiles: File[] = [];
+    let entriesToCheckForSubDirectories = [...transferEntries];
+    while (entriesToCheckForSubDirectories.length > 0) {
+      const currentEntry = entriesToCheckForSubDirectories.pop();
+
+      if (isFileSystemDirectoryEntry(currentEntry)) {
+        entriesToCheckForSubDirectories = entriesToCheckForSubDirectories.concat(
+          await getContentsFromFileSystemDirectoryEntry(currentEntry),
+        );
+      } else if (isFileSystemFileEntry(currentEntry)) {
+        allFiles.push(await getFileFromFileSystemEntry(currentEntry));
+      }
+    }
+
+    return allFiles;
+  };
+
+  const isFileSystemDirectoryEntry = (entry?: FileSystemEntry): entry is FileSystemDirectoryEntry =>
+    !!entry && entry.isDirectory;
+  const isFileSystemFileEntry = (entry?: FileSystemEntry): entry is FileSystemFileEntry => !!entry && entry.isFile;
+
+  const getFileFromFileSystemEntry = async (fileSystemFileEntry: FileSystemFileEntry): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      fileSystemFileEntry.file(resolve, reject);
+    });
+  };
+
+  const getContentsFromFileSystemDirectoryEntry = async (
+    fileSystemDirectoryEntry: FileSystemDirectoryEntry,
+  ): Promise<FileSystemEntry[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = fileSystemDirectoryEntry.createReader();
+      reader.readEntries(resolve, reject);
+    });
+  };
+
+  const handleFiles = async (files?: FileList | File[]) => {
     if (!files) {
       return;
     }
@@ -64,6 +139,6 @@
     }}
   >
     <ImmichLogo noText class="m-16 w-48 animate-bounce" />
-    <div class="text-2xl">Drop files anywhere to upload</div>
+    <div class="text-2xl">{$t('drop_files_to_upload')}</div>
   </div>
 {/if}

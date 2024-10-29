@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, Literal, Protocol, TypedDict, TypeGuard, TypeVar
+from typing import Any, Literal, Protocol, TypeGuard, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 
 class StrEnum(str, Enum):
@@ -11,14 +11,6 @@ class StrEnum(str, Enum):
 
     def __str__(self) -> str:
         return self.value
-
-
-class TextResponse(BaseModel):
-    __root__: str
-
-
-class MessageResponse(BaseModel):
-    message: str
 
 
 class BoundingBox(TypedDict):
@@ -54,6 +46,14 @@ class ModelSource(StrEnum):
 ModelIdentity = tuple[ModelType, ModelTask]
 
 
+class SessionNode(Protocol):
+    @property
+    def name(self) -> str | None: ...
+
+    @property
+    def shape(self) -> tuple[int, ...]: ...
+
+
 class ModelSession(Protocol):
     def run(
         self,
@@ -61,6 +61,10 @@ class ModelSession(Protocol):
         input_feed: dict[str, npt.NDArray[np.float32]] | dict[str, npt.NDArray[np.int32]],
         run_options: Any = None,
     ) -> list[npt.NDArray[np.float32]]: ...
+
+    def get_inputs(self) -> list[SessionNode]: ...
+
+    def get_outputs(self) -> list[SessionNode]: ...
 
 
 class HasProfiling(Protocol):

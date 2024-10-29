@@ -31,12 +31,9 @@
   <MenuOption
     text={$t('change_location')}
     icon={mdiMapMarkerMultipleOutline}
-    on:click={() => (isShowChangeLocation = true)}
+    onClick={() => (isShowChangeLocation = true)}
   />
 {/if}
 {#if isShowChangeLocation}
-  <ChangeLocation
-    on:confirm={({ detail: point }) => handleConfirm(point)}
-    on:cancel={() => (isShowChangeLocation = false)}
-  />
+  <ChangeLocation onConfirm={handleConfirm} onCancel={() => (isShowChangeLocation = false)} />
 {/if}

@@ -46,6 +46,7 @@ class APIKeyCreateResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static APIKeyCreateResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "APIKeyCreateResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

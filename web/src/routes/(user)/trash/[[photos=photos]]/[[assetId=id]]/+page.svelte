@@ -25,20 +25,22 @@
   import { handlePromiseError } from '$lib/utils';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
   export let data: PageData;
 
-  $featureFlags.trash || handlePromiseError(goto(AppRoute.PHOTOS));
+  if (!$featureFlags.trash) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
 
-  const assetStore = new AssetStore({ isTrashed: true });
+  const options = { isTrashed: true };
+  const assetStore = new AssetStore(options);
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'empty-trash',
-      prompt:
-        'Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.\nYou cannot undo this action!',
+      prompt: $t('empty_trash_confirmation'),
     });
 
     if (!isConfirmed) {
@@ -46,16 +48,15 @@
     }
 
     try {
-      await emptyTrash();
-
-      const deletedAssetIds = assetStore.assets.map((a) => a.id);
-      const numberOfAssets = deletedAssetIds.length;
-      assetStore.removeAssets(deletedAssetIds);
+      const { count } = await emptyTrash();
 
       notificationController.show({
-        message: `Permanently deleted ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
+        message: $t('assets_permanently_deleted_count', { values: { count } }),
         type: NotificationType.Info,
       });
+
+      // reset asset grid (TODO fix in asset store that it should reset when it is empty)
+      await assetStore.updateOptions(options);
     } catch (error) {
       handleError(error, $t('errors.unable_to_empty_trash'));
     }
@@ -63,28 +64,29 @@
 
   const handleRestoreTrash = async () => {
     const isConfirmed = await dialogController.show({
-      id: 'restore-trash',
-      prompt: 'Are you sure you want to restore all your trashed assets? You cannot undo this action!',
+      prompt: $t('assets_restore_confirmation'),
     });
 
     if (!isConfirmed) {
       return;
     }
     try {
-      await restoreTrash();
-
-      const restoredAssetIds = assetStore.assets.map((a) => a.id);
-      const numberOfAssets = restoredAssetIds.length;
-      assetStore.removeAssets(restoredAssetIds);
-
+      const { count } = await restoreTrash();
       notificationController.show({
-        message: `Restored ${numberOfAssets} ${numberOfAssets == 1 ? 'asset' : 'assets'}`,
+        message: $t('assets_restored_count', { values: { count } }),
         type: NotificationType.Info,
       });
+
+      // reset asset grid (TODO fix in asset store that it should reset when it is empty)
+      await assetStore.updateOptions(options);
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_trash'));
     }
   };
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if $isMultiSelectState}
@@ -112,7 +114,7 @@
       </LinkButton>
     </div>
 
-    <AssetGrid {assetStore} {assetInteractionStore}>
+    <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>

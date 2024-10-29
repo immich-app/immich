@@ -36,7 +36,9 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  $: $featureFlags.map || handlePromiseError(goto(AppRoute.PHOTOS));
+  $: if (!$featureFlags.map) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
   const omit = (obj: MapSettings, key: string) => {
     return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
   };
@@ -111,18 +113,21 @@
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout title={data.meta.title}>
     <div class="isolate h-full w-full">
-      <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
-    </div></UserPageLayout
-  >
+      <Map hash bind:mapMarkers bind:showSettingsModal onSelect={onViewAssets} />
+    </div>
+  </UserPageLayout>
   <Portal target="body">
     {#if $showAssetViewer}
       {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           asset={$viewingAsset}
           showNavigation={viewingAssets.length > 1}
-          on:next={navigateNext}
-          on:previous={navigatePrevious}
-          on:close={() => assetViewingStore.showAssetViewer(false)}
+          onNext={navigateNext}
+          onPrevious={navigatePrevious}
+          onClose={() => {
+            assetViewingStore.showAssetViewer(false);
+            handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+          }}
           isShared={false}
         />
       {/await}
@@ -132,11 +137,11 @@
   {#if showSettingsModal}
     <MapSettingsModal
       settings={{ ...$mapSettings }}
-      on:close={() => (showSettingsModal = false)}
-      on:save={async ({ detail }) => {
-        const shouldUpdate = !isEqual(omit(detail, 'allowDarkMode'), omit($mapSettings, 'allowDarkMode'));
+      onClose={() => (showSettingsModal = false)}
+      onSave={async (settings) => {
+        const shouldUpdate = !isEqual(omit(settings, 'allowDarkMode'), omit($mapSettings, 'allowDarkMode'));
         showSettingsModal = false;
-        $mapSettings = detail;
+        $mapSettings = settings;
 
         if (shouldUpdate) {
           mapMarkers = await loadMapMarkers();

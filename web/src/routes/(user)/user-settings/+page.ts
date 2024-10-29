@@ -1,7 +1,6 @@
 import { authenticate } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
 import { getApiKeys, getSessions } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
@@ -9,7 +8,7 @@ export const load = (async () => {
 
   const keys = await getApiKeys();
   const sessions = await getSessions();
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     keys,

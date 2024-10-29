@@ -1,14 +1,13 @@
 import { authenticate } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
 import { getAllPeople } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
 
   const people = await getAllPeople({ withHidden: true });
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     people,

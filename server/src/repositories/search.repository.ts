@@ -1,13 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getVectorExtension } from 'src/database.config';
+import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { AssetType, PaginationMode } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateResult,
@@ -20,26 +23,27 @@ import {
   SmartSearchOptions,
 } from 'src/interfaces/search.interface';
 import { asVector, searchAssetBuilder } from 'src/utils/database';
-import { Instrumentation } from 'src/utils/instrumentation';
-import { getCLIPModelInfo } from 'src/utils/misc';
-import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
+import { Paginated, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
+  private vectorExtension: VectorExtension;
   private faceColumns: string[];
   private assetsByCityQuery: string;
 
   constructor(
     @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
   ) {
+    this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(SearchRepository.name);
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -52,18 +56,7 @@ export class SearchRepository implements ISearchRepository {
         .innerJoinAndSelect('asset.exifInfo', 'exif')
         .withDeleted()
         .getQuery() +
-      ' INNER JOIN cte ON asset.id = cte."assetId"';
-  }
-
-  async init(modelName: string): Promise<void> {
-    const { dimSize } = getCLIPModelInfo(modelName);
-    const curDimSize = await this.getDimSize();
-    this.logger.verbose(`Current database CLIP dimension size is ${curDimSize}`);
-
-    if (dimSize != curDimSize) {
-      this.logger.log(`Dimension size of model ${modelName} is ${dimSize}, but database expects ${curDimSize}.`);
-      await this.updateDimSize(dimSize);
-    }
+      ' INNER JOIN cte ON asset.id = cte."assetId" ORDER BY exif.city';
   }
 
   @GenerateSql({
@@ -72,18 +65,16 @@ export class SearchRepository implements ISearchRepository {
       {
         takenAfter: DummyValue.DATE,
         lensModel: DummyValue.STRING,
-        ownerId: DummyValue.UUID,
         withStacked: true,
         isFavorite: true,
-        ownerIds: [DummyValue.UUID],
+        userIds: [DummyValue.UUID],
       },
     ],
   })
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
-    builder = searchAssetBuilder(builder, options);
+    builder = searchAssetBuilder(builder, options).orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
 
-    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: (pagination.page - 1) * pagination.size,
@@ -91,12 +82,33 @@ export class SearchRepository implements ISearchRepository {
     });
   }
 
-  private createPersonFilter(builder: SelectQueryBuilder<AssetFaceEntity>, personIds: string[]) {
-    return builder
-      .select(`${builder.alias}."assetId"`)
-      .where(`${builder.alias}."personId" IN (:...personIds)`, { personIds })
-      .groupBy(`${builder.alias}."assetId"`)
-      .having(`COUNT(DISTINCT ${builder.alias}."personId") = :personCount`, { personCount: personIds.length });
+  @GenerateSql({
+    params: [
+      100,
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
+    const builder1 = searchAssetBuilder(this.assetRepository.createQueryBuilder('asset'), options);
+    const builder2 = builder1.clone();
+
+    const uuid = randomUUID();
+    builder1.andWhere('asset.id > :uuid', { uuid }).orderBy('asset.id').take(size);
+    builder2.andWhere('asset.id < :uuid', { uuid }).orderBy('asset.id').take(size);
+
+    const [assets1, assets2] = await Promise.all([builder1.getMany(), builder2.getMany()]);
+    const missingCount = size - assets1.length;
+    for (let i = 0; i < missingCount && i < assets2.length; i++) {
+      assets1.push(assets2[i]);
+    }
+
+    return assets1;
   }
 
   @GenerateSql({
@@ -114,21 +126,12 @@ export class SearchRepository implements ISearchRepository {
   })
   async searchSmart(
     pagination: SearchPaginationOptions,
-    { embedding, userIds, personIds, ...options }: SmartSearchOptions,
+    { embedding, userIds, ...options }: SmartSearchOptions,
   ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
-
-      if (personIds?.length) {
-        const assetFaceBuilder = manager.createQueryBuilder(AssetFaceEntity, 'asset_face');
-        const cte = this.createPersonFilter(assetFaceBuilder, personIds);
-        builder
-          .addCommonTableExpression(cte, 'asset_face_ids')
-          .innerJoin('asset_face_ids', 'a', 'a."assetId" = asset.id');
-      }
-
       builder = searchAssetBuilder(builder, options);
       builder
         .innerJoin('asset.smartSearch', 'search')
@@ -300,31 +303,7 @@ export class SearchRepository implements ISearchRepository {
     );
   }
 
-  private async updateDimSize(dimSize: number): Promise<void> {
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
-      throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
-    }
-
-    const curDimSize = await this.getDimSize();
-    if (curDimSize === dimSize) {
-      return;
-    }
-
-    this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
-
-    await this.smartSearchRepository.manager.transaction(async (manager) => {
-      await manager.clear(SmartSearchEntity);
-      await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
-    });
-
-    this.logger.log(`Successfully updated database CLIP dimension size from ${curDimSize} to ${dimSize}.`);
-  }
-
-  deleteAllSearchEmbeddings(): Promise<void> {
-    return this.smartSearchRepository.clear();
-  }
-
-  private async getDimSize(): Promise<number> {
+  async getDimensionSize(): Promise<number> {
     const res = await this.smartSearchRepository.manager.query(`
       SELECT atttypmod as dimsize
       FROM pg_attribute f
@@ -341,8 +320,111 @@ export class SearchRepository implements ISearchRepository {
     return dimSize;
   }
 
+  setDimensionSize(dimSize: number): Promise<void> {
+    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+      throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
+    }
+
+    return this.smartSearchRepository.manager.transaction(async (manager) => {
+      await manager.clear(SmartSearchEntity);
+      await manager.query(`ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(${dimSize})`);
+      await manager.query(`REINDEX INDEX clip_index`);
+    });
+  }
+
+  async deleteAllSearchEmbeddings(): Promise<void> {
+    return this.smartSearchRepository.clear();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getCountries(userIds: string[]): Promise<string[]> {
+    const results = await this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.country', 'country')
+      .distinctOn(['exif.country'])
+      .getRawMany<{ country: string }>();
+
+    return results.map(({ country }) => country).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getStates(userIds: string[], country: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.state', 'state')
+      .distinctOn(['exif.state']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    const result = await query.getRawMany<{ state: string }>();
+
+    return result.map(({ state }) => state).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
+  async getCities(userIds: string[], country: string | undefined, state: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.city', 'city')
+      .distinctOn(['exif.city']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    if (state) {
+      query.andWhere('exif.state = :state', { state });
+    }
+
+    const results = await query.getRawMany<{ city: string }>();
+
+    return results.map(({ city }) => city).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getCameraMakes(userIds: string[], model: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.make', 'make')
+      .distinctOn(['exif.make']);
+
+    if (model) {
+      query.andWhere('exif.model = :model', { model });
+    }
+
+    const results = await query.getRawMany<{ make: string }>();
+    return results.map(({ make }) => make).filter((item) => item !== '');
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getCameraModels(userIds: string[], make: string | undefined): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .leftJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .select('exif.model', 'model')
+      .distinctOn(['exif.model']);
+
+    if (make) {
+      query.andWhere('exif.make = :make', { make });
+    }
+
+    const results = await query.getRawMany<{ model: string }>();
+    return results.map(({ model }) => model).filter((item) => item !== '');
+  }
+
   private getRuntimeConfig(numResults?: number): string {
-    if (getVectorExtension() === DatabaseExtension.VECTOR) {
+    if (this.vectorExtension === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 

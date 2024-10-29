@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
-import { Chunked, ChunkedArray, DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from 'src/decorators';
+import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AlbumAsset, AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
-import { setUnion } from 'src/utils/set';
-import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
+import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsOrder,
+  FindOptionsRelations,
+  In,
+  IsNull,
+  Not,
+  Repository,
+} from 'typeorm';
 
 const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   if (album) {
@@ -16,7 +22,6 @@ const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   return album;
 };
 
-@Instrumentation()
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
   constructor(
@@ -48,22 +53,6 @@ export class AlbumRepository implements IAlbumRepository {
 
     const album = await this.repository.findOne({ where: { id }, relations, order });
     return withoutDeletedUsers(album);
-  }
-
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  @ChunkedArray()
-  async getByIds(ids: string[]): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      where: {
-        id: In(ids),
-      },
-      relations: {
-        owner: true,
-        albumUsers: { user: true },
-      },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
@@ -107,34 +96,6 @@ export class AlbumRepository implements IAlbumRepository {
       startDate: metadatas['end_date'] ? new Date(metadatas['start_date']) : undefined,
       endDate: metadatas['end_date'] ? new Date(metadatas['end_date']) : undefined,
     }));
-  }
-
-  /**
-   * Returns the album IDs that have an invalid thumbnail, when:
-   *  - Thumbnail references an asset outside the album
-   *  - Empty album still has a thumbnail set
-   */
-  @GenerateSql()
-  async getInvalidThumbnail(): Promise<string[]> {
-    // Using dataSource, because there is no direct access to albums_assets_assets.
-    const albumHasAssets = this.dataSource
-      .createQueryBuilder()
-      .select('1')
-      .from('albums_assets_assets', 'albums_assets')
-      .where('"albums"."id" = "albums_assets"."albumsId"');
-
-    const albumContainsThumbnail = albumHasAssets
-      .clone()
-      .andWhere('"albums"."albumThumbnailAssetId" = "albums_assets"."assetsId"');
-
-    const albums = await this.repository
-      .createQueryBuilder('albums')
-      .select('albums.id')
-      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${albumHasAssets.getQuery()})`)
-      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${albumContainsThumbnail.getQuery()})`)
-      .getMany();
-
-    return albums.map((album) => album.id);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -192,15 +153,6 @@ export class AlbumRepository implements IAlbumRepository {
     await this.repository.delete({ ownerId: userId });
   }
 
-  @GenerateSql()
-  getAll(): Promise<AlbumEntity[]> {
-    return this.repository.find({
-      relations: {
-        owner: true,
-      },
-    });
-  }
-
   @GenerateSql({ params: [DummyValue.UUID] })
   async removeAsset(assetId: string): Promise<void> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
@@ -215,6 +167,10 @@ export class AlbumRepository implements IAlbumRepository {
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
   async removeAssetIds(albumId: string, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
     await this.dataSource
       .createQueryBuilder()
       .delete()
@@ -233,64 +189,66 @@ export class AlbumRepository implements IAlbumRepository {
    * @param assetIds Optional list of asset IDs to filter on.
    * @returns Set of Asset IDs for the given album ID.
    */
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] }, { name: 'no assets', params: [DummyValue.UUID] })
-  async getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>> {
-    const query = this.dataSource
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  @ChunkedSet({ paramIndex: 1 })
+  async getAssetIds(albumId: string, assetIds: string[]): Promise<Set<string>> {
+    if (assetIds.length === 0) {
+      return new Set();
+    }
+
+    const results = await this.dataSource
       .createQueryBuilder()
       .select('albums_assets.assetsId', 'assetId')
       .from('albums_assets_assets', 'albums_assets')
-      .where('"albums_assets"."albumsId" = :albumId', { albumId });
+      .where('"albums_assets"."albumsId" = :albumId', { albumId })
+      .andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds })
+      .getRawMany<{ assetId: string }>();
 
-    if (!assetIds?.length) {
-      const result = await query.getRawMany();
-      return new Set(result.map((row) => row['assetId']));
-    }
-
-    return Promise.all(
-      _.chunk(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        query
-          .andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds: idChunk })
-          .getRawMany()
-          .then((result) => new Set(result.map((row) => row['assetId']))),
-      ),
-    ).then((results) => setUnion(...results));
-  }
-
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
-  hasAsset(asset: AlbumAsset): Promise<boolean> {
-    return this.repository.exist({
-      where: {
-        id: asset.albumId,
-        assets: {
-          id: asset.assetId,
-        },
-      },
-      relations: {
-        assets: true,
-      },
-    });
+    return new Set(results.map(({ assetId }) => assetId));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
-    await this.dataSource
-      .createQueryBuilder()
-      .insert()
-      .into('albums_assets_assets', ['albumsId', 'assetsId'])
-      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
-      .execute();
+    await this.addAssets(this.dataSource.manager, albumId, assetIds);
   }
 
   create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
-    return this.save(album);
+    return this.dataSource.transaction<AlbumEntity>(async (manager) => {
+      const { id } = await manager.save(AlbumEntity, { ...album, assets: [] });
+      const assetIds = (album.assets || []).map((asset) => asset.id);
+      await this.addAssets(manager, id, assetIds);
+      return manager.findOneOrFail(AlbumEntity, {
+        where: { id },
+        relations: {
+          owner: true,
+          albumUsers: { user: true },
+          sharedLinks: true,
+          assets: true,
+        },
+      });
+    });
   }
 
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
   }
 
-  async delete(album: AlbumEntity): Promise<void> {
-    await this.repository.remove(album);
+  async delete(id: string): Promise<void> {
+    await this.repository.delete({ id });
+  }
+
+  @Chunked({ paramIndex: 2, chunkSize: 30_000 })
+  private async addAssets(manager: EntityManager, albumId: string, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    await manager
+      .createQueryBuilder()
+      .insert()
+      .into('albums_assets_assets', ['albumsId', 'assetsId'])
+      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
+      .execute();
   }
 
   private async save(album: Partial<AlbumEntity>) {
@@ -317,32 +275,26 @@ export class AlbumRepository implements IAlbumRepository {
   @GenerateSql()
   async updateThumbnails(): Promise<number | undefined> {
     // Subquery for getting a new thumbnail.
-    const newThumbnail = this.assetRepository
-      .createQueryBuilder('assets')
-      .select('albums_assets2.assetsId')
-      .addFrom('albums_assets_assets', 'albums_assets2')
-      .where('albums_assets2.assetsId = assets.id')
-      .andWhere('albums_assets2.albumsId = "albums"."id"') // Reference to albums.id outside this query
-      .orderBy('assets.fileCreatedAt', 'DESC')
-      .limit(1);
 
-    // Using dataSource, because there is no direct access to albums_assets_assets.
-    const albumHasAssets = this.dataSource
-      .createQueryBuilder()
-      .select('1')
-      .from('albums_assets_assets', 'albums_assets')
-      .where('"albums"."id" = "albums_assets"."albumsId"');
+    const builder = this.dataSource
+      .createQueryBuilder('albums_assets_assets', 'album_assets')
+      .innerJoin('assets', 'assets', '"album_assets"."assetsId" = "assets"."id"')
+      .where('"album_assets"."albumsId" = "albums"."id"');
 
-    const albumContainsThumbnail = albumHasAssets
+    const newThumbnail = builder
       .clone()
-      .andWhere('"albums"."albumThumbnailAssetId" = "albums_assets"."assetsId"');
+      .select('"album_assets"."assetsId"')
+      .orderBy('"assets"."fileCreatedAt"', 'DESC')
+      .limit(1);
+    const hasAssets = builder.clone().select('1');
+    const hasInvalidAsset = hasAssets.clone().andWhere('"albums"."albumThumbnailAssetId" = "album_assets"."assetsId"');
 
     const updateAlbums = this.repository
       .createQueryBuilder('albums')
       .update(AlbumEntity)
       .set({ albumThumbnailAssetId: () => `(${newThumbnail.getQuery()})` })
-      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${albumHasAssets.getQuery()})`)
-      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${albumContainsThumbnail.getQuery()})`);
+      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${hasAssets.getQuery()})`)
+      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${hasInvalidAsset.getQuery()})`);
 
     const result = await updateAlbums.execute();
 

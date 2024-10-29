@@ -1,5 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { Injectable } from '@nestjs/common';
 import {
   ActivityCreateDto,
   ActivityDto,
@@ -13,23 +12,14 @@ import {
 } from 'src/dtos/activity.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ActivityEntity } from 'src/entities/activity.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IActivityRepository } from 'src/interfaces/activity.interface';
+import { Permission } from 'src/enum';
+import { BaseService } from 'src/services/base.service';
 
 @Injectable()
-export class ActivityService {
-  private access: AccessCore;
-
-  constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
-    @Inject(IActivityRepository) private repository: IActivityRepository,
-  ) {
-    this.access = AccessCore.create(accessRepository);
-  }
-
+export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
-    await this.access.requirePermission(auth, Permission.ALBUM_READ, dto.albumId);
-    const activities = await this.repository.search({
+    await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+    const activities = await this.activityRepository.search({
       userId: dto.userId,
       albumId: dto.albumId,
       assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
@@ -40,12 +30,12 @@ export class ActivityService {
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
-    await this.access.requirePermission(auth, Permission.ALBUM_READ, dto.albumId);
-    return { comments: await this.repository.getStatistics(dto.assetId, dto.albumId) };
+    await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+    return { comments: await this.activityRepository.getStatistics(dto.assetId, dto.albumId) };
   }
 
   async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
-    await this.access.requirePermission(auth, Permission.ACTIVITY_CREATE, dto.albumId);
+    await this.requireAccess({ auth, permission: Permission.ACTIVITY_CREATE, ids: [dto.albumId] });
 
     const common = {
       userId: auth.user.id,
@@ -58,7 +48,7 @@ export class ActivityService {
 
     if (dto.type === ReactionType.LIKE) {
       delete dto.comment;
-      [activity] = await this.repository.search({
+      [activity] = await this.activityRepository.search({
         ...common,
         // `null` will search for an album like
         assetId: dto.assetId ?? null,
@@ -68,7 +58,7 @@ export class ActivityService {
     }
 
     if (!activity) {
-      activity = await this.repository.create({
+      activity = await this.activityRepository.create({
         ...common,
         isLiked: dto.type === ReactionType.LIKE,
         comment: dto.comment,
@@ -79,7 +69,7 @@ export class ActivityService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await this.access.requirePermission(auth, Permission.ACTIVITY_DELETE, id);
-    await this.repository.delete(id);
+    await this.requireAccess({ auth, permission: Permission.ACTIVITY_DELETE, ids: [id] });
+    await this.activityRepository.delete(id);
   }
 }

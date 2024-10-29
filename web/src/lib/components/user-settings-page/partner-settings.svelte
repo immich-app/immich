@@ -2,6 +2,7 @@
   import {
     createPartner,
     getPartners,
+    PartnerDirection,
     removePartner,
     updatePartner,
     type PartnerResponseDto,
@@ -40,8 +41,8 @@
     partners = [];
 
     const [sharedBy, sharedWith] = await Promise.all([
-      getPartners({ direction: 'shared-by' }),
-      getPartners({ direction: 'shared-with' }),
+      getPartners({ direction: PartnerDirection.SharedBy }),
+      getPartners({ direction: PartnerDirection.SharedWith }),
     ]);
 
     for (const candidate of sharedBy) {
@@ -78,7 +79,6 @@
 
   const handleRemovePartner = async (partner: PartnerResponseDto) => {
     const isConfirmed = await dialogController.show({
-      id: 'remove-partner',
       title: $t('stop_photo_sharing'),
       prompt: $t('stop_photo_sharing_description', { values: { partner: partner.name } }),
     });
@@ -177,7 +177,7 @@
               title={$t('show_in_timeline')}
               subtitle={$t('show_in_timeline_setting_description')}
               bind:checked={partner.inTimeline}
-              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
+              onToggle={(isChecked) => handleShowOnTimelineChanged(partner, isChecked)}
             />
           {/if}
         </div>
@@ -191,9 +191,5 @@
 </section>
 
 {#if createPartnerFlag}
-  <PartnerSelectionModal
-    {user}
-    onClose={() => (createPartnerFlag = false)}
-    on:add-users={(event) => handleCreatePartners(event.detail)}
-  />
+  <PartnerSelectionModal {user} onClose={() => (createPartnerFlag = false)} onAddUsers={handleCreatePartners} />
 {/if}

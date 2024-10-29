@@ -28,32 +28,30 @@ class CuratedPlacesRow extends StatelessWidget {
 
     return SizedBox(
       height: imageSize,
-      child: ListView.builder(
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
           horizontal: 16,
         ),
+        separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           // Injecting Map thumbnail as the first element
           if (isMapEnabled && index == 0) {
-            return SearchMapThumbnail(
-              size: imageSize,
+            return SizedBox.square(
+              dimension: imageSize,
+              child: SearchMapThumbnail(size: imageSize),
             );
           }
           final actualIndex = index - actualContentIndex;
           final object = content[actualIndex];
           final thumbnailRequestUrl =
               '${Store.get(StoreKey.serverEndpoint)}/assets/${object.id}/thumbnail';
-          return SizedBox(
-            width: imageSize,
-            height: imageSize,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 10.0),
-              child: ThumbnailWithInfo(
-                imageUrl: thumbnailRequestUrl,
-                textInfo: object.label,
-                onTap: () => onTap?.call(object, actualIndex),
-              ),
+          return SizedBox.square(
+            dimension: imageSize,
+            child: ThumbnailWithInfo(
+              imageUrl: thumbnailRequestUrl,
+              textInfo: object.label,
+              onTap: () => onTap?.call(object, actualIndex),
             ),
           );
         },

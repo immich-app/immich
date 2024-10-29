@@ -18,7 +18,9 @@ class UpdateAssetDto {
     this.isArchived,
     this.isFavorite,
     this.latitude,
+    this.livePhotoVideoId,
     this.longitude,
+    this.rating,
   });
 
   ///
@@ -61,6 +63,8 @@ class UpdateAssetDto {
   ///
   num? latitude;
 
+  String? livePhotoVideoId;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -69,6 +73,16 @@ class UpdateAssetDto {
   ///
   num? longitude;
 
+  /// Minimum value: 0
+  /// Maximum value: 5
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? rating;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
     other.dateTimeOriginal == dateTimeOriginal &&
@@ -76,7 +90,9 @@ class UpdateAssetDto {
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
     other.latitude == latitude &&
-    other.longitude == longitude;
+    other.livePhotoVideoId == livePhotoVideoId &&
+    other.longitude == longitude &&
+    other.rating == rating;
 
   @override
   int get hashCode =>
@@ -86,10 +102,12 @@ class UpdateAssetDto {
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
-    (longitude == null ? 0 : longitude!.hashCode);
+    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
+    (longitude == null ? 0 : longitude!.hashCode) +
+    (rating == null ? 0 : rating!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude]';
+  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -118,10 +136,20 @@ class UpdateAssetDto {
     } else {
     //  json[r'latitude'] = null;
     }
+    if (this.livePhotoVideoId != null) {
+      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
+    } else {
+    //  json[r'livePhotoVideoId'] = null;
+    }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
     } else {
     //  json[r'longitude'] = null;
+    }
+    if (this.rating != null) {
+      json[r'rating'] = this.rating;
+    } else {
+    //  json[r'rating'] = null;
     }
     return json;
   }
@@ -130,6 +158,7 @@ class UpdateAssetDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UpdateAssetDto? fromJson(dynamic value) {
+    upgradeDto(value, "UpdateAssetDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -139,7 +168,9 @@ class UpdateAssetDto {
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
+        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         longitude: num.parse('${json[r'longitude']}'),
+        rating: num.parse('${json[r'rating']}'),
       );
     }
     return null;

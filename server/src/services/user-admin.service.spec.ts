@@ -1,38 +1,22 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { mapUserAdmin } from 'src/dtos/user.dto';
-import { UserStatus } from 'src/entities/user.entity';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { UserStatus } from 'src/enum';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UserAdminService } from 'src/services/user-admin.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, describe } from 'vitest';
 
 describe(UserAdminService.name, () => {
   let sut: UserAdminService;
-  let userMock: Mocked<IUserRepository>;
-  let cryptoRepositoryMock: Mocked<ICryptoRepository>;
 
-  let albumMock: Mocked<IAlbumRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
-    albumMock = newAlbumRepositoryMock();
-    cryptoRepositoryMock = newCryptoRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    userMock = newUserRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new UserAdminService(albumMock, cryptoRepositoryMock, jobMock, userMock, loggerMock);
+    ({ sut, jobMock, userMock } = newTestService(UserAdminService));
 
     userMock.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),

@@ -1,39 +1,40 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
-import { AccessCore, Permission } from 'src/cores/access.core';
+import { StorageCore } from 'src/cores/storage.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IStorageRepository, ImmichReadStream } from 'src/interfaces/storage.interface';
+import { Permission } from 'src/enum';
+import { ImmichReadStream } from 'src/interfaces/storage.interface';
+import { BaseService } from 'src/services/base.service';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class DownloadService {
-  private access: AccessCore;
-
-  constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {
-    this.access = AccessCore.create(accessRepository);
-  }
-
+export class DownloadService extends BaseService {
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
 
+    const preferences = getPreferences(auth.user);
+
     const assetPagination = await this.getDownloadAssets(auth, dto);
     for await (const assets of assetPagination) {
       // motion part of live photos
-      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
+      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter((id): id is string => !!id);
       if (motionIds.length > 0) {
-        assets.push(...(await this.assetRepository.getByIds(motionIds, { exifInfo: true })));
+        const motionAssets = await this.assetRepository.getByIds(motionIds, { exifInfo: true });
+        for (const motionAsset of motionAssets) {
+          if (
+            !StorageCore.isAndroidMotionPath(motionAsset.originalPath) ||
+            preferences.download.includeEmbeddedVideos
+          ) {
+            assets.push(motionAsset);
+          }
+        }
       }
 
       for (const asset of assets) {
@@ -60,7 +61,7 @@ export class DownloadService {
   }
 
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
-    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, dto.assetIds);
+    await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: dto.assetIds });
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
@@ -83,7 +84,14 @@ export class DownloadService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      zip.addFile(originalPath, filename);
+      let realpath = originalPath;
+      try {
+        realpath = await this.storageRepository.realpath(originalPath);
+      } catch {
+        this.logger.warn('Unable to resolve realpath', { originalPath });
+      }
+
+      zip.addFile(realpath, filename);
     }
 
     void zip.finalize();
@@ -96,20 +104,20 @@ export class DownloadService {
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
-      await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
+      await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: assetIds });
       const assets = await this.assetRepository.getByIds(assetIds, { exifInfo: true });
       return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {
       const albumId = dto.albumId;
-      await this.access.requirePermission(auth, Permission.ALBUM_DOWNLOAD, albumId);
+      await this.requireAccess({ auth, permission: Permission.ALBUM_DOWNLOAD, ids: [albumId] });
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
     }
 
     if (dto.userId) {
       const userId = dto.userId;
-      await this.access.requirePermission(auth, Permission.TIMELINE_DOWNLOAD, userId);
+      await this.requireAccess({ auth, permission: Permission.TIMELINE_DOWNLOAD, ids: [userId] });
       return usePagination(PAGINATION_SIZE, (pagination) =>
         this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
       );

@@ -33,6 +33,7 @@ export interface IUserRepository {
   create(user: Partial<UserEntity>): Promise<UserEntity>;
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
   upsertMetadata<T extends keyof UserMetadata>(id: string, item: { key: T; value: UserMetadata[T] }): Promise<void>;
+  deleteMetadata<T extends keyof UserMetadata>(id: string, key: T): Promise<void>;
   delete(user: UserEntity, hard?: boolean): Promise<UserEntity>;
   updateUsage(id: string, delta: number): Promise<void>;
   syncUsage(id?: string): Promise<void>;

@@ -8,12 +8,6 @@ export class CreateProfileImageDto {
 
 export class CreateProfileImageResponseDto {
   userId!: string;
+  profileChangedAt!: Date;
   profileImagePath!: string;
-}
-
-export function mapCreateProfileImageResponse(userId: string, profileImagePath: string): CreateProfileImageResponseDto {
-  return {
-    userId: userId,
-    profileImagePath: profileImagePath,
-  };
 }

@@ -9,8 +9,6 @@ function _getNotificationListElement(sut: RenderResult<NotificationList>): HTMLA
 }
 
 describe('NotificationList component', () => {
-  const sut: RenderResult<NotificationList> = render(NotificationList);
-
   beforeAll(() => {
     // https://testing-library.com/docs/svelte-testing-library/faq#why-arent-transition-events-running
     vi.stubGlobal('requestAnimationFrame', (fn: FrameRequestCallback) => {
@@ -23,6 +21,10 @@ describe('NotificationList component', () => {
   });
 
   it('shows a notification when added and closes it automatically after the delay timeout', async () => {
+    const sut: RenderResult<NotificationList> = render(NotificationList);
+    const status = await sut.findAllByRole('status');
+
+    expect(status).toHaveLength(1);
     expect(_getNotificationListElement(sut)).not.toBeInTheDocument();
 
     notificationController.show({

@@ -7,6 +7,8 @@ export enum AssetAction {
   DELETE = 'delete',
   RESTORE = 'restore',
   ADD = 'add',
+  ADD_TO_ALBUM = 'add-to-album',
+  UNSTACK = 'unstack',
 }
 
 export enum AppRoute {
@@ -34,6 +36,7 @@ export enum AppRoute {
   MEMORY = '/memory',
   TRASH = '/trash',
   PARTNERS = '/partners',
+  BUY = '/buy',
 
   AUTH_LOGIN = '/auth/login',
   AUTH_REGISTER = '/auth/register',
@@ -42,6 +45,9 @@ export enum AppRoute {
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
+
+  FOLDERS = '/folders',
+  TAGS = '/tags',
 }
 
 export enum ProjectionType {
@@ -65,9 +71,8 @@ export const dateFormats = {
 
 export enum QueryParameter {
   ACTION = 'action',
-  ASSET_INDEX = 'assetIndex',
+  ID = 'id',
   IS_OPEN = 'isOpen',
-  MEMORY_INDEX = 'memoryIndex',
   ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
@@ -75,6 +80,7 @@ export enum QueryParameter {
   SEARCHED_PEOPLE = 'searchedPeople',
   SMART_SEARCH = 'smartSearch',
   PAGE = 'page',
+  PATH = 'path',
 }
 
 export enum OpenSettingQueryParameterValue {
@@ -87,7 +93,7 @@ export enum ActionQueryParameterValue {
   MERGE = 'merge',
 }
 
-export const maximumLengthSearchPeople: number = 20;
+export const maximumLengthSearchPeople = 1000;
 
 // time to load the map before displaying the loading spinner
 export const timeToLoadTheMap: number = 100;
@@ -244,43 +250,84 @@ export const locales = [
   { code: 'zu-ZA', name: 'Zulu (South Africa)' },
 ];
 
-export const defaultLang = { name: 'English', code: 'en', loader: () => import('$lib/i18n/en.json') };
+export const defaultLang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
 
 export const langs = [
-  { name: 'Arabic', code: 'ar', loader: () => import('$lib/i18n/ar.json') },
-  { name: 'Bislama', code: 'bi', loader: () => import('$lib/i18n/bi.json') },
-  { name: 'Catalan', code: 'ca', loader: () => import('$lib/i18n/ca.json') },
-  { name: 'Czech', code: 'cs', loader: () => import('$lib/i18n/cs.json') },
-  { name: 'Danish', code: 'da', loader: () => import('$lib/i18n/da.json') },
-  { name: 'German', code: 'de', loader: () => import('$lib/i18n/de.json') },
+  { name: 'Afrikaans', code: 'af', loader: () => import('$i18n/af.json') },
+  { name: 'Arabic', code: 'ar', loader: () => import('$i18n/ar.json') },
+  { name: 'Azerbaijani', code: 'az', loader: () => import('$i18n/az.json') },
+  { name: 'Belarusian', code: 'be', loader: () => import('$i18n/be.json') },
+  { name: 'Bulgarian', code: 'bg', loader: () => import('$i18n/bg.json') },
+  { name: 'Bislama', code: 'bi', loader: () => import('$i18n/bi.json') },
+  { name: 'Catalan', code: 'ca', loader: () => import('$i18n/ca.json') },
+  { name: 'Czech', code: 'cs', loader: () => import('$i18n/cs.json') },
+  { name: 'Chuvash', code: 'cv', loader: () => import('$i18n/cv.json') },
+  { name: 'Danish', code: 'da', loader: () => import('$i18n/da.json') },
+  { name: 'German', code: 'de', loader: () => import('$i18n/de.json') },
   defaultLang,
-  { name: 'Spanish', code: 'es', loader: () => import('$lib/i18n/es.json') },
-  { name: 'Finnish', code: 'fi', loader: () => import('$lib/i18n/fi.json') },
-  { name: 'French', code: 'fr', loader: () => import('$lib/i18n/fr.json') },
-  { name: 'Hebrew', code: 'he', loader: () => import('$lib/i18n/he.json') },
-  { name: 'Hindi', code: 'hi', loader: () => import('$lib/i18n/hi.json') },
-  { name: 'Croatian', code: 'hr', loader: () => import('$lib/i18n/hr.json') },
-  { name: 'Hungarian', code: 'hu', loader: () => import('$lib/i18n/hu.json') },
-  { name: 'Italian', code: 'it', loader: () => import('$lib/i18n/it.json') },
-  { name: 'Japanese', code: 'ja', loader: () => import('$lib/i18n/ja.json') },
-  { name: 'Korean', code: 'ko', loader: () => import('$lib/i18n/ko.json') },
-  { name: 'Lithuanian', code: 'lt', loader: () => import('$lib/i18n/lt.json') },
-  { name: 'Latvian', code: 'lv', loader: () => import('$lib/i18n/lv.json') },
-  { name: 'Mongolian', code: 'mn', loader: () => import('$lib/i18n/mn.json') },
-  { name: 'Norwegian Bokmål', code: 'nb-NO', loader: () => import('$lib/i18n/nb_NO.json') },
-  { name: 'Dutch', code: 'nl', loader: () => import('$lib/i18n/nl.json') },
-  { name: 'Polish', code: 'pl', loader: () => import('$lib/i18n/pl.json') },
-  { name: 'Portuguese', code: 'pt', loader: () => import('$lib/i18n/pt.json') },
-  { name: 'Romanian', code: 'ro', loader: () => import('$lib/i18n/ro.json') },
-  { name: 'Russian', code: 'ru', loader: () => import('$lib/i18n/ru.json') },
-  { name: 'Slovak', code: 'sk', loader: () => import('$lib/i18n/sk.json') },
-  { name: 'Slovenian', code: 'sl', loader: () => import('$lib/i18n/sl.json') },
-  { name: 'Serbian', code: 'sr', loader: () => import('$lib/i18n/sr.json') },
-  { name: 'Swedish', code: 'sv', loader: () => import('$lib/i18n/sv.json') },
-  { name: 'Thai', code: 'th', loader: () => import('$lib/i18n/th.json') },
-  { name: 'Ukrainian', code: 'uk', loader: () => import('$lib/i18n/uk.json') },
-  { name: 'Vietnamese', code: 'vi', loader: () => import('$lib/i18n/vi.json') },
-  { name: 'Chinese (Traditional)', code: 'zh-Hant', loader: () => import('$lib/i18n/zh_Hant.json') },
-  { name: 'Chinese (Simplified)', code: 'zh-Hans', loader: () => import('$lib/i18n/zh_SIMPLIFIED.json') },
+  { name: 'Greek', code: 'el', loader: () => import('$i18n/el.json') },
+  { name: 'Spanish', code: 'es', loader: () => import('$i18n/es.json') },
+  { name: 'Estonian', code: 'et', loader: () => import('$i18n/et.json') },
+  { name: 'Persian', code: 'fa', loader: () => import('$i18n/fa.json') },
+  { name: 'Finnish', code: 'fi', loader: () => import('$i18n/fi.json') },
+  { name: 'French', code: 'fr', loader: () => import('$i18n/fr.json') },
+  { name: 'Hebrew', code: 'he', loader: () => import('$i18n/he.json') },
+  { name: 'Hindi', code: 'hi', loader: () => import('$i18n/hi.json') },
+  { name: 'Croatian', code: 'hr', loader: () => import('$i18n/hr.json') },
+  { name: 'Hungarian', code: 'hu', loader: () => import('$i18n/hu.json') },
+  { name: 'Armenian', code: 'hy', loader: () => import('$i18n/hy.json') },
+  { name: 'Indonesian', code: 'id', loader: () => import('$i18n/id.json') },
+  { name: 'Italian', code: 'it', loader: () => import('$i18n/it.json') },
+  { name: 'Japanese', code: 'ja', loader: () => import('$i18n/ja.json') },
+  { name: 'Kurdish (Northern)', code: 'kmr', loader: () => import('$i18n/kmr.json') },
+  { name: 'Korean', code: 'ko', loader: () => import('$i18n/ko.json') },
+  { name: 'Luxembourgish', code: 'lb', loader: () => import('$i18n/lb.json') },
+  { name: 'Lithuanian', code: 'lt', loader: () => import('$i18n/lt.json') },
+  { name: 'Latvian', code: 'lv', loader: () => import('$i18n/lv.json') },
+  { name: 'Malay (Pattani)', code: 'mfa', loader: () => import('$i18n/mfa.json') },
+  { name: 'Macedonian', code: 'mk', loader: () => import('$i18n/mk.json') },
+  { name: 'Mongolian', code: 'mn', loader: () => import('$i18n/mn.json') },
+  { name: 'Marathi', code: 'mr', loader: () => import('$i18n/mr.json') },
+  { name: 'Malay', code: 'ms', loader: () => import('$i18n/ms.json') },
+  { name: 'Norwegian Bokmål', code: 'nb-NO', weblateCode: 'nb_NO', loader: () => import('$i18n/nb_NO.json') },
+  { name: 'Dutch', code: 'nl', loader: () => import('$i18n/nl.json') },
+  { name: 'Polish', code: 'pl', loader: () => import('$i18n/pl.json') },
+  { name: 'Portuguese', code: 'pt', loader: () => import('$i18n/pt.json') },
+  { name: 'Portuguese (Brazil) ', code: 'pt-BR', weblateCode: 'pt_BR', loader: () => import('$i18n/pt_BR.json') },
+  { name: 'Romanian', code: 'ro', loader: () => import('$i18n/ro.json') },
+  { name: 'Russian', code: 'ru', loader: () => import('$i18n/ru.json') },
+  { name: 'Slovak', code: 'sk', loader: () => import('$i18n/sk.json') },
+  { name: 'Slovenian', code: 'sl', loader: () => import('$i18n/sl.json') },
+  {
+    name: 'Serbian (Cyrillic)',
+    code: 'sr-Cyrl',
+    weblateCode: 'sr_Cyrl',
+    loader: () => import('$i18n/sr_Cyrl.json'),
+  },
+  { name: 'Serbian (Latin)', code: 'sr-Latn', weblateCode: 'sr_Latn', loader: () => import('$i18n/sr_Latn.json') },
+  { name: 'Swedish', code: 'sv', loader: () => import('$i18n/sv.json') },
+  { name: 'Tamil', code: 'ta', loader: () => import('$i18n/ta.json') },
+  { name: 'Telugu', code: 'te', loader: () => import('$i18n/te.json') },
+  { name: 'Thai', code: 'th', loader: () => import('$i18n/th.json') },
+  { name: 'Turkish', code: 'tr', loader: () => import('$i18n/tr.json') },
+  { name: 'Ukrainian', code: 'uk', loader: () => import('$i18n/uk.json') },
+  { name: 'Vietnamese', code: 'vi', loader: () => import('$i18n/vi.json') },
+  {
+    name: 'Chinese (Traditional)',
+    code: 'zh-TW',
+    weblateCode: 'zh_Hant',
+    loader: () => import('$i18n/zh_Hant.json'),
+  },
+  {
+    name: 'Chinese (Simplified)',
+    code: 'zh-CN',
+    weblateCode: 'zh_SIMPLIFIED',
+    loader: () => import('$i18n/zh_SIMPLIFIED.json'),
+  },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
 ];
+
+export enum ImmichProduct {
+  Client = 'immich-client',
+  Server = 'immich-server',
+}

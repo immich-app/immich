@@ -39,7 +39,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text={label} icon={mdiDeleteOutline} on:click={handleTrash} />
+  <MenuOption text={label} icon={mdiDeleteOutline} onClick={handleTrash} />
 {:else if loading}
   <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
 {:else}
@@ -49,7 +49,7 @@
 {#if isShowConfirmation}
   <DeleteAssetDialog
     size={getOwnedAssets().size}
-    on:confirm={handleDelete}
-    on:cancel={() => (isShowConfirmation = false)}
+    onConfirm={handleDelete}
+    onCancel={() => (isShowConfirmation = false)}
   />
 {/if}

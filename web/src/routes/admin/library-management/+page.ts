@@ -1,14 +1,13 @@
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
 import { searchUsersAdmin } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate({ admin: true });
   await requestServerInfo();
   const allUsers = await searchUsersAdmin({ withDeleted: false });
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     allUsers,

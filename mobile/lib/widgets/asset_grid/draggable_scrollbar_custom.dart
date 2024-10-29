@@ -316,37 +316,39 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     }
 
     setState(() {
-      int firstItemIndex =
-          widget.itemPositionsListener.itemPositions.value.first.index;
+      try {
+        int firstItemIndex =
+            widget.itemPositionsListener.itemPositions.value.first.index;
 
-      if (notification is ScrollUpdateNotification) {
-        _barOffset = (firstItemIndex / maxItemCount) * barMaxScrollExtent;
+        if (notification is ScrollUpdateNotification) {
+          _barOffset = (firstItemIndex / maxItemCount) * barMaxScrollExtent;
 
-        if (_barOffset < barMinScrollExtent) {
-          _barOffset = barMinScrollExtent;
-        }
-        if (_barOffset > barMaxScrollExtent) {
-          _barOffset = barMaxScrollExtent;
-        }
-      }
-
-      if (notification is ScrollUpdateNotification ||
-          notification is OverscrollNotification) {
-        if (_thumbAnimationController.status != AnimationStatus.forward) {
-          _thumbAnimationController.forward();
+          if (_barOffset < barMinScrollExtent) {
+            _barOffset = barMinScrollExtent;
+          }
+          if (_barOffset > barMaxScrollExtent) {
+            _barOffset = barMaxScrollExtent;
+          }
         }
 
-        if (itemPos < maxItemCount) {
-          _currentItem = itemPos;
-        }
+        if (notification is ScrollUpdateNotification ||
+            notification is OverscrollNotification) {
+          if (_thumbAnimationController.status != AnimationStatus.forward) {
+            _thumbAnimationController.forward();
+          }
 
-        _fadeoutTimer?.cancel();
-        _fadeoutTimer = Timer(widget.scrollbarTimeToFade, () {
-          _thumbAnimationController.reverse();
-          _labelAnimationController.reverse();
-          _fadeoutTimer = null;
-        });
-      }
+          if (itemPosition < maxItemCount) {
+            _currentItem = itemPosition;
+          }
+
+          _fadeoutTimer?.cancel();
+          _fadeoutTimer = Timer(widget.scrollbarTimeToFade, () {
+            _thumbAnimationController.reverse();
+            _labelAnimationController.reverse();
+            _fadeoutTimer = null;
+          });
+        }
+      } catch (_) {}
     });
   }
 
@@ -360,25 +362,35 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     widget.scrollStateListener(true);
   }
 
-  int get itemPos {
+  int get itemPosition {
     int numberOfItems = widget.child.itemCount;
     return ((_barOffset / barMaxScrollExtent) * numberOfItems).toInt();
   }
 
-  void _jumpToBarPos() {
-    if (itemPos > maxItemCount - 1) {
+  void _jumpToBarPosition() {
+    if (itemPosition > maxItemCount - 1) {
       return;
     }
 
-    _currentItem = itemPos;
+    _currentItem = itemPosition;
+
+    /// If the bar is at the bottom but the item position is still smaller than the max item count (due to rounding error)
+    /// jump to the end of the list
+    if (barMaxScrollExtent - _barOffset < 10 && itemPosition < maxItemCount) {
+      widget.controller.jumpTo(
+        index: maxItemCount,
+      );
+
+      return;
+    }
 
     widget.controller.jumpTo(
-      index: itemPos,
+      index: itemPosition,
     );
   }
 
   Timer? dragHaltTimer;
-  int lastTimerPos = 0;
+  int lastTimerPosition = 0;
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     setState(() {
@@ -395,8 +407,8 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           _barOffset = barMaxScrollExtent;
         }
 
-        if (itemPos != lastTimerPos) {
-          lastTimerPos = itemPos;
+        if (itemPosition != lastTimerPosition) {
+          lastTimerPosition = itemPosition;
           dragHaltTimer?.cancel();
           widget.scrollStateListener(true);
 
@@ -408,7 +420,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
           );
         }
 
-        _jumpToBarPos();
+        _jumpToBarPosition();
       }
     });
   }
@@ -421,7 +433,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     });
 
     setState(() {
-      _jumpToBarPos();
+      _jumpToBarPosition();
       _isDragInProcess = false;
     });
 

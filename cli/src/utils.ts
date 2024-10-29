@@ -1,8 +1,9 @@
 import { getMyUser, init, isHttpError } from '@immich/sdk';
-import { glob } from 'fast-glob';
+import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
+import { platform } from 'node:os';
 import { join, resolve } from 'node:path';
 import yaml from 'yaml';
 
@@ -106,6 +107,11 @@ export interface CrawlOptions {
   exclusionPattern?: string;
   extensions: string[];
 }
+
+const convertPathToPatternOnWin = (path: string) => {
+  return platform() === 'win32' ? convertPathToPattern(path) : path;
+};
+
 export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   const { extensions: extensionsWithPeriod, recursive, pathsToCrawl, exclusionPattern, includeHidden } = options;
   const extensions = extensionsWithPeriod.map((extension) => extension.replace('.', ''));
@@ -124,36 +130,32 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
       if (stats.isFile() || stats.isSymbolicLink()) {
         crawledFiles.push(absolutePath);
       } else {
-        patterns.push(absolutePath);
+        patterns.push(convertPathToPatternOnWin(absolutePath));
       }
     } catch (error: any) {
       if (error.code === 'ENOENT') {
-        patterns.push(currentPath);
+        patterns.push(convertPathToPatternOnWin(currentPath));
       } else {
         throw error;
       }
     }
   }
 
-  let searchPattern: string;
-  if (patterns.length === 1) {
-    searchPattern = patterns[0];
-  } else if (patterns.length === 0) {
+  if (patterns.length === 0) {
     return crawledFiles;
-  } else {
-    searchPattern = '{' + patterns.join(',') + '}';
   }
 
-  if (recursive) {
-    searchPattern = searchPattern + '/**/';
-  }
+  const searchPatterns = patterns.map((pattern) => {
+    let escapedPattern = pattern;
+    if (recursive) {
+      escapedPattern = escapedPattern + '/**';
+    }
+    return `${escapedPattern}/*.{${extensions.join(',')}}`;
+  });
 
-  searchPattern = `${searchPattern}/*.{${extensions.join(',')}}`;
-
-  const globbedFiles = await glob(searchPattern, {
+  const globbedFiles = await glob(searchPatterns, {
     absolute: true,
     caseSensitiveMatch: false,
-    onlyFiles: true,
     dot: includeHidden,
     ignore: [`**/${exclusionPattern}`],
   });

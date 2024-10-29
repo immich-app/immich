@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -7,26 +8,27 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/latlngbounds_extension.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/models/map/map_event.model.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
+import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/map/map_marker.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/debounce.dart';
+import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/map/map_app_bar.dart';
 import 'package:immich_mobile/widgets/map/map_asset_grid.dart';
 import 'package:immich_mobile/widgets/map/map_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:immich_mobile/widgets/map/positioned_asset_marker_icon.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/utils/immich_loading_overlay.dart';
-import 'package:immich_mobile/utils/debounce.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
@@ -35,7 +37,7 @@ class MapPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapController = useRef<MapLibreMapController?>(null);
+    final mapController = useRef<MaplibreMapController?>(null);
     final markers = useRef<List<MapMarker>>([]);
     final markersInBounds = useRef<List<MapMarker>>([]);
     final bottomSheetStreamController = useStreamController<MapEvent>();
@@ -155,7 +157,7 @@ class MapPage extends HookConsumerWidget {
       }
     }
 
-    void onMapCreated(MapLibreMapController controller) async {
+    void onMapCreated(MaplibreMapController controller) async {
       mapController.value = controller;
       controller.addListener(() {
         if (controller.isCameraMoving && selectedMarker.value != null) {
@@ -178,12 +180,17 @@ class MapPage extends HookConsumerWidget {
         return;
       }
 
+      // Since we only have a single asset, we can just show GroupAssetBy.none
+      final renderList = await RenderList.fromAssets(
+        [asset],
+        GroupAssetsBy.none,
+      );
+
       context.pushRoute(
         GalleryViewerRoute(
           initialIndex: 0,
-          loadAsset: (index) => asset,
-          totalAssets: 1,
           heroOffset: 0,
+          renderList: renderList,
         ),
       );
     }
@@ -298,7 +305,7 @@ class MapPage extends HookConsumerWidget {
                         ),
                         Positioned(
                           right: 0,
-                          bottom: MediaQuery.of(context).padding.bottom + 16,
+                          bottom: MediaQuery.paddingOf(context).bottom + 16,
                           child: ElevatedButton(
                             onPressed: onZoomToLocation,
                             style: ElevatedButton.styleFrom(
@@ -373,7 +380,7 @@ class _MapWithMarker extends StatelessWidget {
         child: Stack(
           children: [
             style.widgetWhen(
-              onData: (style) => MapLibreMap(
+              onData: (style) => MaplibreMap(
                 initialCameraPosition:
                     const CameraPosition(target: LatLng(0, 0)),
                 styleString: style,
@@ -387,7 +394,7 @@ class _MapWithMarker extends StatelessWidget {
                 tiltGesturesEnabled: false,
                 dragEnabled: false,
                 myLocationEnabled: false,
-                attributionButtonPosition: AttributionButtonPosition.topRight,
+                attributionButtonPosition: AttributionButtonPosition.TopRight,
                 rotateGesturesEnabled: false,
               ),
             ),

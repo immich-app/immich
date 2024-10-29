@@ -1,0 +1,21 @@
+name: PR Label Validation
+
+on:
+  pull_request_target:
+    types: [opened, labeled, unlabeled, synchronize]
+
+jobs:
+  validate-release-label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Require PR to have a changelog label
+        uses: mheap/github-action-required-labels@v5
+        with:
+          mode: exactly
+          count: 1
+          use_regex: true
+          labels: "changelog:.*"
+          add_comment: true

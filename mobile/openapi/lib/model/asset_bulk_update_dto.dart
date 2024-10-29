@@ -20,8 +20,7 @@ class AssetBulkUpdateDto {
     this.isFavorite,
     this.latitude,
     this.longitude,
-    this.removeParent,
-    this.stackParentId,
+    this.rating,
   });
 
   ///
@@ -68,21 +67,15 @@ class AssetBulkUpdateDto {
   ///
   num? longitude;
 
+  /// Minimum value: 0
+  /// Maximum value: 5
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? removeParent;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? stackParentId;
+  num? rating;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
@@ -93,8 +86,7 @@ class AssetBulkUpdateDto {
     other.isFavorite == isFavorite &&
     other.latitude == latitude &&
     other.longitude == longitude &&
-    other.removeParent == removeParent &&
-    other.stackParentId == stackParentId;
+    other.rating == rating;
 
   @override
   int get hashCode =>
@@ -106,11 +98,10 @@ class AssetBulkUpdateDto {
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
-    (removeParent == null ? 0 : removeParent!.hashCode) +
-    (stackParentId == null ? 0 : stackParentId!.hashCode);
+    (rating == null ? 0 : rating!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -145,15 +136,10 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'longitude'] = null;
     }
-    if (this.removeParent != null) {
-      json[r'removeParent'] = this.removeParent;
+    if (this.rating != null) {
+      json[r'rating'] = this.rating;
     } else {
-    //  json[r'removeParent'] = null;
-    }
-    if (this.stackParentId != null) {
-      json[r'stackParentId'] = this.stackParentId;
-    } else {
-    //  json[r'stackParentId'] = null;
+    //  json[r'rating'] = null;
     }
     return json;
   }
@@ -162,6 +148,7 @@ class AssetBulkUpdateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetBulkUpdateDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetBulkUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -175,8 +162,7 @@ class AssetBulkUpdateDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
-        removeParent: mapValueOfType<bool>(json, r'removeParent'),
-        stackParentId: mapValueOfType<String>(json, r'stackParentId'),
+        rating: num.parse('${json[r'rating']}'),
       );
     }
     return null;

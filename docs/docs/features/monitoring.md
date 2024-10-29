@@ -25,10 +25,10 @@ The metrics in immich are grouped into API (endpoint calls and response times), 
 
 ### Configuration
 
-Immich will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_METRICS=true` environmental variable to your `.env` file. Note that only the server and microservices containers currently use this variable.
+Immich will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_TELEMETRY_INCLUDE=all` environmental variable to your `.env` file. Note that only the server container currently use this variable.
 
 :::tip
-`IMMICH_METRICS` enables all metrics, but there are also [environmental variables](/docs/install/environment-variables.md#prometheus) to toggle specific metric groups. If you'd like to only expose certain kinds of metrics, you can set only those environmental variables to `true`. Explicitly setting the environmental variable for a metric group overrides `IMMICH_METRICS` for that group. For example, setting `IMMICH_METRICS=true` and `IMMICH_API_METRICS=false` will enable all metrics except API metrics.
+`IMMICH_TELEMETRY_INCLUDE=all` enables all metrics. For a more granular configuration you can enumerate the telemetry metrics that should be included as a comma separated list (e.g. `IMMICH_TELEMETRY_INCLUDE=repo,api`). Alternatively, you can also exclude specific metrics with `IMMICH_TELEMETRY_EXCLUDE`. For more information refer to the [environment section](/docs/install/environment-variables.md#prometheus).
 :::
 
 The next step is to configure a new or existing Prometheus instance to scrape this endpoint. The following steps assume that you do not have an existing Prometheus instance, but the steps will be similar either way.
@@ -66,7 +66,7 @@ The provided file is just a starting point. There are a ton of ways to configure
 After bringing down the containers with `docker compose down` and back up with `docker compose up -d`, a Prometheus instance will now collect metrics from the immich server and microservices containers. Note that we didn't need to expose any new ports for these containers - the communication is handled in the internal Docker network.
 
 :::note
-To see exactly what metrics are made available, you can additionally add `8081:8081` to the server container's ports and `8082:8081` to the microservices container's ports. Visiting the `/metrics` endpoint for these services will show the same raw data that Prometheus collects.
+To see exactly what metrics are made available, you can additionally add `8081:8081` to the server container's ports and `8082:8082` to the microservices container's ports. Visiting the `/metrics` endpoint for these services will show the same raw data that Prometheus collects.
 :::
 
 ### Usage

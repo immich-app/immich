@@ -6,6 +6,7 @@ import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
   MetadataSearchDto,
   PlacesResponseDto,
+  RandomSearchDto,
   SearchExploreResponseDto,
   SearchPeopleDto,
   SearchPlacesDto,
@@ -26,6 +27,13 @@ export class SearchController {
   @Authenticated()
   searchMetadata(@Auth() auth: AuthDto, @Body() dto: MetadataSearchDto): Promise<SearchResponseDto> {
     return this.service.searchMetadata(auth, dto);
+  }
+
+  @Post('random')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated()
+  searchRandom(@Auth() auth: AuthDto, @Body() dto: RandomSearchDto): Promise<AssetResponseDto[]> {
+    return this.service.searchRandom(auth, dto);
   }
 
   @Post('smart')
@@ -62,6 +70,7 @@ export class SearchController {
   @Get('suggestions')
   @Authenticated()
   getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
-    return this.service.getSearchSuggestions(auth, dto);
+    // TODO fix open api generation to indicate that results can be nullable
+    return this.service.getSearchSuggestions(auth, dto) as Promise<string[]>;
   }
 }

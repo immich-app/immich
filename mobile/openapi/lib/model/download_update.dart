@@ -14,6 +14,7 @@ class DownloadUpdate {
   /// Returns a new [DownloadUpdate] instance.
   DownloadUpdate({
     this.archiveSize,
+    this.includeEmbeddedVideos,
   });
 
   /// Minimum value: 1
@@ -25,17 +26,27 @@ class DownloadUpdate {
   ///
   int? archiveSize;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? includeEmbeddedVideos;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadUpdate &&
-    other.archiveSize == archiveSize;
+    other.archiveSize == archiveSize &&
+    other.includeEmbeddedVideos == includeEmbeddedVideos;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (archiveSize == null ? 0 : archiveSize!.hashCode);
+    (archiveSize == null ? 0 : archiveSize!.hashCode) +
+    (includeEmbeddedVideos == null ? 0 : includeEmbeddedVideos!.hashCode);
 
   @override
-  String toString() => 'DownloadUpdate[archiveSize=$archiveSize]';
+  String toString() => 'DownloadUpdate[archiveSize=$archiveSize, includeEmbeddedVideos=$includeEmbeddedVideos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -44,6 +55,11 @@ class DownloadUpdate {
     } else {
     //  json[r'archiveSize'] = null;
     }
+    if (this.includeEmbeddedVideos != null) {
+      json[r'includeEmbeddedVideos'] = this.includeEmbeddedVideos;
+    } else {
+    //  json[r'includeEmbeddedVideos'] = null;
+    }
     return json;
   }
 
@@ -51,11 +67,13 @@ class DownloadUpdate {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DownloadUpdate? fromJson(dynamic value) {
+    upgradeDto(value, "DownloadUpdate");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return DownloadUpdate(
         archiveSize: mapValueOfType<int>(json, r'archiveSize'),
+        includeEmbeddedVideos: mapValueOfType<bool>(json, r'includeEmbeddedVideos'),
       );
     }
     return null;

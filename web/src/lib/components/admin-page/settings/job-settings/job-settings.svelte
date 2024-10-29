@@ -2,9 +2,8 @@
   import { getJobName } from '$lib/utils';
   import { JobName, type SystemConfigDto, type SystemConfigJobDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField, {
     SettingInputFieldType,
@@ -15,8 +14,8 @@
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
-
-  const dispatch = createEventDispatcher<SettingsEventType>();
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
 
   const jobNames = [
     JobName.ThumbnailGeneration,
@@ -67,8 +66,8 @@
 
       <div class="ml-4">
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['job'] })}
-          on:save={() => dispatch('save', { job: config.job })}
+          onReset={(options) => onReset({ ...options, configKeys: ['job'] })}
+          onSave={() => onSave({ job: config.job })}
           showResetToDefault={!isEqual(savedConfig.job, defaultConfig.job)}
           {disabled}
         />

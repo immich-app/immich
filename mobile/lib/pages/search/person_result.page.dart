@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
@@ -92,6 +92,7 @@ class PersonResultPage extends HookConsumerWidget {
                   Text(
                     name.value,
                     style: context.textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -122,14 +123,14 @@ class PersonResultPage extends HookConsumerWidget {
                 radius: 36,
                 backgroundImage: NetworkImage(
                   getFaceThumbnailUrl(personId),
-                  headers: {
-                    "x-immich-user-token": Store.get(StoreKey.accessToken),
-                  },
+                  headers: ApiService.getRequestHeaders(),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: buildTitleBlock(),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+                  child: buildTitleBlock(),
+                ),
               ),
             ],
           ),

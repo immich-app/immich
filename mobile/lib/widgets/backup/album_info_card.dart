@@ -5,15 +5,21 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
   final AvailableAlbum album;
 
-  const AlbumInfoCard({super.key, required this.album});
+  const AlbumInfoCard({
+    super.key,
+    required this.album,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,6 +27,9 @@ class AlbumInfoCard extends HookConsumerWidget {
         ref.watch(backupProvider).selectedBackupAlbums.contains(album);
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(album);
+    final syncAlbum = ref
+        .watch(appSettingsServiceProvider)
+        .getSetting(AppSettingsEnum.syncAlbums);
 
     final isDarkTheme = context.isDarkTheme;
 
@@ -85,6 +94,9 @@ class AlbumInfoCard extends HookConsumerWidget {
           ref.read(backupProvider.notifier).removeAlbumForBackup(album);
         } else {
           ref.read(backupProvider.notifier).addAlbumForBackup(album);
+          if (syncAlbum) {
+            ref.read(albumProvider.notifier).createSyncAlbum(album.name);
+          }
         }
       },
       onDoubleTap: () {
@@ -171,23 +183,13 @@ class AlbumInfoCard extends HookConsumerWidget {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
-                          child: FutureBuilder(
-                            builder: ((context, snapshot) {
-                              if (snapshot.hasData) {
-                                return Text(
-                                  snapshot.data.toString() +
-                                      (album.isAll
-                                          ? " (${'backup_all'.tr()})"
-                                          : ""),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                );
-                              }
-                              return const Text("0");
-                            }),
-                            future: album.assetCount,
+                          child: Text(
+                            album.assetCount.toString() +
+                                (album.isAll ? " (${'backup_all'.tr()})" : ""),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ),
                       ],
@@ -196,7 +198,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                   IconButton(
                     onPressed: () {
                       context.pushRoute(
-                        AlbumPreviewRoute(album: album.albumEntity),
+                        AlbumPreviewRoute(album: album.album),
                       );
                     },
                     icon: Icon(

@@ -1,13 +1,12 @@
 import { authenticate } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
 import { getAuditFiles } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate({ admin: true });
   const { orphans, extras } = await getAuditFiles();
-  const $t = get(t);
+  const $t = await getFormatter();
 
   return {
     orphans,

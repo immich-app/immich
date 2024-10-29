@@ -12,8 +12,9 @@ describe('getKeysDeep', () => {
         foo: 'bar',
         flag: true,
         count: 42,
+        date: new Date(),
       }),
-    ).toEqual(['foo', 'flag', 'count']);
+    ).toEqual(['foo', 'flag', 'count', 'date']);
   });
 
   it('should skip undefined properties', () => {

@@ -32,6 +32,7 @@ class ExifResponseDto {
     this.modifyDate,
     this.orientation,
     this.projectionType,
+    this.rating,
     this.state,
     this.timeZone,
   });
@@ -74,6 +75,8 @@ class ExifResponseDto {
 
   String? projectionType;
 
+  num? rating;
+
   String? state;
 
   String? timeZone;
@@ -99,6 +102,7 @@ class ExifResponseDto {
     other.modifyDate == modifyDate &&
     other.orientation == orientation &&
     other.projectionType == projectionType &&
+    other.rating == rating &&
     other.state == state &&
     other.timeZone == timeZone;
 
@@ -124,11 +128,12 @@ class ExifResponseDto {
     (modifyDate == null ? 0 : modifyDate!.hashCode) +
     (orientation == null ? 0 : orientation!.hashCode) +
     (projectionType == null ? 0 : projectionType!.hashCode) +
+    (rating == null ? 0 : rating!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (timeZone == null ? 0 : timeZone!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, state=$state, timeZone=$timeZone]';
+  String toString() => 'ExifResponseDto[city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, rating=$rating, state=$state, timeZone=$timeZone]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -227,6 +232,11 @@ class ExifResponseDto {
     } else {
     //  json[r'projectionType'] = null;
     }
+    if (this.rating != null) {
+      json[r'rating'] = this.rating;
+    } else {
+    //  json[r'rating'] = null;
+    }
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
@@ -244,6 +254,7 @@ class ExifResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ExifResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "ExifResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -281,6 +292,9 @@ class ExifResponseDto {
         modifyDate: mapDateTime(json, r'modifyDate', r''),
         orientation: mapValueOfType<String>(json, r'orientation'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
+        rating: json[r'rating'] == null
+            ? null
+            : num.parse('${json[r'rating']}'),
         state: mapValueOfType<String>(json, r'state'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
       );

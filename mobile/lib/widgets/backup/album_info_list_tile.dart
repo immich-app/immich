@@ -1,13 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoListTile extends HookConsumerWidget {
@@ -21,15 +23,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
         ref.watch(backupProvider).selectedBackupAlbums.contains(album);
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(album);
-    var assetCount = useState(0);
-
-    useEffect(
-      () {
-        album.assetCount.then((value) => assetCount.value = value);
-        return null;
-      },
-      [album],
-    );
+    final syncAlbum = ref
+        .watch(appSettingsServiceProvider)
+        .getSetting(AppSettingsEnum.syncAlbums);
 
     buildTileColor() {
       if (isSelected) {
@@ -47,22 +43,22 @@ class AlbumInfoListTile extends HookConsumerWidget {
 
     buildIcon() {
       if (isSelected) {
-        return const Icon(
+        return Icon(
           Icons.check_circle_rounded,
-          color: Colors.green,
+          color: context.colorScheme.primary,
         );
       }
 
       if (isExcluded) {
-        return const Icon(
+        return Icon(
           Icons.remove_circle_rounded,
-          color: Colors.red,
+          color: context.colorScheme.error,
         );
       }
 
       return Icon(
         Icons.circle,
-        color: context.isDarkTheme ? Colors.grey[400] : Colors.black45,
+        color: context.colorScheme.surfaceContainerHighest,
       );
     }
 
@@ -98,6 +94,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
             ref.read(backupProvider.notifier).removeAlbumForBackup(album);
           } else {
             ref.read(backupProvider.notifier).addAlbumForBackup(album);
+            if (syncAlbum) {
+              ref.read(albumProvider.notifier).createSyncAlbum(album.name);
+            }
           }
         },
         leading: buildIcon(),
@@ -108,11 +107,11 @@ class AlbumInfoListTile extends HookConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        subtitle: Text(assetCount.value.toString()),
+        subtitle: Text(album.assetCount.toString()),
         trailing: IconButton(
           onPressed: () {
             context.pushRoute(
-              AlbumPreviewRoute(album: album.albumEntity),
+              AlbumPreviewRoute(album: album.album),
             );
           },
           icon: Icon(

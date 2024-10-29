@@ -84,6 +84,19 @@ class _DateTimePicker extends HookWidget {
     final date = useState<DateTime>(initialDateTime ?? DateTime.now());
     final tzOffset = useState<_TimeZoneOffset>(_getInitiationLocation());
     final timeZones = useMemoized(() => getAllTimeZones(), const []);
+    final menuEntries = timeZones
+        .map(
+          (timezone) => DropdownMenuEntry<_TimeZoneOffset>(
+            value: timezone,
+            label: timezone.display,
+            style: ButtonStyle(
+              textStyle: WidgetStatePropertyAll(
+                context.textTheme.bodyMedium,
+              ),
+            ),
+          ),
+        )
+        .toList();
 
     void pickDate() async {
       final now = DateTime.now();
@@ -120,93 +133,84 @@ class _DateTimePicker extends HookWidget {
       context.pop(dtWithOffset);
     }
 
-    return AlertDialog(
-      contentPadding: const EdgeInsets.all(30),
-      alignment: Alignment.center,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            "edit_date_time_dialog_date_time",
-            textAlign: TextAlign.center,
-          ).tr(),
-          TextButton.icon(
-            onPressed: pickDate,
-            icon: Text(
-              DateFormat("dd-MM-yyyy hh:mm a").format(date.value),
-              style: context.textTheme.bodyLarge
-                  ?.copyWith(color: context.primaryColor),
-            ),
-            label: const Icon(
-              Icons.edit_outlined,
-              size: 18,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraint) => AlertDialog(
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 32, horizontal: 18),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text(
+              "action_common_cancel",
+              style: context.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: context.colorScheme.error,
+              ),
+            ).tr(),
           ),
-          const Text(
-            "edit_date_time_dialog_timezone",
-            textAlign: TextAlign.center,
-          ).tr(),
-          DropdownMenu(
-            menuHeight: 300,
-            width: 280,
-            inputDecorationTheme: const InputDecorationTheme(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
+          TextButton(
+            onPressed: popWithDateTime,
+            child: Text(
+              "action_common_update",
+              style: context.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: context.primaryColor,
+              ),
+            ).tr(),
+          ),
+        ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "edit_date_time_dialog_date_time",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ).tr(),
+            const SizedBox(height: 32),
+            ListTile(
+              tileColor: context.colorScheme.surfaceContainerHighest,
+              shape: ShapeBorder.lerp(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                1,
+              ),
+              trailing: Icon(
+                Icons.edit_outlined,
+                size: 18,
+                color: context.primaryColor,
+              ),
+              title: Text(
+                DateFormat("dd-MM-yyyy hh:mm a").format(date.value),
+                style: context.textTheme.bodyMedium,
+              ).tr(),
+              onTap: pickDate,
             ),
-            trailingIcon: Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: Icon(
+            const SizedBox(height: 24),
+            DropdownMenu(
+              width: 275,
+              menuHeight: 300,
+              trailingIcon: Icon(
                 Icons.arrow_drop_down,
                 color: context.primaryColor,
               ),
+              hintText: "edit_date_time_dialog_timezone".tr(),
+              label: const Text('edit_date_time_dialog_timezone').tr(),
+              textStyle: context.textTheme.bodyMedium,
+              onSelected: (value) => tzOffset.value = value!,
+              initialSelection: tzOffset.value,
+              dropdownMenuEntries: menuEntries,
             ),
-            textStyle: context.textTheme.bodyLarge?.copyWith(
-              color: context.primaryColor,
-            ),
-            menuStyle: const MenuStyle(
-              fixedSize: WidgetStatePropertyAll(Size.fromWidth(350)),
-              alignment: Alignment(-1.25, 0.5),
-            ),
-            onSelected: (value) => tzOffset.value = value!,
-            initialSelection: tzOffset.value,
-            dropdownMenuEntries: timeZones
-                .map(
-                  (t) => DropdownMenuEntry<_TimeZoneOffset>(
-                    value: t,
-                    label: t.display,
-                    style: ButtonStyle(
-                      textStyle: WidgetStatePropertyAll(
-                        context.textTheme.bodyMedium,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
+          ],
+        ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => context.pop(),
-          child: Text(
-            "action_common_cancel",
-            style: context.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: context.colorScheme.error,
-            ),
-          ).tr(),
-        ),
-        TextButton(
-          onPressed: popWithDateTime,
-          child: Text(
-            "action_common_update",
-            style: context.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: context.primaryColor,
-            ),
-          ).tr(),
-        ),
-      ],
     );
   }
 }

@@ -1,11 +1,10 @@
 import 'dart:convert';
 
 import 'package:immich_mobile/entities/exif_info.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager/photo_manager.dart' show AssetEntity;
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:path/path.dart' as p;
 
@@ -23,8 +22,12 @@ class Asset {
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = remote.originalFileName,
-        height = remote.exifInfo?.exifImageHeight?.toInt(),
-        width = remote.exifInfo?.exifImageWidth?.toInt(),
+        height = isFlipped(remote)
+            ? remote.exifInfo?.exifImageWidth?.toInt()
+            : remote.exifInfo?.exifImageHeight?.toInt(),
+        width = isFlipped(remote)
+            ? remote.exifInfo?.exifImageHeight?.toInt()
+            : remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
         ownerId = fastHash(remote.ownerId),
         exifInfo =
@@ -33,39 +36,14 @@ class Asset {
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
         isOffline = remote.isOffline,
-        // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+        // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
         // stack handling to properly handle it
-        stackParentId =
-            remote.stackParentId == remote.id ? null : remote.stackParentId,
-        stackCount = remote.stackCount,
+        stackPrimaryAssetId = remote.stack?.primaryAssetId == remote.id
+            ? null
+            : remote.stack?.primaryAssetId,
+        stackCount = remote.stack?.assetCount ?? 0,
+        stackId = remote.stack?.id,
         thumbhash = remote.thumbhash;
-
-  Asset.local(AssetEntity local, List<int> hash)
-      : localId = local.id,
-        checksum = base64.encode(hash),
-        durationInSeconds = local.duration,
-        type = AssetType.values[local.typeInt],
-        height = local.height,
-        width = local.width,
-        fileName = local.title!,
-        ownerId = Store.get(StoreKey.currentUser).isarId,
-        fileModifiedAt = local.modifiedDateTime,
-        updatedAt = local.modifiedDateTime,
-        isFavorite = local.isFavorite,
-        isArchived = false,
-        isTrashed = false,
-        isOffline = false,
-        stackCount = 0,
-        fileCreatedAt = local.createDateTime {
-    if (fileCreatedAt.year == 1970) {
-      fileCreatedAt = fileModifiedAt;
-    }
-    if (local.latitude != null) {
-      exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
-    }
-    _local = local;
-    assert(hash.length == 20, "invalid SHA1 hash");
-  }
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -86,7 +64,8 @@ class Asset {
     this.isFavorite = false,
     this.isArchived = false,
     this.isTrashed = false,
-    this.stackParentId,
+    this.stackId,
+    this.stackPrimaryAssetId,
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
@@ -111,6 +90,8 @@ class Asset {
     }
     return _local;
   }
+
+  set local(AssetEntity? assetEntity) => _local = assetEntity;
 
   Id id = Isar.autoIncrement;
 
@@ -163,12 +144,11 @@ class Asset {
   @ignore
   ExifInfo? exifInfo;
 
-  String? stackParentId;
+  String? stackId;
 
-  @ignore
-  int get stackChildrenCount => stackCount ?? 0;
+  String? stackPrimaryAssetId;
 
-  int? stackCount;
+  int stackCount;
 
   /// Aspect ratio of the asset
   @ignore
@@ -208,6 +188,10 @@ class Asset {
   @ignore
   Duration get duration => Duration(seconds: durationInSeconds);
 
+  // ignore: invalid_annotation_target
+  @ignore
+  set byteHash(List<int> hash) => checksum = base64.encode(hash);
+
   @override
   bool operator ==(other) {
     if (other is! Asset) return false;
@@ -231,7 +215,8 @@ class Asset {
         isArchived == other.isArchived &&
         isTrashed == other.isTrashed &&
         stackCount == other.stackCount &&
-        stackParentId == other.stackParentId;
+        stackPrimaryAssetId == other.stackPrimaryAssetId &&
+        stackId == other.stackId;
   }
 
   @override
@@ -256,7 +241,8 @@ class Asset {
       isArchived.hashCode ^
       isTrashed.hashCode ^
       stackCount.hashCode ^
-      stackParentId.hashCode;
+      stackPrimaryAssetId.hashCode ^
+      stackId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -269,7 +255,6 @@ class Asset {
         width == null && a.width != null ||
         height == null && a.height != null ||
         livePhotoVideoId == null && a.livePhotoVideoId != null ||
-        stackParentId == null && a.stackParentId != null ||
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
@@ -278,10 +263,9 @@ class Asset {
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
         a.thumbhash != thumbhash ||
-        ((stackCount == null && a.stackCount != null) ||
-            (stackCount != null &&
-                a.stackCount != null &&
-                stackCount != a.stackCount));
+        stackId != a.stackId ||
+        stackCount != a.stackCount ||
+        stackPrimaryAssetId == null && a.stackPrimaryAssetId != null;
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -311,9 +295,11 @@ class Asset {
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
-          stackParentId: stackParentId == remoteId ? null : stackParentId,
+          stackId: stackId,
+          stackPrimaryAssetId:
+              stackPrimaryAssetId == remoteId ? null : stackPrimaryAssetId,
           stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
@@ -330,9 +316,12 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
-          // workaround to nullify stackParentId for the parent asset until we refactor the mobile app
+          // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
           // stack handling to properly handle it
-          stackParentId: a.stackParentId == a.remoteId ? null : a.stackParentId,
+          stackId: a.stackId,
+          stackPrimaryAssetId: a.stackPrimaryAssetId == a.remoteId
+              ? null
+              : a.stackPrimaryAssetId,
           stackCount: a.stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
@@ -374,7 +363,8 @@ class Asset {
     bool? isTrashed,
     bool? isOffline,
     ExifInfo? exifInfo,
-    String? stackParentId,
+    String? stackId,
+    String? stackPrimaryAssetId,
     int? stackCount,
     String? thumbhash,
   }) =>
@@ -398,7 +388,8 @@ class Asset {
         isTrashed: isTrashed ?? this.isTrashed,
         isOffline: isOffline ?? this.isOffline,
         exifInfo: exifInfo ?? this.exifInfo,
-        stackParentId: stackParentId ?? this.stackParentId,
+        stackId: stackId ?? this.stackId,
+        stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
         stackCount: stackCount ?? this.stackCount,
         thumbhash: thumbhash ?? this.thumbhash,
       );
@@ -445,8 +436,9 @@ class Asset {
   "checksum": "$checksum",
   "ownerId": $ownerId,
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
+  "stackId": "${stackId ?? "N/A"}",
+  "stackPrimaryAssetId": "${stackPrimaryAssetId ?? "N/A"}",
   "stackCount": "$stackCount",
-  "stackParentId": "${stackParentId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt",
   "updatedAt": "$updatedAt",
@@ -518,4 +510,21 @@ extension AssetsHelper on IsarCollection<Asset> {
   ) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
+}
+
+/// Returns `true` if this [int] is flipped 90° clockwise
+bool isRotated90CW(int orientation) {
+  return [7, 8, -90].contains(orientation);
+}
+
+/// Returns `true` if this [int] is flipped 270° clockwise
+bool isRotated270CW(int orientation) {
+  return [5, 6, 90].contains(orientation);
+}
+
+/// Returns `true` if this [Asset] is flipped 90° or 270° clockwise
+bool isFlipped(AssetResponseDto response) {
+  final int orientation = response.exifInfo?.orientation?.toInt() ?? 0;
+  return orientation != 0 &&
+      (isRotated90CW(orientation) || isRotated270CW(orientation));
 }

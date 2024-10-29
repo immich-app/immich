@@ -4,13 +4,19 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { createEventDispatcher, tick } from 'svelte';
+  import { tick } from 'svelte';
+  import { swipe } from 'svelte-gestures';
+  import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
   export let assetId: string;
   export let loopVideo: boolean;
   export let checksum: string;
+  export let onPreviousAsset: () => void = () => {};
+  export let onNextAsset: () => void = () => {};
+  export let onVideoEnded: () => void = () => {};
+  export let onVideoStarted: () => void = () => {};
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
@@ -23,12 +29,10 @@
     element.load();
   }
 
-  const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
-
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
       await video.play();
-      dispatch('onVideoStarted');
+      onVideoStarted();
     } catch (error) {
       if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
         await tryForceMutedPlay(video);
@@ -49,13 +53,18 @@
       handleError(error, $t('errors.unable_to_play_video'));
     }
   };
+
+  const onSwipe = (event: SwipeCustomEvent) => {
+    if (event.detail.direction === 'left') {
+      onNextAsset();
+    }
+    if (event.detail.direction === 'right') {
+      onPreviousAsset();
+    }
+  };
 </script>
 
-<div
-  transition:fade={{ duration: 150 }}
-  class="flex select-none place-content-center place-items-center"
-  style="height: calc(100% - 64px)"
->
+<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
     bind:this={element}
     loop={$loopVideoPreference && loopVideo}
@@ -63,8 +72,10 @@
     playsinline
     controls
     class="h-full object-contain"
+    use:swipe
+    on:swipe={onSwipe}
     on:canplay={(e) => handleCanPlay(e.currentTarget)}
-    on:ended={() => dispatch('onVideoEnded')}
+    on:ended={onVideoEnded}
     on:volumechange={(e) => {
       if (!forceMuted) {
         $videoViewerMuted = e.currentTarget.muted;
@@ -73,9 +84,8 @@
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+    src={assetFileUrl}
   >
-    <source src={assetFileUrl} type="video/mp4" />
-    <track kind="captions" />
   </video>
 
   {#if isVideoLoading}

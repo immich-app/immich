@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateUUID } from 'src/validation';
 
 export class CreateLibraryDto {
   @ValidateUUID()
@@ -48,10 +48,14 @@ export class UpdateLibraryDto {
   exclusionPatterns?: string[];
 }
 
-export class CrawlOptionsDto {
-  pathsToCrawl!: string[];
-  includeHidden? = false;
+export interface CrawlOptionsDto {
+  pathsToCrawl: string[];
+  includeHidden?: boolean;
   exclusionPatterns?: string[];
+}
+
+export interface WalkOptionsDto extends CrawlOptionsDto {
+  take: number;
 }
 
 export class ValidateLibraryDto {
@@ -83,14 +87,6 @@ export class ValidateLibraryImportPathResponseDto {
 export class LibrarySearchDto {
   @ValidateUUID({ optional: true })
   userId?: string;
-}
-
-export class ScanLibraryDto {
-  @ValidateBoolean({ optional: true })
-  refreshModifiedFiles?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  refreshAllFiles?: boolean;
 }
 
 export class LibraryResponseDto {

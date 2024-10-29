@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -15,6 +16,7 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
@@ -26,12 +28,15 @@ import 'package:immich_mobile/widgets/forms/login/login_button.dart';
 import 'package:immich_mobile/widgets/forms/login/o_auth_login_button.dart';
 import 'package:immich_mobile/widgets/forms/login/password_input.dart';
 import 'package:immich_mobile/widgets/forms/login/server_endpoint_input.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
-  const LoginForm({super.key});
+  LoginForm({super.key});
+
+  final log = Logger('LoginForm');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,7 +60,7 @@ class LoginForm extends HookConsumerWidget {
     )..repeat();
     final serverInfo = ref.watch(serverInfoProvider);
     final warningMessage = useState<String?>(null);
-
+    final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
     checkVersionMismatch() async {
@@ -175,11 +180,15 @@ class LoginForm extends HookConsumerWidget {
     }
 
     login() async {
+      TextInput.finishAutofillContext();
       // Start loading
       isLoading.value = true;
 
       // This will remove current cache asset state of previous user login.
       ref.read(assetProvider.notifier).clearAllAsset();
+
+      // Invalidate all api repository provider instance to take into account new access token
+      invalidateAllApiRepositoryProviders(ref);
 
       try {
         final isAuthenticated =
@@ -227,7 +236,9 @@ class LoginForm extends HookConsumerWidget {
             .getOAuthServerUrl(sanitizeUrl(serverEndpointController.text));
 
         isLoading.value = true;
-      } catch (e) {
+      } catch (error, stack) {
+        log.severe('Error getting OAuth server Url: $error', stack);
+
         ImmichToast.show(
           context: context,
           msg: "login_form_failed_get_oauth_server_config".tr(),
@@ -239,10 +250,19 @@ class LoginForm extends HookConsumerWidget {
       }
 
       if (oAuthServerUrl != null) {
-        var loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl);
+        try {
+          final loginResponseDto =
+              await oAuthService.oAuthLogin(oAuthServerUrl);
 
-        if (loginResponseDto != null) {
-          var isSuccess = await ref
+          if (loginResponseDto == null) {
+            return;
+          }
+
+          log.info(
+            "Finished OAuth login with response: ${loginResponseDto.userEmail}",
+          );
+
+          final isSuccess = await ref
               .watch(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
@@ -256,17 +276,19 @@ class LoginForm extends HookConsumerWidget {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
             context.replaceRoute(const TabControllerRoute());
-          } else {
-            ImmichToast.show(
-              context: context,
-              msg: "login_form_failed_login".tr(),
-              toastType: ToastType.error,
-              gravity: ToastGravity.TOP,
-            );
           }
-        }
+        } catch (error, stack) {
+          log.severe('Error logging in with OAuth: $error', stack);
 
-        isLoading.value = false;
+          ImmichToast.show(
+            context: context,
+            msg: error.toString(),
+            toastType: ToastType.error,
+            gravity: ToastGravity.TOP,
+          );
+        } finally {
+          isLoading.value = false;
+        }
       } else {
         ImmichToast.show(
           context: context,
@@ -478,7 +500,10 @@ class LoginForm extends HookConsumerWidget {
 
                   // Note: This used to have an AnimatedSwitcher, but was removed
                   // because of https://github.com/flutter/flutter/issues/120874
-                  serverSelectionOrLogin,
+                  Form(
+                    key: loginFormKey,
+                    child: serverSelectionOrLogin,
+                  ),
                 ],
               ),
             ),

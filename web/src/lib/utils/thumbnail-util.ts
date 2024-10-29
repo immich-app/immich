@@ -1,4 +1,6 @@
-import type { AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { t } from 'svelte-i18n';
+import { derived } from 'svelte/store';
 import { fromLocalDateTime } from './timeline-util';
 
 /**
@@ -35,29 +37,58 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
   return 300;
 }
 
-export function getAltText(asset: AssetResponseDto) {
-  if (asset.exifInfo?.description) {
-    return asset.exifInfo.description;
-  }
+export const getAltText = derived(t, ($t) => {
+  return (asset: AssetResponseDto) => {
+    if (asset.exifInfo?.description) {
+      return asset.exifInfo.description;
+    }
 
-  let altText = 'Image taken';
-  if (asset.exifInfo?.city && asset.exifInfo.country) {
-    altText += ` in ${asset.exifInfo.city}, ${asset.exifInfo.country}`;
-  }
+    const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
+    const hasPlace = !!asset.exifInfo?.city && !!asset.exifInfo?.country;
+    const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
+    const peopleCount = names.length;
+    const isVideo = asset.type === AssetTypeEnum.Video;
 
-  const names = asset.people?.filter((p) => p.name).map((p) => p.name) ?? [];
-  if (names.length == 1) {
-    altText += ` with ${names[0]}`;
-  }
-  if (names.length > 1 && names.length <= 3) {
-    altText += ` with ${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
-  }
-  if (names.length > 3) {
-    altText += ` with ${names.slice(0, 2).join(', ')}, and ${names.length - 2} others`;
-  }
+    const values = {
+      date,
+      city: asset.exifInfo?.city,
+      country: asset.exifInfo?.country,
+      person1: names[0],
+      person2: names[1],
+      person3: names[2],
+      isVideo,
+      additionalCount: peopleCount > 3 ? peopleCount - 2 : 0,
+    };
 
-  const date = fromLocalDateTime(asset.localDateTime).toLocaleString({ dateStyle: 'long' });
-  altText += ` on ${date}`;
+    if (peopleCount > 0) {
+      switch (peopleCount) {
+        case 1: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_1_person', { values })
+            : $t('image_alt_text_date_1_person', { values });
+        }
+        case 2: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_2_people', { values })
+            : $t('image_alt_text_date_2_people', { values });
+        }
+        case 3: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_3_people', { values })
+            : $t('image_alt_text_date_3_people', { values });
+        }
+        default: {
+          return hasPlace
+            ? $t('image_alt_text_date_place_4_or_more_people', { values })
+            : $t('image_alt_text_date_4_or_more_people', { values });
+        }
+      }
+    }
 
-  return altText;
-}
+    if (hasPlace) {
+      return $t('image_alt_text_date_place', { values });
+    }
+
+    return $t('image_alt_text_date', { values });
+  };
+});

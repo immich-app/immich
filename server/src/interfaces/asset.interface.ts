@@ -1,7 +1,7 @@
-import { AssetOrder } from 'src/entities/album.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
@@ -16,6 +16,7 @@ export interface AssetStatsOptions {
 
 export interface LivePhotoSearchOptions {
   ownerId: string;
+  libraryId?: string | null;
   livePhotoCID: string;
   otherAssetId: string;
   type: AssetType;
@@ -35,7 +36,6 @@ export enum WithoutProperty {
 
 export enum WithProperty {
   SIDECAR = 'sidecar',
-  IS_OFFLINE = 'isOffline',
 }
 
 export enum TimeBucketSize {
@@ -49,10 +49,12 @@ export interface AssetBuilderOptions {
   isTrashed?: boolean;
   isDuplicate?: boolean;
   albumId?: string;
+  tagId?: string;
   personId?: string;
   userIds?: string[];
   withStacked?: boolean;
   exifInfo?: boolean;
+  status?: AssetStatus;
   assetType?: AssetType;
 }
 
@@ -139,6 +141,12 @@ export interface AssetUpdateDuplicateOptions {
   duplicateIds: string[];
 }
 
+export interface UpsertFileOptions {
+  assetId: string;
+  type: AssetFileType;
+  path: string;
+}
+
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
 export const IAssetRepository = 'IAssetRepository';
@@ -164,21 +172,17 @@ export interface IAssetRepository {
     order?: FindOptionsOrder<AssetEntity>,
   ): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
-  getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
-  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
-  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
+  getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
-  getExternalLibraryAssetPaths(pagination: PaginationOptions, libraryId: string): Paginated<AssetPathEntity>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
+  getLivePhotoCount(motionId: string): Promise<number>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
   updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
-  softDeleteAll(ids: string[]): Promise<void>;
-  restoreAll(ids: string[]): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
@@ -190,4 +194,6 @@ export interface IAssetRepository {
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
+  upsertFile(file: UpsertFileOptions): Promise<void>;
+  upsertFiles(files: UpsertFileOptions[]): Promise<void>;
 }

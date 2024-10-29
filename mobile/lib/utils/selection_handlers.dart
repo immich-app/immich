@@ -22,7 +22,10 @@ void handleShareAssets(
   showDialog(
     context: context,
     builder: (BuildContext buildContext) {
-      ref.watch(shareServiceProvider).shareAssets(selection.toList()).then(
+      ref
+          .watch(shareServiceProvider)
+          .shareAssets(selection.toList(), context)
+          .then(
         (bool status) {
           if (!status) {
             ImmichToast.show(
@@ -115,6 +118,7 @@ Future<void> handleEditDateTime(
     initialTZ: timeZone,
     initialTZOffset: offset,
   );
+
   if (dateTime == null) {
     return;
   }
@@ -139,10 +143,12 @@ Future<void> handleEditLocation(
       );
     }
   }
+
   final location = await showLocationPicker(
     context: context,
     initialLatLng: initialLatLng,
   );
+
   if (location == null) {
     return;
   }

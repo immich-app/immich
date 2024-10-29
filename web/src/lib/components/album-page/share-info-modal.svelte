@@ -8,7 +8,7 @@
     AlbumUserRole,
   } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -20,11 +20,8 @@
 
   export let album: AlbumResponseDto;
   export let onClose: () => void;
-
-  const dispatch = createEventDispatcher<{
-    remove: string;
-    refreshAlbum: void;
-  }>();
+  export let onRemove: (userId: string) => void;
+  export let onRefreshAlbum: () => void;
 
   let currentUser: UserResponseDto;
   let selectedRemoveUser: UserResponseDto | null = null;
@@ -52,8 +49,11 @@
 
     try {
       await removeUserFromAlbum({ id: album.id, userId });
-      dispatch('remove', userId);
-      const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
+      onRemove(userId);
+      const message =
+        userId === 'me'
+          ? $t('album_user_left', { values: { album: album.albumName } })
+          : $t('album_user_removed', { values: { user: selectedRemoveUser.name } });
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
@@ -65,8 +65,10 @@
   const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
       await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
-      const message = `Set ${user.name} as ${role}`;
-      dispatch('refreshAlbum');
+      const message = $t('user_role_set', {
+        values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
+      });
+      onRefreshAlbum();
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
@@ -101,22 +103,22 @@
           <div id="icon-{user.id}" class="flex place-items-center gap-2 text-sm">
             <div>
               {#if role === AlbumUserRole.Viewer}
-                Viewer
+                {$t('role_viewer')}
               {:else}
-                Editor
+                {$t('role_editor')}
               {/if}
             </div>
             {#if isOwned}
               <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
                 {#if role === AlbumUserRole.Viewer}
-                  <MenuOption on:click={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
+                  <MenuOption onClick={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
                 {:else}
                   <MenuOption
-                    on:click={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                    onClick={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
                     text={$t('disallow_edits')}
                   />
                 {/if}
-                <MenuOption on:click={() => handleMenuRemove(user)} text={$t('remove')} />
+                <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
               </ButtonContextMenu>
             {:else if user.id == currentUser?.id}
               <button
@@ -135,8 +137,8 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialog
-    title="Leave album?"
-    prompt="Are you sure you want to leave {album.albumName}?"
+    title={$t('album_leave')}
+    prompt={$t('album_leave_confirmation', { values: { album: album.albumName } })}
     confirmText={$t('leave')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
@@ -145,9 +147,9 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialog
-    title="Remove user?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.name}?"
-    confirmText={$t('remove')}
+    title={$t('album_remove_user')}
+    prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
+    confirmText={$t('remove_user')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
   />

@@ -20,6 +20,7 @@ class AssetFaceWithoutPersonResponseDto {
     required this.id,
     required this.imageHeight,
     required this.imageWidth,
+    this.sourceType,
   });
 
   int boundingBoxX1;
@@ -36,6 +37,14 @@ class AssetFaceWithoutPersonResponseDto {
 
   int imageWidth;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  SourceType? sourceType;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceWithoutPersonResponseDto &&
     other.boundingBoxX1 == boundingBoxX1 &&
@@ -44,7 +53,8 @@ class AssetFaceWithoutPersonResponseDto {
     other.boundingBoxY2 == boundingBoxY2 &&
     other.id == id &&
     other.imageHeight == imageHeight &&
-    other.imageWidth == imageWidth;
+    other.imageWidth == imageWidth &&
+    other.sourceType == sourceType;
 
   @override
   int get hashCode =>
@@ -55,10 +65,11 @@ class AssetFaceWithoutPersonResponseDto {
     (boundingBoxY2.hashCode) +
     (id.hashCode) +
     (imageHeight.hashCode) +
-    (imageWidth.hashCode);
+    (imageWidth.hashCode) +
+    (sourceType == null ? 0 : sourceType!.hashCode);
 
   @override
-  String toString() => 'AssetFaceWithoutPersonResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth]';
+  String toString() => 'AssetFaceWithoutPersonResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -69,6 +80,11 @@ class AssetFaceWithoutPersonResponseDto {
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
       json[r'imageWidth'] = this.imageWidth;
+    if (this.sourceType != null) {
+      json[r'sourceType'] = this.sourceType;
+    } else {
+    //  json[r'sourceType'] = null;
+    }
     return json;
   }
 
@@ -76,6 +92,7 @@ class AssetFaceWithoutPersonResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetFaceWithoutPersonResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetFaceWithoutPersonResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -87,6 +104,7 @@ class AssetFaceWithoutPersonResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
+        sourceType: SourceType.fromJson(json[r'sourceType']),
       );
     }
     return null;

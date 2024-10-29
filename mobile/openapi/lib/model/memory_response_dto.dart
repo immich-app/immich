@@ -56,7 +56,7 @@ class MemoryResponseDto {
   ///
   DateTime? seenAt;
 
-  MemoryResponseDtoTypeEnum type;
+  MemoryType type;
 
   DateTime updatedAt;
 
@@ -120,6 +120,7 @@ class MemoryResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MemoryResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "MemoryResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -133,7 +134,7 @@ class MemoryResponseDto {
         memoryAt: mapDateTime(json, r'memoryAt', r'')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         seenAt: mapDateTime(json, r'seenAt', r''),
-        type: MemoryResponseDtoTypeEnum.fromJson(json[r'type'])!,
+        type: MemoryType.fromJson(json[r'type'])!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
@@ -193,75 +194,4 @@ class MemoryResponseDto {
     'updatedAt',
   };
 }
-
-
-class MemoryResponseDtoTypeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const MemoryResponseDtoTypeEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const onThisDay = MemoryResponseDtoTypeEnum._(r'on_this_day');
-
-  /// List of all possible values in this [enum][MemoryResponseDtoTypeEnum].
-  static const values = <MemoryResponseDtoTypeEnum>[
-    onThisDay,
-  ];
-
-  static MemoryResponseDtoTypeEnum? fromJson(dynamic value) => MemoryResponseDtoTypeEnumTypeTransformer().decode(value);
-
-  static List<MemoryResponseDtoTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <MemoryResponseDtoTypeEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = MemoryResponseDtoTypeEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [MemoryResponseDtoTypeEnum] to String,
-/// and [decode] dynamic data back to [MemoryResponseDtoTypeEnum].
-class MemoryResponseDtoTypeEnumTypeTransformer {
-  factory MemoryResponseDtoTypeEnumTypeTransformer() => _instance ??= const MemoryResponseDtoTypeEnumTypeTransformer._();
-
-  const MemoryResponseDtoTypeEnumTypeTransformer._();
-
-  String encode(MemoryResponseDtoTypeEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a MemoryResponseDtoTypeEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  MemoryResponseDtoTypeEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'on_this_day': return MemoryResponseDtoTypeEnum.onThisDay;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [MemoryResponseDtoTypeEnumTypeTransformer] instance.
-  static MemoryResponseDtoTypeEnumTypeTransformer? _instance;
-}
-
 

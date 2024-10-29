@@ -5,7 +5,7 @@ export const newPartnerRepositoryMock = (): Mocked<IPartnerRepository> => {
   return {
     create: vitest.fn(),
     remove: vitest.fn(),
-    getAll: vitest.fn(),
+    getAll: vitest.fn().mockResolvedValue([]),
     get: vitest.fn(),
     update: vitest.fn(),
   };

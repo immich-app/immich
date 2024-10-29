@@ -16,7 +16,7 @@
 {#if $isDownloading}
   <div
     transition:fly={{ x: -100, duration: 350 }}
-    class="absolute bottom-10 left-2 z-[10000] max-h-[270px] w-[315px] rounded-2xl border bg-immich-bg p-4 text-sm shadow-sm"
+    class="fixed bottom-10 left-2 z-[10000] max-h-[270px] w-[315px] rounded-2xl border bg-immich-bg p-4 text-sm shadow-sm"
   >
     <p class="mb-2 text-xs text-gray-500">{$t('downloading').toUpperCase()}</p>
     <div class="my-2 mb-2 flex max-h-[200px] flex-col overflow-y-auto text-sm">
@@ -35,7 +35,9 @@
                 <div class="h-[7px] rounded-full bg-immich-primary" style={`width: ${download.percentage}%`} />
               </div>
               <p class="min-w-[4em] whitespace-nowrap text-right">
-                <span class="text-immich-primary">{download.percentage}%</span>
+                <span class="text-immich-primary">
+                  {(download.percentage / 100).toLocaleString($locale, { style: 'percent' })}
+                </span>
               </p>
             </div>
           </div>

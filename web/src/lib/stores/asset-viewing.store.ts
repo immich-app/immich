@@ -1,11 +1,13 @@
 import { getKey } from '$lib/utils';
+import { type AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-import { writable } from 'svelte/store';
+import { readonly, writable } from 'svelte/store';
 
 function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
   const preloadAssets = writable<AssetResponseDto[]>([]);
   const viewState = writable<boolean>(false);
+  const gridScrollTarget = writable<AssetGridRouteSearchParams | null | undefined>();
 
   const setAsset = (asset: AssetResponseDto, assetsToPreload: AssetResponseDto[] = []) => {
     preloadAssets.set(assetsToPreload);
@@ -23,16 +25,10 @@ function createAssetViewingStore() {
   };
 
   return {
-    asset: {
-      subscribe: viewingAssetStoreState.subscribe,
-    },
-    preloadAssets: {
-      subscribe: preloadAssets.subscribe,
-    },
-    isViewing: {
-      subscribe: viewState.subscribe,
-      set: viewState.set,
-    },
+    asset: readonly(viewingAssetStoreState),
+    preloadAssets: readonly(preloadAssets),
+    isViewing: viewState,
+    gridScrollTarget,
     setAsset,
     setAssetId,
     showAssetViewer,

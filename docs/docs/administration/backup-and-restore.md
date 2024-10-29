@@ -21,6 +21,8 @@ The recommended way to backup and restore the Immich database is to use the `pg_
 It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
 :::
 
+### Manual Backup and Restore
+
 <Tabs>
   <TabItem value="Linux system" label="Linux system" default>
 
@@ -29,34 +31,38 @@ docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgre
 ```
 
 ```bash title='Restore'
-docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
-# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
-docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them.
+docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
+## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
+# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
+docker compose pull             # Update to latest version of Immich (if desired)
+docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
-sleep 10    # Wait for Postgres server to start up
+sleep 10                        # Wait for Postgres server to start up
+# Check the database user if you deviated from the default
 gunzip < "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --username=postgres    # Restore Backup
-docker compose up -d    # Start remainder of Immich apps
+| docker exec -i immich_postgres psql --username=postgres  # Restore Backup
+docker compose up -d            # Start remainder of Immich apps
 ```
 
 </TabItem>
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres > "\path\to\backup\dump.sql"
+docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | Set-Content -Encoding utf8 "C:\path\to\backup\dump.sql"
 ```
 
 ```powershell title='Restore'
-docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
-# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch.
-docker compose pull     # Update to latest version of Immich (if desired)
-docker compose create   # Create Docker containers for Immich apps without running them.
+docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
+## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
+# Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
+docker compose pull             # Update to latest version of Immich (if desired)
+docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
-sleep 10    # Wait for Postgres server to start up
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres   # Restore Backup
-docker compose up -d    # Start remainder of Immich apps
+sleep 10                        # Wait for Postgres server to start up
+# Check the database user if you deviated from the default
+gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres  # Restore Backup
+docker compose up -d            # Start remainder of Immich apps
 ```
 
 </TabItem>
@@ -68,6 +74,8 @@ Note that for the database restore to proceed properly, it requires a completely
 Some deployment methods make it difficult to start the database without also starting the server or microservices. In these cases, you may set the environmental variable `DB_SKIP_MIGRATIONS=true` before starting the services. This will prevent the server from running migrations that interfere with the restore process. Note that both the server and microservices must have this variable set to prevent the migrations from running. Be sure to remove this variable and restart the services after the database is restored.
 :::
 
+### Automatic Database Backups
+
 The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
 
 ```yaml
@@ -76,6 +84,7 @@ services:
   backup:
     container_name: immich_db_dumper
     image: prodrigestivill/postgres-backup-local:14
+    restart: always
     env_file:
       - .env
     environment:
@@ -96,6 +105,7 @@ services:
 Then you can restore with the same command but pointed at the latest dump.
 
 ```bash title='Automated Restore'
+# Be sure to check the username if you changed it from default
 gunzip < db_dumps/last/immich-latest.sql.gz \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
 | docker exec -i immich_postgres psql --username=postgres
@@ -148,8 +158,20 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
   - Preview images (small thumbnails and large previews) for each asset and thumbnails for recognized faces.
   - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
+
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
+
+- **Postgres**
+
+  - The Immich database containing all the information to allow the system to function properly.  
+    **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
+  - Stored in `DB_DATA_LOCATION`.
+
+  :::danger
+  A backup of this folder does not constitute a backup of your database!
+  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  :::
 
 </TabItem>
   <TabItem value="Storage Template On" label="Storage Template On">
@@ -178,7 +200,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Stored in `UPLOAD_LOCATION/profile/<userID>`.
 - **Thumbs Images:**
   - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
-  - Stored in `UPLOCAD_LOCATION/thumbs/<userID>`.
+  - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
@@ -186,11 +208,22 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Files uploaded through mobile apps.
   - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
+- **Postgres**
+
+  - The Immich database containing all the information to allow the system to function properly.  
+    **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
+  - Stored in `DB_DATA_LOCATION`.
+
+  :::danger
+  A backup of this folder does not constitute a backup of your database!
+  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  :::
 
 </TabItem>
+
 </Tabs>
 
 :::danger
-Do not touch the files inside these folders under any circumstances except taking a backup, changing or removing an asset can cause untracked and missing files.
+Do not touch the files inside these folders under any circumstances except taking a backup. Changing or removing an asset can cause untracked and missing files.
 You can think of it as App-Which-Must-Not-Be-Named, the only access to viewing, changing and deleting assets is only through the mobile or browser interface.
 :::

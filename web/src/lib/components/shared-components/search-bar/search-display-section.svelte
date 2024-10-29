@@ -19,7 +19,7 @@
     <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
       <Checkbox id="not-in-album-checkbox" label={$t('not_in_any_album')} bind:checked={filters.isNotInAlbum} />
       <Checkbox id="archive-checkbox" label={$t('archive')} bind:checked={filters.isArchive} />
-      <Checkbox id="favorite-checkbox" label={$t('favorite')} bind:checked={filters.isFavorite} />
+      <Checkbox id="favorite-checkbox" label={$t('favorites')} bind:checked={filters.isFavorite} />
     </div>
   </fieldset>
 </div>

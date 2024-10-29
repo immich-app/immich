@@ -1,10 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
-import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/top_control_app_bar.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
@@ -56,7 +57,7 @@ class GalleryAppBar extends ConsumerWidget {
       if (result && context.mounted) {
         ImmichToast.show(
           context: context,
-          msg: 'asset restored successfully',
+          msg: 'asset_restored_successfully'.tr(),
           gravity: ToastGravity.BOTTOM,
         );
       }
@@ -92,6 +93,10 @@ class GalleryAppBar extends ConsumerWidget {
       );
     }
 
+    handleDownloadAsset() {
+      ref.read(downloadStateProvider.notifier).downloadAsset(asset, context);
+    }
+
     return IgnorePointer(
       ignoring: !ref.watch(showControlsProvider),
       child: AnimatedOpacity(
@@ -108,13 +113,7 @@ class GalleryAppBar extends ConsumerWidget {
             onFavorite: toggleFavorite,
             onRestorePressed: () => handleRestore(asset),
             onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,
-            onDownloadPressed: asset.isLocal
-                ? null
-                : () =>
-                    ref.read(imageViewerStateProvider.notifier).downloadAsset(
-                          asset,
-                          context,
-                        ),
+            onDownloadPressed: asset.isLocal ? null : handleDownloadAsset,
             onToggleMotionVideo: onToggleMotionVideo,
             onAddToAlbumPressed: () => addToAlbum(asset),
             onActivitiesPressed: handleActivities,

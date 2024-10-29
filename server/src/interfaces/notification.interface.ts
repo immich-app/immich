@@ -90,7 +90,7 @@ export type SendEmailResponse = {
 };
 
 export interface INotificationRepository {
-  renderEmail(request: EmailRenderRequest): { html: string; text: string };
+  renderEmail(request: EmailRenderRequest): Promise<{ html: string; text: string }>;
   sendEmail(options: SendEmailOptions): Promise<SendEmailResponse>;
   verifySmtp(options: SmtpOptions): Promise<true>;
 }

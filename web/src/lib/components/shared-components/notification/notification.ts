@@ -1,3 +1,4 @@
+import type { ComponentProps, ComponentType, SvelteComponent } from 'svelte';
 import { writable } from 'svelte/store';
 
 export enum NotificationType {
@@ -15,11 +16,6 @@ export type Notification = {
   id: number;
   type: NotificationType;
   message: string;
-  /**
-   * Allow HTML to be inserted within the message. Make sure to verify/encode
-   * variables that may be interpoalted into 'message'
-   */
-  html?: boolean;
   /** The action to take when the notification is clicked */
   action: NotificationAction;
   button?: NotificationButton;
@@ -32,13 +28,37 @@ type NoopAction = { type: 'noop' };
 
 export type NotificationAction = DiscardAction | NoopAction;
 
-export type NotificationOptions = Partial<Exclude<Notification, 'id'>> & { message: string };
+type Component<T extends ComponentType> = {
+  type: T;
+  props: ComponentProps<InstanceType<T>>;
+};
+
+type BaseNotificationOptions<T, R extends keyof T> = Partial<Omit<T, 'id'>> & Pick<T, R>;
+
+export type NotificationOptions = BaseNotificationOptions<Notification, 'message'>;
+export type ComponentNotificationOptions<T extends ComponentType> = BaseNotificationOptions<
+  ComponentNotification<T>,
+  'component'
+>;
+
+export type ComponentNotification<T extends ComponentType = ComponentType<SvelteComponent>> = Omit<
+  Notification,
+  'message'
+> & {
+  component: Component<T>;
+};
+
+export const isComponentNotification = <T extends ComponentType>(
+  notification: Notification | ComponentNotification<T>,
+): notification is ComponentNotification<T> => {
+  return 'component' in notification;
+};
 
 function createNotificationList() {
-  const notificationList = writable<Notification[]>([]);
+  const notificationList = writable<(Notification | ComponentNotification)[]>([]);
   let count = 1;
 
-  const show = (options: NotificationOptions) => {
+  const show = <T>(options: T extends ComponentType ? ComponentNotificationOptions<T> : NotificationOptions) => {
     notificationList.update((currentList) => {
       currentList.push({
         id: count++,

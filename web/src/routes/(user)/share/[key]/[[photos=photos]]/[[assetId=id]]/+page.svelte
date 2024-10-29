@@ -11,8 +11,13 @@
   import type { PageData } from './$types';
   import { setSharedLink } from '$lib/utils';
   import { t } from 'svelte-i18n';
+  import { navigate } from '$lib/utils/navigation';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { tick } from 'svelte';
 
   export let data: PageData;
+
+  let { gridScrollTarget } = assetViewingStore;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
   let { title, description } = meta;
   let isOwned = $user ? $user.id === sharedLink?.userId : false;
@@ -26,9 +31,16 @@
       passwordRequired = false;
       isOwned = $user ? $user.id === sharedLink.userId : false;
       title = (sharedLink.album ? sharedLink.album.albumName : $t('public_share')) + ' - Immich';
-      description = sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`;
+      description =
+        sharedLink.description ||
+        $t('shared_photos_and_videos_count', { values: { assetCount: sharedLink.assets.length } });
+      await tick();
+      await navigate(
+        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+        { forceNavigate: true, replaceState: true },
+      );
     } catch (error) {
-      handleError(error, 'Failed to get shared link');
+      handleError(error, $t('errors.unable_to_get_shared_link'));
     }
   };
 </script>
@@ -57,7 +69,7 @@
     <div class="flex flex-col items-center justify-center mt-20">
       <div class="text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">{$t('password_required')}</div>
       <div class="mt-4 text-lg text-immich-primary dark:text-immich-dark-primary">
-        Please enter the password to view this page.
+        {$t('sharing_enter_password')}
       </div>
       <div class="mt-4">
         <form novalidate autocomplete="off" on:submit|preventDefault={handlePasswordSubmit}>

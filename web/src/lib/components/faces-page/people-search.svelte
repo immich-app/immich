@@ -62,7 +62,7 @@
       searchedPeople = data;
       searchWord = searchName;
     } catch (error) {
-      handleError(error, $t('cant_search_people'));
+      handleError(error, $t('errors.cant_search_people'));
     } finally {
       clearTimeout(timeout);
       timeout = null;
@@ -83,8 +83,8 @@
     bind:name={searchName}
     {showLoadingSpinner}
     {placeholder}
-    on:reset={handleReset}
-    on:search={({ detail }) => handleSearch(detail.force ?? false)}
+    onReset={handleReset}
+    onSearch={({ force }) => handleSearch(force ?? false)}
   />
 {:else}
   <input

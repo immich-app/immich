@@ -105,15 +105,15 @@ class MapApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /map/style.json' operation and returns the [Response].
+  /// Performs an HTTP 'GET /map/reverse-geocode' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [MapTheme] theme (required):
+  /// * [double] lat (required):
   ///
-  /// * [String] key:
-  Future<Response> getMapStyleWithHttpInfo(MapTheme theme, { String? key, }) async {
+  /// * [double] lon (required):
+  Future<Response> reverseGeocodeWithHttpInfo(double lat, double lon,) async {
     // ignore: prefer_const_declarations
-    final path = r'/map/style.json';
+    final path = r'/map/reverse-geocode';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -122,10 +122,8 @@ class MapApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-      queryParams.addAll(_queryParams('', 'theme', theme));
+      queryParams.addAll(_queryParams('', 'lat', lat));
+      queryParams.addAll(_queryParams('', 'lon', lon));
 
     const contentTypes = <String>[];
 
@@ -143,11 +141,11 @@ class MapApi {
 
   /// Parameters:
   ///
-  /// * [MapTheme] theme (required):
+  /// * [double] lat (required):
   ///
-  /// * [String] key:
-  Future<Object?> getMapStyle(MapTheme theme, { String? key, }) async {
-    final response = await getMapStyleWithHttpInfo(theme,  key: key, );
+  /// * [double] lon (required):
+  Future<List<MapReverseGeocodeResponseDto>?> reverseGeocode(double lat, double lon,) async {
+    final response = await reverseGeocodeWithHttpInfo(lat, lon,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -155,8 +153,11 @@ class MapApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MapReverseGeocodeResponseDto>') as List)
+        .cast<MapReverseGeocodeResponseDto>()
+        .toList(growable: false);
+
     }
     return null;
   }

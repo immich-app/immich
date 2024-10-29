@@ -13,8 +13,6 @@ class AppLogDetailPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isDarkTheme = context.isDarkTheme;
-
     buildTextWithCopyButton(String header, String text) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -61,7 +59,7 @@ class AppLogDetailPage extends HookConsumerWidget {
             ),
             Container(
               decoration: BoxDecoration(
-                color: isDarkTheme ? Colors.grey[900] : Colors.grey[200],
+                color: context.colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(15.0),
               ),
               child: Padding(
@@ -100,7 +98,7 @@ class AppLogDetailPage extends HookConsumerWidget {
             ),
             Container(
               decoration: BoxDecoration(
-                color: isDarkTheme ? Colors.grey[900] : Colors.grey[200],
+                color: context.colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(15.0),
               ),
               child: Padding(

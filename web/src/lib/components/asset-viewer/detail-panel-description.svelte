@@ -18,7 +18,7 @@
       await updateAsset({ id: asset.id, updateAssetDto: { description: newDescription } });
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Asset description has been updated',
+        message: $t('asset_description_updated'),
       });
     } catch (error) {
       handleError(error, $t('cannot_update_the_description'));

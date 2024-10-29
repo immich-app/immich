@@ -14,25 +14,31 @@ class DownloadResponse {
   /// Returns a new [DownloadResponse] instance.
   DownloadResponse({
     required this.archiveSize,
+    this.includeEmbeddedVideos = false,
   });
 
   int archiveSize;
 
+  bool includeEmbeddedVideos;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadResponse &&
-    other.archiveSize == archiveSize;
+    other.archiveSize == archiveSize &&
+    other.includeEmbeddedVideos == includeEmbeddedVideos;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (archiveSize.hashCode);
+    (archiveSize.hashCode) +
+    (includeEmbeddedVideos.hashCode);
 
   @override
-  String toString() => 'DownloadResponse[archiveSize=$archiveSize]';
+  String toString() => 'DownloadResponse[archiveSize=$archiveSize, includeEmbeddedVideos=$includeEmbeddedVideos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'archiveSize'] = this.archiveSize;
+      json[r'includeEmbeddedVideos'] = this.includeEmbeddedVideos;
     return json;
   }
 
@@ -40,11 +46,13 @@ class DownloadResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DownloadResponse? fromJson(dynamic value) {
+    upgradeDto(value, "DownloadResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return DownloadResponse(
         archiveSize: mapValueOfType<int>(json, r'archiveSize')!,
+        includeEmbeddedVideos: mapValueOfType<bool>(json, r'includeEmbeddedVideos')!,
       );
     }
     return null;
@@ -93,6 +101,7 @@ class DownloadResponse {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'archiveSize',
+    'includeEmbeddedVideos',
   };
 }
 

@@ -12,16 +12,13 @@
     mdiLinux,
     mdiMicrosoftWindows,
     mdiTrashCanOutline,
+    mdiUbuntu,
   } from '@mdi/js';
   import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
 
   export let device: SessionResponseDto;
-
-  const dispatcher = createEventDispatcher<{
-    delete: void;
-  }>();
+  export let onDelete: (() => void) | undefined = undefined;
 
   const options: ToRelativeCalendarOptions = {
     unit: 'days',
@@ -41,6 +38,8 @@
       <Icon path={mdiMicrosoftWindows} size="40" />
     {:else if device.deviceOS === 'Linux'}
       <Icon path={mdiLinux} size="40" />
+    {:else if device.deviceOS === 'Ubuntu'}
+      <Icon path={mdiUbuntu} size="40" />
     {:else if device.deviceOS === 'Chromium OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium'}
       <Icon path={mdiGoogleChrome} size="40" />
     {:else}
@@ -51,7 +50,7 @@
     <div class="flex flex-col justify-center gap-1 dark:text-white">
       <span class="text-sm">
         {#if device.deviceType || device.deviceOS}
-          <span>{device.deviceOS || 'Unknown'} • {device.deviceType || 'Unknown'}</span>
+          <span>{device.deviceOS || $t('unknown')} • {device.deviceType || $t('unknown')}</span>
         {:else}
           <span>{$t('unknown')}</span>
         {/if}
@@ -65,14 +64,14 @@
         </span>
       </div>
     </div>
-    {#if !device.current}
+    {#if !device.current && onDelete}
       <div>
         <CircleIconButton
           color="primary"
           icon={mdiTrashCanOutline}
           title={$t('log_out')}
           size="16"
-          on:click={() => dispatcher('delete')}
+          on:click={onDelete}
         />
       </div>
     {/if}

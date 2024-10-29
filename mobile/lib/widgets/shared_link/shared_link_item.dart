@@ -65,8 +65,8 @@ class SharedLinkItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeData = context.themeData;
-    final isDarkMode = themeData.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final isDarkMode = colorScheme.brightness == Brightness.dark;
     final thumbnailUrl = sharedLink.thumbAssetId != null
         ? getThumbnailUrlForRemoteId(sharedLink.thumbAssetId!)
         : null;
@@ -159,7 +159,7 @@ class SharedLinkItem extends ConsumerWidget {
       return Padding(
         padding: const EdgeInsets.only(right: 10),
         child: Chip(
-          backgroundColor: themeData.primaryColor,
+          backgroundColor: colorScheme.primary,
           label: Text(
             labelText,
             style: TextStyle(
@@ -240,7 +240,7 @@ class SharedLinkItem extends ConsumerWidget {
             child: Tooltip(
               verticalOffset: 0,
               decoration: BoxDecoration(
-                color: themeData.primaryColor.withOpacity(0.9),
+                color: colorScheme.primary.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(10),
               ),
               textStyle: TextStyle(
@@ -253,7 +253,7 @@ class SharedLinkItem extends ConsumerWidget {
               child: Text(
                 sharedLink.title,
                 style: TextStyle(
-                  color: themeData.primaryColor,
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.bold,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -268,7 +268,7 @@ class SharedLinkItem extends ConsumerWidget {
                 child: Tooltip(
                   verticalOffset: 0,
                   decoration: BoxDecoration(
-                    color: themeData.primaryColor.withOpacity(0.9),
+                    color: colorScheme.primary.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   textStyle: TextStyle(

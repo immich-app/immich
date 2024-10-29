@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -10,22 +9,23 @@
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { locale } from '$lib/stores/preferences.store';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig, featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { mdiClose, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiContentCopy, mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
-  import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   export let data: PageData;
 
@@ -59,16 +59,8 @@
     return websocketEvents.on('on_user_delete', onDeleteSuccess);
   });
 
-  const deleteDateFormat: Intl.DateTimeFormatOptions = {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  };
-
-  const getDeleteDate = (deletedAt: string): string => {
-    return DateTime.fromISO(deletedAt)
-      .plus({ days: $serverConfig.userDeleteDelay })
-      .toLocaleString(deleteDateFormat, { locale: $locale });
+  const getDeleteDate = (deletedAt: string): Date => {
+    return DateTime.fromISO(deletedAt).plus({ days: $serverConfig.userDeleteDelay }).toJSDate();
   };
 
   const onUserCreated = async () => {
@@ -118,9 +110,10 @@
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
         <CreateUserForm
-          on:submit={onUserCreated}
-          on:cancel={() => (shouldShowCreateUserForm = false)}
+          onSubmit={onUserCreated}
+          onCancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
+          oauthEnabled={$featureFlags.oauth}
         />
       {/if}
 
@@ -129,8 +122,8 @@
           user={selectedUser}
           bind:newPassword
           canResetPassword={selectedUser?.id !== $user.id}
-          on:editSuccess={onEditUserSuccess}
-          on:resetPasswordSuccess={onEditPasswordSuccess}
+          onEditSuccess={onEditUserSuccess}
+          onResetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}
         />
       {/if}
@@ -138,18 +131,18 @@
       {#if shouldShowDeleteConfirmDialog}
         <DeleteConfirmDialog
           user={selectedUser}
-          on:success={onUserDelete}
-          on:fail={onUserDelete}
-          on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
+          onSuccess={onUserDelete}
+          onFail={onUserDelete}
+          onCancel={() => (shouldShowDeleteConfirmDialog = false)}
         />
       {/if}
 
       {#if shouldShowRestoreDialog}
         <RestoreDialogue
           user={selectedUser}
-          on:success={onUserRestore}
-          on:fail={onUserRestore}
-          on:cancel={() => (shouldShowRestoreDialog = false)}
+          onSuccess={onUserRestore}
+          onFail={onUserRestore}
+          onCancel={() => (shouldShowRestoreDialog = false)}
         />
       {/if}
 
@@ -217,7 +210,7 @@
                     {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
                       {getByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
-                      <Icon path={mdiClose} size="16" />
+                      <Icon path={mdiInfinity} size="16" />
                     {/if}
                   </div>
                 </td>
@@ -245,7 +238,9 @@
                   {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
                     <CircleIconButton
                       icon={mdiDeleteRestore}
-                      title="Restore user - scheduled removal on {getDeleteDate(immichUser.deletedAt)}"
+                      title={$t('admin.user_restore_scheduled_removal', {
+                        values: { date: getDeleteDate(immichUser.deletedAt) },
+                      })}
                       color="primary"
                       size="16"
                       on:click={() => restoreUserHandler(immichUser)}

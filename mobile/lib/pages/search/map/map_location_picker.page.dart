@@ -12,7 +12,7 @@ import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
 
-@RoutePage<LatLng?>()
+@RoutePage()
 class MapLocationPickerPage extends HookConsumerWidget {
   final LatLng initialLatLng;
 
@@ -24,7 +24,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedLatLng = useValueNotifier<LatLng>(initialLatLng);
-    final controller = useRef<MapLibreMapController?>(null);
+    final controller = useRef<MaplibreMapController?>(null);
     final marker = useRef<Symbol?>(null);
 
     Future<void> onStyleLoaded() async {
@@ -74,7 +74,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
                   bottomRight: Radius.circular(40),
                 ),
               ),
-              child: MapLibreMap(
+              child: MaplibreMap(
                 initialCameraPosition:
                     CameraPosition(target: initialLatLng, zoom: 12),
                 styleString: style,

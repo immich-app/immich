@@ -14,10 +14,8 @@
   $: thumbnailUrl = album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null;
 </script>
 
-<div class="relative aspect-square">
-  {#if thumbnailUrl}
-    <AssetCover {alt} class={className} src={thumbnailUrl} {preload} />
-  {:else}
-    <NoCover {alt} class={className} {preload} />
-  {/if}
-</div>
+{#if thumbnailUrl}
+  <AssetCover {alt} class={className} src={thumbnailUrl} {preload} />
+{:else}
+  <NoCover {alt} class={className} {preload} />
+{/if}

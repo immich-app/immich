@@ -1,6 +1,7 @@
 import { AssetEntity } from 'src/entities/asset.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
+import { UserStatus } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -10,12 +11,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-export enum UserStatus {
-  ACTIVE = 'active',
-  REMOVING = 'removing',
-  DELETED = 'deleted',
-}
 
 @Entity('users')
 export class UserEntity {
@@ -72,4 +67,7 @@ export class UserEntity {
 
   @OneToMany(() => UserMetadataEntity, (metadata) => metadata.user)
   metadata!: UserMetadataEntity[];
+
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  profileChangedAt!: Date;
 }

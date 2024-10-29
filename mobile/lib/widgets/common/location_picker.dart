@@ -141,7 +141,8 @@ class _ManualPickerInput extends HookWidget {
         errorText: isValid.value ? null : errorText.tr(),
       ),
       onEditingComplete: onEditingComplete,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true, signed: true),
       inputFormatters: [LengthLimitingTextInputFormatter(8)],
       onTapOutside: (_) => focusNode.unfocus(),
     );

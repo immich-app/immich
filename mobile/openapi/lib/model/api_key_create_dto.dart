@@ -14,6 +14,7 @@ class APIKeyCreateDto {
   /// Returns a new [APIKeyCreateDto] instance.
   APIKeyCreateDto({
     this.name,
+    this.permissions = const [],
   });
 
   ///
@@ -24,17 +25,21 @@ class APIKeyCreateDto {
   ///
   String? name;
 
+  List<Permission> permissions;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyCreateDto &&
-    other.name == name;
+    other.name == name &&
+    _deepEquality.equals(other.permissions, permissions);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (name == null ? 0 : name!.hashCode);
+    (name == null ? 0 : name!.hashCode) +
+    (permissions.hashCode);
 
   @override
-  String toString() => 'APIKeyCreateDto[name=$name]';
+  String toString() => 'APIKeyCreateDto[name=$name, permissions=$permissions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -43,6 +48,7 @@ class APIKeyCreateDto {
     } else {
     //  json[r'name'] = null;
     }
+      json[r'permissions'] = this.permissions;
     return json;
   }
 
@@ -50,11 +56,13 @@ class APIKeyCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static APIKeyCreateDto? fromJson(dynamic value) {
+    upgradeDto(value, "APIKeyCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return APIKeyCreateDto(
         name: mapValueOfType<String>(json, r'name'),
+        permissions: Permission.listFromJson(json[r'permissions']),
       );
     }
     return null;
@@ -102,6 +110,7 @@ class APIKeyCreateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'permissions',
   };
 }
 

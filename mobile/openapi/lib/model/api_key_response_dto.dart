@@ -16,6 +16,7 @@ class APIKeyResponseDto {
     required this.createdAt,
     required this.id,
     required this.name,
+    this.permissions = const [],
     required this.updatedAt,
   });
 
@@ -25,6 +26,8 @@ class APIKeyResponseDto {
 
   String name;
 
+  List<Permission> permissions;
+
   DateTime updatedAt;
 
   @override
@@ -32,6 +35,7 @@ class APIKeyResponseDto {
     other.createdAt == createdAt &&
     other.id == id &&
     other.name == name &&
+    _deepEquality.equals(other.permissions, permissions) &&
     other.updatedAt == updatedAt;
 
   @override
@@ -40,16 +44,18 @@ class APIKeyResponseDto {
     (createdAt.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
+    (permissions.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'APIKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, updatedAt=$updatedAt]';
+  String toString() => 'APIKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, permissions=$permissions, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
+      json[r'permissions'] = this.permissions;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -58,6 +64,7 @@ class APIKeyResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static APIKeyResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "APIKeyResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -65,6 +72,7 @@ class APIKeyResponseDto {
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
+        permissions: Permission.listFromJson(json[r'permissions']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
@@ -116,6 +124,7 @@ class APIKeyResponseDto {
     'createdAt',
     'id',
     'name',
+    'permissions',
     'updatedAt',
   };
 }

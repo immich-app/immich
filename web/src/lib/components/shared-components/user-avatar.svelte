@@ -5,6 +5,7 @@
 <script lang="ts">
   import { getProfileImageUrl } from '$lib/utils';
   import { type UserAvatarColor } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
 
   interface User {
     id: string;
@@ -12,6 +13,7 @@
     email: string;
     profileImagePath: string;
     avatarColor: UserAvatarColor;
+    profileChangedAt: string;
   }
 
   export let user: User;
@@ -26,6 +28,8 @@
   let img: HTMLImageElement;
   let showFallback = true;
 
+  // sveeeeeeelteeeeee fiveeeeee
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   $: img, user, void tryLoadImage();
 
   const tryLoadImage = async () => {
@@ -76,8 +80,8 @@
   {#if showProfileImage && user.profileImagePath}
     <img
       bind:this={img}
-      src={getProfileImageUrl(user.id)}
-      alt="Profile image of {title}"
+      src={getProfileImageUrl(user)}
+      alt={$t('profile_image_of_user', { values: { user: title } })}
       class="h-full w-full object-cover"
       class:hidden={showFallback}
       draggable="false"

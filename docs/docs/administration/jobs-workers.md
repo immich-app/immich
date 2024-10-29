@@ -22,7 +22,7 @@ Copy the entire `immich-server` block as a new service and make the following ch
 -   container_name: immich_server
 ...
 -   ports:
--     - 2283:3001
+-     - 2283:2283
 + immich-microservices:
 +   container_name: immich_microservices
 ```
@@ -52,4 +52,4 @@ Additionally, some jobs run on a schedule, which is every night at midnight. Thi
 Storage Migration job can be run after changing the [Storage Template](/docs/administration/storage-template.mdx), in order to apply the change to the existing library.
 :::
 
-<img src={require('./img/admin-jobs.png').default} width="80%" title="Admin jobs" />
+<img src={require('./img/admin-jobs.webp').default} width="60%" title="Admin jobs" />

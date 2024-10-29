@@ -1,29 +1,26 @@
 <script lang="ts">
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
 
   export let user: UserResponseDto;
-
-  const dispatch = createEventDispatcher<{
-    success: void;
-    fail: void;
-    cancel: void;
-  }>();
+  export let onSuccess: () => void;
+  export let onFail: () => void;
+  export let onCancel: () => void;
 
   const handleRestoreUser = async () => {
     try {
       const { deletedAt } = await restoreUserAdmin({ id: user.id });
       if (deletedAt == undefined) {
-        dispatch('success');
+        onSuccess();
       } else {
-        dispatch('fail');
+        onFail();
       }
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_user'));
-      dispatch('fail');
+      onFail();
     }
   };
 </script>
@@ -33,9 +30,13 @@
   confirmText={$t('continue')}
   confirmColor="green"
   onConfirm={handleRestoreUser}
-  onCancel={() => dispatch('cancel')}
+  {onCancel}
 >
   <svelte:fragment slot="prompt">
-    <p><b>{user.name}</b>'s account will be restored.</p>
+    <p>
+      <FormatMessage key="admin.user_restore_description" values={{ user: user.name }} let:message>
+        <b>{message}</b>
+      </FormatMessage>
+    </p>
   </svelte:fragment>
 </ConfirmDialog>

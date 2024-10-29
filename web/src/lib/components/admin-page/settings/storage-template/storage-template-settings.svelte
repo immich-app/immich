@@ -10,9 +10,8 @@
   import handlebar from 'handlebars';
   import { isEqual } from 'lodash-es';
   import * as luxon from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { SettingsEventType } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SupportedDatetimePanel from './supported-datetime-panel.svelte';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
@@ -21,14 +20,17 @@
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
   export let minified = false;
+  export let onReset: SettingsResetEvent;
+  export let onSave: SettingsSaveEvent;
+  export let duration: number = 500;
 
-  const dispatch = createEventDispatcher<SettingsEventType>();
   let templateOptions: SystemConfigTemplateStorageOptionDto;
   let selectedPreset = '';
 
@@ -86,23 +88,29 @@
 </script>
 
 <section class="dark:text-immich-dark-fg mt-2">
-  <div in:fade={{ duration: 500 }} class="mx-4 flex flex-col gap-4 py-4">
+  <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
     <p class="text-sm dark:text-immich-dark-fg">
-      For more details about this feature, refer to the <a
-        href="https://immich.app/docs/administration/storage-template"
-        class="underline"
-        target="_blank"
-        rel="noreferrer"
-        >Storage Template
-      </a>
-      and its
-      <a
-        href="https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations"
-        class="underline"
-        target="_blank"
-        rel="noreferrer"
-        >implications
-      </a>
+      <FormatMessage key="admin.storage_template_more_details" let:tag let:message>
+        {#if tag === 'template-link'}
+          <a
+            href="https://immich.app/docs/administration/storage-template"
+            class="underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {message}
+          </a>
+        {:else if tag === 'implications-link'}
+          <a
+            href="https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations"
+            class="underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {message}
+          </a>
+        {/if}
+      </FormatMessage>
     </p>
   </div>
   {#await getTemplateOptions() then}
@@ -153,15 +161,23 @@
           </div>
 
           <p class="text-sm">
-            Approximately path length limit : <span
-              class="font-semibold text-immich-primary dark:text-immich-dark-primary"
-              >{parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length}</span
-            >/260
+            <FormatMessage
+              key="admin.storage_template_path_length"
+              values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
+              let:message
+            >
+              <span class="font-semibold text-immich-primary dark:text-immich-dark-primary">{message}</span>
+            </FormatMessage>
           </p>
 
           <p class="text-sm">
-            <code class="text-immich-primary dark:text-immich-dark-primary">{$user.storageLabel || $user.id}</code> is the
-            user's Storage Label
+            <FormatMessage
+              key="admin.storage_template_user_label"
+              values={{ label: $user.storageLabel || $user.id }}
+              let:message
+            >
+              <code class="text-immich-primary dark:text-immich-dark-primary">{message}</code>
+            </FormatMessage>
           </p>
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
@@ -213,20 +229,15 @@
                 <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('notes')}</h3>
                 <section class="flex flex-col gap-2">
                   <p>
-                    Template changes will only apply to new assets. To retroactively apply the template to previously
-                    uploaded assets, run the
-                    <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
-                      >{$t('admin.storage_template_migration_job')}</a
-                    >.
-                  </p>
-                  <p>
-                    The template variable <span class="font-mono">{`{{album}}`}</span> will always be empty for new
-                    assets, so manually running the
-
-                    <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary"
-                      >{$t('admin.storage_template_migration_job')}</a
+                    <FormatMessage
+                      key="admin.storage_template_migration_info"
+                      values={{ job: $t('admin.storage_template_migration_job') }}
+                      let:message
                     >
-                    is required in order to successfully use the variable.
+                      <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
+                        {message}
+                      </a>
+                    </FormatMessage>
                   </p>
                 </section>
               </div>
@@ -239,8 +250,8 @@
         <slot />
       {:else}
         <SettingButtonsRow
-          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['storageTemplate'] })}
-          on:save={() => dispatch('save', { storageTemplate: config.storageTemplate })}
+          onReset={(options) => onReset({ ...options, configKeys: ['storageTemplate'] })}
+          onSave={() => onSave({ storageTemplate: config.storageTemplate })}
           showResetToDefault={!isEqual(savedConfig.storageTemplate, defaultConfig.storageTemplate) && !minified}
           {disabled}
         />

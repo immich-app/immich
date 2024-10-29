@@ -111,12 +111,15 @@ class SearchApi {
   ///
   /// * [String] country:
   ///
+  /// * [bool] includeNull:
+  ///   This property was added in v111.0.0
+  ///
   /// * [String] make:
   ///
   /// * [String] model:
   ///
   /// * [String] state:
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
+  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? make, String? model, String? state, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search/suggestions';
 
@@ -129,6 +132,9 @@ class SearchApi {
 
     if (country != null) {
       queryParams.addAll(_queryParams('', 'country', country));
+    }
+    if (includeNull != null) {
+      queryParams.addAll(_queryParams('', 'includeNull', includeNull));
     }
     if (make != null) {
       queryParams.addAll(_queryParams('', 'make', make));
@@ -161,13 +167,16 @@ class SearchApi {
   ///
   /// * [String] country:
   ///
+  /// * [bool] includeNull:
+  ///   This property was added in v111.0.0
+  ///
   /// * [String] make:
   ///
   /// * [String] model:
   ///
   /// * [String] state:
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, String? make, String? model, String? state, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, make: make, model: model, state: state, );
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? make, String? model, String? state, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, make: make, model: model, state: state, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -336,6 +345,56 @@ class SearchApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<PlacesResponseDto>') as List)
         .cast<PlacesResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'POST /search/random' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [RandomSearchDto] randomSearchDto (required):
+  Future<Response> searchRandomWithHttpInfo(RandomSearchDto randomSearchDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/search/random';
+
+    // ignore: prefer_final_locals
+    Object? postBody = randomSearchDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [RandomSearchDto] randomSearchDto (required):
+  Future<List<AssetResponseDto>?> searchRandom(RandomSearchDto randomSearchDto,) async {
+    final response = await searchRandomWithHttpInfo(randomSearchDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
+        .cast<AssetResponseDto>()
         .toList(growable: false);
 
     }

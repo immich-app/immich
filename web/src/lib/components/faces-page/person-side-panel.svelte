@@ -15,10 +15,9 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { mdiAccountOff } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowLeftThin, mdiMinus, mdiRestart } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -31,6 +30,8 @@
 
   export let assetId: string;
   export let assetType: AssetTypeEnum;
+  export let onClose: () => void;
+  export let onRefresh: () => void;
 
   // keep track of the changes
   let peopleToCreate: string[] = [];
@@ -56,11 +57,6 @@
 
   const thumbnailWidth = '90px';
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    refresh: void;
-  }>();
-
   async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
@@ -68,7 +64,7 @@
       allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
     } catch (error) {
-      handleError(error, $t('cant_get_faces'));
+      handleError(error, $t('errors.cant_get_faces'));
     } finally {
       clearTimeout(timeout);
     }
@@ -85,7 +81,7 @@
     ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
-      dispatch('refresh');
+      onRefresh();
     }
   };
 
@@ -100,10 +96,6 @@
 
   const isEqual = (a: string[], b: string[]): boolean => {
     return b.every((valueB) => a.includes(valueB));
-  };
-
-  const handleBackButton = () => {
-    dispatch('close');
   };
 
   const handleReset = (id: string) => {
@@ -146,20 +138,20 @@
         }
 
         notificationController.show({
-          message: `Edited ${numberOfChanges} ${numberOfChanges > 1 ? 'people' : 'person'}`,
+          message: $t('people_edits_count', { values: { count: numberOfChanges } }),
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, $t('cant_apply_changes'));
+        handleError(error, $t('errors.cant_apply_changes'));
       }
     }
 
     isShowLoadingDone = false;
     if (peopleToCreate.length === 0) {
       clearTimeout(loaderLoadingDoneTimeout);
-      dispatch('refresh');
+      onRefresh();
     } else {
-      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15_000);
+      automaticRefreshTimeout = setTimeout(onRefresh, 15_000);
     }
   };
 
@@ -189,7 +181,7 @@
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={handleBackButton} />
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('edit_faces')}</p>
     </div>
     {#if !isShowLoadingDone}
@@ -198,7 +190,7 @@
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
         on:click={() => handleEditFaces()}
       >
-        Done
+        {$t('done')}
       </button>
     {:else}
       <LoadingSpinner />
@@ -213,7 +205,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {@const personName = face.person ? face.person?.name : 'Unassigned'}
+          {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <div
               role="button"
@@ -239,9 +231,9 @@
                   <ImageThumbnail
                     curve
                     shadow
-                    url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id].id)}
+                    url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id])}
                     altText={selectedPersonToReassign[face.id].name}
-                    title={getPersonNameWithHiddenValue(
+                    title={$getPersonNameWithHiddenValue(
                       selectedPersonToReassign[face.id].name,
                       selectedPersonToReassign[face.id]?.isHidden,
                     )}
@@ -253,9 +245,9 @@
                   <ImageThumbnail
                     curve
                     shadow
-                    url={getPeopleThumbnailUrl(face.person.id)}
+                    url={getPeopleThumbnailUrl(face.person)}
                     altText={face.person.name}
-                    title={getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
+                    title={$getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                     hidden={face.person.isHidden}
@@ -266,24 +258,20 @@
                       curve
                       shadow
                       url="/src/lib/assets/no-thumbnail.png"
-                      altText="Unassigned"
-                      title="Unassigned"
+                      altText={$t('face_unassigned')}
+                      title={$t('face_unassigned')}
                       widthStyle="90px"
                       heightStyle="90px"
-                      thumbhash={null}
-                      hidden={false}
                     />
                   {:then data}
                     <ImageThumbnail
                       curve
                       shadow
                       url={data === null ? '/src/lib/assets/no-thumbnail.png' : data}
-                      altText="Unassigned"
-                      title="Unassigned"
+                      altText={$t('face_unassigned')}
+                      title={$t('face_unassigned')}
                       widthStyle="90px"
                       heightStyle="90px"
-                      thumbhash={null}
-                      hidden={false}
                     />
                   {/await}
                 {/if}
@@ -294,7 +282,7 @@
                   {#if selectedPersonToReassign[face.id]?.id}
                     {selectedPersonToReassign[face.id]?.name}
                   {:else}
-                    <span class={personName == 'Unassigned' ? 'dark:text-gray-500' : ''}>{personName}</span>
+                    <span class={personName === $t('face_unassigned') ? 'dark:text-gray-500' : ''}>{personName}</span>
                   {/if}
                 </p>
               {/if}
@@ -304,7 +292,7 @@
                   <CircleIconButton
                     color="primary"
                     icon={mdiRestart}
-                    title="Reset"
+                    title={$t('reset')}
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
@@ -313,7 +301,7 @@
                 {:else}
                   <CircleIconButton
                     color="primary"
-                    icon={mdiMinus}
+                    icon={mdiPencil}
                     title={$t('select_new_face')}
                     size="18"
                     padding="1"
@@ -327,7 +315,7 @@
                   <div
                     class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                   >
-                    <Icon color="primary" path={mdiAccountOff} ariaLabel="Just a face" size="18" />
+                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="18" />
                   </div>
                 {/if}
               </div>
@@ -345,8 +333,8 @@
     {editedFace}
     {assetId}
     {assetType}
-    on:close={() => (showSelectedFaces = false)}
-    on:createPerson={(event) => handleCreatePerson(event.detail)}
-    on:reassign={(event) => handleReassignFace(event.detail)}
+    onClose={() => (showSelectedFaces = false)}
+    onCreatePerson={handleCreatePerson}
+    onReassign={handleReassignFace}
   />
 {/if}

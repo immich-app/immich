@@ -1,4 +1,5 @@
 import { UserEntity } from 'src/entities/user.entity';
+import { Permission } from 'src/enum';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('api_keys')
@@ -17,6 +18,9 @@ export class APIKeyEntity {
 
   @Column()
   userId!: string;
+
+  @Column({ array: true, type: 'varchar' })
+  permissions!: Permission[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;

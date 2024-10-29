@@ -51,7 +51,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                   ),
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[700],
+                    color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -191,9 +191,6 @@ class ChangePasswordButton extends ConsumerWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         visualDensity: VisualDensity.standard,
-        backgroundColor: context.primaryColor,
-        foregroundColor: Colors.grey[50],
-        elevation: 2,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       ),
       onPressed: onPressed,

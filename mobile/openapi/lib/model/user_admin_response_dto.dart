@@ -19,8 +19,10 @@ class UserAdminResponseDto {
     required this.email,
     required this.id,
     required this.isAdmin,
+    required this.license,
     required this.name,
     required this.oauthId,
+    required this.profileChangedAt,
     required this.profileImagePath,
     required this.quotaSizeInBytes,
     required this.quotaUsageInBytes,
@@ -42,9 +44,13 @@ class UserAdminResponseDto {
 
   bool isAdmin;
 
+  UserLicense? license;
+
   String name;
 
   String oauthId;
+
+  DateTime profileChangedAt;
 
   String profileImagePath;
 
@@ -68,8 +74,10 @@ class UserAdminResponseDto {
     other.email == email &&
     other.id == id &&
     other.isAdmin == isAdmin &&
+    other.license == license &&
     other.name == name &&
     other.oauthId == oauthId &&
+    other.profileChangedAt == profileChangedAt &&
     other.profileImagePath == profileImagePath &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.quotaUsageInBytes == quotaUsageInBytes &&
@@ -87,8 +95,10 @@ class UserAdminResponseDto {
     (email.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
+    (license == null ? 0 : license!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
+    (profileChangedAt.hashCode) +
     (profileImagePath.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
@@ -98,7 +108,7 @@ class UserAdminResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -112,8 +122,14 @@ class UserAdminResponseDto {
       json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
+    if (this.license != null) {
+      json[r'license'] = this.license;
+    } else {
+    //  json[r'license'] = null;
+    }
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
+      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
@@ -140,6 +156,7 @@ class UserAdminResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UserAdminResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "UserAdminResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -150,8 +167,10 @@ class UserAdminResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        license: UserLicense.fromJson(json[r'license']),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
@@ -212,8 +231,10 @@ class UserAdminResponseDto {
     'email',
     'id',
     'isAdmin',
+    'license',
     'name',
     'oauthId',
+    'profileChangedAt',
     'profileImagePath',
     'quotaSizeInBytes',
     'quotaUsageInBytes',

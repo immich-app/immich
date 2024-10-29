@@ -4,7 +4,6 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import type { MapSettings } from '$lib/stores/preferences.store';
   import { Duration } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -12,19 +11,15 @@
   import DateInput from '../elements/date-input.svelte';
 
   export let settings: MapSettings;
+  export let onClose: () => void;
+  export let onSave: (settings: MapSettings) => void;
+
   let customDateRange = !!settings.dateAfter || !!settings.dateBefore;
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-    save: MapSettings;
-  }>();
-
-  const handleClose = () => dispatch('close');
 </script>
 
-<FullScreenModal title={$t('map_settings')} onClose={handleClose}>
+<FullScreenModal title={$t('map_settings')} {onClose}>
   <form
-    on:submit|preventDefault={() => dispatch('save', settings)}
+    on:submit|preventDefault={() => onSave(settings)}
     class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
     id="map-settings-form"
   >
@@ -57,7 +52,7 @@
               settings.dateBefore = '';
             }}
           >
-            Remove custom date range
+            {$t('remove_custom_date_range')}
           </LinkButton>
         </div>
       </div>
@@ -70,7 +65,7 @@
           options={[
             {
               value: '',
-              text: 'All',
+              text: $t('all'),
             },
             {
               value: Duration.fromObject({ hours: 24 }).toISO() || '',
@@ -101,14 +96,14 @@
               settings.relativeDate = '';
             }}
           >
-            Use custom date range instead
+            {$t('use_custom_date_range')}
           </LinkButton>
         </div>
       </div>
     {/if}
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" size="sm" fullwidth on:click={handleClose}>{$t('cancel')}</Button>
+    <Button color="gray" size="sm" fullwidth on:click={onClose}>{$t('cancel')}</Button>
     <Button type="submit" size="sm" fullwidth form="map-settings-form">{$t('save')}</Button>
   </svelte:fragment>
 </FullScreenModal>

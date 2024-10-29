@@ -1,10 +1,9 @@
 import { SetMetadata, applyDecorators } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
-import { ServerAsyncEvent, ServerEvent } from 'src/interfaces/event.interface';
+import { MetadataKey } from 'src/enum';
+import { EmitEvent } from 'src/interfaces/event.interface';
 import { setUnion } from 'src/utils/set';
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
@@ -48,23 +47,26 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
  * @param options.paramIndex The index of the function parameter to chunk. Defaults to 0.
  * @param options.flatten Whether to flatten the results. Defaults to false.
  */
-export function Chunked(options: { paramIndex?: number; mergeFn?: (results: any) => any } = {}): MethodDecorator {
+export function Chunked(
+  options: { paramIndex?: number; chunkSize?: number; mergeFn?: (results: any) => any } = {},
+): MethodDecorator {
   return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     const parameterIndex = options.paramIndex ?? 0;
+    const chunkSize = options.chunkSize || DATABASE_PARAMETER_CHUNK_SIZE;
     descriptor.value = async function (...arguments_: any[]) {
       const argument = arguments_[parameterIndex];
 
       // Early return if argument length is less than or equal to the chunk size.
       if (
-        (Array.isArray(argument) && argument.length <= DATABASE_PARAMETER_CHUNK_SIZE) ||
-        (argument instanceof Set && argument.size <= DATABASE_PARAMETER_CHUNK_SIZE)
+        (Array.isArray(argument) && argument.length <= chunkSize) ||
+        (argument instanceof Set && argument.size <= chunkSize)
       ) {
         return await originalMethod.apply(this, arguments_);
       }
 
       return Promise.all(
-        chunks(argument, DATABASE_PARAMETER_CHUNK_SIZE).map(async (chunk) => {
+        chunks(argument, chunkSize).map(async (chunk) => {
           await Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
@@ -82,27 +84,6 @@ export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator
 
 export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
   return Chunked({ ...options, mergeFn: setUnion });
-}
-
-// https://stackoverflow.com/a/74898678
-export function DecorateAll(
-  decorator: <T>(
-    target: any,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>,
-  ) => TypedPropertyDescriptor<T> | void,
-) {
-  return (target: any) => {
-    const descriptors = Object.getOwnPropertyDescriptors(target.prototype);
-    for (const [propName, descriptor] of Object.entries(descriptors)) {
-      const isMethod = typeof descriptor.value == 'function' && propName !== 'constructor';
-      if (!isMethod) {
-        continue;
-      }
-      decorator({ ...target, constructor: { ...target.constructor, name: target.name } as any }, propName, descriptor);
-      Object.defineProperty(target.prototype, propName, descriptor);
-    }
-  };
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
@@ -126,11 +107,20 @@ export interface GenerateSqlQueries {
   params: unknown[];
 }
 
+export const Telemetry = (options: { enabled?: boolean }) =>
+  SetMetadata(MetadataKey.TELEMETRY_ENABLED, options?.enabled ?? true);
+
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
 
-export const OnServerEvent = (event: ServerEvent | ServerAsyncEvent, options?: OnEventOptions) =>
-  OnEvent(event, { suppressErrors: false, ...options });
+export type EventConfig = {
+  name: EmitEvent;
+  /** handle socket.io server events as well  */
+  server?: boolean;
+  /** lower value has higher priority, defaults to 0 */
+  priority?: number;
+};
+export const OnEvent = (config: EventConfig) => SetMetadata(MetadataKey.EVENT_CONFIG, config);
 
 type LifecycleRelease = 'NEXT_RELEASE' | string;
 type LifecycleMetadata = {

@@ -2,6 +2,7 @@ import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AssetOrder } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -14,12 +15,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-// ran into issues when importing the enum from `asset.dto.ts`
-export enum AssetOrder {
-  ASC = 'asc',
-  DESC = 'desc',
-}
 
 @Entity('albums')
 export class AlbumEntity {
@@ -57,7 +52,7 @@ export class AlbumEntity {
   albumUsers!: AlbumUserEntity[];
 
   @ManyToMany(() => AssetEntity, (asset) => asset.albums)
-  @JoinTable()
+  @JoinTable({ synchronize: false })
   assets!: AssetEntity[];
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)

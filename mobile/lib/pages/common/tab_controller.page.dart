@@ -3,8 +3,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
+import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -16,10 +18,11 @@ class TabControllerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final refreshing = ref.watch(assetProvider);
+    final isRefreshingAssets = ref.watch(assetProvider);
+    final isRefreshingRemoteAlbums = ref.watch(isRefreshingRemoteAlbumProvider);
 
-    Widget buildIcon(Widget icon) {
-      if (!refreshing) return icon;
+    Widget buildIcon({required Widget icon, required bool isProcessing}) {
+      if (!isProcessing) return icon;
       return Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -42,75 +45,27 @@ class TabControllerPage extends HookConsumerWidget {
       );
     }
 
-    navigationRail(TabsRouter tabsRouter) {
-      return NavigationRail(
-        labelType: NavigationRailLabelType.all,
-        selectedIndex: tabsRouter.activeIndex,
-        onDestinationSelected: (index) {
-          // Selected Photos while it is active
-          if (tabsRouter.activeIndex == 0 && index == 0) {
-            // Scroll to top
-            scrollToTopNotifierProvider.scrollToTop();
-          }
+    onNavigationSelected(TabsRouter router, int index) {
+      // On Photos page menu tapped
+      if (router.activeIndex == 0 && index == 0) {
+        scrollToTopNotifierProvider.scrollToTop();
+      }
 
-          ref.read(hapticFeedbackProvider.notifier).selectionClick();
-          tabsRouter.setActiveIndex(index);
-          ref.read(tabProvider.notifier).state = TabEnum.values[index];
-        },
-        selectedIconTheme: IconThemeData(
-          color: context.primaryColor,
-        ),
-        selectedLabelTextStyle: TextStyle(
-          color: context.primaryColor,
-        ),
-        useIndicator: false,
-        destinations: [
-          NavigationRailDestination(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 4,
-              left: 4,
-              right: 4,
-              bottom: 4,
-            ),
-            icon: const Icon(Icons.photo_library_outlined),
-            selectedIcon: const Icon(Icons.photo_library),
-            label: const Text('tab_controller_nav_photos').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.search_rounded),
-            selectedIcon: const Icon(Icons.search),
-            label: const Text('tab_controller_nav_search').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.share_rounded),
-            selectedIcon: const Icon(Icons.share),
-            label: const Text('tab_controller_nav_sharing').tr(),
-          ),
-          NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.photo_album_outlined),
-            selectedIcon: const Icon(Icons.photo_album),
-            label: const Text('tab_controller_nav_library').tr(),
-          ),
-        ],
-      );
+      // On Search page tapped
+      if (router.activeIndex == 1 && index == 1) {
+        ref.read(searchInputFocusProvider).requestFocus();
+      }
+
+      ref.read(hapticFeedbackProvider.notifier).selectionClick();
+      router.setActiveIndex(index);
+      ref.read(tabProvider.notifier).state = TabEnum.values[index];
     }
 
     bottomNavigationBar(TabsRouter tabsRouter) {
       return NavigationBar(
         selectedIndex: tabsRouter.activeIndex,
-        onDestinationSelected: (index) {
-          if (tabsRouter.activeIndex == 0 && index == 0) {
-            // Scroll to top
-            scrollToTopNotifierProvider.scrollToTop();
-          }
-
-          ref.read(hapticFeedbackProvider.notifier).selectionClick();
-          tabsRouter.setActiveIndex(index);
-          ref.read(tabProvider.notifier).state = TabEnum.values[index];
-        },
+        onDestinationSelected: (index) =>
+            onNavigationSelected(tabsRouter, index),
         destinations: [
           NavigationDestination(
             label: 'tab_controller_nav_photos'.tr(),
@@ -118,7 +73,8 @@ class TabControllerPage extends HookConsumerWidget {
               Icons.photo_library_outlined,
             ),
             selectedIcon: buildIcon(
-              Icon(
+              isProcessing: isRefreshingAssets,
+              icon: Icon(
                 Icons.photo_library,
                 color: context.primaryColor,
               ),
@@ -135,23 +91,27 @@ class TabControllerPage extends HookConsumerWidget {
             ),
           ),
           NavigationDestination(
-            label: 'tab_controller_nav_sharing'.tr(),
-            icon: const Icon(
-              Icons.group_outlined,
-            ),
-            selectedIcon: Icon(
-              Icons.group,
-              color: context.primaryColor,
-            ),
-          ),
-          NavigationDestination(
-            label: 'tab_controller_nav_library'.tr(),
+            label: 'albums'.tr(),
             icon: const Icon(
               Icons.photo_album_outlined,
             ),
             selectedIcon: buildIcon(
-              Icon(
+              isProcessing: isRefreshingRemoteAlbums,
+              icon: Icon(
                 Icons.photo_album_rounded,
+                color: context.primaryColor,
+              ),
+            ),
+          ),
+          NavigationDestination(
+            label: 'library'.tr(),
+            icon: const Icon(
+              Icons.space_dashboard_outlined,
+            ),
+            selectedIcon: buildIcon(
+              isProcessing: isRefreshingAssets,
+              icon: Icon(
+                Icons.space_dashboard_rounded,
                 color: context.primaryColor,
               ),
             ),
@@ -162,11 +122,11 @@ class TabControllerPage extends HookConsumerWidget {
 
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
-      routes: const [
-        PhotosRoute(),
+      routes: [
+        const PhotosRoute(),
         SearchRoute(),
-        SharingRoute(),
-        LibraryRoute(),
+        const AlbumsRoute(),
+        const LibraryRoute(),
       ],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(
@@ -177,35 +137,15 @@ class TabControllerPage extends HookConsumerWidget {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
-          onPopInvoked: (didPop) =>
+          onPopInvokedWithResult: (didPop, _) =>
               !didPop ? tabsRouter.setActiveIndex(0) : null,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const medium = 600;
-              final Widget? bottom;
-              final Widget body;
-              if (constraints.maxWidth < medium) {
-                // Normal phone width
-                bottom = bottomNavigationBar(tabsRouter);
-                body = child;
-              } else {
-                // Medium tablet width
-                bottom = null;
-                body = Row(
-                  children: [
-                    navigationRail(tabsRouter),
-                    Expanded(child: child),
-                  ],
-                );
-              }
-              return Scaffold(
-                body: HeroControllerScope(
-                  controller: HeroController(),
-                  child: body,
-                ),
-                bottomNavigationBar: multiselectEnabled ? null : bottom,
-              );
-            },
+          child: Scaffold(
+            body: HeroControllerScope(
+              controller: HeroController(),
+              child: child,
+            ),
+            bottomNavigationBar:
+                multiselectEnabled ? null : bottomNavigationBar(tabsRouter),
           ),
         );
       },

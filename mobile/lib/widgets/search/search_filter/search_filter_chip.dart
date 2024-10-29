@@ -22,9 +22,9 @@ class SearchFilterChip extends StatelessWidget {
         onTap: onTap,
         child: Card(
           elevation: 0,
-          color: context.primaryColor.withAlpha(25),
+          color: context.primaryColor.withOpacity(.5),
           shape: StadiumBorder(
-            side: BorderSide(color: context.primaryColor),
+            side: BorderSide(color: context.colorScheme.secondaryContainer),
           ),
           child: Padding(
             padding:
@@ -47,8 +47,9 @@ class SearchFilterChip extends StatelessWidget {
       onTap: onTap,
       child: Card(
         elevation: 0,
-        shape:
-            StadiumBorder(side: BorderSide(color: Colors.grey.withAlpha(100))),
+        shape: StadiumBorder(
+          side: BorderSide(color: context.colorScheme.outline.withAlpha(15)),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 14.0),
           child: Row(
