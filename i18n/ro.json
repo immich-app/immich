@@ -28,6 +28,7 @@
   "added_to_favorites_count": "Adăugat {count, number} la favorite",
   "admin": {
     "add_exclusion_pattern_description": "Adăugați modele de excludere. Globing folosind *, ** și ? este suportat. Pentru a ignora toate fișierele din orice director numit „Raw”, utilizați „**/Raw/**”. Pentru a ignora toate fișierele care se termină în „.tif”, utilizați „**/*.tif”. Pentru a ignora o cale absolută, utilizați „/path/to/ignore/**”.",
+    "asset_offline_description": "Acest material din biblioteca externă nu se mai găsește pe disc și a fost mutat în coșul de gunoi. Dacă fișierul a fost mutat în bibliotecă, verificați cronologia pentru noul material corespunzător. Pentru a restabili acest material, asigurați-vă că calea fișierului de mai jos poate fi accesată de Immich și scanați biblioteca.",
     "authentication_settings": "Setări de autentificare",
     "authentication_settings_description": "Gestionează parola, OAuth și alte setări de autentificare",
     "authentication_settings_disable_all": "Ești sigur că vrei sa dezactivezi toate metodele de autentificare? Autentificarea va fi complet dezactivată.",
