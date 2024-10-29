@@ -19,7 +19,7 @@ services:
       - DB_PASSWORD=postgres
       - DB_DATABASE_NAME=immich
       - IMMICH_MACHINE_LEARNING_ENABLED=false
-      - IMMICH_METRICS=true
+      - IMMICH_TELEMETRY_INCLUDE=all
       - IMMICH_ENV=testing
       - IMMICH_PORT=2285
       - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true

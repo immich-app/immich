@@ -352,11 +352,6 @@ export const immichAppConfig: ConfigModuleOptions = {
           cidr: 'optional',
         }),
       ),
-
-    IMMICH_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_HOST_METRICS: Joi.boolean().optional(),
-    IMMICH_API_METRICS: Joi.boolean().optional(),
-    IMMICH_IO_METRICS: Joi.boolean().optional(),
   }),
 };
 
