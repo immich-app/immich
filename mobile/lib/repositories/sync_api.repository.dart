@@ -59,8 +59,6 @@ class SyncApiRepository extends ApiRepository implements ISyncApiRepository {
         yield await compute(_parseSyncReponse, lines);
         lines.clear();
       }
-    } catch (error, stack) {
-      debugPrint("[getChanges] Error getChangeStream $error $stack");
     } finally {
       yield await compute(_parseSyncReponse, lines);
       client.close();

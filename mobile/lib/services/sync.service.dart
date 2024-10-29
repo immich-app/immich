@@ -82,53 +82,57 @@ class SyncService {
   );
 
   Future<void> syncAssets() async {
-    final batchSize = 1000;
-    final List<Asset> toUpsert = [];
-    final List<String> toDelete = [];
-    String ackTimestamp = "";
-    String ackId = "";
+    try {
+      final batchSize = 1000;
+      final List<Asset> toUpsert = [];
+      final List<String> toDelete = [];
+      String ackTimestamp = "";
+      String ackId = "";
 
-    final eventStream =
-        _syncApiRepository.getChanges(SyncStreamDtoTypesEnum.asset);
+      final eventStream =
+          _syncApiRepository.getChanges(SyncStreamDtoTypesEnum.asset);
 
-    await for (final event in eventStream) {
-      for (final e in event) {
-        ackTimestamp = e.timestamp;
-        ackId = e.id;
+      await for (final event in eventStream) {
+        for (final e in event) {
+          ackTimestamp = e.timestamp;
+          ackId = e.id;
 
-        if (e.action == SyncAction.upsert) {
-          toUpsert.add(e.data as Asset);
+          if (e.action == SyncAction.upsert) {
+            toUpsert.add(e.data as Asset);
+          }
+
+          if (e.action == SyncAction.delete) {
+            toDelete.add(e.data as String);
+          }
+
+          if (toUpsert.length >= batchSize) {
+            await _upsertAssets(toUpsert);
+            toUpsert.clear();
+            await _confirmAssetsChanges(ackId, ackTimestamp);
+          }
+
+          if (toDelete.length >= batchSize) {
+            await _deleteAssets(toDelete);
+            toDelete.clear();
+            await _confirmAssetsChanges(ackId, ackTimestamp);
+          }
         }
 
-        if (e.action == SyncAction.delete) {
-          toDelete.add(e.data as String);
-        }
-
-        if (toUpsert.length >= batchSize) {
+        // Process any remaining events
+        if (toUpsert.isNotEmpty) {
           await _upsertAssets(toUpsert);
           toUpsert.clear();
           await _confirmAssetsChanges(ackId, ackTimestamp);
         }
 
-        if (toDelete.length >= batchSize) {
+        if (toDelete.isNotEmpty) {
           await _deleteAssets(toDelete);
           toDelete.clear();
           await _confirmAssetsChanges(ackId, ackTimestamp);
         }
       }
-
-      // Process any remaining events
-      if (toUpsert.isNotEmpty) {
-        await _upsertAssets(toUpsert);
-        toUpsert.clear();
-        await _confirmAssetsChanges(ackId, ackTimestamp);
-      }
-
-      if (toDelete.isNotEmpty) {
-        await _deleteAssets(toDelete);
-        toDelete.clear();
-        await _confirmAssetsChanges(ackId, ackTimestamp);
-      }
+    } catch (error, stackTrace) {
+      _log.severe("Error syncing assets", error, stackTrace);
     }
   }
 
