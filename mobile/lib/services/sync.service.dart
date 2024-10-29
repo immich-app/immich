@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -31,6 +32,7 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
+import 'package:immich_mobile/utils/hooks/timer_hook.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -79,55 +81,55 @@ class SyncService {
     this._syncApiRepository,
   );
 
-  void syncAssets() {
-    final stopWatch = Stopwatch()..start();
+  Future<void> syncAssets() async {
     final batchSize = 1000;
     final List<Asset> toUpsert = [];
     final List<String> toDelete = [];
     String ackTimestamp = "";
     String ackId = "";
-    _syncApiRepository.getChanges(SyncStreamDtoTypesEnum.asset).listen(
-      (event) async {
-        for (final e in event) {
-          ackTimestamp = e.timestamp;
-          ackId = e.id;
 
-          if (e.action == SyncAction.upsert) {
-            toUpsert.add(e.data as Asset);
-          }
+    final eventStream =
+        _syncApiRepository.getChanges(SyncStreamDtoTypesEnum.asset);
 
-          if (e.action == SyncAction.delete) {
-            toDelete.add(e.data as String);
-          }
+    await for (final event in eventStream) {
+      for (final e in event) {
+        ackTimestamp = e.timestamp;
+        ackId = e.id;
 
-          if (toUpsert.length >= batchSize) {
-            await _upsertAssets(toUpsert);
-            toUpsert.clear();
-            await _confirmAssetsChanges(ackId, ackTimestamp);
-          }
-
-          if (toDelete.length >= batchSize) {
-            await _deleteAssets(toDelete);
-            toDelete.clear();
-            await _confirmAssetsChanges(ackId, ackTimestamp);
-          }
+        if (e.action == SyncAction.upsert) {
+          toUpsert.add(e.data as Asset);
         }
 
-        // Process any remaining events
-        if (toUpsert.isNotEmpty) {
-          await _upsertAssets(toUpsert); // Maybe try/catch
+        if (e.action == SyncAction.delete) {
+          toDelete.add(e.data as String);
+        }
+
+        if (toUpsert.length >= batchSize) {
+          await _upsertAssets(toUpsert);
+          toUpsert.clear();
           await _confirmAssetsChanges(ackId, ackTimestamp);
         }
 
-        if (toDelete.isNotEmpty) {
+        if (toDelete.length >= batchSize) {
           await _deleteAssets(toDelete);
+          toDelete.clear();
           await _confirmAssetsChanges(ackId, ackTimestamp);
         }
-      },
-      onDone: () {
-        debugPrint("Syncing assets took ${stopWatch.elapsedMilliseconds}ms");
-      },
-    );
+      }
+
+      // Process any remaining events
+      if (toUpsert.isNotEmpty) {
+        await _upsertAssets(toUpsert);
+        toUpsert.clear();
+        await _confirmAssetsChanges(ackId, ackTimestamp);
+      }
+
+      if (toDelete.isNotEmpty) {
+        await _deleteAssets(toDelete);
+        toDelete.clear();
+        await _confirmAssetsChanges(ackId, ackTimestamp);
+      }
+    }
   }
 
   Future<void> _confirmAssetsChanges(String id, String timestamp) async {
@@ -141,10 +143,15 @@ class SyncService {
   Future<void> _upsertAssets(
     List<Asset> toUpsert,
   ) async {
-    print("process ${toUpsert.length} assets");
     final (updateAssets, newAssets) = await _getAssetsFromDb(toUpsert);
-    await upsertAssetsWithExif(newAssets);
-    await _assetRepository.updateAll(updateAssets);
+
+    if (updateAssets.isNotEmpty) {
+      await _assetRepository.updateAll(updateAssets);
+    }
+
+    if (newAssets.isNotEmpty) {
+      await upsertAssetsWithExif(newAssets);
+    }
   }
 
   Future<void> _deleteAssets(
