@@ -132,8 +132,9 @@ const getEnv = (): EnvData => {
         connectTimeoutMS: 10_000, // 10 seconds
         parseInt8: true,
         ...(databaseUrl
-          ? { url: databaseUrl }
+          ? { connectionType: 'url', url: databaseUrl }
           : {
+              connectionType: 'parts',
               host: process.env.DB_HOSTNAME || 'database',
               port: Number(process.env.DB_PORT) || 5432,
               username: process.env.DB_USERNAME || 'postgres',
