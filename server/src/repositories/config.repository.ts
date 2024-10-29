@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { CLS_ID } from 'nestjs-cls';
 import { join, resolve } from 'node:path';
 import { citiesFile, excludePaths } from 'src/constants';
 import { Telemetry } from 'src/decorators';
-import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
+import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { QueueName } from 'src/interfaces/job.interface';
@@ -119,6 +121,22 @@ const getEnv = (): EnvData => {
         },
       },
       queues: Object.values(QueueName).map((name) => ({ name })),
+    },
+
+    cls: {
+      config: {
+        middleware: {
+          mount: true,
+          generateId: true,
+          setup: (cls, req: Request, res: Response) => {
+            const headerValues = req.headers[ImmichHeader.CID];
+            const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
+            const cid = headerValue || cls.get(CLS_ID);
+            cls.set(CLS_ID, cid);
+            res.header(ImmichHeader.CID, cid);
+          },
+        },
+      },
     },
 
     database: {

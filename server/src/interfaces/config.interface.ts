@@ -1,6 +1,7 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
+import { ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
 import { DatabaseConnectionParams, VectorExtension } from 'src/interfaces/database.interface';
@@ -34,6 +35,10 @@ export interface EnvData {
   bull: {
     config: QueueOptions;
     queues: RegisterQueueOptions[];
+  };
+
+  cls: {
+    config: ClsModuleOptions;
   };
 
   database: {

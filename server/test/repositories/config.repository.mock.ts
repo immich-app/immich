@@ -15,6 +15,10 @@ const envData: EnvData = {
     queues: [{ name: 'queue-1' }],
   },
 
+  cls: {
+    config: {},
+  },
+
   database: {
     config: {
       connectionType: 'parts',
