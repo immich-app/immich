@@ -18,6 +18,7 @@
   export let disabled = false;
   export let onReset: SettingsResetEvent;
   export let onSave: SettingsSaveEvent;
+  export let openByDefault = false;
 
   $: cronExpressionOptions = [
     { title: $t('interval.night_at_midnight'), expression: '0 0 * * *' },
@@ -35,7 +36,7 @@
           key="library-watching"
           title={$t('admin.library_watching_settings')}
           subtitle={$t('admin.library_watching_settings_description')}
-          isOpen
+          isOpen={openByDefault}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
@@ -50,7 +51,7 @@
           key="library-scanning"
           title={$t('admin.library_scanning')}
           subtitle={$t('admin.library_scanning_description')}
-          isOpen
+          isOpen={openByDefault}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
