@@ -110,16 +110,16 @@ export class MediaRepository implements IMediaRepository {
       format: {
         formatName: results.format.format_name,
         formatLongName: results.format.format_long_name,
-        duration: results.format.duration || 0,
-        bitrate: results.format.bit_rate ?? 0,
+        duration: this.parseFloat(results.format.duration),
+        bitrate: this.parseInt(results.format.bit_rate),
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')
         .filter((stream) => !stream.disposition?.attached_pic)
         .map((stream) => ({
           index: stream.index,
-          height: stream.height || 0,
-          width: stream.width || 0,
+          height: this.parseInt(stream.height),
+          width: this.parseInt(stream.width),
           codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
           codecType: stream.codec_type,
           frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
@@ -214,5 +214,9 @@ export class MediaRepository implements IMediaRepository {
 
   private parseInt(value: string | number | undefined): number {
     return Number.parseInt(value as string) || 0;
+  }
+
+  private parseFloat(value: string | number | undefined): number {
+    return Number.parseFloat(value as string) || 0;
   }
 }
