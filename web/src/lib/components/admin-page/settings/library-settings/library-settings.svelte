@@ -90,7 +90,12 @@
               <svelte:fragment slot="desc">
                 <p class="text-sm dark:text-immich-dark-fg">
                   <FormatMessage key="admin.library_cron_expression_description" let:message>
-                    <a href="https://crontab.guru" class="underline" target="_blank" rel="noreferrer">
+                    <a
+                      href="https://crontab.guru/#{config.library.scan.cronExpression.replaceAll(' ', '_')}"
+                      class="underline"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       {message}
                     </a>
                   </FormatMessage>
