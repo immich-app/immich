@@ -69,7 +69,7 @@ export const getBoundingBox = (
     };
 
     boxes.push({
-      extendedStyle: extendedStyle,
+      extendedStyle,
       top: Math.round(coordinates.y1),
       left: Math.round(coordinates.x1),
       width: Math.round(coordinates.x2 - coordinates.x1),
