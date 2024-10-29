@@ -10,10 +10,8 @@ import {
   UserListFilter,
   UserStatsQueryResponse,
 } from 'src/interfaces/user.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Not, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(

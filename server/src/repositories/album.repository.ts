@@ -7,6 +7,7 @@ import { PaginationMode } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
 import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, paginatedBuilder, PaginationOptions } from 'src/utils/pagination';
+
 import {
   DataSource,
   EntityManager,
@@ -25,7 +26,6 @@ const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   return album;
 };
 
-@Instrumentation()
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
   constructor(

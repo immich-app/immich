@@ -7481,7 +7481,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.118.2",
+    "version": "1.119.0",
     "contact": {}
   },
   "tags": [],
@@ -8603,7 +8603,8 @@
         "enum": [
           "mp3",
           "aac",
-          "libopus"
+          "libopus",
+          "pcm_s16le"
         ],
         "type": "string"
       },

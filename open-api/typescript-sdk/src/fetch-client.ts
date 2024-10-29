@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.118.2
+ * 1.119.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -3533,7 +3533,8 @@ export enum TranscodeHWAccel {
 export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
-    Libopus = "libopus"
+    Libopus = "libopus",
+    PcmS16Le = "pcm_s16le"
 }
 export enum VideoContainer {
     Mov = "mov",

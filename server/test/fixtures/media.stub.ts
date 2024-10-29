@@ -154,6 +154,13 @@ export const probeStub = {
     ...probeStubDefault,
     audioStreams: [{ index: 1, codecName: 'aac', frameCount: 100 }],
   }),
+  audioStreamUnknown: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [
+      { index: 0, codecName: 'aac', frameCount: 100 },
+      { index: 1, codecName: 'unknown', frameCount: 200 },
+    ],
+  }),
   matroskaContainer: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     format: {

@@ -8,9 +8,6 @@ import { OnEvent } from 'src/decorators';
 import {
   AuthDto,
   ChangePasswordDto,
-  ImmichCookie,
-  ImmichHeader,
-  ImmichQuery,
   LoginCredentialDto,
   LogoutResponseDto,
   OAuthAuthorizeResponseDto,
@@ -21,12 +18,11 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { AuthType, Permission } from 'src/enum';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
 import { OAuthProfile } from 'src/interfaces/oauth.interface';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
-import { createUser } from 'src/utils/user';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -118,16 +114,13 @@ export class AuthService extends BaseService {
       throw new BadRequestException('The server already has an admin');
     }
 
-    const admin = await createUser(
-      { userRepo: this.userRepository, cryptoRepo: this.cryptoRepository },
-      {
-        isAdmin: true,
-        email: dto.email,
-        name: dto.name,
-        password: dto.password,
-        storageLabel: 'admin',
-      },
-    );
+    const admin = await this.createUser({
+      isAdmin: true,
+      email: dto.email,
+      name: dto.name,
+      password: dto.password,
+      storageLabel: 'admin',
+    });
 
     return mapUserAdmin(admin);
   }
@@ -237,16 +230,13 @@ export class AuthService extends BaseService {
       });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
-      user = await createUser(
-        { userRepo: this.userRepository, cryptoRepo: this.cryptoRepository },
-        {
-          name: userName,
-          email: profile.email,
-          oauthId: profile.sub,
-          quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
-          storageLabel: storageLabel || null,
-        },
-      );
+      user = await this.createUser({
+        name: userName,
+        email: profile.email,
+        oauthId: profile.sub,
+        quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
+        storageLabel: storageLabel || null,
+      });
     }
 
     return this.createLoginResponse(user, loginDetails);
