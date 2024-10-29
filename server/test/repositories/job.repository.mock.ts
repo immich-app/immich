@@ -5,7 +5,6 @@ export const newJobRepositoryMock = (): Mocked<IJobRepository> => {
   return {
     addHandler: vitest.fn(),
     addCronJob: vitest.fn(),
-    deleteCronJob: vitest.fn(),
     updateCronJob: vitest.fn(),
     setConcurrency: vitest.fn(),
     empty: vitest.fn(),
@@ -17,5 +16,6 @@ export const newJobRepositoryMock = (): Mocked<IJobRepository> => {
     getJobCounts: vitest.fn(),
     clear: vitest.fn(),
     waitForQueueCompletion: vitest.fn(),
+    removeJob: vitest.fn(),
   };
 };

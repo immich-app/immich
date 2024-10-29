@@ -48,9 +48,8 @@ class BackupSettings extends HookConsumerWidget {
       if (Platform.isIOS)
         SettingsSwitchListTile(
           valueNotifier: ignoreIcloudAssets,
-          title: 'Ignore iCloud photos',
-          subtitle:
-              'Photos that are stored on iCloud will not be uploaded to the Immich server',
+          title: 'ignore_icloud_photos'.tr(),
+          subtitle: 'ignore_icloud_photos_description'.tr(),
         ),
       if (Platform.isAndroid && isAdvancedTroubleshooting.value)
         SettingsButtonListTile(

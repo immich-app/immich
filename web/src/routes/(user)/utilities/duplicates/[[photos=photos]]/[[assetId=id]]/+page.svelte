@@ -42,7 +42,7 @@
       { key: ['s'], action: $t('view') },
       { key: ['d'], action: $t('unselect_all_duplicates') },
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
-      { key: ['⇧', 'c'], action: $t('stack_duplicates') },
+      { key: ['⇧', 's'], action: $t('stack_duplicates') },
     ],
   };
 
@@ -196,5 +196,5 @@
 </UserPageLayout>
 
 {#if isShowKeyboardShortcut}
-  <ShowShortcuts shortcuts={duplicateShortcuts} on:close={() => (isShowKeyboardShortcut = false)} />
+  <ShowShortcuts shortcuts={duplicateShortcuts} onClose={() => (isShowKeyboardShortcut = false)} />
 {/if}

@@ -11,7 +11,7 @@ Unable to set `app.immich:///oauth-callback` as a valid redirect URI? See [Mobil
 Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
 
 - [Authentik](https://goauthentik.io/integrations/sources/oauth/#openid-connect)
-- [Authelia](https://www.authelia.com/configuration/identity-providers/openid-connect/clients/)
+- [Authelia](https://www.authelia.com/integration/openid-connect/immich/)
 - [Okta](https://www.okta.com/openid-connect/)
 - [Google](https://developers.google.com/identity/openid-connect/openid-connect)
 
@@ -154,21 +154,21 @@ Configuration of Authorised redirect URIs (Google Console)
 
 Configuration of OAuth in Immich System Settings
 
-| Setting                      | Value                                                                                                |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Issuer URL                   | `https://accounts.google.com`                                       |
-| Client ID                    | 7\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***vuls.apps.googleusercontent.com                         |
-| Client Secret                | G\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***OO                                                      |
-| Scope                        | openid email profile                                                                                 |
-| Signing Algorithm            | RS256                                                                                                |
-| Storage Label Claim          | preferred_username                                                                                   |
-| Storage Quota Claim          | immich_quota                                                                                         |
-| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                                            |
-| Button Text                  | Sign in with Google (optional)                                                                       |
-| Auto Register                | Enabled (optional)                                                                                   |
-| Auto Launch                  | Enabled                                                                                              |
-| Mobile Redirect URI Override | Enabled (required)                                                                                   |
-| Mobile Redirect URI          | `https://example.immich.app/api/oauth/mobile-redirect`                                               |
+| Setting                      | Value                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| Issuer URL                   | `https://accounts.google.com`                                                |
+| Client ID                    | 7\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***vuls.apps.googleusercontent.com |
+| Client Secret                | G\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***OO                              |
+| Scope                        | openid email profile                                                         |
+| Signing Algorithm            | RS256                                                                        |
+| Storage Label Claim          | preferred_username                                                           |
+| Storage Quota Claim          | immich_quota                                                                 |
+| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                    |
+| Button Text                  | Sign in with Google (optional)                                               |
+| Auto Register                | Enabled (optional)                                                           |
+| Auto Launch                  | Enabled                                                                      |
+| Mobile Redirect URI Override | Enabled (required)                                                           |
+| Mobile Redirect URI          | `https://example.immich.app/api/oauth/mobile-redirect`                       |
 
 </details>
 

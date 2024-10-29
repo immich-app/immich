@@ -5,8 +5,9 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
-import { bullConfig } from 'src/config';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
+  IEntityJob,
   IJobRepository,
   JobCounts,
   JobItem,
@@ -16,7 +17,6 @@ import {
   QueueStatus,
 } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 
 export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // misc
@@ -36,10 +36,11 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // thumbnails
   [JobName.QUEUE_GENERATE_THUMBNAILS]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_PREVIEW]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
-  [JobName.GENERATE_THUMBHASH]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_THUMBNAILS]: QueueName.THUMBNAIL_GENERATION,
   [JobName.GENERATE_PERSON_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+
+  // tags
+  [JobName.TAG_CLEANUP]: QueueName.BACKGROUND_TASK,
 
   // metadata
   [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
@@ -76,12 +77,12 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.SIDECAR_WRITE]: QueueName.SIDECAR,
 
   // Library management
-  [JobName.LIBRARY_SCAN_ASSET]: QueueName.LIBRARY,
-  [JobName.LIBRARY_SCAN]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SYNC_FILE]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_FILES]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_ASSETS]: QueueName.LIBRARY,
   [JobName.LIBRARY_DELETE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_CHECK_OFFLINE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_REMOVE_OFFLINE]: QueueName.LIBRARY,
-  [JobName.LIBRARY_QUEUE_SCAN_ALL]: QueueName.LIBRARY,
+  [JobName.LIBRARY_SYNC_ASSET]: QueueName.LIBRARY,
+  [JobName.LIBRARY_QUEUE_SYNC_ALL]: QueueName.LIBRARY,
   [JobName.LIBRARY_QUEUE_CLEANUP]: QueueName.LIBRARY,
 
   // Notification
@@ -92,9 +93,11 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // Version check
   [JobName.VERSION_CHECK]: QueueName.BACKGROUND_TASK,
+
+  // Trash
+  [JobName.QUEUE_TRASH_EMPTY]: QueueName.BACKGROUND_TASK,
 };
 
-@Instrumentation()
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
@@ -102,14 +105,16 @@ export class JobRepository implements IJobRepository {
   constructor(
     private moduleReference: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
+    @Inject(IConfigRepository) private configRepository: IConfigRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(JobRepository.name);
   }
 
   addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
+    const { bull } = this.configRepository.getEnv();
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);
-    const workerOptions: WorkerOptions = { ...bullConfig, concurrency };
+    const workerOptions: WorkerOptions = { ...bull.config, concurrency };
     this.workers[queueName] = new Worker(queueName, workerHandler, workerOptions);
   }
 
@@ -148,10 +153,6 @@ export class JobRepository implements IJobRepository {
         job.stop();
       }
     }
-  }
-
-  deleteCronJob(name: string): void {
-    this.schedulerReqistry.deleteCronJob(name);
   }
 
   setConcurrency(queueName: QueueName, concurrency: number) {
@@ -250,6 +251,9 @@ export class JobRepository implements IJobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
+      case JobName.NOTIFY_ALBUM_UPDATE: {
+        return { jobId: item.data.id, delay: item.data?.delay };
+      }
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         return { jobId: item.data.id };
       }
@@ -259,7 +263,6 @@ export class JobRepository implements IJobRepository {
       case JobName.QUEUE_FACIAL_RECOGNITION: {
         return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
       }
-
       default: {
         return null;
       }
@@ -268,5 +271,21 @@ export class JobRepository implements IJobRepository {
 
   private getQueue(queue: QueueName): Queue {
     return this.moduleReference.get<Queue>(getQueueToken(queue), { strict: false });
+  }
+
+  public async removeJob(jobId: string, name: JobName): Promise<IEntityJob | undefined> {
+    const existingJob = await this.getQueue(JOBS_TO_QUEUE[name]).getJob(jobId);
+    if (!existingJob) {
+      return;
+    }
+    try {
+      await existingJob.remove();
+    } catch (error: any) {
+      if (error.message?.includes('Missing key for job')) {
+        return;
+      }
+      throw error;
+    }
+    return existingJob.data;
   }
 }

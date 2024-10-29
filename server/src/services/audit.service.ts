@@ -1,8 +1,8 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -12,46 +12,32 @@ import {
   PathEntityType,
 } from 'src/dtos/audit.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
-import { AssetFileType, DatabaseAction, Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import {
+  AssetFileType,
+  AssetPathType,
+  DatabaseAction,
+  Permission,
+  PersonPathType,
+  StorageFolder,
+  UserPathType,
+} from 'src/enum';
 import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
-import { requireAccess } from 'src/utils/access';
+import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class AuditService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(IAuditRepository) private repository: IAuditRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(AuditService.name);
-  }
-
+export class AuditService extends BaseService {
   async handleCleanup(): Promise<JobStatus> {
-    await this.repository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
+    await this.auditRepository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
     return JobStatus.SUCCESS;
   }
 
   async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
     const userId = dto.userId || auth.user.id;
-    await requireAccess(this.access, { auth, permission: Permission.TIMELINE_READ, ids: [userId] });
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
 
-    const audits = await this.repository.getAfter(dto.after, {
+    const audits = await this.auditRepository.getAfter(dto.after, {
       userIds: [userId],
       entityType: dto.entityType,
       action: DatabaseAction.DELETE,

@@ -1,30 +1,26 @@
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { CliService } from 'src/services/cli.service';
 import { userStub } from 'test/fixtures/user.stub';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, describe, it } from 'vitest';
 
 describe(CliService.name, () => {
   let sut: CliService;
 
   let userMock: Mocked<IUserRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
 
   beforeEach(() => {
-    cryptoMock = newCryptoRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    userMock = newUserRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
+    ({ sut, userMock, systemMock } = newTestService(CliService));
+  });
 
-    sut = new CliService(cryptoMock, systemMock, userMock, loggerMock);
+  describe('listUsers', () => {
+    it('should list users', async () => {
+      userMock.getList.mockResolvedValue([userStub.admin]);
+      await expect(sut.listUsers()).resolves.toEqual([expect.objectContaining({ isAdmin: true })]);
+      expect(userMock.getList).toHaveBeenCalledWith({ withDeleted: true });
+    });
   });
 
   describe('resetAdminPassword', () => {
@@ -63,6 +59,34 @@ describe(CliService.name, () => {
       expect(ask).toHaveBeenCalled();
       expect(id).toEqual(userStub.admin.id);
       expect(update.password).toBeDefined();
+    });
+  });
+
+  describe('disablePasswordLogin', () => {
+    it('should disable password login', async () => {
+      await sut.disablePasswordLogin();
+      expect(systemMock.set).toHaveBeenCalledWith('system-config', { passwordLogin: { enabled: false } });
+    });
+  });
+
+  describe('enablePasswordLogin', () => {
+    it('should enable password login', async () => {
+      await sut.enablePasswordLogin();
+      expect(systemMock.set).toHaveBeenCalledWith('system-config', {});
+    });
+  });
+
+  describe('disableOAuthLogin', () => {
+    it('should disable oauth login', async () => {
+      await sut.disableOAuthLogin();
+      expect(systemMock.set).toHaveBeenCalledWith('system-config', {});
+    });
+  });
+
+  describe('enableOAuthLogin', () => {
+    it('should enable oauth login', async () => {
+      await sut.enableOAuthLogin();
+      expect(systemMock.set).toHaveBeenCalledWith('system-config', { oauth: { enabled: true } });
     });
   });
 });

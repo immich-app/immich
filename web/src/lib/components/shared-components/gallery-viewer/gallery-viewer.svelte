@@ -24,6 +24,8 @@
   export let viewport: Viewport;
   export let onIntersected: (() => void) | undefined = undefined;
   export let showAssetName = false;
+  export let onPrevious: (() => Promise<AssetResponseDto | undefined>) | undefined = undefined;
+  export let onNext: (() => Promise<AssetResponseDto | undefined>) | undefined = undefined;
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
@@ -50,8 +52,9 @@
 
   const handleNext = async () => {
     try {
-      if (currentViewAssetIndex < assets.length - 1) {
-        setAsset(assets[++currentViewAssetIndex]);
+      const asset = onNext ? await onNext() : assets[++currentViewAssetIndex];
+      if (asset) {
+        setAsset(asset);
         await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
@@ -61,8 +64,9 @@
 
   const handlePrevious = async () => {
     try {
-      if (currentViewAssetIndex > 0) {
-        setAsset(assets[--currentViewAssetIndex]);
+      const asset = onPrevious ? await onPrevious() : assets[--currentViewAssetIndex];
+      if (asset) {
+        setAsset(asset);
         await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
       }
     } catch (error) {
@@ -159,9 +163,9 @@
     <AssetViewer
       asset={$viewingAsset}
       onAction={handleAction}
-      on:previous={handlePrevious}
-      on:next={handleNext}
-      on:close={() => {
+      onPrevious={handlePrevious}
+      onNext={handleNext}
+      onClose={() => {
         assetViewingStore.showAssetViewer(false);
         handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
       }}

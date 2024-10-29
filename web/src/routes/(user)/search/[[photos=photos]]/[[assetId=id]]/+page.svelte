@@ -41,6 +41,7 @@
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
   import { afterUpdate, tick } from 'svelte';
+  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -216,6 +217,11 @@
 
   const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
 
+  const onAddToAlbum = (assetIds: string[]) => {
+    const assetIdSet = new Set(assetIds);
+    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+  };
+
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
@@ -230,8 +236,8 @@
         <CreateSharedLink />
         <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-          <AddToAlbum />
-          <AddToAlbum shared />
+          <AddToAlbum {onAddToAlbum} />
+          <AddToAlbum shared {onAddToAlbum} />
         </ButtonContextMenu>
         <FavoriteAction removeFavorite={isAllFavorite} onFavorite={triggerAssetUpdate} />
 
@@ -241,12 +247,14 @@
           <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <DeleteAssets menuItem {onAssetDelete} />
+          <hr />
+          <AssetJobActions />
         </ButtonContextMenu>
       </AssetSelectControlBar>
     </div>
   {:else}
     <div class="fixed z-[100] top-0 left-0 w-full">
-      <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+      <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="w-full flex-1 pl-4">
           <SearchBar grayTheme={false} value={terms.query ?? ''} searchQuery={terms} />
         </div>

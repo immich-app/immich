@@ -9,7 +9,7 @@ The database is saved to your Immich upload folder in the `database-backup` subd
 ### Prerequisites
 
 - Borg needs to be installed on your server as well as the remote machine. You can find instructions to install Borg [here](https://borgbackup.readthedocs.io/en/latest/installation.html).
-- (Optional) To run this sript as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
+- (Optional) To run this script as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
 - To run this script non-interactively, set up [passwordless ssh](https://www.redhat.com/sysadmin/passwordless-ssh) to your remote machine from your server. If you skipped the previous step, make sure this step is done from your root account.
 
 To initialize the borg repository, run the following commands once.
@@ -78,4 +78,4 @@ borg mount "$REMOTE_HOST:$REMOTE_BACKUP_PATH"/immich-borg /tmp/immich-mountpoint
 cd /tmp/immich-mountpoint
 ```
 
-You can find available snapshots in seperate sub-directories at `/tmp/immich-mountpoint`. Restore the files you need, and unmount the Borg repository using `borg umount /tmp/immich-mountpoint`
+You can find available snapshots in separate sub-directories at `/tmp/immich-mountpoint`. Restore the files you need, and unmount the Borg repository using `borg umount /tmp/immich-mountpoint`

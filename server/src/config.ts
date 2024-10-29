@@ -1,88 +1,24 @@
-import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { ConfigModuleOptions } from '@nestjs/config';
 import { CronExpression } from '@nestjs/schedule';
-import { QueueOptions } from 'bullmq';
 import { Request, Response } from 'express';
-import { RedisOptions } from 'ioredis';
 import Joi, { Root } from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
-import { ImmichHeader } from 'src/dtos/auth.dto';
+import {
+  AudioCodec,
+  Colorspace,
+  CQMode,
+  ImageFormat,
+  ImmichEnvironment,
+  ImmichHeader,
+  LogLevel,
+  ToneMapping,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+  VideoContainer,
+} from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-
-export enum TranscodePolicy {
-  ALL = 'all',
-  OPTIMAL = 'optimal',
-  BITRATE = 'bitrate',
-  REQUIRED = 'required',
-  DISABLED = 'disabled',
-}
-
-export enum TranscodeTarget {
-  NONE,
-  AUDIO,
-  VIDEO,
-  ALL,
-}
-
-export enum VideoCodec {
-  H264 = 'h264',
-  HEVC = 'hevc',
-  VP9 = 'vp9',
-  AV1 = 'av1',
-}
-
-export enum AudioCodec {
-  MP3 = 'mp3',
-  AAC = 'aac',
-  LIBOPUS = 'libopus',
-}
-
-export enum VideoContainer {
-  MOV = 'mov',
-  MP4 = 'mp4',
-  OGG = 'ogg',
-  WEBM = 'webm',
-}
-
-export enum TranscodeHWAccel {
-  NVENC = 'nvenc',
-  QSV = 'qsv',
-  VAAPI = 'vaapi',
-  RKMPP = 'rkmpp',
-  DISABLED = 'disabled',
-}
-
-export enum ToneMapping {
-  HABLE = 'hable',
-  MOBIUS = 'mobius',
-  REINHARD = 'reinhard',
-  DISABLED = 'disabled',
-}
-
-export enum CQMode {
-  AUTO = 'auto',
-  CQP = 'cqp',
-  ICQ = 'icq',
-}
-
-export enum Colorspace {
-  SRGB = 'srgb',
-  P3 = 'p3',
-}
-
-export enum ImageFormat {
-  JPEG = 'jpeg',
-  WEBP = 'webp',
-}
-
-export enum LogLevel {
-  VERBOSE = 'verbose',
-  DEBUG = 'debug',
-  LOG = 'log',
-  WARN = 'warn',
-  ERROR = 'error',
-  FATAL = 'fatal',
-}
+import { ImageOptions } from 'src/interfaces/media.interface';
 
 export interface SystemConfig {
   ffmpeg: {
@@ -141,6 +77,11 @@ export interface SystemConfig {
   reverseGeocoding: {
     enabled: boolean;
   };
+  metadata: {
+    faces: {
+      import: boolean;
+    };
+  };
   oauth: {
     autoLaunch: boolean;
     autoRegister: boolean;
@@ -167,11 +108,8 @@ export interface SystemConfig {
     template: string;
   };
   image: {
-    thumbnailFormat: ImageFormat;
-    thumbnailSize: number;
-    previewFormat: ImageFormat;
-    previewSize: number;
-    quality: number;
+    thumbnail: ImageOptions;
+    preview: ImageOptions;
     colorspace: Colorspace;
     extractEmbedded: boolean;
   };
@@ -225,7 +163,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
     acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     targetResolution: '720',
     maxBitrate: '0',
@@ -280,11 +218,16 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    lightStyle: '',
-    darkStyle: '',
+    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
+    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
   },
   reverseGeocoding: {
     enabled: true,
+  },
+  metadata: {
+    faces: {
+      import: false,
+    },
   },
   oauth: {
     autoLaunch: false,
@@ -312,11 +255,16 @@ export const defaults = Object.freeze<SystemConfig>({
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {
-    thumbnailFormat: ImageFormat.WEBP,
-    thumbnailSize: 250,
-    previewFormat: ImageFormat.JPEG,
-    previewSize: 1440,
-    quality: 80,
+    thumbnail: {
+      format: ImageFormat.WEBP,
+      size: 250,
+      quality: 80,
+    },
+    preview: {
+      format: ImageFormat.JPEG,
+      size: 1440,
+      quality: 80,
+    },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },
@@ -372,7 +320,10 @@ export const immichAppConfig: ConfigModuleOptions = {
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
-    IMMICH_ENV: Joi.string().optional().valid('development', 'testing', 'production').default('production'),
+    IMMICH_ENV: Joi.string()
+      .optional()
+      .valid(...Object.values(ImmichEnvironment))
+      .default(ImmichEnvironment.PRODUCTION),
     IMMICH_LOG_LEVEL: Joi.string()
       .optional()
       .valid(...Object.values(LogLevel)),
@@ -403,43 +354,11 @@ export const immichAppConfig: ConfigModuleOptions = {
       ),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_HOST_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_API_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_IO_METRICS: Joi.boolean().optional().default(false),
+    IMMICH_HOST_METRICS: Joi.boolean().optional(),
+    IMMICH_API_METRICS: Joi.boolean().optional(),
+    IMMICH_IO_METRICS: Joi.boolean().optional(),
   }),
 };
-
-export function parseRedisConfig(): RedisOptions {
-  const redisUrl = process.env.REDIS_URL;
-  if (redisUrl && redisUrl.startsWith('ioredis://')) {
-    try {
-      const decodedString = Buffer.from(redisUrl.slice(10), 'base64').toString();
-      return JSON.parse(decodedString);
-    } catch (error) {
-      throw new Error(`Failed to decode redis options: ${error}`);
-    }
-  }
-  return {
-    host: process.env.REDIS_HOSTNAME || 'redis',
-    port: Number.parseInt(process.env.REDIS_PORT || '6379'),
-    db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
-    username: process.env.REDIS_USERNAME || undefined,
-    password: process.env.REDIS_PASSWORD || undefined,
-    path: process.env.REDIS_SOCKET || undefined,
-  };
-}
-
-export const bullConfig: QueueOptions = {
-  prefix: 'immich_bull',
-  connection: parseRedisConfig(),
-  defaultJobOptions: {
-    attempts: 3,
-    removeOnComplete: true,
-    removeOnFail: false,
-  },
-};
-
-export const bullQueues: RegisterQueueOptions[] = Object.values(QueueName).map((name) => ({ name }));
 
 export const clsConfig: ClsModuleOptions = {
   middleware: {
@@ -453,42 +372,4 @@ export const clsConfig: ClsModuleOptions = {
       res.header(ImmichHeader.CID, cid);
     },
   },
-};
-
-export const getBuildMetadata = () => ({
-  build: process.env.IMMICH_BUILD,
-  buildUrl: process.env.IMMICH_BUILD_URL,
-  buildImage: process.env.IMMICH_BUILD_IMAGE,
-  buildImageUrl: process.env.IMMICH_BUILD_IMAGE_URL,
-  repository: process.env.IMMICH_REPOSITORY,
-  repositoryUrl: process.env.IMMICH_REPOSITORY_URL,
-  sourceRef: process.env.IMMICH_SOURCE_REF,
-  sourceCommit: process.env.IMMICH_SOURCE_COMMIT,
-  sourceUrl: process.env.IMMICH_SOURCE_URL,
-});
-
-const clientLicensePublicKeyProd =
-  'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2LzdTMzJjUkE1KysxTm5WRHNDTQpzcFAvakpISU1xT0pYRm5oNE53QTJPcHorUk1mZGNvOTJQc09naCt3d1FlRXYxVTJjMnBqelRpUS8ybHJLcS9rCnpKUmxYd2M0Y1Vlc1FETUpPRitQMnFPTlBiQUprWHZDWFlCVUxpdENJa29Md2ZoU0dOanlJS2FSRGhkL3ROeU4KOCtoTlJabllUMWhTSWo5U0NrS3hVQ096YXRQVjRtQ0RlclMrYkUrZ0VVZVdwOTlWOWF6dkYwRkltblRXcFFTdwpjOHdFWmdPTWg0c3ZoNmFpY3dkemtQQ3dFTGFrMFZhQkgzMUJFVUNRTGI5K0FJdEhBVXRKQ0t4aGI1V2pzMXM5CmJyWGZpMHZycGdjWi82RGFuWTJxZlNQem5PbXZEMkZycmxTMXE0SkpOM1ZvN1d3LzBZeS95TWNtelRXWmhHdWgKVVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tDQo=';
-
-const clientLicensePublicKeyStaging =
-  'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFuSUNyTm5jbGpPSC9JdTNtWVVaRQp0dGJLV1c3OGRuajl5M0U2ekk3dU1NUndEckdYWFhkTGhkUDFxSWtlZHh0clVVeUpCMWR4R04yQW91S082MlNGCldrbU9PTmNGQlRBWFZTdjhUNVY0S0VwWnFQYWEwaXpNaGxMaE5sRXEvY1ZKdllrWlh1Z2x6b1o3cG1nbzFSdHgKam1iRm5NNzhrYTFRUUJqOVdLaEw2eWpWRUl2MDdVS0lKWHBNTnNuS2g1V083MjZhYmMzSE9udTlETjY5VnFFRQo3dGZrUnRWNmx2U1NzMkFVMngzT255cHA4ek53b0lPTWRibGsyb09aWWROZzY0Y3l2SzJoU0FlU3NVMFRyOVc5Ckgra0Y5QlNCNlk0QXl0QlVkSmkrK2pMSW5HM2Q5cU9ieFVzTlYrN05mRkF5NjJkL0xNR0xSOC9OUFc0U0s3c0MKRlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tDQo=';
-
-export const getClientLicensePublicKey = (): string => {
-  if (process.env.IMMICH_ENV === 'production') {
-    return clientLicensePublicKeyProd;
-  }
-  return clientLicensePublicKeyStaging;
-};
-
-const serverLicensePublicKeyProd =
-  'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFvcG5ZRGEwYS9kVTVJZUc3NGlFRQpNd2RBS2pzTmN6TGRDcVJkMVo5eTVUMndqTzdlWUlPZUpUc2wzNTBzUjBwNEtmU1VEU1h2QzlOcERwYzF0T0tsCjVzaEMvQXhwdlFBTENva0Y0anQ4dnJyZDlmQ2FYYzFUcVJiT21uaGl1Z0Q2dmtyME8vRmIzVURpM1UwVHZoUFAKbFBkdlNhd3pMcldaUExmbUhWVnJiclNLbW45SWVTZ3kwN3VrV1RJeUxzY2lOcnZuQnl3c0phUmVEdW9OV1BCSApVL21vMm1YYThtNHdNV2hpWGVoaUlPUXFNdVNVZ1BlQ3NXajhVVngxQ0dsUnpQREEwYlZOUXZlS1hXVnhjRUk2ClVMRWdKeTJGNDlsSDArYVlDbUJmN05FcjZWUTJXQjk1ZXZUS1hLdm4wcUlNN25nRmxjVUF3NmZ1VjFjTkNUSlMKNndJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tDQo=';
-
-const serverLicensePublicKeyStaging =
-  'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUE3Sy8yd3ZLUS9NdU8ydi9MUm5saAoyUy9zTHhDOGJiTEw1UUlKOGowQ3BVZW40YURlY2dYMUpKUmtGNlpUVUtpNTdTbEhtS3RSM2JOTzJmdTBUUVg5Ck5WMEJzVzllZVB0MmlTMWl4VVFmTzRObjdvTjZzbEtac01qd29RNGtGRGFmM3VHTlZJc0dMb3UxVWRLUVhpeDEKUlRHcXVTb3NZVjNWRlk3Q1hGYTVWaENBL3poVXNsNGFuVXp3eEF6M01jUFVlTXBaenYvbVZiQlRKVzBPSytWZgpWQUJvMXdYMkVBanpBekVHVzQ3Vko4czhnMnQrNHNPaHFBNStMQjBKVzlORUg5QUpweGZzWE4zSzVtM00yNUJVClZXcTlRYStIdHRENnJ0bnAvcUFweXVkWUdwZk9HYTRCUlZTR1MxMURZM0xrb2FlRzYwUEU5NHpoYjduOHpMWkgKelFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tDQo=';
-
-export const getServerLicensePublicKey = (): string => {
-  if (process.env.IMMICH_ENV === 'production') {
-    return serverLicensePublicKeyProd;
-  }
-  return serverLicensePublicKeyStaging;
 };

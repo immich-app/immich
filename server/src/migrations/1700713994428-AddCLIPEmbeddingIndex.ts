@@ -1,12 +1,14 @@
-import { getVectorExtension } from 'src/database.config';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+
+const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
 
 export class AddCLIPEmbeddingIndex1700713994428 implements MigrationInterface {
   name = 'AddCLIPEmbeddingIndex1700713994428';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (getVectorExtension() === DatabaseExtension.VECTORS) {
+    if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }
     await queryRunner.query(`SET search_path TO "$user", public, vectors`);

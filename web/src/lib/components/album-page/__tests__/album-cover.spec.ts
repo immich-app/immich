@@ -19,7 +19,7 @@ describe('AlbumCover component', () => {
     const img = component.getByTestId('album-image') as HTMLImageElement;
     expect(img.alt).toBe('someName');
     expect(img.getAttribute('loading')).toBe('lazy');
-    expect(img.className).toBe('z-0 rounded-xl object-cover aspect-square text');
+    expect(img.className).toBe('size-full rounded-xl object-cover aspect-square text');
     expect(img.getAttribute('src')).toBe('/asdf');
     expect(getAssetThumbnailUrl).toHaveBeenCalledWith({ id: '123' });
   });
@@ -36,7 +36,7 @@ describe('AlbumCover component', () => {
     const img = component.getByTestId('album-image') as HTMLImageElement;
     expect(img.alt).toBe('unnamed_album');
     expect(img.getAttribute('loading')).toBe('eager');
-    expect(img.className).toBe('z-0 rounded-xl object-cover aspect-square asdf');
+    expect(img.className).toBe('size-full rounded-xl object-cover aspect-square asdf');
     expect(img.getAttribute('src')).toStrictEqual(expect.any(String));
   });
 });

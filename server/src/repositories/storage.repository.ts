@@ -14,10 +14,8 @@ import {
   ImmichZipStream,
   WatchEvents,
 } from 'src/interfaces/storage.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { mimeTypes } from 'src/utils/mime-types';
 
-@Instrumentation()
 @Injectable()
 export class StorageRepository implements IStorageRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
@@ -40,8 +38,16 @@ export class StorageRepository implements IStorageRepository {
     return fs.stat(filepath);
   }
 
-  writeFile(filepath: string, buffer: Buffer) {
-    return fs.writeFile(filepath, buffer);
+  createFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'wx' });
+  }
+
+  createOrOverwriteFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'w' });
+  }
+
+  overwriteFile(filepath: string, buffer: Buffer) {
+    return fs.writeFile(filepath, buffer, { flag: 'r+' });
   }
 
   rename(source: string, target: string) {
@@ -148,7 +154,9 @@ export class StorageRepository implements IStorageRepository {
       return Promise.resolve([]);
     }
 
-    return glob(this.asGlob(pathsToCrawl), {
+    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
+
+    return glob(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -164,7 +172,9 @@ export class StorageRepository implements IStorageRepository {
       return emptyGenerator();
     }
 
-    const stream = globStream(this.asGlob(pathsToCrawl), {
+    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
+
+    const stream = globStream(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,
       onlyFiles: true,
@@ -198,10 +208,9 @@ export class StorageRepository implements IStorageRepository {
     return () => watcher.close();
   }
 
-  private asGlob(pathsToCrawl: string[]): string {
-    const escapedPaths = pathsToCrawl.map((path) => escapePath(path));
-    const base = escapedPaths.length === 1 ? escapedPaths[0] : `{${escapedPaths.join(',')}}`;
+  private asGlob(pathToCrawl: string): string {
+    const escapedPath = escapePath(pathToCrawl);
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-    return `${base}/**/${extensions}`;
+    return `${escapedPath}/**/${extensions}`;
   }
 }

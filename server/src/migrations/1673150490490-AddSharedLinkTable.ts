@@ -18,10 +18,10 @@ export class AddSharedLinkTable1673150490490 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "shared_link__asset" DROP CONSTRAINT "FK_c9fab4aa97ffd1b034f3d6581ab"`);
         await queryRunner.query(`ALTER TABLE "shared_link__asset" DROP CONSTRAINT "FK_5b7decce6c8d3db9593d6111a66"`);
         await queryRunner.query(`ALTER TABLE "shared_links" DROP CONSTRAINT "FK_0c6ce9058c29f07cdf7014eac66"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_c9fab4aa97ffd1b034f3d6581a"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_5b7decce6c8d3db9593d6111a6"`);
+        await queryRunner.query(`DROP INDEX "IDX_c9fab4aa97ffd1b034f3d6581a"`);
+        await queryRunner.query(`DROP INDEX "IDX_5b7decce6c8d3db9593d6111a6"`);
         await queryRunner.query(`DROP TABLE "shared_link__asset"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_sharedlink_key"`);
+        await queryRunner.query(`DROP INDEX "IDX_sharedlink_key"`);
         await queryRunner.query(`DROP TABLE "shared_links"`);
     }
 

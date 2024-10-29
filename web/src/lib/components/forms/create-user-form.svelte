@@ -1,17 +1,19 @@
 <script lang="ts">
-  import { serverInfo } from '$lib/stores/server-info.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createUserAdmin } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import PasswordField from '../shared-components/password-field.svelte';
-  import Slider from '../elements/slider.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { t } from 'svelte-i18n';
+  import { serverInfo } from '$lib/stores/server-info.store';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
+  import { createUserAdmin } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
+  import Button from '../elements/buttons/button.svelte';
+  import Slider from '../elements/slider.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
 
   export let onClose: () => void;
+  export let onSubmit: () => void;
+  export let onCancel: () => void;
+  export let oauthEnabled = false;
 
   let error: string;
   let success: string;
@@ -39,10 +41,6 @@
       canCreateUser = true;
     }
   }
-  const dispatch = createEventDispatcher<{
-    submit: void;
-    cancel: void;
-  }>();
 
   async function registerUser() {
     if (canCreateUser && !isCreatingUser) {
@@ -63,7 +61,7 @@
 
         success = $t('new_user_created');
 
-        dispatch('submit');
+        onSubmit();
 
         return;
       } catch (error) {
@@ -93,12 +91,17 @@
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">{$t('password')}</label>
-      <PasswordField id="password" bind:password autocomplete="new-password" />
+      <PasswordField id="password" bind:password autocomplete="new-password" required={!oauthEnabled} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="confirmPassword">{$t('confirm_password')}</label>
-      <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
+      <PasswordField
+        id="confirmPassword"
+        bind:password={confirmPassword}
+        autocomplete="new-password"
+        required={!oauthEnabled}
+      />
     </div>
 
     <div class="my-4 flex place-items-center justify-between gap-2">
@@ -132,7 +135,7 @@
     {/if}
   </form>
   <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => dispatch('cancel')}>{$t('cancel')}</Button>
+    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
   </svelte:fragment>
 </FullScreenModal>

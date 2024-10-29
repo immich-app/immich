@@ -151,7 +151,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
     handleSyncAlbumToggle(bool isEnable) async {
       if (isEnable) {
-        await ref.read(albumProvider.notifier).getAllAlbums();
+        await ref.read(albumProvider.notifier).refreshRemoteAlbums();
         for (final album in selectedBackupAlbums) {
           await ref.read(albumProvider.notifier).createSyncAlbum(album.name);
         }

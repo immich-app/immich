@@ -1,14 +1,19 @@
+<script lang="ts" context="module">
+  void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
+</script>
+
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl, getKey, handlePromiseError } from '$lib/utils';
-  import { getMapStyle, MapTheme, type MapMarkerResponseDto } from '@immich/sdk';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getServerConfig, type MapMarkerResponseDto } from '@immich/sdk';
+  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import maplibregl from 'maplibre-gl';
-  import { createEventDispatcher } from 'svelte';
+  import { t } from 'svelte-i18n';
   import {
     AttributionControl,
     Control,
@@ -24,7 +29,6 @@
     ScaleControl,
     type Map,
   } from 'svelte-maplibre';
-  import { t } from 'svelte-i18n';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -47,26 +51,25 @@
   }
 
   export let onOpenInMapView: (() => Promise<void> | void) | undefined = undefined;
+  export let onSelect: (assetIds: string[]) => void = () => {};
+  export let onClickPoint: ({ lat, lng }: { lat: number; lng: number }) => void = () => {};
 
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
-  $: style = (() =>
-    getMapStyle({
-      theme: ($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT) as unknown as MapTheme,
-      key: getKey(),
-    }) as Promise<StyleSpecification>)();
-
-  const dispatch = createEventDispatcher<{
-    selected: string[];
-    clickedPoint: { lat: number; lng: number };
-  }>();
+  $: style = (async () => {
+    const config = await getServerConfig();
+    const theme = $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT;
+    const styleUrl = theme === Theme.DARK ? config.mapDarkStyleUrl : config.mapLightStyleUrl;
+    const style = await fetch(styleUrl).then((response) => response.json());
+    return style as StyleSpecification;
+  })();
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
       return;
     }
-    dispatch('selected', [assetId]);
+    onSelect([assetId]);
   }
 
   async function handleClusterClick(clusterId: number, map: Map | null) {
@@ -77,13 +80,13 @@
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
     const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
     const ids = leaves.map((leaf) => leaf.properties?.id);
-    dispatch('selected', ids);
+    onSelect(ids);
   }
 
   function handleMapClick(event: maplibregl.MapMouseEvent) {
     if (clickable) {
       const { lng, lat } = event.lngLat;
-      dispatch('clickedPoint', { lng, lat });
+      onClickPoint({ lng, lat });
 
       if (marker) {
         marker.remove();

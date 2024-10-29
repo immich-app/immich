@@ -21,15 +21,16 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
+import { RouteKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor, Route } from 'src/middleware/file-upload.interceptor';
+import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { UserService } from 'src/services/user.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Users')
-@Controller(Route.USER)
+@Controller(RouteKey.USER)
 export class UserController {
   constructor(
     private service: UserService,

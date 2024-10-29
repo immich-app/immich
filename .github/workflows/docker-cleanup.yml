@@ -22,7 +22,7 @@ concurrency:
 jobs:
   cleanup-images:
     name: Cleanup Stale Images Tags for ${{ matrix.primary-name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +35,7 @@ jobs:
     steps:
       - name: Clean temporary images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/ephemeral@v0.8.0
+        uses: stumpylog/image-cleaner-action/ephemeral@v0.9.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"
@@ -48,7 +48,7 @@ jobs:
 
   cleanup-untagged-images:
     name: Cleanup Untagged Images Tags for ${{ matrix.primary-name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - cleanup-images
     strategy:
@@ -64,7 +64,7 @@ jobs:
     steps:
       - name: Clean untagged images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/untagged@v0.8.0
+        uses: stumpylog/image-cleaner-action/untagged@v0.9.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"

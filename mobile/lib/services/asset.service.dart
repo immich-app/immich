@@ -1,67 +1,85 @@
-// ignore_for_file: null_argument_to_non_null_type
-
 import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/etag.entity.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/asset_api.interface.dart';
+import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/etag.interface.dart';
+import 'package:immich_mobile/interfaces/exif_info.interface.dart';
+import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
+import 'package:immich_mobile/repositories/etag.repository.dart';
+import 'package:immich_mobile/repositories/exif_info.repository.dart';
+import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(
+    ref.watch(assetApiRepositoryProvider),
+    ref.watch(assetRepositoryProvider),
+    ref.watch(exifInfoRepositoryProvider),
+    ref.watch(userRepositoryProvider),
+    ref.watch(etagRepositoryProvider),
+    ref.watch(backupRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(userServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(albumServiceProvider),
-    ref.watch(dbProvider),
   ),
 );
 
 class AssetService {
+  final IAssetApiRepository _assetApiRepository;
+  final IAssetRepository _assetRepository;
+  final IExifInfoRepository _exifInfoRepository;
+  final IUserRepository _userRepository;
+  final IETagRepository _etagRepository;
+  final IBackupRepository _backupRepository;
   final ApiService _apiService;
   final SyncService _syncService;
   final UserService _userService;
   final BackupService _backupService;
   final AlbumService _albumService;
   final log = Logger('AssetService');
-  final Isar _db;
 
   AssetService(
+    this._assetApiRepository,
+    this._assetRepository,
+    this._exifInfoRepository,
+    this._userRepository,
+    this._etagRepository,
+    this._backupRepository,
     this._apiService,
     this._syncService,
     this._userService,
     this._backupService,
     this._albumService,
-    this._db,
   );
 
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets() async {
-    final syncedUserIds = await _db.eTags.where().idProperty().findAll();
+    final syncedUserIds = await _etagRepository.getAllIds();
     final List<User> syncedUsers = syncedUserIds.isEmpty
         ? []
-        : await _db.users
-            .where()
-            .anyOf(syncedUserIds, (q, id) => q.idEqualTo(id))
-            .findAll();
+        : await _userRepository.getByIds(syncedUserIds);
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
       users: syncedUsers,
@@ -166,7 +184,7 @@ class AssetService {
   /// Loads the exif information from the database. If there is none, loads
   /// the exif info from the server (remote assets only)
   Future<Asset> loadExif(Asset a) async {
-    a.exifInfo ??= await _db.exifInfos.get(a.id);
+    a.exifInfo ??= await _exifInfoRepository.get(a.id);
     // fileSize is always filled on the server but not set on client
     if (a.exifInfo?.fileSize == null) {
       if (a.isRemote) {
@@ -176,7 +194,7 @@ class AssetService {
           a.exifInfo = newExif;
           if (newExif != a.exifInfo) {
             if (a.isInDb) {
-              _db.writeTxn(() => a.put(_db));
+              _assetRepository.transaction(() => _assetRepository.update(a));
             } else {
               debugPrint("[loadExif] parameter Asset is not from DB!");
             }
@@ -205,7 +223,7 @@ class AssetService {
     );
   }
 
-  Future<List<Asset?>> changeFavoriteStatus(
+  Future<List<Asset>> changeFavoriteStatus(
     List<Asset> assets,
     bool isFavorite,
   ) async {
@@ -221,11 +239,11 @@ class AssetService {
       return assets;
     } catch (error, stack) {
       log.severe("Error while changing favorite status", error, stack);
-      return Future.value(null);
+      return [];
     }
   }
 
-  Future<List<Asset?>> changeArchiveStatus(
+  Future<List<Asset>> changeArchiveStatus(
     List<Asset> assets,
     bool isArchived,
   ) async {
@@ -241,11 +259,11 @@ class AssetService {
       return assets;
     } catch (error, stack) {
       log.severe("Error while changing archive status", error, stack);
-      return Future.value(null);
+      return [];
     }
   }
 
-  Future<List<Asset?>> changeDateTime(
+  Future<List<Asset>?> changeDateTime(
     List<Asset> assets,
     String updatedDt,
   ) async {
@@ -269,7 +287,7 @@ class AssetService {
     }
   }
 
-  Future<List<Asset?>> changeLocation(
+  Future<List<Asset>?> changeLocation(
     List<Asset> assets,
     LatLng location,
   ) async {
@@ -298,10 +316,10 @@ class AssetService {
 
   Future<void> syncUploadedAssetToAlbums() async {
     try {
-      final [selectedAlbums, excludedAlbums] = await Future.wait([
-        _backupService.selectedAlbumsQuery().findAll(),
-        _backupService.excludedAlbumsQuery().findAll(),
-      ]);
+      final selectedAlbums =
+          await _backupRepository.getAllBySelection(BackupSelection.select);
+      final excludedAlbums =
+          await _backupRepository.getAllBySelection(BackupSelection.exclude);
 
       final candidates = await _backupService.buildUploadCandidates(
         selectedAlbums,
@@ -309,32 +327,19 @@ class AssetService {
         useTimeFilter: false,
       );
 
-      final duplicates = await _apiService.assetsApi.checkExistingAssets(
-        CheckExistingAssetsDto(
-          deviceAssetIds: candidates.map((c) => c.asset.id).toList(),
-          deviceId: Store.get(StoreKey.deviceId),
-        ),
-      );
-
-      if (duplicates != null) {
-        candidates
-            .removeWhere((c) => !duplicates.existingIds.contains(c.asset.id));
-      }
-
       await refreshRemoteAssets();
-      final remoteAssets = await _db.assets
-          .where()
-          .localIdIsNotNull()
-          .filter()
-          .remoteIdIsNotNull()
-          .findAll();
+      final owner = await _userRepository.me();
+      final remoteAssets = await _assetRepository.getAll(
+        ownerId: owner.isarId,
+        state: AssetState.merged,
+      );
 
       /// Map<AlbumName, [AssetId]>
       Map<String, List<String>> assetToAlbums = {};
 
       for (BackupCandidate candidate in candidates) {
         final asset = remoteAssets.firstWhereOrNull(
-          (a) => a.localId == candidate.asset.id,
+          (a) => a.localId == candidate.asset.localId,
         );
 
         if (asset != null) {
@@ -354,5 +359,47 @@ class AssetService {
     } catch (error, stack) {
       log.severe("Error while syncing uploaded asset to albums", error, stack);
     }
+  }
+
+  Future<void> setDescription(
+    Asset asset,
+    String newDescription,
+  ) async {
+    final remoteAssetId = asset.remoteId;
+    final localExifId = asset.exifInfo?.id;
+
+    // Guard [remoteAssetId] and [localExifId] null
+    if (remoteAssetId == null || localExifId == null) {
+      return;
+    }
+
+    final result = await _assetApiRepository.update(
+      remoteAssetId,
+      description: newDescription,
+    );
+
+    final description = result.exifInfo?.description;
+
+    if (description != null) {
+      var exifInfo = await _exifInfoRepository.get(localExifId);
+
+      if (exifInfo != null) {
+        exifInfo.description = description;
+        await _exifInfoRepository.update(exifInfo);
+      }
+    }
+  }
+
+  Future<String> getDescription(Asset asset) async {
+    final localExifId = asset.exifInfo?.id;
+
+    // Guard [remoteAssetId] and [localExifId] null
+    if (localExifId == null) {
+      return "";
+    }
+
+    final exifInfo = await _exifInfoRepository.get(localExifId);
+
+    return exifInfo?.description ?? "";
   }
 }

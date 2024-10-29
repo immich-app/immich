@@ -10,10 +10,12 @@ type TrackedProperties = {
   left?: string;
 };
 type OnIntersectCallback = (entryOrElement: IntersectionObserverEntry | HTMLElement) => unknown;
-type OnSeperateCallback = (element: HTMLElement) => unknown;
+type OnSeparateCallback = (element: HTMLElement) => unknown;
 type IntersectionObserverActionProperties = {
   key?: string;
-  onSeparate?: OnSeperateCallback;
+  /** Function to execute when the element leaves the viewport */
+  onSeparate?: OnSeparateCallback;
+  /** Function to execute when the element enters the viewport */
   onIntersect?: OnIntersectCallback;
 
   root?: Element | Document | null;
@@ -22,8 +24,6 @@ type IntersectionObserverActionProperties = {
   right?: string;
   bottom?: string;
   left?: string;
-
-  disabled?: boolean;
 };
 type TaskKey = HTMLElement | string;
 
@@ -92,11 +92,7 @@ function _intersectionObserver(
   element: HTMLElement,
   properties: IntersectionObserverActionProperties,
 ) {
-  if (properties.disabled) {
-    properties.onIntersect?.(element);
-  } else {
-    configure(key, element, properties);
-  }
+  configure(key, element, properties);
   return {
     update(properties: IntersectionObserverActionProperties) {
       const config = elementToConfig.get(key);
@@ -106,24 +102,24 @@ function _intersectionObserver(
       if (isEquivalent(config, properties)) {
         return;
       }
+
       configure(key, element, properties);
     },
     destroy: () => {
-      if (properties.disabled) {
-        properties.onSeparate?.(element);
-      } else {
-        const config = elementToConfig.get(key);
-        const { observer, onSeparate } = config || {};
-        observer?.unobserve(element);
-        elementToConfig.delete(key);
-        if (onSeparate) {
-          onSeparate?.(element);
-        }
-      }
+      const config = elementToConfig.get(key);
+      const { observer } = config || {};
+      observer?.unobserve(element);
+      elementToConfig.delete(key);
     },
   };
 }
 
+/**
+ * Monitors an element's visibility in the viewport and calls functions when it enters or leaves (based on a threshold).
+ * @param element
+ * @param properties One or multiple configurations for the IntersectionObserver(s)
+ * @returns
+ */
 export function intersectionObserver(
   element: HTMLElement,
   properties: IntersectionObserverActionProperties | IntersectionObserverActionProperties[],
@@ -148,5 +144,5 @@ export function intersectionObserver(
       },
     };
   }
-  return _intersectionObserver(element, element, properties);
+  return _intersectionObserver(properties.key || element, element, properties);
 }

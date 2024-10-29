@@ -71,6 +71,8 @@
   }
 
   beforeNavigate(({ from, to }) => {
+    setKey(isSharedLinkRoute(to?.route.id) ? to?.params?.key : undefined);
+
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
@@ -84,7 +86,7 @@
 
 <svelte:head>
   <title>{$page.data.meta?.title || 'Web'} - Immich</title>
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="currentColor" />
   <AppleHeader />
 

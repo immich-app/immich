@@ -16,17 +16,16 @@ class DeprecatedApi {
 
   final ApiClient apiClient;
 
-  /// This property was deprecated in v1.113.0
+  /// This property was deprecated in v1.116.0
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
-  /// * [String] id (required):
-  Future<Response> getPersonAssetsWithHttpInfo(String id,) async {
+  /// * [num] count:
+  Future<Response> getRandomWithHttpInfo({ num? count, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/people/{id}/assets'
-      .replaceAll('{id}', id);
+    final path = r'/assets/random';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -34,6 +33,10 @@ class DeprecatedApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (count != null) {
+      queryParams.addAll(_queryParams('', 'count', count));
+    }
 
     const contentTypes = <String>[];
 
@@ -49,13 +52,13 @@ class DeprecatedApi {
     );
   }
 
-  /// This property was deprecated in v1.113.0
+  /// This property was deprecated in v1.116.0
   ///
   /// Parameters:
   ///
-  /// * [String] id (required):
-  Future<List<AssetResponseDto>?> getPersonAssets(String id,) async {
-    final response = await getPersonAssetsWithHttpInfo(id,);
+  /// * [num] count:
+  Future<List<AssetResponseDto>?> getRandom({ num? count, }) async {
+    final response = await getRandomWithHttpInfo( count: count, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

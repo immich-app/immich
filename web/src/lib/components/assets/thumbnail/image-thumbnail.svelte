@@ -5,7 +5,6 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   export let url: string;
@@ -45,12 +44,20 @@
       setLoaded();
     }
   });
+
+  $: optionalClasses = [
+    curve && 'rounded-xl',
+    circle && 'rounded-full',
+    shadow && 'shadow-lg',
+    (circle || !heightStyle) && 'aspect-square',
+    border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+  ]
+    .filter(Boolean)
+    .join(' ');
 </script>
 
 {#if errored}
-  <BrokenAsset>
-    <div slot="message" class="absolute top-2/3">{$t('error_loading_image')}</div>
-  </BrokenAsset>
+  <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
 {:else}
   <img
     bind:this={img}
@@ -64,11 +71,7 @@
     src={url}
     alt={loaded || errored ? altText : ''}
     {title}
-    class="object-cover {border ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary' : ''}"
-    class:rounded-xl={curve}
-    class:shadow-lg={shadow}
-    class:rounded-full={circle}
-    class:aspect-square={circle || !heightStyle}
+    class="object-cover {optionalClasses}"
     class:opacity-0={!thumbhash && !loaded}
     draggable="false"
   />

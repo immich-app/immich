@@ -5,31 +5,67 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/interfaces/album.interface.dart';
+import 'package:immich_mobile/interfaces/album_api.interface.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/etag.interface.dart';
+import 'package:immich_mobile/interfaces/exif_info.interface.dart';
+import 'package:immich_mobile/interfaces/user.interface.dart';
+import 'package:immich_mobile/repositories/album.repository.dart';
+import 'package:immich_mobile/repositories/album_api.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/etag.repository.dart';
+import 'package:immich_mobile/repositories/exif_info.repository.dart';
+import 'package:immich_mobile/repositories/user.repository.dart';
+import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 final syncServiceProvider = Provider(
-  (ref) => SyncService(ref.watch(dbProvider), ref.watch(hashServiceProvider)),
+  (ref) => SyncService(
+    ref.watch(hashServiceProvider),
+    ref.watch(entityServiceProvider),
+    ref.watch(albumMediaRepositoryProvider),
+    ref.watch(albumApiRepositoryProvider),
+    ref.watch(albumRepositoryProvider),
+    ref.watch(assetRepositoryProvider),
+    ref.watch(exifInfoRepositoryProvider),
+    ref.watch(userRepositoryProvider),
+    ref.watch(etagRepositoryProvider),
+  ),
 );
 
 class SyncService {
-  final Isar _db;
   final HashService _hashService;
+  final EntityService _entityService;
+  final IAlbumMediaRepository _albumMediaRepository;
+  final IAlbumApiRepository _albumApiRepository;
+  final IAlbumRepository _albumRepository;
+  final IAssetRepository _assetRepository;
+  final IExifInfoRepository _exifInfoRepository;
+  final IUserRepository _userRepository;
+  final IETagRepository _eTagRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
 
-  SyncService(this._db, this._hashService);
+  SyncService(
+    this._hashService,
+    this._entityService,
+    this._albumMediaRepository,
+    this._albumApiRepository,
+    this._albumRepository,
+    this._assetRepository,
+    this._exifInfoRepository,
+    this._userRepository,
+    this._eTagRepository,
+  );
 
   // public methods:
 
@@ -59,16 +95,14 @@ class SyncService {
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
   Future<bool> syncRemoteAlbumsToDb(
-    List<AlbumResponseDto> remote, {
-    required bool isShared,
-    required FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
-  }) =>
-      _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
+    List<Album> remote,
+  ) =>
+      _lock.run(() => _syncRemoteAlbumsToDb(remote));
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
   Future<bool> syncLocalAlbumAssetsToDb(
-    List<AssetPathEntity> onDevice, [
+    List<Album> onDevice, [
     Set<String>? excludedAssets,
   ]) =>
       _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice, excludedAssets));
@@ -102,8 +136,7 @@ class SyncService {
   /// Returns `true`if there were any changes
   Future<bool> _syncUsersFromServer(List<User> users) async {
     users.sortBy((u) => u.id);
-    final dbUsers = await _db.users.where().sortById().findAll();
-    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
+    final dbUsers = await _userRepository.getAll(sortBy: UserSort.id);
     final List<int> toDelete = [];
     final List<User> toUpsert = [];
     final changes = diffSortedListsSync(
@@ -124,9 +157,9 @@ class SyncService {
       onlySecond: (User b) => toDelete.add(b.isarId),
     );
     if (changes) {
-      await _db.writeTxn(() async {
-        await _db.users.deleteAll(toDelete);
-        await _db.users.putAll(toUpsert);
+      await _userRepository.transaction(() async {
+        await _userRepository.deleteById(toDelete);
+        await _userRepository.upsertAll(toUpsert);
       });
     }
     return changes;
@@ -135,15 +168,15 @@ class SyncService {
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset a) async {
     final Asset? inDb =
-        await _db.assets.getByOwnerIdChecksum(a.ownerId, a.checksum);
+        await _assetRepository.getByOwnerIdChecksum(a.ownerId, a.checksum);
     if (inDb != null) {
       // unify local/remote assets by replacing the
       // local-only asset in the DB with a local&remote asset
       a = inDb.updatedCopy(a);
     }
     try {
-      await _db.writeTxn(() => a.put(_db));
-    } on IsarError catch (e) {
+      await _assetRepository.update(a);
+    } catch (e) {
       _log.severe("Failed to put new asset into db", e);
       return false;
     }
@@ -158,9 +191,9 @@ class SyncService {
       DateTime since,
     ) getChangedAssets,
   ) async {
-    final currentUser = Store.get(StoreKey.currentUser);
+    final currentUser = await _userRepository.me();
     final DateTime? since =
-        _db.eTags.getSync(currentUser.isarId)?.time?.toUtc();
+        (await _eTagRepository.get(currentUser.isarId))?.time?.toUtc();
     if (since == null) return null;
     final DateTime now = DateTime.now();
     final (toUpsert, toDelete) = await getChangedAssets(users, since);
@@ -181,7 +214,7 @@ class SyncService {
         return true;
       }
       return false;
-    } on IsarError catch (e) {
+    } catch (e) {
       _log.severe("Failed to sync remote assets to db", e);
     }
     return null;
@@ -189,23 +222,21 @@ class SyncService {
 
   /// Deletes remote-only assets, updates merged assets to be local-only
   Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
-    return _db.writeTxn(() async {
-      final idsToRemove = await _db.assets
-          .remote(idsToDelete)
-          .filter()
-          .localIdIsNull()
-          .idProperty()
-          .findAll();
-      await _db.assets.deleteAll(idsToRemove);
-      await _db.exifInfos.deleteAll(idsToRemove);
-      final onlyLocal = await _db.assets.remote(idsToDelete).findAll();
-      if (onlyLocal.isNotEmpty) {
-        for (final Asset a in onlyLocal) {
-          a.remoteId = null;
-          a.isTrashed = false;
-        }
-        await _db.assets.putAll(onlyLocal);
+    return _assetRepository.transaction(() async {
+      await _assetRepository.deleteAllByRemoteId(
+        idsToDelete,
+        state: AssetState.remote,
+      );
+      final merged = await _assetRepository.getAllByRemoteId(
+        idsToDelete,
+        state: AssetState.merged,
+      );
+      if (merged.isEmpty) return;
+      for (final Asset asset in merged) {
+        asset.remoteId = null;
+        asset.isTrashed = false;
       }
+      await _assetRepository.updateAll(merged);
     });
   }
 
@@ -220,12 +251,7 @@ class SyncService {
       return false;
     }
     await _syncUsersFromServer(serverUsers);
-    final List<User> users = await _db.users
-        .filter()
-        .isPartnerSharedWithEqualTo(true)
-        .or()
-        .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
-        .findAll();
+    final List<User> users = await _userRepository.getAllAccessible();
     bool changes = false;
     for (User u in users) {
       changes |= await _syncRemoteAssetsForUser(u, loadAssets);
@@ -242,11 +268,10 @@ class SyncService {
     if (remote == null) {
       return false;
     }
-    final List<Asset> inDb = await _db.assets
-        .where()
-        .ownerIdEqualToAnyChecksum(user.isarId)
-        .sortByChecksum()
-        .findAll();
+    final List<Asset> inDb = await _assetRepository.getAll(
+      ownerId: user.isarId,
+      sortBy: AssetSort.checksum,
+    );
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
 
     remote.sort(Asset.compareByChecksum);
@@ -261,9 +286,9 @@ class SyncService {
     }
     final idsToDelete = toRemove.map((e) => e.id).toList();
     try {
-      await _db.writeTxn(() => _db.assets.deleteAll(idsToDelete));
+      await _assetRepository.deleteById(idsToDelete);
       await upsertAssetsWithExif(toAdd + toUpdate);
-    } on IsarError catch (e) {
+    } catch (e) {
       _log.severe("Failed to sync remote assets to db", e);
     }
     await _updateUserAssetsETag([user], now);
@@ -272,55 +297,44 @@ class SyncService {
 
   Future<void> _updateUserAssetsETag(List<User> users, DateTime time) {
     final etags = users.map((u) => ETag(id: u.id, time: time)).toList();
-    return _db.writeTxn(() => _db.eTags.putAll(etags));
+    return _eTagRepository.upsertAll(etags);
   }
 
   Future<void> _clearUserAssetsETag(List<User> users) {
     final ids = users.map((u) => u.id).toList();
-    return _db.writeTxn(() => _db.eTags.deleteAllById(ids));
+    return _eTagRepository.deleteByIds(ids);
   }
 
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
   Future<bool> _syncRemoteAlbumsToDb(
-    List<AlbumResponseDto> remote,
-    bool isShared,
-    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
+    List<Album> remoteAlbums,
   ) async {
-    remote.sortBy((e) => e.id);
+    remoteAlbums.sortBy((e) => e.remoteId!);
 
-    final baseQuery = _db.albums.where().remoteIdIsNotNull().filter();
-    final QueryBuilder<Album, Album, QAfterFilterCondition> query;
-    if (isShared) {
-      query = baseQuery.sharedEqualTo(true);
-    } else {
-      final User me = Store.get(StoreKey.currentUser);
-      query = baseQuery.owner((q) => q.isarIdEqualTo(me.isarId));
-    }
-    final List<Album> dbAlbums = await query.sortByRemoteId().findAll();
-    assert(dbAlbums.isSortedBy((e) => e.remoteId!), "dbAlbums not sorted!");
+    final List<Album> dbAlbums = await _albumRepository.getAll(
+      remote: true,
+      sortBy: AlbumSort.remoteId,
+    );
 
     final List<Asset> toDelete = [];
     final List<Asset> existing = [];
 
     final bool changes = await diffSortedLists(
-      remote,
+      remoteAlbums,
       dbAlbums,
-      compare: (AlbumResponseDto a, Album b) => a.id.compareTo(b.remoteId!),
-      both: (AlbumResponseDto a, Album b) =>
-          _syncRemoteAlbum(a, b, toDelete, existing, loadDetails),
-      onlyFirst: (AlbumResponseDto a) =>
-          _addAlbumFromServer(a, existing, loadDetails),
-      onlySecond: (Album a) => _removeAlbumFromDb(a, toDelete),
+      compare: (remoteAlbum, dbAlbum) =>
+          remoteAlbum.remoteId!.compareTo(dbAlbum.remoteId!),
+      both: (remoteAlbum, dbAlbum) =>
+          _syncRemoteAlbum(remoteAlbum, dbAlbum, toDelete, existing),
+      onlyFirst: (remoteAlbum) => _addAlbumFromServer(remoteAlbum, existing),
+      onlySecond: (dbAlbum) => _removeAlbumFromDb(dbAlbum, toDelete),
     );
 
-    if (isShared && toDelete.isNotEmpty) {
+    if (toDelete.isNotEmpty) {
       final List<int> idsToRemove = sharedAssetsToRemove(toDelete, existing);
       if (idsToRemove.isNotEmpty) {
-        await _db.writeTxn(() async {
-          await _db.assets.deleteAll(idsToRemove);
-          await _db.exifInfos.deleteAll(idsToRemove);
-        });
+        await _assetRepository.deleteById(idsToRemove);
       }
     } else {
       assert(toDelete.isEmpty);
@@ -332,26 +346,25 @@ class SyncService {
   /// syncing changes from local back to server)
   /// accumulates
   Future<bool> _syncRemoteAlbum(
-    AlbumResponseDto dto,
+    Album dto,
     Album album,
     List<Asset> deleteCandidates,
     List<Asset> existing,
-    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   ) async {
-    if (!_hasAlbumResponseDtoChanged(dto, album)) {
+    if (!_hasRemoteAlbumChanged(dto, album)) {
       return false;
     }
     // loadDetails (/api/album/:id) will not include lastModifiedAssetTimestamp,
     // i.e. it will always be null. Save it here.
     final originalDto = dto;
-    dto = await loadDetails(dto);
-    if (dto.assetCount != dto.assets.length) {
-      return false;
-    }
-    final assetsInDb =
-        await album.assets.filter().sortByOwnerId().thenByChecksum().findAll();
+    dto = await _albumApiRepository.get(dto.remoteId!);
+
+    final assetsInDb = await _assetRepository.getByAlbum(
+      album,
+      sortBy: AssetSort.ownerIdChecksum,
+    );
     assert(assetsInDb.isSorted(Asset.compareByOwnerChecksum), "inDb unsorted!");
-    final List<Asset> assetsOnRemote = dto.getAssets();
+    final List<Asset> assetsOnRemote = dto.remoteAssets.toList();
     assetsOnRemote.sort(Asset.compareByOwnerChecksum);
     final (toAdd, toUpdate, toUnlink) = _diffAssets(
       assetsOnRemote,
@@ -362,15 +375,16 @@ class SyncService {
     // update shared users
     final List<User> sharedUsers = album.sharedUsers.toList(growable: false);
     sharedUsers.sort((a, b) => a.id.compareTo(b.id));
-    dto.albumUsers.sort((a, b) => a.user.id.compareTo(b.user.id));
+    final List<User> users = dto.remoteUsers.toList()
+      ..sort((a, b) => a.id.compareTo(b.id));
     final List<String> userIdsToAdd = [];
     final List<User> usersToUnlink = [];
     diffSortedListsSync(
-      dto.albumUsers,
+      users,
       sharedUsers,
-      compare: (AlbumUserResponseDto a, User b) => a.user.id.compareTo(b.id),
+      compare: (User a, User b) => a.id.compareTo(b.id),
       both: (a, b) => false,
-      onlyFirst: (AlbumUserResponseDto a) => userIdsToAdd.add(a.user.id),
+      onlyFirst: (User a) => userIdsToAdd.add(a.id),
       onlySecond: (User a) => usersToUnlink.add(a),
     );
 
@@ -378,43 +392,44 @@ class SyncService {
     final (existingInDb, updated) = await _linkWithExistingFromDb(toAdd);
     await upsertAssetsWithExif(updated);
     final assetsToLink = existingInDb + updated;
-    final usersToLink = (await _db.users.getAllById(userIdsToAdd)).cast<User>();
+    final usersToLink = await _userRepository.getByIds(userIdsToAdd);
 
-    album.name = dto.albumName;
+    album.name = dto.name;
     album.shared = dto.shared;
     album.createdAt = dto.createdAt;
-    album.modifiedAt = dto.updatedAt;
+    album.modifiedAt = dto.modifiedAt;
     album.startDate = dto.startDate;
     album.endDate = dto.endDate;
     album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
     album.shared = dto.shared;
-    album.activityEnabled = dto.isActivityEnabled;
-    if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
-      album.thumbnail.value = await _db.assets
-          .where()
-          .remoteIdEqualTo(dto.albumThumbnailAssetId)
-          .findFirst();
+    album.activityEnabled = dto.activityEnabled;
+    final remoteThumbnailAssetId = dto.remoteThumbnailAssetId;
+    if (remoteThumbnailAssetId != null &&
+        album.thumbnail.value?.remoteId != remoteThumbnailAssetId) {
+      album.thumbnail.value =
+          await _assetRepository.getByRemoteId(remoteThumbnailAssetId);
     }
 
     // write & commit all changes to DB
     try {
-      await _db.writeTxn(() async {
-        await _db.assets.putAll(toUpdate);
-        await album.thumbnail.save();
-        await album.sharedUsers
-            .update(link: usersToLink, unlink: usersToUnlink);
-        await album.assets.update(link: assetsToLink, unlink: toUnlink.cast());
-        await _db.albums.put(album);
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(toUpdate);
+        await _albumRepository.addUsers(album, usersToLink);
+        await _albumRepository.removeUsers(album, usersToUnlink);
+        await _albumRepository.addAssets(album, assetsToLink);
+        await _albumRepository.removeAssets(album, toUnlink);
+        await _albumRepository.recalculateMetadata(album);
+        await _albumRepository.update(album);
       });
       _log.info("Synced changes of remote album ${album.name} to DB");
-    } on IsarError catch (e) {
+    } catch (e) {
       _log.severe("Failed to sync remote album to database", e);
     }
 
     if (album.shared || dto.shared) {
-      final userId = Store.get(StoreKey.currentUser).isarId;
+      final userId = (await _userRepository.me()).isarId;
       final foreign =
-          await album.assets.filter().not().ownerIdEqualTo(userId).findAll();
+          await _assetRepository.getByAlbum(album, notOwnedBy: [userId]);
       existing.addAll(foreign);
 
       // delete assets in DB unless they belong to this user or part of some other shared album
@@ -428,27 +443,26 @@ class SyncService {
   /// (shared) assets to the database beforehand
   /// accumulates assets already existing in the database
   Future<void> _addAlbumFromServer(
-    AlbumResponseDto dto,
+    Album album,
     List<Asset> existing,
-    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   ) async {
-    if (dto.assetCount != dto.assets.length) {
-      dto = await loadDetails(dto);
+    if (album.remoteAssetCount != album.remoteAssets.length) {
+      album = await _albumApiRepository.get(album.remoteId!);
     }
-    if (dto.assetCount == dto.assets.length) {
+    if (album.remoteAssetCount == album.remoteAssets.length) {
       // in case an album contains assets not yet present in local DB:
       // put missing album assets into local DB
       final (existingInDb, updated) =
-          await _linkWithExistingFromDb(dto.getAssets());
+          await _linkWithExistingFromDb(album.remoteAssets.toList());
       existing.addAll(existingInDb);
       await upsertAssetsWithExif(updated);
 
-      final Album a = await Album.remote(dto);
-      await _db.writeTxn(() => _db.albums.store(a));
+      await _entityService.fillAlbumWithDatabaseEntities(album);
+      await _albumRepository.create(album);
     } else {
       _log.warning(
-          "Failed to add album from server: assetCount ${dto.assetCount} != "
-          "asset array length ${dto.assets.length} for album ${dto.albumName}");
+          "Failed to add album from server: assetCount ${album.remoteAssetCount} != "
+          "asset array length ${album.remoteAssets.length} for album ${album.name}");
     }
   }
 
@@ -462,27 +476,18 @@ class SyncService {
       _log.info("Removing local album $album from DB");
       // delete assets in DB unless they are remote or part of some other album
       deleteCandidates.addAll(
-        await album.assets.filter().remoteIdIsNull().findAll(),
+        await _assetRepository.getByAlbum(album, state: AssetState.local),
       );
     } else if (album.shared) {
-      final User user = Store.get(StoreKey.currentUser);
       // delete assets in DB unless they belong to this user or are part of some other shared album or belong to a partner
-      final userIds = await _db.users
-          .filter()
-          .isPartnerSharedWithEqualTo(true)
-          .isarIdProperty()
-          .findAll();
-      userIds.add(user.isarId);
-      final orphanedAssets = await album.assets
-          .filter()
-          .not()
-          .anyOf(userIds, (q, int id) => q.ownerIdEqualTo(id))
-          .findAll();
+      final userIds =
+          (await _userRepository.getAllAccessible()).map((user) => user.isarId);
+      final orphanedAssets =
+          await _assetRepository.getByAlbum(album, notOwnedBy: userIds);
       deleteCandidates.addAll(orphanedAssets);
     }
     try {
-      final bool ok = await _db.writeTxn(() => _db.albums.delete(album.id));
-      assert(ok);
+      await _albumRepository.delete(album.id);
       _log.info("Removed local album $album from DB");
     } catch (e) {
       _log.severe("Failed to remove local album $album from DB", e);
@@ -492,28 +497,26 @@ class SyncService {
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
   Future<bool> _syncLocalAlbumAssetsToDb(
-    List<AssetPathEntity> onDevice, [
+    List<Album> onDevice, [
     Set<String>? excludedAssets,
   ]) async {
-    onDevice.sort((a, b) => a.id.compareTo(b.id));
+    onDevice.sort((a, b) => a.localId!.compareTo(b.localId!));
     final inDb =
-        await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
+        await _albumRepository.getAll(remote: false, sortBy: AlbumSort.localId);
     final List<Asset> deleteCandidates = [];
     final List<Asset> existing = [];
-    assert(inDb.isSorted((a, b) => a.localId!.compareTo(b.localId!)), "sort!");
     final bool anyChanges = await diffSortedLists(
       onDevice,
       inDb,
-      compare: (AssetPathEntity a, Album b) => a.id.compareTo(b.localId!),
-      both: (AssetPathEntity ape, Album album) => _syncAlbumInDbAndOnDevice(
-        ape,
-        album,
+      compare: (Album a, Album b) => a.localId!.compareTo(b.localId!),
+      both: (Album a, Album b) => _syncAlbumInDbAndOnDevice(
+        a,
+        b,
         deleteCandidates,
         existing,
         excludedAssets,
       ),
-      onlyFirst: (AssetPathEntity ape) =>
-          _addAlbumFromDevice(ape, existing, excludedAssets),
+      onlyFirst: (Album a) => _addAlbumFromDevice(a, existing, excludedAssets),
       onlySecond: (Album a) => _removeAlbumFromDb(a, deleteCandidates),
     );
     _log.fine(
@@ -525,10 +528,9 @@ class SyncService {
       "${toDelete.length} assets to delete, ${toUpdate.length} to update",
     );
     if (toDelete.isNotEmpty || toUpdate.isNotEmpty) {
-      await _db.writeTxn(() async {
-        await _db.assets.deleteAll(toDelete);
-        await _db.exifInfos.deleteAll(toDelete);
-        await _db.assets.putAll(toUpdate);
+      await _assetRepository.transaction(() async {
+        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.updateAll(toUpdate);
       });
       _log.info(
         "Removed ${toDelete.length} and updated ${toUpdate.length} local assets from DB",
@@ -541,58 +543,64 @@ class SyncService {
   /// returns `true` if there were any changes
   /// Accumulates asset candidates to delete and those already existing in DB
   Future<bool> _syncAlbumInDbAndOnDevice(
-    AssetPathEntity ape,
-    Album album,
+    Album deviceAlbum,
+    Album dbAlbum,
     List<Asset> deleteCandidates,
     List<Asset> existing, [
     Set<String>? excludedAssets,
     bool forceRefresh = false,
   ]) async {
-    if (!forceRefresh && !await _hasAssetPathEntityChanged(ape, album)) {
-      _log.fine("Local album ${ape.name} has not changed. Skipping sync.");
+    if (!forceRefresh && !await _hasAlbumChangeOnDevice(deviceAlbum, dbAlbum)) {
+      _log.fine(
+        "Local album ${deviceAlbum.name} has not changed. Skipping sync.",
+      );
       return false;
     }
     if (!forceRefresh &&
         excludedAssets == null &&
-        await _syncDeviceAlbumFast(ape, album)) {
+        await _syncDeviceAlbumFast(deviceAlbum, dbAlbum)) {
       return true;
     }
-
     // general case, e.g. some assets have been deleted or there are excluded albums on iOS
-    final inDb = await album.assets
-        .filter()
-        .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
-        .sortByChecksum()
-        .findAll();
+    final inDb = await _assetRepository.getByAlbum(
+      dbAlbum,
+      ownerId: (await _userRepository.me()).isarId,
+      sortBy: AssetSort.checksum,
+    );
+
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
-    final int assetCountOnDevice = await ape.assetCountAsync;
-    final List<Asset> onDevice =
-        await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
+    final int assetCountOnDevice =
+        await _albumMediaRepository.getAssetCount(deviceAlbum.localId!);
+    final List<Asset> onDevice = await _hashService.getHashedAssets(
+      deviceAlbum,
+      excludedAssets: excludedAssets,
+    );
     _removeDuplicates(onDevice);
     // _removeDuplicates sorts `onDevice` by checksum
     final (toAdd, toUpdate, toDelete) = _diffAssets(onDevice, inDb);
     if (toAdd.isEmpty &&
         toUpdate.isEmpty &&
         toDelete.isEmpty &&
-        album.name == ape.name &&
-        ape.lastModified != null &&
-        album.modifiedAt.isAtSameMomentAs(ape.lastModified!)) {
+        dbAlbum.name == deviceAlbum.name &&
+        dbAlbum.modifiedAt.isAtSameMomentAs(deviceAlbum.modifiedAt)) {
       // changes only affeted excluded albums
       _log.fine(
-        "Only excluded assets in local album ${ape.name} changed. Stopping sync.",
+        "Only excluded assets in local album ${deviceAlbum.name} changed. Stopping sync.",
       );
       if (assetCountOnDevice !=
-          _db.eTags.getByIdSync(ape.eTagKeyAssetCount)?.assetCount) {
-        await _db.writeTxn(
-          () => _db.eTags.put(
-            ETag(id: ape.eTagKeyAssetCount, assetCount: assetCountOnDevice),
+          (await _eTagRepository.getById(deviceAlbum.eTagKeyAssetCount))
+              ?.assetCount) {
+        await _eTagRepository.upsertAll([
+          ETag(
+            id: deviceAlbum.eTagKeyAssetCount,
+            assetCount: assetCountOnDevice,
           ),
-        );
+        ]);
       }
       return false;
     }
     _log.fine(
-      "Syncing local album ${ape.name}. ${toAdd.length} assets to add, ${toUpdate.length} to update, ${toDelete.length} to delete",
+      "Syncing local album ${deviceAlbum.name}. ${toAdd.length} assets to add, ${toUpdate.length} to update, ${toDelete.length} to delete",
     );
     final (existingInDb, updated) = await _linkWithExistingFromDb(toAdd);
     _log.fine(
@@ -600,28 +608,29 @@ class SyncService {
     );
     deleteCandidates.addAll(toDelete);
     existing.addAll(existingInDb);
-    album.name = ape.name;
-    album.modifiedAt = ape.lastModified ?? DateTime.now();
-    if (album.thumbnail.value != null &&
-        toDelete.contains(album.thumbnail.value)) {
-      album.thumbnail.value = null;
+    dbAlbum.name = deviceAlbum.name;
+    dbAlbum.modifiedAt = deviceAlbum.modifiedAt;
+    if (dbAlbum.thumbnail.value != null &&
+        toDelete.contains(dbAlbum.thumbnail.value)) {
+      dbAlbum.thumbnail.value = null;
     }
     try {
-      await _db.writeTxn(() async {
-        await _db.assets.putAll(updated);
-        await _db.assets.putAll(toUpdate);
-        await album.assets
-            .update(link: existingInDb + updated, unlink: toDelete);
-        await _db.albums.put(album);
-        album.thumbnail.value ??= await album.assets.filter().findFirst();
-        await album.thumbnail.save();
-        await _db.eTags.put(
-          ETag(id: ape.eTagKeyAssetCount, assetCount: assetCountOnDevice),
-        );
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(updated + toUpdate);
+        await _albumRepository.addAssets(dbAlbum, existingInDb + updated);
+        await _albumRepository.removeAssets(dbAlbum, toDelete);
+        await _albumRepository.recalculateMetadata(dbAlbum);
+        await _albumRepository.update(dbAlbum);
+        await _eTagRepository.upsertAll([
+          ETag(
+            id: deviceAlbum.eTagKeyAssetCount,
+            assetCount: assetCountOnDevice,
+          ),
+        ]);
       });
-      _log.info("Synced changes of local album ${ape.name} to DB");
-    } on IsarError catch (e) {
-      _log.severe("Failed to update synced album ${ape.name} in DB", e);
+      _log.info("Synced changes of local album ${deviceAlbum.name} to DB");
+    } catch (e) {
+      _log.severe("Failed to update synced album ${deviceAlbum.name} in DB", e);
     }
 
     return true;
@@ -629,45 +638,47 @@ class SyncService {
 
   /// fast path for common case: only new assets were added to device album
   /// returns `true` if successfull, else `false`
-  Future<bool> _syncDeviceAlbumFast(AssetPathEntity ape, Album album) async {
-    if (!(ape.lastModified ?? DateTime.now()).isAfter(album.modifiedAt)) {
+  Future<bool> _syncDeviceAlbumFast(Album deviceAlbum, Album dbAlbum) async {
+    if (!deviceAlbum.modifiedAt.isAfter(dbAlbum.modifiedAt)) {
       return false;
     }
-    final int totalOnDevice = await ape.assetCountAsync;
+    final int totalOnDevice =
+        await _albumMediaRepository.getAssetCount(deviceAlbum.localId!);
     final int lastKnownTotal =
-        (await _db.eTags.getById(ape.eTagKeyAssetCount))?.assetCount ?? 0;
-    final AssetPathEntity? modified = totalOnDevice > lastKnownTotal
-        ? await ape.fetchPathProperties(
-            filterOptionGroup: FilterOptionGroup(
-              updateTimeCond: DateTimeCond(
-                min: album.modifiedAt.add(const Duration(seconds: 1)),
-                max: ape.lastModified ?? DateTime.now(),
-              ),
-            ),
-          )
-        : null;
-    if (modified == null) {
+        (await _eTagRepository.getById(deviceAlbum.eTagKeyAssetCount))
+                ?.assetCount ??
+            0;
+    if (totalOnDevice <= lastKnownTotal) {
       return false;
     }
-    final List<Asset> newAssets = await _hashService.getHashedAssets(modified);
+    final List<Asset> newAssets = await _hashService.getHashedAssets(
+      deviceAlbum,
+      modifiedFrom: dbAlbum.modifiedAt.add(const Duration(seconds: 1)),
+      modifiedUntil: deviceAlbum.modifiedAt,
+    );
 
     if (totalOnDevice != lastKnownTotal + newAssets.length) {
       return false;
     }
-    album.modifiedAt = ape.lastModified ?? DateTime.now();
+    dbAlbum.modifiedAt = deviceAlbum.modifiedAt;
     _removeDuplicates(newAssets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(newAssets);
     try {
-      await _db.writeTxn(() async {
-        await _db.assets.putAll(updated);
-        await album.assets.update(link: existingInDb + updated);
-        await _db.albums.put(album);
-        await _db.eTags
-            .put(ETag(id: ape.eTagKeyAssetCount, assetCount: totalOnDevice));
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(updated);
+        await _albumRepository.addAssets(dbAlbum, existingInDb + updated);
+        await _albumRepository.recalculateMetadata(dbAlbum);
+        await _albumRepository.update(dbAlbum);
+        await _eTagRepository.upsertAll(
+          [ETag(id: deviceAlbum.eTagKeyAssetCount, assetCount: totalOnDevice)],
+        );
       });
-      _log.info("Fast synced local album ${ape.name} to DB");
-    } on IsarError catch (e) {
-      _log.severe("Failed to fast sync local album ${ape.name} to DB", e);
+      _log.info("Fast synced local album ${deviceAlbum.name} to DB");
+    } catch (e) {
+      _log.severe(
+        "Failed to fast sync local album ${deviceAlbum.name} to DB",
+        e,
+      );
       return false;
     }
 
@@ -677,14 +688,15 @@ class SyncService {
   /// Adds a new album from the device to the database and Accumulates all
   /// assets already existing in the database to the list of `existing` assets
   Future<void> _addAlbumFromDevice(
-    AssetPathEntity ape,
+    Album album,
     List<Asset> existing, [
     Set<String>? excludedAssets,
   ]) async {
-    _log.info("Syncing a new local album to DB: ${ape.name}");
-    final Album a = Album.local(ape);
-    final assets =
-        await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
+    _log.info("Syncing a new local album to DB: ${album.name}");
+    final assets = await _hashService.getHashedAssets(
+      album,
+      excludedAssets: excludedAssets,
+    );
     _removeDuplicates(assets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(assets);
     _log.info(
@@ -692,15 +704,15 @@ class SyncService {
     );
     await upsertAssetsWithExif(updated);
     existing.addAll(existingInDb);
-    a.assets.addAll(existingInDb);
-    a.assets.addAll(updated);
+    album.assets.addAll(existingInDb);
+    album.assets.addAll(updated);
     final thumb = existingInDb.firstOrNull ?? updated.firstOrNull;
-    a.thumbnail.value = thumb;
+    album.thumbnail.value = thumb;
     try {
-      await _db.writeTxn(() => _db.albums.store(a));
-      _log.info("Added a new local album to DB: ${ape.name}");
-    } on IsarError catch (e) {
-      _log.severe("Failed to add new local album ${ape.name} to DB", e);
+      await _albumRepository.create(album);
+      _log.info("Added a new local album to DB: ${album.name}");
+    } catch (e) {
+      _log.severe("Failed to add new local album ${album.name} to DB", e);
     }
   }
 
@@ -710,7 +722,7 @@ class SyncService {
   ) async {
     if (assets.isEmpty) return ([].cast<Asset>(), [].cast<Asset>());
 
-    final List<Asset?> inDb = await _db.assets.getAllByOwnerIdChecksum(
+    final List<Asset?> inDb = await _assetRepository.getAllByOwnerIdChecksum(
       assets.map((a) => a.ownerId).toInt64List(),
       assets.map((a) => a.checksum).toList(growable: false),
     );
@@ -724,7 +736,7 @@ class SyncService {
       }
       if (b.canUpdate(assets[i])) {
         final updated = b.updatedCopy(assets[i]);
-        assert(updated.id != Isar.autoIncrement);
+        assert(updated.isInDb);
         toUpsert.add(updated);
       } else {
         existing.add(b);
@@ -736,24 +748,22 @@ class SyncService {
 
   /// Inserts or updates the assets in the database with their ExifInfo (if any)
   Future<void> upsertAssetsWithExif(List<Asset> assets) async {
-    if (assets.isEmpty) {
-      return;
-    }
-    final exifInfos = assets.map((e) => e.exifInfo).whereNotNull().toList();
+    if (assets.isEmpty) return;
+    final exifInfos = assets.map((e) => e.exifInfo).nonNulls.toList();
     try {
-      await _db.writeTxn(() async {
-        await _db.assets.putAll(assets);
+      await _assetRepository.transaction(() async {
+        await _assetRepository.updateAll(assets);
         for (final Asset added in assets) {
           added.exifInfo?.id = added.id;
         }
-        await _db.exifInfos.putAll(exifInfos);
+        await _exifInfoRepository.updateAll(exifInfos);
       });
       _log.info("Upserted ${assets.length} assets into the DB");
-    } on IsarError catch (e) {
+    } catch (e) {
       _log.severe("Failed to upsert ${assets.length} assets into the DB", e);
       // give details on the errors
       assets.sort(Asset.compareByOwnerChecksum);
-      final inDb = await _db.assets.getAllByOwnerIdChecksum(
+      final inDb = await _assetRepository.getAllByOwnerIdChecksum(
         assets.map((e) => e.ownerId).toInt64List(),
         assets.map((e) => e.checksum).toList(growable: false),
       );
@@ -761,7 +771,7 @@ class SyncService {
         final Asset a = assets[i];
         final Asset? b = inDb[i];
         if (b == null) {
-          if (a.id != Isar.autoIncrement) {
+          if (!a.isInDb) {
             _log.warning(
               "Trying to update an asset that does not exist in DB:\n$a",
             );
@@ -787,8 +797,7 @@ class SyncService {
     assets.sort(Asset.compareByOwnerChecksumCreatedModified);
     assets.uniqueConsecutive(
       compare: Asset.compareByOwnerChecksum,
-      onDuplicate: (a, b) =>
-          _log.info("Ignoring duplicate assets on device:\n$a\n$b"),
+      onDuplicate: (a, b) => {},
     );
     final int duplicates = before - assets.length;
     if (duplicates > 0) {
@@ -798,23 +807,26 @@ class SyncService {
   }
 
   /// returns `true` if the albums differ on the surface
-  Future<bool> _hasAssetPathEntityChanged(AssetPathEntity a, Album b) async {
-    return a.name != b.name ||
-        a.lastModified == null ||
-        !a.lastModified!.isAtSameMomentAs(b.modifiedAt) ||
-        await a.assetCountAsync !=
-            (await _db.eTags.getById(a.eTagKeyAssetCount))?.assetCount;
+  Future<bool> _hasAlbumChangeOnDevice(
+    Album deviceAlbum,
+    Album dbAlbum,
+  ) async {
+    return deviceAlbum.name != dbAlbum.name ||
+        !deviceAlbum.modifiedAt.isAtSameMomentAs(dbAlbum.modifiedAt) ||
+        await _albumMediaRepository.getAssetCount(deviceAlbum.localId!) !=
+            (await _eTagRepository.getById(deviceAlbum.eTagKeyAssetCount))
+                ?.assetCount;
   }
 
   Future<bool> _removeAllLocalAlbumsAndAssets() async {
     try {
-      final assets = await _db.assets.where().localIdIsNotNull().findAll();
+      final assets = await _assetRepository.getAllLocal();
       final (toDelete, toUpdate) =
           _handleAssetRemoval(assets, [], remote: false);
-      await _db.writeTxn(() async {
-        await _db.assets.deleteAll(toDelete);
-        await _db.assets.putAll(toUpdate);
-        await _db.albums.where().localIdIsNotNull().deleteAll();
+      await _assetRepository.transaction(() async {
+        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.updateAll(toUpdate);
+        await _albumRepository.deleteAllLocal();
       });
       return true;
     } catch (e) {
@@ -900,17 +912,17 @@ class SyncService {
 }
 
 /// returns `true` if the albums differ on the surface
-bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
-  return dto.assetCount != a.assetCount ||
-      dto.albumName != a.name ||
-      dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
-      dto.shared != a.shared ||
-      dto.albumUsers.length != a.sharedUsers.length ||
-      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt) ||
-      !isAtSameMomentAs(dto.startDate, a.startDate) ||
-      !isAtSameMomentAs(dto.endDate, a.endDate) ||
+bool _hasRemoteAlbumChanged(Album remoteAlbum, Album dbAlbum) {
+  return remoteAlbum.remoteAssetCount != dbAlbum.assetCount ||
+      remoteAlbum.name != dbAlbum.name ||
+      remoteAlbum.remoteThumbnailAssetId != dbAlbum.thumbnail.value?.remoteId ||
+      remoteAlbum.shared != dbAlbum.shared ||
+      remoteAlbum.remoteUsers.length != dbAlbum.sharedUsers.length ||
+      !remoteAlbum.modifiedAt.isAtSameMomentAs(dbAlbum.modifiedAt) ||
+      !isAtSameMomentAs(remoteAlbum.startDate, dbAlbum.startDate) ||
+      !isAtSameMomentAs(remoteAlbum.endDate, dbAlbum.endDate) ||
       !isAtSameMomentAs(
-        dto.lastModifiedAssetTimestamp,
-        a.lastModifiedAssetTimestamp,
+        remoteAlbum.lastModifiedAssetTimestamp,
+        dbAlbum.lastModifiedAssetTimestamp,
       );
 }

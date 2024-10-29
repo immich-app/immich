@@ -4,24 +4,33 @@
   import { requestServerInfo } from '$lib/utils/auth';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
+  import {
+    getAboutInfo,
+    getVersionHistory,
+    type ServerAboutResponseDto,
+    type ServerVersionHistoryResponseDto,
+  } from '@immich/sdk';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiAlert } from '@mdi/js';
 
   const { serverVersion, connected } = websocketStore;
 
   let isOpen = false;
 
+  $: isMain = info?.sourceRef === 'main' && info.repository === 'immich-app/immich';
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
 
-  let aboutInfo: ServerAboutResponseDto;
+  let info: ServerAboutResponseDto;
+  let versions: ServerVersionHistoryResponseDto[] = [];
 
   onMount(async () => {
     await requestServerInfo();
-    aboutInfo = await getAboutInfo();
+    [info, versions] = await Promise.all([getAboutInfo(), getVersionHistory()]);
   });
 </script>
 
 {#if isOpen}
-  <ServerAboutModal onClose={() => (isOpen = false)} info={aboutInfo} />
+  <ServerAboutModal onClose={() => (isOpen = false)} {info} {versions} />
 {/if}
 
 <div
@@ -41,7 +50,13 @@
 
   <div class="flex justify-between justify-items-center">
     {#if $connected && version}
-      <button type="button" on:click={() => (isOpen = true)} class="dark:text-immich-gray">{version}</button>
+      <button type="button" on:click={() => (isOpen = true)} class="dark:text-immich-gray flex gap-1">
+        {#if isMain}
+          <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info.sourceRef}
+        {:else}
+          {version}
+        {/if}
+      </button>
     {:else}
       <p class="text-red-500">{$t('unknown')}</p>
     {/if}

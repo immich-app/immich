@@ -68,6 +68,9 @@ export class UpdateAssetDto extends UpdateAssetBase {
   @Optional()
   @IsString()
   description?: string;
+
+  @ValidateUUID({ optional: true, nullable: true })
+  livePhotoVideoId?: string | null;
 }
 
 export class RandomAssetsDto {
@@ -89,8 +92,9 @@ export class AssetIdsDto {
 }
 
 export enum AssetJobName {
-  REGENERATE_THUMBNAIL = 'regenerate-thumbnail',
+  REFRESH_FACES = 'refresh-faces',
   REFRESH_METADATA = 'refresh-metadata',
+  REGENERATE_THUMBNAIL = 'regenerate-thumbnail',
   TRANSCODE_VIDEO = 'transcode-video',
 }
 

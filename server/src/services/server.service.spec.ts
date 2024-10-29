@@ -1,37 +1,20 @@
 import { SystemMetadataKey } from 'src/enum';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerService } from 'src/services/server.service';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
+
   let storageMock: Mocked<IStorageRepository>;
-  let userMock: Mocked<IUserRepository>;
-  let serverInfoMock: Mocked<IServerInfoRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
-    storageMock = newStorageRepositoryMock();
-    userMock = newUserRepositoryMock();
-    serverInfoMock = newServerInfoRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
-
-    sut = new ServerService(userMock, storageMock, systemMock, serverInfoMock, loggerMock, cryptoMock);
+    ({ sut, storageMock, systemMock, userMock } = newTestService(ServerService));
   });
 
   it('should work', () => {
@@ -160,6 +143,7 @@ describe(ServerService.name, () => {
         smartSearch: true,
         duplicateDetection: true,
         facialRecognition: true,
+        importFaces: false,
         map: true,
         reverseGeocoding: true,
         oauth: false,
@@ -175,9 +159,9 @@ describe(ServerService.name, () => {
     });
   });
 
-  describe('getConfig', () => {
+  describe('getSystemConfig', () => {
     it('should respond the server configuration', async () => {
-      await expect(sut.getConfig()).resolves.toEqual({
+      await expect(sut.getSystemConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
@@ -185,6 +169,8 @@ describe(ServerService.name, () => {
         isInitialized: undefined,
         isOnboarded: false,
         externalDomain: '',
+        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
       expect(systemMock.get).toHaveBeenCalled();
     });

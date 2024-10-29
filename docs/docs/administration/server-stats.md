@@ -7,7 +7,7 @@ If a storage quota has been defined for the user, the usage number will be displ
 :::
 
 :::info External library
-External library is not included in the storage quota.
+External libraries are not included in the storage quota.
 :::
 
 <img src={require('./img/server-stats.png').default} title="server statistic" />

@@ -70,18 +70,6 @@ extension AssetListExtension on Iterable<Asset> {
     }
     return this;
   }
-
-  /// Filters out offline assets and returns those that are still accessible by the Immich server
-  Iterable<Asset> nonOfflineOnly({
-    void Function()? errorCallback,
-  }) {
-    final bool onlyLive = every((e) => !e.isOffline);
-    if (!onlyLive) {
-      if (errorCallback != null) errorCallback();
-      return where((a) => !a.isOffline);
-    }
-    return this;
-  }
 }
 
 extension SortedByProperty<T> on Iterable<T> {

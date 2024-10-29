@@ -1,11 +1,4 @@
-import {
-  LibraryResponseDto,
-  LoginResponseDto,
-  ScanLibraryDto,
-  getAllLibraries,
-  removeOfflineFiles,
-  scanLibrary,
-} from '@immich/sdk';
+import { LibraryResponseDto, LoginResponseDto, getAllLibraries, scanLibrary } from '@immich/sdk';
 import { cpSync, existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
@@ -15,8 +8,7 @@ import request from 'supertest';
 import { utimes } from 'utimes';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-const scan = async (accessToken: string, id: string, dto: ScanLibraryDto = {}) =>
-  scanLibrary({ id, scanLibraryDto: dto }, { headers: asBearerAuth(accessToken) });
+const scan = async (accessToken: string, id: string) => scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
 
 describe('/libraries', () => {
   let admin: LoginResponseDto;
@@ -83,7 +75,7 @@ describe('/libraries', () => {
           refreshedAt: null,
           assetCount: 0,
           importPaths: [],
-          exclusionPatterns: [],
+          exclusionPatterns: expect.any(Array),
         }),
       );
     });
@@ -270,7 +262,7 @@ describe('/libraries', () => {
           refreshedAt: null,
           assetCount: 0,
           importPaths: [],
-          exclusionPatterns: [],
+          exclusionPatterns: expect.any(Array),
         }),
       );
     });
@@ -293,14 +285,19 @@ describe('/libraries', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should scan external library', async () => {
+    it('should import new asset when scanning external library', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/directoryA`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.metadataSearch(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
@@ -315,8 +312,13 @@ describe('/libraries', () => {
         exclusionPatterns: ['**/directoryA'],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
@@ -330,8 +332,13 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/directoryA`, `${testAssetDirInternal}/temp/directoryB`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
@@ -340,95 +347,200 @@ describe('/libraries', () => {
       expect(assets.items.find((asset) => asset.originalPath.includes('directoryB'))).toBeDefined();
     });
 
-    it('should pick up new files', async () => {
+    it('should scan multiple import paths with commas', async () => {
+      // https://github.com/immich-app/immich/issues/10699
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
+        importPaths: [`${testAssetDirInternal}/temp/folder, a`, `${testAssetDirInternal}/temp/folder, b`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+      utils.createImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(2);
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder, a'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder, b'))).toBeDefined();
 
-      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 3 });
-
-      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-
-      expect(newAssets.count).toBe(3);
-      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
     });
 
-    it('should offline a file missing from disk', async () => {
-      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+    it('should scan multiple import paths with braces', async () => {
+      // https://github.com/immich-app/immich/issues/10699
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/folder{ a`, `${testAssetDirInternal}/temp/folder} b`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(2);
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder{ a'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder} b'))).toBeDefined();
+
+      utils.removeImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
+    });
+
+    it('should reimport a modified file', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_001);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ refreshModifiedFiles: true });
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+        model: 'NIKON D750',
+      });
+      expect(assets.count).toBe(1);
+    });
+
+    it('should not reimport unmodified files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
+      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ refreshModifiedFiles: true });
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+        model: 'NIKON D750',
+      });
+      expect(assets.count).toBe(0);
+    });
+
+    it('should set an asset offline if its file is missing', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      expect(assets.count).toBe(1);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(trashedAsset.isOffline).toEqual(true);
+
+      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      expect(newAssets.items).toEqual([]);
+    });
+
+    it('should set an asset offline its file is not in any import path', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(assets.count).toBe(3);
+      expect(assets.count).toBe(1);
 
-      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(newAssets.count).toBe(3);
-
-      expect(newAssets.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'assetC.png',
-          }),
-        ]),
-      );
-    });
-
-    it('should offline a file outside of import paths', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
-      });
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      utils.createDirectory(`${testAssetDir}/temp/another-path/`);
 
       await request(app)
         .put(`/libraries/${library.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ importPaths: [`${testAssetDirInternal}/temp/directoryA`] });
+        .send({ importPaths: [`${testAssetDirInternal}/temp/another-path/`] });
 
-      await scan(admin.accessToken, library.id);
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(trashedAsset.isOffline).toBe(true);
 
-      expect(assets.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: false,
-            originalFileName: 'assetA.png',
-          }),
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'assetB.png',
-          }),
-        ]),
-      );
+      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+
+      expect(newAssets.items).toEqual([]);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
+      utils.removeDirectory(`${testAssetDir}/temp/another-path/`);
     });
 
-    it('should offline a file covered by an exclusion pattern', async () => {
+    it('should set an asset offline if its file is covered by an exclusion pattern', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp`],
@@ -436,6 +548,12 @@ describe('/libraries', () => {
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.metadataSearch(admin.accessToken, {
+        libraryId: library.id,
+        originalFileName: 'assetB.png',
+      });
+      expect(assets.count).toBe(1);
 
       await request(app)
         .put(`/libraries/${library.id}`)
@@ -445,282 +563,21 @@ describe('/libraries', () => {
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(trashedAsset.isTrashed).toBe(true);
+      expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/directoryB/assetB.png`);
+      expect(trashedAsset.isOffline).toBe(true);
 
-      expect(assets.count).toBe(2);
+      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
 
-      expect(assets.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: false,
-            originalFileName: 'assetA.png',
-          }),
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'assetB.png',
-          }),
-        ]),
-      );
+      expect(newAssets.items).toEqual([
+        expect.objectContaining({
+          originalFileName: 'assetA.png',
+        }),
+      ]);
     });
 
-    it('should not try to delete offline files', async () => {
-      utils.createImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp/offline1`],
-      });
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(initialAssets).toEqual({
-        count: 1,
-        total: 1,
-        facets: [],
-        items: [expect.objectContaining({ originalFileName: 'assetA.png' })],
-        nextPage: null,
-      });
-
-      utils.removeImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-        isOffline: true,
-      });
-      expect(offlineAssets).toEqual({
-        count: 1,
-        total: 1,
-        facets: [],
-        items: [expect.objectContaining({ originalFileName: 'assetA.png' })],
-        nextPage: null,
-      });
-
-      utils.createImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-      await removeOfflineFiles({ id: library.id }, { headers: asBearerAuth(admin.accessToken) });
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForWebsocketEvent({ event: 'assetDelete', total: 1 });
-
-      expect(existsSync(`${testAssetDir}/temp/offline1/assetA.png`)).toBe(true);
-
-      utils.removeImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-    });
-
-    it('should scan new files', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
-      });
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      utils.createImageFile(`${testAssetDir}/temp/directoryC/assetC.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-
-      expect(assets.count).toBe(3);
-      expect(assets.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            originalFileName: 'assetC.png',
-          }),
-        ]),
-      );
-
-      utils.removeImageFile(`${testAssetDir}/temp/directoryC/assetC.png`);
-    });
-
-    describe('with refreshModifiedFiles=true', () => {
-      it('should reimport modified files', async () => {
-        const library = await utils.createLibrary(admin.accessToken, {
-          ownerId: admin.userId,
-          importPaths: [`${testAssetDirInternal}/temp`],
-        });
-
-        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_001);
-
-        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-
-        const { assets } = await utils.metadataSearch(admin.accessToken, {
-          libraryId: library.id,
-          model: 'NIKON D750',
-        });
-        expect(assets.count).toBe(1);
-      });
-
-      it('should not reimport unmodified files', async () => {
-        const library = await utils.createLibrary(admin.accessToken, {
-          ownerId: admin.userId,
-          importPaths: [`${testAssetDirInternal}/temp`],
-        });
-
-        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-
-        const { assets } = await utils.metadataSearch(admin.accessToken, {
-          libraryId: library.id,
-          model: 'NIKON D750',
-        });
-        expect(assets.count).toBe(0);
-      });
-    });
-
-    describe('with refreshAllFiles=true', () => {
-      it('should reimport all files', async () => {
-        const library = await utils.createLibrary(admin.accessToken, {
-          ownerId: admin.userId,
-          importPaths: [`${testAssetDirInternal}/temp`],
-        });
-
-        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id, { refreshAllFiles: true });
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-
-        const { assets } = await utils.metadataSearch(admin.accessToken, {
-          libraryId: library.id,
-          model: 'NIKON D750',
-        });
-        expect(assets.count).toBe(1);
-      });
-    });
-  });
-
-  describe('POST /libraries/:id/removeOffline', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/removeOffline`).send({});
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should remove offline files', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp/offline`],
-      });
-
-      utils.createImageFile(`${testAssetDir}/temp/offline/online.png`);
-      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-      });
-      expect(initialAssets.count).toBe(2);
-
-      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-        isOffline: true,
-      });
-      expect(offlineAssets.count).toBe(1);
-
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/removeOffline`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
-
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-
-      expect(assets.count).toBe(1);
-
-      utils.removeImageFile(`${testAssetDir}/temp/offline/online.png`);
-    });
-
-    it('should remove offline files from trash', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp/offline`],
-      });
-
-      utils.createImageFile(`${testAssetDir}/temp/offline/online.png`);
-      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-      });
-
-      expect(initialAssets.count).toBe(2);
-      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-        isOffline: true,
-      });
-      expect(offlineAssets.count).toBe(1);
-
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/removeOffline`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
-
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-
-      expect(assets.count).toBe(1);
-      expect(assets.items[0].isOffline).toBe(false);
-      expect(assets.items[0].originalPath).toEqual(`${testAssetDirInternal}/temp/offline/online.png`);
-
-      utils.removeImageFile(`${testAssetDir}/temp/offline/online.png`);
-    });
-
-    it('should not remove online files', async () => {
+    it('should not trash an online asset', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp`],
@@ -733,10 +590,11 @@ describe('/libraries', () => {
       expect(assetsBefore.count).toBeGreaterThan(1);
 
       const { status } = await request(app)
-        .post(`/libraries/${library.id}/removeOffline`)
+        .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
       expect(status).toBe(204);
+
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
@@ -772,6 +630,29 @@ describe('/libraries', () => {
         importPath: pathToTest,
         isValid: false,
         message: `Path does not exist (ENOENT)`,
+      });
+    });
+
+    it("should fail if path isn't absolute", async () => {
+      const pathToTest = `relative/path`;
+
+      const cwd = process.cwd();
+      // Create directory in cwd
+      utils.createDirectory(`${cwd}/${pathToTest}`);
+
+      const response = await utils.validateLibrary(admin.accessToken, library.id, {
+        importPaths: [pathToTest],
+      });
+
+      utils.removeDirectory(`${cwd}/${pathToTest}`);
+
+      expect(response.importPaths?.length).toEqual(1);
+      const pathResponse = response?.importPaths?.at(0);
+
+      expect(pathResponse).toEqual({
+        importPath: pathToTest,
+        isValid: false,
+        message: expect.stringMatching('Import path must be absolute, try /usr/src/app/relative/path'),
       });
     });
 
@@ -828,7 +709,7 @@ describe('/libraries', () => {
       });
 
       await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { status, body } = await request(app)
         .delete(`/libraries/${library.id}`)

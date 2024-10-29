@@ -1,31 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { PaginationMode, SourceType } from 'src/enum';
 import {
   AssetFaceId,
+  DeleteFacesOptions,
   IPersonRepository,
   PeopleStatistics,
+  PersonNameResponse,
   PersonNameSearchOptions,
   PersonSearchOptions,
   PersonStatistics,
+  UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
-import { Paginated, PaginationMode, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
-import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
+import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
+import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class PersonRepository implements IPersonRepository {
   constructor(
+    @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
+    @InjectRepository(FaceSearchEntity) private faceSearchRepository: Repository<FaceSearchEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
   ) {}
 
@@ -35,22 +40,35 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where(_.omitBy({ personId: oldPersonId ?? undefined, id: faceIds ? In(faceIds) : undefined }, _.isUndefined))
+      .where(_.omitBy({ personId: oldPersonId, id: faceIds ? In(faceIds) : undefined }, _.isUndefined))
       .execute();
 
     return result.affected ?? 0;
+  }
+
+  async unassignFaces({ sourceType }: UnassignFacesOptions): Promise<void> {
+    await this.assetFaceRepository
+      .createQueryBuilder()
+      .update()
+      .set({ personId: null })
+      .where({ sourceType })
+      .execute();
+
+    await this.vacuum({ reindexVectors: false });
   }
 
   async delete(entities: PersonEntity[]): Promise<void> {
     await this.personRepository.remove(entities);
   }
 
-  async deleteAll(): Promise<void> {
-    await this.personRepository.clear();
-  }
+  async deleteFaces({ sourceType }: DeleteFacesOptions): Promise<void> {
+    await this.assetFaceRepository
+      .createQueryBuilder('asset_faces')
+      .delete()
+      .andWhere('sourceType = :sourceType', { sourceType })
+      .execute();
 
-  async deleteAllFaces(): Promise<void> {
-    await this.assetFaceRepository.query('TRUNCATE TABLE asset_faces CASCADE');
+    await this.vacuum({ reindexVectors: sourceType === SourceType.MACHINE_LEARNING });
   }
 
   getAllFaces(
@@ -167,18 +185,30 @@ export class PersonRepository implements IPersonRepository {
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
       .where(
         'person.ownerId = :userId AND (LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere)',
         { userId, nameStart: `${personName.toLowerCase()}%`, nameAnywhere: `% ${personName.toLowerCase()}%` },
       )
-      .groupBy('person.id')
-      .orderBy('COUNT(face.assetId)', 'DESC')
-      .limit(20);
+      .limit(1000);
 
     if (!withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
+    return queryBuilder.getMany();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { withHidden: true }] })
+  getDistinctNames(userId: string, { withHidden }: PersonNameSearchOptions): Promise<PersonNameResponse[]> {
+    const queryBuilder = this.personRepository
+      .createQueryBuilder('person')
+      .select(['person.id', 'person.name'])
+      .distinctOn(['lower(person.name)'])
+      .where(`person.ownerId = :userId AND person.name != ''`, { userId });
+
+    if (!withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+
     return queryBuilder.getMany();
   }
 
@@ -196,30 +226,6 @@ export class PersonRepository implements IPersonRepository {
     return {
       assets: items.count ?? 0,
     };
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAssets(personId: string): Promise<AssetEntity[]> {
-    return this.assetRepository.find({
-      where: {
-        faces: {
-          personId,
-        },
-        isVisible: true,
-        isArchived: false,
-      },
-      relations: {
-        faces: {
-          person: true,
-        },
-        exifInfo: true,
-      },
-      order: {
-        fileCreatedAt: 'desc',
-      },
-      // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
-      take: 1000,
-    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -248,18 +254,49 @@ export class PersonRepository implements IPersonRepository {
     return result;
   }
 
-  create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    return this.personRepository.save(entity);
+  create(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    return this.save(person);
   }
 
-  async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
-    const res = await this.assetFaceRepository.save(entities);
-    return res.map((row) => row.id);
+  async createAll(people: Partial<PersonEntity>[]): Promise<string[]> {
+    const results = await this.personRepository.save(people);
+    return results.map((person) => person.id);
   }
 
-  async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    const { id } = await this.personRepository.save(entity);
-    return this.personRepository.findOneByOrFail({ id });
+  async refreshFaces(
+    facesToAdd: Partial<AssetFaceEntity>[],
+    faceIdsToRemove: string[],
+    embeddingsToAdd?: FaceSearchEntity[],
+  ): Promise<void> {
+    const query = this.faceSearchRepository.createQueryBuilder().select('1').fromDummy();
+    if (facesToAdd.length > 0) {
+      const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
+      query.addCommonTableExpression(insertCte, 'added');
+    }
+
+    if (faceIdsToRemove.length > 0) {
+      const deleteCte = this.assetFaceRepository
+        .createQueryBuilder()
+        .delete()
+        .where('id = any(:faceIdsToRemove)', { faceIdsToRemove });
+      query.addCommonTableExpression(deleteCte, 'deleted');
+    }
+
+    if (embeddingsToAdd?.length) {
+      const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
+      query.addCommonTableExpression(embeddingCte, 'embeddings');
+      query.getQuery(); // typeorm mixes up parameters without this
+    }
+
+    await query.execute();
+  }
+
+  async update(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    return this.save(person);
+  }
+
+  async updateAll(people: Partial<PersonEntity>[]): Promise<void> {
+    await this.personRepository.save(people);
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
@@ -280,5 +317,19 @@ export class PersonRepository implements IPersonRepository {
       .select('MAX(jobStatus.facesRecognizedAt)::text', 'latestDate')
       .getRawOne();
     return result?.latestDate;
+  }
+
+  private async save(person: Partial<PersonEntity>): Promise<PersonEntity> {
+    const { id } = await this.personRepository.save(person);
+    return this.personRepository.findOneByOrFail({ id });
+  }
+
+  private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
+    await this.assetFaceRepository.query('VACUUM ANALYZE asset_faces, face_search, person');
+    await this.assetFaceRepository.query('REINDEX TABLE asset_faces');
+    await this.assetFaceRepository.query('REINDEX TABLE person');
+    if (reindexVectors) {
+      await this.assetFaceRepository.query('REINDEX TABLE face_search');
+    }
   }
 }
