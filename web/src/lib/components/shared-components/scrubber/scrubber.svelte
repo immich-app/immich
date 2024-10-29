@@ -75,7 +75,7 @@
   $: timelineFullHeight = $assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset;
   $: relativeTopOffset = toScrollY(timelineTopOffset / timelineFullHeight);
   $: relativeBottomOffset = toScrollY(timelineBottomOffset / timelineFullHeight);
-  $: formatedDate = parseUtcDate(scrubBucket?.bucketDate ?? '').toFormat('MMM yyyy');
+  $: formatedDate = scrubBucket?.bucketDate ? parseUtcDate(scrubBucket?.bucketDate).toFormat('MMM yyyy') : '';
 
   const listener: BucketListener = (event) => {
     const { type } = event;
@@ -243,7 +243,7 @@
       class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + HOVER_DATE_HEIGHT}px"
     >
-      {#if $isTimelineScrolling && formatedDate !== 'Invalid DateTime'}
+      {#if $isTimelineScrolling}
         <p
           transition:fly={{ y: -10, duration: 250 }}
           class="truncate opacity-85 pointer-events-none absolute right-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
