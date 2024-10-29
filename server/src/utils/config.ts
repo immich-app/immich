@@ -1,5 +1,5 @@
 import AsyncLock from 'async-lock';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
@@ -87,13 +87,13 @@ const buildConfig = async (repos: RepoDeps) => {
     : await metadataRepo.get(SystemMetadataKey.SYSTEM_CONFIG);
 
   // merge with defaults
-  const config = _.cloneDeep(defaults);
+  const rawConfig = _.cloneDeep(defaults);
   for (const property of getKeysDeep(partial)) {
-    _.set(config, property, _.get(partial, property));
+    _.set(rawConfig, property, _.get(partial, property));
   }
 
   // check for extra properties
-  const unknownKeys = _.cloneDeep(config);
+  const unknownKeys = _.cloneDeep(rawConfig);
   for (const property of getKeysDeep(defaults)) {
     unsetDeep(unknownKeys, property);
   }
@@ -103,7 +103,8 @@ const buildConfig = async (repos: RepoDeps) => {
   }
 
   // validate full config
-  const errors = await validate(plainToInstance(SystemConfigDto, config));
+  const instance = plainToInstance(SystemConfigDto, rawConfig);
+  const errors = await validate(instance);
   if (errors.length > 0) {
     if (configFile) {
       throw new Error(`Invalid value(s) in file: ${errors}`);
@@ -111,6 +112,9 @@ const buildConfig = async (repos: RepoDeps) => {
       logger.error('Validation error', errors);
     }
   }
+
+  // return config with class-transform changes
+  const config = instanceToPlain(instance) as SystemConfig;
 
   if (config.server.externalDomain.length > 0) {
     config.server.externalDomain = new URL(config.server.externalDomain).origin;

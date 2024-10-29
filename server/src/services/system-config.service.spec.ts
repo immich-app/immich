@@ -237,6 +237,24 @@ describe(SystemConfigService.name, () => {
       expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
 
+    it('should transform booleans', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { twoPass: 'false' } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        ffmpeg: expect.objectContaining({ twoPass: false }),
+      });
+    });
+
+    it('should transform numbers', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { threads: '42' } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        ffmpeg: expect.objectContaining({ threads: 42 }),
+      });
+    });
+
     it('should log errors with the config file', async () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
 
