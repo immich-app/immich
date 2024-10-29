@@ -163,7 +163,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
     acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     targetResolution: '720',
     maxBitrate: '0',
@@ -354,9 +354,9 @@ export const immichAppConfig: ConfigModuleOptions = {
       ),
 
     IMMICH_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_HOST_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_API_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_IO_METRICS: Joi.boolean().optional().default(false),
+    IMMICH_HOST_METRICS: Joi.boolean().optional(),
+    IMMICH_API_METRICS: Joi.boolean().optional(),
+    IMMICH_IO_METRICS: Joi.boolean().optional(),
   }),
 };
 

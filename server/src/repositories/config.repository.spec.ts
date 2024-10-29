@@ -1,3 +1,4 @@
+import { ImmichTelemetry } from 'src/enum';
 import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
 
 const getEnv = () => {
@@ -9,6 +10,11 @@ const resetEnv = () => {
   for (const env of [
     'IMMICH_WORKERS_INCLUDE',
     'IMMICH_WORKERS_EXCLUDE',
+    'IMMICH_TRUSTED_PROXIES',
+    'IMMICH_API_METRICS_PORT',
+    'IMMICH_MICROSERVICES_METRICS_PORT',
+    'IMMICH_TELEMETRY_INCLUDE',
+    'IMMICH_TELEMETRY_EXCLUDE',
 
     'DB_URL',
     'DB_HOSTNAME',
@@ -60,12 +66,14 @@ describe('getEnv', () => {
     it('should use defaults', () => {
       const { database } = getEnv();
       expect(database).toEqual({
-        url: undefined,
-        host: 'database',
-        port: 5432,
-        name: 'immich',
-        username: 'postgres',
-        password: 'postgres',
+        config: expect.objectContaining({
+          type: 'postgres',
+          host: 'database',
+          port: 5432,
+          database: 'immich',
+          username: 'postgres',
+          password: 'postgres',
+        }),
         skipMigrations: false,
         vectorExtension: 'vectors',
       });
@@ -176,6 +184,66 @@ describe('getEnv', () => {
     it('should throw error for invalid workers', () => {
       process.env.IMMICH_WORKERS_INCLUDE = 'api,microservices,randomservice';
       expect(getEnv).toThrowError('Invalid worker(s) found: api,microservices,randomservice');
+    });
+  });
+
+  describe('network', () => {
+    it('should return default network options', () => {
+      const { network } = getEnv();
+      expect(network).toEqual({
+        trustedProxies: [],
+      });
+    });
+
+    it('should parse trusted proxies', () => {
+      process.env.IMMICH_TRUSTED_PROXIES = '10.1.0.0,10.2.0.0, 169.254.0.0/16';
+      const { network } = getEnv();
+      expect(network).toEqual({
+        trustedProxies: ['10.1.0.0', '10.2.0.0', '169.254.0.0/16'],
+      });
+    });
+  });
+
+  describe('telemetry', () => {
+    it('should have default values', () => {
+      const { telemetry } = getEnv();
+      expect(telemetry).toEqual({
+        apiPort: 8081,
+        microservicesPort: 8082,
+        metrics: new Set([]),
+      });
+    });
+
+    it('should parse custom ports', () => {
+      process.env.IMMICH_API_METRICS_PORT = '2001';
+      process.env.IMMICH_MICROSERVICES_METRICS_PORT = '2002';
+      const { telemetry } = getEnv();
+      expect(telemetry).toMatchObject({
+        apiPort: 2001,
+        microservicesPort: 2002,
+        metrics: expect.any(Set),
+      });
+    });
+
+    it('should run with telemetry enabled', () => {
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'all';
+      const { telemetry } = getEnv();
+      expect(telemetry.metrics).toEqual(new Set(Object.values(ImmichTelemetry)));
+    });
+
+    it('should run with telemetry enabled and jobs disabled', () => {
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'all';
+      process.env.IMMICH_TELEMETRY_EXCLUDE = 'job';
+      const { telemetry } = getEnv();
+      expect(telemetry.metrics).toEqual(
+        new Set([ImmichTelemetry.API, ImmichTelemetry.HOST, ImmichTelemetry.IO, ImmichTelemetry.REPO]),
+      );
+    });
+
+    it('should run with specific telemetry metrics', () => {
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'io, host, api';
+      const { telemetry } = getEnv();
+      expect(telemetry.metrics).toEqual(new Set([ImmichTelemetry.API, ImmichTelemetry.HOST, ImmichTelemetry.IO]));
     });
   });
 });

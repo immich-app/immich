@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { join } from 'node:path';
-import { citiesFile } from 'src/constants';
-import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
+import { join, resolve } from 'node:path';
+import { citiesFile, excludePaths } from 'src/constants';
+import { Telemetry } from 'src/decorators';
+import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { QueueName } from 'src/interfaces/job.interface';
@@ -24,16 +25,17 @@ const stagingKeys = {
 };
 
 const WORKER_TYPES = new Set(Object.values(ImmichWorker));
+const TELEMETRY_TYPES = new Set(Object.values(ImmichTelemetry));
 
-const asSet = (value: string | undefined, defaults: ImmichWorker[]) => {
+const asSet = <T>(value: string | undefined, defaults: T[]) => {
   const values = (value || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
-  return new Set(values.length === 0 ? defaults : (values as ImmichWorker[]));
+  return new Set(values.length === 0 ? defaults : (values as T[]));
 };
 
 const getEnv = (): EnvData => {
-  const included = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
-  const excluded = asSet(process.env.IMMICH_WORKERS_EXCLUDE, []);
-  const workers = [...setDifference(included, excluded)];
+  const includedWorkers = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
+  const excludedWorkers = asSet(process.env.IMMICH_WORKERS_EXCLUDE, []);
+  const workers = [...setDifference(includedWorkers, excludedWorkers)];
   for (const worker of workers) {
     if (!WORKER_TYPES.has(worker)) {
       throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
@@ -44,9 +46,13 @@ const getEnv = (): EnvData => {
   const isProd = environment === ImmichEnvironment.PRODUCTION;
   const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
   const folders = {
+    // eslint-disable-next-line unicorn/prefer-module
+    dist: resolve(`${__dirname}/..`),
     geodata: join(buildFolder, 'geodata'),
     web: join(buildFolder, 'www'),
   };
+
+  const databaseUrl = process.env.DB_URL;
 
   let redisConfig = {
     host: process.env.REDIS_HOSTNAME || 'redis',
@@ -63,6 +69,19 @@ const getEnv = (): EnvData => {
       redisConfig = JSON.parse(Buffer.from(redisUrl.slice(10), 'base64').toString());
     } catch (error) {
       throw new Error(`Failed to decode redis options: ${error}`);
+    }
+  }
+
+  const includedTelemetries =
+    process.env.IMMICH_TELEMETRY_INCLUDE === 'all'
+      ? new Set(Object.values(ImmichTelemetry))
+      : asSet<ImmichTelemetry>(process.env.IMMICH_TELEMETRY_INCLUDE, []);
+
+  const excludedTelemetries = asSet<ImmichTelemetry>(process.env.IMMICH_TELEMETRY_EXCLUDE, []);
+  const telemetries = setDifference(includedTelemetries, excludedTelemetries);
+  for (const telemetry of telemetries) {
+    if (!TELEMETRY_TYPES.has(telemetry)) {
+      throw new Error(`Invalid telemetry found: ${telemetry}`);
     }
   }
 
@@ -103,12 +122,25 @@ const getEnv = (): EnvData => {
     },
 
     database: {
-      url: process.env.DB_URL,
-      host: process.env.DB_HOSTNAME || 'database',
-      port: Number(process.env.DB_PORT) || 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      name: process.env.DB_DATABASE_NAME || 'immich',
+      config: {
+        type: 'postgres',
+        entities: [`${folders.dist}/entities` + '/*.entity.{js,ts}'],
+        migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
+        subscribers: [`${folders.dist}/subscribers` + '/*.{js,ts}'],
+        migrationsRun: false,
+        synchronize: false,
+        connectTimeoutMS: 10_000, // 10 seconds
+        parseInt8: true,
+        ...(databaseUrl
+          ? { url: databaseUrl }
+          : {
+              host: process.env.DB_HOSTNAME || 'database',
+              port: Number(process.env.DB_PORT) || 5432,
+              username: process.env.DB_USERNAME || 'postgres',
+              password: process.env.DB_PASSWORD || 'postgres',
+              database: process.env.DB_DATABASE_NAME || 'immich',
+            }),
+      },
 
       skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
       vectorExtension:
@@ -116,6 +148,23 @@ const getEnv = (): EnvData => {
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,
+
+    network: {
+      trustedProxies: (process.env.IMMICH_TRUSTED_PROXIES ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    },
+
+    otel: {
+      metrics: {
+        hostMetrics: telemetries.has(ImmichTelemetry.HOST),
+        apiMetrics: {
+          enable: telemetries.has(ImmichTelemetry.API),
+          ignoreRoutes: excludePaths,
+        },
+      },
+    },
 
     redis: redisConfig,
 
@@ -138,6 +187,12 @@ const getEnv = (): EnvData => {
       ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',
     },
 
+    telemetry: {
+      apiPort: Number(process.env.IMMICH_API_METRICS_PORT || '') || 8081,
+      microservicesPort: Number(process.env.IMMICH_MICROSERVICES_METRICS_PORT || '') || 8082,
+      metrics: telemetries,
+    },
+
     workers,
 
     noColor: !!process.env.NO_COLOR,
@@ -147,6 +202,7 @@ const getEnv = (): EnvData => {
 let cached: EnvData | undefined;
 
 @Injectable()
+@Telemetry({ enabled: false })
 export class ConfigRepository implements IConfigRepository {
   getEnv(): EnvData {
     if (!cached) {

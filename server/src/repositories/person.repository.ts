@@ -20,11 +20,9 @@ import {
   UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class PersonRepository implements IPersonRepository {
   constructor(

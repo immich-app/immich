@@ -41,6 +41,7 @@
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
   import { afterUpdate, tick } from 'svelte';
+  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -246,6 +247,8 @@
           <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
           <DeleteAssets menuItem {onAssetDelete} />
+          <hr />
+          <AssetJobActions />
         </ButtonContextMenu>
       </AssetSelectControlBar>
     </div>
