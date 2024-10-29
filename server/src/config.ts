@@ -1,15 +1,12 @@
 import { ConfigModuleOptions } from '@nestjs/config';
 import { CronExpression } from '@nestjs/schedule';
-import { Request, Response } from 'express';
 import Joi, { Root } from 'joi';
-import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import {
   AudioCodec,
   Colorspace,
   CQMode,
   ImageFormat,
   ImmichEnvironment,
-  ImmichHeader,
   LogLevel,
   ToneMapping,
   TranscodeHWAccel,
@@ -353,18 +350,4 @@ export const immichAppConfig: ConfigModuleOptions = {
         }),
       ),
   }),
-};
-
-export const clsConfig: ClsModuleOptions = {
-  middleware: {
-    mount: true,
-    generateId: true,
-    setup: (cls, req: Request, res: Response) => {
-      const headerValues = req.headers[ImmichHeader.CID];
-      const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
-      const cid = headerValue || cls.get(CLS_ID);
-      cls.set(CLS_ID, cid);
-      res.header(ImmichHeader.CID, cid);
-    },
-  },
 };
