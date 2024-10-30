@@ -7,7 +7,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
@@ -59,37 +58,22 @@ class SearchPage extends HookConsumerWidget {
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
-    final page = useState(1);
-    final hasNextPage = useState(true);
-
-    trySearch() async {
-      print("trySearch with page: $page");
-      final searchResult = await ref
-          .watch(paginatedSearchProvider.notifier)
-          .getNextPage(filter.value, page.value);
-
-      if (searchResult == null) return;
-
-      if (searchResult.nextPage == null) {
-        hasNextPage.value = false;
-      } else {
-        page.value = searchResult.nextPage!.toInt();
-        print("next page payload: $page");
-      }
-    }
+    final isSearching = useState(false);
 
     search() async {
       if (prefilter == null && filter.value == previousFilter.value) return;
 
+      isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
-      await trySearch();
+      await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
       previousFilter.value = filter.value;
+      isSearching.value = false;
     }
 
     loadMoreSearchResult() async {
-      if (hasNextPage.value) {
-        await trySearch();
-      }
+      isSearching.value = true;
+      await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      isSearching.value = false;
     }
 
     searchPrefilter() {
@@ -112,7 +96,11 @@ class SearchPage extends HookConsumerWidget {
 
     useEffect(
       () {
+        Future.microtask(
+          () => ref.invalidate(paginatedSearchProvider),
+        );
         searchPrefilter();
+
         return null;
       },
       [],
@@ -609,6 +597,7 @@ class SearchPage extends HookConsumerWidget {
           ),
           SearchResultGrid(
             onScrollEnd: loadMoreSearchResult,
+            isSearching: isSearching.value,
           ),
         ],
       ),
@@ -618,8 +607,13 @@ class SearchPage extends HookConsumerWidget {
 
 class SearchResultGrid extends StatelessWidget {
   final VoidCallback onScrollEnd;
+  final bool isSearching;
 
-  const SearchResultGrid({super.key, required this.onScrollEnd});
+  const SearchResultGrid({
+    super.key,
+    required this.onScrollEnd,
+    this.isSearching = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -653,7 +647,7 @@ class SearchResultGrid extends StatelessWidget {
             stackEnabled: false,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SearchEmptyContent(),
+              child: !isSearching ? SearchEmptyContent() : SizedBox.shrink(),
             ),
           ),
         ),

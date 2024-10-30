@@ -4,7 +4,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 
 class SearchResult {
   final List<Asset> assets;
-  final String? nextPage;
+  final int? nextPage;
 
   SearchResult({
     required this.assets,
@@ -13,7 +13,7 @@ class SearchResult {
 
   SearchResult copyWith({
     List<Asset>? assets,
-    String? nextPage,
+    int? nextPage,
   }) {
     return SearchResult(
       assets: assets ?? this.assets,

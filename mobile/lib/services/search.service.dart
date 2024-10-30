@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -108,9 +109,10 @@ class SearchService {
         assets: await _assetRepository.getAllByRemoteId(
           response.assets.items.map((e) => e.id),
         ),
-        nextPage: response.assets.nextPage,
+        nextPage: response.assets.nextPage?.toInt(),
       );
     } catch (error, stackTrace) {
+      print(error);
       _log.severe("Failed to search for assets", error, stackTrace);
     }
     return null;
