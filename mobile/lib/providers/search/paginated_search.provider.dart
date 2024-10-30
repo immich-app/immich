@@ -42,7 +42,7 @@ AsyncValue<RenderList> paginatedSearchRenderList(
   PaginatedSearchRenderListRef ref,
 ) {
   final result = ref.watch(paginatedSearchProvider);
-  // print("paginatedSearchRenderList: ${result.assets.length}");
+
   return ref.watch(
     renderListProviderWithGrouping(
       (result.assets, GroupAssetsBy.none),
