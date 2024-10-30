@@ -72,7 +72,7 @@
     "@photo-sphere-viewer/core": "^5.7.1",
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.7.2",
     "@photo-sphere-viewer/video-plugin": "^5.7.2",
-    "@zoom-image/svelte": "^0.2.6",
+    "@zoom-image/svelte": "^0.3.0",
     "dom-to-image": "^2.6.0",
     "handlebars": "^4.7.8",
     "intl-messageformat": "^10.5.14",
