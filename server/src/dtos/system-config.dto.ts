@@ -59,6 +59,7 @@ export class DatabaseBackupConfig {
   cronExpression!: string;
 
   @IsInt()
+  @IsPositive()
   @IsNotEmpty()
   keepLastAmount!: number;
 }

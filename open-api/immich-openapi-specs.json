@@ -8767,6 +8767,7 @@
             "type": "boolean"
           },
           "keepLastAmount": {
+            "minimum": 1,
             "type": "number"
           }
         },

@@ -22,6 +22,7 @@ class DatabaseBackupConfig {
 
   bool enabled;
 
+  /// Minimum value: 1
   num keepLastAmount;
 
   @override

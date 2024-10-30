@@ -15,14 +15,14 @@ import { describe, Mocked } from 'vitest';
 describe(BackupService.name, () => {
   let sut: BackupService;
 
-  let storageMock: Mocked<IStorageRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
   let processMock: Mocked<IProcessRepository>;
+  let storageMock: Mocked<IStorageRepository>;
+  let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    ({ sut, databaseMock, jobMock, storageMock, systemMock, processMock } = newTestService(BackupService));
+    ({ sut, databaseMock, jobMock, processMock, storageMock, systemMock } = newTestService(BackupService));
   });
 
   it('should work', () => {
@@ -38,20 +38,6 @@ describe(BackupService.name, () => {
 
       expect(jobMock.addCronJob).toHaveBeenCalled();
       expect(systemMock.get).toHaveBeenCalled();
-
-      sut.onConfigUpdate({
-        oldConfig: defaults,
-        newConfig: {
-          backup: {
-            database: {
-              enabled: true,
-              cronExpression: '0 1 * * *',
-            },
-          },
-        } as SystemConfig,
-      });
-
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith('backupDatabase', '0 1 * * *', true);
     });
 
     it('should not initialize backup database cron job when lock is taken', async () => {
@@ -75,6 +61,23 @@ describe(BackupService.name, () => {
       systemMock.get.mockResolvedValue(defaults);
       databaseMock.tryLock.mockResolvedValue(true);
       await sut.onBootstrap(ImmichWorker.API);
+    });
+
+    it('should update cron job if backup is enabled', () => {
+      sut.onConfigUpdate({
+        oldConfig: defaults,
+        newConfig: {
+          backup: {
+            database: {
+              enabled: true,
+              cronExpression: '0 1 * * *',
+            },
+          },
+        } as SystemConfig,
+      });
+
+      expect(jobMock.updateCronJob).toHaveBeenCalledWith('backupDatabase', '0 1 * * *', true);
+      expect(jobMock.updateCronJob).toHaveBeenCalled();
     });
 
     it('should do nothing if oldConfig is not provided', () => {

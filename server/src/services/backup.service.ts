@@ -62,9 +62,7 @@ export class BackupService extends BaseService {
     const files = await this.storageRepository.readdir(backupsFolder);
     const failedBackups = files.filter((file) => file.match(/immich-db-backup-\d+\.sql\.gz\.tmp$/));
     const backups = files
-      .filter((file) => {
-        return file.match(/immich-db-backup-\d+\.sql\.gz$/);
-      })
+      .filter((file) => file.match(/immich-db-backup-\d+\.sql\.gz$/))
       .sort()
       .reverse();
 
@@ -86,6 +84,10 @@ export class BackupService extends BaseService {
 
     const isUrlConnection = config.connectionType === 'url';
     const databaseParams = isUrlConnection ? [config.url] : ['-U', config.username, '-h', config.host];
+    const backupFilePath = path.join(
+      StorageCore.getBaseFolder(StorageFolder.BACKUPS),
+      `immich-db-backup-${Date.now()}.sql.gz.tmp`,
+    );
 
     try {
       await new Promise<void>((resolve, reject) => {
@@ -96,26 +98,9 @@ export class BackupService extends BaseService {
         const gzip = this.processRepository.spawn(`gzip`, []);
         pgdump.stdout.pipe(gzip.stdin);
 
-        const backupFilePath = path.join(
-          StorageCore.getBaseFolder(StorageFolder.BACKUPS),
-          `immich-db-backup-${Date.now()}.sql.gz.tmp`,
-        );
-
         const fileStream = this.storageRepository.createWriteStream(backupFilePath);
 
         gzip.stdout.pipe(fileStream);
-
-        if (!pgdump.stderr || !pgdump.stdout) {
-          this.logger.error('Backup failed, could not spawn backup process');
-          reject('Backup failed, could not spawn backup process');
-          return;
-        }
-
-        if (!gzip.stderr || !gzip.stdout) {
-          this.logger.error('Backup failed, could not spawn gzip process');
-          reject('Backup failed, could not spawn gzip process');
-          return;
-        }
 
         pgdump.on('error', (err) => {
           this.logger.error('Backup failed with error', err);
@@ -156,17 +141,10 @@ export class BackupService extends BaseService {
             this.logger.error(`Gzip exited with code 0 but pgdump exited with ${pgdump.exitCode}`);
             return;
           }
-          this.storageRepository
-            .rename(backupFilePath, backupFilePath.replace('.tmp', ''))
-            .then(() => {
-              resolve();
-            })
-            .catch((error) => {
-              this.logger.error('Backup failed with error', error);
-              reject(error);
-            });
+          resolve();
         });
       });
+      await this.storageRepository.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
     } catch (error) {
       this.logger.error('Database Backup Failure', error);
       return JobStatus.FAILED;

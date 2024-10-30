@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
-import fsSync, { constants, createReadStream, existsSync, mkdirSync } from 'node:fs';
+import { constants, createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Writable } from 'node:stream';
@@ -44,7 +44,7 @@ export class StorageRepository implements IStorageRepository {
   }
 
   createWriteStream(filepath: string): Writable {
-    return fsSync.createWriteStream(filepath, { flags: 'w' });
+    return createWriteStream(filepath, { flags: 'w' });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
