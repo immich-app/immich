@@ -16,16 +16,35 @@
 
   interface Props {
     assets: AssetResponseDto[];
-    onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
+    isSynchronizeAlbumsActive: boolean;
+    isSynchronizeArchivesActive: boolean;
+    isSynchronizeFavoritesActive: boolean;
+    onResolve: (duplicateAssetIds: string[], trashIds: string[], selectedDataToSync: SelectedSyncData) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
+  let {
+    assets,
+    isSynchronizeAlbumsActive,
+    isSynchronizeArchivesActive,
+    isSynchronizeFavoritesActive,
+    onResolve,
+    onStack,
+  }: Props = $props();
+
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+  export interface SelectedSyncData {
+    isArchived: boolean | null;
+    isFavorite: boolean | null;
+  }
+  let selectedSyncData: SelectedSyncData = $state({
+    isArchived: null,
+    isFavorite: null,
+  });
 
   onMount(() => {
     const suggestedAsset = suggestDuplicate(assets);
@@ -89,7 +108,7 @@
   const handleResolve = () => {
     const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
     const duplicateAssetIds = assets.map((asset) => asset.id);
-    onResolve(duplicateAssetIds, trashIds);
+    onResolve(duplicateAssetIds, trashIds, selectedSyncData);
   };
 
   const handleStack = () => {
@@ -118,8 +137,12 @@
       <DuplicateAsset
         {asset}
         {onSelectAsset}
+        bind:selectedSyncData
         isSelected={selectedAssetIds.has(asset.id)}
         onViewAsset={(asset) => setAsset(asset)}
+        {isSynchronizeAlbumsActive}
+        {isSynchronizeFavoritesActive}
+        {isSynchronizeArchivesActive}
       />
     {/each}
   </div>
