@@ -39,7 +39,7 @@
     "vite": "^5.0.12",
     "vite-tsconfig-paths": "^5.0.0",
     "vitest": "^2.0.5",
-    "vitest-fetch-mock": "^0.3.0",
+    "vitest-fetch-mock": "^0.4.0",
     "yaml": "^2.3.1"
   },
   "scripts": {
