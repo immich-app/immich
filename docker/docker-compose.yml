@@ -29,6 +29,7 @@ services:
     restart: always
     healthcheck:
       disable: false
+    user: ${UID:-0}:${GID:-0}
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -38,13 +39,16 @@ services:
     # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
-    volumes:
-      - model-cache:/cache
     env_file:
       - .env
     restart: always
     healthcheck:
       disable: false
+    user: ${UID:-0}:${GID:-0}
+    tmpfs:
+      - /cache:mode=755,uid=${UID:-0},gid=${PID:-0} # model-cache
+      - /.config:mode=755,uid=${UID:-0},gid=${PID:-0}
+      - /.cache:mode=755,uid=${UID:-0},gid=${PID:-0}
 
   redis:
     container_name: immich_redis
@@ -52,6 +56,9 @@ services:
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
+    user: ${UID:-0}:${GID:-0}
+    tmpfs:
+      - /data:mode=755,uid=${UID:-0},gid=${PID:-0}
 
   database:
     container_name: immich_postgres
@@ -86,6 +93,4 @@ services:
         'wal_compression=on',
       ]
     restart: always
-
-volumes:
-  model-cache:
+    user: ${UID:-0}:${GID:-0}
