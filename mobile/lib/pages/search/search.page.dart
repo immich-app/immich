@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
@@ -58,23 +59,37 @@ class SearchPage extends HookConsumerWidget {
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
-    final currentPage = useState(1);
-    final searchProvider = ref.watch(paginatedSearchProvider);
-    final searchResultCount = useState(0);
+    final page = useState(1);
+    final hasNextPage = useState(true);
+
+    trySearch() async {
+      print("trySearch with page: $page");
+      final searchResult = await ref
+          .watch(paginatedSearchProvider.notifier)
+          .getNextPage(filter.value, page.value);
+
+      if (searchResult == null) return;
+
+      if (searchResult.nextPage == null) {
+        hasNextPage.value = false;
+      } else {
+        page.value = searchResult.nextPage!.toInt();
+        print("next page payload: $page");
+      }
+    }
 
     search() async {
       if (prefilter == null && filter.value == previousFilter.value) return;
 
       ref.watch(paginatedSearchProvider.notifier).clear();
-
-      currentPage.value = 1;
-
-      final searchResult = await ref
-          .watch(paginatedSearchProvider.notifier)
-          .getNextPage(filter.value, currentPage.value);
-
+      await trySearch();
       previousFilter.value = filter.value;
-      searchResultCount.value = searchResult.length;
+    }
+
+    loadMoreSearchResult() async {
+      if (hasNextPage.value) {
+        await trySearch();
+      }
     }
 
     searchPrefilter() {
@@ -102,14 +117,6 @@ class SearchPage extends HookConsumerWidget {
       },
       [],
     );
-
-    loadMoreSearchResult() async {
-      currentPage.value += 1;
-      final searchResult = await ref
-          .watch(paginatedSearchProvider.notifier)
-          .getNextPage(filter.value, currentPage.value);
-      searchResultCount.value = searchResult.length;
-    }
 
     showPeoplePicker() {
       handleOnSelect(Set<Person> value) {
@@ -465,41 +472,6 @@ class SearchPage extends HookConsumerWidget {
       search();
     }
 
-    buildSearchResult() {
-      return switch (searchProvider) {
-        AsyncData() => Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: NotificationListener<ScrollEndNotification>(
-                onNotification: (notification) {
-                  final metrics = notification.metrics;
-                  final shouldLoadMore = searchResultCount.value > 75;
-                  if (metrics.pixels >= metrics.maxScrollExtent &&
-                      shouldLoadMore) {
-                    loadMoreSearchResult();
-                  }
-                  return true;
-                },
-                child: MultiselectGrid(
-                  renderListProvider: paginatedSearchRenderListProvider,
-                  archiveEnabled: true,
-                  deleteEnabled: true,
-                  editEnabled: true,
-                  favoriteEnabled: true,
-                  stackEnabled: false,
-                  emptyIndicator: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: SearchEmptyContent(),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        AsyncError(:final error) => Text('Error: $error'),
-        _ => const Expanded(child: Center(child: CircularProgressIndicator())),
-      };
-    }
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -635,8 +607,56 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          buildSearchResult(),
+          SearchResultGrid(
+            onScrollEnd: loadMoreSearchResult,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class SearchResultGrid extends StatelessWidget {
+  final VoidCallback onScrollEnd;
+
+  const SearchResultGrid({super.key, required this.onScrollEnd});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: NotificationListener<ScrollEndNotification>(
+          onNotification: (notification) {
+            final isBottomSheetNotification = notification.context
+                    ?.findAncestorWidgetOfExactType<
+                        DraggableScrollableSheet>() !=
+                null;
+
+            final metrics = notification.metrics;
+            final isVerticalScroll = metrics.axis == Axis.vertical;
+
+            if (metrics.pixels >= metrics.maxScrollExtent &&
+                isVerticalScroll &&
+                !isBottomSheetNotification) {
+              onScrollEnd();
+            }
+
+            return true;
+          },
+          child: MultiselectGrid(
+            renderListProvider: paginatedSearchRenderListProvider,
+            archiveEnabled: true,
+            deleteEnabled: true,
+            editEnabled: true,
+            favoriteEnabled: true,
+            stackEnabled: false,
+            emptyIndicator: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SearchEmptyContent(),
+            ),
+          ),
+        ),
       ),
     );
   }
