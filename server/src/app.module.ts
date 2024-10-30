@@ -1,13 +1,11 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
-import { immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
@@ -43,7 +41,6 @@ const imports = [
   BullModule.forRoot(bull.config),
   BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(cls.config),
-  ConfigModule.forRoot(immichAppConfig),
   OpenTelemetryModule.forRoot(otel),
   TypeOrmModule.forRootAsync({
     inject: [ModuleRef],
