@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { SystemFlags } from 'src/entities/system-metadata.entity';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
-import { IDeleteFilesJob, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-
-export class ImmichStartupError extends Error {}
-export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
+import { ImmichStartupError } from 'src/utils/misc';
 
 const docsMessage = `Please see https://immich.app/docs/administration/system-integrity#folder-checks for more information.`;
 
@@ -66,7 +64,8 @@ export class StorageService extends BaseService {
     });
   }
 
-  async handleDeleteFiles(job: IDeleteFilesJob) {
+  @OnJob({ name: JobName.DELETE_FILES, queue: QueueName.BACKGROUND_TASK })
+  async handleDeleteFiles(job: JobOf<JobName.DELETE_FILES>): Promise<JobStatus> {
     const { files } = job;
 
     // TODO: one job per file

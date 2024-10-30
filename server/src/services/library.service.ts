@@ -3,7 +3,7 @@ import { R_OK } from 'node:constants';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -19,14 +19,7 @@ import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetType, ImmichWorker } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import {
-  IEntityJob,
-  ILibraryAssetJob,
-  ILibraryFileJob,
-  JobName,
-  JOBS_LIBRARY_PAGINATION_SIZE,
-  JobStatus,
-} from 'src/interfaces/job.interface';
+import { JobName, JobOf, JOBS_LIBRARY_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
@@ -223,6 +216,7 @@ export class LibraryService extends BaseService {
     return libraries.map((library) => mapLibrary(library));
   }
 
+  @OnJob({ name: JobName.LIBRARY_QUEUE_CLEANUP, queue: QueueName.LIBRARY })
   async handleQueueCleanup(): Promise<JobStatus> {
     this.logger.debug('Cleaning up any pending library deletions');
     const pendingDeletion = await this.libraryRepository.getAllDeleted();
@@ -340,7 +334,8 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });
   }
 
-  async handleDeleteLibrary(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_DELETE, queue: QueueName.LIBRARY })
+  async handleDeleteLibrary(job: JobOf<JobName.LIBRARY_DELETE>): Promise<JobStatus> {
     const libraryId = job.id;
 
     const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
@@ -374,7 +369,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSyncFile(job: ILibraryFileJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_SYNC_FILE, queue: QueueName.LIBRARY })
+  async handleSyncFile(job: JobOf<JobName.LIBRARY_SYNC_FILE>): Promise<JobStatus> {
     // Only needs to handle new assets
     const assetPath = path.normalize(job.assetPath);
 
@@ -458,6 +454,7 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
   }
 
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, queue: QueueName.LIBRARY })
   async handleQueueSyncAll(): Promise<JobStatus> {
     this.logger.debug(`Refreshing all external libraries`);
 
@@ -483,7 +480,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSyncAsset(job: ILibraryAssetJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_SYNC_ASSET, queue: QueueName.LIBRARY })
+  async handleSyncAsset(job: JobOf<JobName.LIBRARY_SYNC_ASSET>): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
     if (!asset) {
       return JobStatus.SKIPPED;
@@ -538,7 +536,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueSyncFiles(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_FILES, queue: QueueName.LIBRARY })
+  async handleQueueSyncFiles(job: JobOf<JobName.LIBRARY_QUEUE_SYNC_FILES>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.id);
     if (!library) {
       this.logger.debug(`Library ${job.id} not found, skipping refresh`);
@@ -589,7 +588,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueSyncAssets(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, queue: QueueName.LIBRARY })
+  async handleQueueSyncAssets(job: JobOf<JobName.LIBRARY_QUEUE_SYNC_ASSETS>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.id);
     if (!library) {
       return JobStatus.SKIPPED;
