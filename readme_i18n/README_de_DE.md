@@ -103,8 +103,8 @@ Für die Handy-App kannst Du `https://demo.immich.app/api` als `Server Endpoint 
 | Offline Unterstützung                                | Ja     | Nein  |
 | Schreibgeschützte Gallerie                           | Ja     | Ja    |
 | Gestapelte Bilder                                    | Ja     | Ja    |
-| Tags                                         | Nein     | Ja |
-| Ordner-Ansicht                                  | Nein     | Ja |
+| Tags                                                 | Nein   | Ja    |
+| Ordner-Ansicht                                       | Nein   | Ja    |
 
 
 ## Übersetzungen
