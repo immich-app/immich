@@ -88,7 +88,6 @@ export type EventItem<T extends EmitEvent> = {
 
 export interface IEventRepository {
   setup(options: { services: ClassConstructor<unknown>[] }): void;
-  on<T extends keyof EventMap>(item: EventItem<T>): void;
   emit<T extends keyof EventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
 
   /**
