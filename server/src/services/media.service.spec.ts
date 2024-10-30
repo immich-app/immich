@@ -1,4 +1,4 @@
-import { Stats } from 'node:fs';
+import type { Stats } from 'node:fs';
 import { SystemConfig } from 'src/config';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -2045,7 +2045,7 @@ describe(MediaService.name, () => {
 
     it('should set options for rkmpp', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
+      storageMock.stat.mockResolvedValue({ isFile: () => true, isCharacterDevice: () => true } as Stats);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
@@ -2081,7 +2081,7 @@ describe(MediaService.name, () => {
 
     it('should set vbr options for rkmpp when max bitrate is enabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
+      storageMock.stat.mockResolvedValue({ isFile: () => true, isCharacterDevice: () => true } as Stats);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVp9);
       systemMock.get.mockResolvedValue({
         ffmpeg: {
@@ -2106,7 +2106,7 @@ describe(MediaService.name, () => {
 
     it('should set cqp options for rkmpp when max bitrate is disabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
+      storageMock.stat.mockResolvedValue({ isFile: () => true, isCharacterDevice: () => true } as Stats);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
@@ -2126,7 +2126,7 @@ describe(MediaService.name, () => {
 
     it('should set OpenCL tonemapping options for rkmpp when OpenCL is available', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
+      storageMock.stat.mockResolvedValue({ isFile: () => true, isCharacterDevice: () => true } as Stats);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
       systemMock.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
@@ -2150,7 +2150,7 @@ describe(MediaService.name, () => {
 
     it('should use software decoding and tone-mapping if hardware decoding is disabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => true, isCharacterDevice: () => true });
+      storageMock.stat.mockResolvedValue({ isFile: () => true, isCharacterDevice: () => true } as Stats);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
       systemMock.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: false, crf: 30, maxBitrate: '0' },
@@ -2174,7 +2174,7 @@ describe(MediaService.name, () => {
 
     it('should use software decoding and tone-mapping if opencl is not available', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
-      storageMock.stat.mockResolvedValue({ ...new Stats(), isFile: () => false, isCharacterDevice: () => false });
+      storageMock.stat.mockResolvedValue({ isFile: () => false, isCharacterDevice: () => false } as Stats);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
       systemMock.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
