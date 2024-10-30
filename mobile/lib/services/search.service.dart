@@ -112,7 +112,6 @@ class SearchService {
         nextPage: response.assets.nextPage?.toInt(),
       );
     } catch (error, stackTrace) {
-      print(error);
       _log.severe("Failed to search for assets", error, stackTrace);
     }
     return null;
