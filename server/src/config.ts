@@ -1,12 +1,9 @@
-import { ConfigModuleOptions } from '@nestjs/config';
 import { CronExpression } from '@nestjs/schedule';
-import Joi, { Root } from 'joi';
 import {
   AudioCodec,
   Colorspace,
   CQMode,
   ImageFormat,
-  ImmichEnvironment,
   LogLevel,
   ToneMapping,
   TranscodeHWAccel,
@@ -306,48 +303,3 @@ export const defaults = Object.freeze<SystemConfig>({
     deleteDelay: 7,
   },
 });
-
-const WHEN_DB_URL_SET = Joi.when('DB_URL', {
-  is: Joi.exist(),
-  then: Joi.string().optional(),
-  otherwise: Joi.string().required(),
-});
-
-export const immichAppConfig: ConfigModuleOptions = {
-  envFilePath: '.env',
-  isGlobal: true,
-  validationSchema: Joi.object({
-    IMMICH_ENV: Joi.string()
-      .optional()
-      .valid(...Object.values(ImmichEnvironment))
-      .default(ImmichEnvironment.PRODUCTION),
-    IMMICH_LOG_LEVEL: Joi.string()
-      .optional()
-      .valid(...Object.values(LogLevel)),
-
-    DB_USERNAME: WHEN_DB_URL_SET,
-    DB_PASSWORD: WHEN_DB_URL_SET,
-    DB_DATABASE_NAME: WHEN_DB_URL_SET,
-    DB_URL: Joi.string().optional(),
-    DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
-    DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
-
-    IMMICH_PORT: Joi.number().optional(),
-    IMMICH_API_METRICS_PORT: Joi.number().optional(),
-    IMMICH_MICROSERVICES_METRICS_PORT: Joi.number().optional(),
-
-    IMMICH_TRUSTED_PROXIES: Joi.extend((joi: Root) => ({
-      type: 'stringArray',
-      base: joi.array(),
-      coerce: (value) => (value.split ? value.split(',') : value),
-    }))
-      .stringArray()
-      .single()
-      .items(
-        Joi.string().ip({
-          version: ['ipv4', 'ipv6'],
-          cidr: 'optional',
-        }),
-      ),
-  }),
-};

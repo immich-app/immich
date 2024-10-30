@@ -8,6 +8,7 @@ const getEnv = () => {
 
 const resetEnv = () => {
   for (const env of [
+    'IMMICH_ENV',
     'IMMICH_WORKERS_INCLUDE',
     'IMMICH_WORKERS_EXCLUDE',
     'IMMICH_TRUSTED_PROXIES',
@@ -60,6 +61,18 @@ const sentinelConfig = {
 describe('getEnv', () => {
   beforeEach(() => {
     resetEnv();
+  });
+
+  it('should use defaults', () => {
+    const config = getEnv();
+
+    expect(config).toMatchObject({
+      host: undefined,
+      port: 2283,
+      environment: 'production',
+      configFile: undefined,
+      logLevel: undefined,
+    });
   });
 
   describe('database', () => {
@@ -201,6 +214,11 @@ describe('getEnv', () => {
       expect(network).toEqual({
         trustedProxies: ['10.1.0.0', '10.2.0.0', '169.254.0.0/16'],
       });
+    });
+
+    it('should reject invalid trusted proxies', () => {
+      process.env.IMMICH_TRUSTED_PROXIES = '10.1';
+      expect(() => getEnv()).toThrowError('Invalid environment variables: IMMICH_TRUSTED_PROXIES');
     });
   });
 

@@ -36,7 +36,6 @@
   "dependencies": {
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
-    "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.2.2",
     "@nestjs/event-emitter": "^2.0.4",
     "@nestjs/platform-express": "^10.2.2",
@@ -88,7 +87,8 @@
     "tailwindcss-preset-email": "^1.3.2",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
-    "ua-parser-js": "^1.0.35"
+    "ua-parser-js": "^1.0.35",
+    "validator": "^13.12.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
