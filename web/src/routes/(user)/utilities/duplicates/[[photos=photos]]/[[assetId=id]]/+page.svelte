@@ -6,7 +6,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import type { AssetResponseDto, AlbumResponseDto } from '@immich/sdk';
+  import type { AssetResponseDto, AlbumResponseDto, AssetBulkUpdateDto } from '@immich/sdk';
   import { deleteAssets, updateAssets, getAllAlbums } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -14,11 +14,12 @@
   import type { PageData } from './$types';
   import { suggestDuplicateByFileSize } from '$lib/utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { mdiCheckOutline, mdiTrashCanOutline, mdiKeyboard, mdiSync, mdiSyncOff } from '@mdi/js';
+  import { mdiCheckOutline, mdiTrashCanOutline, mdiKeyboard, mdiCogOutline } from '@mdi/js';
   import { stackAssets, addAssetsToAlbum } from '$lib/utils/asset-utils';
   import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import DuplicateOptions from '$lib/components/utilities-page/duplicates/duplicate-options.svelte';
   import { locale } from '$lib/stores/preferences.store';
 
   interface Props {
@@ -27,7 +28,10 @@
   }
 
   let { data = $bindable(), isShowKeyboardShortcut = $bindable(false) }: Props = $props();
+  export let isShowOptions = false;
   let isSynchronizeAlbumsActive = true;
+  let isSynchronizeFavoritesActive = true;
+  let isSynchronizeArchivesActive = true;
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -83,11 +87,21 @@
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     return withConfirmation(
       async () => {
+        let assetBulkUpdate: AssetBulkUpdateDto = {
+          ids: duplicateAssetIds,
+          duplicateId: null,
+        };
         if (isSynchronizeAlbumsActive) {
           await synchronizeAlbums(duplicateAssetIds);
         }
+        if (isSynchronizeArchivesActive) {
+          assetBulkUpdate.isArchived = data.duplicates[0].assets.some((asset) => asset.isArchived);
+        }
+        if (isSynchronizeFavoritesActive) {
+          assetBulkUpdate.isFavorite = data.duplicates[0].assets.some((asset) => asset.isFavorite);
+        }
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
-        await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+        await updateAssets({ assetBulkUpdateDto: assetBulkUpdate });
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
@@ -189,11 +203,7 @@
         title={$t('show_keyboard_shortcuts')}
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
       />
-    <CircleIconButton
-      icon={isSynchronizeAlbumsActive ? mdiSync : mdiSyncOff}
-      title={$t('show_synchronise_albums')}
-      on:click={() => (isSynchronizeAlbumsActive = !isSynchronizeAlbumsActive)}
-    />
+    <CircleIconButton icon={mdiCogOutline} title={$t('options')} on:click={() => (isShowOptions = !isShowOptions)} />
     </div>
   {/snippet}
 
@@ -217,6 +227,18 @@
     {/if}
   </div>
 </UserPageLayout>
+
+{#if isShowOptions}
+  <DuplicateOptions
+    synchronizeAlbums={isSynchronizeAlbumsActive}
+    synchronizeFavorites={isSynchronizeFavoritesActive}
+    synchronizeArchives={isSynchronizeArchivesActive}
+    onClose={() => (isShowOptions = false)}
+    onToggleSyncAlbum={() => (isSynchronizeAlbumsActive = !isSynchronizeAlbumsActive)}
+    onToggleSyncFavorites={() => (isSynchronizeFavoritesActive = !isSynchronizeFavoritesActive)}
+    onToggleSyncArchives={() => (isSynchronizeArchivesActive = !isSynchronizeArchivesActive)}
+  />
+{/if}
 
 {#if isShowKeyboardShortcut}
   <ShowShortcuts shortcuts={duplicateShortcuts} onClose={() => (isShowKeyboardShortcut = false)} />
