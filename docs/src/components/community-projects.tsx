@@ -85,9 +85,10 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: 'Immich Public Proxy',
-    description: 'Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.',
-    url: 'https://github.com/alangrainger/immich-public-proxy'
-  }
+    description:
+      'Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.',
+    url: 'https://github.com/alangrainger/immich-public-proxy',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
