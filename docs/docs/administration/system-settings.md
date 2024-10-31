@@ -32,7 +32,7 @@ You can always use the [Server CLI](/docs/administration/server-commands) to re-
 - Previews - Used in the asset viewer.
 
 By default Immich creates 3 thumbnails for each asset,
-Blurred (thumbhash) , Small - thumbnails (webp) , and Large - previews (jpeg/webp), using these settings you can change the quality for the thumbnails and previews files that are created.
+Blurred (thumbhash) , Small - thumbnails (jpeg/webp) , and Large - previews (jpeg/webp), using these settings you can change the quality for the thumbnails and previews files that are created.
 
 **Thumbnail format**  
 Allows you to choose the type of format you want for the Thumbnail images, Webp produces smaller files than jpeg, but is slower to encode.
@@ -65,7 +65,7 @@ The default resolution for Large thumbnails can be lowered from 1440p (default) 
 
 ## Job Settings
 
-Using these settings, you can determine the amount of work that will run concurrently for each task in microservices. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
+Using these settings, you can determine the amount of work that will run concurrently for each task. Some tasks can be set to higher values on computers with powerful hardware and storage with good I/O capabilities.
 
 With higher concurrency, the host will work on more assets in parallel,
 this advice improves throughput, not latency, for example, it will make Smart Search jobs process more quickly, but it won't make searching faster.
@@ -81,6 +81,12 @@ Doing so can impact API responsiveness with no gain in thumbnail generation spee
 The Facial Recognition Concurrency value cannot be changed because
 [DBSCAN](https://www.youtube.com/watch?v=RDZUdRSDOok) is traditionally sequential, but there are parallel implementations of it out there. Our implementation isn't parallel.
 :::
+
+## Metadata Settings
+
+### Enable face import
+
+Import faces from EXIF and XMP sidecars (Digikam format)
 
 ## External Library
 
