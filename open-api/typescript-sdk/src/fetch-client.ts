@@ -1221,6 +1221,14 @@ export type SystemConfigStorageTemplateDto = {
     hashVerificationEnabled: boolean;
     template: string;
 };
+export type SystemConfigTemplateEmailsDto = {
+    albumInviteTemplate: string;
+    albumUpdateTemplate: string;
+    welcomeTemplate: string;
+};
+export type SystemConfigTemplatesDto = {
+    email: SystemConfigTemplateEmailsDto;
+};
 export type SystemConfigThemeDto = {
     customCss: string;
 };
@@ -1247,6 +1255,7 @@ export type SystemConfigDto = {
     reverseGeocoding: SystemConfigReverseGeocodingDto;
     server: SystemConfigServerDto;
     storageTemplate: SystemConfigStorageTemplateDto;
+    templates: SystemConfigTemplatesDto;
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;

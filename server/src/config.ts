@@ -317,9 +317,9 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   templates: {
     email: {
-      welcomeTemplate: welcomeTemplate,
-      albumInviteTemplate: albumInviteTemplate,
-      albumUpdateTemplate: albumUpdateTemplate,
+      welcomeTemplate,
+      albumInviteTemplate,
+      albumUpdateTemplate,
     },
   },
   user: {
