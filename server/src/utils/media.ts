@@ -58,9 +58,8 @@ export class BaseConfig implements VideoCodecSWConfig {
         break;
       }
       case TranscodeHWAccel.RKMPP: {
-        handler =
-          config.accelDecode && hasMaliOpenCL
-            ? new RkmppHwDecodeConfig(config, devices)
+        handler = config.accelDecode
+            ? new RkmppHwDecodeConfig(config, devices, hasMaliOpenCL)
             : new RkmppSwDecodeConfig(config, devices);
         break;
       }
@@ -968,6 +967,16 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
 }
 
 export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
+  protected hasMaliOpenCL: boolean;
+  constructor(
+    protected config: SystemConfigFFmpegDto,
+    devices: string[] = [],
+    hasMaliOpenCL = false,
+  ) {
+    super(config, devices);
+    this.hasMaliOpenCL = hasMaliOpenCL;
+  }
+
   getBaseInputOptions() {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
@@ -978,14 +987,18 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     if (this.shouldToneMap(videoStream)) {
-      const { primaries, transfer, matrix } = this.getColors();
-      return [
-        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
-        'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
-        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
-        'format=drm_prime',
-      ];
+      if (this.hasMaliOpenCL) {
+        const { primaries, transfer, matrix } = this.getColors();
+        return [
+          `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
+          'hwmap=derive_device=opencl:mode=read',
+          `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
+          'hwmap=derive_device=rkmpp:mode=write:reverse=1',
+          'format=drm_prime',
+        ];
+      } else {
+        return super.getFilterOptions(videoStream);
+      }
     } else if (this.shouldScale(videoStream)) {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }

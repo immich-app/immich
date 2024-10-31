@@ -502,7 +502,7 @@ export class MediaService extends BaseService {
         const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
         this.maliOpenCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
       } catch {
-        this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU decoding');
+        this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU tonemapping');
         this.maliOpenCL = false;
       }
     }

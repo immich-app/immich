@@ -2212,6 +2212,30 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should set hardware decoding options for rkmpp when hardware decoding is enabled with no OpenCL on non-HDR file', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      storageMock.stat.mockResolvedValue({ isFile: () => false, isCharacterDevice: () => false } as Stats);
+      mediaMock.probe.mockResolvedValue(probeStub.noAudioStreams);
+      systemMock.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHWAccel.RKMPP, accelDecode: true, crf: 30, maxBitrate: '0' },
+      });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+          outputOptions: expect.arrayContaining([
+            expect.stringContaining(
+              'scale_rkrga=-2:720:format=nv12:afbc=1',
+            ),
+          ]),
+          twoPass: false,
+        }),
+      );
+    });
+
     it('should use software decoding and tone-mapping if hardware decoding is disabled', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       storageMock.stat.mockResolvedValue({ isFile: () => true, isCharacterDevice: () => true } as Stats);
