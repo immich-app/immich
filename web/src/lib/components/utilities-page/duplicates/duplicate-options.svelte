@@ -16,20 +16,20 @@
   <div class="items-center justify-center">
     <div class="grid p-2 gap-y-2">
       <SettingSwitch
-        title={'Synchronize Albums'}
-        subtitle={'All deduplicates get put in all albums of all duplicates.'}
+        title={$t('synchronize_albums')}
+        subtitle={$t('synchronize_albums_description')}
         checked={synchronizeAlbums}
         onToggle={onToggleSyncAlbum}
       />
       <SettingSwitch
-        title={'Synchronize Favorites'}
-        subtitle={'If one of the duplicates is a favorite, mark all deduplicated as favorites.'}
+        title={$t('synchronize_favorites')}
+        subtitle={$t('synchronize_favorites_description')}
         checked={synchronizeFavorites}
         onToggle={onToggleSyncFavorites}
       />
       <SettingSwitch
-        title={'Synchronize Archives'}
-        subtitle={'If one of the duplicates is already archived, also archive the deduplicated result.'}
+        title={$t('synchronize_archives')}
+        subtitle={$t('synchronize_archives_description')}
         checked={synchronizeArchives}
         onToggle={onToggleSyncArchives}
       />

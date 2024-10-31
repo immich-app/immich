@@ -4,7 +4,7 @@
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
-  import { mdiHeart, mdiMagnifyPlus, mdiImageMultipleOutline } from '@mdi/js';
+  import { mdiHeart, mdiMagnifyPlus, mdiImageMultipleOutline, mdiArchiveArrowDownOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -43,11 +43,14 @@
       />
 
       <!-- FAVORITE ICON -->
+      <div class="absolute bottom-2 left-2">
       {#if asset.isFavorite}
-        <div class="absolute bottom-2 left-2">
-          <Icon path={mdiHeart} size="24" class="text-white" />
+          <Icon path={mdiHeart} size="24" class="text-white inline-block" />
+        {/if}
+        {#if asset.isArchived}
+          <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white inline-block" />
+        {/if}
         </div>
-      {/if}
 
       <!-- OVERLAY CHIP -->
       <div
