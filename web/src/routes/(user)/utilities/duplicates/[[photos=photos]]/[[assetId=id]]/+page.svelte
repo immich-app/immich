@@ -7,7 +7,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import type { AssetResponseDto, AlbumResponseDto, AssetBulkUpdateDto } from '@immich/sdk';
-  import { deleteAssets, updateAssets, getAllAlbums } from '@immich/sdk';
+  import { deleteAssets, updateAsset, updateAssets, getAllAlbums } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
@@ -84,7 +84,12 @@
     });
   };
 
-  const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+  const handleResolve = async (
+    duplicateId: string,
+    duplicateAssetIds: string[],
+    trashIds: string[],
+    selectedDataToSync,
+  ) => {
     return withConfirmation(
       async () => {
         let assetBulkUpdate: AssetBulkUpdateDto = {
@@ -100,8 +105,32 @@
         if (isSynchronizeFavoritesActive) {
           assetBulkUpdate.isFavorite = data.duplicates[0].assets.some((asset) => asset.isFavorite);
         }
+        if (selectedDataToSync.dateTime !== null) {
+          assetBulkUpdate.dateTimeOriginal = selectedDataToSync.dateTime;
+        }
+        if (selectedDataToSync.location !== null) {
+          assetBulkUpdate.latitude = selectedDataToSync.location.latitude;
+          assetBulkUpdate.longitude = selectedDataToSync.location.longitude;
+        }
+
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: assetBulkUpdate });
+
+        if (selectedDataToSync.description !== null) {
+          await Promise.all(
+            duplicateAssetIds.map((assetId) =>
+              updateAsset({ id: assetId, updateAssetDto: { description: selectedDataToSync.description } }),
+            ),
+          );
+        }
+
+        if (selectedDataToSync.description !== null) {
+          await Promise.all(
+            duplicateAssetIds.map((assetId) =>
+              updateAsset({ id: assetId, updateAssetDto: { description: selectedDataToSync.description } }),
+            ),
+          );
+        }
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
@@ -215,8 +244,8 @@
       {#key duplicates[0].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[0].assets}
-          onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
+          onResolve={(duplicateAssetIds, trashIds, selectedDataToSync) =>
+            handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds, selectedDataToSync)}
           onStack={(assets) => handleStack(duplicates[0].duplicateId, assets)}
         />
       {/key}

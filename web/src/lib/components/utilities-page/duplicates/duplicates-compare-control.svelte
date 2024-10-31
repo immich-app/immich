@@ -15,7 +15,7 @@
 
   interface Props {
     assets: AssetResponseDto[];
-    onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
+    onResolve: (duplicateAssetIds: string[], trashIds: string[], selectedDataToSync) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
@@ -25,6 +25,11 @@
 
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+  let selectedSyncData = {
+    dateTime: null,
+    description: null,
+    location: null,
+  };
 
   onMount(() => {
     const suggestedAsset = suggestDuplicateByFileSize(assets);
@@ -49,6 +54,44 @@
     }
   };
 
+  const onSelectDate = (dateTime) => {
+    selectedSyncData.dateTime = selectedSyncData.dateTime?.ts === dateTime.ts ? null : dateTime;
+  };
+
+  const onSelectDescription = (description) => {
+    selectedSyncData.description = selectedSyncData.description === description ? null : description;
+  };
+
+  const onSelectLocation = (location) => {
+    if (
+      selectedSyncData.location?.longitude === location.longitude &&
+      selectedSyncData.location?.latitude === location.latitude
+    ) {
+      selectedSyncData.location = null;
+    } else {
+      selectedSyncData.location = location;
+    }
+  };
+
+  const onSelectDate = (dateTime) => {
+    selectedSyncData.dateTime = selectedSyncData.dateTime?.ts === dateTime.ts ? null : dateTime;
+  };
+
+  const onSelectDescription = (description) => {
+    selectedSyncData.description = selectedSyncData.description === description ? null : description;
+  };
+
+  const onSelectLocation = (location) => {
+    if (
+      selectedSyncData.location?.longitude === location.longitude &&
+      selectedSyncData.location?.latitude === location.latitude
+    ) {
+      selectedSyncData.location = null;
+    } else {
+      selectedSyncData.location = location;
+    }
+  };
+
   const onSelectNone = () => {
     selectedAssetIds.clear();
   };
@@ -60,7 +103,7 @@
   const handleResolve = () => {
     const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
     const duplicateAssetIds = assets.map((asset) => asset.id);
-    onResolve(duplicateAssetIds, trashIds);
+    onResolve(duplicateAssetIds, trashIds, selectedSyncData);
   };
 
   const handleStack = () => {
@@ -89,6 +132,10 @@
       <DuplicateAsset
         {asset}
         {onSelectAsset}
+        {onSelectDate}
+        {onSelectDescription}
+        {onSelectLocation}
+        {selectedSyncData}
         isSelected={selectedAssetIds.has(asset.id)}
         onViewAsset={(asset) => setAsset(asset)}
       />

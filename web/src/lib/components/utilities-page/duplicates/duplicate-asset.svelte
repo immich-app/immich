@@ -13,11 +13,23 @@
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
   }
+  export let selectedSyncData;
+  export let onSelectDate: (dateTime) => void;
+  export let onSelectDescription: (description) => void;
+  export let onSelectLocation: (location) => void;
 
   let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
+
+  $: timeZone = asset.exifInfo?.timeZone;
+  $: dateTime =
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromLocalDateTime(asset.localDateTime);
+  $: description = asset.exifInfo?.description;
+  $: location = { latitude: asset.exifInfo?.latitude, longitude: asset.exifInfo?.longitude };
 </script>
 
 <div
@@ -44,13 +56,13 @@
 
       <!-- FAVORITE ICON -->
       <div class="absolute bottom-2 left-2">
-      {#if asset.isFavorite}
+        {#if asset.isFavorite}
           <Icon path={mdiHeart} size="24" class="text-white inline-block" />
         {/if}
         {#if asset.isArchived}
           <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white inline-block" />
         {/if}
-        </div>
+      </div>
 
       <!-- OVERLAY CHIP -->
       <div
@@ -107,5 +119,63 @@
         {/if}
       {/await}
     </span>
+    <button
+      type="button"
+      class="dark:hover:bg-gray-300 {isSelected
+        ? 'hover:bg-gray-300'
+        : 'hover:bg-gray-500'} {selectedSyncData.dateTime === null
+        ? ''
+        : selectedSyncData.dateTime?.ts === dateTime?.ts
+          ? 'bg-green-400/90'
+          : 'bg-red-300/90'}"
+      on:click={() => onSelectDate(dateTime)}
+    >
+      {dateTime.toLocaleString(
+        {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        },
+        { locale: $locale },
+      )}
+      {dateTime.toLocaleString(
+        {
+          weekday: 'short',
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZoneName: timeZone ? 'longOffset' : undefined,
+        },
+        { locale: $locale },
+      )}
+    </button>
+    <button
+      type="button"
+      id="description_button"
+      class="dark:hover:bg-gray-300 {isSelected
+        ? 'hover:bg-gray-300'
+        : 'hover:bg-gray-500'} {selectedSyncData.description === null
+        ? ''
+        : selectedSyncData.description === description
+          ? 'bg-green-400/90'
+          : 'bg-red-300/90'}"
+      on:click={() => onSelectDescription(description)}
+    >
+      {description}
+    </button>
+    <button
+      type="button"
+      id="location_button"
+      class="dark:hover:bg-gray-300 {isSelected
+        ? 'hover:bg-gray-300'
+        : 'hover:bg-gray-500'} {selectedSyncData.location === null
+        ? ''
+        : selectedSyncData.location.latitude === location.latitude &&
+            selectedSyncData.location.longitude === location.longitude
+          ? 'bg-green-400/90'
+          : 'bg-red-300/90'}"
+      on:click={() => onSelectLocation(location)}
+    >
+      <DetailPanelLocation isOwner={false} {asset} />
+    </button>
   </div>
 </div>
