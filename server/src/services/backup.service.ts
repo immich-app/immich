@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { default as path } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { ImmichWorker, StorageFolder } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { handlePromiseError } from 'src/utils/misc';
 import { validateCronExpression } from 'src/validation';
@@ -75,6 +75,7 @@ export class BackupService extends BaseService {
     this.logger.debug(`Database Backup Cleanup Finished, deleted ${toDelete.length} backups`);
   }
 
+  @OnJob({ name: JobName.BACKUP_DATABASE, queue: QueueName.BACKUP_DATABASE })
   async handleBackupDatabase(): Promise<JobStatus> {
     this.logger.debug(`Database Backup Started`);
 

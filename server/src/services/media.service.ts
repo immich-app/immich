@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { dirname } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
+import { OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import {
@@ -19,11 +20,10 @@ import {
 } from 'src/enum';
 import { UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
 import {
-  IBaseJob,
-  IEntityJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
   JobName,
+  JobOf,
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
@@ -39,7 +39,8 @@ export class MediaService extends BaseService {
   private maliOpenCL?: boolean;
   private devices?: string[];
 
-  async handleQueueGenerateThumbnails({ force }: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
+  async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QUEUE_GENERATE_THUMBNAILS>): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination, {
@@ -90,6 +91,7 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
+  @OnJob({ name: JobName.QUEUE_MIGRATION, queue: QueueName.MIGRATION })
   async handleQueueMigration(): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination),
@@ -120,7 +122,8 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetMigration({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.MIGRATE_ASSET, queue: QueueName.MIGRATION })
+  async handleAssetMigration({ id }: JobOf<JobName.MIGRATE_ASSET>): Promise<JobStatus> {
     const { image } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
@@ -134,7 +137,8 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleGenerateThumbnails({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
+  async handleGenerateThumbnails({ id }: JobOf<JobName.GENERATE_THUMBNAILS>): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(id, { exifInfo: true, files: true });
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
@@ -257,7 +261,8 @@ export class MediaService extends BaseService {
     return { previewPath, thumbnailPath, thumbhash };
   }
 
-  async handleQueueVideoConversion(job: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_VIDEO_CONVERSION, queue: QueueName.VIDEO_CONVERSION })
+  async handleQueueVideoConversion(job: JobOf<JobName.QUEUE_VIDEO_CONVERSION>): Promise<JobStatus> {
     const { force } = job;
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
@@ -275,7 +280,8 @@ export class MediaService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleVideoConversion({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.VIDEO_CONVERSION, queue: QueueName.VIDEO_CONVERSION })
+  async handleVideoConversion({ id }: JobOf<JobName.VIDEO_CONVERSION>): Promise<JobStatus> {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset || asset.type !== AssetType.VIDEO) {
       return JobStatus.FAILED;
