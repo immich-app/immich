@@ -1,3 +1,5 @@
+import { ChildProcessWithoutNullStreams } from 'node:child_process';
+import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
@@ -25,6 +27,7 @@ import { newNotificationRepositoryMock } from 'test/repositories/notification.re
 import { newOAuthRepositoryMock } from 'test/repositories/oauth.repository.mock';
 import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
 import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
+import { newProcessRepositoryMock } from 'test/repositories/process.repository.mock';
 import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
 import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
 import { newSessionRepositoryMock } from 'test/repositories/session.repository.mock';
@@ -38,7 +41,8 @@ import { newTrashRepositoryMock } from 'test/repositories/trash.repository.mock'
 import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
 import { newVersionHistoryRepositoryMock } from 'test/repositories/version-history.repository.mock';
 import { newViewRepositoryMock } from 'test/repositories/view.repository.mock';
-import { Mocked } from 'vitest';
+import { Readable } from 'typeorm/platform/PlatformTools';
+import { Mocked, vitest } from 'vitest';
 
 type RepositoryOverrides = {
   metadataRepository: IMetadataRepository;
@@ -78,6 +82,7 @@ export const newTestService = <T extends BaseService>(
   const oauthMock = newOAuthRepositoryMock();
   const partnerMock = newPartnerRepositoryMock();
   const personMock = newPersonRepositoryMock();
+  const processMock = newProcessRepositoryMock();
   const searchMock = newSearchRepositoryMock();
   const serverInfoMock = newServerInfoRepositoryMock();
   const sessionMock = newSessionRepositoryMock();
@@ -117,6 +122,7 @@ export const newTestService = <T extends BaseService>(
     oauthMock,
     partnerMock,
     personMock,
+    processMock,
     searchMock,
     serverInfoMock,
     sessionMock,
@@ -158,6 +164,7 @@ export const newTestService = <T extends BaseService>(
     oauthMock,
     partnerMock,
     personMock,
+    processMock,
     searchMock,
     serverInfoMock,
     sessionMock,
@@ -203,3 +210,37 @@ export const newRandomImage = () => {
 
   return value;
 };
+
+export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+  return {
+    stdout: new Readable({
+      read() {
+        this.push(stdout); // write mock data to stdout
+        this.push(null); // end stream
+      },
+    }),
+    stderr: new Readable({
+      read() {
+        this.push(stderr); // write mock data to stderr
+        this.push(null); // end stream
+      },
+    }),
+    stdin: new Writable({
+      write(chunk, encoding, callback) {
+        callback();
+      },
+    }),
+    exitCode,
+    on: vitest.fn((event, callback: any) => {
+      if (event === 'close') {
+        callback(0);
+      }
+      if (event === 'error' && error) {
+        callback(error);
+      }
+      if (event === 'exit') {
+        callback(exitCode);
+      }
+    }),
+  } as unknown as ChildProcessWithoutNullStreams;
+});

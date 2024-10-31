@@ -36,6 +36,7 @@
   import { page } from '$app/stores';
   import type { UpdatePayload } from 'vite';
   import { generateId } from '$lib/utils/generate-id';
+  import { isTimelineScrolling } from '$lib/stores/timeline.store';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -331,7 +332,17 @@
     }
   };
 
+  let scrollObserverTimer: NodeJS.Timeout;
+
   const _handleTimelineScroll = () => {
+    $isTimelineScrolling = true;
+    if (scrollObserverTimer) {
+      clearTimeout(scrollObserverTimer);
+    }
+    scrollObserverTimer = setTimeout(() => {
+      $isTimelineScrolling = false;
+    }, 1000);
+
     leadout = false;
     if ($assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead

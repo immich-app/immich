@@ -44,10 +44,10 @@
     "@nestjs/swagger": "^7.1.8",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.2",
-    "@opentelemetry/auto-instrumentations-node": "^0.51.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.52.0",
     "@opentelemetry/context-async-hooks": "^1.24.0",
-    "@opentelemetry/exporter-prometheus": "^0.53.0",
-    "@opentelemetry/sdk-node": "^0.53.0",
+    "@opentelemetry/exporter-prometheus": "^0.54.0",
+    "@opentelemetry/sdk-node": "^0.54.0",
     "@react-email/components": "^0.0.25",
     "@socket.io/redis-adapter": "^8.3.0",
     "archiver": "^7.0.0",
@@ -108,7 +108,7 @@
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.17.0",
+    "@types/node": "^22.8.1",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^3.0.0",
     "@types/pngjs": "^6.0.5",
@@ -139,6 +139,6 @@
     "vitest": "^2.0.5"
   },
   "volta": {
-    "node": "20.18.0"
+    "node": "22.11.0"
   }
 }
