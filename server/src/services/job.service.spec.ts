@@ -44,7 +44,7 @@ describe(JobService.name, () => {
       sut.onBootstrap(ImmichWorker.MICROSERVICES);
       sut.onConfigUpdate({ oldConfig: defaults, newConfig: defaults });
 
-      expect(jobMock.setConcurrency).toHaveBeenCalledTimes(14);
+      expect(jobMock.setConcurrency).toHaveBeenCalledTimes(15);
       expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
       expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DUPLICATE_DETECTION, 1);
       expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BACKGROUND_TASK, 5);
@@ -114,6 +114,7 @@ describe(JobService.name, () => {
         [QueueName.SIDECAR]: expectedJobStatus,
         [QueueName.LIBRARY]: expectedJobStatus,
         [QueueName.NOTIFICATION]: expectedJobStatus,
+        [QueueName.BACKUP_DATABASE]: expectedJobStatus,
       });
     });
   });

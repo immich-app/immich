@@ -5,6 +5,7 @@ import { ArgOf } from 'src/interfaces/event.interface';
 import { IDeleteFilesJob, JobName } from 'src/interfaces/job.interface';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
+import { BackupService } from 'src/services/backup.service';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
@@ -26,6 +27,7 @@ export class MicroservicesService {
   constructor(
     private auditService: AuditService,
     private assetService: AssetService,
+    private backupService: BackupService,
     private jobService: JobService,
     private libraryService: LibraryService,
     private mediaService: MediaService,
@@ -52,6 +54,7 @@ export class MicroservicesService {
     await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
+      [JobName.BACKUP_DATABASE]: () => this.backupService.handleBackupDatabase(),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.CLEAN_OLD_SESSION_TOKENS]: () => this.sessionService.handleCleanup(),
