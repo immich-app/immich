@@ -25,9 +25,9 @@ describe('formatGroupTitle', () => {
   });
 
   it('formats last week', () => {
-    const date = parseUtcDate('2024-07-21T00:00:00Z');
-    expect(formatGroupTitle(date.setLocale('en'))).toBe('Sunday');
-    expect(formatGroupTitle(date.setLocale('ar-SA'))).toBe('الأحد');
+    const date = parseUtcDate('2024-07-22T00:00:00Z');
+    expect(formatGroupTitle(date.setLocale('en'))).toBe('Monday');
+    expect(formatGroupTitle(date.setLocale('ar-SA'))).toBe('الاثنين');
   });
 
   it('formats date 7 days ago', () => {

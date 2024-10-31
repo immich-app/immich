@@ -51,7 +51,7 @@ export function formatGroupTitle(_date: DateTime): string {
     return _date.toString();
   }
   const date = _date as DateTime<true>;
-  const today = DateTime.now().startOf('day');
+  const today = DateTime.now();
 
   // Today
   if (today.hasSame(date, 'day')) {
