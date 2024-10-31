@@ -525,14 +525,8 @@ bool isRotated270CW(int orientation) {
 
 /// Returns `true` if this [Asset] is flipped 90° or 270° clockwise
 bool isFlipped(AssetResponseDto response) {
-  try {
-    final int orientation = response.exifInfo?.orientation?.toInt() ?? 0;
-    return orientation != 0 &&
-        (isRotated90CW(orientation) || isRotated270CW(orientation));
-  } catch (e) {
-    debugPrint(
-      "Cannot check orientation value of: ${response.exifInfo?.orientation}",
-    );
-    return false;
-  }
+  final int orientation =
+      int.tryParse(response.exifInfo?.orientation ?? '0') ?? 0;
+  return orientation != 0 &&
+      (isRotated90CW(orientation) || isRotated270CW(orientation));
 }
