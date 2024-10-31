@@ -54,6 +54,7 @@
   import type { ComponentType, SvelteComponent } from 'svelte';
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
+  import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
 
   export let data: PageData;
 
@@ -153,6 +154,13 @@
       title: $t('admin.notification_settings'),
       subtitle: $t('admin.notification_settings_description'),
       key: 'notifications',
+      icon: mdiBellOutline,
+    },
+    {
+      component: TemplateSettings,
+      title: $t('admin.template_settings'),
+      subtitle: $t('admin.template_settings'),
+      key: 'templates',
       icon: mdiBellOutline,
     },
     {

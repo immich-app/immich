@@ -1,23 +1,11 @@
 <script lang="ts">
-  import { sendTestEmail, type SystemConfigDto } from '@immich/sdk';
+  import { type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
-  import { user } from '$lib/stores/user.store';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { handleError } from '$lib/utils/handle-error';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
 
   export let savedConfig: SystemConfigDto;
@@ -26,46 +14,6 @@
   export let disabled = false;
   export let onReset: SettingsResetEvent;
   export let onSave: SettingsSaveEvent;
-
-  let isSending = false;
-
-  const handleSendTestEmail = async () => {
-    if (isSending) {
-      return;
-    }
-
-    isSending = true;
-
-    try {
-      await sendTestEmail({
-        systemConfigSmtpDto: {
-          enabled: config.notifications.smtp.enabled,
-          transport: {
-            host: config.notifications.smtp.transport.host,
-            port: config.notifications.smtp.transport.port,
-            username: config.notifications.smtp.transport.username,
-            password: config.notifications.smtp.transport.password,
-            ignoreCert: config.notifications.smtp.transport.ignoreCert,
-          },
-          from: config.notifications.smtp.from,
-          replyTo: config.notifications.smtp.from,
-        },
-      });
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('admin.notification_email_test_email_sent', { values: { email: $user.email } }),
-      });
-
-      if (!disabled) {
-        onSave({ notifications: config.notifications });
-      }
-    } catch (error) {
-      handleError(error, $t('admin.notification_email_test_email_failed'));
-    } finally {
-      isSending = false;
-    }
-  };
 </script>
 
 <div>
@@ -78,69 +26,35 @@
           subtitle={$t('admin.tempalates_emails_description')}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              required
-              label={$t('host')}
-              desc={$t('admin.notification_email_host_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.host}
-              isEdited={config.notifications.smtp.transport.host !== savedConfig.notifications.smtp.transport.host}
+            <SettingTextarea
+              label={$t('admin.template_email_welcome')}
+              desc={$t('admin.template_email_welcome_description')}
+              bind:value={config.templates.email.welcomeTemplate}
+              isEdited={config.templates.email.welcomeTemplate !== savedConfig.templates.email.welcomeTemplate}
             />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              required
-              label={$t('port')}
-              desc={$t('admin.notification_email_port_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.port}
-              isEdited={config.notifications.smtp.transport.port !== savedConfig.notifications.smtp.transport.port}
+          </div>
+          <div class="ml-4 mt-4 flex flex-col gap-4">
+            <SettingTextarea
+              label={$t('admin.template_email_invite_album')}
+              desc={$t('admin.template_email_invite_album_desciption')}
+              bind:value={config.templates.email.albumInviteTemplate}
+              isEdited={config.templates.email.albumInviteTemplate !== savedConfig.templates.email.albumInviteTemplate}
             />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              label={$t('username')}
-              desc={$t('admin.notification_email_username_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.username}
-              isEdited={config.notifications.smtp.transport.username !==
-                savedConfig.notifications.smtp.transport.username}
+          </div>
+          <div class="ml-4 mt-4 flex flex-col gap-4">
+            <SettingTextarea
+              label={$t('admin.template_email_update_album')}
+              desc={$t('admin.template_email_update_album_description')}
+              bind:value={config.templates.email.albumUpdateTemplate}
+              isEdited={config.templates.email.albumUpdateTemplate !== savedConfig.templates.email.albumUpdateTemplate}
             />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.PASSWORD}
-              label={$t('password')}
-              desc={$t('admin.notification_email_password_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.password}
-              isEdited={config.notifications.smtp.transport.password !==
-                savedConfig.notifications.smtp.transport.password}
-            />
-
-            <SettingSwitch
-              title={$t('admin.notification_email_ignore_certificate_errors')}
-              subtitle={$t('admin.notification_email_ignore_certificate_errors_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:checked={config.notifications.smtp.transport.ignoreCert}
-            />
-
-            <hr />
-
-            <SettingTextarea             
-            label={$t('admin.template_email_welcome')}
-            desc={$t('admin.template_email_welcome_description')}
-            disabled={disabled || !config.}
-            bind:value={config.notifications.smtp.from}
-            isEdited={config.notifications.smtp.from !== savedConfig.notifications.smtp.from} />
-
           </div>
         </SettingAccordion>
       </div>
 
       <SettingButtonsRow
-        onReset={(options) => onReset({ ...options, configKeys: ['notifications'] })}
-        onSave={() => onSave({ notifications: config.notifications })}
+        onReset={(options) => onReset({ ...options, configKeys: ['templates'] })}
+        onSave={() => onSave({ templates: config.templates })}
         showResetToDefault={!isEqual(savedConfig, defaultConfig)}
         {disabled}
       />
