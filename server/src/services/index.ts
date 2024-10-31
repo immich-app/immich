@@ -6,6 +6,7 @@ import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { AuthService } from 'src/services/auth.service';
+import { BackupService } from 'src/services/backup.service';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
@@ -48,6 +49,7 @@ export const services = [
   AssetService,
   AuditService,
   AuthService,
+  BackupService,
   CliService,
   DatabaseService,
   DownloadService,

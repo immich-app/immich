@@ -30,6 +30,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.USER_SYNC_USAGE]: QueueName.BACKGROUND_TASK,
 
+  // backups
+  [JobName.BACKUP_DATABASE]: QueueName.BACKUP_DATABASE,
+
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
   [JobName.VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
