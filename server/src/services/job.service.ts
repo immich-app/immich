@@ -4,11 +4,10 @@ import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
 import { AssetType, ImmichWorker, ManualJobName } from 'src/enum';
-import { ArgOf } from 'src/interfaces/event.interface';
+import { ArgOf, ArgsOf } from 'src/interfaces/event.interface';
 import {
   ConcurrentQueueName,
   JobCommand,
-  JobHandler,
   JobItem,
   JobName,
   JobStatus,
@@ -47,8 +46,8 @@ export class JobService extends BaseService {
   }
 
   @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig: config, oldConfig }: ArgOf<'config.update'>) {
-    if (!oldConfig || !this.isMicroservices) {
+  onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
+    if (!this.isMicroservices) {
       return;
     }
 
@@ -177,41 +176,21 @@ export class JobService extends BaseService {
     }
   }
 
-  async init(jobHandlers: Record<JobName, JobHandler>) {
-    const config = await this.getConfig({ withCache: false });
-    for (const queueName of Object.values(QueueName)) {
-      let concurrency = 1;
-
-      if (this.isConcurrentQueue(queueName)) {
-        concurrency = config.job[queueName].concurrency;
+  @OnEvent({ name: 'job.start' })
+  async onJobStart(...[queueName, job]: ArgsOf<'job.start'>) {
+    const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
+    this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
+    try {
+      const status = await this.jobRepository.run(job);
+      const jobMetric = `immich.jobs.${job.name.replaceAll('-', '_')}.${status}`;
+      this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
+      if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
+        await this.onDone(job);
       }
-
-      this.logger.debug(`Registering ${queueName} with a concurrency of ${concurrency}`);
-      this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
-        const { name, data } = item;
-
-        const handler = jobHandlers[name];
-        if (!handler) {
-          this.logger.warn(`Skipping unknown job: "${name}"`);
-          return;
-        }
-
-        const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
-        this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
-
-        try {
-          const status = await handler(data);
-          const jobMetric = `immich.jobs.${name.replaceAll('-', '_')}.${status}`;
-          this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
-          if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
-            await this.onDone(item);
-          }
-        } catch (error: Error | any) {
-          this.logger.error(`Unable to run job handler (${queueName}/${name}): ${error}`, error?.stack, data);
-        } finally {
-          this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
-        }
-      });
+    } catch (error: Error | any) {
+      this.logger.error(`Unable to run job handler (${queueName}/${job.name}): ${error}`, error?.stack, job.data);
+    } finally {
+      this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }
   }
 
