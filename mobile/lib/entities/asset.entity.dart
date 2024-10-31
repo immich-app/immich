@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
@@ -524,7 +525,14 @@ bool isRotated270CW(int orientation) {
 
 /// Returns `true` if this [Asset] is flipped 90° or 270° clockwise
 bool isFlipped(AssetResponseDto response) {
-  final int orientation = response.exifInfo?.orientation?.toInt() ?? 0;
-  return orientation != 0 &&
-      (isRotated90CW(orientation) || isRotated270CW(orientation));
+  try {
+    final int orientation = response.exifInfo?.orientation?.toInt() ?? 0;
+    return orientation != 0 &&
+        (isRotated90CW(orientation) || isRotated270CW(orientation));
+  } catch (e) {
+    debugPrint(
+      "Cannot check orientation value of: ${response.exifInfo?.orientation}",
+    );
+    return false;
+  }
 }
