@@ -3,6 +3,9 @@ import { CronExpression } from '@nestjs/schedule';
 import { Request, Response } from 'express';
 import Joi, { Root } from 'joi';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
+import { albumInviteTemplate } from 'src/emails/templates/album-invite';
+import { albumUpdateTemplate } from 'src/emails/templates/album-update';
+import { welcomeTemplate } from 'src/emails/templates/welcome';
 import {
   AudioCodec,
   Colorspace,
@@ -144,6 +147,13 @@ export interface SystemConfig {
         username: string;
         password: string;
       };
+    };
+  };
+  templates: {
+    email: {
+      welcomeTemplate: string;
+      albumInviteTemplate: string;
+      albumUpdateTemplate: string;
     };
   };
   server: {
@@ -303,6 +313,13 @@ export const defaults = Object.freeze<SystemConfig>({
         username: '',
         password: '',
       },
+    },
+  },
+  templates: {
+    email: {
+      welcomeTemplate: welcomeTemplate,
+      albumInviteTemplate: albumInviteTemplate,
+      albumUpdateTemplate: albumUpdateTemplate,
     },
   },
   user: {
