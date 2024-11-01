@@ -22,7 +22,14 @@ export class SharedLinkService extends BaseService {
     return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
   async getAllUnchecked(): Promise<SharedLinkResponseDto[]> {
-    return this.sharedLinkRepository.getAllUnchecked().then((links) => links.map((link) => mapSharedLink(link)));
+    const links = this.sharedLinkRepository.getAllUnchecked().then((links) =>
+      links.map((link) => {
+        const mappedLink = mapSharedLink(link);
+        mappedLink.password = 'REDACTED';
+        return mappedLink;
+      }),
+    );
+    return links;
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {

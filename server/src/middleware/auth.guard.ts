@@ -89,7 +89,7 @@ export class AuthGuard implements CanActivate {
     } = { sharedLink: false, admin: false, ...options };
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
-    console.log(`canActivate/sharedLinkRoute: ${sharedLinkRoute}`)
+    console.log(`canActivate/sharedLinkRoute: ${sharedLinkRoute}`);
 
     request.user = await this.authService.authenticate({
       headers: request.headers,
