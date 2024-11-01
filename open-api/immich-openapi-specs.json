@@ -11621,10 +11621,6 @@
           "maxBitrate": {
             "type": "string"
           },
-          "npl": {
-            "minimum": 0,
-            "type": "integer"
-          },
           "preferredHwDevice": {
             "type": "string"
           },
@@ -11673,7 +11669,6 @@
           "crf",
           "gopSize",
           "maxBitrate",
-          "npl",
           "preferredHwDevice",
           "preset",
           "refs",

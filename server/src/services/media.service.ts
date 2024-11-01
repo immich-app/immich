@@ -413,7 +413,7 @@ export class MediaService extends BaseService {
     const isLargerThanTargetBitrate = stream.bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
 
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
-    const isRequired = !isTargetVideoCodec || stream.isHDR;
+    const isRequired = !isTargetVideoCodec || !stream.pixelFormat.endsWith('420p');
 
     switch (ffmpegConfig.transcode) {
       case TranscodePolicy.DISABLED: {
