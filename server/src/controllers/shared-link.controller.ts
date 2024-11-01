@@ -30,6 +30,7 @@ export class SharedLinkController {
 
   //@Authenticated({ permission: Permission.SHARED_LINK_READ })
   // TODO: put behind E-sek member auth
+  // TODO: strip password
   @Get('unchecked')
   getAllSharedLinksUnchecked(): Promise<SharedLinkResponseDto[]> {
     return this.service.getAllUnchecked();

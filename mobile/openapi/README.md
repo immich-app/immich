@@ -190,6 +190,7 @@ Class | Method | HTTP request | Description
 *SharedLinksApi* | [**addSharedLinkAssets**](doc//SharedLinksApi.md#addsharedlinkassets) | **PUT** /shared-links/{id}/assets | 
 *SharedLinksApi* | [**createSharedLink**](doc//SharedLinksApi.md#createsharedlink) | **POST** /shared-links | 
 *SharedLinksApi* | [**getAllSharedLinks**](doc//SharedLinksApi.md#getallsharedlinks) | **GET** /shared-links | 
+*SharedLinksApi* | [**getAllSharedLinksUnchecked**](doc//SharedLinksApi.md#getallsharedlinksunchecked) | **GET** /shared-links/unchecked | 
 *SharedLinksApi* | [**getMySharedLink**](doc//SharedLinksApi.md#getmysharedlink) | **GET** /shared-links/me | 
 *SharedLinksApi* | [**getSharedLinkById**](doc//SharedLinksApi.md#getsharedlinkbyid) | **GET** /shared-links/{id} | 
 *SharedLinksApi* | [**removeSharedLink**](doc//SharedLinksApi.md#removesharedlink) | **DELETE** /shared-links/{id} | 
@@ -306,6 +307,7 @@ Class | Method | HTTP request | Description
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
+ - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponse](doc//DownloadResponse.md)
@@ -413,6 +415,7 @@ Class | Method | HTTP request | Description
  - [StackCreateDto](doc//StackCreateDto.md)
  - [StackResponseDto](doc//StackResponseDto.md)
  - [StackUpdateDto](doc//StackUpdateDto.md)
+ - [SystemConfigBackupsDto](doc//SystemConfigBackupsDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigFacesDto](doc//SystemConfigFacesDto.md)

@@ -16,7 +16,6 @@ class UpdateAlbumDto {
     this.albumName,
     this.albumThumbnailAssetId,
     this.description,
-    this.esekShared,
     this.isActivityEnabled,
     this.order,
   });
@@ -51,14 +50,6 @@ class UpdateAlbumDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? esekShared;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   bool? isActivityEnabled;
 
   ///
@@ -74,7 +65,6 @@ class UpdateAlbumDto {
     other.albumName == albumName &&
     other.albumThumbnailAssetId == albumThumbnailAssetId &&
     other.description == description &&
-    other.esekShared == esekShared &&
     other.isActivityEnabled == isActivityEnabled &&
     other.order == order;
 
@@ -84,12 +74,11 @@ class UpdateAlbumDto {
     (albumName == null ? 0 : albumName!.hashCode) +
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (esekShared == null ? 0 : esekShared!.hashCode) +
     (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
     (order == null ? 0 : order!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, esekShared=$esekShared, isActivityEnabled=$isActivityEnabled, order=$order]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -107,11 +96,6 @@ class UpdateAlbumDto {
       json[r'description'] = this.description;
     } else {
     //  json[r'description'] = null;
-    }
-    if (this.esekShared != null) {
-      json[r'esekShared'] = this.esekShared;
-    } else {
-    //  json[r'esekShared'] = null;
     }
     if (this.isActivityEnabled != null) {
       json[r'isActivityEnabled'] = this.isActivityEnabled;
@@ -138,7 +122,6 @@ class UpdateAlbumDto {
         albumName: mapValueOfType<String>(json, r'albumName'),
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         description: mapValueOfType<String>(json, r'description'),
-        esekShared: mapValueOfType<bool>(json, r'esekShared'),
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled'),
         order: AssetOrder.fromJson(json[r'order']),
       );

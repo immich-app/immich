@@ -970,12 +970,10 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [bool] esekShared:
-  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
-  Future<Response> viewAssetWithHttpInfo(String id, { bool? esekShared, String? key, AssetMediaSize? size, }) async {
+  Future<Response> viewAssetWithHttpInfo(String id, { String? key, AssetMediaSize? size, }) async {
     // ignore: prefer_const_declarations
     final path = r'/assets/{id}/thumbnail'
       .replaceAll('{id}', id);
@@ -987,9 +985,6 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (esekShared != null) {
-      queryParams.addAll(_queryParams('', 'esekShared', esekShared));
-    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -1015,13 +1010,11 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [bool] esekShared:
-  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
-  Future<MultipartFile?> viewAsset(String id, { bool? esekShared, String? key, AssetMediaSize? size, }) async {
-    final response = await viewAssetWithHttpInfo(id,  esekShared: esekShared, key: key, size: size, );
+  Future<MultipartFile?> viewAsset(String id, { String? key, AssetMediaSize? size, }) async {
+    final response = await viewAssetWithHttpInfo(id,  key: key, size: size, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
