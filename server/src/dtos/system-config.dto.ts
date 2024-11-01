@@ -134,12 +134,6 @@ export class SystemConfigFFmpegDto {
   @ApiProperty({ type: 'integer' })
   gopSize!: number;
 
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  npl!: number;
-
   @ValidateBoolean()
   temporalAQ!: boolean;
 
