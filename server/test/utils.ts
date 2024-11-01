@@ -1,6 +1,7 @@
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
+import { ImmichWorker } from 'src/enum';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -44,8 +45,9 @@ import { newViewRepositoryMock } from 'test/repositories/view.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools';
 import { Mocked, vitest } from 'vitest';
 
-type RepositoryOverrides = {
-  metadataRepository: IMetadataRepository;
+type Overrides = {
+  worker?: ImmichWorker;
+  metadataRepository?: IMetadataRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -54,9 +56,11 @@ type Constructor<Type, Args extends Array<any>> = {
 
 export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
-  overrides?: RepositoryOverrides,
+  overrides?: Overrides,
 ) => {
-  const { metadataRepository } = overrides || {};
+  const { metadataRepository, worker: workerOverride } = overrides || {};
+
+  const worker = workerOverride || ImmichWorker.API;
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggerRepositoryMock();
@@ -98,6 +102,7 @@ export const newTestService = <T extends BaseService>(
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
+    worker,
     loggerMock,
     accessMock,
     activityMock,
