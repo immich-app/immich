@@ -62,6 +62,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getAllUnchecked(): Promise<SharedLinkEntity[]> {
     return this.repository.find({
+      where: {
+        allowUpload: false
+      },
       relations: {
         assets: true,
         album: {

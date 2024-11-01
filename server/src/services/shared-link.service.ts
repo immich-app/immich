@@ -29,9 +29,9 @@ export class SharedLinkService extends BaseService {
           mappedLink.password = "REDACTED";
           return mappedLink;
         })
-        .filter( // Remove duplicate albums
+        .filter( 
           (link, index, self) =>
-            index === self.findIndex((l) => l.album!.id === link.album!.id)
+            index === self.findIndex((l) => l.album!.id === link.album!.id) // Remove duplicate albums
         )
     );
     return links;
