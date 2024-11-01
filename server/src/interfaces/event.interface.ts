@@ -3,6 +3,7 @@ import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { ImmichWorker } from 'src/enum';
+import { JobItem, QueueName } from 'src/interfaces/job.interface';
 
 export const IEventRepository = 'IEventRepository';
 
@@ -37,6 +38,8 @@ type EventMap = {
   'assets.trash': [{ assetIds: string[]; userId: string }];
   'assets.delete': [{ assetIds: string[]; userId: string }];
   'assets.restore': [{ assetIds: string[]; userId: string }];
+
+  'job.start': [QueueName, JobItem];
 
   // session events
   'session.delete': [{ sessionId: string }];

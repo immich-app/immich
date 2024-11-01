@@ -1,9 +1,9 @@
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TrashResponseDto } from 'src/dtos/trash.dto';
 import { Permission } from 'src/enum';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { usePagination } from 'src/utils/pagination';
 
@@ -44,6 +44,7 @@ export class TrashService extends BaseService {
     await this.jobRepository.queue({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
   }
 
+  @OnJob({ name: JobName.QUEUE_TRASH_EMPTY, queue: QueueName.BACKGROUND_TASK })
   async handleQueueEmptyTrash() {
     let count = 0;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>

@@ -59,6 +59,7 @@ export interface VideoStreamInfo {
   frameCount: number;
   isHDR: boolean;
   bitrate: number;
+  pixelFormat: string;
 }
 
 export interface AudioStreamInfo {

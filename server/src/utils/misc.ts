@@ -15,6 +15,32 @@ import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
 import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 
+export class ImmichStartupError extends Error {}
+export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
+
+export const getKeyByValue = (object: Record<string, unknown>, value: unknown) =>
+  Object.keys(object).find((key) => object[key] === value);
+
+export const getMethodNames = (instance: any) => {
+  const ctx = Object.getPrototypeOf(instance);
+  const methods: string[] = [];
+  for (const property of Object.getOwnPropertyNames(ctx)) {
+    const descriptor = Object.getOwnPropertyDescriptor(ctx, property);
+    if (!descriptor || descriptor.get || descriptor.set) {
+      continue;
+    }
+
+    const handler = instance[property];
+    if (typeof handler !== 'function') {
+      continue;
+    }
+
+    methods.push(property);
+  }
+
+  return methods;
+};
+
 export const getExternalDomain = (server: SystemConfig['server'], port: number) =>
   server.externalDomain || `http://localhost:${port}`;
 
