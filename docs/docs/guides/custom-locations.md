@@ -43,7 +43,7 @@ docker compose up -d
 Due to the underlying properties of docker bind mounts, it is not recommended to mount the `upload/` and `library/` folders as separate bind mounts if they are on the same device.
 For this reason, we mount the hard drive (HDD) or the network storage (NAS) to `/usr/src/app/upload` and then mount the folders we want to access under that folder.
 
-The `thumbs/` folder contains both the small thumbnails displayed in the timeline and the larger previews shown when clicking into an image. The latter cannot be separated.
+The `thumbs/` folder contains both the small thumbnails displayed in the timeline and the larger previews shown when clicking into an image. These cannot be separated.
 
 The storage metrics of the Immich server will track available storage at `UPLOAD_LOCATION`, so the administrator must set up some sort of monitoring to ensure the storage does not run out of space. The `profile/` folder is much smaller, usually less than 1 MB.
 :::
