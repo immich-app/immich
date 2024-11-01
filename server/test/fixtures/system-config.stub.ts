@@ -74,6 +74,15 @@ export const systemConfigStub = {
       },
     },
   },
+  backupEnabled: {
+    backup: {
+      database: {
+        enabled: true,
+        cronExpression: '0 0 * * *',
+        keepLastAmount: 1,
+      },
+    },
+  },
   machineLearningDisabled: {
     machineLearning: {
       enabled: false,

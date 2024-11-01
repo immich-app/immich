@@ -13,8 +13,7 @@ import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
-import { isStartUpError } from 'src/services/storage.service';
-import { useSwagger } from 'src/utils/misc';
+import { isStartUpError, useSwagger } from 'src/utils/misc';
 
 async function bootstrap() {
   process.title = 'immich-api';

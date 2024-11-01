@@ -345,15 +345,6 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.transcoding_tone_mapping_npl')}
-              desc={$t('admin.transcoding_tone_mapping_npl_description')}
-              bind:value={config.ffmpeg.npl}
-              isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
-              {disabled}
-            />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_b_frames')}
               desc={$t('admin.transcoding_max_b_frames_description')}
               bind:value={config.ffmpeg.bframes}

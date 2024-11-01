@@ -1,17 +1,16 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
-import { clsConfig, immichAppConfig } from 'src/config';
 import { controllers } from 'src/controllers';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
+import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
@@ -37,13 +36,12 @@ const middleware = [
 ];
 
 const configRepository = new ConfigRepository();
-const { bull, database, otel } = configRepository.getEnv();
+const { bull, cls, database, otel } = configRepository.getEnv();
 
 const imports = [
   BullModule.forRoot(bull.config),
   BullModule.registerQueue(...bull.queues),
-  ClsModule.forRoot(clsConfig),
-  ConfigModule.forRoot(immichAppConfig),
+  ClsModule.forRoot(cls.config),
   OpenTelemetryModule.forRoot(otel),
   TypeOrmModule.forRootAsync({
     inject: [ModuleRef],
@@ -67,6 +65,7 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ITelemetryRepository) private telemetryRepository: ITelemetryRepository,
   ) {
     logger.setAppName(this.worker);
@@ -76,6 +75,12 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     this.telemetryRepository.setup({ repositories: repositories.map(({ useClass }) => useClass) });
+
+    this.jobRepository.setup({ services });
+    if (this.worker === ImmichWorker.MICROSERVICES) {
+      this.jobRepository.startWorkers();
+    }
+
     this.eventRepository.setup({ services });
     await this.eventRepository.emit('app.bootstrap', this.worker);
   }

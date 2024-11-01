@@ -61,6 +61,7 @@ describe(DatabaseService.name, () => {
           mockEnvData({
             database: {
               config: {
+                connectionType: 'parts',
                 type: 'postgres',
                 host: 'database',
                 port: 5432,
@@ -290,6 +291,7 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
+              connectionType: 'parts',
               type: 'postgres',
               host: 'database',
               port: 5432,
@@ -313,6 +315,7 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
+              connectionType: 'parts',
               type: 'postgres',
               host: 'database',
               port: 5432,

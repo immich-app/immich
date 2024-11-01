@@ -57,7 +57,6 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
   setup({ services }: { services: ClassConstructor<unknown>[] }) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
-    const repository = this.moduleRef.get<IEventRepository>(IEventRepository);
     const items: Item<EmitEvent>[] = [];
 
     // discovery
@@ -94,7 +93,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
     // register by priority
     for (const handler of handlers) {
-      repository.on(handler);
+      this.addHandler(handler);
     }
   }
 
@@ -134,7 +133,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     await client.leave(client.nsp.name);
   }
 
-  on<T extends EmitEvent>(item: EventItem<T>): void {
+  private addHandler<T extends EmitEvent>(item: EventItem<T>): void {
     const event = item.event;
 
     if (!this.emitHandlers[event]) {

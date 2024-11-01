@@ -7,7 +7,7 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -16,15 +16,7 @@ import { AssetType, ImmichWorker, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import {
-  IBaseJob,
-  IEntityJob,
-  ISidecarWriteJob,
-  JobName,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
+import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { ReverseGeocodeResult } from 'src/interfaces/map.interface';
 import { ImmichTags } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
@@ -124,7 +116,8 @@ export class MetadataService extends BaseService {
     }
   }
 
-  async handleLivePhotoLinking(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LINK_LIVE_PHOTOS, queue: QueueName.METADATA_EXTRACTION })
+  async handleLivePhotoLinking(job: JobOf<JobName.LINK_LIVE_PHOTOS>): Promise<JobStatus> {
     const { id } = job;
     const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset?.exifInfo) {
@@ -159,7 +152,8 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueMetadataExtraction(job: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
+  async handleQueueMetadataExtraction(job: JobOf<JobName.QUEUE_METADATA_EXTRACTION>): Promise<JobStatus> {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
@@ -176,7 +170,8 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
+  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
     if (!asset) {
@@ -260,7 +255,8 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueSidecar(job: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_SIDECAR, queue: QueueName.SIDECAR })
+  async handleQueueSidecar(job: JobOf<JobName.QUEUE_SIDECAR>): Promise<JobStatus> {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
@@ -280,11 +276,13 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  handleSidecarSync({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_SYNC, queue: QueueName.SIDECAR })
+  handleSidecarSync({ id }: JobOf<JobName.SIDECAR_SYNC>): Promise<JobStatus> {
     return this.processSidecar(id, true);
   }
 
-  handleSidecarDiscovery({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_DISCOVERY, queue: QueueName.SIDECAR })
+  handleSidecarDiscovery({ id }: JobOf<JobName.SIDECAR_DISCOVERY>): Promise<JobStatus> {
     return this.processSidecar(id, false);
   }
 
@@ -298,7 +296,8 @@ export class MetadataService extends BaseService {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }
 
-  async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_WRITE, queue: QueueName.SIDECAR })
+  async handleSidecarWrite(job: JobOf<JobName.SIDECAR_WRITE>): Promise<JobStatus> {
     const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
     const [asset] = await this.assetRepository.getByIds([id], { tags: true });
     if (!asset) {
