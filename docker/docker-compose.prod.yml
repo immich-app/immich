@@ -16,7 +16,7 @@ services:
     env_file:
       - .env
     ports:
-      - 2283:3001
+      - 2283:2283
     depends_on:
       - redis
       - database
@@ -71,15 +71,30 @@ services:
       interval: 5m
       start_interval: 30s
       start_period: 5m
-    command: ["postgres", "-c", "shared_preload_libraries=vectors.so", "-c", 'search_path="$$user", public, vectors', "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
+    command:
+      [
+        'postgres',
+        '-c',
+        'shared_preload_libraries=vectors.so',
+        '-c',
+        'search_path="$$user", public, vectors',
+        '-c',
+        'logging_collector=on',
+        '-c',
+        'max_wal_size=2GB',
+        '-c',
+        'shared_buffers=512MB',
+        '-c',
+        'wal_compression=on',
+      ]
     restart: always
 
-  # set IMMICH_METRICS=true in .env to enable metrics
+  # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   immich-prometheus:
     container_name: immich_prometheus
     ports:
       - 9090:9090
-    image: prom/prometheus@sha256:f6639335d34a77d9d9db382b92eeb7fc00934be8eae81dbc03b31cfe90411a94
+    image: prom/prometheus@sha256:378f4e03703557d1c6419e6caccf922f96e6d88a530f7431d66a4c4f4b1000fe
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -91,7 +106,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:11.2.2-ubuntu@sha256:2bef00403c18d27919ff19d64fd6253fa713b3880304e92f69109e14221ac843
+    image: grafana/grafana:11.3.0-ubuntu@sha256:51587e148ac0214d7938e7f3fe8512182e4eb6141892a3ffb88bba1901b49285
     volumes:
       - grafana-data:/var/lib/grafana
 

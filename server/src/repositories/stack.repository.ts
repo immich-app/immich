@@ -3,10 +3,8 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { IStackRepository, StackSearch } from 'src/interfaces/stack.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class StackRepository implements IStackRepository {
   constructor(

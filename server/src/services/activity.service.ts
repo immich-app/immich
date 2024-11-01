@@ -14,12 +14,11 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ActivityEntity } from 'src/entities/activity.entity';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 
 @Injectable()
 export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
     const activities = await this.activityRepository.search({
       userId: dto.userId,
       albumId: dto.albumId,
@@ -31,12 +30,12 @@ export class ActivityService extends BaseService {
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+    await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
     return { comments: await this.activityRepository.getStatistics(dto.assetId, dto.albumId) };
   }
 
   async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ACTIVITY_CREATE, ids: [dto.albumId] });
+    await this.requireAccess({ auth, permission: Permission.ACTIVITY_CREATE, ids: [dto.albumId] });
 
     const common = {
       userId: auth.user.id,
@@ -70,7 +69,7 @@ export class ActivityService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ACTIVITY_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ACTIVITY_DELETE, ids: [id] });
     await this.activityRepository.delete(id);
   }
 }

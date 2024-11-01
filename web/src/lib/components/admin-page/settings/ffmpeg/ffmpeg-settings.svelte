@@ -102,6 +102,7 @@
           onSelect={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
         />
 
+        <!-- PCM is excluded here since it's a bad choice for users storage-wise -->
         <SettingSelect
           label={$t('admin.transcoding_audio_codec')}
           {disabled}
@@ -145,6 +146,7 @@
             { value: AudioCodec.Aac, text: 'AAC' },
             { value: AudioCodec.Mp3, text: 'MP3' },
             { value: AudioCodec.Libopus, text: 'Opus' },
+            { value: AudioCodec.PcmS16Le, text: 'PCM (16 bit)' },
           ]}
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
         />
@@ -341,15 +343,6 @@
           subtitle={$t('admin.transcoding_advanced_options_description')}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.transcoding_tone_mapping_npl')}
-              desc={$t('admin.transcoding_tone_mapping_npl_description')}
-              bind:value={config.ffmpeg.npl}
-              isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
-              {disabled}
-            />
-
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_b_frames')}

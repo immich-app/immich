@@ -1,46 +1,39 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/models/search/search_result.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/render_list.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/services/search.service.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'paginated_search.provider.g.dart';
 
-@riverpod
-class PaginatedSearch extends _$PaginatedSearch {
-  Future<List<Asset>?> _search(SearchFilter filter, int page) async {
-    final service = ref.read(searchServiceProvider);
-    final result = await service.search(filter, page);
+final paginatedSearchProvider =
+    StateNotifierProvider<PaginatedSearchNotifier, SearchResult>(
+  (ref) => PaginatedSearchNotifier(ref.watch(searchServiceProvider)),
+);
 
-    return result;
-  }
+class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
+  final SearchService _searchService;
 
-  @override
-  Future<List<Asset>> build() async {
-    return [];
-  }
+  PaginatedSearchNotifier(this._searchService)
+      : super(SearchResult(assets: [], nextPage: 1));
 
-  Future<List<Asset>> getNextPage(SearchFilter filter, int nextPage) async {
-    state = const AsyncValue.loading();
+  search(SearchFilter filter) async {
+    if (state.nextPage == null) return;
 
-    final newState = await AsyncValue.guard(() async {
-      final assets = await _search(filter, nextPage);
+    final result = await _searchService.search(filter, state.nextPage!);
 
-      if (assets != null) {
-        return [...?state.value, ...assets];
-      }
-    });
+    if (result == null) return;
 
-    state = newState.valueOrNull == null
-        ? const AsyncValue.data([])
-        : AsyncValue.data(newState.value!);
-
-    return newState.valueOrNull ?? [];
+    state = SearchResult(
+      assets: [...state.assets, ...result.assets],
+      nextPage: result.nextPage,
+    );
   }
 
   clear() {
-    state = const AsyncValue.data([]);
+    state = SearchResult(assets: [], nextPage: 1);
   }
 }
 
@@ -48,15 +41,11 @@ class PaginatedSearch extends _$PaginatedSearch {
 AsyncValue<RenderList> paginatedSearchRenderList(
   PaginatedSearchRenderListRef ref,
 ) {
-  final assets = ref.watch(paginatedSearchProvider).value;
+  final result = ref.watch(paginatedSearchProvider);
 
-  if (assets != null) {
-    return ref.watch(
-      renderListProviderWithGrouping(
-        (assets, GroupAssetsBy.none),
-      ),
-    );
-  } else {
-    return const AsyncValue.loading();
-  }
+  return ref.watch(
+    renderListProviderWithGrouping(
+      (result.assets, GroupAssetsBy.none),
+    ),
+  );
 }

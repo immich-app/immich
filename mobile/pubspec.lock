@@ -66,10 +66,10 @@ packages:
     dependency: "direct main"
     description:
       name: auto_route
-      sha256: bb673104dbdc22667d01ec668df3d2a358b6e3da481428eeb1151933cfc1a7d6
+      sha256: b83e8ce46da7228cdd019b5a11205454847f0a971bca59a7529b98df9876889b
       url: "https://pub.dev"
     source: hosted
-    version: "9.2.0"
+    version: "9.2.2"
   auto_route_generator:
     dependency: "direct dev"
     description:
@@ -378,10 +378,10 @@ packages:
     dependency: "direct main"
     description:
       name: device_info_plus
-      sha256: a7fd703482b391a87d60b6061d04dfdeab07826b96f9abd8f5ed98068acc0074
+      sha256: db03b2d2a3fa466a4627709e1db58692c3f7f658e36a5942d342d86efedc4091
       url: "https://pub.dev"
     source: hosted
-    version: "10.1.2"
+    version: "11.0.0"
   device_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -450,10 +450,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "825aec673606875c33cd8d3c4083f1a3c3999015a84178b317b7ef396b7384f3"
+      sha256: "167bb619cdddaa10ef2907609feb8a79c16dfa479d3afaf960f8e223f754bf12"
       url: "https://pub.dev"
     source: hosted
-    version: "8.0.7"
+    version: "8.1.2"
   file_selector_linux:
     dependency: transitive
     description:
@@ -622,10 +622,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_web_auth
-      sha256: a69fa8f43b9e4d86ac72176bf747b735e7b977dd7cf215076d95b87cb05affdd
+      sha256: "95e4856e24fb6ac1678f5ff334743b63f782d839ab324543d29ccbd295176209"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.0"
+    version: "0.6.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -635,10 +635,10 @@ packages:
     dependency: "direct main"
     description:
       name: fluttertoast
-      sha256: "7eae679e596a44fdf761853a706f74979f8dd3cd92cf4e23cae161fda091b847"
+      sha256: "95f349437aeebe524ef7d6c9bde3e6b4772717cf46a0eb6a3ceaddc740b297cc"
       url: "https://pub.dev"
     source: hosted
-    version: "8.2.6"
+    version: "8.2.8"
   freezed_annotation:
     dependency: transitive
     description:
@@ -1067,10 +1067,10 @@ packages:
     dependency: "direct main"
     description:
       name: package_info_plus
-      sha256: "4de6c36df77ffbcef0a5aefe04669d33f2d18397fea228277b852a2d4e58e860"
+      sha256: "894f37107424311bdae3e476552229476777b8752c5a2a2369c0cb9a2d5442ef"
       url: "https://pub.dev"
     source: hosted
-    version: "8.0.1"
+    version: "8.0.3"
   package_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -1179,10 +1179,10 @@ packages:
     dependency: transitive
     description:
       name: permission_handler_html
-      sha256: "6cac773d389e045a8d4f85418d07ad58ef9e42a56e063629ce14c4c26344de24"
+      sha256: af26edbbb1f2674af65a8f4b56e1a6f526156bc273d0e65dd8075fab51c78851
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.2"
+    version: "0.1.3+2"
   permission_handler_platform_interface:
     dependency: transitive
     description:
@@ -1211,18 +1211,18 @@ packages:
     dependency: "direct main"
     description:
       name: photo_manager
-      sha256: "32a1ce1095aeaaa792a29f28c1f74613aa75109f21c2d4ab85be3ad9964230a4"
+      sha256: "70159eee32203e8162d49d588232f0299ed3f383c63eef1e899cb6b83dee6b26"
       url: "https://pub.dev"
     source: hosted
-    version: "3.5.0"
+    version: "3.5.1"
   photo_manager_image_provider:
     dependency: "direct main"
     description:
       name: photo_manager_image_provider
-      sha256: "38ef1023dc11de3a8669f16e7c981673b3c5cfee715d17120f4b87daa2cdd0af"
+      sha256: b6015b67b32f345f57cf32c126f871bced2501236c405aafaefa885f7c821e4f
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "2.2.0"
   platform:
     dependency: transitive
     description:
@@ -1339,18 +1339,18 @@ packages:
     dependency: "direct main"
     description:
       name: share_plus
-      sha256: "59dfd53f497340a0c3a81909b220cfdb9b8973a91055c4e5ab9b9b9ad7c513c0"
+      sha256: fec12c3c39f01e4df1ec6ad92b6e85503c5ca64ffd6e28d18c9ffe53fcc4cb11
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.0"
+    version: "10.0.3"
   share_plus_platform_interface:
     dependency: transitive
     description:
       name: share_plus_platform_interface
-      sha256: "6ababf341050edff57da8b6990f11f4e99eaba837865e2e6defe16d039619db5"
+      sha256: c57c0bbfec7142e3a0f55633be504b796af72e60e3c791b44d5a017b985f7a48
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "5.0.1"
   shared_preferences:
     dependency: transitive
     description:
@@ -1760,10 +1760,10 @@ packages:
     dependency: "direct main"
     description:
       name: wakelock_plus
-      sha256: "4fa83a128b4127619e385f686b4f080a5d2de46cff8e8c94eccac5fcf76550e5"
+      sha256: bf4ee6f17a2fa373ed3753ad0e602b7603f8c75af006d5b9bdade263928c0484
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.7"
+    version: "1.2.8"
   wakelock_plus_platform_interface:
     dependency: transitive
     description:
@@ -1784,10 +1784,10 @@ packages:
     dependency: transitive
     description:
       name: web
-      sha256: "97da13628db363c635202ad97068d47c5b8aa555808e7a9411963c533b449b27"
+      sha256: cd3543bd5798f6ad290ea73d210f423502e71900302dde696f8bff84bf89a1cb
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.1"
+    version: "1.1.0"
   web_socket:
     dependency: transitive
     description:
@@ -1861,5 +1861,5 @@ packages:
     source: hosted
     version: "3.1.2"
 sdks:
-  dart: ">=3.5.0 <4.0.0"
-  flutter: ">=3.24.3"
+  dart: ">=3.5.3 <4.0.0"
+  flutter: ">=3.24.4"

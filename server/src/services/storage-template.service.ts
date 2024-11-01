@@ -3,25 +3,49 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import {
-  supportedDayTokens,
-  supportedHourTokens,
-  supportedMinuteTokens,
-  supportedMonthTokens,
-  supportedSecondTokens,
-  supportedWeekTokens,
-  supportedYearTokens,
-} from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
+import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetPathType, AssetType, StorageFolder } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 import { usePagination } from 'src/utils/pagination';
+
+const storageTokens = {
+  secondOptions: ['s', 'ss', 'SSS'],
+  minuteOptions: ['m', 'mm'],
+  dayOptions: ['d', 'dd'],
+  weekOptions: ['W', 'WW'],
+  hourOptions: ['h', 'hh', 'H', 'HH'],
+  yearOptions: ['y', 'yy'],
+  monthOptions: ['M', 'MM', 'MMM', 'MMMM'],
+};
+
+const storagePresets = [
+  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MM}}/{{filename}}',
+  '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+  '{{y}}/{{MMM}}/{{filename}}',
+  '{{y}}/{{MMMM}}/{{filename}}',
+  '{{y}}/{{MM}}/{{dd}}/{{filename}}',
+  '{{y}}/{{MMMM}}/{{dd}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}/{{filename}}',
+  '{{y}}/{{y}}-{{WW}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
+  '{{y}}/{{y}}-{{MM}}/{{assetId}}',
+  '{{y}}/{{y}}-{{WW}}/{{assetId}}',
+  '{{album}}/{{filename}}',
+];
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;
@@ -80,7 +104,12 @@ export class StorageTemplateService extends BaseService {
     }
   }
 
-  async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
+  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+    return { ...storageTokens, presetOptions: storagePresets };
+  }
+
+  @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
+  async handleMigrationSingle({ id }: JobOf<JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
@@ -109,6 +138,7 @@ export class StorageTemplateService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
+  @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
     const { storageTemplate } = await this.getConfig({ withCache: true });
@@ -277,17 +307,7 @@ export class StorageTemplateService extends BaseService {
     const zone = asset.exifInfo?.timeZone || systemTimeZone;
     const dt = DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
-    const dateTokens = [
-      ...supportedYearTokens,
-      ...supportedMonthTokens,
-      ...supportedWeekTokens,
-      ...supportedDayTokens,
-      ...supportedHourTokens,
-      ...supportedMinuteTokens,
-      ...supportedSecondTokens,
-    ];
-
-    for (const token of dateTokens) {
+    for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);
     }
 

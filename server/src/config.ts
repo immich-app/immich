@@ -1,18 +1,9 @@
-import { RegisterQueueOptions } from '@nestjs/bullmq';
-import { ConfigModuleOptions } from '@nestjs/config';
 import { CronExpression } from '@nestjs/schedule';
-import { QueueOptions } from 'bullmq';
-import { Request, Response } from 'express';
-import { RedisOptions } from 'ioredis';
-import Joi, { Root } from 'joi';
-import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
-import { ImmichHeader } from 'src/dtos/auth.dto';
 import {
   AudioCodec,
   Colorspace,
   CQMode,
   ImageFormat,
-  ImmichEnvironment,
   LogLevel,
   ToneMapping,
   TranscodeHWAccel,
@@ -24,6 +15,13 @@ import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
 import { ImageOptions } from 'src/interfaces/media.interface';
 
 export interface SystemConfig {
+  backup: {
+    database: {
+      enabled: boolean;
+      cronExpression: string;
+      keepLastAmount: number;
+    };
+  };
   ffmpeg: {
     crf: number;
     threads: number;
@@ -38,7 +36,6 @@ export interface SystemConfig {
     bframes: number;
     refs: number;
     gopSize: number;
-    npl: number;
     temporalAQ: boolean;
     cqMode: CQMode;
     twoPass: boolean;
@@ -159,6 +156,13 @@ export interface SystemConfig {
 }
 
 export const defaults = Object.freeze<SystemConfig>({
+  backup: {
+    database: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_2AM,
+      keepLastAmount: 14,
+    },
+  },
   ffmpeg: {
     crf: 23,
     threads: 0,
@@ -166,14 +170,13 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
     acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
     refs: 0,
     gopSize: 0,
-    npl: 0,
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
@@ -312,99 +315,3 @@ export const defaults = Object.freeze<SystemConfig>({
     deleteDelay: 7,
   },
 });
-
-const WHEN_DB_URL_SET = Joi.when('DB_URL', {
-  is: Joi.exist(),
-  then: Joi.string().optional(),
-  otherwise: Joi.string().required(),
-});
-
-export const immichAppConfig: ConfigModuleOptions = {
-  envFilePath: '.env',
-  isGlobal: true,
-  validationSchema: Joi.object({
-    IMMICH_ENV: Joi.string()
-      .optional()
-      .valid(...Object.values(ImmichEnvironment))
-      .default(ImmichEnvironment.PRODUCTION),
-    IMMICH_LOG_LEVEL: Joi.string()
-      .optional()
-      .valid(...Object.values(LogLevel)),
-
-    DB_USERNAME: WHEN_DB_URL_SET,
-    DB_PASSWORD: WHEN_DB_URL_SET,
-    DB_DATABASE_NAME: WHEN_DB_URL_SET,
-    DB_URL: Joi.string().optional(),
-    DB_VECTOR_EXTENSION: Joi.string().optional().valid('pgvector', 'pgvecto.rs').default('pgvecto.rs'),
-    DB_SKIP_MIGRATIONS: Joi.boolean().optional().default(false),
-
-    IMMICH_PORT: Joi.number().optional(),
-    IMMICH_API_METRICS_PORT: Joi.number().optional(),
-    IMMICH_MICROSERVICES_METRICS_PORT: Joi.number().optional(),
-
-    IMMICH_TRUSTED_PROXIES: Joi.extend((joi: Root) => ({
-      type: 'stringArray',
-      base: joi.array(),
-      coerce: (value) => (value.split ? value.split(',') : value),
-    }))
-      .stringArray()
-      .single()
-      .items(
-        Joi.string().ip({
-          version: ['ipv4', 'ipv6'],
-          cidr: 'optional',
-        }),
-      ),
-
-    IMMICH_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_HOST_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_API_METRICS: Joi.boolean().optional().default(false),
-    IMMICH_IO_METRICS: Joi.boolean().optional().default(false),
-  }),
-};
-
-export function parseRedisConfig(): RedisOptions {
-  const redisUrl = process.env.REDIS_URL;
-  if (redisUrl && redisUrl.startsWith('ioredis://')) {
-    try {
-      const decodedString = Buffer.from(redisUrl.slice(10), 'base64').toString();
-      return JSON.parse(decodedString);
-    } catch (error) {
-      throw new Error(`Failed to decode redis options: ${error}`);
-    }
-  }
-  return {
-    host: process.env.REDIS_HOSTNAME || 'redis',
-    port: Number.parseInt(process.env.REDIS_PORT || '6379'),
-    db: Number.parseInt(process.env.REDIS_DBINDEX || '0'),
-    username: process.env.REDIS_USERNAME || undefined,
-    password: process.env.REDIS_PASSWORD || undefined,
-    path: process.env.REDIS_SOCKET || undefined,
-  };
-}
-
-export const bullConfig: QueueOptions = {
-  prefix: 'immich_bull',
-  connection: parseRedisConfig(),
-  defaultJobOptions: {
-    attempts: 3,
-    removeOnComplete: true,
-    removeOnFail: false,
-  },
-};
-
-export const bullQueues: RegisterQueueOptions[] = Object.values(QueueName).map((name) => ({ name }));
-
-export const clsConfig: ClsModuleOptions = {
-  middleware: {
-    mount: true,
-    generateId: true,
-    setup: (cls, req: Request, res: Response) => {
-      const headerValues = req.headers[ImmichHeader.CID];
-      const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
-      const cid = headerValue || cls.get(CLS_ID);
-      cls.set(CLS_ID, cid);
-      res.header(ImmichHeader.CID, cid);
-    },
-  },
-};

@@ -6,6 +6,5 @@ export const newMapRepositoryMock = (): Mocked<IMapRepository> => {
     init: vitest.fn(),
     reverseGeocode: vitest.fn(),
     getMapMarkers: vitest.fn(),
-    fetchStyle: vitest.fn(),
   };
 };

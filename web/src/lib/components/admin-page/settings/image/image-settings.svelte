@@ -19,6 +19,7 @@
   export let disabled = false;
   export let onReset: SettingsResetEvent;
   export let onSave: SettingsSaveEvent;
+  export let openByDefault = false;
 </script>
 
 <div>
@@ -29,7 +30,7 @@
           key="thumbnail-settings"
           title={$t('admin.image_thumbnail_title')}
           subtitle={$t('admin.image_thumbnail_description')}
-          isOpen={true}
+          isOpen={openByDefault}
         >
           <SettingSelect
             label={$t('admin.image_format')}
@@ -75,7 +76,7 @@
           key="preview-settings"
           title={$t('admin.image_preview_title')}
           subtitle={$t('admin.image_preview_description')}
-          isOpen={true}
+          isOpen={openByDefault}
         >
           <SettingSelect
             label={$t('admin.image_format')}

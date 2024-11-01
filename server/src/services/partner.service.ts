@@ -6,7 +6,6 @@ import { PartnerEntity } from 'src/entities/partner.entity';
 import { Permission } from 'src/enum';
 import { PartnerDirection, PartnerIds } from 'src/interfaces/partner.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 
 @Injectable()
 export class PartnerService extends BaseService {
@@ -41,7 +40,7 @@ export class PartnerService extends BaseService {
   }
 
   async update(auth: AuthDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.PARTNER_UPDATE, ids: [sharedById] });
+    await this.requireAccess({ auth, permission: Permission.PARTNER_UPDATE, ids: [sharedById] });
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.partnerRepository.update({ ...partnerId, inTimeline: dto.inTimeline });

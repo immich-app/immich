@@ -59,7 +59,7 @@ class ExploreGrid extends StatelessWidget {
                     ),
                   )
                 : context.pushRoute(
-                    SearchInputRoute(
+                    SearchRoute(
                       prefilter: SearchFilter(
                         people: {},
                         location: SearchLocationFilter(

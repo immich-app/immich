@@ -21,6 +21,17 @@ The recommended way to backup and restore the Immich database is to use the `pg_
 It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
 :::
 
+### Automatic Database Backups
+
+Immich will automatically create database backups by default. The backups are stored in `UPLOAD_LOCATION/backups`.  
+You can adjust the schedule and amount of kept backups in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).  
+By default, Immich will keep the last 14 backups and create a new backup every day at 2:00 AM.
+
+#### Restoring
+
+We hope to make restoring simpler in future versions, for now you can find the backups in the `UPLOAD_LOCATION/backups` folder on your host.  
+Then please follow the steps in the following section for restoring the database.
+
 ### Manual Backup and Restore
 
 <Tabs>
@@ -200,7 +211,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Stored in `UPLOAD_LOCATION/profile/<userID>`.
 - **Thumbs Images:**
   - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
-  - Stored in `UPLOCAD_LOCATION/thumbs/<userID>`.
+  - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.

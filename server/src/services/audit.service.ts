@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { OnJob } from 'src/decorators';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -21,14 +22,14 @@ import {
   StorageFolder,
   UserPathType,
 } from 'src/enum';
-import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class AuditService extends BaseService {
+  @OnJob({ name: JobName.CLEAN_OLD_AUDIT_LOGS, queue: QueueName.BACKGROUND_TASK })
   async handleCleanup(): Promise<JobStatus> {
     await this.auditRepository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
     return JobStatus.SUCCESS;
@@ -36,7 +37,7 @@ export class AuditService extends BaseService {
 
   async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
     const userId = dto.userId || auth.user.id;
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TIMELINE_READ, ids: [userId] });
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
 
     const audits = await this.auditRepository.getAfter(dto.after, {
       userIds: [userId],

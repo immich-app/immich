@@ -15,7 +15,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { locale } from '$lib/stores/preferences.store';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig, featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
@@ -113,6 +113,7 @@
           onSubmit={onUserCreated}
           onCancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
+          oauthEnabled={$featureFlags.oauth}
         />
       {/if}
 

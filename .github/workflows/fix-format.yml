@@ -1,0 +1,52 @@
+name: Fix formatting
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  fix-formatting:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'fix:formatting' }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
+
+      - name: Fix formatting
+        run: make install-all && make format-all
+
+      - name: Commit and push
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: 'chore: fix formatting'
+
+      - name: Remove label
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'fix:formatting'
+            })
+

@@ -20,11 +20,9 @@ import {
   UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -61,10 +59,6 @@ export class PersonRepository implements IPersonRepository {
 
   async delete(entities: PersonEntity[]): Promise<void> {
     await this.personRepository.remove(entities);
-  }
-
-  async deleteAll(): Promise<void> {
-    await this.personRepository.clear();
   }
 
   async deleteFaces({ sourceType }: DeleteFacesOptions): Promise<void> {
@@ -267,11 +261,6 @@ export class PersonRepository implements IPersonRepository {
   async createAll(people: Partial<PersonEntity>[]): Promise<string[]> {
     const results = await this.personRepository.save(people);
     return results.map((person) => person.id);
-  }
-
-  async createFaces(entities: AssetFaceEntity[]): Promise<string[]> {
-    const res = await this.assetFaceRepository.save(entities);
-    return res.map((row) => row.id);
   }
 
   async refreshFaces(

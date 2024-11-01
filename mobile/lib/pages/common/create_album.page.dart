@@ -17,13 +17,11 @@ import 'package:immich_mobile/widgets/album/shared_album_thumbnail_image.dart';
 @RoutePage()
 // ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
-  final bool isSharedAlbum;
-  final List<Asset>? initialAssets;
+  final List<Asset>? assets;
 
   const CreateAlbumPage({
     super.key,
-    required this.isSharedAlbum,
-    this.initialAssets,
+    this.assets,
   });
 
   @override
@@ -34,17 +32,8 @@ class CreateAlbumPage extends HookConsumerWidget {
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
     final selectedAssets = useState<Set<Asset>>(
-      initialAssets != null ? Set.from(initialAssets!) : const {},
+      assets != null ? Set.from(assets!) : const {},
     );
-
-    showSelectUserPage() async {
-      final bool? ok = await context.pushRoute<bool?>(
-        AlbumSharedUserSelectionRoute(assets: selectedAssets.value),
-      );
-      if (ok == true) {
-        selectedAssets.value = {};
-      }
-    }
 
     void onBackgroundTapped() {
       albumTitleTextFieldFocusNode.unfocus();
@@ -199,7 +188,7 @@ class CreateAlbumPage extends HookConsumerWidget {
           );
 
       if (newAlbum != null) {
-        ref.watch(albumProvider.notifier).getAllAlbums();
+        ref.watch(albumProvider.notifier).refreshRemoteAlbums();
         selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
@@ -223,36 +212,20 @@ class CreateAlbumPage extends HookConsumerWidget {
           'share_create_album',
         ).tr(),
         actions: [
-          if (isSharedAlbum)
-            TextButton(
-              onPressed: albumTitleController.text.isNotEmpty
-                  ? showSelectUserPage
-                  : null,
-              child: Text(
-                'create_shared_album_page_share'.tr(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: albumTitleController.text.isEmpty
-                      ? context.themeData.disabledColor
-                      : context.primaryColor,
-                ),
+          TextButton(
+            onPressed: albumTitleController.text.isNotEmpty
+                ? createNonSharedAlbum
+                : null,
+            child: Text(
+              'create_shared_album_page_create'.tr(),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: albumTitleController.text.isNotEmpty
+                    ? context.primaryColor
+                    : context.themeData.disabledColor,
               ),
             ),
-          if (!isSharedAlbum)
-            TextButton(
-              onPressed: albumTitleController.text.isNotEmpty
-                  ? createNonSharedAlbum
-                  : null,
-              child: Text(
-                'create_shared_album_page_create'.tr(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: albumTitleController.text.isNotEmpty
-                      ? context.primaryColor
-                      : context.themeData.disabledColor,
-                ),
-              ),
-            ),
+          ),
         ],
       ),
       body: GestureDetector(

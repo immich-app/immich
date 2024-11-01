@@ -5,19 +5,13 @@
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import {
-    AssetBucket,
-    AssetStore,
-    isSelectingAllAssets,
-    type BucketListener,
-    type ViewportXY,
-  } from '$lib/stores/assets.store';
+  import { AssetBucket, AssetStore, type BucketListener, type ViewportXY } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import {
     formatGroupTitle,
@@ -42,6 +36,7 @@
   import { page } from '$app/stores';
   import type { UpdatePayload } from 'vite';
   import { generateId } from '$lib/utils/generate-id';
+  import { isTimelineScrolling } from '$lib/stores/timeline.store';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -337,7 +332,17 @@
     }
   };
 
+  let scrollObserverTimer: NodeJS.Timeout;
+
   const _handleTimelineScroll = () => {
+    $isTimelineScrolling = true;
+    if (scrollObserverTimer) {
+      clearTimeout(scrollObserverTimer);
+    }
+    scrollObserverTimer = setTimeout(() => {
+      $isTimelineScrolling = false;
+    }, 1000);
+
     leadout = false;
     if ($assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
@@ -595,8 +600,7 @@
   let shiftKeyIsDown = false;
 
   const deselectAllAssets = () => {
-    $isSelectingAllAssets = false;
-    assetInteractionStore.clearMultiselect();
+    cancelMultiselect(assetInteractionStore);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {

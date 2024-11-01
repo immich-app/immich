@@ -23,7 +23,7 @@ jobs:
           tg_version: "0.58.12"
           tofu_version: "1.7.1"
           tg_dir: "deployment/modules/cloudflare/docs"
-          tg_command: "destroy"
+          tg_command: "destroy -refresh=false"
 
       - name: Comment
         uses: actions-cool/maintain-one-comment@v3

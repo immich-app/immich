@@ -40,7 +40,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
+  import { downloadAlbum, cancelMultiselect } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -270,7 +270,7 @@
       return;
     }
     if ($isMultiSelectState) {
-      assetInteractionStore.clearMultiselect();
+      cancelMultiselect(assetInteractionStore);
       return;
     }
     await goto(backUrl);
@@ -345,7 +345,7 @@
     }
   };
 
-  const handleRemoveUser = async (userId: string) => {
+  const handleRemoveUser = async (userId: string, nextViewMode: ViewMode) => {
     if (userId == 'me' || userId === $user.id) {
       await goto(backUrl);
       return;
@@ -353,7 +353,9 @@
 
     try {
       await refreshAlbum();
-      viewMode = album.albumUsers.length > 0 ? ViewMode.VIEW_USERS : ViewMode.VIEW;
+
+      // Dynamically set the view mode based on the passed argument
+      viewMode = album.albumUsers.length > 0 ? nextViewMode : ViewMode.VIEW;
     } catch (error) {
       handleError(error, $t('errors.error_deleting_shared_user'));
     }
@@ -730,7 +732,7 @@
   <ShareInfoModal
     onClose={() => (viewMode = ViewMode.VIEW)}
     {album}
-    onRemove={handleRemoveUser}
+    onRemove={(userId) => handleRemoveUser(userId, ViewMode.VIEW_USERS)}
     onRefreshAlbum={refreshAlbum}
   />
 {/if}
@@ -744,6 +746,8 @@
       albumOrder = order;
       await setModeToView();
     }}
+    onRemove={(userId) => handleRemoveUser(userId, ViewMode.OPTIONS)}
+    onRefreshAlbum={refreshAlbum}
     onClose={() => (viewMode = ViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
     onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -12,10 +13,9 @@ import {
 } from 'src/dtos/tag.dto';
 import { TagEntity } from 'src/entities/tag.entity';
 import { Permission } from 'src/enum';
-import { JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { AssetTagItem } from 'src/interfaces/tag.interface';
 import { BaseService } from 'src/services/base.service';
-import { checkAccess, requireAccess } from 'src/utils/access';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { upsertTags } from 'src/utils/tag';
 
@@ -27,7 +27,7 @@ export class TagService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<TagResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [id] });
     const tag = await this.findOrFail(id);
     return mapTag(tag);
   }
@@ -35,7 +35,7 @@ export class TagService extends BaseService {
   async create(auth: AuthDto, dto: TagCreateDto) {
     let parent: TagEntity | undefined;
     if (dto.parentId) {
-      await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_READ, ids: [dto.parentId] });
+      await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [dto.parentId] });
       parent = (await this.tagRepository.get(dto.parentId)) || undefined;
       if (!parent) {
         throw new BadRequestException('Tag not found');
@@ -55,7 +55,7 @@ export class TagService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TAG_UPDATE, ids: [id] });
 
     const { color } = dto;
     const tag = await this.tagRepository.update({ id, color });
@@ -68,7 +68,7 @@ export class TagService extends BaseService {
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TAG_DELETE, ids: [id] });
 
     // TODO sync tag changes for affected assets
 
@@ -77,8 +77,8 @@ export class TagService extends BaseService {
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     const [tagIds, assetIds] = await Promise.all([
-      checkAccess(this.accessRepository, { auth, permission: Permission.TAG_ASSET, ids: dto.tagIds }),
-      checkAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds }),
+      this.checkAccess({ auth, permission: Permission.TAG_ASSET, ids: dto.tagIds }),
+      this.checkAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds }),
     ]);
 
     const items: AssetTagItem[] = [];
@@ -97,7 +97,7 @@ export class TagService extends BaseService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_ASSET, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TAG_ASSET, ids: [id] });
 
     const results = await addAssets(
       auth,
@@ -115,7 +115,7 @@ export class TagService extends BaseService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.TAG_ASSET, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TAG_ASSET, ids: [id] });
 
     const results = await removeAssets(
       auth,
@@ -132,6 +132,7 @@ export class TagService extends BaseService {
     return results;
   }
 
+  @OnJob({ name: JobName.TAG_CLEANUP, queue: QueueName.BACKGROUND_TASK })
   async handleTagCleanup() {
     await this.tagRepository.deleteEmptyTags();
     return JobStatus.SUCCESS;
