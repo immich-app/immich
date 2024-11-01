@@ -13,6 +13,7 @@ import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:immich_mobile/widgets/common/delayed_loading_indicator.dart';
 import 'package:native_video_player/native_video_player.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class NativeVideoViewerPage extends HookConsumerWidget {
@@ -63,7 +64,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     Future<VideoSource> createSource(Asset asset) async {
       if (asset.isLocal && asset.livePhotoVideoId == null) {
-        final entity = await asset.local!.obtainForNewProperties();
+        final entity = await AssetEntity.fromId(asset.localId!);
         final file = await entity?.file;
         if (entity == null || file == null) {
           throw Exception('No file found for the video');
@@ -79,13 +80,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       } else {
         final assetWithExif =
             await ref.read(assetServiceProvider).loadExif(asset);
-        final shouldFlip = assetWithExif.exifInfo?.isFlipped ?? false;
-        width.value = (shouldFlip ? assetWithExif.height : assetWithExif.width)
-                ?.toDouble() ??
-            width.value;
-        height.value = (shouldFlip ? assetWithExif.width : assetWithExif.height)
-                ?.toDouble() ??
-            height.value;
+
+        width.value = assetWithExif.orientatedWidth?.toDouble() ?? width.value;
+        height.value =
+            assetWithExif.orientatedHeight?.toDouble() ?? height.value;
 
         // Use a network URL for the video player controller
         final serverEndpoint = Store.get(StoreKey.serverEndpoint);
@@ -132,7 +130,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     });
 
-    // When the custom video controls paus or plays
+    // // When the custom video controls pause or play
     ref.listen(videoPlayerControlsProvider.select((value) => value.pause),
         (_, pause) {
       try {
