@@ -38,16 +38,9 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 
 @Injectable()
 export class JobService extends BaseService {
-  private isMicroservices = false;
-
-  @OnEvent({ name: 'app.bootstrap' })
-  onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    this.isMicroservices = app === ImmichWorker.MICROSERVICES;
-  }
-
   @OnEvent({ name: 'config.update', server: true })
   onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
-    if (!this.isMicroservices) {
+    if (this.worker !== ImmichWorker.MICROSERVICES) {
       return;
     }
 

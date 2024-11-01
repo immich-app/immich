@@ -18,7 +18,9 @@ describe(JobService.name, () => {
   let telemetryMock: Mocked<ITelemetryRepository>;
 
   beforeEach(() => {
-    ({ sut, assetMock, jobMock, loggerMock, telemetryMock } = newTestService(JobService));
+    ({ sut, assetMock, jobMock, loggerMock, telemetryMock } = newTestService(JobService, {
+      worker: ImmichWorker.MICROSERVICES,
+    }));
   });
 
   it('should work', () => {
@@ -27,7 +29,6 @@ describe(JobService.name, () => {
 
   describe('onConfigUpdate', () => {
     it('should update concurrency', () => {
-      sut.onBootstrap(ImmichWorker.MICROSERVICES);
       sut.onConfigUpdate({ oldConfig: defaults, newConfig: defaults });
 
       expect(jobMock.setConcurrency).toHaveBeenCalledTimes(15);
