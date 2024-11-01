@@ -22,12 +22,17 @@ export class SharedLinkService extends BaseService {
     return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
   async getAllUnchecked(): Promise<SharedLinkResponseDto[]> {
-    const links = this.sharedLinkRepository.getAllUnchecked().then((links) =>
-      links.map((link) => {
-        const mappedLink = mapSharedLink(link);
-        mappedLink.password = 'REDACTED';
-        return mappedLink;
-      }),
+    const links = await this.sharedLinkRepository.getAllUnchecked().then((links) =>
+      links
+        .map((link) => {
+          const mappedLink = mapSharedLink(link);
+          mappedLink.password = "REDACTED";
+          return mappedLink;
+        })
+        .filter( // Remove duplicate albums
+          (link, index, self) =>
+            index === self.findIndex((l) => l.album!.id === link.album!.id)
+        )
     );
     return links;
   }
