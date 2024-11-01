@@ -27,7 +27,7 @@
 
 <ConfirmDialog
   title={$t('restore_user')}
-  confirmText={$t('continue')}
+  confirmText={$t('continue_text')}
   confirmColor="green"
   onConfirm={handleRestoreUser}
   {onCancel}
