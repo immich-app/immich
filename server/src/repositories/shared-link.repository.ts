@@ -59,6 +59,21 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getAllUnchecked(): Promise<SharedLinkEntity[]> {
+    return this.repository.find({
+      relations: {
+        assets: true,
+        album: {
+          owner: true,
+        },
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
   @GenerateSql({ params: [DummyValue.BUFFER] })
   async getByKey(key: Buffer): Promise<SharedLinkEntity | null> {
     return await this.repository.findOne({

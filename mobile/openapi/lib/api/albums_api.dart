@@ -223,10 +223,12 @@ class AlbumsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] esekShared:
+  ///
   /// * [String] key:
   ///
   /// * [bool] withoutAssets:
-  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, bool? withoutAssets, }) async {
+  Future<Response> getAlbumInfoWithHttpInfo(String id, { bool? esekShared, String? key, bool? withoutAssets, }) async {
     // ignore: prefer_const_declarations
     final path = r'/albums/{id}'
       .replaceAll('{id}', id);
@@ -238,6 +240,9 @@ class AlbumsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (esekShared != null) {
+      queryParams.addAll(_queryParams('', 'esekShared', esekShared));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -263,11 +268,13 @@ class AlbumsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] esekShared:
+  ///
   /// * [String] key:
   ///
   /// * [bool] withoutAssets:
-  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, bool? withoutAssets, }) async {
-    final response = await getAlbumInfoWithHttpInfo(id,  key: key, withoutAssets: withoutAssets, );
+  Future<AlbumResponseDto?> getAlbumInfo(String id, { bool? esekShared, String? key, bool? withoutAssets, }) async {
+    final response = await getAlbumInfoWithHttpInfo(id,  esekShared: esekShared, key: key, withoutAssets: withoutAssets, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -328,8 +335,10 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
   ///
+  /// * [bool] esekShared:
+  ///
   /// * [bool] shared:
-  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
+  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? esekShared, bool? shared, }) async {
     // ignore: prefer_const_declarations
     final path = r'/albums';
 
@@ -342,6 +351,9 @@ class AlbumsApi {
 
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
+    if (esekShared != null) {
+      queryParams.addAll(_queryParams('', 'esekShared', esekShared));
     }
     if (shared != null) {
       queryParams.addAll(_queryParams('', 'shared', shared));
@@ -366,9 +378,11 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
   ///
+  /// * [bool] esekShared:
+  ///
   /// * [bool] shared:
-  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? shared, }) async {
-    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, shared: shared, );
+  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? esekShared, bool? shared, }) async {
+    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, esekShared: esekShared, shared: shared, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

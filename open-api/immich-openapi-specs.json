@@ -5287,6 +5287,30 @@
         ]
       }
     },
+    "/shared-links/unchecked": {
+      "get": {
+        "operationId": "getAllSharedLinksUnchecked",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SharedLinkResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Shared Links"
+        ]
+      }
+    },
     "/shared-links/{id}": {
       "delete": {
         "operationId": "removeSharedLink",

@@ -21,6 +21,9 @@ export class SharedLinkService extends BaseService {
   async getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
     return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
+  async getAllUnchecked(): Promise<SharedLinkResponseDto[]> {
+    return this.sharedLinkRepository.getAllUnchecked().then((links) => links.map((link) => mapSharedLink(link)));
+  }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
     if (!auth.sharedLink) {

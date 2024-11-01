@@ -28,6 +28,13 @@ export class SharedLinkController {
     return this.service.getAll(auth);
   }
 
+  //@Authenticated({ permission: Permission.SHARED_LINK_READ })
+  // TODO: put behind E-sek member auth
+  @Get('unchecked')
+  getAllSharedLinksUnchecked(): Promise<SharedLinkResponseDto[]> {
+    return this.service.getAllUnchecked();
+  }
+
   @Get('me')
   @Authenticated({ sharedLink: true })
   async getMySharedLink(

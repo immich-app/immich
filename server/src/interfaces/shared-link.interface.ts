@@ -4,6 +4,7 @@ export const ISharedLinkRepository = 'ISharedLinkRepository';
 
 export interface ISharedLinkRepository {
   getAll(userId: string): Promise<SharedLinkEntity[]>;
+  getAllUnchecked(): Promise<SharedLinkEntity[]>;
   get(userId: string, id: string): Promise<SharedLinkEntity | null>;
   getByKey(key: Buffer): Promise<SharedLinkEntity | null>;
   create(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity>;
