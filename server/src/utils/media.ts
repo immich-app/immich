@@ -987,18 +987,23 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     if (this.shouldToneMap(videoStream)) {
+      const { primaries, transfer, matrix } = this.getColors();
       if (this.hasMaliOpenCL) {
-        const { primaries, transfer, matrix } = this.getColors();
-        return [
+        return [ // use RKMPP for scaling, OpenCL for tone mapping
           `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
           'hwmap=derive_device=opencl:mode=read',
           `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
           'hwmap=derive_device=rkmpp:mode=write:reverse=1',
           'format=drm_prime',
         ];
-      } else {
-        return super.getFilterOptions(videoStream);
       }
+      return [ // use RKMPP for scaling, CPU for tone mapping
+        `scale_rkrga=${this.getScaling(videoStream)}:format=nv12`,
+        'hwdownload',
+        'format=nv12',
+        `tonemapx=tonemap=${this.config.tonemap}:desat=0:p=${primaries}:t=${transfer}:m=${matrix}:r=pc:peak=100:format=nv12`,
+        'hwupload',
+      ];
     } else if (this.shouldScale(videoStream)) {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
