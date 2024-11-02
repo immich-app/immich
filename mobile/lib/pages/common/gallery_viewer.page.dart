@@ -12,7 +12,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/pages/common/download_panel.dart';
-import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
+import 'package:immich_mobile/pages/common/native_video_loader.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
@@ -366,8 +366,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                     maxScale: 1.0,
                     minScale: 1.0,
                     basePosition: Alignment.center,
-                    child: NativeVideoViewerPage(
-                      key: ValueKey(a),
+                    child: NativeVideoLoader(
+                      key: ValueKey(a.id),
                       asset: a,
                       isMotionVideo: a.livePhotoVideoId != null,
                       loopVideo: shouldLoopVideo.value,
