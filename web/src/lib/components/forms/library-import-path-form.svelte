@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
@@ -10,9 +8,9 @@
   interface Props {
     importPath: string | null;
     importPaths?: string[];
-    title?: any;
-    cancelText?: any;
-    submitText?: any;
+    title?: string;
+    cancelText?: string;
+    submitText?: string;
     isEditing?: boolean;
     onCancel: () => void;
     onSubmit: (importPath: string | null) => void;
@@ -28,7 +26,7 @@
     isEditing = false,
     onCancel,
     onSubmit,
-    onDelete = () => {}
+    onDelete,
   }: Props = $props();
 
   onMount(() => {
@@ -39,10 +37,17 @@
 
   let isDuplicate = $derived(importPath !== null && importPaths.includes(importPath));
   let canSubmit = $derived(importPath !== '' && importPath !== null && !importPaths.includes(importPath));
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    if (canSubmit) {
+      onSubmit(importPath);
+    }
+  };
 </script>
 
 <FullScreenModal {title} icon={mdiFolderSync} onClose={onCancel}>
-  <form onsubmit={preventDefault(() => onSubmit(importPath))} autocomplete="off" id="library-import-path-form">
+  <form {onsubmit} autocomplete="off" id="library-import-path-form">
     <p class="py-5 text-sm">{$t('admin.library_import_path_description')}</p>
 
     <div class="my-4 flex flex-col gap-2">
@@ -56,16 +61,11 @@
       {/if}
     </div>
   </form>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={onCancel}>{cancelText}</Button>
+
+  <svelte:fragment slot="stickyBottom">
+    <Button color="gray" fullwidth onclick={onCancel}>{cancelText}</Button>
     {#if isEditing}
-      <Button color="red" fullwidth on:click={onDelete}>{$t('delete')}</Button>
+      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
     {/if}
     <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
   </svelte:fragment>

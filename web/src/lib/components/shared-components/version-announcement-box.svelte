@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { websocketStore } from '$lib/stores/websocket';
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
@@ -13,7 +11,6 @@
   const { release } = websocketStore;
 
   const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
-
 
   const onAcknowledge = () => {
     localStorage.setItem('appVersion', releaseVersion);
@@ -33,7 +30,7 @@
   };
   let releaseVersion = $derived($release && semverToName($release.releaseVersion));
   let serverVersion = $derived($release && semverToName($release.serverVersion));
-  run(() => {
+  $effect(() => {
     if ($release?.isAvailable) {
       handleRelease();
     }
@@ -43,9 +40,9 @@
 {#if showModal}
   <FullScreenModal title="🎉 {$t('new_version_available')}" onClose={() => (showModal = false)}>
     <div>
-      <FormatMessage key="version_announcement_message"  >
+      <FormatMessage key="version_announcement_message">
         {#snippet children({ tag, message })}
-                {#if tag === 'link'}
+          {#if tag === 'link'}
             <span class="font-medium underline">
               <a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer">
                 {message}
@@ -54,8 +51,8 @@
           {:else if tag === 'code'}
             <code>{message}</code>
           {/if}
-                      {/snippet}
-            </FormatMessage>
+        {/snippet}
+      </FormatMessage>
     </div>
 
     <div class="mt-4 font-medium">{$t('version_announcement_closing')}</div>
@@ -66,13 +63,7 @@
       <code>{$t('latest_version')}: {releaseVersion}</code>
     </div>
 
-    <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+    <svelte:fragment slot="stickyBottom">
       <Button fullwidth on:click={onAcknowledge}>{$t('acknowledge')}</Button>
     </svelte:fragment>
   </FullScreenModal>

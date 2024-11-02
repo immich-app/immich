@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -21,14 +19,15 @@
   let { settings = $bindable(), onClose, onSave }: Props = $props();
 
   let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSave(settings);
+  };
 </script>
 
 <FullScreenModal title={$t('map_settings')} {onClose}>
-  <form
-    onsubmit={preventDefault(() => onSave(settings))}
-    class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
-    id="map-settings-form"
-  >
+  <form {onsubmit} class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary" id="map-settings-form">
     <SettingSwitch title={$t('allow_dark_mode')} bind:checked={settings.allowDarkMode} />
     <SettingSwitch title={$t('only_favorites')} bind:checked={settings.onlyFavorites} />
     <SettingSwitch title={$t('include_archived')} bind:checked={settings.includeArchived} />
@@ -52,7 +51,7 @@
         </div>
         <div class="flex justify-center text-xs">
           <LinkButton
-            on:click={() => {
+            onclick={() => {
               customDateRange = false;
               settings.dateAfter = '';
               settings.dateBefore = '';
@@ -97,7 +96,7 @@
         />
         <div class="text-xs">
           <LinkButton
-            on:click={() => {
+            onclick={() => {
               customDateRange = true;
               settings.relativeDate = '';
             }}
@@ -108,13 +107,8 @@
       </div>
     {/if}
   </form>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+
+  <svelte:fragment slot="stickyBottom">
     <Button color="gray" size="sm" fullwidth on:click={onClose}>{$t('cancel')}</Button>
     <Button type="submit" size="sm" fullwidth form="map-settings-form">{$t('save')}</Button>
   </svelte:fragment>

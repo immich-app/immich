@@ -39,8 +39,8 @@
   let shouldShowPasswordResetSuccess = $state(false);
   let shouldShowDeleteConfirmDialog = $state(false);
   let shouldShowRestoreDialog = $state(false);
-  let selectedUser: UserAdminResponseDto = $state();
-  let newPassword: string = $state();
+  let selectedUser = $state<UserAdminResponseDto>();
+  let newPassword = $state('');
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
@@ -121,7 +121,7 @@
         />
       {/if}
 
-      {#if shouldShowEditUserForm}
+      {#if shouldShowEditUserForm && selectedUser}
         <EditUserForm
           user={selectedUser}
           bind:newPassword
@@ -132,7 +132,7 @@
         />
       {/if}
 
-      {#if shouldShowDeleteConfirmDialog}
+      {#if shouldShowDeleteConfirmDialog && selectedUser}
         <DeleteConfirmDialog
           user={selectedUser}
           onSuccess={onUserDelete}
@@ -141,7 +141,7 @@
         />
       {/if}
 
-      {#if shouldShowRestoreDialog}
+      {#if shouldShowRestoreDialog && selectedUser}
         <RestoreDialogue
           user={selectedUser}
           onSuccess={onUserRestore}
@@ -169,7 +169,7 @@
                 >
                   {newPassword}
                 </code>
-                <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
+                <LinkButton onclick={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
                   <div class="flex place-items-center gap-2 text-sm">
                     <Icon path={mdiContentCopy} size="18" />
                   </div>

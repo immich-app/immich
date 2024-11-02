@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -64,13 +62,14 @@
     })),
   ]);
 
-  // svelte-ignore reactive_declaration_non_reactive_property
   let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
-  run(() => {
+
+  $effect(() => {
     if (!showMetadata) {
       allowDownload = false;
     }
   });
+
   if (editingLink) {
     if (editingLink.description) {
       description = editingLink.description;
@@ -235,13 +234,7 @@
     </div>
   </section>
 
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="stickyBottom">
+  {#snippet stickyBottom()}
     {#if !sharedLink}
       {#if editingLink}
         <Button size="sm" fullwidth onclick={handleEditLink}>{$t('confirm')}</Button>
@@ -258,5 +251,5 @@
         </LinkButton>
       </div>
     {/if}
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

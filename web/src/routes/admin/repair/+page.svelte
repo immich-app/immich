@@ -1,8 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
-<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
-<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
-<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
-<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
 <script lang="ts">
   import empty4Url from '$lib/assets/empty-4.svg';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
@@ -190,29 +185,29 @@
 
 <UserPageLayout title={data.meta.title} admin>
   {#snippet sidebar()}
-    <svelte:fragment  />
+    <svelte:fragment />
   {/snippet}
   {#snippet buttons()}
-    <div class="flex justify-end gap-2" >
-      <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>
+    <div class="flex justify-end gap-2">
+      <LinkButton onclick={() => handleRepair()} disabled={matches.length === 0 || repairing}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiWrench} size="18" />
           {$t('admin.repair_all')}
         </div>
       </LinkButton>
-      <LinkButton on:click={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
+      <LinkButton onclick={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCheckAll} size="18" />
           {$t('admin.check_all')}
         </div>
       </LinkButton>
-      <LinkButton on:click={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
+      <LinkButton onclick={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
           {$t('export')}
         </div>
       </LinkButton>
-      <LinkButton on:click={() => handleRefresh()}>
+      <LinkButton onclick={() => handleRefresh()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiRefresh} size="18" />
           {$t('refresh')}

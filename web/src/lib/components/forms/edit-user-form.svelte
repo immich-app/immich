@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import { serverInfo } from '$lib/stores/server-info.store';
@@ -22,12 +20,12 @@
   }
 
   let {
-    user = $bindable(),
+    user,
     canResetPassword = true,
     newPassword = $bindable(),
     onClose,
     onResetPasswordSuccess,
-    onEditSuccess
+    onEditSuccess,
   }: Props = $props();
 
   let error: string;
@@ -36,10 +34,11 @@
 
   const previousQutoa = user.quotaSizeInBytes;
 
-  let quotaSizeWarning =
-    $derived(previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
-    !!quotaSize &&
-    convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw);
+  let quotaSizeWarning = $derived(
+    previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
+      !!quotaSize &&
+      convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw,
+  );
 
   const editUser = async () => {
     try {
@@ -102,10 +101,15 @@
 
     return generatedPassword;
   }
+
+  const onSubmit = async (event: Event) => {
+    event.preventDefault();
+    await editUser();
+  };
 </script>
 
 <FullScreenModal title={$t('edit_user')} icon={mdiAccountEditOutline} {onClose}>
-  <form onsubmit={preventDefault(editUser)} autocomplete="off" id="edit-user-form">
+  <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
@@ -153,16 +157,11 @@
       <p class="ml-4 text-sm text-immich-primary">{success}</p>
     {/if}
   </form>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+
+  {#snippet stickyBottom()}
     {#if canResetPassword}
       <Button color="light-red" fullwidth on:click={resetPassword}>{$t('reset_password')}</Button>
     {/if}
     <Button type="submit" fullwidth form="edit-user-form">{$t('confirm')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

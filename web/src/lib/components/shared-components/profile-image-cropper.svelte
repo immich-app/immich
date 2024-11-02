@@ -17,9 +17,13 @@
 
   let { asset, onClose }: Props = $props();
 
-  let imgElement: HTMLDivElement = $state();
+  let imgElement = $state<HTMLDivElement>();
 
   onMount(() => {
+    if (!imgElement) {
+      return;
+    }
+
     imgElement.style.width = '100%';
   });
 
@@ -83,13 +87,8 @@
       <PhotoViewer bind:element={imgElement} {asset} />
     </div>
   </div>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="stickyBottom">
+
+  {#snippet stickyBottom()}
     <Button fullwidth onclick={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

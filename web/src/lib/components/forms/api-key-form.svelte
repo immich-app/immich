@@ -1,18 +1,15 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
-
   interface Props {
     apiKey: { name: string };
     title: string;
-    cancelText?: any;
-    submitText?: any;
+    cancelText?: string;
+    submitText?: string;
     onSubmit: (apiKey: { name: string }) => void;
     onCancel: () => void;
   }
@@ -23,7 +20,7 @@
     cancelText = $t('cancel'),
     submitText = $t('save'),
     onSubmit,
-    onCancel
+    onCancel,
   }: Props = $props();
 
   const handleSubmit = () => {
@@ -36,22 +33,22 @@
       });
     }
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    handleSubmit();
+  };
 </script>
 
 <FullScreenModal {title} icon={mdiKeyVariant} onClose={() => onCancel()}>
-  <form onsubmit={preventDefault(handleSubmit)} autocomplete="off" id="api-key-form">
+  <form {onsubmit} autocomplete="off" id="api-key-form">
     <div class="mb-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">{$t('name')}</label>
       <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
     </div>
   </form>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+
+  <svelte:fragment slot="stickyBottom">
     <Button color="gray" fullwidth on:click={() => onCancel()}>{cancelText}</Button>
     <Button type="submit" fullwidth form="api-key-form">{submitText}</Button>
   </svelte:fragment>

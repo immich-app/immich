@@ -22,8 +22,6 @@
 </script>
 
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
   import SearchPeopleSection from './search-people-section.svelte';
@@ -128,10 +126,20 @@
 
     onSearch(payload);
   };
+
+  const onreset = (event: Event) => {
+    event.preventDefault();
+    resetForm();
+  };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    search();
+  };
 </script>
 
 <FullScreenModal icon={mdiTune} width="extra-wide" title={$t('search_options')} {onClose}>
-  <form id={formId} autocomplete="off" onsubmit={preventDefault(search)} onreset={preventDefault(resetForm)}>
+  <form id={formId} autocomplete="off" {onsubmit} {onreset}>
     <div class="space-y-10 pb-10" tabindex="-1">
       <!-- PEOPLE -->
       <SearchPeopleSection bind:selectedPeople={filter.personIds} />
@@ -158,13 +166,7 @@
     </div>
   </form>
 
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+  <svelte:fragment slot="stickyBottom">
     <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
     <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>
   </svelte:fragment>

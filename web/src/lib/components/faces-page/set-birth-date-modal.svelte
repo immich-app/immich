@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiCake } from '@mdi/js';
@@ -16,6 +14,11 @@
   let { birthDate = $bindable(), onClose, onUpdate }: Props = $props();
 
   const todayFormatted = new Date().toISOString().split('T')[0];
+
+  const onSubmit = (event: Event) => {
+    event.preventDefault();
+    onUpdate(birthDate);
+  };
 </script>
 
 <FullScreenModal title={$t('set_date_of_birth')} icon={mdiCake} {onClose}>
@@ -25,7 +28,7 @@
     </p>
   </div>
 
-  <form onsubmit={preventDefault(() => onUpdate(birthDate))} autocomplete="off" id="set-birth-date-form">
+  <form onsubmit={(e) => onSubmit(e)} autocomplete="off" id="set-birth-date-form">
     <div class="my-4 flex flex-col gap-2">
       <DateInput
         class="immich-form-input"
@@ -37,13 +40,8 @@
       />
     </div>
   </form>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+
+  <svelte:fragment slot="stickyBottom">
     <Button color="gray" fullwidth on:click={onClose}>{$t('cancel')}</Button>
     <Button type="submit" fullwidth form="set-birth-date-form">{$t('set')}</Button>
   </svelte:fragment>

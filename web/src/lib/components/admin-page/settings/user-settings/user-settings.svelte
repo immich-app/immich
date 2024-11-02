@@ -1,17 +1,13 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import { type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
 
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -27,7 +23,7 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
+    <form autocomplete="off" onsubmit={(e) => e.preventDefault()}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}

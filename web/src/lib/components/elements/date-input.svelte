@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import type { HTMLInputAttributes } from 'svelte/elements';
-
-  
-
   interface Props {
     type: 'date' | 'datetime-local';
-    value?: $$Props['value'];
-    max?: $$Props['max'];
-    [key: string]: any
+    value?: string;
+    max?: string;
+    class: string;
+    id: string;
+    name: string;
   }
 
   let { type, value = $bindable(undefined), max = undefined, ...rest }: Props = $props();
@@ -18,8 +14,8 @@
 
   // Updating `value` directly causes the date input to reset itself or
   // interfere with user changes.
-  let updatedValue;
-  run(() => {
+  let updatedValue = $state();
+  $effect(() => {
     updatedValue = value;
   });
 </script>

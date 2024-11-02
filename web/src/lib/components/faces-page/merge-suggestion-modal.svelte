@@ -117,6 +117,8 @@
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button fullwidth color="gray" on:click={onReject}>{$t('no')}</Button>
     <Button fullwidth on:click={() => onConfirm([personMerge1, personMerge2])}>{$t('yes')}</Button>

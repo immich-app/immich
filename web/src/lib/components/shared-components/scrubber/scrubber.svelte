@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets.store';
   import { DateTime } from 'luxon';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
@@ -37,7 +35,7 @@
     leadout = false,
     onScrub = undefined,
     startScrub = undefined,
-    stopScrub = undefined
+    stopScrub = undefined,
   }: Props = $props();
 
   let isHover = $state(false);
@@ -90,14 +88,17 @@
       return scrubOverallPercent * (height - HOVER_DATE_HEIGHT * 2) - 2;
     }
   };
-  let scrollY;
-  run(() => {
+  let scrollY = $state(0);
+  $effect(() => {
     scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
   });
+
   let timelineFullHeight = $derived($assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset);
   let relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
   let relativeBottomOffset = $derived(toScrollY(timelineBottomOffset / timelineFullHeight));
-  let formatedDate = $derived(scrubBucket?.bucketDate ? parseUtcDate(scrubBucket?.bucketDate).toFormat('MMM yyyy') : '');
+  let formatedDate = $derived(
+    scrubBucket?.bucketDate ? parseUtcDate(scrubBucket?.bucketDate).toFormat('MMM yyyy') : '',
+  );
 
   const listener: BucketListener = (event) => {
     const { type } = event;

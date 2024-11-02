@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { mdiClose, mdiTag } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import Button from '../elements/buttons/button.svelte';
@@ -43,21 +41,26 @@
     selectedIds.delete(tag);
     selectedIds = selectedIds;
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    handleSubmit();
+  };
 </script>
 
 <FullScreenModal title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
   <div class="text-sm">
     <p>
-      <FormatMessage key="tag_not_found_question" >
+      <FormatMessage key="tag_not_found_question">
         {#snippet children({ message })}
-                <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-dark-primary underline">
+          <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-dark-primary underline">
             {message}
           </a>
-                      {/snippet}
-            </FormatMessage>
+        {/snippet}
+      </FormatMessage>
     </p>
   </div>
-  <form onsubmit={preventDefault(handleSubmit)} autocomplete="off" id="create-tag-form">
+  <form {onsubmit} autocomplete="off" id="create-tag-form">
     <div class="my-4 flex flex-col gap-2">
       <Combobox
         onSelect={handleSelect}
@@ -94,13 +97,7 @@
     {/each}
   </section>
 
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+  <svelte:fragment slot="stickyBottom">
     <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" fullwidth form="create-tag-form" {disabled}>{$t('tag_assets')}</Button>
   </svelte:fragment>

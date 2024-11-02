@@ -448,6 +448,8 @@
   <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
   <MotionPhotoAction
           slot="motion-photo"
           isPlaying={shouldPlayMotionPhoto}

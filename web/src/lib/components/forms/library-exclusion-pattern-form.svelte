@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderRemove } from '@mdi/js';
@@ -11,7 +9,7 @@
     exclusionPattern: string;
     exclusionPatterns?: string[];
     isEditing?: boolean;
-    submitText?: any;
+    submitText?: string;
     onCancel: () => void;
     onSubmit: (exclusionPattern: string) => void;
     onDelete?: () => void;
@@ -24,7 +22,7 @@
     submitText = $t('submit'),
     onCancel,
     onSubmit,
-    onDelete = () => {}
+    onDelete,
   }: Props = $props();
 
   onMount(() => {
@@ -35,10 +33,17 @@
 
   let isDuplicate = $derived(exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern));
   let canSubmit = $derived(exclusionPattern && !exclusionPatterns.includes(exclusionPattern));
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    if (canSubmit) {
+      onSubmit(exclusionPattern);
+    }
+  };
 </script>
 
 <FullScreenModal title={$t('add_exclusion_pattern')} icon={mdiFolderRemove} onClose={onCancel}>
-  <form onsubmit={preventDefault(() => onSubmit(exclusionPattern))} autocomplete="off" id="add-exclusion-pattern-form">
+  <form {onsubmit} autocomplete="off" id="add-exclusion-pattern-form">
     <p class="py-5 text-sm">
       {$t('admin.exclusion_pattern_description')}
       <br /><br />
@@ -60,16 +65,11 @@
       {/if}
     </div>
   </form>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
+
+  <svelte:fragment slot="stickyBottom">
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
     {#if isEditing}
-      <Button color="red" fullwidth on:click={onDelete}>{$t('delete')}</Button>
+      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
     {/if}
     <Button type="submit" disabled={!canSubmit} fullwidth form="add-exclusion-pattern-form">{submitText}</Button>
   </svelte:fragment>
