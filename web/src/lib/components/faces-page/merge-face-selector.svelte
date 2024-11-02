@@ -102,7 +102,7 @@
       {:else}
         {$t('merge_people')}
       {/if}
-      <div />
+      <div></div>
     </svelte:fragment>
     <svelte:fragment slot="trailing">
       <Button size={'sm'} disabled={!hasSelection} on:click={handleMerge}>
