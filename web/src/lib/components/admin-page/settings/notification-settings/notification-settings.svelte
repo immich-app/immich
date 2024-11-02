@@ -31,14 +31,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
   let isSending = $state(false);
 
@@ -99,7 +92,7 @@
               inputType={SettingInputFieldType.TEXT}
               required
               label={$t('host')}
-              desc={$t('admin.notification_email_host_description')}
+              description={$t('admin.notification_email_host_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.host}
               isEdited={config.notifications.smtp.transport.host !== savedConfig.notifications.smtp.transport.host}
@@ -109,7 +102,7 @@
               inputType={SettingInputFieldType.NUMBER}
               required
               label={$t('port')}
-              desc={$t('admin.notification_email_port_description')}
+              description={$t('admin.notification_email_port_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.port}
               isEdited={config.notifications.smtp.transport.port !== savedConfig.notifications.smtp.transport.port}
@@ -118,7 +111,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('username')}
-              desc={$t('admin.notification_email_username_description')}
+              description={$t('admin.notification_email_username_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.username}
               isEdited={config.notifications.smtp.transport.username !==
@@ -128,7 +121,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.PASSWORD}
               label={$t('password')}
-              desc={$t('admin.notification_email_password_description')}
+              description={$t('admin.notification_email_password_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.password}
               isEdited={config.notifications.smtp.transport.password !==
@@ -148,7 +141,7 @@
               inputType={SettingInputFieldType.TEXT}
               required
               label={$t('admin.notification_email_from_address')}
-              desc={$t('admin.notification_email_from_address_description')}
+              description={$t('admin.notification_email_from_address_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.from}
               isEdited={config.notifications.smtp.from !== savedConfig.notifications.smtp.from}

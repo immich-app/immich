@@ -24,14 +24,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div class="mt-2">
@@ -52,7 +45,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_light_style')}
-              desc={$t('admin.map_style_description')}
+              description={$t('admin.map_style_description')}
               bind:value={config.map.lightStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
@@ -60,7 +53,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_dark_style')}
-              desc={$t('admin.map_style_description')}
+              description={$t('admin.map_style_description')}
               bind:value={config.map.darkStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}
@@ -70,23 +63,21 @@
 
         <SettingAccordion key="reverse-geocoding" title={$t('admin.map_reverse_geocoding_settings')}>
           {#snippet subtitle()}
-                  
-              <p class="text-sm dark:text-immich-dark-fg">
-                <FormatMessage key="admin.map_manage_reverse_geocoding_settings" >
-                  {#snippet children({ message })}
-                                <a
-                      href="https://immich.app/docs/features/reverse-geocoding"
-                      class="underline"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {message}
-                    </a>
-                                                {/snippet}
-                            </FormatMessage>
-              </p>
-            
-                  {/snippet}
+            <p class="text-sm dark:text-immich-dark-fg">
+              <FormatMessage key="admin.map_manage_reverse_geocoding_settings">
+                {#snippet children({ message })}
+                  <a
+                    href="https://immich.app/docs/features/reverse-geocoding"
+                    class="underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {message}
+                  </a>
+                {/snippet}
+              </FormatMessage>
+            </p>
+          {/snippet}
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.map_reverse_geocoding_enable_description')}

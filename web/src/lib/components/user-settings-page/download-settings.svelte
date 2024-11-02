@@ -48,7 +48,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label={$t('archive_size')}
-          desc={$t('archive_size_description')}
+          description={$t('archive_size_description')}
           bind:value={archiveSize}
         />
         <SettingSwitch

@@ -22,14 +22,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div>
@@ -40,7 +33,7 @@
           inputType={SettingInputFieldType.NUMBER}
           min={1}
           label={$t('admin.user_delete_delay_settings')}
-          desc={$t('admin.user_delete_delay_settings_description')}
+          description={$t('admin.user_delete_delay_settings_description')}
           bind:value={config.user.deleteDelay}
           isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}
         />

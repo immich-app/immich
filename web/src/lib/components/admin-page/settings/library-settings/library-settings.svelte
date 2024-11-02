@@ -33,7 +33,7 @@
     disabled = false,
     onReset,
     onSave,
-    openByDefault = false
+    openByDefault = false,
   }: Props = $props();
 
   let cronExpressionOptions = $derived([
@@ -92,24 +92,22 @@
               bind:value={config.library.scan.cronExpression}
               isEdited={config.library.scan.cronExpression !== savedConfig.library.scan.cronExpression}
             >
-              {#snippet desc()}
-                          
-                  <p class="text-sm dark:text-immich-dark-fg">
-                    <FormatMessage key="admin.cron_expression_description" >
-                      {#snippet children({ message })}
-                                        <a
-                          href="https://crontab.guru/#{config.library.scan.cronExpression.replaceAll(' ', '_')}"
-                          class="underline"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {message}
-                        </a>
-                                                            {/snippet}
-                                    </FormatMessage>
-                  </p>
-                
-                          {/snippet}
+              {#snippet description()}
+                <p class="text-sm dark:text-immich-dark-fg">
+                  <FormatMessage key="admin.cron_expression_description">
+                    {#snippet children({ message })}
+                      <a
+                        href="https://crontab.guru/#{config.library.scan.cronExpression.replaceAll(' ', '_')}"
+                        class="underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {message}
+                      </a>
+                    {/snippet}
+                  </FormatMessage>
+                </p>
+              {/snippet}
             </SettingInputField>
           </div>
         </SettingAccordion>

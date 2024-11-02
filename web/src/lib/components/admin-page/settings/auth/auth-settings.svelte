@@ -25,14 +25,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
   let isConfirmOpen = $state(false);
 
@@ -63,26 +56,25 @@
     onConfirm={() => handleSave(true)}
   >
     {#snippet prompt()}
-      
-        <div class="flex flex-col gap-4">
-          <p>{$t('admin.authentication_settings_disable_all')}</p>
-          <p>
-            <FormatMessage key="admin.authentication_settings_reenable" >
-              {#snippet children({ message })}
-                        <a
-                  href="https://immich.app/docs/administration/server-commands"
-                  rel="noreferrer"
-                  target="_blank"
-                  class="underline"
-                >
-                  {message}
-                </a>
-                                    {/snippet}
-                    </FormatMessage>
-          </p>
-        </div>
-      
-      {/snippet}
+      ""
+      <div class="flex flex-col gap-4">
+        <p>{$t('admin.authentication_settings_disable_all')}</p>
+        <p>
+          <FormatMessage key="admin.authentication_settings_reenable">
+            {#snippet children({ message })}
+              <a
+                href="https://immich.app/docs/administration/server-commands"
+                rel="noreferrer"
+                target="_blank"
+                class="underline"
+              >
+                {message}
+              </a>
+            {/snippet}
+          </FormatMessage>
+        </p>
+      </div>
+    {/snippet}
   </ConfirmDialog>
 {/if}
 
@@ -97,9 +89,9 @@
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
-              <FormatMessage key="admin.oauth_settings_more_details" >
+              <FormatMessage key="admin.oauth_settings_more_details">
                 {#snippet children({ message })}
-                                <a
+                  <a
                     href="https://immich.app/docs/administration/oauth"
                     class="underline"
                     target="_blank"
@@ -107,8 +99,8 @@
                   >
                     {message}
                   </a>
-                                              {/snippet}
-                            </FormatMessage>
+                {/snippet}
+              </FormatMessage>
             </p>
 
             <SettingSwitch
@@ -167,7 +159,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_profile_signing_algorithm').toUpperCase()}
-                desc={$t('admin.oauth_profile_signing_algorithm_description')}
+                description={$t('admin.oauth_profile_signing_algorithm_description')}
                 bind:value={config.oauth.profileSigningAlgorithm}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -177,7 +169,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_storage_label_claim').toUpperCase()}
-                desc={$t('admin.oauth_storage_label_claim_description')}
+                description={$t('admin.oauth_storage_label_claim_description')}
                 bind:value={config.oauth.storageLabelClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -187,7 +179,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_storage_quota_claim').toUpperCase()}
-                desc={$t('admin.oauth_storage_quota_claim_description')}
+                description={$t('admin.oauth_storage_quota_claim_description')}
                 bind:value={config.oauth.storageQuotaClaim}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
@@ -197,7 +189,7 @@
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
                 label={$t('admin.oauth_storage_quota_default').toUpperCase()}
-                desc={$t('admin.oauth_storage_quota_default_description')}
+                description={$t('admin.oauth_storage_quota_default_description')}
                 bind:value={config.oauth.defaultStorageQuota}
                 required={true}
                 disabled={disabled || !config.oauth.enabled}

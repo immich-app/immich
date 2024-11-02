@@ -22,14 +22,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
   const jobNames = [
     JobName.ThumbnailGeneration,
@@ -60,7 +53,7 @@
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
               label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
-              desc=""
+              description=""
               bind:value={config.job[jobName].concurrency}
               required={true}
               isEdited={!(config.job[jobName].concurrency == savedConfig.job[jobName].concurrency)}
@@ -69,7 +62,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
-              desc=""
+              description=""
               value="1"
               disabled={true}
               title={$t('admin.job_not_concurrency_safe')}

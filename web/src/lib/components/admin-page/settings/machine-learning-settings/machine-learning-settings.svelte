@@ -26,14 +26,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div class="mt-2">
@@ -52,7 +45,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('url')}
-          desc={$t('admin.machine_learning_url_description')}
+          description={$t('admin.machine_learning_url_description')}
           bind:value={config.machineLearning.url}
           required={true}
           disabled={disabled || !config.machineLearning.enabled}
@@ -83,15 +76,15 @@
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
             isEdited={config.machineLearning.clip.modelName !== savedConfig.machineLearning.clip.modelName}
           >
-            {#snippet desc()}
-                        <p  class="immich-form-label pb-2 text-sm">
-                <FormatMessage key="admin.machine_learning_clip_model_description" >
+            {#snippet description()}
+              <p class="immich-form-label pb-2 text-sm">
+                <FormatMessage key="admin.machine_learning_clip_model_description">
                   {#snippet children({ message })}
-                                <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
-                                                {/snippet}
-                            </FormatMessage>
+                    <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
+                  {/snippet}
+                </FormatMessage>
               </p>
-                      {/snippet}
+            {/snippet}
           </SettingInputField>
         </div>
       </SettingAccordion>
@@ -118,7 +111,7 @@
             step="0.0005"
             min={0.001}
             max={0.1}
-            desc={$t('admin.machine_learning_max_detection_distance_description')}
+            description={$t('admin.machine_learning_max_detection_distance_description')}
             disabled={disabled || !$featureFlags.duplicateDetection}
             isEdited={config.machineLearning.duplicateDetection.maxDistance !==
               savedConfig.machineLearning.duplicateDetection.maxDistance}
@@ -160,7 +153,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_min_detection_score')}
-            desc={$t('admin.machine_learning_min_detection_score_description')}
+            description={$t('admin.machine_learning_min_detection_score_description')}
             bind:value={config.machineLearning.facialRecognition.minScore}
             step="0.1"
             min={0.1}
@@ -173,7 +166,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_max_recognition_distance')}
-            desc={$t('admin.machine_learning_max_recognition_distance_description')}
+            description={$t('admin.machine_learning_max_recognition_distance_description')}
             bind:value={config.machineLearning.facialRecognition.maxDistance}
             step="0.1"
             min={0.1}
@@ -186,7 +179,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_min_recognized_faces')}
-            desc={$t('admin.machine_learning_min_recognized_faces_description')}
+            description={$t('admin.machine_learning_min_recognized_faces_description')}
             bind:value={config.machineLearning.facialRecognition.minFaces}
             step="1"
             min={1}

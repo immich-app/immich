@@ -33,7 +33,7 @@
     disabled = false,
     onReset,
     onSave,
-    openByDefault = false
+    openByDefault = false,
   }: Props = $props();
 </script>
 
@@ -80,7 +80,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
-            desc={$t('admin.image_thumbnail_quality_description')}
+            description={$t('admin.image_thumbnail_quality_description')}
             bind:value={config.image.thumbnail.quality}
             isEdited={config.image.thumbnail.quality !== savedConfig.image.thumbnail.quality}
             {disabled}
@@ -125,7 +125,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
-            desc={$t('admin.image_preview_quality_description')}
+            description={$t('admin.image_preview_quality_description')}
             bind:value={config.image.preview.quality}
             isEdited={config.image.preview.quality !== savedConfig.image.preview.quality}
             {disabled}

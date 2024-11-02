@@ -22,14 +22,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div>
@@ -43,7 +36,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label={$t('admin.trash_number_of_days')}
-          desc={$t('admin.trash_number_of_days_description')}
+          description={$t('admin.trash_number_of_days_description')}
           bind:value={config.trash.days}
           required={true}
           disabled={disabled || !config.trash.enabled}

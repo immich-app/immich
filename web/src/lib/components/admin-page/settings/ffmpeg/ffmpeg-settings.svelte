@@ -37,14 +37,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div>
@@ -53,9 +46,9 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          <FormatMessage key="admin.transcoding_codecs_learn_more"  >
+          <FormatMessage key="admin.transcoding_codecs_learn_more">
             {#snippet children({ tag, message })}
-                        {#if tag === 'h264-link'}
+              {#if tag === 'h264-link'}
                 <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
                   {message}
                 </a>
@@ -68,15 +61,15 @@
                   {message}
                 </a>
               {/if}
-                                  {/snippet}
-                    </FormatMessage>
+            {/snippet}
+          </FormatMessage>
         </p>
 
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
           label={$t('admin.transcoding_constant_rate_factor')}
-          desc={$t('admin.transcoding_constant_rate_factor_description')}
+          description={$t('admin.transcoding_constant_rate_factor_description')}
           bind:value={config.ffmpeg.crf}
           required={true}
           isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
@@ -202,7 +195,7 @@
           inputType={SettingInputFieldType.TEXT}
           {disabled}
           label={$t('admin.transcoding_max_bitrate')}
-          desc={$t('admin.transcoding_max_bitrate_description')}
+          description={$t('admin.transcoding_max_bitrate_description')}
           bind:value={config.ffmpeg.maxBitrate}
           isEdited={config.ffmpeg.maxBitrate !== savedConfig.ffmpeg.maxBitrate}
         />
@@ -211,7 +204,7 @@
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
           label={$t('admin.transcoding_threads')}
-          desc={$t('admin.transcoding_threads_description')}
+          description={$t('admin.transcoding_threads_description')}
           bind:value={config.ffmpeg.threads}
           isEdited={config.ffmpeg.threads !== savedConfig.ffmpeg.threads}
         />
@@ -345,7 +338,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.transcoding_preferred_hardware_device')}
-              desc={$t('admin.transcoding_preferred_hardware_device_description')}
+              description={$t('admin.transcoding_preferred_hardware_device_description')}
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
               {disabled}
@@ -362,7 +355,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_b_frames')}
-              desc={$t('admin.transcoding_max_b_frames_description')}
+              description={$t('admin.transcoding_max_b_frames_description')}
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
               {disabled}
@@ -371,7 +364,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_reference_frames')}
-              desc={$t('admin.transcoding_reference_frames_description')}
+              description={$t('admin.transcoding_reference_frames_description')}
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
               {disabled}
@@ -380,7 +373,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_keyframe_interval')}
-              desc={$t('admin.transcoding_max_keyframe_interval_description')}
+              description={$t('admin.transcoding_max_keyframe_interval_description')}
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
               {disabled}

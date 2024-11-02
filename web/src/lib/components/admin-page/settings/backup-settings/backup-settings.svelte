@@ -24,14 +24,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
   let cronExpressionOptions = $derived([
     { text: $t('interval.night_at_midnight'), value: '0 0 * * *' },
@@ -43,7 +36,7 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
+    <form autocomplete="off" onsubmit={(e) => e.preventDefault()}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.backup_database_enable_description')}
@@ -67,25 +60,23 @@
           bind:value={config.backup.database.cronExpression}
           isEdited={config.backup.database.cronExpression !== savedConfig.backup.database.cronExpression}
         >
-          {#snippet desc()}
-                  
-              <p class="text-sm dark:text-immich-dark-fg">
-                <FormatMessage key="admin.cron_expression_description" >
-                  {#snippet children({ message })}
-                                <a
-                      href="https://crontab.guru/#{config.backup.database.cronExpression.replaceAll(' ', '_')}"
-                      class="underline"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {message}
-                      <br />
-                    </a>
-                                                {/snippet}
-                            </FormatMessage>
-              </p>
-            
-                  {/snippet}
+          {#snippet description()}
+            <p class="text-sm dark:text-immich-dark-fg">
+              <FormatMessage key="admin.cron_expression_description">
+                {#snippet children({ message })}
+                  <a
+                    href="https://crontab.guru/#{config.backup.database.cronExpression.replaceAll(' ', '_')}"
+                    class="underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {message}
+                    <br />
+                  </a>
+                {/snippet}
+              </FormatMessage>
+            </p>
+          {/snippet}
         </SettingInputField>
 
         <SettingInputField

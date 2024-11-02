@@ -23,7 +23,7 @@
   export let max = Number.MAX_SAFE_INTEGER;
   export let step = '1';
   export let label = '';
-  export let desc = '';
+  export let description = '';
   export let title = '';
   export let required = false;
   export let disabled = false;
@@ -74,9 +74,9 @@
     {/if}
   </div>
 
-  {#if desc}
+  {#if description}
     <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
-      {desc}
+      {description}
     </p>
   {:else}
     <slot name="desc" />
@@ -88,7 +88,7 @@
         <input
           bind:this={input}
           class="immich-form-input w-full pb-2 rounded-none mr-1"
-          aria-describedby={desc ? `${label}-desc` : undefined}
+          aria-describedby={description ? `${label}-desc` : undefined}
           aria-labelledby="{label}-label"
           id={label}
           name={label}
@@ -108,7 +108,7 @@
         bind:this={input}
         class="immich-form-input w-full pb-2"
         class:color-picker={inputType === SettingInputFieldType.COLOR}
-        aria-describedby={desc ? `${label}-desc` : undefined}
+        aria-describedby={description ? `${label}-desc` : undefined}
         aria-labelledby="{label}-label"
         id={label}
         name={label}
@@ -125,7 +125,7 @@
     </div>
   {:else}
     <PasswordField
-      aria-describedby={desc ? `${label}-desc` : undefined}
+      aria-describedby={description ? `${label}-desc` : undefined}
       aria-labelledby="{label}-label"
       id={label}
       name={label}

@@ -21,14 +21,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div>
@@ -38,7 +31,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_external_domain_settings')}
-          desc={$t('admin.server_external_domain_settings_description')}
+          description={$t('admin.server_external_domain_settings_description')}
           bind:value={config.server.externalDomain}
           isEdited={config.server.externalDomain !== savedConfig.server.externalDomain}
         />
@@ -46,7 +39,7 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_welcome_message')}
-          desc={$t('admin.server_welcome_message_description')}
+          description={$t('admin.server_welcome_message_description')}
           bind:value={config.server.loginPageMessage}
           isEdited={config.server.loginPageMessage !== savedConfig.server.loginPageMessage}
         />
