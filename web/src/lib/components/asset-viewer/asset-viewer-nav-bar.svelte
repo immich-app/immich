@@ -1,11 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
@@ -53,24 +45,42 @@
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let album: AlbumResponseDto | null = null;
-  export let stack: StackResponseDto | null = null;
-  export let showDetailButton: boolean;
-  export let showSlideshow = false;
-  export let onZoomImage: () => void;
-  export let onCopyImage: () => void;
-  export let onAction: OnAction;
-  export let onRunJob: (name: AssetJobName) => void;
-  export let onPlaySlideshow: () => void;
-  export let onShowDetail: () => void;
-  // export let showEditorHandler: () => void;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    album?: AlbumResponseDto | null;
+    stack?: StackResponseDto | null;
+    showDetailButton: boolean;
+    showSlideshow?: boolean;
+    onZoomImage: () => void;
+    onCopyImage: () => void;
+    onAction: OnAction;
+    onRunJob: (name: AssetJobName) => void;
+    onPlaySlideshow: () => void;
+    onShowDetail: () => void;
+    // export let showEditorHandler: () => void;
+    onClose: () => void;
+    motionPhoto?: import('svelte').Snippet;
+  }
+
+  let {
+    asset,
+    album = null,
+    stack = null,
+    showDetailButton,
+    showSlideshow = false,
+    onZoomImage,
+    onCopyImage,
+    onAction,
+    onRunJob,
+    onPlaySlideshow,
+    onShowDetail,
+    onClose,
+    motionPhoto,
+  }: Props = $props();
 
   const sharedLink = getSharedLink();
-  $: isOwner = $user && asset.ownerId === $user?.id;
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let isOwner = $derived($user && asset.ownerId === $user?.id);
+  let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -99,7 +109,7 @@
       <CircleIconButton color="alert" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
     {/if}
     {#if asset.livePhotoVideoId}
-      <slot name="motion-photo" />
+      {@render motionPhoto?.()}
     {/if}
     {#if asset.type === AssetTypeEnum.Image}
       <CircleIconButton

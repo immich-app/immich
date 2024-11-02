@@ -108,8 +108,8 @@
     {/if}
   </form>
 
-  <svelte:fragment slot="stickyBottom">
-    <Button color="gray" size="sm" fullwidth on:click={onClose}>{$t('cancel')}</Button>
+  {#snippet stickyBottom()}
+    <Button color="gray" size="sm" fullwidth onclick={onClose}>{$t('cancel')}</Button>
     <Button type="submit" size="sm" fullwidth form="map-settings-form">{$t('save')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

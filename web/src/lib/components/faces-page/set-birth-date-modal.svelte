@@ -41,8 +41,8 @@
     </div>
   </form>
 
-  <svelte:fragment slot="stickyBottom">
-    <Button color="gray" fullwidth on:click={onClose}>{$t('cancel')}</Button>
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={onClose}>{$t('cancel')}</Button>
     <Button type="submit" fullwidth form="set-birth-date-form">{$t('set')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

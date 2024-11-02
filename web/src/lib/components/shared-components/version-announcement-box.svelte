@@ -63,8 +63,8 @@
       <code>{$t('latest_version')}: {releaseVersion}</code>
     </div>
 
-    <svelte:fragment slot="stickyBottom">
-      <Button fullwidth on:click={onAcknowledge}>{$t('acknowledge')}</Button>
-    </svelte:fragment>
+    {#snippet stickyBottom()}
+      <Button fullwidth onclick={onAcknowledge}>{$t('acknowledge')}</Button>
+    {/snippet}
   </FullScreenModal>
 {/if}

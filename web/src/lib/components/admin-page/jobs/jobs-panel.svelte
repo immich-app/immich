@@ -4,8 +4,6 @@
 <!-- @migration-task Error while migrating Svelte code: Unexpected token -->
 <!-- @migration-task Error while migrating Svelte code: Unexpected token -->
 <!-- @migration-task Error while migrating Svelte code: Unexpected token -->
-<!-- @migration-task Error while migrating Svelte code: Unexpected token -->
-<!-- @migration-task Error while migrating Svelte code: Unexpected token -->
 <script lang="ts">
   import {
     notificationController,
@@ -64,8 +62,7 @@
     await handleCommand(jobId, dto);
   };
 
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
+  let jobDetails = <Partial<Record<JobName, JobDetails>>>{
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: $getJobName(JobName.ThumbnailGeneration),
@@ -150,7 +147,8 @@
       missingText: $t('missing'),
     },
   };
-  $: jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
+
+  let jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
 
   async function handleCommand(jobId: JobName, jobCommand: JobCommandDto) {
     const title = jobDetails[jobId]?.title;

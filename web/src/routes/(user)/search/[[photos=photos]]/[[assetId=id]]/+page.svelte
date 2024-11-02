@@ -1,12 +1,7 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
+<!-- @migration-task Error while migrating Svelte code: `$:` is not allowed in runes mode, use `$derived` or `$effect` instead -->
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
@@ -48,23 +43,23 @@
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
-  import { afterUpdate, tick } from 'svelte';
+  import { tick } from 'svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const viewport: Viewport = { width: 0, height: 0 };
+  const viewport: Viewport = $state({ width: 0, height: 0 });
 
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
-  let previousRoute = AppRoute.EXPLORE as string;
+  let previousRoute = $state(AppRoute.EXPLORE as string);
 
   let nextPage: number | null = 1;
-  let searchResultAlbums: AlbumResponseDto[] = [];
-  let searchResultAssets: AssetResponseDto[] = [];
-  let isLoading = true;
-  let scrollY = 0;
+  let searchResultAlbums: AlbumResponseDto[] = $state([]);
+  let searchResultAssets: AssetResponseDto[] = $state([]);
+  let isLoading = $state(true);
+  let scrollY = $state(0);
   let scrollYHistory = 0;
 
   const onEscape = () => {
@@ -82,8 +77,7 @@
     $preventRaceConditionSearchBar = false;
   };
 
-  // save and restore scroll position
-  afterUpdate(() => {
+  $effect(() => {
     if (scrollY) {
       scrollYHistory = scrollY;
     }
@@ -113,10 +107,7 @@
       });
   });
 
-  let selectedAssets: Set<AssetResponseDto> = new Set();
-  $: isMultiSelectionMode = selectedAssets.size > 0;
-  $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
-  $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
+  let selectedAssets: Set<AssetResponseDto> = $state(new Set());
 
   const onAssetDelete = (assetIds: string[]) => {
     const assetIdSet = new Set(assetIds);
@@ -128,13 +119,7 @@
 
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
 
-  $: searchQuery = $page.url.searchParams.get(QueryParameter.QUERY);
-  let terms: SearchTerms;
-  $: terms = searchQuery ? JSON.parse(searchQuery) : {};
-
-  $: if (terms && $featureFlags.loaded) {
-    handlePromiseError(onSearchQueryUpdate());
-  }
+  let terms: SearchTerms = $state();
 
   async function onSearchQueryUpdate() {
     nextPage = 1;
@@ -233,6 +218,18 @@
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
+  let isMultiSelectionMode = $derived(selectedAssets.size > 0);
+  let isAllArchived = $derived([...selectedAssets].every((asset) => asset.isArchived));
+  let isAllFavorite = $derived([...selectedAssets].every((asset) => asset.isFavorite));
+  let searchQuery = $derived($page.url.searchParams.get(QueryParameter.QUERY));
+  run(() => {
+    terms = searchQuery ? JSON.parse(searchQuery) : {};
+  });
+  run(() => {
+    if (terms && $featureFlags.loaded) {
+      handlePromiseError(onSearchQueryUpdate());
+    }
+  });
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />

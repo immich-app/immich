@@ -63,6 +63,7 @@
     onClose: (dto: { asset: AssetResponseDto }) => void;
     onNext: () => void;
     onPrevious: () => void;
+    copyImage?: () => void;
   }
 
   let {
@@ -77,7 +78,8 @@
     reactions = $bindable([]),
     onClose,
     onNext,
-    onPrevious
+    onPrevious,
+    copyImage = $bindable(),
   }: Props = $props();
 
   const { setAsset } = assetViewingStore;
@@ -99,15 +101,13 @@
   let isShowActivity = $state(false);
   let isShowEditor = $state(false);
   let isLiked: ActivityResponseDto | null = $state(null);
-  let numberOfComments: number = $state();
-  let fullscreenElement: Element = $state();
+  let numberOfComments = $state(0);
+  let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
   let selectedEditType: string = $state('');
   let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
-  let copyImage: () => Promise<void> = $state();
-
 
   const refreshStack = async () => {
     if (isSharedLink()) {
@@ -126,8 +126,6 @@
       preloadAssets.push(stack.assets[1]);
     }
   };
-
-
 
   const handleAddComment = () => {
     numberOfComments++;
@@ -194,7 +192,6 @@
     }
   };
 
-
   onMount(async () => {
     unsubscribes.push(
       websocketEvents.on('on_upload_success', onAssetUpdate),
@@ -236,7 +233,6 @@
       unsubscribe();
     }
   });
-
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {
@@ -336,7 +332,7 @@
    * Slide show mode
    */
 
-  let assetViewerHtmlElement: HTMLElement = $state();
+  let assetViewerHtmlElement = $state<HTMLElement>();
 
   const slideshowHistory = new SlideshowHistory((asset) => {
     setAsset(asset);
@@ -351,7 +347,7 @@
 
   const handlePlaySlideshow = async () => {
     try {
-      await assetViewerHtmlElement.requestFullscreen?.();
+      await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
       handleError(error, $t('errors.unable_to_enter_fullscreen'));
       $slideshowState = SlideshowState.StopSlideshow;
@@ -442,19 +438,13 @@
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
       >
-        <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
-  <MotionPhotoAction
-          slot="motion-photo"
-          isPlaying={shouldPlayMotionPhoto}
-          onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
-        />
+        {#snippet motionPhoto()}
+                <MotionPhotoAction
+            
+            isPlaying={shouldPlayMotionPhoto}
+            onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
+          />
+              {/snippet}
       </AssetViewerNavBar>
     </div>
   {/if}
@@ -471,7 +461,7 @@
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
           {isFullScreen}
-          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen?.()}
+          onSetToFullScreen={() => assetViewerHtmlElement?.requestFullscreen?.()}
           onPrevious={() => navigateAsset('previous')}
           onNext={() => navigateAsset('next')}
           onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
@@ -489,7 +479,7 @@
             {preloadAssets}
             onPreviousAsset={() => navigateAsset('previous')}
             onNextAsset={() => navigateAsset('next')}
-            on:close={closeViewer}
+            onClose={closeViewer}
             haveFadeTransition={false}
             {sharedLink}
           />
@@ -501,9 +491,9 @@
             loopVideo={true}
             onPreviousAsset={() => navigateAsset('previous')}
             onNextAsset={() => navigateAsset('next')}
-            on:close={closeViewer}
-            on:onVideoEnded={() => navigateAsset()}
-            on:onVideoStarted={handleVideoStarted}
+            onClose={closeViewer}
+            onVideoEnded={() => navigateAsset()}
+            onVideoStarted={handleVideoStarted}
           />
         {/if}
       {/key}
@@ -518,8 +508,7 @@
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
-              on:close={closeViewer}
-              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
             />
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
@@ -535,7 +524,7 @@
               {preloadAssets}
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
-              on:close={closeViewer}
+              onClose={closeViewer}
               {sharedLink}
               haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
             />
@@ -548,9 +537,9 @@
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
             onPreviousAsset={() => navigateAsset('previous')}
             onNextAsset={() => navigateAsset('next')}
-            on:close={closeViewer}
-            on:onVideoEnded={() => navigateAsset()}
-            on:onVideoStarted={handleVideoStarted}
+            onClose={closeViewer}
+            onVideoEnded={() => navigateAsset()}
+            onVideoStarted={handleVideoStarted}
           />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}

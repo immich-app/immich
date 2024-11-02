@@ -42,15 +42,9 @@
 </script>
 
 <script lang="ts">
-  import { createBubbler } from 'svelte/legacy';
-
-  const bubble = createBubbler();
-  type $$Props = Props;
-
-
   interface Props {
-    type?: $$Props['type'];
-    href?: $$Props['href'];
+    type?: string;
+    href?: string;
     color?: Color;
     size?: Size;
     rounded?: Rounded;
@@ -59,7 +53,11 @@
     border?: boolean;
     class?: string;
     children?: import('svelte').Snippet;
-    [key: string]: any
+    onclick?: (event: MouseEvent) => void;
+    onfocus?: () => void;
+    onblur?: () => void;
+    form?: string;
+    disabled?: boolean;
   }
 
   let {
@@ -73,9 +71,11 @@
     border = false,
     class: className = '',
     children,
+    onclick,
+    onfocus,
+    onblur,
     ...rest
   }: Props = $props();
-  
 
   const colorClasses: Record<Color, string> = {
     primary:
@@ -114,17 +114,19 @@
     full: 'rounded-full',
   };
 
-  let computedClass = $derived([
-    className,
-    colorClasses[color],
-    sizeClasses[size],
-    roundedClasses[rounded],
-    shadow === 'md' && 'shadow-md',
-    fullwidth && 'w-full',
-    border && 'border',
-  ]
-    .filter(Boolean)
-    .join(' '));
+  let computedClass = $derived(
+    [
+      className,
+      colorClasses[color],
+      sizeClasses[size],
+      roundedClasses[rounded],
+      shadow === 'md' && 'shadow-md',
+      fullwidth && 'w-full',
+      border && 'border',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -132,9 +134,9 @@
   this={href ? 'a' : 'button'}
   type={href ? undefined : type}
   {href}
-  onclick={bubble('click')}
-  onfocus={bubble('focus')}
-  onblur={bubble('blur')}
+  {onclick}
+  {onfocus}
+  {onblur}
   class="inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 disabled:pointer-events-none {computedClass}"
   {...rest}
 >

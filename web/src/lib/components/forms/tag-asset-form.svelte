@@ -97,8 +97,8 @@
     {/each}
   </section>
 
-  <svelte:fragment slot="stickyBottom">
-    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" fullwidth form="create-tag-form" {disabled}>{$t('tag_assets')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

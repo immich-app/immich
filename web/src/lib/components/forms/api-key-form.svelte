@@ -48,8 +48,8 @@
     </div>
   </form>
 
-  <svelte:fragment slot="stickyBottom">
-    <Button color="gray" fullwidth on:click={() => onCancel()}>{cancelText}</Button>
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={() => onCancel()}>{cancelText}</Button>
     <Button type="submit" fullwidth form="api-key-form">{submitText}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

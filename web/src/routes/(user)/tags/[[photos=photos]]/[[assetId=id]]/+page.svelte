@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run, preventDefault } from 'svelte/legacy';
-
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -13,13 +11,11 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
-  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
+  import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
@@ -48,15 +44,17 @@
 
   const assetStore = new AssetStore({});
 
-  let tags;
-  run(() => {
+  let tags = $state<TagResponseDto[]>([]);
+  $effect(() => {
     tags = data.tags;
   });
+
   let tagsMap = $derived(buildMap(tags));
   let tag = $derived(currentPath ? tagsMap[currentPath] : null);
   let tagId = $derived(tag?.id);
   let tree = $derived(buildTree(tags.map((tag) => tag.value)));
-  run(() => {
+
+  $effect(() => {
     void assetStore.updateOptions({ tagId });
   });
 
@@ -144,24 +142,35 @@
     const parentPath = pathSegments.slice(0, -1).join('/');
     await navigateToView(parentPath);
   };
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleSubmit();
+  };
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={false}>
   {#snippet sidebar()}
-    <SideBarSection >
+    <SideBarSection>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} />
       <section>
         <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
         <div class="h-full">
-          <TreeItems icons={{ default: mdiTag, active: mdiTag }} items={tree} active={currentPath} {getLink} {getColor} />
+          <TreeItems
+            icons={{ default: mdiTag, active: mdiTag }}
+            items={tree}
+            active={currentPath}
+            {getLink}
+            {getColor}
+          />
         </div>
       </section>
     </SideBarSection>
   {/snippet}
 
   {#snippet buttons()}
-    <section >
-      <LinkButton on:click={handleCreate}>
+    <section>
+      <LinkButton onclick={handleCreate}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiPlus} size="18" />
           <p class="hidden md:block">{$t('create_tag')}</p>
@@ -169,13 +178,13 @@
       </LinkButton>
 
       {#if pathSegments.length > 0 && tag}
-        <LinkButton on:click={handleEdit}>
+        <LinkButton onclick={handleEdit}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiPencil} size="18" />
             <p class="hidden md:block">{$t('edit_tag')}</p>
           </div>
         </LinkButton>
-        <LinkButton on:click={handleDelete}>
+        <LinkButton onclick={handleDelete}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiTrashCanOutline} size="18" />
             <p class="hidden md:block">{$t('delete_tag')}</p>
@@ -191,8 +200,8 @@
     {#if tag}
       <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
-                <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation}  />
-              {/snippet}
+          <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} />
+        {/snippet}
       </AssetGrid>
     {:else}
       <TreeItemThumbnails items={Object.keys(tree)} icon={mdiTag} onClick={handleNavigation} />
@@ -208,7 +217,7 @@
       </p>
     </div>
 
-    <form onsubmit={preventDefault(handleSubmit)} autocomplete="off" id="create-tag-form">
+    <form {onsubmit} autocomplete="off" id="create-tag-form">
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
@@ -219,24 +228,19 @@
         />
       </div>
     </form>
-    <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-      <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
-      <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
-    </svelte:fragment>
+
+    {#snippet stickyBottom()}
+      
+        <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
+        <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
+      
+      {/snippet}
   </FullScreenModal>
 {/if}
 
 {#if isEditOpen}
   <FullScreenModal title={$t('edit_tag')} icon={mdiTag} onClose={handleCancel}>
-    <form onsubmit={preventDefault(handleSubmit)} autocomplete="off" id="edit-tag-form">
+    <form {onsubmit} autocomplete="off" id="edit-tag-form">
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
           inputType={SettingInputFieldType.COLOR}
@@ -245,17 +249,12 @@
         />
       </div>
     </form>
-    <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-      <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
-      <Button type="submit" fullwidth form="edit-tag-form">{$t('save')}</Button>
-    </svelte:fragment>
+
+    {#snippet stickyBottom()}
+      
+        <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
+        <Button type="submit" fullwidth form="edit-tag-form">{$t('save')}</Button>
+      
+      {/snippet}
   </FullScreenModal>
 {/if}

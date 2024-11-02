@@ -22,6 +22,7 @@
     preload?: boolean;
     hiddenIconClass?: string;
     onComplete?: (() => void) | undefined;
+    onClick?: (() => void) | undefined;
   }
 
   let {
@@ -38,7 +39,7 @@
     border = false,
     preload = true,
     hiddenIconClass = 'text-white',
-    onComplete = undefined
+    onComplete = undefined,
   }: Props = $props();
 
   let {
@@ -48,7 +49,7 @@
   let loaded = $state(false);
   let errored = $state(false);
 
-  let img: HTMLImageElement = $state();
+  let img = $state<HTMLImageElement>();
 
   const setLoaded = () => {
     loaded = true;
@@ -59,20 +60,22 @@
     onComplete?.();
   };
   onMount(() => {
-    if (img.complete) {
+    if (img?.complete) {
       setLoaded();
     }
   });
 
-  let optionalClasses = $derived([
-    curve && 'rounded-xl',
-    circle && 'rounded-full',
-    shadow && 'shadow-lg',
-    (circle || !heightStyle) && 'aspect-square',
-    border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
-  ]
-    .filter(Boolean)
-    .join(' '));
+  let optionalClasses = $derived(
+    [
+      curve && 'rounded-xl',
+      circle && 'rounded-full',
+      shadow && 'shadow-lg',
+      (circle || !heightStyle) && 'aspect-square',
+      border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
 </script>
 
 {#if errored}

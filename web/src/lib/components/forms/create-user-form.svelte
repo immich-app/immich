@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run, preventDefault } from 'svelte/legacy';
-
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { serverInfo } from '$lib/stores/server-info.store';
@@ -19,15 +17,10 @@
     oauthEnabled?: boolean;
   }
 
-  let {
-    onClose,
-    onSubmit,
-    onCancel,
-    oauthEnabled = false
-  }: Props = $props();
+  let { onClose, onSubmit, onCancel, oauthEnabled = false }: Props = $props();
 
-  let error: string = $state();
-  let success: string = $state();
+  let error = $state('');
+  let success = $state('');
 
   let email = $state('');
   let password = $state('');
@@ -43,7 +36,7 @@
   let quotaSizeInBytes = $derived(quotaSize ? convertToBytes(quotaSize, ByteUnit.GiB) : null);
   let quotaSizeWarning = $derived(quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw);
 
-  run(() => {
+  $effect(() => {
     if (password !== confirmPassword && confirmPassword.length > 0) {
       error = $t('password_does_not_match');
       canCreateUser = false;
@@ -82,10 +75,15 @@
       }
     }
   }
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await registerUser();
+  };
 </script>
 
 <FullScreenModal title={$t('create_new_user')} showLogo {onClose}>
-  <form onsubmit={preventDefault(registerUser)} autocomplete="off" id="create-new-user-form">
+  <form {onsubmit} autocomplete="off" id="create-new-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" bind:value={email} type="email" required />
@@ -145,16 +143,11 @@
       <p class="text-sm text-immich-primary">{success}</p>
     {/if}
   </form>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
-    <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
-  </svelte:fragment>
+
+  {#snippet stickyBottom()}
+  
+      <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
+      <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
+    
+  {/snippet}
 </FullScreenModal>

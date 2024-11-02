@@ -3,9 +3,9 @@
     type: 'date' | 'datetime-local';
     value?: string;
     max?: string;
-    class: string;
-    id: string;
-    name: string;
+    class?: string;
+    id?: string;
+    name?: string;
   }
 
   let { type, value = $bindable(undefined), max = undefined, ...rest }: Props = $props();

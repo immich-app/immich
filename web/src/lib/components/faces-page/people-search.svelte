@@ -7,7 +7,6 @@
   import { searchPerson, type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
   let abortController: AbortController | null = null;
@@ -42,9 +41,9 @@
     inputClass?: string;
     showLoadingSpinner?: boolean;
     placeholder?: string;
-    onReset?: any;
-    onSearch?: any;
-    handleSearch?: any;
+    onReset?: () => void;
+    onSearch?: () => void;
+    handleSearch?: (force?: boolean, name?: string) => Promise<void>;
   }
 
   let {
@@ -58,33 +57,33 @@
     onReset = () => {},
     onSearch = () => {},
     handleSearch = async (force?: boolean, name?: string) => {
-    searchName = name ?? searchName;
-    onSearch();
-    if (searchName === '') {
-      reset();
-      return;
-    }
-    if (!force && searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
-      search();
-      return;
-    }
-    cancelPreviousRequest();
-    abortController = new AbortController();
-    timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
-    try {
-      const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
-      searchedPeople = data;
-      searchWord = searchName;
-    } catch (error) {
-      handleError(error, $t('errors.cant_search_people'));
-    } finally {
-      clearTimeout(timeout);
-      timeout = null;
-      abortController = null;
-      showLoadingSpinner = false;
-      search();
-    }
-  }
+      // searchName = name ?? searchName;
+      // onSearch();
+      // if (searchName === '') {
+      //   reset();
+      //   return;
+      // }
+      // if (!force && searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
+      //   search();
+      //   return;
+      // }
+      // cancelPreviousRequest();
+      // abortController = new AbortController();
+      // timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
+      // try {
+      //   const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
+      //   searchedPeople = data;
+      //   searchWord = searchName;
+      // } catch (error) {
+      //   handleError(error, $t('errors.cant_search_people'));
+      // } finally {
+      //   clearTimeout(timeout);
+      //   timeout = null;
+      //   abortController = null;
+      //   showLoadingSpinner = false;
+      //   search();
+      // }
+    },
   }: Props = $props();
 
   const handleReset = () => {

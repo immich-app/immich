@@ -24,7 +24,7 @@
     potentialMergePeople = $bindable(),
     onReject,
     onConfirm,
-    onClose
+    onClose,
   }: Props = $props();
 
   let choosePersonToMerge = $state(false);
@@ -94,7 +94,7 @@
                     url={getPeopleThumbnailUrl(person)}
                     altText={person.name}
                     widthStyle="100%"
-                    on:click={() => changePersonToMerge(person)}
+                    onClick={() => changePersonToMerge(person)}
                   />
                 </button>
               </div>
@@ -111,16 +111,9 @@
   <div class="flex px-4 pt-2">
     <p class="text-sm text-gray-500 dark:text-gray-300">{$t('they_will_be_merged_together')}</p>
   </div>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth color="gray" on:click={onReject}>{$t('no')}</Button>
-    <Button fullwidth on:click={() => onConfirm([personMerge1, personMerge2])}>{$t('yes')}</Button>
-  </svelte:fragment>
+
+  {#snippet stickyBottom()}
+    <Button fullwidth color="gray" onclick={onReject}>{$t('no')}</Button>
+    <Button fullwidth onclick={() => onConfirm([personMerge1, personMerge2])}>{$t('yes')}</Button>
+  {/snippet}
 </FullScreenModal>

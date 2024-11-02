@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
@@ -20,6 +18,7 @@
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
     onVideoStarted?: () => void;
+    onClose?: () => void;
   }
 
   let {
@@ -29,15 +28,16 @@
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
-    onVideoStarted = () => {}
+    onVideoStarted = () => {},
+    onClose = () => {},
   }: Props = $props();
 
   let element: HTMLVideoElement | undefined = $state(undefined);
   let isVideoLoading = $state(true);
-  let assetFileUrl: string = $state();
+  let assetFileUrl = $state('');
   let forceMuted = $state(false);
 
-  run(() => {
+  $effect(() => {
     if (element) {
       assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
       forceMuted = false;
@@ -97,6 +97,7 @@
         $videoViewerMuted = e.currentTarget.muted;
       }
     }}
+    onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}

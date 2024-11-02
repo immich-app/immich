@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { shortcuts } from '$lib/actions/shortcut';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
@@ -32,6 +30,7 @@
     onNextAsset?: (() => void) | null;
     copyImage?: (() => Promise<void>) | null;
     zoomToggle?: (() => void) | null;
+    onClose?: () => void;
   }
 
   let {
@@ -43,7 +42,7 @@
     onPreviousAsset = null,
     onNextAsset = null,
     copyImage = $bindable(null),
-    zoomToggle = $bindable(null)
+    zoomToggle = $bindable(null),
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
@@ -52,9 +51,7 @@
   let imageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
   let forceUseOriginal: boolean = $state(false);
-  let loader: HTMLImageElement = $state();
-
-
+  let loader = $state<HTMLImageElement>();
 
   photoZoomState.set({
     currentRotation: 0,
@@ -137,11 +134,11 @@
     const onerror = () => {
       imageError = imageLoaded = true;
     };
-    if (loader.complete) {
+    if (loader?.complete) {
       onload();
     }
-    loader.addEventListener('load', onload);
-    loader.addEventListener('error', onerror);
+    loader?.addEventListener('load', onload);
+    loader?.addEventListener('error', onerror);
     return () => {
       loader?.removeEventListener('load', onload);
       loader?.removeEventListener('error', onerror);
@@ -150,12 +147,14 @@
   let isWebCompatible = $derived(isWebCompatibleImage(asset));
   let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
   // when true, will force loading of the original image
-  run(() => {
+  $effect(() => {
     forceUseOriginal =
-      forceUseOriginal || asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible);
+      forceUseOriginal ||
+      asset.originalMimeType === 'image/gif' ||
+      ($photoZoomState.currentZoom > 1 && isWebCompatible);
   });
   let useOriginalImage = $derived(useOriginalByDefault || forceUseOriginal);
-  run(() => {
+  $effect(() => {
     preload(useOriginalImage, preloadAssets);
   });
   let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.checksum));

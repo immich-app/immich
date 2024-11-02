@@ -1,22 +1,27 @@
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  export let value: string;
-  export let label = '';
-  export let desc = '';
-  export let required = false;
-  export let disabled = false;
-  export let isEdited = false;
+  interface Props {
+    value: string;
+    label?: string;
+    descriptionText?: string;
+    required?: boolean;
+    disabled?: boolean;
+    isEdited?: boolean;
+    desc?: import('svelte').Snippet;
+  }
+
+  let {
+    value = $bindable(),
+    label = '',
+    descriptionText = '',
+    required = false,
+    disabled = false,
+    isEdited = false,
+    desc
+  }: Props = $props();
 
   const handleInput = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
@@ -40,23 +45,23 @@
     {/if}
   </div>
 
-  {#if desc}
+  {#if descriptionText}
     <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
-      {desc}
+      {descriptionText}
     </p>
   {:else}
-    <slot name="desc" />
+    {@render desc?.()}
   {/if}
 
   <textarea
     class="immich-form-input w-full pb-2"
-    aria-describedby={desc ? `${label}-desc` : undefined}
+    aria-describedby={descriptionText ? `${label}-desc` : undefined}
     aria-labelledby="{label}-label"
     id={label}
     name={label}
     {required}
     {value}
-    on:input={handleInput}
+    oninput={handleInput}
     {disabled}
   ></textarea>
 </div>

@@ -6,7 +6,11 @@
 <!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
   import { onDestroy } from 'svelte';
@@ -14,16 +18,30 @@
 
   const accordionState = getAccordionState();
 
-  export let title: string;
-  export let subtitle = '';
-  export let key: string;
-  export let isOpen = $accordionState.has(key);
-  export let autoScrollTo = false;
-  export let icon = '';
+  interface Props {
+    title: string;
+    subtitleText?: string;
+    key: string;
+    isOpen?: any;
+    autoScrollTo?: boolean;
+    icon?: string;
+    subtitle?: import('svelte').Snippet;
+    children?: import('svelte').Snippet;
+  }
 
-  let accordionElement: HTMLDivElement;
+  let {
+    title,
+    subtitleText = '',
+    key,
+    isOpen = $bindable($accordionState.has(key)),
+    autoScrollTo = false,
+    icon = '',
+    subtitle,
+    children
+  }: Props = $props();
 
-  $: setIsOpen(isOpen);
+  let accordionElement: HTMLDivElement = $state();
+
 
   const setIsOpen = (isOpen: boolean) => {
     if (isOpen) {
@@ -46,6 +64,9 @@
   onDestroy(() => {
     setIsOpen(false);
   });
+  run(() => {
+    setIsOpen(isOpen);
+  });
 </script>
 
 <div
@@ -57,7 +78,7 @@
   <button
     type="button"
     aria-expanded={isOpen}
-    on:click={() => (isOpen = !isOpen)}
+    onclick={() => (isOpen = !isOpen)}
     class="flex w-full place-items-center justify-between text-left"
   >
     <div>
@@ -70,9 +91,9 @@
         </h2>
       </div>
 
-      <slot name="subtitle">
-        <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitle}</p>
-      </slot>
+      {#if subtitle}{@render subtitle()}{:else}
+        <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitleText}</p>
+      {/if}
     </div>
 
     <div
@@ -96,7 +117,7 @@
 
   {#if isOpen}
     <ul transition:slide={{ duration: 150 }} class="mb-2 ml-4">
-      <slot />
+      {@render children?.()}
     </ul>
   {/if}
 </div>

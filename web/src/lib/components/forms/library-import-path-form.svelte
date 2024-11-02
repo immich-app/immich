@@ -62,11 +62,13 @@
     </div>
   </form>
 
-  <svelte:fragment slot="stickyBottom">
-    <Button color="gray" fullwidth onclick={onCancel}>{cancelText}</Button>
-    {#if isEditing}
-      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
-    {/if}
-    <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
-  </svelte:fragment>
+  {#snippet stickyBottom()}
+  
+      <Button color="gray" fullwidth onclick={onCancel}>{cancelText}</Button>
+      {#if isEditing}
+        <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
+      {/if}
+      <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
+    
+  {/snippet}
 </FullScreenModal>

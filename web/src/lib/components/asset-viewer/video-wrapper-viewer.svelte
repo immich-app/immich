@@ -9,8 +9,11 @@
     projectionType: string | null | undefined;
     checksum: string;
     loopVideo: boolean;
-    onPreviousAsset: () => void;
-    onNextAsset: () => void;
+    onClose?: () => void;
+    onPreviousAsset?: () => void;
+    onNextAsset?: () => void;
+    onVideoEnded?: () => void;
+    onVideoStarted?: () => void;
   }
 
   let {
@@ -19,7 +22,10 @@
     checksum,
     loopVideo,
     onPreviousAsset,
-    onNextAsset
+    onClose,
+    onNextAsset,
+    onVideoEnded,
+    onVideoStarted,
   }: Props = $props();
 </script>
 
@@ -32,7 +38,8 @@
     {assetId}
     {onPreviousAsset}
     {onNextAsset}
-    on:onVideoEnded
-    on:onVideoStarted
+    {onVideoEnded}
+    {onVideoStarted}
+    {onClose}
   />
 {/if}
