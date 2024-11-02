@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
@@ -15,21 +17,25 @@
   import { generateId } from '$lib/utils/generate-id';
   import { tick } from 'svelte';
 
-  export let value = '';
-  export let grayTheme: boolean;
-  export let searchQuery: MetadataSearchDto | SmartSearchDto = {};
+  interface Props {
+    value?: string;
+    grayTheme: boolean;
+    searchQuery?: MetadataSearchDto | SmartSearchDto;
+  }
 
-  $: showClearIcon = value.length > 0;
+  let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
 
-  let input: HTMLInputElement;
+  let showClearIcon = $derived(value.length > 0);
 
-  let showSuggestions = false;
-  let showFilter = false;
-  let isSearchSuggestions = false;
-  let selectedId: string | undefined;
-  let moveSelection: (direction: 1 | -1) => void;
-  let clearSelection: () => void;
-  let selectActiveOption: () => void;
+  let input: HTMLInputElement = $state();
+
+  let showSuggestions = $state(false);
+  let showFilter = $state(false);
+  let isSearchSuggestions = $state(false);
+  let selectedId: string | undefined = $state();
+  let moveSelection: (direction: 1 | -1) => void = $state();
+  let clearSelection: () => void = $state();
+  let selectActiveOption: () => void = $state();
 
   const listboxId = generateId();
 
@@ -151,9 +157,9 @@
     autocomplete="off"
     class="select-text text-sm"
     action={AppRoute.SEARCH}
-    on:reset={() => (value = '')}
-    on:submit|preventDefault={onSubmit}
-    on:focusin={onFocusIn}
+    onreset={() => (value = '')}
+    onsubmit={preventDefault(onSubmit)}
+    onfocusin={onFocusIn}
     role="search"
   >
     <div use:focusOutside={{ onFocusOut: closeDropdown }} tabindex="-1">
@@ -171,8 +177,8 @@
         pattern="^(?!m:$).*$"
         bind:value
         bind:this={input}
-        on:focus={openDropdown}
-        on:input={onInput}
+        onfocus={openDropdown}
+        oninput={onInput}
         disabled={showFilter}
         role="combobox"
         aria-controls={listboxId}

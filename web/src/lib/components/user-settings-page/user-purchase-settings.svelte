@@ -24,8 +24,8 @@
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   const { isPurchased } = purchaseStore;
 
-  let isServerProduct = false;
-  let serverPurchaseInfo: LicenseResponseDto | null = null;
+  let isServerProduct = $state(false);
+  let serverPurchaseInfo: LicenseResponseDto | null = $state(null);
 
   const checkPurchaseInfo = async () => {
     const serverInfo = await getAboutInfo();

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import { type LibraryResponseDto } from '@immich/sdk';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -8,17 +10,21 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let library: Partial<LibraryResponseDto>;
-  export let onCancel: () => void;
-  export let onSubmit: (library: Partial<LibraryResponseDto>) => void;
+  interface Props {
+    library: Partial<LibraryResponseDto>;
+    onCancel: () => void;
+    onSubmit: (library: Partial<LibraryResponseDto>) => void;
+  }
 
-  let addExclusionPattern = false;
-  let editExclusionPattern: number | null = null;
+  let { library = $bindable(), onCancel, onSubmit }: Props = $props();
 
-  let exclusionPatternToAdd: string;
-  let editedExclusionPattern: string;
+  let addExclusionPattern = $state(false);
+  let editExclusionPattern: number | null = $state(null);
 
-  let exclusionPatterns: string[] = [];
+  let exclusionPatternToAdd: string = $state();
+  let editedExclusionPattern: string = $state();
+
+  let exclusionPatterns: string[] = $state([]);
 
   onMount(() => {
     if (library.exclusionPatterns) {
@@ -113,7 +119,7 @@
   />
 {/if}
 
-<form on:submit|preventDefault={() => onSubmit(library)} autocomplete="off" class="m-4 flex flex-col gap-4">
+<form onsubmit={preventDefault(() => onSubmit(library))} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="w-full text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as exclusionPattern, listIndex}

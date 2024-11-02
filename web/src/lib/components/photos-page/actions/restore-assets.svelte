@@ -12,11 +12,15 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
 
-  export let onRestore: OnRestore | undefined;
+  interface Props {
+    onRestore: OnRestore | undefined;
+  }
+
+  let { onRestore }: Props = $props();
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
-  let loading = false;
+  let loading = $state(false);
 
   const handleRestore = async () => {
     loading = true;

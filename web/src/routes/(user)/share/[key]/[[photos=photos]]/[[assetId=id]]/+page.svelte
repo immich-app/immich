@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
@@ -15,14 +17,18 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { tick } from 'svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   let { gridScrollTarget } = assetViewingStore;
-  let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = data;
-  let { title, description } = meta;
-  let isOwned = $user ? $user.id === sharedLink?.userId : false;
-  let password = '';
-  let innerWidth: number;
+  let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = $state(data);
+  let { title, description } = $state(meta);
+  let isOwned = $state($user ? $user.id === sharedLink?.userId : false);
+  let password = $state('');
+  let innerWidth: number = $state();
 
   const handlePasswordSubmit = async () => {
     try {
@@ -54,13 +60,17 @@
 {#if passwordRequired}
   <header>
     <ControlAppBar showBackButton={false}>
-      <svelte:fragment slot="leading">
-        <ImmichLogoSmallLink width={innerWidth} />
-      </svelte:fragment>
+      {#snippet leading()}
+          
+          <ImmichLogoSmallLink width={innerWidth} />
+        
+          {/snippet}
 
-      <svelte:fragment slot="trailing">
-        <ThemeButton />
-      </svelte:fragment>
+      {#snippet trailing()}
+          
+          <ThemeButton />
+        
+          {/snippet}
     </ControlAppBar>
   </header>
   <main
@@ -72,7 +82,7 @@
         {$t('sharing_enter_password')}
       </div>
       <div class="mt-4">
-        <form novalidate autocomplete="off" on:submit|preventDefault={handlePasswordSubmit}>
+        <form novalidate autocomplete="off" onsubmit={preventDefault(handlePasswordSubmit)}>
           <input type="password" class="immich-form-input mr-2" placeholder={$t('password')} bind:value={password} />
           <Button type="submit">{$t('submit')}</Button>
         </form>

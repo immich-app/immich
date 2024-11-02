@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import {
     notificationController,
     NotificationType,
@@ -14,7 +17,7 @@
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
 
-  let editedUser = cloneDeep($user);
+  let editedUser = $state(cloneDeep($user));
 
   const handleSaveProfile = async () => {
     try {
@@ -40,7 +43,7 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}

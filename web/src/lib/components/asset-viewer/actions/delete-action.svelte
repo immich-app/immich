@@ -16,10 +16,14 @@
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
-  export let asset: AssetResponseDto;
-  export let onAction: OnAction;
+  interface Props {
+    asset: AssetResponseDto;
+    onAction: OnAction;
+  }
 
-  let showConfirmModal = false;
+  let { asset, onAction }: Props = $props();
+
+  let showConfirmModal = $state(false);
 
   const trashOrDelete = async (force = false) => {
     if (force || !$featureFlags.trash) {

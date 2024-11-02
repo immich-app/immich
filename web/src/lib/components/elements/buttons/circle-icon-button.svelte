@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import type { HTMLButtonAttributes, HTMLLinkAttributes } from 'svelte/elements';
 
   export type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque' | 'alert';
@@ -30,35 +30,59 @@
 </script>
 
 <script lang="ts">
+  import { createBubbler } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import Icon from '$lib/components/elements/icon.svelte';
 
   type $$Props = Props;
 
-  export let type: $$Props['type'] = 'button';
-  export let href: $$Props['href'] = undefined;
-  export let icon: string;
-  export let color: Color = 'transparent';
-  export let title: string;
-  /**
-   * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
-   */
-  export let padding: Padding = '3';
-  /**
-   * Size of the button, used for a CSS value.
-   */
-  export let size = '24';
-  export let hideMobile = false;
-  export let buttonSize: string | undefined = undefined;
-  /**
-   * viewBox attribute for the SVG icon.
-   */
-  export let viewBox: string | undefined = undefined;
+  
+  
+  
 
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
    */
-  let className = '';
-  export { className as class };
+  interface Props {
+    type?: $$Props['type'];
+    href?: $$Props['href'];
+    icon: string;
+    color?: Color;
+    title: string;
+    /**
+   * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
+   */
+    padding?: Padding;
+    /**
+   * Size of the button, used for a CSS value.
+   */
+    size?: string;
+    hideMobile?: boolean;
+    buttonSize?: string | undefined;
+    /**
+   * viewBox attribute for the SVG icon.
+   */
+    viewBox?: string | undefined;
+    class?: string;
+    [key: string]: any
+  }
+
+  let {
+    type = 'button',
+    href = undefined,
+    icon,
+    color = 'transparent',
+    title,
+    padding = '3',
+    size = '24',
+    hideMobile = false,
+    buttonSize = undefined,
+    viewBox = undefined,
+    class: className = '',
+    ...rest
+  }: Props = $props();
+  
 
   const colorClasses: Record<Color, string> = {
     transparent: 'bg-transparent hover:bg-[#d3d3d3] dark:text-immich-dark-fg',
@@ -77,12 +101,12 @@
     '3': 'p-3',
   };
 
-  $: colorClass = colorClasses[color];
-  $: mobileClass = hideMobile ? 'hidden sm:flex' : '';
-  $: paddingClass = paddingClasses[padding];
+  let colorClass = $derived(colorClasses[color]);
+  let mobileClass = $derived(hideMobile ? 'hidden sm:flex' : '');
+  let paddingClass = $derived(paddingClasses[padding]);
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href ? 'a' : 'button'}
   type={href ? undefined : type}
@@ -91,8 +115,8 @@
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
   class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all disabled:cursor-default hover:dark:text-immich-dark-gray {className} {mobileClass}"
-  on:click
-  {...$$restProps}
+  onclick={bubble('click')}
+  {...rest}
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />
 </svelte:element>

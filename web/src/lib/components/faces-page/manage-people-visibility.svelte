@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   const enum ToggleVisibility {
     HIDE_ALL = 'hide-all',
     HIDE_UNNANEMD = 'hide-unnamed',
@@ -7,6 +7,8 @@
 </script>
 
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -24,17 +26,25 @@
   import { t } from 'svelte-i18n';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
-  export let people: PersonResponseDto[];
-  export let totalPeopleCount: number;
-  export let titleId: string | undefined = undefined;
-  export let onClose: () => void;
-  export let loadNextPage: () => void;
+  interface Props {
+    people: PersonResponseDto[];
+    totalPeopleCount: number;
+    titleId?: string | undefined;
+    onClose: () => void;
+    loadNextPage: () => void;
+  }
 
-  let toggleVisibility = ToggleVisibility.SHOW_ALL;
-  let showLoadingSpinner = false;
+  let {
+    people = $bindable(),
+    totalPeopleCount,
+    titleId = undefined,
+    onClose,
+    loadNextPage
+  }: Props = $props();
 
-  $: personIsHidden = getPersonIsHidden(people);
-  $: toggleButton = toggleButtonOptions[getNextVisibility(toggleVisibility)];
+  let toggleVisibility = $state(ToggleVisibility.SHOW_ALL);
+  let showLoadingSpinner = $state(false);
+
 
   const getPersonIsHidden = (people: PersonResponseDto[]) => {
     const personIsHidden: Record<string, boolean> = {};
@@ -44,15 +54,6 @@
     return personIsHidden;
   };
 
-  // svelte-ignore reactive_declaration_non_reactive_property
-  // svelte-ignore reactive_declaration_module_script_dependency
-  $: toggleButtonOptions = ((): Record<ToggleVisibility, { icon: string; label: string }> => {
-    return {
-      [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
-      [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
-      [ToggleVisibility.SHOW_ALL]: { icon: mdiEye, label: $t('show_all_people') },
-    };
-  })();
 
   const getNextVisibility = (toggleVisibility: ToggleVisibility) => {
     if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
@@ -115,6 +116,20 @@
       showLoadingSpinner = false;
     }
   };
+  let personIsHidden;
+  run(() => {
+    personIsHidden = getPersonIsHidden(people);
+  });
+  // svelte-ignore reactive_declaration_non_reactive_property
+  // svelte-ignore reactive_declaration_module_script_dependency
+  let toggleButtonOptions = $derived(((): Record<ToggleVisibility, { icon: string; label: string }> => {
+    return {
+      [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
+      [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
+      [ToggleVisibility.SHOW_ALL]: { icon: mdiEye, label: $t('show_all_people') },
+    };
+  })());
+  let toggleButton = $derived(toggleButtonOptions[getNextVisibility(toggleVisibility)]);
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
@@ -143,29 +158,31 @@
 </div>
 
 <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
-  <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage} let:person let:index>
-    {@const hidden = personIsHidden[person.id]}
-    <button
-      type="button"
-      class="group relative w-full h-full"
-      on:click={() => (personIsHidden[person.id] = !hidden)}
-      aria-pressed={hidden}
-      aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
-    >
-      <ImageThumbnail
-        preload={index < 20}
-        {hidden}
-        shadow
-        url={getPeopleThumbnailUrl(person)}
-        altText={person.name}
-        widthStyle="100%"
-        hiddenIconClass="text-white group-hover:text-black transition-colors"
-      />
-      {#if person.name}
-        <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
-          {person.name}
-        </span>
-      {/if}
-    </button>
-  </PeopleInfiniteScroll>
+  <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}  >
+    {#snippet children({ person, index })}
+        {@const hidden = personIsHidden[person.id]}
+      <button
+        type="button"
+        class="group relative w-full h-full"
+        onclick={() => (personIsHidden[person.id] = !hidden)}
+        aria-pressed={hidden}
+        aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
+      >
+        <ImageThumbnail
+          preload={index < 20}
+          {hidden}
+          shadow
+          url={getPeopleThumbnailUrl(person)}
+          altText={person.name}
+          widthStyle="100%"
+          hiddenIconClass="text-white group-hover:text-black transition-colors"
+        />
+        {#if person.name}
+          <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+            {person.name}
+          </span>
+        {/if}
+      </button>
+          {/snippet}
+    </PeopleInfiniteScroll>
 </div>

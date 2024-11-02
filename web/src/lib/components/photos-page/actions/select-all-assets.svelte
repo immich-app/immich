@@ -6,8 +6,12 @@
   import { selectAllAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
 
-  export let assetStore: AssetStore;
-  export let assetInteractionStore: AssetInteractionStore;
+  interface Props {
+    assetStore: AssetStore;
+    assetInteractionStore: AssetInteractionStore;
+  }
+
+  let { assetStore, assetInteractionStore }: Props = $props();
 
   const handleSelectAll = async () => {
     await selectAllAssets(assetStore, assetInteractionStore);

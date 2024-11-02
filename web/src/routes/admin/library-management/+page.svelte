@@ -36,23 +36,27 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import { locale } from '$lib/stores/preferences.store';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let libraries: LibraryResponseDto[] = [];
+  let { data }: Props = $props();
+
+  let libraries: LibraryResponseDto[] = $state([]);
 
   let stats: LibraryStatsResponseDto[] = [];
-  let owner: UserResponseDto[] = [];
+  let owner: UserResponseDto[] = $state([]);
   let photos: number[] = [];
   let videos: number[] = [];
-  let totalCount: number[] = [];
-  let diskUsage: number[] = [];
-  let diskUsageUnit: ByteUnit[] = [];
-  let editImportPaths: number | null;
-  let editScanSettings: number | null;
-  let renameLibrary: number | null;
+  let totalCount: number[] = $state([]);
+  let diskUsage: number[] = $state([]);
+  let diskUsageUnit: ByteUnit[] = $state([]);
+  let editImportPaths: number | null = $state();
+  let editScanSettings: number | null = $state();
+  let renameLibrary: number | null = $state();
   let updateLibraryIndex: number | null;
   let dropdownOpen: boolean[] = [];
-  let toCreateLibrary = false;
+  let toCreateLibrary = $state(false);
 
   onMount(async () => {
     await readLibraryList();
@@ -213,22 +217,24 @@
 {/if}
 
 <UserPageLayout title={data.meta.title} admin>
-  <div class="flex justify-end gap-2" slot="buttons">
-    {#if libraries.length > 0}
-      <LinkButton on:click={() => handleScanAll()}>
+  {#snippet buttons()}
+    <div class="flex justify-end gap-2" >
+      {#if libraries.length > 0}
+        <LinkButton on:click={() => handleScanAll()}>
+          <div class="flex gap-1 text-sm">
+            <Icon path={mdiSync} size="18" />
+            <span>{$t('scan_all_libraries')}</span>
+          </div>
+        </LinkButton>
+      {/if}
+      <LinkButton on:click={() => (toCreateLibrary = true)}>
         <div class="flex gap-1 text-sm">
-          <Icon path={mdiSync} size="18" />
-          <span>{$t('scan_all_libraries')}</span>
+          <Icon path={mdiPlusBoxOutline} size="18" />
+          <span>{$t('create_library')}</span>
         </div>
       </LinkButton>
-    {/if}
-    <LinkButton on:click={() => (toCreateLibrary = true)}>
-      <div class="flex gap-1 text-sm">
-        <Icon path={mdiPlusBoxOutline} size="18" />
-        <span>{$t('create_library')}</span>
-      </div>
-    </LinkButton>
-  </div>
+    </div>
+  {/snippet}
   <section class="my-4">
     <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}

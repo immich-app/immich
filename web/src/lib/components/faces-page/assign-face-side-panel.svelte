@@ -14,24 +14,36 @@
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { t } from 'svelte-i18n';
 
-  export let allPeople: PersonResponseDto[];
-  export let editedFace: AssetFaceResponseDto;
-  export let assetId: string;
-  export let assetType: AssetTypeEnum;
-  export let onClose: () => void;
-  export let onCreatePerson: (featurePhoto: string | null) => void;
-  export let onReassign: (person: PersonResponseDto) => void;
+  interface Props {
+    allPeople: PersonResponseDto[];
+    editedFace: AssetFaceResponseDto;
+    assetId: string;
+    assetType: AssetTypeEnum;
+    onClose: () => void;
+    onCreatePerson: (featurePhoto: string | null) => void;
+    onReassign: (person: PersonResponseDto) => void;
+  }
+
+  let {
+    allPeople,
+    editedFace,
+    assetId,
+    assetType,
+    onClose,
+    onCreatePerson,
+    onReassign
+  }: Props = $props();
 
   // loading spinners
-  let isShowLoadingNewPerson = false;
-  let isShowLoadingSearch = false;
+  let isShowLoadingNewPerson = $state(false);
+  let isShowLoadingSearch = $state(false);
 
   // search people
-  let searchedPeople: PersonResponseDto[] = [];
-  let searchFaces = false;
-  let searchName = '';
+  let searchedPeople: PersonResponseDto[] = $state([]);
+  let searchFaces = $state(false);
+  let searchName = $state('');
 
-  $: showPeople = searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden);
+  let showPeople = $derived(searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden));
 
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
@@ -96,7 +108,7 @@
       {#each showPeople as person (person.id)}
         {#if !editedFace.person || person.id !== editedFace.person.id}
           <div class="w-fit">
-            <button type="button" class="w-[90px]" on:click={() => onReassign(person)}>
+            <button type="button" class="w-[90px]" onclick={() => onReassign(person)}>
               <div class="relative">
                 <ImageThumbnail
                   curve

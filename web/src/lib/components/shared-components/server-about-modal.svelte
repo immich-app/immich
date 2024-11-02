@@ -7,10 +7,14 @@
   import { mdiAlert } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-  export let onClose: () => void;
 
-  export let info: ServerAboutResponseDto;
-  export let versions: ServerVersionHistoryResponseDto[];
+  interface Props {
+    onClose: () => void;
+    info: ServerAboutResponseDto;
+    versions: ServerVersionHistoryResponseDto[];
+  }
+
+  let { onClose, info, versions }: Props = $props();
 </script>
 
 <Portal>

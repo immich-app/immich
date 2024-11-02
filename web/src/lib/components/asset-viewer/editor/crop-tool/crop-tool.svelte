@@ -16,7 +16,7 @@
   import { tick } from 'svelte';
   import CropPreset from './crop-preset.svelte';
 
-  $: rotateHorizontal = [90, 270].includes($normaizedRorateDegrees);
+  let rotateHorizontal = $derived([90, 270].includes($normaizedRorateDegrees));
   const icon_16_9 = `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`;
   const icon_4_3 = `M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H5V7h14v10z`;
   const icon_3_2 = `M200-240q-33 0-56.5-23.5T120-320v-320q0-33 23.5-56.5T200-720h560q33 0 56.5 23.5T840-640v320q0 33-23.5 56.5T760-240H200Zm0-80h560v-320H200v320Zm0 0v-320 320Z`;
@@ -92,14 +92,14 @@
     },
   ];
 
-  let selectedSize: CropAspectRatio = 'free';
+  let selectedSize: CropAspectRatio = $state('free');
   $cropAspectRatio = selectedSize;
 
-  $: sizesRows = [
+  let sizesRows = $derived([
     sizes.filter((s) => s.rotate === false),
     sizes.filter((s) => s.rotate === undefined),
     sizes.filter((s) => s.rotate === true),
-  ];
+  ]);
 
   async function rotate(clock: boolean) {
     rotateDegrees.update((v) => {

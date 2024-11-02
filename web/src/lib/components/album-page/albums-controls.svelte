@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -38,8 +40,12 @@
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  export let albumGroups: string[];
-  export let searchQuery: string;
+  interface Props {
+    albumGroups: string[];
+    searchQuery: string;
+  }
+
+  let { albumGroups, searchQuery = $bindable() }: Props = $props();
 
   const flipOrdering = (ordering: string) => {
     return ordering === SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
@@ -73,44 +79,45 @@
       $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 
-  let selectedGroupOption: AlbumGroupOptionMetadata;
-  let groupIcon: string;
+  let selectedGroupOption: AlbumGroupOptionMetadata = $state();
+  let groupIcon: string = $state();
 
-  $: selectedFilterOption = albumFilterNames[findFilterOption($albumViewSettings.filter)];
 
-  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
 
-  $: {
+
+
+
+
+
+  // svelte-ignore reactive_declaration_non_reactive_property
+  let albumFilterNames = $derived(((): Record<AlbumFilter, string> => {
+    return {
+      [AlbumFilter.All]: $t('all'),
+      [AlbumFilter.Owned]: $t('owned'),
+      [AlbumFilter.Shared]: $t('shared'),
+    };
+  })());
+  let selectedFilterOption = $derived(albumFilterNames[findFilterOption($albumViewSettings.filter)]);
+  let selectedSortOption = $derived(findSortOptionMetadata($albumViewSettings.sortBy));
+  run(() => {
     selectedGroupOption = findGroupOptionMetadata($albumViewSettings.groupBy);
     if (selectedGroupOption.isDisabled()) {
       selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
     }
-  }
-
+  });
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: {
+  run(() => {
     if (selectedGroupOption.id === AlbumGroupBy.None) {
       groupIcon = mdiFolderRemoveOutline;
     } else {
       groupIcon =
         $albumViewSettings.groupOrder === SortOrder.Desc ? mdiFolderArrowDownOutline : mdiFolderArrowUpOutline;
     }
-  }
-
+  });
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
-
+  let sortIcon = $derived($albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin);
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: albumFilterNames = ((): Record<AlbumFilter, string> => {
-    return {
-      [AlbumFilter.All]: $t('all'),
-      [AlbumFilter.Owned]: $t('owned'),
-      [AlbumFilter.Shared]: $t('shared'),
-    };
-  })();
-
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
+  let albumSortByNames = $derived(((): Record<AlbumSortBy, string> => {
     return {
       [AlbumSortBy.Title]: $t('sort_title'),
       [AlbumSortBy.ItemCount]: $t('sort_items'),
@@ -119,16 +126,15 @@
       [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
       [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
     };
-  })();
-
+  })());
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: albumGroupByNames = ((): Record<AlbumGroupBy, string> => {
+  let albumGroupByNames = $derived(((): Record<AlbumGroupBy, string> => {
     return {
       [AlbumGroupBy.None]: $t('group_no'),
       [AlbumGroupBy.Owner]: $t('group_owner'),
       [AlbumGroupBy.Year]: $t('group_year'),
     };
-  })();
+  })());
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->

@@ -2,8 +2,12 @@
   import RadioButton from '$lib/components/elements/radio-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let query: string | undefined;
-  export let queryType: 'smart' | 'metadata' = 'smart';
+  interface Props {
+    query: string | undefined;
+    queryType?: 'smart' | 'metadata';
+  }
+
+  let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
 </script>
 
 <fieldset>

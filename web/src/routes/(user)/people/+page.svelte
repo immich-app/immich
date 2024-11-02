@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
@@ -38,28 +40,28 @@
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  $: people = data.people.people;
-  $: visiblePeople = people.filter((people) => !people.isHidden);
-  $: countVisiblePeople = searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden;
-  $: showPeople = searchName ? searchedPeopleLocal : visiblePeople;
+  let { data }: Props = $props();
 
-  let selectHidden = false;
-  let searchName = '';
-  let showChangeNameModal = false;
-  let showSetBirthDateModal = false;
-  let showMergeModal = false;
-  let personName = '';
-  let nextPage = data.people.hasNextPage ? 2 : null;
-  let personMerge1: PersonResponseDto;
-  let personMerge2: PersonResponseDto;
-  let potentialMergePeople: PersonResponseDto[] = [];
-  let edittingPerson: PersonResponseDto | null = null;
-  let searchedPeopleLocal: PersonResponseDto[] = [];
-  let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
-  let changeNameInputEl: HTMLInputElement | null;
-  let innerHeight: number;
+
+  let selectHidden = $state(false);
+  let searchName = $state('');
+  let showChangeNameModal = $state(false);
+  let showSetBirthDateModal = $state(false);
+  let showMergeModal = $state(false);
+  let personName = $state('');
+  let nextPage = $state(data.people.hasNextPage ? 2 : null);
+  let personMerge1: PersonResponseDto = $state();
+  let personMerge2: PersonResponseDto = $state();
+  let potentialMergePeople: PersonResponseDto[] = $state([]);
+  let edittingPerson: PersonResponseDto | null = $state(null);
+  let searchedPeopleLocal: PersonResponseDto[] = $state([]);
+  let handleSearchPeople: (force?: boolean, name?: string) => Promise<void> = $state();
+  let changeNameInputEl: HTMLInputElement | null = $state();
+  let innerHeight: number = $state();
 
   onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -293,6 +295,13 @@
   const onResetSearchBar = async () => {
     await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
   };
+  let people;
+  run(() => {
+    people = data.people.people;
+  });
+  let visiblePeople = $derived(people.filter((people) => !people.isHidden));
+  let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
+  let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 </script>
 
 <svelte:window bind:innerHeight />
@@ -312,49 +321,53 @@
   title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
-  <svelte:fragment slot="buttons">
-    {#if people.length > 0}
-      <div class="flex gap-2 items-center justify-center">
-        <div class="hidden sm:block">
-          <div class="w-40 lg:w-80 h-10">
-            <SearchPeople
-              type="searchBar"
-              placeholder={$t('search_people')}
-              onReset={onResetSearchBar}
-              onSearch={handleSearch}
-              bind:searchName
-              bind:searchedPeopleLocal
-              bind:handleSearch={handleSearchPeople}
-            />
+  {#snippet buttons()}
+  
+      {#if people.length > 0}
+        <div class="flex gap-2 items-center justify-center">
+          <div class="hidden sm:block">
+            <div class="w-40 lg:w-80 h-10">
+              <SearchPeople
+                type="searchBar"
+                placeholder={$t('search_people')}
+                onReset={onResetSearchBar}
+                onSearch={handleSearch}
+                bind:searchName
+                bind:searchedPeopleLocal
+                bind:handleSearch={handleSearchPeople}
+              />
+            </div>
           </div>
+          <LinkButton on:click={() => (selectHidden = !selectHidden)}>
+            <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+              <Icon path={mdiEyeOutline} size="18" />
+              <p class="ml-2">{$t('show_and_hide_people')}</p>
+            </div>
+          </LinkButton>
         </div>
-        <LinkButton on:click={() => (selectHidden = !selectHidden)}>
-          <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-            <Icon path={mdiEyeOutline} size="18" />
-            <p class="ml-2">{$t('show_and_hide_people')}</p>
-          </div>
-        </LinkButton>
-      </div>
-    {/if}
-  </svelte:fragment>
+      {/if}
+    
+  {/snippet}
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <PeopleInfiniteScroll
       people={showPeople}
       hasNextPage={!!nextPage && !searchName}
       {loadNextPage}
-      let:person
-      let:index
+      
+      
     >
-      <PeopleCard
-        {person}
-        preload={index < 20}
-        onChangeName={() => handleChangeName(person)}
-        onSetBirthDate={() => handleSetBirthDate(person)}
-        onMergePeople={() => handleMergePeople(person)}
-        onHidePerson={() => handleHidePerson(person)}
-      />
-    </PeopleInfiniteScroll>
+      {#snippet children({ person, index })}
+            <PeopleCard
+          {person}
+          preload={index < 20}
+          onChangeName={() => handleChangeName(person)}
+          onSetBirthDate={() => handleSetBirthDate(person)}
+          onMergePeople={() => handleMergePeople(person)}
+          onHidePerson={() => handleHidePerson(person)}
+        />
+                {/snippet}
+        </PeopleInfiniteScroll>
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
@@ -368,7 +381,7 @@
 
   {#if showChangeNameModal}
     <FullScreenModal title={$t('change_name')} onClose={() => (showChangeNameModal = false)}>
-      <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
+      <form onsubmit={preventDefault(submitNameChange)} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">{$t('name')}</label>
           <input
@@ -381,7 +394,8 @@
           />
         </div>
       </form>
-      <svelte:fragment slot="sticky-bottom">
+      <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <svelte:fragment slot="sticky-bottom">
         <Button
           color="gray"
           fullwidth

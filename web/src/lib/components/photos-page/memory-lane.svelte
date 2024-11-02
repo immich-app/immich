@@ -11,23 +11,23 @@
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  $: shouldRender = $memoryStore?.length > 0;
+  let shouldRender = $derived($memoryStore?.length > 0);
 
   onMount(async () => {
     const localTime = new Date();
     $memoryStore = await getMemoryLane({ month: localTime.getMonth() + 1, day: localTime.getDate() });
   });
 
-  let memoryLaneElement: HTMLElement;
-  let offsetWidth = 0;
-  let innerWidth = 0;
+  let memoryLaneElement: HTMLElement = $state();
+  let offsetWidth = $state(0);
+  let innerWidth = $state(0);
 
-  let scrollLeftPosition = 0;
+  let scrollLeftPosition = $state(0);
 
   const onScroll = () => (scrollLeftPosition = memoryLaneElement?.scrollLeft);
 
-  $: canScrollLeft = scrollLeftPosition > 0;
-  $: canScrollRight = Math.ceil(scrollLeftPosition) < innerWidth - offsetWidth;
+  let canScrollLeft = $derived(scrollLeftPosition > 0);
+  let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < innerWidth - offsetWidth);
 
   const scrollBy = 400;
   const scrollLeft = () => memoryLaneElement.scrollBy({ left: -scrollBy, behavior: 'smooth' });
@@ -40,7 +40,7 @@
     bind:this={memoryLaneElement}
     class="relative mt-5 overflow-x-hidden whitespace-nowrap transition-all"
     use:resizeObserver={({ width }) => (offsetWidth = width)}
-    on:scroll={onScroll}
+    onscroll={onScroll}
   >
     {#if canScrollLeft || canScrollRight}
       <div class="sticky left-0 z-20">
@@ -49,7 +49,7 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
-              on:click={scrollLeft}
+              onclick={scrollLeft}
             >
               <Icon path={mdiChevronLeft} size="36" /></button
             >
@@ -60,7 +60,7 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
-              on:click={scrollRight}
+              onclick={scrollRight}
             >
               <Icon path={mdiChevronRight} size="36" /></button
             >

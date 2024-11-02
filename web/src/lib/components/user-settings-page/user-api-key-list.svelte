@@ -19,11 +19,15 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let keys: ApiKeyResponseDto[];
+  interface Props {
+    keys: ApiKeyResponseDto[];
+  }
 
-  let newKey: { name: string } | null = null;
-  let editKey: ApiKeyResponseDto | null = null;
-  let secret = '';
+  let { keys = $bindable() }: Props = $props();
+
+  let newKey: { name: string } | null = $state(null);
+  let editKey: ApiKeyResponseDto | null = $state(null);
+  let secret = $state('');
 
   const format: Intl.DateTimeFormatOptions = {
     month: 'short',

@@ -1,8 +1,19 @@
 <script lang="ts">
   import ImmichLogo from './immich-logo.svelte';
 
-  export let title: string;
-  export let showMessage = $$slots.message;
+  interface Props {
+    title: string;
+    message?: import('svelte').Snippet;
+    showMessage?: any;
+    children?: import('svelte').Snippet;
+  }
+
+  let {
+    title,
+    message,
+    showMessage = message,
+    children
+  }: Props = $props();
 </script>
 
 <section class="min-w-screen flex min-h-screen place-content-center place-items-center p-4">
@@ -20,10 +31,10 @@
       <div
         class="w-full rounded-xl border-2 border-immich-primary bg-immich-primary/5 p-4 text-sm font-medium text-immich-primary dark:border-immich-dark-bg dark:text-immich-dark-primary"
       >
-        <slot name="message" />
+        {@render message?.()}
       </div>
     {/if}
 
-    <slot />
+    {@render children?.()}
   </div>
 </section>

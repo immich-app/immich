@@ -15,10 +15,14 @@
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
 
-  export let onLogout: () => void;
-  export let onClose: () => void = () => {};
+  interface Props {
+    onLogout: () => void;
+    onClose?: () => void;
+  }
 
-  let isShowSelectAvatar = false;
+  let { onLogout, onClose = () => {} }: Props = $props();
+
+  let isShowSelectAvatar = $state(false);
 
   const handleSaveProfile = async (color: UserAvatarColor) => {
     try {
@@ -101,7 +105,7 @@
     <button
       type="button"
       class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
-      on:click={onLogout}
+      onclick={onLogout}
     >
       <Icon path={mdiLogout} size={24} />
       {$t('sign_out')}</button

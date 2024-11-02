@@ -9,7 +9,11 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let sharedLink: SharedLinkResponseDto;
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+  }
+
+  let { sharedLink = $bindable() }: Props = $props();
 
   const { getAssets, clearSelect } = getAssetControlContext();
 

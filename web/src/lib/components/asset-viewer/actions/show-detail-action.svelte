@@ -4,7 +4,11 @@
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let onShowDetail: () => void;
+  interface Props {
+    onShowDetail: () => void;
+  }
+
+  let { onShowDetail }: Props = $props();
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'i' }, onShortcut: onShowDetail }} />

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
@@ -58,9 +60,13 @@
   import { t } from 'svelte-i18n';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let numberOfAssets = data.statistics.assets;
+  let { data = $bindable() }: Props = $props();
+
+  let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   enum ViewMode {
@@ -77,28 +83,22 @@
     personId: data.person.id,
   });
 
-  $: person = data.person;
-  $: thumbnailData = getPeopleThumbnailUrl(person);
-  $: if (person) {
-    handlePromiseError(updateAssetCount());
-    handlePromiseError(assetStore.updateOptions({ personId: person.id }));
-  }
 
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
 
-  let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
-  let isEditingName = false;
-  let previousRoute: string = AppRoute.EXPLORE;
+  let viewMode: ViewMode = $state(ViewMode.VIEW_ASSETS);
+  let isEditingName = $state(false);
+  let previousRoute: string = $state(AppRoute.EXPLORE);
   let people: PersonResponseDto[] = [];
-  let personMerge1: PersonResponseDto;
-  let personMerge2: PersonResponseDto;
-  let potentialMergePeople: PersonResponseDto[] = [];
+  let personMerge1: PersonResponseDto = $state();
+  let personMerge2: PersonResponseDto = $state();
+  let potentialMergePeople: PersonResponseDto[] = $state([]);
 
   let refreshAssetGrid = false;
 
   let personName = '';
-  let suggestedPeople: PersonResponseDto[] = [];
+  let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
    * Save the word used to search people name: for example,
@@ -107,11 +107,9 @@
    * However, it needs to make a new api request if searching 'r' returns 20 names (arbitrary value, the limit sent back by the server).
    * or if the new search word starts with another word / letter
    **/
-  let isSearchingPeople = false;
-  let suggestionContainer: HTMLDivElement;
+  let isSearchingPeople = $state(false);
+  let suggestionContainer: HTMLDivElement = $state();
 
-  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
-  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
 
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
@@ -341,6 +339,22 @@
   onDestroy(() => {
     assetStore.destroy();
   });
+  let person;
+  run(() => {
+    person = data.person;
+  });
+  let thumbnailData;
+  run(() => {
+    thumbnailData = getPeopleThumbnailUrl(person);
+  });
+  run(() => {
+    if (person) {
+      handlePromiseError(updateAssetCount());
+      handlePromiseError(assetStore.updateOptions({ personId: person.id }));
+    }
+  });
+  let isAllArchive = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+  let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
 </script>
 
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
@@ -401,36 +415,40 @@
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
-        <svelte:fragment slot="trailing">
-          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-            <MenuOption
-              text={$t('select_featured_photo')}
-              icon={mdiAccountBoxOutline}
-              onClick={() => (viewMode = ViewMode.SELECT_PERSON)}
-            />
-            <MenuOption
-              text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
-              icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
-              onClick={() => toggleHidePerson()}
-            />
-            <MenuOption
-              text={$t('set_date_of_birth')}
-              icon={mdiCalendarEditOutline}
-              onClick={() => (viewMode = ViewMode.BIRTH_DATE)}
-            />
-            <MenuOption
-              text={$t('merge_people')}
-              icon={mdiAccountMultipleCheckOutline}
-              onClick={() => (viewMode = ViewMode.MERGE_PEOPLE)}
-            />
-          </ButtonContextMenu>
-        </svelte:fragment>
+        {#snippet trailing()}
+              
+            <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+              <MenuOption
+                text={$t('select_featured_photo')}
+                icon={mdiAccountBoxOutline}
+                onClick={() => (viewMode = ViewMode.SELECT_PERSON)}
+              />
+              <MenuOption
+                text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
+                icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
+                onClick={() => toggleHidePerson()}
+              />
+              <MenuOption
+                text={$t('set_date_of_birth')}
+                icon={mdiCalendarEditOutline}
+                onClick={() => (viewMode = ViewMode.BIRTH_DATE)}
+              />
+              <MenuOption
+                text={$t('merge_people')}
+                icon={mdiAccountMultipleCheckOutline}
+                onClick={() => (viewMode = ViewMode.MERGE_PEOPLE)}
+              />
+            </ButtonContextMenu>
+          
+              {/snippet}
       </ControlAppBar>
     {/if}
 
     {#if viewMode === ViewMode.SELECT_PERSON}
       <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}>
-        <svelte:fragment slot="leading">{$t('select_featured_photo')}</svelte:fragment>
+        {#snippet leading()}
+                {$t('select_featured_photo')}
+              {/snippet}
       </ControlAppBar>
     {/if}
   {/if}
@@ -473,7 +491,7 @@
                   type="button"
                   class="flex items-center justify-center"
                   title={$t('edit_name')}
-                  on:click={() => (isEditingName = true)}
+                  onclick={() => (isEditingName = true)}
                 >
                   <ImageThumbnail
                     circle
@@ -514,7 +532,7 @@
                       suggestedPeople.length - 1
                         ? 'rounded-b-lg border-b'
                         : ''}"
-                      on:click={() => handleSuggestPeople(person)}
+                      onclick={() => handleSuggestPeople(person)}
                     >
                       <ImageThumbnail
                         circle

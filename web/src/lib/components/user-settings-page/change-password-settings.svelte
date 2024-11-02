@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import {
     notificationController,
     NotificationType,
@@ -13,9 +16,9 @@
   } from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
 
-  let password = '';
-  let newPassword = '';
-  let confirmPassword = '';
+  let password = $state('');
+  let newPassword = $state('');
+  let confirmPassword = $state('');
 
   const handleChangePassword = async () => {
     try {
@@ -41,7 +44,7 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}

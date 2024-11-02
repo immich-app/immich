@@ -6,13 +6,17 @@
   import { t } from 'svelte-i18n';
 
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: icon = $colorTheme.value === Theme.LIGHT ? moonPath : sunPath;
+  let icon = $derived($colorTheme.value === Theme.LIGHT ? moonPath : sunPath);
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: viewBox = $colorTheme.value === Theme.LIGHT ? moonViewBox : sunViewBox;
+  let viewBox = $derived($colorTheme.value === Theme.LIGHT ? moonViewBox : sunViewBox);
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: isDark = $colorTheme.value === Theme.DARK;
+  let isDark = $derived($colorTheme.value === Theme.DARK);
 
-  export let padding: Padding = '3';
+  interface Props {
+    padding?: Padding;
+  }
+
+  let { padding = '3' }: Props = $props();
 </script>
 
 {#if !$colorTheme.system}

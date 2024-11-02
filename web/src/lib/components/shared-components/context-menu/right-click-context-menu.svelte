@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import { tick } from 'svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
@@ -6,27 +8,33 @@
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
 
-  export let title: string;
-  export let direction: 'left' | 'right' = 'right';
-  export let x = 0;
-  export let y = 0;
-  export let isOpen = false;
-  export let onClose: (() => unknown) | undefined;
+  interface Props {
+    title: string;
+    direction?: 'left' | 'right';
+    x?: number;
+    y?: number;
+    isOpen?: boolean;
+    onClose: (() => unknown) | undefined;
+    children?: import('svelte').Snippet;
+  }
 
-  let uniqueKey = {};
-  let menuContainer: HTMLUListElement;
-  let triggerElement: HTMLElement | undefined = undefined;
+  let {
+    title,
+    direction = 'right',
+    x = 0,
+    y = 0,
+    isOpen = false,
+    onClose,
+    children
+  }: Props = $props();
+
+  let uniqueKey = $state({});
+  let menuContainer: HTMLUListElement = $state();
+  let triggerElement: HTMLElement | undefined = $state(undefined);
 
   const id = generateId();
   const menuId = `context-menu-${id}`;
 
-  $: {
-    if (isOpen && menuContainer) {
-      triggerElement = document.activeElement as HTMLElement;
-      menuContainer.focus();
-      $optionClickCallbackStore = closeContextMenu;
-    }
-  }
 
   const reopenContextMenu = async (event: MouseEvent) => {
     const contextMenuEvent = new MouseEvent('contextmenu', {
@@ -58,6 +66,13 @@
     triggerElement?.focus();
     onClose?.();
   };
+  run(() => {
+    if (isOpen && menuContainer) {
+      triggerElement = document.activeElement as HTMLElement;
+      menuContainer.focus();
+      $optionClickCallbackStore = closeContextMenu;
+    }
+  });
 </script>
 
 {#key uniqueKey}
@@ -83,7 +98,7 @@
     >
       <section
         class="fixed left-0 top-0 z-10 flex h-screen w-screen"
-        on:contextmenu|preventDefault={reopenContextMenu}
+        oncontextmenu={preventDefault(reopenContextMenu)}
         role="presentation"
       >
         <ContextMenu
@@ -97,7 +112,7 @@
           isVisible
           onClose={closeContextMenu}
         >
-          <slot />
+          {@render children?.()}
         </ContextMenu>
       </section>
     </div>

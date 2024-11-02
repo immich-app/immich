@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
@@ -18,12 +20,12 @@
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
 
-  let showMessage = false;
-  let isOpen = false;
-  let hoverMessage = false;
-  let hoverButton = false;
+  let showMessage = $state(false);
+  let isOpen = $state(false);
+  let hoverMessage = $state(false);
+  let hoverButton = $state(false);
 
-  let showBuyButton = getButtonVisibility();
+  let showBuyButton = $state(getButtonVisibility());
 
   const { isPurchased } = purchaseStore;
 
@@ -63,13 +65,15 @@
     }
   };
 
-  $: if (showMessage && !hoverMessage && !hoverButton) {
-    setTimeout(() => {
-      if (!hoverMessage && !hoverButton) {
-        showMessage = false;
-      }
-    }, 300);
-  }
+  run(() => {
+    if (showMessage && !hoverMessage && !hoverButton) {
+      setTimeout(() => {
+        if (!hoverMessage && !hoverButton) {
+          showMessage = false;
+        }
+      }, 300);
+    }
+  });
 </script>
 
 {#if isOpen}
@@ -79,7 +83,7 @@
 <div class="hidden md:block license-status pl-4 text-sm">
   {#if $isPurchased && $preferences.purchase.showSupportBadge}
     <button
-      on:click={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
+      onclick={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
       class="w-full"
       type="button"
     >
@@ -88,11 +92,11 @@
   {:else if !$isPurchased && showBuyButton && getAccountAge() > 14}
     <button
       type="button"
-      on:click={openPurchaseModal}
-      on:mouseover={onButtonHover}
-      on:mouseleave={() => (hoverButton = false)}
-      on:focus={onButtonHover}
-      on:blur={() => (hoverButton = false)}
+      onclick={openPurchaseModal}
+      onmouseover={onButtonHover}
+      onmouseleave={() => (hoverButton = false)}
+      onfocus={onButtonHover}
+      onblur={() => (hoverButton = false)}
       class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/10 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 w-full"
     >
       <div class="flex justify-between w-full place-items-center place-content-center">
@@ -122,10 +126,10 @@
     <div
       class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
-      on:mouseover={() => (hoverMessage = true)}
-      on:mouseleave={() => (hoverMessage = false)}
-      on:focus={() => (hoverMessage = true)}
-      on:blur={() => (hoverMessage = false)}
+      onmouseover={() => (hoverMessage = true)}
+      onmouseleave={() => (hoverMessage = false)}
+      onfocus={() => (hoverMessage = true)}
+      onblur={() => (hoverMessage = false)}
       role="dialog"
     >
       <div class="flex justify-between place-items-center">

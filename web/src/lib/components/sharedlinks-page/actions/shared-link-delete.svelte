@@ -4,8 +4,12 @@
   import { mdiDelete } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let menuItem = false;
-  export let onDelete: () => void;
+  interface Props {
+    menuItem?: boolean;
+    onDelete: () => void;
+  }
+
+  let { menuItem = false, onDelete }: Props = $props();
 </script>
 
 {#if menuItem}

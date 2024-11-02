@@ -8,16 +8,20 @@
   import DeleteAssetDialog from '../delete-asset-dialog.svelte';
   import { t } from 'svelte-i18n';
 
-  export let onAssetDelete: OnDelete;
-  export let menuItem = false;
-  export let force = !$featureFlags.trash;
+  interface Props {
+    onAssetDelete: OnDelete;
+    menuItem?: boolean;
+    force?: any;
+  }
+
+  let { onAssetDelete, menuItem = false, force = !$featureFlags.trash }: Props = $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  let isShowConfirmation = false;
-  let loading = false;
+  let isShowConfirmation = $state(false);
+  let loading = $state(false);
 
-  $: label = force ? $t('permanently_delete') : $t('delete');
+  let label = $derived(force ? $t('permanently_delete') : $t('delete'));
 
   const handleTrash = async () => {
     if (force) {

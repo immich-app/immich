@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import CircleIconButton, {
     type Color,
     type Padding,
@@ -15,39 +17,53 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { shortcuts } from '$lib/actions/shortcut';
 
-  export let icon: string;
-  export let title: string;
-  /**
+  
+  
+  
+  interface Props {
+    icon: string;
+    title: string;
+    /**
    * The alignment of the context menu relative to the button.
    */
-  export let align: Align = 'top-left';
-  /**
+    align?: Align;
+    /**
    * The direction in which the context menu should open.
    */
-  export let direction: 'left' | 'right' = 'right';
-  export let color: Color = 'transparent';
-  export let size: string | undefined = undefined;
-  export let padding: Padding | undefined = undefined;
-  /**
+    direction?: 'left' | 'right';
+    color?: Color;
+    size?: string | undefined;
+    padding?: Padding | undefined;
+    /**
    * Additional classes to apply to the button.
    */
-  export let buttonClass: string | undefined = undefined;
-  export let hideContent = false;
+    buttonClass?: string | undefined;
+    hideContent?: boolean;
+    children?: import('svelte').Snippet;
+  }
 
-  let isOpen = false;
-  let contextMenuPosition = { x: 0, y: 0 };
-  let menuContainer: HTMLUListElement;
-  let buttonContainer: HTMLDivElement;
+  let {
+    icon,
+    title,
+    align = 'top-left',
+    direction = 'right',
+    color = 'transparent',
+    size = undefined,
+    padding = undefined,
+    buttonClass = undefined,
+    hideContent = false,
+    children
+  }: Props = $props();
+
+  let isOpen = $state(false);
+  let contextMenuPosition = $state({ x: 0, y: 0 });
+  let menuContainer: HTMLUListElement = $state();
+  let buttonContainer: HTMLDivElement = $state();
 
   const id = generateId();
   const buttonId = `context-menu-button-${id}`;
   const menuId = `context-menu-${id}`;
 
-  $: {
-    if (isOpen) {
-      $optionClickCallbackStore = handleOptionClick;
-    }
-  }
 
   const openDropdown = (event: KeyboardEvent | MouseEvent) => {
     contextMenuPosition = getContextMenuPositionFromEvent(event, align);
@@ -95,9 +111,14 @@
     const button: HTMLButtonElement | null = buttonContainer.querySelector(`#${buttonId}`);
     button?.focus();
   };
+  run(() => {
+    if (isOpen) {
+      $optionClickCallbackStore = handleOptionClick;
+    }
+  });
 </script>
 
-<svelte:window on:resize={onResize} />
+<svelte:window onresize={onResize} />
 <div
   use:contextMenuNavigation={{
     closeDropdown,
@@ -109,7 +130,7 @@
     selectionChanged: (id) => ($selectedIdStore = id),
   }}
   use:clickOutside={{ onOutclick: closeDropdown }}
-  on:resize={onResize}
+  onresize={onResize}
 >
   <div bind:this={buttonContainer}>
     <CircleIconButton
@@ -150,7 +171,7 @@
         id={menuId}
         isVisible={isOpen}
       >
-        <slot />
+        {@render children?.()}
       </ContextMenu>
     </div>
   {/if}

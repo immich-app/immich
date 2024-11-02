@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import {
     notificationController,
     NotificationType,
@@ -12,9 +15,9 @@
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
 
-  let emailNotificationsEnabled = $preferences?.emailNotifications?.enabled ?? true;
-  let albumInviteNotificationEnabled = $preferences?.emailNotifications?.albumInvite ?? true;
-  let albumUpdateNotificationEnabled = $preferences?.emailNotifications?.albumUpdate ?? true;
+  let emailNotificationsEnabled = $state($preferences?.emailNotifications?.enabled ?? true);
+  let albumInviteNotificationEnabled = $state($preferences?.emailNotifications?.albumInvite ?? true);
+  let albumUpdateNotificationEnabled = $state($preferences?.emailNotifications?.albumUpdate ?? true);
 
   const handleSave = async () => {
     try {
@@ -41,7 +44,7 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch

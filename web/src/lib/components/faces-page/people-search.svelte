@@ -7,15 +7,6 @@
   import { searchPerson, type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let searchName: string;
-  export let searchedPeopleLocal: PersonResponseDto[];
-  export let type: 'searchBar' | 'input';
-  export let numberPeopleToSearch: number = maximumLengthSearchPeople;
-  export let inputClass: string = 'w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg';
-  export let showLoadingSpinner: boolean = false;
-  export let placeholder: string = $t('name_or_nickname');
-  export let onReset = () => {};
-  export let onSearch = () => {};
 
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
@@ -43,7 +34,30 @@
     }
   };
 
-  export let handleSearch = async (force?: boolean, name?: string) => {
+  interface Props {
+    searchName: string;
+    searchedPeopleLocal: PersonResponseDto[];
+    type: 'searchBar' | 'input';
+    numberPeopleToSearch?: number;
+    inputClass?: string;
+    showLoadingSpinner?: boolean;
+    placeholder?: string;
+    onReset?: any;
+    onSearch?: any;
+    handleSearch?: any;
+  }
+
+  let {
+    searchName = $bindable(),
+    searchedPeopleLocal = $bindable(),
+    type,
+    numberPeopleToSearch = maximumLengthSearchPeople,
+    inputClass = 'w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg',
+    showLoadingSpinner = $bindable(false),
+    placeholder = $t('name_or_nickname'),
+    onReset = () => {},
+    onSearch = () => {},
+    handleSearch = async (force?: boolean, name?: string) => {
     searchName = name ?? searchName;
     onSearch();
     if (searchName === '') {
@@ -70,7 +84,8 @@
       showLoadingSpinner = false;
       search();
     }
-  };
+  }
+  }: Props = $props();
 
   const handleReset = () => {
     reset();
@@ -92,7 +107,7 @@
     type="text"
     {placeholder}
     bind:value={searchName}
-    on:input={() => handleSearch(false)}
+    oninput={() => handleSearch(false)}
     use:initInput
   />
 {/if}

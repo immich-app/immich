@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { goto } from '$app/navigation';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
@@ -46,10 +48,19 @@
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
-  export let asset: AssetResponseDto;
-  export let albums: AlbumResponseDto[] = [];
-  export let currentAlbum: AlbumResponseDto | null = null;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    albums?: AlbumResponseDto[];
+    currentAlbum?: AlbumResponseDto | null;
+    onClose: () => void;
+  }
+
+  let {
+    asset,
+    albums = [],
+    currentAlbum = null,
+    onClose
+  }: Props = $props();
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -60,11 +71,11 @@
     return { width, height };
   };
 
-  let showAssetPath = false;
-  let showEditFaces = false;
-  let previousId: string;
+  let showAssetPath = $state(false);
+  let showEditFaces = $state(false);
+  let previousId: string = $state();
 
-  $: {
+  run(() => {
     if (!previousId) {
       previousId = asset.id;
     }
@@ -72,9 +83,9 @@
       showEditFaces = false;
       previousId = asset.id;
     }
-  }
+  });
 
-  $: isOwner = $user?.id === asset.ownerId;
+  let isOwner = $derived($user?.id === asset.ownerId);
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
     // TODO: check if reloading asset data is necessary
@@ -85,27 +96,36 @@
     }
   };
 
-  $: handlePromiseError(handleNewAsset(asset));
+  run(() => {
+    handlePromiseError(handleNewAsset(asset));
+  });
 
-  $: latlng = (() => {
+  let latlng = $derived((() => {
     const lat = asset.exifInfo?.latitude;
     const lng = asset.exifInfo?.longitude;
 
     if (lat && lng) {
       return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
     }
-  })();
+  })());
 
-  $: people = asset.people || [];
-  $: showingHiddenPeople = false;
+  let people;
+  run(() => {
+    people = asset.people || [];
+  });
+  let showingHiddenPeople = $state(false);
+  
 
-  $: unassignedFaces = asset.unassignedFaces || [];
+  let unassignedFaces;
+  run(() => {
+    unassignedFaces = asset.unassignedFaces || [];
+  });
 
-  $: timeZone = asset.exifInfo?.timeZone;
-  $: dateTime =
-    timeZone && asset.exifInfo?.dateTimeOriginal
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime =
+    $derived(timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromLocalDateTime(asset.localDateTime);
+      : fromLocalDateTime(asset.localDateTime));
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -127,7 +147,7 @@
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
-  let isShowChangeDate = false;
+  let isShowChangeDate = $state(false);
 
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
@@ -212,10 +232,10 @@
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
                 ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                 : AppRoute.PHOTOS}"
-              on:focus={() => ($boundingBoxesArray = people[index].faces)}
-              on:blur={() => ($boundingBoxesArray = [])}
-              on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
-              on:mouseleave={() => ($boundingBoxesArray = [])}
+              onfocus={() => ($boundingBoxesArray = people[index].faces)}
+              onblur={() => ($boundingBoxesArray = [])}
+              onmouseover={() => ($boundingBoxesArray = people[index].faces)}
+              onmouseleave={() => ($boundingBoxesArray = [])}
             >
               <div class="relative">
                 <ImageThumbnail
@@ -278,7 +298,7 @@
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-        on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
+        onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
@@ -426,8 +446,7 @@
         </div>
       {/await}
     {:then component}
-      <svelte:component
-        this={component.default}
+      <component.default
         mapMarkers={[
           {
             lat: latlng.lat,
@@ -444,20 +463,22 @@
         useLocationPin
         onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
-        <svelte:fragment slot="popup" let:marker>
-          {@const { lat, lon } = marker}
-          <div class="flex flex-col items-center gap-1">
-            <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-            <a
-              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
-              target="_blank"
-              class="font-medium text-immich-primary"
-            >
-              {$t('open_in_openstreetmap')}
-            </a>
-          </div>
-        </svelte:fragment>
-      </svelte:component>
+        {#snippet popup({ marker })}
+              
+            {@const { lat, lon } = marker}
+            <div class="flex flex-col items-center gap-1">
+              <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+              <a
+                href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
+                target="_blank"
+                class="font-medium text-immich-primary"
+              >
+                {$t('open_in_openstreetmap')}
+              </a>
+            </div>
+          
+              {/snippet}
+      </component.default>
     {/await}
   </div>
 {/if}

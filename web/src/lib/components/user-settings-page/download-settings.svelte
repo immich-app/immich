@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import {
     notificationController,
     NotificationType,
@@ -16,8 +19,8 @@
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
-  let archiveSize = convertFromBytes($preferences?.download?.archiveSize || 4, ByteUnit.GiB);
-  let includeEmbeddedVideos = $preferences?.download?.includeEmbeddedVideos || false;
+  let archiveSize = $state(convertFromBytes($preferences?.download?.archiveSize || 4, ByteUnit.GiB));
+  let includeEmbeddedVideos = $state($preferences?.download?.includeEmbeddedVideos || false);
 
   const handleSave = async () => {
     try {
@@ -40,7 +43,7 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}

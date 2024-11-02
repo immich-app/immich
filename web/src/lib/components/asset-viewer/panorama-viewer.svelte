@@ -8,7 +8,11 @@
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
-  export let asset: { id: string; type: AssetTypeEnum.Video } | AssetResponseDto;
+  interface Props {
+    asset: { id: string; type: AssetTypeEnum.Video } | AssetResponseDto;
+  }
+
+  let { asset }: Props = $props();
 
   const photoSphereConfigs =
     asset.type === AssetTypeEnum.Video
@@ -43,8 +47,7 @@
   {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs])}
     <LoadingSpinner />
   {:then [data, module, adapter, plugins, navbar]}
-    <svelte:component
-      this={module.default}
+    <module.default
       panorama={data}
       plugins={plugins ?? undefined}
       {navbar}

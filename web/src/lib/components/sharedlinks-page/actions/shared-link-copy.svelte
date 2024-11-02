@@ -7,8 +7,12 @@
   import { mdiContentCopy } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let link: SharedLinkResponseDto;
-  export let menuItem = false;
+  interface Props {
+    link: SharedLinkResponseDto;
+    menuItem?: boolean;
+  }
+
+  let { link, menuItem = false }: Props = $props();
 
   const handleCopy = async () => {
     await copyToClipboard(makeSharedLinkUrl($serverConfig.externalDomain, link.key));

@@ -9,7 +9,6 @@
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { shortcut } from '$lib/actions/shortcut';
 
-  export let asset: AssetResponseDto;
 
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
@@ -19,12 +18,17 @@
     });
   });
 
-  export let onUpdateSelectedType: (type: string) => void;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    onUpdateSelectedType: (type: string) => void;
+    onClose: () => void;
+  }
 
-  let selectedType: string = editTypes[0].name;
+  let { asset = $bindable(), onUpdateSelectedType, onClose }: Props = $props();
+
+  let selectedType: string = $state(editTypes[0].name);
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
+  let selectedTypeObj = $derived(editTypes.find((t) => t.name === selectedType) || editTypes[0]);
 
   setTimeout(() => {
     onUpdateSelectedType(selectedType);
@@ -57,7 +61,7 @@
     </ul>
   </section>
   <section>
-    <svelte:component this={selectedTypeObj.component} />
+    <selectedTypeObj.component />
   </section>
 </section>
 

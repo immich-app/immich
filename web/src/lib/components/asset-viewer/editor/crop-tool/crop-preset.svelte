@@ -3,33 +3,42 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import type { CropAspectRatio } from '$lib/stores/asset-editor.store';
 
-  export let size: {
+  interface Props {
+    size: {
     icon: string;
     name: CropAspectRatio;
     viewBox: string;
     rotate?: boolean;
   };
-  export let selectedSize: CropAspectRatio;
-  export let rotateHorizontal: boolean;
-  export let selectType: (size: CropAspectRatio) => void;
+    selectedSize: CropAspectRatio;
+    rotateHorizontal: boolean;
+    selectType: (size: CropAspectRatio) => void;
+  }
 
-  $: isSelected = selectedSize === size.name;
-  $: buttonColor = (isSelected ? 'primary' : 'transparent-gray') as Color;
+  let {
+    size,
+    selectedSize,
+    rotateHorizontal,
+    selectType
+  }: Props = $props();
 
-  $: rotatedTitle = (title: string, toRotate: boolean) => {
+  let isSelected = $derived(selectedSize === size.name);
+  let buttonColor = $derived((isSelected ? 'primary' : 'transparent-gray') as Color);
+
+  let rotatedTitle = $derived((title: string, toRotate: boolean) => {
     let sides = title.split(':');
     if (toRotate) {
       sides.reverse();
     }
     return sides.join(':');
-  };
+  });
 
-  $: toRotate = (def: boolean | undefined) => {
+  let toRotate = $derived((def: boolean | undefined) => {
     if (def === false) {
       return false;
     }
     return (def && !rotateHorizontal) || (!def && rotateHorizontal);
-  };
+  });
 </script>
 
 <li>

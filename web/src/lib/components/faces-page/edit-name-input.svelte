@@ -1,16 +1,29 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import { type PersonResponseDto } from '@immich/sdk';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { t } from 'svelte-i18n';
 
-  export let person: PersonResponseDto;
-  export let name: string;
-  export let suggestedPeople: PersonResponseDto[];
-  export let thumbnailData: string;
-  export let isSearchingPeople: boolean;
-  export let onChange: (name: string) => void;
+  interface Props {
+    person: PersonResponseDto;
+    name: string;
+    suggestedPeople: PersonResponseDto[];
+    thumbnailData: string;
+    isSearchingPeople: boolean;
+    onChange: (name: string) => void;
+  }
+
+  let {
+    person,
+    name = $bindable(),
+    suggestedPeople = $bindable(),
+    thumbnailData,
+    isSearchingPeople = $bindable(),
+    onChange
+  }: Props = $props();
 </script>
 
 <div
@@ -22,7 +35,7 @@
   <form
     class="ml-4 flex w-full justify-between gap-16"
     autocomplete="off"
-    on:submit|preventDefault={() => onChange(name)}
+    onsubmit={preventDefault(() => onChange(name))}
   >
     <SearchPeople
       bind:searchName={name}

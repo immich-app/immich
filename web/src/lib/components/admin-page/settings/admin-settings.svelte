@@ -1,4 +1,4 @@
-<svelte:options accessors />
+<svelte:options />
 
 <script lang="ts">
   import {
@@ -13,10 +13,15 @@
   import type { SettingsResetOptions } from './admin-settings';
   import { t } from 'svelte-i18n';
 
-  export let config: SystemConfigDto;
+  interface Props {
+    config: SystemConfigDto;
+    children?: import('svelte').Snippet<[any]>;
+  }
 
-  let savedConfig: SystemConfigDto;
-  let defaultConfig: SystemConfigDto;
+  let { config = $bindable(), children }: Props = $props();
+
+  let savedConfig: SystemConfigDto = $state();
+  let defaultConfig: SystemConfigDto = $state();
 
   const handleReset = async (options: SettingsResetOptions) => {
     await (options.default ? resetToDefault(options.configKeys) : reset(options.configKeys));
@@ -72,8 +77,12 @@
   onMount(async () => {
     [savedConfig, defaultConfig] = await Promise.all([getConfig(), getConfigDefaults()]);
   });
+
+  export {
+  	config,
+  }
 </script>
 
 {#if savedConfig && defaultConfig}
-  <slot {handleReset} {handleSave} {savedConfig} {defaultConfig} />
+  {@render children?.({ handleReset, handleSave, savedConfig, defaultConfig, })}
 {/if}

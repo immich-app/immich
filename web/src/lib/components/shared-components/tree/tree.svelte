@@ -1,22 +1,39 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import Icon from '$lib/components/elements/icon.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { normalizeTreePath, type RecursiveObject } from '$lib/utils/tree-utils';
   import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 
-  export let tree: RecursiveObject;
-  export let parent: string;
-  export let value: string;
-  export let active = '';
-  export let icons: { default: string; active: string };
-  export let getLink: (path: string) => string;
-  export let getColor: (path: string) => string | undefined;
+  interface Props {
+    tree: RecursiveObject;
+    parent: string;
+    value: string;
+    active?: string;
+    icons: { default: string; active: string };
+    getLink: (path: string) => string;
+    getColor: (path: string) => string | undefined;
+  }
 
-  $: path = normalizeTreePath(`${parent}/${value}`);
-  $: isActive = active === path || active.startsWith(`${path}/`);
-  $: isOpen = isActive;
-  $: isTarget = active === path;
-  $: color = getColor(path);
+  let {
+    tree,
+    parent,
+    value,
+    active = '',
+    icons,
+    getLink,
+    getColor
+  }: Props = $props();
+
+  let path = $derived(normalizeTreePath(`${parent}/${value}`));
+  let isActive = $derived(active === path || active.startsWith(`${path}/`));
+  let isOpen;
+  run(() => {
+    isOpen = isActive;
+  });
+  let isTarget = $derived(active === path);
+  let color = $derived(getColor(path));
 </script>
 
 <a
@@ -26,7 +43,7 @@
 >
   <button
     type="button"
-    on:click|preventDefault={() => (isOpen = !isOpen)}
+    onclick={preventDefault(() => (isOpen = !isOpen))}
     class={Object.values(tree).length === 0 ? 'invisible' : ''}
   >
     <Icon path={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size={20} />

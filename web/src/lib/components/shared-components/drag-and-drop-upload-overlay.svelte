@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault, stopPropagation } from 'svelte/legacy';
+
   import { page } from '$app/stores';
   import { shouldIgnoreEvent } from '$lib/actions/shortcut';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
@@ -8,10 +10,10 @@
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
 
-  $: albumId = isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined;
-  $: isShare = isSharedLinkRoute($page.route?.id);
+  let albumId = $derived(isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined);
+  let isShare = $derived(isSharedLinkRoute($page.route?.id));
 
-  let dragStartTarget: EventTarget | null = null;
+  let dragStartTarget: EventTarget | null = $state(null);
 
   const onDragEnter = (e: DragEvent) => {
     if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
@@ -119,20 +121,20 @@
   };
 </script>
 
-<svelte:window on:paste={onPaste} />
+<svelte:window onpaste={onPaste} />
 
 <svelte:body
-  on:dragenter|stopPropagation|preventDefault={onDragEnter}
-  on:dragleave|stopPropagation|preventDefault={onDragLeave}
-  on:drop|stopPropagation|preventDefault={onDrop}
+  ondragenter={stopPropagation(preventDefault(onDragEnter))}
+  ondragleave={stopPropagation(preventDefault(onDragLeave))}
+  ondrop={stopPropagation(preventDefault(onDrop))}
 />
 
 {#if dragStartTarget}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="fixed inset-0 z-[1000] flex h-full w-full flex-col items-center justify-center bg-gray-100/90 text-immich-dark-gray dark:bg-immich-dark-bg/90 dark:text-immich-gray"
     transition:fade={{ duration: 250 }}
-    on:dragover={(e) => {
+    ondragover={(e) => {
       // Prevent browser from opening the dropped file.
       e.stopPropagation();
       e.preventDefault();

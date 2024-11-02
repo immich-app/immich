@@ -17,8 +17,12 @@
   import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
   import { t } from 'svelte-i18n';
 
-  export let device: SessionResponseDto;
-  export let onDelete: (() => void) | undefined = undefined;
+  interface Props {
+    device: SessionResponseDto;
+    onDelete?: (() => void) | undefined;
+  }
+
+  let { device, onDelete = undefined }: Props = $props();
 
   const options: ToRelativeCalendarOptions = {
     unit: 'days',

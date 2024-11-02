@@ -7,23 +7,27 @@
   import StatsCard from './stats-card.svelte';
   import { t } from 'svelte-i18n';
 
-  export let stats: ServerStatsResponseDto = {
+  interface Props {
+    stats?: ServerStatsResponseDto;
+  }
+
+  let { stats = {
     photos: 0,
     videos: 0,
     usage: 0,
     usageByUser: [],
-  };
+  } }: Props = $props();
 
-  $: zeros = (value: number) => {
+  let zeros = $derived((value: number) => {
     const maxLength = 13;
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;
 
     return '0'.repeat(zeroLength);
-  };
+  });
 
   const TiB = 1024 ** 4;
-  $: [statsUsage, statsUsageUnit] = getBytesWithUnit(stats.usage, stats.usage > TiB ? 2 : 0);
+  let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(stats.usage, stats.usage > TiB ? 2 : 0));
 </script>
 
 <div class="flex flex-col gap-5">

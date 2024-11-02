@@ -1,25 +1,36 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { type PersonResponseDto } from '@immich/sdk';
   import FaceThumbnail from './face-thumbnail.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { t } from 'svelte-i18n';
 
-  export let screenHeight: number;
-  export let people: PersonResponseDto[];
-  export let peopleToNotShow: PersonResponseDto[];
-  export let onSelect: (person: PersonResponseDto) => void;
+  interface Props {
+    screenHeight: number;
+    people: PersonResponseDto[];
+    peopleToNotShow: PersonResponseDto[];
+    onSelect: (person: PersonResponseDto) => void;
+  }
 
-  let searchedPeopleLocal: PersonResponseDto[] = [];
+  let {
+    screenHeight,
+    people,
+    peopleToNotShow,
+    onSelect
+  }: Props = $props();
 
-  let name = '';
-  let showPeople: PersonResponseDto[];
+  let searchedPeopleLocal: PersonResponseDto[] = $state([]);
 
-  $: {
+  let name = $state('');
+  let showPeople: PersonResponseDto[] = $state();
+
+  run(() => {
     showPeople = name ? searchedPeopleLocal : people;
     showPeople = showPeople.filter(
       (person) => !peopleToNotShow.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
-  }
+  });
 </script>
 
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">

@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
@@ -14,17 +17,28 @@
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
+
+  let {
+    savedConfig,
+    defaultConfig,
+    config = $bindable(),
+    disabled = false,
+    onReset,
+    onSave
+  }: Props = $props();
 </script>
 
 <div class="mt-2">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault class="mx-4 mt-4">
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))} class="mx-4 mt-4">
       <div class="flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.machine_learning_enabled')}
@@ -69,11 +83,15 @@
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
             isEdited={config.machineLearning.clip.modelName !== savedConfig.machineLearning.clip.modelName}
           >
-            <p slot="desc" class="immich-form-label pb-2 text-sm">
-              <FormatMessage key="admin.machine_learning_clip_model_description" let:message>
-                <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
-              </FormatMessage>
-            </p>
+            {#snippet desc()}
+                        <p  class="immich-form-label pb-2 text-sm">
+                <FormatMessage key="admin.machine_learning_clip_model_description" >
+                  {#snippet children({ message })}
+                                <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
+                                                {/snippet}
+                            </FormatMessage>
+              </p>
+                      {/snippet}
           </SettingInputField>
         </div>
       </SettingAccordion>

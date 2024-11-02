@@ -8,12 +8,23 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
-  export let showOwner = false;
-  export let showDateRange = false;
-  export let showItemCount = false;
-  export let preload = false;
-  export let onShowContextMenu: ((position: ContextMenuPosition) => unknown) | undefined = undefined;
+  interface Props {
+    album: AlbumResponseDto;
+    showOwner?: boolean;
+    showDateRange?: boolean;
+    showItemCount?: boolean;
+    preload?: boolean;
+    onShowContextMenu?: ((position: ContextMenuPosition) => unknown) | undefined;
+  }
+
+  let {
+    album,
+    showOwner = false,
+    showDateRange = false,
+    showItemCount = false,
+    preload = false,
+    onShowContextMenu = undefined
+  }: Props = $props();
 
   const showAlbumContextMenu = (e: MouseEvent) => {
     e.stopPropagation();

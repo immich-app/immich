@@ -3,7 +3,11 @@
   import type { AlbumSortOptionMetadata } from '$lib/utils/album-utils';
   import { t } from 'svelte-i18n';
 
-  export let option: AlbumSortOptionMetadata;
+  interface Props {
+    option: AlbumSortOptionMetadata;
+  }
+
+  let { option }: Props = $props();
 
   const handleSort = () => {
     if ($albumViewSettings.sortBy === option.id) {
@@ -14,7 +18,7 @@
     }
   };
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
+  let albumSortByNames = $derived(((): Record<AlbumSortBy, string> => {
     return {
       [AlbumSortBy.Title]: $t('sort_title'),
       [AlbumSortBy.ItemCount]: $t('sort_items'),
@@ -23,14 +27,14 @@
       [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
       [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
     };
-  })();
+  })());
 </script>
 
 <th class="text-sm font-medium {option.columnStyle}">
   <button
     type="button"
     class="rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
-    on:click={handleSort}
+    onclick={handleSort}
   >
     {#if $albumViewSettings.sortBy === option.id}
       {#if $albumViewSettings.sortOrder === SortOrder.Desc}

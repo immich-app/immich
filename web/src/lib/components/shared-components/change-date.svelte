@@ -1,14 +1,25 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { DateTime } from 'luxon';
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import Combobox from './combobox.svelte';
   import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
 
-  export let initialDate: DateTime = DateTime.now();
-  export let initialTimeZone: string = '';
-  export let onCancel: () => void;
-  export let onConfirm: (date: string) => void;
+  interface Props {
+    initialDate?: DateTime;
+    initialTimeZone?: string;
+    onCancel: () => void;
+    onConfirm: (date: string) => void;
+  }
+
+  let {
+    initialDate = DateTime.now(),
+    initialTimeZone = '',
+    onCancel,
+    onConfirm
+  }: Props = $props();
 
   type ZoneOption = {
     /**
@@ -49,21 +60,17 @@
 
   const knownTimezones = Intl.supportedValuesOf('timeZone');
 
-  let timezones: ZoneOption[];
-  $: timezones = knownTimezones
+  let timezones: ZoneOption[] = $derived(knownTimezones
     .map((zone) => zoneOptionForDate(zone, selectedDate))
     .filter((zone) => zone.valid)
-    .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB));
+    .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB)));
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
-  let selectedOption: ZoneOption | undefined;
-  $: selectedOption = getPreferredTimeZone(initialDate, userTimeZone, timezones, selectedOption);
+  let selectedOption: ZoneOption | undefined = $state();
 
-  let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
+  let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
 
-  // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
-  $: date = DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true });
 
   function zoneOptionForDate(zone: string, date: string) {
     const dateAtZone: DateTime = DateTime.fromISO(date, { zone });
@@ -125,6 +132,12 @@
       onConfirm(value);
     }
   };
+  
+  run(() => {
+    selectedOption = getPreferredTimeZone(initialDate, userTimeZone, timezones, selectedOption);
+  });
+  // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
+  let date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
 <ConfirmDialog
@@ -135,6 +148,7 @@
   onConfirm={handleConfirm}
   {onCancel}
 >
+  <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <div class="flex flex-col text-left gap-2" slot="prompt">
     <div class="flex flex-col">
       <label for="datetime">{$t('date_and_time')}</label>

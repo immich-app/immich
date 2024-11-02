@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
@@ -13,14 +16,25 @@
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
 
-  let isConfirmOpen = false;
+  let {
+    savedConfig,
+    defaultConfig,
+    config = $bindable(),
+    disabled = false,
+    onReset,
+    onSave
+  }: Props = $props();
+
+  let isConfirmOpen = $state(false);
 
   const handleToggleOverride = () => {
     // click runs before bind
@@ -48,29 +62,33 @@
     onCancel={() => (isConfirmOpen = false)}
     onConfirm={() => handleSave(true)}
   >
-    <svelte:fragment slot="prompt">
-      <div class="flex flex-col gap-4">
-        <p>{$t('admin.authentication_settings_disable_all')}</p>
-        <p>
-          <FormatMessage key="admin.authentication_settings_reenable" let:message>
-            <a
-              href="https://immich.app/docs/administration/server-commands"
-              rel="noreferrer"
-              target="_blank"
-              class="underline"
-            >
-              {message}
-            </a>
-          </FormatMessage>
-        </p>
-      </div>
-    </svelte:fragment>
+    {#snippet prompt()}
+      
+        <div class="flex flex-col gap-4">
+          <p>{$t('admin.authentication_settings_disable_all')}</p>
+          <p>
+            <FormatMessage key="admin.authentication_settings_reenable" >
+              {#snippet children({ message })}
+                        <a
+                  href="https://immich.app/docs/administration/server-commands"
+                  rel="noreferrer"
+                  target="_blank"
+                  class="underline"
+                >
+                  {message}
+                </a>
+                                    {/snippet}
+                    </FormatMessage>
+          </p>
+        </div>
+      
+      {/snippet}
   </ConfirmDialog>
 {/if}
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ml-4 mt-4 flex flex-col">
         <SettingAccordion
           key="oauth"
@@ -79,16 +97,18 @@
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <p class="text-sm dark:text-immich-dark-fg">
-              <FormatMessage key="admin.oauth_settings_more_details" let:message>
-                <a
-                  href="https://immich.app/docs/administration/oauth"
-                  class="underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {message}
-                </a>
-              </FormatMessage>
+              <FormatMessage key="admin.oauth_settings_more_details" >
+                {#snippet children({ message })}
+                                <a
+                    href="https://immich.app/docs/administration/oauth"
+                    class="underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {message}
+                  </a>
+                                              {/snippet}
+                            </FormatMessage>
             </p>
 
             <SettingSwitch

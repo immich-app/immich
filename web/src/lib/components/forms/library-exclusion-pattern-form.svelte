@@ -1,17 +1,31 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderRemove } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  export let exclusionPattern: string;
-  export let exclusionPatterns: string[] = [];
-  export let isEditing = false;
-  export let submitText = $t('submit');
-  export let onCancel: () => void;
-  export let onSubmit: (exclusionPattern: string) => void;
-  export let onDelete: () => void = () => {};
+  interface Props {
+    exclusionPattern: string;
+    exclusionPatterns?: string[];
+    isEditing?: boolean;
+    submitText?: any;
+    onCancel: () => void;
+    onSubmit: (exclusionPattern: string) => void;
+    onDelete?: () => void;
+  }
+
+  let {
+    exclusionPattern = $bindable(),
+    exclusionPatterns = $bindable([]),
+    isEditing = false,
+    submitText = $t('submit'),
+    onCancel,
+    onSubmit,
+    onDelete = () => {}
+  }: Props = $props();
 
   onMount(() => {
     if (isEditing) {
@@ -19,12 +33,12 @@
     }
   });
 
-  $: isDuplicate = exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern);
-  $: canSubmit = exclusionPattern && !exclusionPatterns.includes(exclusionPattern);
+  let isDuplicate = $derived(exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern));
+  let canSubmit = $derived(exclusionPattern && !exclusionPatterns.includes(exclusionPattern));
 </script>
 
 <FullScreenModal title={$t('add_exclusion_pattern')} icon={mdiFolderRemove} onClose={onCancel}>
-  <form on:submit|preventDefault={() => onSubmit(exclusionPattern)} autocomplete="off" id="add-exclusion-pattern-form">
+  <form onsubmit={preventDefault(() => onSubmit(exclusionPattern))} autocomplete="off" id="add-exclusion-pattern-form">
     <p class="py-5 text-sm">
       {$t('admin.exclusion_pattern_description')}
       <br /><br />
@@ -46,6 +60,7 @@
       {/if}
     </div>
   </form>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
     {#if isEditing}

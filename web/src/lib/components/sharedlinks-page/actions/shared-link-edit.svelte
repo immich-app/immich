@@ -4,8 +4,12 @@
   import { mdiCircleEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let menuItem = false;
-  export let onEdit: () => void;
+  interface Props {
+    menuItem?: boolean;
+    onEdit: () => void;
+  }
+
+  let { menuItem = false, onEdit }: Props = $props();
 </script>
 
 {#if menuItem}

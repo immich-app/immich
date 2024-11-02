@@ -6,9 +6,13 @@
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
+  interface Props {
+    asset: AssetResponseDto;
+  }
 
-  let showModal = false;
+  let { asset }: Props = $props();
+
+  let showModal = $state(false);
 </script>
 
 <CircleIconButton

@@ -2,14 +2,27 @@
   import { clamp } from 'lodash-es';
   import type { ClipboardEventHandler } from 'svelte/elements';
 
-  export let id: string;
-  export let min: number;
-  export let max: number;
-  export let step: number | string = 'any';
-  export let required = true;
-  export let value: number | null = null;
-  export let onInput: (value: number | null) => void;
-  export let onPaste: ClipboardEventHandler<HTMLInputElement> | undefined = undefined;
+  interface Props {
+    id: string;
+    min: number;
+    max: number;
+    step?: number | string;
+    required?: boolean;
+    value?: number | null;
+    onInput: (value: number | null) => void;
+    onPaste?: ClipboardEventHandler<HTMLInputElement> | undefined;
+  }
+
+  let {
+    id,
+    min,
+    max,
+    step = 'any',
+    required = true,
+    value = $bindable(null),
+    onInput,
+    onPaste = undefined
+  }: Props = $props();
 </script>
 
 <input
@@ -21,11 +34,11 @@
   {step}
   {required}
   bind:value
-  on:input={() => {
+  oninput={() => {
     if (value !== null && (value < min || value > max)) {
       value = clamp(value, min, max);
     }
     onInput(value);
   }}
-  on:paste={onPaste}
+  onpaste={onPaste}
 />

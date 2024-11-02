@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   // Necessary for eslint
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type T = any;
@@ -20,19 +20,34 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { fly } from 'svelte/transition';
 
-  let className = '';
-  export { className as class };
+  
 
-  export let options: T[];
-  export let selectedOption = options[0];
-  export let showMenu = false;
-  export let controlable = false;
-  export let hideTextOnSmallScreen = true;
-  export let title: string | undefined = undefined;
-  export let onSelect: (option: T) => void;
-  export let onClickOutside: () => void = () => {};
 
-  export let render: (item: T) => string | RenderedOption = String;
+  interface Props {
+    class?: string;
+    options: T[];
+    selectedOption?: any;
+    showMenu?: boolean;
+    controlable?: boolean;
+    hideTextOnSmallScreen?: boolean;
+    title?: string | undefined;
+    onSelect: (option: T) => void;
+    onClickOutside?: () => void;
+    render?: (item: T) => string | RenderedOption;
+  }
+
+  let {
+    class: className = '',
+    options,
+    selectedOption = $bindable(options[0]),
+    showMenu = $bindable(false),
+    controlable = false,
+    hideTextOnSmallScreen = true,
+    title = undefined,
+    onSelect,
+    onClickOutside = () => {},
+    render = String
+  }: Props = $props();
 
   const handleClickOutside = () => {
     if (!controlable) {
@@ -65,7 +80,7 @@
     }
   };
 
-  $: renderedSelectedOption = renderOption(selectedOption);
+  let renderedSelectedOption = $derived(renderOption(selectedOption));
 </script>
 
 <div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
@@ -92,7 +107,7 @@
           type="button"
           class="grid grid-cols-[36px,1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"
           disabled={renderedOption.disabled}
-          on:click={() => !renderedOption.disabled && handleSelectOption(option)}
+          onclick={() => !renderedOption.disabled && handleSelectOption(option)}
         >
           {#if isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">

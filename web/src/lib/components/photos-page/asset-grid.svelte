@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
@@ -38,80 +40,78 @@
   import { generateId } from '$lib/utils/generate-id';
   import { isTimelineScrolling } from '$lib/stores/timeline.store';
 
-  export let isSelectionMode = false;
-  export let singleSelect = false;
 
-  /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
+  
+
+  interface Props {
+    isSelectionMode?: boolean;
+    singleSelect?: boolean;
+    /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
    `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
    additionally, update the page location/url with the asset as the asset-grid is scrolled */
-  export let enableRouting: boolean;
-
-  export let assetStore: AssetStore;
-  export let assetInteractionStore: AssetInteractionStore;
-  export let removeAction:
+    enableRouting: boolean;
+    assetStore: AssetStore;
+    assetInteractionStore: AssetInteractionStore;
+    removeAction?: 
     | AssetAction.UNARCHIVE
     | AssetAction.ARCHIVE
     | AssetAction.FAVORITE
     | AssetAction.UNFAVORITE
-    | null = null;
-  export let withStacked = false;
-  export let showArchiveIcon = false;
-  export let isShared = false;
-  export let album: AlbumResponseDto | null = null;
-  export let isShowDeleteConfirmation = false;
-  export let onSelect: (asset: AssetResponseDto) => void = () => {};
-  export let onEscape: () => void = () => {};
+    | null;
+    withStacked?: boolean;
+    showArchiveIcon?: boolean;
+    isShared?: boolean;
+    album?: AlbumResponseDto | null;
+    isShowDeleteConfirmation?: boolean;
+    onSelect?: (asset: AssetResponseDto) => void;
+    onEscape?: () => void;
+    children?: import('svelte').Snippet;
+    empty?: import('svelte').Snippet;
+  }
+
+  let {
+    isSelectionMode = false,
+    singleSelect = false,
+    enableRouting,
+    assetStore = $bindable(),
+    assetInteractionStore,
+    removeAction = null,
+    withStacked = false,
+    showArchiveIcon = false,
+    isShared = false,
+    album = null,
+    isShowDeleteConfirmation = $bindable(false),
+    onSelect = () => {},
+    onEscape = () => {},
+    children,
+    empty
+  }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
 
-  const viewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
-  const safeViewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
+  const viewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
+  const safeViewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
 
   const componentId = generateId();
-  let element: HTMLElement;
-  let timelineElement: HTMLElement;
-  let showShortcuts = false;
-  let showSkeleton = true;
+  let element: HTMLElement = $state();
+  let timelineElement: HTMLElement = $state();
+  let showShortcuts = $state(false);
+  let showSkeleton = $state(true);
   let internalScroll = false;
   let navigating = false;
-  let preMeasure: AssetBucket[] = [];
+  let preMeasure: AssetBucket[] = $state([]);
   let lastIntersectedBucketDate: string | undefined;
-  let scrubBucketPercent = 0;
-  let scrubBucket: { bucketDate: string | undefined } | undefined;
-  let scrubOverallPercent: number = 0;
-  let topSectionHeight = 0;
-  let topSectionOffset = 0;
+  let scrubBucketPercent = $state(0);
+  let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
+  let scrubOverallPercent: number = $state(0);
+  let topSectionHeight = $state(0);
+  let topSectionOffset = $state(0);
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
-  let leadout = false;
+  let leadout = $state(false);
 
-  $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
-  $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
-  $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
-  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
-  $: {
-    if (isEmpty) {
-      assetInteractionStore.clearMultiselect();
-    }
-  }
-  $: {
-    if (element && isViewportOrigin()) {
-      const rect = element.getBoundingClientRect();
-      viewport.height = rect.height;
-      viewport.width = rect.width;
-      viewport.x = rect.x;
-      viewport.y = rect.y;
-    }
-    if (!isViewportOrigin() && !isEqual(viewport, safeViewport)) {
-      safeViewport.height = viewport.height;
-      safeViewport.width = viewport.width;
-      safeViewport.x = viewport.x;
-      safeViewport.y = viewport.y;
-      updateViewport();
-    }
-  }
   const {
     ASSET_GRID: { NAVIGATE_ON_ASSET_IN_VIEW },
     BUCKET: {
@@ -470,32 +470,6 @@
     }
   };
 
-  $: shortcutList = (() => {
-    if ($isSearchEnabled || $showAssetViewer) {
-      return [];
-    }
-
-    const shortcuts: ShortcutOptions[] = [
-      { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-      { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
-      { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-      { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
-      { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
-      { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
-    ];
-
-    if ($isMultiSelectState) {
-      shortcuts.push(
-        { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-        { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
-        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-        { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
-        { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
-      );
-    }
-
-    return shortcuts;
-  })();
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
     if (!$assetStore.albumAssets.has(asset.id)) {
@@ -585,13 +559,10 @@
     }
   };
 
-  let lastAssetMouseEvent: AssetResponseDto | null = null;
+  let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
 
-  $: if (!lastAssetMouseEvent) {
-    assetInteractionStore.clearAssetSelectionCandidates();
-  }
 
-  let shiftKeyIsDown = false;
+  let shiftKeyIsDown = $state(false);
 
   const deselectAllAssets = () => {
     cancelMultiselect(assetInteractionStore);
@@ -619,13 +590,7 @@
     }
   };
 
-  $: if (!shiftKeyIsDown) {
-    assetInteractionStore.clearAssetSelectionCandidates();
-  }
 
-  $: if (shiftKeyIsDown && lastAssetMouseEvent) {
-    selectAssetCandidates(lastAssetMouseEvent);
-  }
 
   const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
     if (asset) {
@@ -751,9 +716,75 @@
   onDestroy(() => {
     assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
+  let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
+  let isEmpty = $derived($assetStore.initialized && $assetStore.buckets.length === 0);
+  let idsSelectedAssets = $derived([...$selectedAssets].map(({ id }) => id));
+  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+  run(() => {
+    if (isEmpty) {
+      assetInteractionStore.clearMultiselect();
+    }
+  });
+  run(() => {
+    if (element && isViewportOrigin()) {
+      const rect = element.getBoundingClientRect();
+      viewport.height = rect.height;
+      viewport.width = rect.width;
+      viewport.x = rect.x;
+      viewport.y = rect.y;
+    }
+    if (!isViewportOrigin() && !isEqual(viewport, safeViewport)) {
+      safeViewport.height = viewport.height;
+      safeViewport.width = viewport.width;
+      safeViewport.x = viewport.x;
+      safeViewport.y = viewport.y;
+      updateViewport();
+    }
+  });
+  let shortcutList = $derived((() => {
+    if ($isSearchEnabled || $showAssetViewer) {
+      return [];
+    }
+
+    const shortcuts: ShortcutOptions[] = [
+      { shortcut: { key: 'Escape' }, onShortcut: onEscape },
+      { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
+      { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
+      { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
+      { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
+      { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
+    ];
+
+    if ($isMultiSelectState) {
+      shortcuts.push(
+        { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+        { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
+        { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+        { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+      );
+    }
+
+    return shortcuts;
+  })());
+  run(() => {
+    if (!lastAssetMouseEvent) {
+      assetInteractionStore.clearAssetSelectionCandidates();
+    }
+  });
+  run(() => {
+    if (!shiftKeyIsDown) {
+      assetInteractionStore.clearAssetSelectionCandidates();
+    }
+  });
+  run(() => {
+    if (shiftKeyIsDown && lastAssetMouseEvent) {
+      selectAssetCandidates(lastAssetMouseEvent);
+    }
+  });
 </script>
 
-<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -789,16 +820,16 @@
   tabindex="-1"
   use:resizeObserver={({ height, width }) => ((viewport.width = width), (viewport.height = height))}
   bind:this={element}
-  on:scroll={() => ((assetStore.lastScrollTime = Date.now()), handleTimelineScroll())}
+  onscroll={() => ((assetStore.lastScrollTime = Date.now()), handleTimelineScroll())}
 >
   <section
     use:resizeObserver={({ target, height }) => ((topSectionHeight = height), (topSectionOffset = target.offsetTop))}
     class:invisible={showSkeleton}
   >
-    <slot />
+    {@render children?.()}
     {#if isEmpty}
       <!-- (optional) empty placeholder -->
-      <slot name="empty" />
+      {@render empty?.()}
     {/if}
   </section>
 

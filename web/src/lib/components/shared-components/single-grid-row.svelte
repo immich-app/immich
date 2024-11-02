@@ -1,10 +1,17 @@
 <script lang="ts">
-  let className = '';
-  export { className as class };
-  export let itemCount = 1;
+  import { run } from 'svelte/legacy';
 
-  let container: HTMLElement | undefined;
-  let contentRect: DOMRectReadOnly | undefined;
+  
+  interface Props {
+    class?: string;
+    itemCount?: number;
+    children?: import('svelte').Snippet<[any]>;
+  }
+
+  let { class: className = '', itemCount = $bindable(1), children }: Props = $props();
+
+  let container: HTMLElement | undefined = $state();
+  let contentRect: DOMRectReadOnly | undefined = $state();
 
   const getGridGap = (element: Element) => {
     const style = getComputedStyle(element);
@@ -28,11 +35,13 @@
     return Math.floor((containerWidth + columnGap) / (childWidth + columnGap)) || 1;
   };
 
-  $: if (container && contentRect) {
-    itemCount = getItemCount(container, contentRect.width);
-  }
+  run(() => {
+    if (container && contentRect) {
+      itemCount = getItemCount(container, contentRect.width);
+    }
+  });
 </script>
 
 <div class={className} bind:this={container} bind:contentRect>
-  <slot {itemCount} />
+  {@render children?.({ itemCount, })}
 </div>

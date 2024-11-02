@@ -1,19 +1,35 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  export let importPath: string | null;
-  export let importPaths: string[] = [];
-  export let title = $t('import_path');
-  export let cancelText = $t('cancel');
-  export let submitText = $t('save');
-  export let isEditing = false;
-  export let onCancel: () => void;
-  export let onSubmit: (importPath: string | null) => void;
-  export let onDelete: () => void = () => {};
+  interface Props {
+    importPath: string | null;
+    importPaths?: string[];
+    title?: any;
+    cancelText?: any;
+    submitText?: any;
+    isEditing?: boolean;
+    onCancel: () => void;
+    onSubmit: (importPath: string | null) => void;
+    onDelete?: () => void;
+  }
+
+  let {
+    importPath = $bindable(),
+    importPaths = $bindable([]),
+    title = $t('import_path'),
+    cancelText = $t('cancel'),
+    submitText = $t('save'),
+    isEditing = false,
+    onCancel,
+    onSubmit,
+    onDelete = () => {}
+  }: Props = $props();
 
   onMount(() => {
     if (isEditing) {
@@ -21,12 +37,12 @@
     }
   });
 
-  $: isDuplicate = importPath !== null && importPaths.includes(importPath);
-  $: canSubmit = importPath !== '' && importPath !== null && !importPaths.includes(importPath);
+  let isDuplicate = $derived(importPath !== null && importPaths.includes(importPath));
+  let canSubmit = $derived(importPath !== '' && importPath !== null && !importPaths.includes(importPath));
 </script>
 
 <FullScreenModal {title} icon={mdiFolderSync} onClose={onCancel}>
-  <form on:submit|preventDefault={() => onSubmit(importPath)} autocomplete="off" id="library-import-path-form">
+  <form onsubmit={preventDefault(() => onSubmit(importPath))} autocomplete="off" id="library-import-path-form">
     <p class="py-5 text-sm">{$t('admin.library_import_path_description')}</p>
 
     <div class="my-4 flex flex-col gap-2">
@@ -40,6 +56,7 @@
       {/if}
     </div>
   </form>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button color="gray" fullwidth on:click={onCancel}>{cancelText}</Button>
     {#if isEditing}

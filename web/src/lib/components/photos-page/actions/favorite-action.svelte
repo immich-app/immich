@@ -12,15 +12,19 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
 
-  export let onFavorite: OnFavorite;
 
-  export let menuItem = false;
-  export let removeFavorite: boolean;
+  interface Props {
+    onFavorite: OnFavorite;
+    menuItem?: boolean;
+    removeFavorite: boolean;
+  }
 
-  $: text = removeFavorite ? $t('remove_from_favorites') : $t('to_favorite');
-  $: icon = removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline;
+  let { onFavorite, menuItem = false, removeFavorite }: Props = $props();
 
-  let loading = false;
+  let text = $derived(removeFavorite ? $t('remove_from_favorites') : $t('to_favorite'));
+  let icon = $derived(removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline);
+
+  let loading = $state(false);
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 

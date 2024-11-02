@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -10,16 +12,20 @@
   import LinkButton from '../elements/buttons/link-button.svelte';
   import DateInput from '../elements/date-input.svelte';
 
-  export let settings: MapSettings;
-  export let onClose: () => void;
-  export let onSave: (settings: MapSettings) => void;
+  interface Props {
+    settings: MapSettings;
+    onClose: () => void;
+    onSave: (settings: MapSettings) => void;
+  }
 
-  let customDateRange = !!settings.dateAfter || !!settings.dateBefore;
+  let { settings = $bindable(), onClose, onSave }: Props = $props();
+
+  let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);
 </script>
 
 <FullScreenModal title={$t('map_settings')} {onClose}>
   <form
-    on:submit|preventDefault={() => onSave(settings)}
+    onsubmit={preventDefault(() => onSave(settings))}
     class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
     id="map-settings-form"
   >
@@ -102,6 +108,7 @@
       </div>
     {/if}
   </form>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button color="gray" size="sm" fullwidth on:click={onClose}>{$t('cancel')}</Button>
     <Button type="submit" size="sm" fullwidth form="map-settings-form">{$t('save')}</Button>

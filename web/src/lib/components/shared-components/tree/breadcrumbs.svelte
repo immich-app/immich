@@ -4,12 +4,21 @@
   import { mdiArrowUpLeft, mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let pathSegments: string[] = [];
-  export let getLink: (path: string) => string;
-  export let title: string;
-  export let icon: string;
+  interface Props {
+    pathSegments?: string[];
+    getLink: (path: string) => string;
+    title: string;
+    icon: string;
+  }
 
-  $: isRoot = pathSegments.length === 0;
+  let {
+    pathSegments = [],
+    getLink,
+    title,
+    icon
+  }: Props = $props();
+
+  let isRoot = $derived(pathSegments.length === 0);
 </script>
 
 <nav class="flex items-center py-2">

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
@@ -23,15 +25,14 @@
   import { t } from 'svelte-i18n';
   import Error from '$lib/components/error.svelte';
   import { shortcut } from '$lib/actions/shortcut';
-
-  let showNavigationLoadingBar = false;
-  $: changeTheme($colorTheme);
-
-  $: if ($user) {
-    openWebsocketConnection();
-  } else {
-    closeWebsocketConnection();
+  interface Props {
+    children?: import('svelte').Snippet;
   }
+
+  let { children }: Props = $props();
+
+  let showNavigationLoadingBar = $state(false);
+
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
@@ -81,6 +82,16 @@
 
   afterNavigate(() => {
     showNavigationLoadingBar = false;
+  });
+  run(() => {
+    changeTheme($colorTheme);
+  });
+  run(() => {
+    if ($user) {
+      openWebsocketConnection();
+    } else {
+      closeWebsocketConnection();
+    }
   });
 </script>
 
@@ -135,7 +146,7 @@
 {#if $page.data.error}
   <Error error={$page.data.error}></Error>
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}
 
 {#if showNavigationLoadingBar}

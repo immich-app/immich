@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     AudioCodec,
@@ -25,35 +28,48 @@
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
+
+  let {
+    savedConfig,
+    defaultConfig,
+    config = $bindable(),
+    disabled = false,
+    onReset,
+    onSave
+  }: Props = $props();
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          <FormatMessage key="admin.transcoding_codecs_learn_more" let:tag let:message>
-            {#if tag === 'h264-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {:else if tag === 'hevc-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {:else if tag === 'vp9-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {/if}
-          </FormatMessage>
+          <FormatMessage key="admin.transcoding_codecs_learn_more"  >
+            {#snippet children({ tag, message })}
+                        {#if tag === 'h264-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {:else if tag === 'hevc-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {:else if tag === 'vp9-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {/if}
+                                  {/snippet}
+                    </FormatMessage>
         </p>
 
         <SettingInputField

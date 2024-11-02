@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
@@ -47,40 +49,46 @@
     return relativeFormatter.format(Math.trunc(diff.as(unit)), unit);
   };
 
-  export let reactions: ActivityResponseDto[];
-  export let user: UserResponseDto;
-  export let assetId: string | undefined = undefined;
-  export let albumId: string;
-  export let assetType: AssetTypeEnum | undefined = undefined;
-  export let albumOwnerId: string;
-  export let disabled: boolean;
-  export let isLiked: ActivityResponseDto | null;
-  export let onDeleteComment: () => void;
-  export let onDeleteLike: () => void;
-  export let onAddComment: () => void;
-  export let onClose: () => void;
-
-  let textArea: HTMLTextAreaElement;
-  let innerHeight: number;
-  let activityHeight: number;
-  let chatHeight: number;
-  let divHeight: number;
-  let previousAssetId: string | undefined = assetId;
-  let message = '';
-  let isSendingMessage = false;
-
-  $: {
-    if (innerHeight && activityHeight) {
-      divHeight = innerHeight - activityHeight;
-    }
+  interface Props {
+    reactions: ActivityResponseDto[];
+    user: UserResponseDto;
+    assetId?: string | undefined;
+    albumId: string;
+    assetType?: AssetTypeEnum | undefined;
+    albumOwnerId: string;
+    disabled: boolean;
+    isLiked: ActivityResponseDto | null;
+    onDeleteComment: () => void;
+    onDeleteLike: () => void;
+    onAddComment: () => void;
+    onClose: () => void;
   }
 
-  $: {
-    if (assetId && previousAssetId != assetId) {
-      handlePromiseError(getReactions());
-      previousAssetId = assetId;
-    }
-  }
+  let {
+    reactions = $bindable(),
+    user,
+    assetId = undefined,
+    albumId,
+    assetType = undefined,
+    albumOwnerId,
+    disabled,
+    isLiked,
+    onDeleteComment,
+    onDeleteLike,
+    onAddComment,
+    onClose
+  }: Props = $props();
+
+  let textArea: HTMLTextAreaElement = $state();
+  let innerHeight: number = $state();
+  let activityHeight: number = $state();
+  let chatHeight: number = $state();
+  let divHeight: number = $state();
+  let previousAssetId: string | undefined = $state(assetId);
+  let message = $state('');
+  let isSendingMessage = $state(false);
+
+
   onMount(async () => {
     await getReactions();
   });
@@ -148,6 +156,17 @@
     }
     isSendingMessage = false;
   };
+  run(() => {
+    if (innerHeight && activityHeight) {
+      divHeight = innerHeight - activityHeight;
+    }
+  });
+  run(() => {
+    if (assetId && previousAssetId != assetId) {
+      handlePromiseError(getReactions());
+      previousAssetId = assetId;
+    }
+  });
 </script>
 
 <div class="overflow-y-hidden relative h-full" bind:offsetHeight={innerHeight}>
@@ -277,7 +296,7 @@
         <div>
           <UserAvatar {user} size="md" showTitle={false} />
         </div>
-        <form class="flex w-full max-h-56 gap-1" on:submit|preventDefault={() => handleSendComment()}>
+        <form class="flex w-full max-h-56 gap-1" onsubmit={preventDefault(() => handleSendComment())}>
           <div class="flex w-full items-center gap-4">
             <textarea
               {disabled}
@@ -285,7 +304,7 @@
               bind:value={message}
               use:autoGrowHeight={'5px'}
               placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-              on:input={() => autoGrowHeight(textArea, '5px')}
+              oninput={() => autoGrowHeight(textArea, '5px')}
               use:shortcut={{
                 shortcut: { key: 'Enter' },
                 onShortcut: () => handleSendComment(),

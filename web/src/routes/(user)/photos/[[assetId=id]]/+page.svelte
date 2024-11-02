@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -35,13 +37,13 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  let isAllFavorite: boolean;
-  let isAllOwned: boolean;
-  let isAssetStackSelected: boolean;
-  let isLinkActionAvailable: boolean;
+  let isAllFavorite: boolean = $state();
+  let isAllOwned: boolean = $state();
+  let isAssetStackSelected: boolean = $state();
+  let isLinkActionAvailable: boolean = $state();
 
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: {
+  run(() => {
     const selection = [...$selectedAssets];
     isAllOwned = selection.every((asset) => asset.ownerId === $user.id);
     isAllFavorite = selection.every((asset) => asset.isFavorite);
@@ -52,7 +54,7 @@
       selection.some((asset) => asset.type === AssetTypeEnum.Image) &&
       selection.some((asset) => asset.type === AssetTypeEnum.Image);
     isLinkActionAvailable = isAllOwned && (isLivePhoto || isLivePhotoCandidate);
-  }
+  });
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -134,6 +136,8 @@
     {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} slot="empty" />
+    {#snippet empty()}
+        <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()}  />
+      {/snippet}
   </AssetGrid>
 </UserPageLayout>

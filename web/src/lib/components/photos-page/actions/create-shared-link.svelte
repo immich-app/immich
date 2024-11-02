@@ -5,7 +5,7 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
 
-  let showModal = false;
+  let showModal = $state(false);
   const { getAssets } = getAssetControlContext();
 </script>
 

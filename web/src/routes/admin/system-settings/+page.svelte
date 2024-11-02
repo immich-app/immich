@@ -57,10 +57,14 @@
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let config = data.configs;
-  let handleSave: (update: Partial<SystemConfigDto>) => Promise<void>;
+  let { data }: Props = $props();
+
+  let config = $state(data.configs);
+  let handleSave: (update: Partial<SystemConfigDto>) => Promise<void> = $state();
 
   type SettingsComponent = ComponentType<SvelteComponent<SettingsComponentProps>>;
 
@@ -73,7 +77,7 @@
     setTimeout(() => downloadManager.clear(downloadKey), 5000);
   };
 
-  let inputElement: HTMLInputElement;
+  let inputElement: HTMLInputElement = $state();
   const uploadConfig = (e: Event) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) {
@@ -215,15 +219,15 @@
     },
   ];
 
-  let searchQuery = '';
+  let searchQuery = $state('');
 
-  $: filteredSettings = settings.filter(({ title, subtitle }) => {
+  let filteredSettings = $derived(settings.filter(({ title, subtitle }) => {
     const query = searchQuery.toLowerCase();
     return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
-  });
+  }));
 </script>
 
-<input bind:this={inputElement} type="file" accept=".json" style="display: none" on:change={uploadConfig} />
+<input bind:this={inputElement} type="file" accept=".json" style="display: none" onchange={uploadConfig} />
 
 <div class="h-svh flex flex-col overflow-hidden">
   {#if $featureFlags.configFile}
@@ -236,54 +240,58 @@
   {/if}
 
   <UserPageLayout title={data.meta.title} admin>
-    <div class="flex justify-end gap-2" slot="buttons">
-      <div class="hidden lg:block">
-        <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
-      </div>
-      <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiContentCopy} size="18" />
-          {$t('copy_to_clipboard')}
+    {#snippet buttons()}
+        <div class="flex justify-end gap-2" >
+        <div class="hidden lg:block">
+          <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
         </div>
-      </LinkButton>
-      <LinkButton on:click={() => downloadConfig()}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiDownload} size="18" />
-          {$t('export_as_json')}
-        </div>
-      </LinkButton>
-      {#if !$featureFlags.configFile}
-        <LinkButton on:click={() => inputElement?.click()}>
+        <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
           <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiUpload} size="18" />
-            {$t('import_from_json')}
+            <Icon path={mdiContentCopy} size="18" />
+            {$t('copy_to_clipboard')}
           </div>
         </LinkButton>
-      {/if}
-    </div>
-
-    <AdminSettings bind:config let:handleReset bind:handleSave let:savedConfig let:defaultConfig>
-      <section id="setting-content" class="flex place-content-center sm:mx-4">
-        <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
-          <div class="block lg:hidden">
-            <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
+        <LinkButton on:click={() => downloadConfig()}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiDownload} size="18" />
+            {$t('export_as_json')}
           </div>
-          <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-            {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
-              <SettingAccordion {title} {subtitle} {key} {icon}>
-                <Component
-                  onSave={(config) => handleSave(config)}
-                  onReset={(options) => handleReset(options)}
-                  disabled={$featureFlags.configFile}
-                  {defaultConfig}
-                  {config}
-                  {savedConfig}
-                />
-              </SettingAccordion>
-            {/each}
-          </SettingAccordionState>
+        </LinkButton>
+        {#if !$featureFlags.configFile}
+          <LinkButton on:click={() => inputElement?.click()}>
+            <div class="flex place-items-center gap-2 text-sm">
+              <Icon path={mdiUpload} size="18" />
+              {$t('import_from_json')}
+            </div>
+          </LinkButton>
+        {/if}
+      </div>
+      {/snippet}
+
+    <AdminSettings bind:config  bind:handleSave  >
+      {#snippet children({ handleReset, savedConfig, defaultConfig })}
+            <section id="setting-content" class="flex place-content-center sm:mx-4">
+          <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
+            <div class="block lg:hidden">
+              <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
+            </div>
+            <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
+              {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
+                <SettingAccordion {title} {subtitle} {key} {icon}>
+                  <Component
+                    onSave={(config) => handleSave(config)}
+                    onReset={(options) => handleReset(options)}
+                    disabled={$featureFlags.configFile}
+                    {defaultConfig}
+                    {config}
+                    {savedConfig}
+                  />
+                </SettingAccordion>
+              {/each}
+            </SettingAccordionState>
+          </section>
         </section>
-      </section>
-    </AdminSettings>
+                {/snippet}
+        </AdminSettings>
   </UserPageLayout>
 </div>

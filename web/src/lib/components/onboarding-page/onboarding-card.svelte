@@ -2,8 +2,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
 
-  export let title: string | undefined = undefined;
-  export let icon: string | undefined = undefined;
+  interface Props {
+    title?: string | undefined;
+    icon?: string | undefined;
+    children?: import('svelte').Snippet;
+  }
+
+  let { title = undefined, icon = undefined, children }: Props = $props();
 </script>
 
 <div
@@ -23,5 +28,5 @@
       {/if}
     </div>
   {/if}
-  <slot />
+  {@render children?.()}
 </div>

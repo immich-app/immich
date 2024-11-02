@@ -7,12 +7,16 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let devices: SessionResponseDto[];
+  interface Props {
+    devices: SessionResponseDto[];
+  }
+
+  let { devices = $bindable() }: Props = $props();
 
   const refresh = () => getSessions().then((_devices) => (devices = _devices));
 
-  $: currentDevice = devices.find((device) => device.current);
-  $: otherDevices = devices.filter((device) => !device.current);
+  let currentDevice = $derived(devices.find((device) => device.current));
+  let otherDevices = $derived(devices.filter((device) => !device.current));
 
   const handleDelete = async (device: SessionResponseDto) => {
     const isConfirmed = await dialogController.show({

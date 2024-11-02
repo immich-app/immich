@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { intersectionObserver } from '$lib/actions/intersection-observer';
@@ -59,17 +61,17 @@
     nextMemory?: MemoryLaneResponseDto;
   };
 
-  let memoryGallery: HTMLElement;
-  let memoryWrapper: HTMLElement;
-  let galleryInView = false;
-  let paused = false;
-  let selectedAssets: Set<AssetResponseDto> = new Set();
-  let current: MemoryAsset | undefined = undefined;
+  let memoryGallery: HTMLElement = $state();
+  let memoryWrapper: HTMLElement = $state();
+  let galleryInView = $state(false);
+  let paused = $state(false);
+  let selectedAssets: Set<AssetResponseDto> = $state(new Set());
+  let current: MemoryAsset | undefined = $state(undefined);
   // let memories: MemoryAsset[] = [];
-  let resetPromise = Promise.resolve();
+  let resetPromise = $state(Promise.resolve());
 
   const { isViewing } = assetViewingStore;
-  const viewport: Viewport = { width: 0, height: 0 };
+  const viewport: Viewport = $state({ width: 0, height: 0 });
   const progress = tweened<number>(0, { duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0) });
   const memories = derived(memoryStore, (memories) => {
     memories = memories ?? [];
@@ -100,12 +102,6 @@
     return memoryAssets;
   });
 
-  $: isMultiSelectionMode = selectedAssets.size > 0;
-  $: isAllArchived = [...selectedAssets].every((asset) => asset.isArchived);
-  $: isAllFavorite = [...selectedAssets].every((asset) => asset.isFavorite);
-  $: selectedAssets = galleryInView ? selectedAssets : new Set();
-  $: handlePromiseError(handleProgress($progress));
-  $: handlePromiseError(handleAction(galleryInView ? 'pause' : 'play'));
 
   const loadFromParams = (memories: MemoryAsset[], page: typeof $page | NavigationTarget | null) => {
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
@@ -210,6 +206,18 @@
 
     current = loadFromParams($memories, target);
   });
+  run(() => {
+    selectedAssets = galleryInView ? selectedAssets : new Set();
+  });
+  let isMultiSelectionMode = $derived(selectedAssets.size > 0);
+  let isAllArchived = $derived([...selectedAssets].every((asset) => asset.isArchived));
+  let isAllFavorite = $derived([...selectedAssets].every((asset) => asset.isFavorite));
+  run(() => {
+    handlePromiseError(handleProgress($progress));
+  });
+  run(() => {
+    handlePromiseError(handleAction(galleryInView ? 'pause' : 'play'));
+  });
 </script>
 
 <svelte:window
@@ -251,11 +259,13 @@
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if current && current.memory.assets.length > 0}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark>
-      <svelte:fragment slot="leading">
-        <p class="text-lg">
-          {$memoryLaneTitle(current.memory.yearsAgo)}
-        </p>
-      </svelte:fragment>
+      {#snippet leading()}
+          
+          <p class="text-lg">
+            {$memoryLaneTitle(current.memory.yearsAgo)}
+          </p>
+        
+          {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
         <CircleIconButton
@@ -296,7 +306,7 @@
       >
         <button
           type="button"
-          on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
+          onclick={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
           disabled={!galleryInView}
         >
           <CircleIconButton title={$t('hide_gallery')} icon={mdiChevronUp} color="light" />
@@ -314,7 +324,7 @@
             type="button"
             class="relative h-full w-full rounded-2xl"
             disabled={!current.previousMemory}
-            on:click={handlePreviousMemory}
+            onclick={handlePreviousMemory}
           >
             {#if current.previousMemory && current.previousMemory.assets.length > 0}
               <img
@@ -409,7 +419,7 @@
           <button
             type="button"
             class="relative h-full w-full rounded-2xl"
-            on:click={handleNextMemory}
+            onclick={handleNextMemory}
             disabled={!current.nextMemory}
           >
             {#if current.nextMemory && current.nextMemory.assets.length > 0}

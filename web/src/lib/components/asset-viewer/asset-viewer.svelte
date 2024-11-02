@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
@@ -48,18 +50,35 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
 
-  export let assetStore: AssetStore | null = null;
-  export let asset: AssetResponseDto;
-  export let preloadAssets: AssetResponseDto[] = [];
-  export let showNavigation = true;
-  export let withStacked = false;
-  export let isShared = false;
-  export let album: AlbumResponseDto | null = null;
-  export let onAction: OnAction | undefined = undefined;
-  export let reactions: ActivityResponseDto[] = [];
-  export let onClose: (dto: { asset: AssetResponseDto }) => void;
-  export let onNext: () => void;
-  export let onPrevious: () => void;
+  interface Props {
+    assetStore?: AssetStore | null;
+    asset: AssetResponseDto;
+    preloadAssets?: AssetResponseDto[];
+    showNavigation?: boolean;
+    withStacked?: boolean;
+    isShared?: boolean;
+    album?: AlbumResponseDto | null;
+    onAction?: OnAction | undefined;
+    reactions?: ActivityResponseDto[];
+    onClose: (dto: { asset: AssetResponseDto }) => void;
+    onNext: () => void;
+    onPrevious: () => void;
+  }
+
+  let {
+    assetStore = null,
+    asset = $bindable(),
+    preloadAssets = $bindable([]),
+    showNavigation = true,
+    withStacked = false,
+    isShared = false,
+    album = null,
+    onAction = undefined,
+    reactions = $bindable([]),
+    onClose,
+    onNext,
+    onPrevious
+  }: Props = $props();
 
   const { setAsset } = assetViewingStore;
   const {
@@ -70,26 +89,25 @@
     slideshowTransition,
   } = slideshowStore;
 
-  let appearsInAlbums: AlbumResponseDto[] = [];
-  let shouldPlayMotionPhoto = false;
+  let appearsInAlbums: AlbumResponseDto[] = $state([]);
+  let shouldPlayMotionPhoto = $state(false);
   let sharedLink = getSharedLink();
   let enableDetailPanel = asset.hasMetadata;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
-  let previewStackedAsset: AssetResponseDto | undefined;
-  let isShowActivity = false;
-  let isShowEditor = false;
-  let isLiked: ActivityResponseDto | null = null;
-  let numberOfComments: number;
-  let fullscreenElement: Element;
+  let previewStackedAsset: AssetResponseDto | undefined = $state();
+  let isShowActivity = $state(false);
+  let isShowEditor = $state(false);
+  let isLiked: ActivityResponseDto | null = $state(null);
+  let numberOfComments: number = $state();
+  let fullscreenElement: Element = $state();
   let unsubscribes: (() => void)[] = [];
-  let selectedEditType: string = '';
-  let stack: StackResponseDto | null = null;
+  let selectedEditType: string = $state('');
+  let stack: StackResponseDto | null = $state(null);
 
-  let zoomToggle = () => void 0;
-  let copyImage: () => Promise<void>;
+  let zoomToggle = $state(() => void 0);
+  let copyImage: () => Promise<void> = $state();
 
-  $: isFullScreen = fullscreenElement !== null;
 
   const refreshStack = async () => {
     if (isSharedLink()) {
@@ -109,15 +127,7 @@
     }
   };
 
-  $: if (asset) {
-    handlePromiseError(refreshStack());
-  }
 
-  $: {
-    if (album && !album.isActivityEnabled && numberOfComments === 0) {
-      isShowActivity = false;
-    }
-  }
 
   const handleAddComment = () => {
     numberOfComments++;
@@ -184,12 +194,6 @@
     }
   };
 
-  $: {
-    if (isShared && asset.id) {
-      handlePromiseError(getFavorite());
-      handlePromiseError(getNumberOfComments());
-    }
-  }
 
   onMount(async () => {
     unsubscribes.push(
@@ -233,11 +237,6 @@
     }
   });
 
-  $: {
-    if (asset.id && !sharedLink) {
-      handlePromiseError(handleGetAllAlbums());
-    }
-  }
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {
@@ -337,7 +336,7 @@
    * Slide show mode
    */
 
-  let assetViewerHtmlElement: HTMLElement;
+  let assetViewerHtmlElement: HTMLElement = $state();
 
   const slideshowHistory = new SlideshowHistory((asset) => {
     setAsset(asset);
@@ -395,6 +394,28 @@
   const handleUpdateSelectedEditType = (type: string) => {
     selectedEditType = type;
   };
+  let isFullScreen = $derived(fullscreenElement !== null);
+  run(() => {
+    if (asset) {
+      handlePromiseError(refreshStack());
+    }
+  });
+  run(() => {
+    if (album && !album.isActivityEnabled && numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  });
+  run(() => {
+    if (isShared && asset.id) {
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
+    }
+  });
+  run(() => {
+    if (asset.id && !sharedLink) {
+      handlePromiseError(handleGetAllAlbums());
+    }
+  });
 </script>
 
 <svelte:document bind:fullscreenElement />
@@ -421,7 +442,8 @@
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
       >
-        <MotionPhotoAction
+        <!-- @migration-task: migrate this slot by hand, `motion-photo` is an invalid identifier -->
+  <MotionPhotoAction
           slot="motion-photo"
           isPlaying={shouldPlayMotionPhoto}
           onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}

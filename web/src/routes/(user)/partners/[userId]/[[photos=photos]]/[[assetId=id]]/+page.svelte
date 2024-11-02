@@ -15,7 +15,11 @@
   import { mdiPlus, mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withStacked: true });
   const assetInteractionStore = createAssetInteractionStore();
@@ -39,11 +43,13 @@
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
-      <svelte:fragment slot="leading">
-        <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-          {data.partner.name}'s photos
-        </p>
-      </svelte:fragment>
+      {#snippet leading()}
+          
+          <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
+            {data.partner.name}'s photos
+          </p>
+        
+          {/snippet}
     </ControlAppBar>
   {/if}
   <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} />

@@ -15,18 +15,18 @@
 
   const { serverVersion, connected } = websocketStore;
 
-  let isOpen = false;
+  let isOpen = $state(false);
 
-  $: isMain = info?.sourceRef === 'main' && info.repository === 'immich-app/immich';
-  $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
 
-  let info: ServerAboutResponseDto;
-  let versions: ServerVersionHistoryResponseDto[] = [];
+  let info: ServerAboutResponseDto = $state();
+  let versions: ServerVersionHistoryResponseDto[] = $state([]);
 
   onMount(async () => {
     await requestServerInfo();
     [info, versions] = await Promise.all([getAboutInfo(), getVersionHistory()]);
   });
+  let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
+  let version = $derived($serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null);
 </script>
 
 {#if isOpen}
@@ -50,7 +50,7 @@
 
   <div class="flex justify-between justify-items-center">
     {#if $connected && version}
-      <button type="button" on:click={() => (isOpen = true)} class="dark:text-immich-gray flex gap-1">
+      <button type="button" onclick={() => (isOpen = true)} class="dark:text-immich-gray flex gap-1">
         {#if isMain}
           <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info.sourceRef}
         {:else}

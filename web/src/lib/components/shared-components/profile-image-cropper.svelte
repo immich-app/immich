@@ -10,10 +10,14 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    onClose: () => void;
+  }
 
-  let imgElement: HTMLDivElement;
+  let { asset, onClose }: Props = $props();
+
+  let imgElement: HTMLDivElement = $state();
 
   onMount(() => {
     imgElement.style.width = '100%';
@@ -79,6 +83,7 @@
       <PhotoViewer bind:element={imgElement} {asset} />
     </div>
   </div>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button fullwidth on:click={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
   </svelte:fragment>

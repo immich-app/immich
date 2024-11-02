@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <script lang="ts" context="module">
   export enum SettingInputFieldType {
     EMAIL = 'email',

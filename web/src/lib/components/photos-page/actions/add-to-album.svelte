@@ -8,10 +8,14 @@
   import { t } from 'svelte-i18n';
   import type { OnAddToAlbum } from '$lib/utils/actions';
 
-  export let shared = false;
-  export let onAddToAlbum: OnAddToAlbum = () => {};
+  interface Props {
+    shared?: boolean;
+    onAddToAlbum?: OnAddToAlbum;
+  }
 
-  let showAlbumPicker = false;
+  let { shared = false, onAddToAlbum = () => {} }: Props = $props();
+
+  let showAlbumPicker = $state(false);
 
   const { getAssets } = getAssetControlContext();
 

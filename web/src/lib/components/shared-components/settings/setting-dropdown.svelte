@@ -4,13 +4,26 @@
   import Dropdown, { type RenderedOption } from '$lib/components/elements/dropdown.svelte';
   import { t } from 'svelte-i18n';
 
-  export let title: string;
-  export let subtitle = '';
-  export let options: RenderedOption[];
-  export let selectedOption: RenderedOption;
-  export let isEdited = false;
 
-  export let onToggle: (option: RenderedOption) => void;
+  interface Props {
+    title: string;
+    subtitle?: string;
+    options: RenderedOption[];
+    selectedOption: RenderedOption;
+    isEdited?: boolean;
+    onToggle: (option: RenderedOption) => void;
+    children?: import('svelte').Snippet;
+  }
+
+  let {
+    title,
+    subtitle = '',
+    options,
+    selectedOption = $bindable(),
+    isEdited = false,
+    onToggle,
+    children
+  }: Props = $props();
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -30,7 +43,7 @@
     </div>
 
     <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
-    <slot />
+    {@render children?.()}
   </div>
   <div class="w-fit">
     <Dropdown

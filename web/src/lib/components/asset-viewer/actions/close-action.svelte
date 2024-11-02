@@ -4,7 +4,11 @@
   import { mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let onClose: () => void;
+  interface Props {
+    onClose: () => void;
+  }
+
+  let { onClose }: Props = $props();
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />

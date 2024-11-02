@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
@@ -22,17 +25,32 @@
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let minified = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
-  export let duration: number = 500;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    minified?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+    duration?: number;
+    children?: import('svelte').Snippet;
+  }
 
-  let templateOptions: SystemConfigTemplateStorageOptionDto;
-  let selectedPreset = '';
+  let {
+    savedConfig,
+    defaultConfig,
+    config = $bindable(),
+    disabled = false,
+    minified = false,
+    onReset,
+    onSave,
+    duration = 500,
+    children
+  }: Props = $props();
+
+  let templateOptions: SystemConfigTemplateStorageOptionDto = $state();
+  let selectedPreset = $state('');
 
   const getTemplateOptions = async () => {
     templateOptions = await getStorageTemplateOptions();
@@ -41,13 +59,6 @@
 
   const getSupportDateTimeFormat = () => getStorageTemplateOptions();
 
-  $: parsedTemplate = () => {
-    try {
-      return renderTemplate(config.storageTemplate.template);
-    } catch {
-      return 'error';
-    }
-  };
 
   const renderTemplate = (templateString: string) => {
     const template = handlebar.compile(templateString, {
@@ -85,32 +96,41 @@
   const handlePresetSelection = () => {
     config.storageTemplate.template = selectedPreset;
   };
+  let parsedTemplate = $derived(() => {
+    try {
+      return renderTemplate(config.storageTemplate.template);
+    } catch {
+      return 'error';
+    }
+  });
 </script>
 
 <section class="dark:text-immich-dark-fg mt-2">
   <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
     <p class="text-sm dark:text-immich-dark-fg">
-      <FormatMessage key="admin.storage_template_more_details" let:tag let:message>
-        {#if tag === 'template-link'}
-          <a
-            href="https://immich.app/docs/administration/storage-template"
-            class="underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {message}
-          </a>
-        {:else if tag === 'implications-link'}
-          <a
-            href="https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations"
-            class="underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {message}
-          </a>
-        {/if}
-      </FormatMessage>
+      <FormatMessage key="admin.storage_template_more_details"  >
+        {#snippet children({ tag, message })}
+                {#if tag === 'template-link'}
+            <a
+              href="https://immich.app/docs/administration/storage-template"
+              class="underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {message}
+            </a>
+          {:else if tag === 'implications-link'}
+            <a
+              href="https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations"
+              class="underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {message}
+            </a>
+          {/if}
+                      {/snippet}
+            </FormatMessage>
     </p>
   </div>
   {#await getTemplateOptions() then}
@@ -164,20 +184,24 @@
             <FormatMessage
               key="admin.storage_template_path_length"
               values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
-              let:message
+              
             >
-              <span class="font-semibold text-immich-primary dark:text-immich-dark-primary">{message}</span>
-            </FormatMessage>
+              {#snippet children({ message })}
+                            <span class="font-semibold text-immich-primary dark:text-immich-dark-primary">{message}</span>
+                                        {/snippet}
+                        </FormatMessage>
           </p>
 
           <p class="text-sm">
             <FormatMessage
               key="admin.storage_template_user_label"
               values={{ label: $user.storageLabel || $user.id }}
-              let:message
+              
             >
-              <code class="text-immich-primary dark:text-immich-dark-primary">{message}</code>
-            </FormatMessage>
+              {#snippet children({ message })}
+                            <code class="text-immich-primary dark:text-immich-dark-primary">{message}</code>
+                                        {/snippet}
+                        </FormatMessage>
           </p>
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
@@ -186,7 +210,7 @@
             >/{parsedTemplate()}.jpg
           </p>
 
-          <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
+          <form autocomplete="off" class="flex flex-col" onsubmit={preventDefault(bubble('submit'))}>
             <div class="flex flex-col my-2">
               <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="preset-select">
                 {$t('preset')}
@@ -197,7 +221,7 @@
                 name="presets"
                 id="preset-select"
                 bind:value={selectedPreset}
-                on:change={handlePresetSelection}
+                onchange={handlePresetSelection}
               >
                 {#each templateOptions.presetOptions as preset}
                   <option value={preset}>{renderTemplate(preset)}</option>
@@ -232,12 +256,14 @@
                     <FormatMessage
                       key="admin.storage_template_migration_info"
                       values={{ job: $t('admin.storage_template_migration_job') }}
-                      let:message
+                      
                     >
-                      <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
-                        {message}
-                      </a>
-                    </FormatMessage>
+                      {#snippet children({ message })}
+                                            <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
+                          {message}
+                        </a>
+                                                                {/snippet}
+                                        </FormatMessage>
                   </p>
                 </section>
               </div>
@@ -247,7 +273,7 @@
       {/if}
 
       {#if minified}
-        <slot />
+        {@render children?.()}
       {:else}
         <SettingButtonsRow
           onReset={(options) => onReset({ ...options, configKeys: ['storageTemplate'] })}

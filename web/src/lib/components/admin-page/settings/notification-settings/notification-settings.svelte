@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import { sendTestEmail, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
@@ -19,14 +22,25 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
 
-  let isSending = false;
+  let {
+    savedConfig,
+    defaultConfig,
+    config = $bindable(),
+    disabled = false,
+    onReset,
+    onSave
+  }: Props = $props();
+
+  let isSending = $state(false);
 
   const handleSendTestEmail = async () => {
     if (isSending) {
@@ -69,7 +83,7 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault class="mt-4">
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))} class="mt-4">
       <div class="flex flex-col gap-4">
         <SettingAccordion key="email" title={$t('email')} subtitle={$t('admin.notification_email_setting_description')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">

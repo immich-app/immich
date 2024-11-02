@@ -7,7 +7,11 @@
   import { user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
 
-  export let onDone: () => void;
+  interface Props {
+    onDone: () => void;
+  }
+
+  let { onDone }: Props = $props();
 </script>
 
 <OnboardingCard>

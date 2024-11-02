@@ -27,11 +27,15 @@
     inTimeline: boolean;
   }
 
-  export let user: UserResponseDto;
+  interface Props {
+    user: UserResponseDto;
+  }
 
-  let createPartnerFlag = false;
+  let { user }: Props = $props();
+
+  let createPartnerFlag = $state(false);
   // let removePartnerDto: PartnerResponseDto | null = null;
-  let partners: Array<PartnerSharing> = [];
+  let partners: Array<PartnerSharing> = $state([]);
 
   onMount(async () => {
     await refreshPartners();

@@ -9,20 +9,30 @@
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
-  export let isFullScreen: boolean;
-  export let onNext = () => {};
-  export let onPrevious = () => {};
-  export let onClose = () => {};
-  export let onSetToFullScreen = () => {};
+  interface Props {
+    isFullScreen: boolean;
+    onNext?: any;
+    onPrevious?: any;
+    onClose?: any;
+    onSetToFullScreen?: any;
+  }
+
+  let {
+    isFullScreen,
+    onNext = () => {},
+    onPrevious = () => {},
+    onClose = () => {},
+    onSetToFullScreen = () => {}
+  }: Props = $props();
 
   const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
 
-  let progressBarStatus: ProgressBarStatus;
-  let progressBar: ProgressBar;
-  let showSettings = false;
-  let showControls = true;
+  let progressBarStatus: ProgressBarStatus = $state();
+  let progressBar: ProgressBar = $state();
+  let showSettings = $state(false);
+  let showControls = $state(true);
   let timer: NodeJS.Timeout;
-  let isOverControls = false;
+  let isOverControls = $state(false);
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
@@ -87,7 +97,7 @@
 </script>
 
 <svelte:window
-  on:mousemove={showControlBar}
+  onmousemove={showControlBar}
   use:shortcuts={[
     { shortcut: { key: 'Escape' }, onShortcut: onClose },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: onPrevious },
@@ -98,8 +108,8 @@
 {#if showControls}
   <div
     class="m-4 flex gap-2"
-    on:mouseenter={() => (isOverControls = true)}
-    on:mouseleave={() => (isOverControls = false)}
+    onmouseenter={() => (isOverControls = true)}
+    onmouseleave={() => (isOverControls = false)}
     transition:fly={{ duration: 150 }}
     role="navigation"
   >

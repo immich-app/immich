@@ -1,17 +1,30 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
-  export let apiKey: { name: string };
-  export let title: string;
-  export let cancelText = $t('cancel');
-  export let submitText = $t('save');
 
-  export let onSubmit: (apiKey: { name: string }) => void;
-  export let onCancel: () => void;
+  interface Props {
+    apiKey: { name: string };
+    title: string;
+    cancelText?: any;
+    submitText?: any;
+    onSubmit: (apiKey: { name: string }) => void;
+    onCancel: () => void;
+  }
+
+  let {
+    apiKey = $bindable(),
+    title,
+    cancelText = $t('cancel'),
+    submitText = $t('save'),
+    onSubmit,
+    onCancel
+  }: Props = $props();
 
   const handleSubmit = () => {
     if (apiKey.name) {
@@ -26,12 +39,13 @@
 </script>
 
 <FullScreenModal {title} icon={mdiKeyVariant} onClose={() => onCancel()}>
-  <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="api-key-form">
+  <form onsubmit={preventDefault(handleSubmit)} autocomplete="off" id="api-key-form">
     <div class="mb-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">{$t('name')}</label>
       <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKey.name} />
     </div>
   </form>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button color="gray" fullwidth on:click={() => onCancel()}>{cancelText}</Button>
     <Button type="submit" fullwidth form="api-key-form">{submitText}</Button>

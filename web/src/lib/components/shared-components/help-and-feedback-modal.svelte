@@ -7,9 +7,13 @@
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
   import { discordPath } from '$lib/assets/svg-paths';
 
-  export let onClose: () => void;
 
-  export let info: ServerAboutResponseDto;
+  interface Props {
+    onClose: () => void;
+    info: ServerAboutResponseDto;
+  }
+
+  let { onClose, info }: Props = $props();
 </script>
 
 <Portal>

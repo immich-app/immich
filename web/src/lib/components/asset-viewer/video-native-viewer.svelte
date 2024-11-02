@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
@@ -10,24 +12,38 @@
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  export let assetId: string;
-  export let loopVideo: boolean;
-  export let checksum: string;
-  export let onPreviousAsset: () => void = () => {};
-  export let onNextAsset: () => void = () => {};
-  export let onVideoEnded: () => void = () => {};
-  export let onVideoStarted: () => void = () => {};
-
-  let element: HTMLVideoElement | undefined = undefined;
-  let isVideoLoading = true;
-  let assetFileUrl: string;
-  let forceMuted = false;
-
-  $: if (element) {
-    assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
-    forceMuted = false;
-    element.load();
+  interface Props {
+    assetId: string;
+    loopVideo: boolean;
+    checksum: string;
+    onPreviousAsset?: () => void;
+    onNextAsset?: () => void;
+    onVideoEnded?: () => void;
+    onVideoStarted?: () => void;
   }
+
+  let {
+    assetId,
+    loopVideo,
+    checksum,
+    onPreviousAsset = () => {},
+    onNextAsset = () => {},
+    onVideoEnded = () => {},
+    onVideoStarted = () => {}
+  }: Props = $props();
+
+  let element: HTMLVideoElement | undefined = $state(undefined);
+  let isVideoLoading = $state(true);
+  let assetFileUrl: string = $state();
+  let forceMuted = $state(false);
+
+  run(() => {
+    if (element) {
+      assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+      forceMuted = false;
+      element.load();
+    }
+  });
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
@@ -73,10 +89,10 @@
     controls
     class="h-full object-contain"
     use:swipe
-    on:swipe={onSwipe}
-    on:canplay={(e) => handleCanPlay(e.currentTarget)}
-    on:ended={onVideoEnded}
-    on:volumechange={(e) => {
+    onswipe={onSwipe}
+    oncanplay={(e) => handleCanPlay(e.currentTarget)}
+    onended={onVideoEnded}
+    onvolumechange={(e) => {
       if (!forceMuted) {
         $videoViewerMuted = e.currentTarget.muted;
       }

@@ -20,7 +20,7 @@
 
   const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
-  export let onClose = () => {};
+  let { onClose = () => {} } = $props();
 
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
@@ -74,6 +74,7 @@
       bind:value={$slideshowDelay}
     />
   </div>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button fullwidth color="primary" on:click={onClose}>{$t('done')}</Button>
   </svelte:fragment>

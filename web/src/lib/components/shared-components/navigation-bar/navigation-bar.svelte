@@ -21,20 +21,24 @@
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import { onMount } from 'svelte';
 
-  export let showUploadButton = true;
-  export let onUploadClick: () => void;
+  interface Props {
+    showUploadButton?: boolean;
+    onUploadClick: () => void;
+  }
 
-  let shouldShowAccountInfo = false;
-  let shouldShowAccountInfoPanel = false;
-  let shouldShowHelpPanel = false;
-  let innerWidth: number;
+  let { showUploadButton = true, onUploadClick }: Props = $props();
+
+  let shouldShowAccountInfo = $state(false);
+  let shouldShowAccountInfoPanel = $state(false);
+  let shouldShowHelpPanel = $state(false);
+  let innerWidth: number = $state();
 
   const onLogout = async () => {
     const { redirectUri } = await logout();
     await handleLogout(redirectUri);
   };
 
-  let aboutInfo: ServerAboutResponseDto;
+  let aboutInfo: ServerAboutResponseDto = $state();
 
   onMount(async () => {
     aboutInfo = await getAboutInfo();
@@ -115,11 +119,11 @@
           <button
             type="button"
             class="flex pl-2"
-            on:mouseover={() => (shouldShowAccountInfo = true)}
-            on:focus={() => (shouldShowAccountInfo = true)}
-            on:blur={() => (shouldShowAccountInfo = false)}
-            on:mouseleave={() => (shouldShowAccountInfo = false)}
-            on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
+            onmouseover={() => (shouldShowAccountInfo = true)}
+            onfocus={() => (shouldShowAccountInfo = true)}
+            onblur={() => (shouldShowAccountInfo = false)}
+            onmouseleave={() => (shouldShowAccountInfo = false)}
+            onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
             {#key $user}
               <UserAvatar user={$user} size="md" showTitle={false} interactive />

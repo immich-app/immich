@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -6,15 +8,24 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
-  export let onEditSuccess: ((album: AlbumResponseDto) => unknown) | undefined = undefined;
-  export let onCancel: (() => unknown) | undefined = undefined;
-  export let onClose: () => void;
+  interface Props {
+    album: AlbumResponseDto;
+    onEditSuccess?: ((album: AlbumResponseDto) => unknown) | undefined;
+    onCancel?: (() => unknown) | undefined;
+    onClose: () => void;
+  }
 
-  let albumName = album.albumName;
-  let description = album.description;
+  let {
+    album = $bindable(),
+    onEditSuccess = undefined,
+    onCancel = undefined,
+    onClose
+  }: Props = $props();
 
-  let isSubmitting = false;
+  let albumName = $state(album.albumName);
+  let description = $state(album.description);
+
+  let isSubmitting = $state(false);
 
   const handleUpdateAlbumInfo = async () => {
     isSubmitting = true;
@@ -38,7 +49,7 @@
 </script>
 
 <FullScreenModal title={$t('edit_album')} width="wide" {onClose}>
-  <form on:submit|preventDefault={handleUpdateAlbumInfo} autocomplete="off" id="edit-album-form">
+  <form onsubmit={preventDefault(handleUpdateAlbumInfo)} autocomplete="off" id="edit-album-form">
     <div class="flex items-center">
       <div class="hidden sm:flex">
         <AlbumCover {album} class="h-[200px] w-[200px] m-4 shadow-lg" />
@@ -57,6 +68,7 @@
       </div>
     </div>
   </form>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button color="gray" fullwidth on:click={() => onCancel?.()}>{$t('cancel')}</Button>
     <Button type="submit" fullwidth disabled={isSubmitting} form="edit-album-form">{$t('ok')}</Button>

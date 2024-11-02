@@ -7,8 +7,12 @@
   import { mdiFolderDownloadOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let menuItem = false;
+  interface Props {
+    asset: AssetResponseDto;
+    menuItem?: boolean;
+  }
+
+  let { asset, menuItem = false }: Props = $props();
 
   const onDownloadFile = () => downloadFile(asset);
 </script>

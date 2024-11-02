@@ -21,11 +21,15 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
 
-  export let sharedLink: SharedLinkResponseDto;
-  export let user: UserResponseDto | undefined = undefined;
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+    user?: UserResponseDto | undefined;
+  }
+
+  let { sharedLink, user = undefined }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
-  let innerWidth: number;
+  let innerWidth: number = $state();
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -70,29 +74,33 @@
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar showBackButton={false}>
-      <svelte:fragment slot="leading">
-        <ImmichLogoSmallLink width={innerWidth} />
-      </svelte:fragment>
+      {#snippet leading()}
+          
+          <ImmichLogoSmallLink width={innerWidth} />
+        
+          {/snippet}
 
-      <svelte:fragment slot="trailing">
-        {#if sharedLink.allowUpload}
-          <CircleIconButton
-            title={$t('add_photos')}
-            on:click={() => openFileUploadDialog({ albumId: album.id })}
-            icon={mdiFileImagePlusOutline}
-          />
-        {/if}
+      {#snippet trailing()}
+          
+          {#if sharedLink.allowUpload}
+            <CircleIconButton
+              title={$t('add_photos')}
+              on:click={() => openFileUploadDialog({ albumId: album.id })}
+              icon={mdiFileImagePlusOutline}
+            />
+          {/if}
 
-        {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton
-            title={$t('download')}
-            on:click={() => downloadAlbum(album)}
-            icon={mdiFolderDownloadOutline}
-          />
-        {/if}
+          {#if album.assetCount > 0 && sharedLink.allowDownload}
+            <CircleIconButton
+              title={$t('download')}
+              on:click={() => downloadAlbum(album)}
+              icon={mdiFolderDownloadOutline}
+            />
+          {/if}
 
-        <ThemeButton />
-      </svelte:fragment>
+          <ThemeButton />
+        
+          {/snippet}
     </ControlAppBar>
   {/if}
 </header>

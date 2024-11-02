@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -29,10 +31,14 @@
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  $: pathSegments = data.path ? data.path.split('/') : [];
-  $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
+  let { data }: Props = $props();
+
+  let pathSegments = $derived(data.path ? data.path.split('/') : []);
+  let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
 
   const assetInteractionStore = createAssetInteractionStore();
 
@@ -42,14 +48,17 @@
 
   const assetStore = new AssetStore({});
 
-  $: tags = data.tags;
-  $: tagsMap = buildMap(tags);
-  $: tag = currentPath ? tagsMap[currentPath] : null;
-  $: tagId = tag?.id;
-  $: tree = buildTree(tags.map((tag) => tag.value));
-  $: {
+  let tags;
+  run(() => {
+    tags = data.tags;
+  });
+  let tagsMap = $derived(buildMap(tags));
+  let tag = $derived(currentPath ? tagsMap[currentPath] : null);
+  let tagId = $derived(tag?.id);
+  let tree = $derived(buildTree(tags.map((tag) => tag.value)));
+  run(() => {
     void assetStore.updateOptions({ tagId });
-  }
+  });
 
   const handleNavigation = async (tag: string) => {
     await navigateToView(normalizeTreePath(`${data.path || ''}/${tag}`));
@@ -67,15 +76,15 @@
 
   const navigateToView = (path: string) => goto(getLink(path));
 
-  let isNewOpen = false;
-  let newTagValue = '';
+  let isNewOpen = $state(false);
+  let newTagValue = $state('');
   const handleCreate = () => {
     newTagValue = tag ? tag.value + '/' : '';
     isNewOpen = true;
   };
 
-  let isEditOpen = false;
-  let newTagColor = '';
+  let isEditOpen = $state(false);
+  let newTagColor = $state('');
   const handleEdit = () => {
     newTagColor = tag?.color ?? '';
     isEditOpen = true;
@@ -138,46 +147,52 @@
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={false}>
-  <SideBarSection slot="sidebar">
-    <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} />
-    <section>
-      <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
-      <div class="h-full">
-        <TreeItems icons={{ default: mdiTag, active: mdiTag }} items={tree} active={currentPath} {getLink} {getColor} />
-      </div>
+  {#snippet sidebar()}
+    <SideBarSection >
+      <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} />
+      <section>
+        <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="h-full">
+          <TreeItems icons={{ default: mdiTag, active: mdiTag }} items={tree} active={currentPath} {getLink} {getColor} />
+        </div>
+      </section>
+    </SideBarSection>
+  {/snippet}
+
+  {#snippet buttons()}
+    <section >
+      <LinkButton on:click={handleCreate}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiPlus} size="18" />
+          <p class="hidden md:block">{$t('create_tag')}</p>
+        </div>
+      </LinkButton>
+
+      {#if pathSegments.length > 0 && tag}
+        <LinkButton on:click={handleEdit}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiPencil} size="18" />
+            <p class="hidden md:block">{$t('edit_tag')}</p>
+          </div>
+        </LinkButton>
+        <LinkButton on:click={handleDelete}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiTrashCanOutline} size="18" />
+            <p class="hidden md:block">{$t('delete_tag')}</p>
+          </div>
+        </LinkButton>
+      {/if}
     </section>
-  </SideBarSection>
-
-  <section slot="buttons">
-    <LinkButton on:click={handleCreate}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiPlus} size="18" />
-        <p class="hidden md:block">{$t('create_tag')}</p>
-      </div>
-    </LinkButton>
-
-    {#if pathSegments.length > 0 && tag}
-      <LinkButton on:click={handleEdit}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiPencil} size="18" />
-          <p class="hidden md:block">{$t('edit_tag')}</p>
-        </div>
-      </LinkButton>
-      <LinkButton on:click={handleDelete}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiTrashCanOutline} size="18" />
-          <p class="hidden md:block">{$t('delete_tag')}</p>
-        </div>
-      </LinkButton>
-    {/if}
-  </section>
+  {/snippet}
 
   <Breadcrumbs {pathSegments} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
   <section class="mt-2 h-full">
     {#if tag}
       <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
-        <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} slot="empty" />
+        {#snippet empty()}
+                <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation}  />
+              {/snippet}
       </AssetGrid>
     {:else}
       <TreeItemThumbnails items={Object.keys(tree)} icon={mdiTag} onClick={handleNavigation} />
@@ -193,7 +208,7 @@
       </p>
     </div>
 
-    <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="create-tag-form">
+    <form onsubmit={preventDefault(handleSubmit)} autocomplete="off" id="create-tag-form">
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
@@ -204,7 +219,8 @@
         />
       </div>
     </form>
-    <svelte:fragment slot="sticky-bottom">
+    <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <svelte:fragment slot="sticky-bottom">
       <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
       <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
     </svelte:fragment>
@@ -213,7 +229,7 @@
 
 {#if isEditOpen}
   <FullScreenModal title={$t('edit_tag')} icon={mdiTag} onClose={handleCancel}>
-    <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="edit-tag-form">
+    <form onsubmit={preventDefault(handleSubmit)} autocomplete="off" id="edit-tag-form">
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
           inputType={SettingInputFieldType.COLOR}
@@ -222,7 +238,8 @@
         />
       </div>
     </form>
-    <svelte:fragment slot="sticky-bottom">
+    <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <svelte:fragment slot="sticky-bottom">
       <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
       <Button type="submit" fullwidth form="edit-tag-form">{$t('save')}</Button>
     </svelte:fragment>

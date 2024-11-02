@@ -22,8 +22,12 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
 
-  export let data: PageData;
-  export let isShowKeyboardShortcut = false;
+  interface Props {
+    data: PageData;
+    isShowKeyboardShortcut?: boolean;
+  }
+
+  let { data = $bindable(), isShowKeyboardShortcut = $bindable(false) }: Props = $props();
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -46,7 +50,7 @@
     ],
   };
 
-  $: hasDuplicates = data.duplicates.length > 0;
+  let hasDuplicates = $derived(data.duplicates.length > 0);
 
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
@@ -154,25 +158,27 @@
 </script>
 
 <UserPageLayout title={data.meta.title + ` (${data.duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
-  <div class="flex place-items-center gap-2" slot="buttons">
-    <LinkButton on:click={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiTrashCanOutline} size="18" />
-        {$t('deduplicate_all')}
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => handleKeepAll()} disabled={!hasDuplicates}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiCheckOutline} size="18" />
-        {$t('keep_all')}
-      </div>
-    </LinkButton>
-    <CircleIconButton
-      icon={mdiKeyboard}
-      title={$t('show_keyboard_shortcuts')}
-      on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
-    />
-  </div>
+  {#snippet buttons()}
+    <div class="flex place-items-center gap-2" >
+      <LinkButton on:click={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiTrashCanOutline} size="18" />
+          {$t('deduplicate_all')}
+        </div>
+      </LinkButton>
+      <LinkButton on:click={() => handleKeepAll()} disabled={!hasDuplicates}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiCheckOutline} size="18" />
+          {$t('keep_all')}
+        </div>
+      </LinkButton>
+      <CircleIconButton
+        icon={mdiKeyboard}
+        title={$t('show_keyboard_shortcuts')}
+        on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+      />
+    </div>
+  {/snippet}
 
   <div class="mt-4">
     {#if data.duplicates && data.duplicates.length > 0}

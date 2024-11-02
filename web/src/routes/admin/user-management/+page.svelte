@@ -27,16 +27,20 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let allUsers: UserAdminResponseDto[] = [];
-  let shouldShowEditUserForm = false;
-  let shouldShowCreateUserForm = false;
-  let shouldShowPasswordResetSuccess = false;
-  let shouldShowDeleteConfirmDialog = false;
-  let shouldShowRestoreDialog = false;
-  let selectedUser: UserAdminResponseDto;
-  let newPassword: string;
+  let { data }: Props = $props();
+
+  let allUsers: UserAdminResponseDto[] = $state([]);
+  let shouldShowEditUserForm = $state(false);
+  let shouldShowCreateUserForm = $state(false);
+  let shouldShowPasswordResetSuccess = $state(false);
+  let shouldShowDeleteConfirmDialog = $state(false);
+  let shouldShowRestoreDialog = $state(false);
+  let selectedUser: UserAdminResponseDto = $state();
+  let newPassword: string = $state();
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
@@ -155,26 +159,28 @@
           hideCancelButton={true}
           confirmColor="green"
         >
-          <svelte:fragment slot="prompt">
-            <div class="flex flex-col gap-4">
-              <p>{$t('admin.user_password_has_been_reset')}</p>
+          {#snippet prompt()}
+                  
+              <div class="flex flex-col gap-4">
+                <p>{$t('admin.user_password_has_been_reset')}</p>
 
-              <div class="flex justify-center gap-2">
-                <code
-                  class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
-                >
-                  {newPassword}
-                </code>
-                <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
-                  <div class="flex place-items-center gap-2 text-sm">
-                    <Icon path={mdiContentCopy} size="18" />
-                  </div>
-                </LinkButton>
+                <div class="flex justify-center gap-2">
+                  <code
+                    class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                  >
+                    {newPassword}
+                  </code>
+                  <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
+                    <div class="flex place-items-center gap-2 text-sm">
+                      <Icon path={mdiContentCopy} size="18" />
+                    </div>
+                  </LinkButton>
+                </div>
+
+                <p>{$t('admin.user_password_reset_description')}</p>
               </div>
-
-              <p>{$t('admin.user_password_reset_description')}</p>
-            </div>
-          </svelte:fragment>
+            
+                  {/snippet}
         </ConfirmDialog>
       {/if}
 

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import {
     NotificationType,
     notificationController,
@@ -8,10 +10,17 @@
   import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let isOwner: boolean;
+  interface Props {
+    asset: AssetResponseDto;
+    isOwner: boolean;
+  }
 
-  $: description = asset.exifInfo?.description || '';
+  let { asset, isOwner }: Props = $props();
+
+  let description;
+  run(() => {
+    description = asset.exifInfo?.description || '';
+  });
 
   const handleFocusOut = async (newDescription: string) => {
     try {

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
@@ -87,22 +89,18 @@
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data = $bindable() }: Props = $props();
 
   let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
-  let oldAt: AssetGridRouteSearchParams | null | undefined;
+  let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
-  $: album = data.album;
-  $: albumId = album.id;
-  $: albumKey = `${albumId}_${albumOrder}`;
 
-  $: {
-    if (!album.isActivityEnabled && $numberOfComments === 0) {
-      isShowActivity = false;
-    }
-  }
 
   enum ViewMode {
     LINK_SHARING = 'link-sharing',
@@ -114,41 +112,24 @@
     OPTIONS = 'options',
   }
 
-  let backUrl: string = AppRoute.ALBUMS;
-  let viewMode = ViewMode.VIEW;
-  let isCreatingSharedAlbum = false;
-  let isShowActivity = false;
-  let isLiked: ActivityResponseDto | null = null;
-  let reactions: ActivityResponseDto[] = [];
-  let globalWidth: number;
-  let assetGridWidth: number;
-  let albumOrder: AssetOrder | undefined = data.album.order;
+  let backUrl: string = $state(AppRoute.ALBUMS);
+  let viewMode = $state(ViewMode.VIEW);
+  let isCreatingSharedAlbum = $state(false);
+  let isShowActivity = $state(false);
+  let isLiked: ActivityResponseDto | null = $state(null);
+  let reactions: ActivityResponseDto[] = $state([]);
+  let globalWidth: number = $state();
+  let assetGridWidth: number = $derived(isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth);
+  let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
-  $: assetStore = new AssetStore({ albumId, order: albumOrder });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: timelineStore = new AssetStore({ isArchived: false, withPartners: true }, albumId);
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
-  $: isOwned = $user.id == album.ownerId;
-  $: isAllUserOwned = [...$selectedAssets].every((asset) => asset.ownerId === $user.id);
-  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
-  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
-  $: {
-    assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
-  }
-  $: showActivityStatus =
-    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: isEditor =
-    album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
-    album.ownerId === $user.id;
 
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: albumHasViewers = album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer);
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
@@ -236,10 +217,6 @@
     isShowActivity = !isShowActivity;
   };
 
-  $: if (album.albumUsers.length > 0) {
-    handlePromiseError(getFavorite());
-    handlePromiseError(getNumberOfComments());
-  }
 
   const handleStartSlideshow = async () => {
     const asset =
@@ -432,6 +409,44 @@
     assetStore.destroy();
     timelineStore.destroy();
   });
+  let album;
+  run(() => {
+    album = data.album;
+  });
+  let albumId = $derived(album.id);
+  let albumKey = $derived(`${albumId}_${albumOrder}`);
+  run(() => {
+    if (!album.isActivityEnabled && $numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  });
+  let assetStore;
+  run(() => {
+    assetStore = new AssetStore({ albumId, order: albumOrder });
+  });
+  let timelineStore;
+  run(() => {
+    timelineStore = new AssetStore({ isArchived: false, withPartners: true }, albumId);
+  });
+  let isOwned = $derived($user.id == album.ownerId);
+  let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
+  let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
+  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+  
+  let showActivityStatus =
+    $derived(album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0));
+  // svelte-ignore reactive_declaration_non_reactive_property
+  let isEditor =
+    $derived(album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
+    album.ownerId === $user.id);
+  // svelte-ignore reactive_declaration_non_reactive_property
+  let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
+  run(() => {
+    if (album.albumUsers.length > 0) {
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
+    }
+  });
 </script>
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
@@ -477,91 +492,99 @@
     {:else}
       {#if viewMode === ViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
-          <svelte:fragment slot="trailing">
-            {#if isEditor}
-              <CircleIconButton
-                title={$t('add_photos')}
-                on:click={async () => {
-                  viewMode = ViewMode.SELECT_ASSETS;
-                  oldAt = { at: $gridScrollTarget?.at };
-                  await navigate(
-                    { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
-                    { replaceState: true },
-                  );
-                }}
-                icon={mdiImagePlusOutline}
-              />
-            {/if}
-
-            {#if isOwned}
-              <CircleIconButton
-                title={$t('share')}
-                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                icon={mdiShareVariantOutline}
-              />
-            {/if}
-
-            {#if album.assetCount > 0}
-              <CircleIconButton title={$t('slideshow')} on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
-              <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+          {#snippet trailing()}
+                  
+              {#if isEditor}
+                <CircleIconButton
+                  title={$t('add_photos')}
+                  on:click={async () => {
+                    viewMode = ViewMode.SELECT_ASSETS;
+                    oldAt = { at: $gridScrollTarget?.at };
+                    await navigate(
+                      { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
+                      { replaceState: true },
+                    );
+                  }}
+                  icon={mdiImagePlusOutline}
+                />
+              {/if}
 
               {#if isOwned}
-                <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
-                  <MenuOption
-                    icon={mdiImageOutline}
-                    text={$t('select_album_cover')}
-                    onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
-                  />
-                  <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
-                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
-                </ButtonContextMenu>
+                <CircleIconButton
+                  title={$t('share')}
+                  on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                  icon={mdiShareVariantOutline}
+                />
               {/if}
-            {/if}
 
-            {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
-              <Button
-                size="sm"
-                rounded="lg"
-                disabled={album.assetCount === 0}
-                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-              >
-                {$t('share')}
-              </Button>
-            {/if}
-          </svelte:fragment>
+              {#if album.assetCount > 0}
+                <CircleIconButton title={$t('slideshow')} on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
+                <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+
+                {#if isOwned}
+                  <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+                    <MenuOption
+                      icon={mdiImageOutline}
+                      text={$t('select_album_cover')}
+                      onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                    />
+                    <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
+                    <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
+                  </ButtonContextMenu>
+                {/if}
+              {/if}
+
+              {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
+                <Button
+                  size="sm"
+                  rounded="lg"
+                  disabled={album.assetCount === 0}
+                  on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                >
+                  {$t('share')}
+                </Button>
+              {/if}
+            
+                  {/snippet}
         </ControlAppBar>
       {/if}
 
       {#if viewMode === ViewMode.SELECT_ASSETS}
         <ControlAppBar onClose={handleCloseSelectAssets}>
-          <svelte:fragment slot="leading">
-            <p class="text-lg dark:text-immich-dark-fg">
-              {#if $timelineSelected.size === 0}
-                {$t('add_to_album')}
-              {:else}
-                {$t('selected_count', { values: { count: $timelineSelected.size } })}
-              {/if}
-            </p>
-          </svelte:fragment>
+          {#snippet leading()}
+                  
+              <p class="text-lg dark:text-immich-dark-fg">
+                {#if $timelineSelected.size === 0}
+                  {$t('add_to_album')}
+                {:else}
+                  {$t('selected_count', { values: { count: $timelineSelected.size } })}
+                {/if}
+              </p>
+            
+                  {/snippet}
 
-          <svelte:fragment slot="trailing">
-            <button
-              type="button"
-              on:click={handleSelectFromComputer}
-              class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
-            >
-              {$t('select_from_computer')}
-            </button>
-            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
-              >{$t('done')}</Button
-            >
-          </svelte:fragment>
+          {#snippet trailing()}
+                  
+              <button
+                type="button"
+                onclick={handleSelectFromComputer}
+                class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
+              >
+                {$t('select_from_computer')}
+              </button>
+              <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
+                >{$t('done')}</Button
+              >
+            
+                  {/snippet}
         </ControlAppBar>
       {/if}
 
       {#if viewMode === ViewMode.SELECT_THUMBNAIL}
         <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW)}>
-          <svelte:fragment slot="leading">{$t('select_album_cover')}</svelte:fragment>
+          {#snippet leading()}
+                    {$t('select_album_cover')}
+                  {/snippet}
         </ControlAppBar>
       {/if}
     {/if}
@@ -621,13 +644,13 @@
                     {/if}
 
                     <!-- owner -->
-                    <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <button type="button" onclick={() => (viewMode = ViewMode.VIEW_USERS)}>
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
                     <!-- users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                      <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <button type="button" onclick={() => (viewMode = ViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
@@ -665,7 +688,7 @@
                   <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
                   <button
                     type="button"
-                    on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                    onclick={() => (viewMode = ViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                   >
                     <span class="text-text-immich-primary dark:text-immich-dark-primary"

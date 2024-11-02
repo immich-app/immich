@@ -11,9 +11,13 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { t } from 'svelte-i18n';
 
-  export let user: UserAdminResponseDto;
+  interface Props {
+    user: UserAdminResponseDto;
+  }
 
-  let loading = true;
+  let { user = $bindable() }: Props = $props();
+
+  let loading = $state(true);
 
   onMount(async () => {
     if (oauth.isCallback(window.location)) {

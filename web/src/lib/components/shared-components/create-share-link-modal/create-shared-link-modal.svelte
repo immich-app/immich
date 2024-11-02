@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Button from '$lib/components/elements/buttons/button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -16,21 +18,31 @@
   import { DateTime, Duration } from 'luxon';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
 
-  export let onClose: () => void;
-  export let albumId: string | undefined = undefined;
-  export let assetIds: string[] = [];
-  export let editingLink: SharedLinkResponseDto | undefined = undefined;
-  export let onCreated: () => void = () => {};
+  interface Props {
+    onClose: () => void;
+    albumId?: string | undefined;
+    assetIds?: string[];
+    editingLink?: SharedLinkResponseDto | undefined;
+    onCreated?: () => void;
+  }
 
-  let sharedLink: string | null = null;
-  let description = '';
-  let allowDownload = true;
-  let allowUpload = false;
-  let showMetadata = true;
-  let expirationOption: number = 0;
-  let password = '';
-  let shouldChangeExpirationTime = false;
-  let enablePassword = false;
+  let {
+    onClose,
+    albumId = $bindable(undefined),
+    assetIds = $bindable([]),
+    editingLink = undefined,
+    onCreated = () => {}
+  }: Props = $props();
+
+  let sharedLink: string | null = $state(null);
+  let description = $state('');
+  let allowDownload = $state(true);
+  let allowUpload = $state(false);
+  let showMetadata = $state(true);
+  let expirationOption: number = $state(0);
+  let password = $state('');
+  let shouldChangeExpirationTime = $state(false);
+  let enablePassword = $state(false);
 
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
     [30, 'minutes'],
@@ -43,22 +55,22 @@
     [1, 'year'],
   ];
 
-  $: relativeTime = new Intl.RelativeTimeFormat($locale);
-  $: expiredDateOptions = [
+  let relativeTime = $derived(new Intl.RelativeTimeFormat($locale));
+  let expiredDateOptions = $derived([
     { text: $t('never'), value: 0 },
     ...expirationOptions.map(([value, unit]) => ({
       text: relativeTime.format(value, unit),
       value: Duration.fromObject({ [unit]: value }).toMillis(),
     })),
-  ];
+  ]);
 
   // svelte-ignore reactive_declaration_non_reactive_property
-  $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
-  $: {
+  let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
+  run(() => {
     if (!showMetadata) {
       allowDownload = false;
     }
-  }
+  });
   if (editingLink) {
     if (editingLink.description) {
       description = editingLink.description;
@@ -223,6 +235,7 @@
     </div>
   </section>
 
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     {#if !sharedLink}
       {#if editingLink}

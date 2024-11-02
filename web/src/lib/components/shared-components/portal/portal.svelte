@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module lang="ts">
   import { handlePromiseError } from '$lib/utils';
   import { tick } from 'svelte';
 
@@ -64,12 +64,18 @@ Used for every occurrence of an HTML tag in a message
 ```
 -->
 <script lang="ts">
-  /**
+  
+  interface Props {
+    /**
    * DOM Element or CSS Selector
    */
-  export let target: HTMLElement | string = 'body';
+    target?: HTMLElement | string;
+    children?: import('svelte').Snippet;
+  }
+
+  let { target = 'body', children }: Props = $props();
 </script>
 
 <div use:portal={target} hidden>
-  <slot />
+  {@render children?.()}
 </div>

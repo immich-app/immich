@@ -7,15 +7,19 @@
   import { archiveAssets } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
 
-  export let onArchive: OnArchive;
 
-  export let menuItem = false;
-  export let unarchive = false;
+  interface Props {
+    onArchive: OnArchive;
+    menuItem?: boolean;
+    unarchive?: boolean;
+  }
 
-  $: text = unarchive ? $t('unarchive') : $t('to_archive');
-  $: icon = unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline;
+  let { onArchive, menuItem = false, unarchive = false }: Props = $props();
 
-  let loading = false;
+  let text = $derived(unarchive ? $t('unarchive') : $t('to_archive'));
+  let icon = $derived(unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline);
+
+  let loading = $state(false);
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 

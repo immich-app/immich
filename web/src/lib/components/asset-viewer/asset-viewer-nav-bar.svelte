@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';

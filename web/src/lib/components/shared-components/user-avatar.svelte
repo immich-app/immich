@@ -1,8 +1,10 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type Size = 'full' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
 </script>
 
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { getProfileImageUrl } from '$lib/utils';
   import { type UserAvatarColor } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -16,21 +18,31 @@
     profileChangedAt: string;
   }
 
-  export let user: User;
-  export let color: UserAvatarColor | undefined = undefined;
-  export let size: Size = 'full';
-  export let rounded = true;
-  export let interactive = false;
-  export let showTitle = true;
-  export let showProfileImage = true;
-  export let label: string | undefined = undefined;
+  interface Props {
+    user: User;
+    color?: UserAvatarColor | undefined;
+    size?: Size;
+    rounded?: boolean;
+    interactive?: boolean;
+    showTitle?: boolean;
+    showProfileImage?: boolean;
+    label?: string | undefined;
+  }
 
-  let img: HTMLImageElement;
-  let showFallback = true;
+  let {
+    user,
+    color = undefined,
+    size = 'full',
+    rounded = true,
+    interactive = false,
+    showTitle = true,
+    showProfileImage = true,
+    label = undefined
+  }: Props = $props();
 
-  // sveeeeeeelteeeeee fiveeeeee
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  $: img, user, void tryLoadImage();
+  let img: HTMLImageElement = $state();
+  let showFallback = $state(true);
+
 
   const tryLoadImage = async () => {
     try {
@@ -64,12 +76,17 @@
     xxxl: 'w-28 h-28',
   };
 
-  $: colorClass = colorClasses[color || user.avatarColor];
-  $: sizeClass = sizeClasses[size];
-  $: title = label ?? `${user.name} (${user.email})`;
-  $: interactiveClass = interactive
+  // sveeeeeeelteeeeee fiveeeeee
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  run(() => {
+    img, user, void tryLoadImage();
+  });
+  let colorClass = $derived(colorClasses[color || user.avatarColor]);
+  let sizeClass = $derived(sizeClasses[size]);
+  let title = $derived(label ?? `${user.name} (${user.email})`);
+  let interactiveClass = $derived(interactive
     ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
-    : '';
+    : '');
 </script>
 
 <figure
