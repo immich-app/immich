@@ -193,7 +193,7 @@
         <div
           class="absolute border-solid border-white border-[3px] rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        />
+        ></div>
       {/each}
     </div>
   {/if}

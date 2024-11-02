@@ -19,7 +19,7 @@
     mdiTagFaces,
     mdiVideo,
   } from '@mdi/js';
-  import type { ComponentType } from 'svelte';
+  import type { Component } from 'svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
@@ -30,7 +30,7 @@
   interface JobDetails {
     title: string;
     subtitle?: string;
-    description?: ComponentType;
+    description?: Component;
     allText?: string;
     refreshText?: string;
     missingText: string;
@@ -56,6 +56,7 @@
     await handleCommand(jobId, dto);
   };
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,

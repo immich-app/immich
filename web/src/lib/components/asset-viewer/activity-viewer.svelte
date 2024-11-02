@@ -293,7 +293,7 @@
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
                 : ''} w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
-            />
+            ></textarea>
           </div>
           {#if isSendingMessage}
             <div class="flex items-end place-items-center pb-2 ml-0">
