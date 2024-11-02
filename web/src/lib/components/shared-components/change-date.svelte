@@ -14,12 +14,7 @@
     onConfirm: (date: string) => void;
   }
 
-  let {
-    initialDate = DateTime.now(),
-    initialTimeZone = '',
-    onCancel,
-    onConfirm
-  }: Props = $props();
+  let { initialDate = DateTime.now(), initialTimeZone = '', onCancel, onConfirm }: Props = $props();
 
   type ZoneOption = {
     /**
@@ -60,17 +55,18 @@
 
   const knownTimezones = Intl.supportedValuesOf('timeZone');
 
-  let timezones: ZoneOption[] = $derived(knownTimezones
-    .map((zone) => zoneOptionForDate(zone, selectedDate))
-    .filter((zone) => zone.valid)
-    .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB)));
+  let timezones: ZoneOption[] = $derived(
+    knownTimezones
+      .map((zone) => zoneOptionForDate(zone, selectedDate))
+      .filter((zone) => zone.valid)
+      .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB)),
+  );
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
   let selectedOption: ZoneOption | undefined = $state();
 
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
-
 
   function zoneOptionForDate(zone: string, date: string) {
     const dateAtZone: DateTime = DateTime.fromISO(date, { zone });
@@ -132,7 +128,7 @@
       onConfirm(value);
     }
   };
-  
+
   run(() => {
     selectedOption = getPreferredTimeZone(initialDate, userTimeZone, timezones, selectedOption);
   });
@@ -143,11 +139,12 @@
 <ConfirmDialog
   confirmColor="primary"
   title={$t('edit_date_and_time')}
-  prompt="Please select a new date:"
+  promptText="Please select a new date:"
   disabled={!date.isValid}
   onConfirm={handleConfirm}
   {onCancel}
 >
+  <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <!-- @migration-task: migrate this slot by hand, `prompt` would shadow a prop on the parent component -->
   <div class="flex flex-col text-left gap-2" slot="prompt">
     <div class="flex flex-col">

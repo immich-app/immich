@@ -51,7 +51,7 @@
   {onCancel}
   disabled={deleteButtonDisabled}
 >
-  {#snippet prompt()}
+  {#snippet promptText()}
     <div class="flex flex-col gap-4">
       {#if forceDelete}
         <p>

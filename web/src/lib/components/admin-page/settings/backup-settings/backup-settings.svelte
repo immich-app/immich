@@ -1,19 +1,15 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -60,7 +56,7 @@
           bind:value={config.backup.database.cronExpression}
           isEdited={config.backup.database.cronExpression !== savedConfig.backup.database.cronExpression}
         >
-          {#snippet description()}
+          {#snippet desc()}
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.cron_expression_description">
                 {#snippet children({ message })}

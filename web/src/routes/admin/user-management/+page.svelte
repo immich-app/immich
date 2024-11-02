@@ -159,28 +159,26 @@
           hideCancelButton={true}
           confirmColor="green"
         >
-          {#snippet prompt()}
-                  
-              <div class="flex flex-col gap-4">
-                <p>{$t('admin.user_password_has_been_reset')}</p>
+          {#snippet promptText()}
+            <div class="flex flex-col gap-4">
+              <p>{$t('admin.user_password_has_been_reset')}</p>
 
-                <div class="flex justify-center gap-2">
-                  <code
-                    class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
-                  >
-                    {newPassword}
-                  </code>
-                  <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
-                    <div class="flex place-items-center gap-2 text-sm">
-                      <Icon path={mdiContentCopy} size="18" />
-                    </div>
-                  </LinkButton>
-                </div>
-
-                <p>{$t('admin.user_password_reset_description')}</p>
+              <div class="flex justify-center gap-2">
+                <code
+                  class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary dark:text-immich-dark-primary dark:bg-gray-700"
+                >
+                  {newPassword}
+                </code>
+                <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
+                  <div class="flex place-items-center gap-2 text-sm">
+                    <Icon path={mdiContentCopy} size="18" />
+                  </div>
+                </LinkButton>
               </div>
-            
-                  {/snippet}
+
+              <p>{$t('admin.user_password_reset_description')}</p>
+            </div>
+          {/snippet}
         </ConfirmDialog>
       {/if}
 

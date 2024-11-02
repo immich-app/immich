@@ -1,14 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<script lang="ts" context="module">
-  export enum SettingInputFieldType {
-    EMAIL = 'email',
-    TEXT = 'text',
-    NUMBER = 'number',
-    PASSWORD = 'password',
-    COLOR = 'color',
-  }
-</script>
-
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import type { FormEventHandler } from 'svelte/elements';
@@ -16,22 +5,43 @@
   import PasswordField from '../password-field.svelte';
   import { t } from 'svelte-i18n';
   import { onMount, tick } from 'svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  export let inputType: SettingInputFieldType;
-  export let value: string | number;
-  export let min = Number.MIN_SAFE_INTEGER;
-  export let max = Number.MAX_SAFE_INTEGER;
-  export let step = '1';
-  export let label = '';
-  export let description = '';
-  export let title = '';
-  export let required = false;
-  export let disabled = false;
-  export let isEdited = false;
-  export let autofocus = false;
-  export let passwordAutocomplete: AutoFill = 'current-password';
+  interface Props {
+    inputType: SettingInputFieldType;
+    value: string | number;
+    min?: number;
+    max?: number;
+    step?: string;
+    label?: string;
+    description?: string;
+    title?: string;
+    required?: boolean;
+    disabled?: boolean;
+    isEdited?: boolean;
+    autofocus?: boolean;
+    passwordAutocomplete?: AutoFill;
+    desc?: import('svelte').Snippet;
+  }
 
-  let input: HTMLInputElement;
+  let {
+    inputType,
+    value = $bindable(),
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+    step = '1',
+    label = '',
+    description = '',
+    title = '',
+    required = false,
+    disabled = false,
+    isEdited = false,
+    autofocus = false,
+    passwordAutocomplete = 'current-password',
+    desc,
+  }: Props = $props();
+
+  let input = $state<HTMLInputElement>();
 
   const handleChange: FormEventHandler<HTMLInputElement> = (e) => {
     value = e.currentTarget.value;
@@ -79,7 +89,7 @@
       {description}
     </p>
   {:else}
-    <slot name="desc" />
+    {@render desc?.()}
   {/if}
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
@@ -98,7 +108,7 @@
           {step}
           {required}
           {value}
-          on:change={handleChange}
+          onchange={handleChange}
           {disabled}
           {title}
         />
@@ -118,7 +128,7 @@
         {step}
         {required}
         {value}
-        on:change={handleChange}
+        onchange={handleChange}
         {disabled}
         {title}
       />

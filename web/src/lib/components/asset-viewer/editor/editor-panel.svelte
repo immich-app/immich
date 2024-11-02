@@ -9,7 +9,6 @@
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { shortcut } from '$lib/actions/shortcut';
 
-
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
       if (assetUpdate.id === asset.id) {
@@ -68,7 +67,7 @@
 {#if $showCancelConfirmDialog}
   <ConfirmDialog
     title={$t('editor_close_without_save_title')}
-    prompt={$t('editor_close_without_save_prompt')}
+    promptText={$t('editor_close_without_save_prompt')}
     cancelText={$t('no')}
     cancelColor="secondary"
     confirmColor="red"

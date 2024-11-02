@@ -78,9 +78,7 @@
     [savedConfig, defaultConfig] = await Promise.all([getConfig(), getConfigDefaults()]);
   });
 
-  export {
-  	config,
-  }
+  
 </script>
 
 {#if savedConfig && defaultConfig}

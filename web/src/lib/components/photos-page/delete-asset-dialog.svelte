@@ -29,20 +29,18 @@
   onConfirm={handleConfirm}
   {onCancel}
 >
-  {#snippet prompt()}
-  
-      <p>
-        <FormatMessage key="permanently_delete_assets_prompt" values={{ count: size }} >
-          {#snippet children({ message })}
-                <b>{message}</b>
-                        {/snippet}
-            </FormatMessage>
-      </p>
-      <p><b>{$t('cannot_undo_this_action')}</b></p>
+  {#snippet promptText()}
+    <p>
+      <FormatMessage key="permanently_delete_assets_prompt" values={{ count: size }}>
+        {#snippet children({ message })}
+          <b>{message}</b>
+        {/snippet}
+      </FormatMessage>
+    </p>
+    <p><b>{$t('cannot_undo_this_action')}</b></p>
 
-      <div class="pt-4 flex justify-center items-center">
-        <Checkbox id="confirm-deletion-input" label={$t('do_not_show_again')} bind:checked />
-      </div>
-    
+    <div class="pt-4 flex justify-center items-center">
+      <Checkbox id="confirm-deletion-input" label={$t('do_not_show_again')} bind:checked />
+    </div>
   {/snippet}
 </ConfirmDialog>

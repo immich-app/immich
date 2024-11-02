@@ -109,6 +109,7 @@
     {/if}
   </form>
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button color="gray" size="sm" fullwidth on:click={onClose}>{$t('cancel')}</Button>
     <Button type="submit" size="sm" fullwidth form="map-settings-form">{$t('save')}</Button>

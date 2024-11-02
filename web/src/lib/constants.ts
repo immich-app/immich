@@ -331,3 +331,11 @@ export enum ImmichProduct {
   Client = 'immich-client',
   Server = 'immich-server',
 }
+
+export enum SettingInputFieldType {
+  EMAIL = 'email',
+  TEXT = 'text',
+  NUMBER = 'number',
+  PASSWORD = 'password',
+  COLOR = 'color',
+}

@@ -12,12 +12,7 @@
     onCancel: () => void;
   }
 
-  let {
-    user,
-    onSuccess,
-    onFail,
-    onCancel
-  }: Props = $props();
+  let { user, onSuccess, onFail, onCancel }: Props = $props();
 
   const handleRestoreUser = async () => {
     try {
@@ -41,15 +36,13 @@
   onConfirm={handleRestoreUser}
   {onCancel}
 >
-  {#snippet prompt()}
-  
-      <p>
-        <FormatMessage key="admin.user_restore_description" values={{ user: user.name }} >
-          {#snippet children({ message })}
-                <b>{message}</b>
-                        {/snippet}
-            </FormatMessage>
-      </p>
-    
+  {#snippet promptText()}
+    <p>
+      <FormatMessage key="admin.user_restore_description" values={{ user: user.name }}>
+        {#snippet children({ message })}
+          <b>{message}</b>
+        {/snippet}
+      </FormatMessage>
+    </p>
   {/snippet}
 </ConfirmDialog>

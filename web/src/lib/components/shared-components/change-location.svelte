@@ -105,8 +105,8 @@
 </script>
 
 <ConfirmDialog confirmColor="primary" title={$t('change_location')} width="wide" onConfirm={handleConfirm} {onCancel}>
-  {#snippet prompt()}
-    <div  class="flex flex-col w-full h-full gap-2">
+  {#snippet promptText()}
+    <div class="flex flex-col w-full h-full gap-2">
       <div
         class="relative w-64 sm:w-96"
         use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
@@ -150,7 +150,7 @@
               <LoadingSpinner />
             </div>
           {/await}
-        {:then {default: Map }}
+        {:then { default: Map }}
           <Map
             mapMarkers={lat !== undefined && lng !== undefined && asset
               ? [

@@ -68,7 +68,7 @@
 
 <UserPageLayout title={data.meta.title} admin>
   {#snippet buttons()}
-    <div class="flex justify-end" >
+    <div class="flex justify-end">
       <LinkButton on:click={() => (isOpen = true)}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiPlus} size="18" />
@@ -100,8 +100,8 @@
     onConfirm={handleCreate}
     onCancel={handleCancel}
   >
-    {#snippet prompt()}
-        <form onsubmit={preventDefault(handleCreate)} autocomplete="off" id="create-tag-form"  class="w-full">
+    {#snippet promptText()}
+      <form onsubmit={preventDefault(handleCreate)} autocomplete="off" id="create-tag-form" class="w-full">
         <div class="flex flex-col gap-1 text-left">
           <Combobox
             bind:selectedOption={selectedJob}
@@ -111,6 +111,6 @@
           />
         </div>
       </form>
-      {/snippet}
+    {/snippet}
   </ConfirmDialog>
 {/if}

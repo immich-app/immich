@@ -25,12 +25,7 @@
     onRefreshAlbum: () => void;
   }
 
-  let {
-    album,
-    onClose,
-    onRemove,
-    onRefreshAlbum
-  }: Props = $props();
+  let { album, onClose, onRemove, onRefreshAlbum }: Props = $props();
 
   let currentUser: UserResponseDto = $state();
   let selectedRemoveUser: UserResponseDto | null = $state(null);
@@ -147,7 +142,7 @@
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialog
     title={$t('album_leave')}
-    prompt={$t('album_leave_confirmation', { values: { album: album.albumName } })}
+    promptText={$t('album_leave_confirmation', { values: { album: album.albumName } })}
     confirmText={$t('leave')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
@@ -157,7 +152,7 @@
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialog
     title={$t('album_remove_user')}
-    prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
+    promptText={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
     confirmText={$t('remove_user')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}

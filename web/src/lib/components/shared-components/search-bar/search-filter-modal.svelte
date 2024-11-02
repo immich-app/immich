@@ -159,6 +159,7 @@
   </form>
 
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
     <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>

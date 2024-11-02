@@ -26,6 +26,7 @@
   </div>
 
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
     <Button on:click={() => copyToClipboard(secret)} fullwidth>{$t('copy_to_clipboard')}</Button>
     <Button on:click={onDone} fullwidth>{$t('done')}</Button>
