@@ -221,6 +221,10 @@
     </form>
     <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
       <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
       <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
@@ -240,6 +244,10 @@
       </div>
     </form>
     <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <svelte:fragment slot="sticky-bottom">
       <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>

@@ -159,7 +159,7 @@
           hideCancelButton={true}
           confirmColor="green"
         >
-          {#snippet promptText()}
+          {#snippet prompt()}
             <div class="flex flex-col gap-4">
               <p>{$t('admin.user_password_has_been_reset')}</p>
 
@@ -227,7 +227,7 @@
                       title={$t('edit_user')}
                       color="primary"
                       size="16"
-                      on:click={() => editUserHandler(immichUser)}
+                      onclick={() => editUserHandler(immichUser)}
                     />
                     {#if immichUser.id !== $user.id}
                       <CircleIconButton
@@ -235,7 +235,7 @@
                         title={$t('delete_user')}
                         color="primary"
                         size="16"
-                        on:click={() => deleteUserHandler(immichUser)}
+                        onclick={() => deleteUserHandler(immichUser)}
                       />
                     {/if}
                   {/if}
@@ -257,7 +257,7 @@
         </tbody>
       </table>
 
-      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
+      <Button size="sm" onclick={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>

@@ -96,14 +96,14 @@
                 icon={mdiCog}
                 size="14"
                 padding="1"
-                on:click={() => (showOptions = !showOptions)}
+                onclick={() => (showOptions = !showOptions)}
               />
               <CircleIconButton
                 title={$t('minimize')}
                 icon={mdiWindowMinimize}
                 size="14"
                 padding="1"
-                on:click={() => (showDetail = false)}
+                onclick={() => (showDetail = false)}
               />
             </div>
             {#if $isDismissible}
@@ -112,7 +112,7 @@
                 icon={mdiCancel}
                 size="14"
                 padding="1"
-                on:click={() => uploadAssetsStore.dismissErrors()}
+                onclick={() => uploadAssetsStore.dismissErrors()}
               />
             {/if}
           </div>

@@ -1,22 +1,38 @@
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <script lang="ts">
   import FullScreenModal from '../full-screen-modal.svelte';
   import Button from '../../elements/buttons/button.svelte';
   import type { Color } from '$lib/components/elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let title = $t('confirm');
-  export let promptText = $t('are_you_sure_to_do_this');
-  export let confirmText = $t('confirm');
-  export let confirmColor: Color = 'red';
-  export let cancelText = $t('cancel');
-  export let cancelColor: Color = 'secondary';
-  export let hideCancelButton = false;
-  export let disabled = false;
-  export let width: 'wide' | 'narrow' = 'narrow';
-  export let onCancel: () => void;
-  export let onConfirm: () => void;
+  interface Props {
+    title?: string;
+    promptText?: string;
+    confirmText?: string;
+    confirmColor?: Color;
+    cancelText?: string;
+    cancelColor?: Color;
+    hideCancelButton?: boolean;
+    disabled?: boolean;
+    width?: 'wide' | 'narrow';
+    onCancel: () => void;
+    onConfirm: () => void;
+    prompt?: import('svelte').Snippet;
+  }
+
+  let {
+    title = $t('confirm'),
+    promptText = $t('are_you_sure_to_do_this'),
+    confirmText = $t('confirm'),
+    confirmColor = 'red',
+    cancelText = $t('cancel'),
+    cancelColor = 'secondary',
+    hideCancelButton = false,
+    disabled = false,
+    width = 'narrow',
+    onCancel,
+    onConfirm,
+    prompt,
+  }: Props = $props();
 
   const handleConfirm = () => {
     onConfirm();
@@ -25,19 +41,21 @@
 
 <FullScreenModal {title} onClose={onCancel} {width}>
   <div class="text-md py-5 text-center">
-    <slot name="prompt">
+    {#if prompt}{@render prompt()}{:else}
       <p>{promptText}</p>
-    </slot>
+    {/if}
   </div>
 
-  <svelte:fragment slot="sticky-bottom">
-    {#if !hideCancelButton}
-      <Button color={cancelColor} fullwidth on:click={onCancel}>
-        {cancelText}
+  {#snippet stickyBottom()}
+  
+      {#if !hideCancelButton}
+        <Button color={cancelColor} fullwidth onclick={onCancel}>
+          {cancelText}
+        </Button>
+      {/if}
+      <Button color={confirmColor} fullwidth onclick={handleConfirm} {disabled}>
+        {confirmText}
       </Button>
-    {/if}
-    <Button color={confirmColor} fullwidth on:click={handleConfirm} {disabled}>
-      {confirmText}
-    </Button>
-  </svelte:fragment>
+    
+  {/snippet}
 </FullScreenModal>

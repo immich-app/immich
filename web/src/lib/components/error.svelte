@@ -45,7 +45,7 @@
                 color="primary"
                 icon={mdiContentCopy}
                 title={$t('copy_error')}
-                on:click={() => handleCopy()}
+                onclick={() => handleCopy()}
               />
             </div>
           </div>

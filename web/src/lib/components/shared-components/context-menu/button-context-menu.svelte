@@ -17,26 +17,23 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { shortcuts } from '$lib/actions/shortcut';
 
-  
-  
-  
   interface Props {
     icon: string;
     title: string;
     /**
-   * The alignment of the context menu relative to the button.
-   */
+     * The alignment of the context menu relative to the button.
+     */
     align?: Align;
     /**
-   * The direction in which the context menu should open.
-   */
+     * The direction in which the context menu should open.
+     */
     direction?: 'left' | 'right';
     color?: Color;
     size?: string | undefined;
     padding?: Padding | undefined;
     /**
-   * Additional classes to apply to the button.
-   */
+     * Additional classes to apply to the button.
+     */
     buttonClass?: string | undefined;
     hideContent?: boolean;
     children?: import('svelte').Snippet;
@@ -52,7 +49,7 @@
     padding = undefined,
     buttonClass = undefined,
     hideContent = false,
-    children
+    children,
   }: Props = $props();
 
   let isOpen = $state(false);
@@ -63,7 +60,6 @@
   const id = generateId();
   const buttonId = `context-menu-button-${id}`;
   const menuId = `context-menu-${id}`;
-
 
   const openDropdown = (event: KeyboardEvent | MouseEvent) => {
     contextMenuPosition = getContextMenuPositionFromEvent(event, align);
@@ -144,7 +140,7 @@
       aria-haspopup={true}
       class={buttonClass}
       id={buttonId}
-      on:click={handleClick}
+      onclick={handleClick}
     />
   </div>
   {#if isOpen || !hideContent}

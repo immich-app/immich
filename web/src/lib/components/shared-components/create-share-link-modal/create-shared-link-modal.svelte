@@ -31,7 +31,7 @@
     albumId = $bindable(undefined),
     assetIds = $bindable([]),
     editingLink = undefined,
-    onCreated = () => {}
+    onCreated = () => {},
   }: Props = $props();
 
   let sharedLink: string | null = $state(null);
@@ -237,17 +237,21 @@
 
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <svelte:fragment slot="stickyBottom">
     {#if !sharedLink}
       {#if editingLink}
-        <Button size="sm" fullwidth on:click={handleEditLink}>{$t('confirm')}</Button>
+        <Button size="sm" fullwidth onclick={handleEditLink}>{$t('confirm')}</Button>
       {:else}
-        <Button size="sm" fullwidth on:click={handleCreateSharedLink}>{$t('create_link')}</Button>
+        <Button size="sm" fullwidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
       {/if}
     {:else}
       <div class="flex w-full gap-2">
         <input class="immich-form-input w-full" bind:value={sharedLink} disabled />
-        <LinkButton on:click={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
+        <LinkButton onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiContentCopy} ariaLabel={$t('copy_link_to_clipboard')} size="18" />
           </div>

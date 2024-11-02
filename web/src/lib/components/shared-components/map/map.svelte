@@ -69,20 +69,22 @@
     onOpenInMapView = undefined,
     onSelect = () => {},
     onClickPoint = () => {},
-    popup
+    popup,
   }: Props = $props();
 
   let map: maplibregl.Map = $state();
   let marker: maplibregl.Marker | null = null;
 
   // svelte-ignore reactive_declaration_non_reactive_property
-  let style = $derived((async () => {
-    const config = await getServerConfig();
-    const theme = $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT;
-    const styleUrl = theme === Theme.DARK ? config.mapDarkStyleUrl : config.mapLightStyleUrl;
-    const style = await fetch(styleUrl).then((response) => response.json());
-    return style as StyleSpecification;
-  })());
+  let style = $derived(
+    (async () => {
+      const config = await getServerConfig();
+      const theme = $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT;
+      const styleUrl = theme === Theme.DARK ? config.mapDarkStyleUrl : config.mapLightStyleUrl;
+      const style = await fetch(styleUrl).then((response) => response.json());
+      return style as StyleSpecification;
+    })(),
+  );
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
@@ -153,13 +155,12 @@
     {zoom}
     attributionControl={false}
     diffStyleUpdates={true}
-    
     on:load={(event) => event.detail.setMaxZoom(18)}
     on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
   >
     {#snippet children({ map })}
-        <NavigationControl position="top-left" showCompass={!simplified} />
+      <NavigationControl position="top-left" showCompass={!simplified} />
 
       {#if !simplified}
         <GeolocateControl position="top-left" />
@@ -171,7 +172,8 @@
       {#if showSettingsModal !== undefined}
         <Control>
           <ControlGroup>
-            <ControlButton on:click={() => (showSettingsModal = true)}><Icon path={mdiCog} size="100%" /></ControlButton>
+            <ControlButton on:click={() => (showSettingsModal = true)}><Icon path={mdiCog} size="100%" /></ControlButton
+            >
           </ControlGroup>
         </Control>
       {/if}
@@ -197,21 +199,19 @@
         <MarkerLayer
           applyToClusters
           asButton
-          
           on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties?.cluster_id, map))}
         >
           {#snippet children({ feature })}
-                <div
+            <div
               class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
             >
               {feature.properties?.point_count}
             </div>
-                        {/snippet}
-            </MarkerLayer>
+          {/snippet}
+        </MarkerLayer>
         <MarkerLayer
           applyToClusters={false}
           asButton
-          
           on:click={(event) => {
             if (!popup) {
               handleAssetClick(event.detail.feature.properties?.id, map);
@@ -219,7 +219,7 @@
           }}
         >
           {#snippet children({ feature })}
-                {#if useLocationPin}
+            {#if useLocationPin}
               <Icon
                 path={mdiMapMarker}
                 size="50px"
@@ -238,14 +238,14 @@
             {/if}
             {#if popup}
               <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
-                {@render popup?.({ marker: asMarker(feature), })}
+                {@render popup?.({ marker: asMarker(feature) })}
               </Popup>
             {/if}
-                        {/snippet}
-            </MarkerLayer>
-      </GeoJSON>
           {/snippet}
-    </MapLibre>
+        </MarkerLayer>
+      </GeoJSON>
+    {/snippet}
+  </MapLibre>
   <style>
     .location-pin {
       transform: translate(0, -50%);

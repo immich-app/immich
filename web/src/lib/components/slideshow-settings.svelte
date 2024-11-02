@@ -1,8 +1,6 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import {
     mdiArrowDownThin,
@@ -17,6 +15,7 @@
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
   import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
   const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
@@ -46,7 +45,7 @@
   };
 </script>
 
-<FullScreenModal title={$t('slideshow_settings')} {onClose}>
+<FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose}>
   <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
     <SettingDropdown
       title={$t('direction')}
@@ -74,9 +73,10 @@
       bind:value={$slideshowDelay}
     />
   </div>
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth color="primary" on:click={onClose}>{$t('done')}</Button>
-  </svelte:fragment>
+
+  {#snippet stickyBottom()}
+  
+      <Button fullwidth color="primary" onclick={onClose}>{$t('done')}</Button>
+    
+  {/snippet}
 </FullScreenModal>

@@ -1,4 +1,8 @@
 <!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
+<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
+<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
+<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
+<!-- @migration-task Error while migrating Svelte code: `<svelte:fragment>` must be the direct child of a component -->
 <script lang="ts">
   import empty4Url from '$lib/assets/empty-4.svg';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';

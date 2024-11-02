@@ -85,7 +85,11 @@
   </div>
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
   <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
-  <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth on:click={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <!-- @migration-task: migrate this slot by hand, `sticky-bottom` is an invalid identifier -->
+  <svelte:fragment slot="stickyBottom">
+    <Button fullwidth onclick={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
   </svelte:fragment>
 </FullScreenModal>
