@@ -924,7 +924,8 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
     return false;
   }
 
-  getBaseInputOptions(): string[] {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
@@ -977,12 +978,16 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
     this.hasMaliOpenCL = hasMaliOpenCL;
   }
 
-  getBaseInputOptions() {
+  getBaseInputOptions(videoStream: VideoStreamInfo) {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
 
-    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
+    if (!this.shouldToneMap(videoStream) || (this.shouldToneMap(videoStream) && this.hasMaliOpenCL)) {
+      return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
+    }
+
+    return [];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -997,13 +1002,8 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
           'format=drm_prime',
         ];
       }
-      return [ // use RKMPP for scaling, CPU for tone mapping
-        `scale_rkrga=${this.getScaling(videoStream)}:format=nv12`,
-        'hwdownload',
-        'format=nv12',
-        `tonemapx=tonemap=${this.config.tonemap}:desat=0:p=${primaries}:t=${transfer}:m=${matrix}:r=pc:peak=100:format=nv12`,
-        'hwupload',
-      ];
+      // use CPU for scaling & tone mapping
+      return super.getFilterOptions(videoStream);
     } else if (this.shouldScale(videoStream)) {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }

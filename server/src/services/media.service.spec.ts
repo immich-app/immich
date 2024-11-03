@@ -2260,7 +2260,7 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should use software tone-mapping if opencl is not available', async () => {
+    it('should use software decoding and tone-mapping if opencl is not available', async () => {
       storageMock.readdir.mockResolvedValue(['renderD128']);
       storageMock.stat.mockResolvedValue({ isFile: () => false, isCharacterDevice: () => false } as Stats);
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
@@ -2273,10 +2273,10 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
-          inputOptions: expect.any(Array),
+          inputOptions: [],
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=',
+              'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p',
             ),
           ]),
           twoPass: false,
