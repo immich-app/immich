@@ -55,4 +55,4 @@
   });
 </script>
 
-<div class="h-full w-full mb-0" bind:this={container} />
+<div class="h-full w-full mb-0" bind:this={container}></div>

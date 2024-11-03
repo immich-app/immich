@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
+import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
@@ -57,12 +58,9 @@ const imports = [
   TypeOrmModule.forFeature(entities),
 ];
 
-abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
-  private get worker() {
-    return this.getWorker();
-  }
-
+class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
+    @Inject(IWorker) private worker: ImmichWorker,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
@@ -70,8 +68,6 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
   ) {
     logger.setAppName(this.worker);
   }
-
-  abstract getWorker(): ImmichWorker;
 
   async onModuleInit() {
     this.telemetryRepository.setup({ repositories: repositories.map(({ useClass }) => useClass) });
@@ -94,23 +90,15 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
 @Module({
   imports: [...imports, ScheduleModule.forRoot()],
   controllers: [...controllers],
-  providers: [...common, ...middleware],
+  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.API }],
 })
-export class ApiModule extends BaseModule {
-  getWorker() {
-    return ImmichWorker.API;
-  }
-}
+export class ApiModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
-  providers: [...common, SchedulerRegistry],
+  providers: [...common, { provide: IWorker, useValue: ImmichWorker.MICROSERVICES }, SchedulerRegistry],
 })
-export class MicroservicesModule extends BaseModule {
-  getWorker() {
-    return ImmichWorker.MICROSERVICES;
-  }
-}
+export class MicroservicesModule extends BaseModule {}
 
 @Module({
   imports: [...imports],

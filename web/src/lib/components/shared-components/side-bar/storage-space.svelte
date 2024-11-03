@@ -63,7 +63,7 @@
       </p>
 
       <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-        <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%" />
+        <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%"></div>
       </div>
     {:else}
       <div class="mt-2">

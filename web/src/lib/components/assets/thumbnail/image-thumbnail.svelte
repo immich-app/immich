@@ -96,5 +96,5 @@
     class:rounded-full={circle}
     draggable="false"
     out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-  />
+  ></canvas>
 {/if}
