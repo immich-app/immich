@@ -6,6 +6,7 @@
   import { t } from 'svelte-i18n';
 
   export let album: AlbumResponseDto;
+  export let shareKey: string | undefined = undefined;
   export let preload = false;
   let className = '';
   export { className as class };
@@ -15,7 +16,12 @@
 </script>
 
 {#if thumbnailUrl}
-  <AssetCover {alt} class={className} src={thumbnailUrl} {preload} />
+  <AssetCover
+    {alt}
+    class={className}
+    src={thumbnailUrl + (shareKey !== undefined ? `?key=${shareKey}` : '')}
+    {preload}
+  />
 {:else}
   <NoCover {alt} class={className} {preload} />
 {/if}

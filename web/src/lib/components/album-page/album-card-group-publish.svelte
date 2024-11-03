@@ -60,6 +60,7 @@
           on:contextmenu|preventDefault={(e) => showContextMenu({ x: e.x, y: e.y }, album)}
         >
           <AlbumCard
+            shareKey={keys[album.id]}
             {album}
             {showOwner}
             {showDateRange}
