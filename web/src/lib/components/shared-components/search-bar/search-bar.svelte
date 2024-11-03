@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
@@ -27,15 +25,12 @@
 
   let showClearIcon = $derived(value.length > 0);
 
-  let input: HTMLInputElement = $state();
-
+  let input = $state<HTMLInputElement>();
+  let searchHistoryBox = $state<ReturnType<typeof SearchHistoryBox>>();
   let showSuggestions = $state(false);
   let showFilter = $state(false);
   let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
-  let moveSelection: (direction: 1 | -1) => void = $state();
-  let clearSelection: () => void = $state();
-  let selectActiveOption: () => void = $state();
 
   const listboxId = generateId();
 
@@ -49,7 +44,7 @@
   };
 
   const clearSearchTerm = (searchTerm: string) => {
-    input.focus();
+    input?.focus();
     $savedSearchTerms = $savedSearchTerms.filter((item) => item !== searchTerm);
   };
 
@@ -63,7 +58,7 @@
   };
 
   const clearAllSearchTerms = () => {
-    input.focus();
+    input?.focus();
     $savedSearchTerms = [];
   };
 
@@ -107,7 +102,7 @@
 
   const onClear = () => {
     value = '';
-    input.focus();
+    input?.focus();
   };
 
   const onEscape = () => {
@@ -118,19 +113,19 @@
   const onArrow = async (direction: 1 | -1) => {
     openDropdown();
     await tick();
-    moveSelection(direction);
+    searchHistoryBox?.moveSelection(direction);
   };
 
   const onEnter = (event: KeyboardEvent) => {
     if (selectedId) {
       event.preventDefault();
-      selectActiveOption();
+      searchHistoryBox?.selectActiveOption();
     }
   };
 
   const onInput = () => {
     openDropdown();
-    clearSelection();
+    searchHistoryBox?.clearSelection();
   };
 
   const openDropdown = () => {
@@ -139,14 +134,19 @@
 
   const closeDropdown = () => {
     showSuggestions = false;
-    clearSelection();
+    searchHistoryBox?.clearSelection();
+  };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSubmit();
   };
 </script>
 
 <svelte:window
   use:shortcuts={[
     { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-    { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input.select() },
+    { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() },
     { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
   ]}
 />
@@ -158,7 +158,7 @@
     class="select-text text-sm"
     action={AppRoute.SEARCH}
     onreset={() => (value = '')}
-    onsubmit={preventDefault(onSubmit)}
+    {onsubmit}
     onfocusin={onFocusIn}
     role="search"
   >
@@ -197,13 +197,11 @@
 
       <!-- SEARCH HISTORY BOX -->
       <SearchHistoryBox
+        bind:this={searchHistoryBox}
+        bind:isSearchSuggestions
         id={listboxId}
         searchQuery={value}
         isOpen={showSuggestions}
-        bind:isSearchSuggestions
-        bind:moveSelection
-        bind:clearSelection
-        bind:selectActiveOption
         onClearAllSearchTerms={clearAllSearchTerms}
         onClearSearchTerm={(searchTerm) => clearSearchTerm(searchTerm)}
         onSelectSearchTerm={(searchTerm) => handlePromiseError(onHistoryTermClick(searchTerm))}

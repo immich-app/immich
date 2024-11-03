@@ -23,7 +23,7 @@
     onReset = () => {},
   }: Props = $props();
 
-  let inputRef: HTMLElement = $state();
+  let inputRef = $state<HTMLElement>();
 
   const resetSearch = () => {
     name = '';

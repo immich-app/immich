@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import Icon from '$lib/components/elements/icon.svelte';
   import { savedSearchTerms } from '$lib/stores/search.store';
   import { mdiMagnify, mdiClose } from '@mdi/js';
@@ -33,14 +31,16 @@
   let filteredSearchTerms = $derived(
     $savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())),
   );
-  run(() => {
+
+  $effect(() => {
     isSearchSuggestions = filteredSearchTerms.length > 0;
   });
+
   let showClearAll = $derived(searchQuery === '');
   let suggestionCount = $derived(showClearAll ? filteredSearchTerms.length + 1 : filteredSearchTerms.length);
 
   let selectedIndex: number | undefined = $state(undefined);
-  let element: HTMLDivElement = $state();
+  let element = $state<HTMLDivElement>();
 
   export function moveSelection(increment: 1 | -1) {
     if (!isSearchSuggestions) {
@@ -64,7 +64,7 @@
     if (selectedIndex === undefined) {
       return;
     }
-    const selectedElement = element.querySelector(`#${getId(selectedIndex)}`) as HTMLElement;
+    const selectedElement = element?.querySelector(`#${getId(selectedIndex)}`) as HTMLElement;
     selectedElement?.click();
   }
 
