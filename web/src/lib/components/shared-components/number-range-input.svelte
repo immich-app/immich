@@ -21,7 +21,7 @@
     required = true,
     value = $bindable(null),
     onInput,
-    onPaste = undefined
+    onPaste = undefined,
   }: Props = $props();
 </script>
 

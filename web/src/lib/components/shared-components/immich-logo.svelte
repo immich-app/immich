@@ -10,12 +10,11 @@
   import { t } from 'svelte-i18n';
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  
 
   interface Props {
     noText?: boolean;
     draggable?: boolean;
-    [key: string]: any
+    [key: string]: any;
   }
 
   let { noText = false, draggable = false, ...rest }: Props = $props();

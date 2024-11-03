@@ -24,7 +24,7 @@
     flippedLogo = false,
     isSelected = $bindable(false),
     preloadData = true,
-    moreInformation
+    moreInformation,
   }: Props = $props();
 
   let showMoreInformation = $state(false);

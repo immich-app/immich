@@ -25,12 +25,7 @@
     onShare: () => void;
   }
 
-  let {
-    album,
-    onClose,
-    onSelect,
-    onShare
-  }: Props = $props();
+  let { album, onClose, onSelect, onShare }: Props = $props();
 
   let users: UserResponseDto[] = $state([]);
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = $state({});
@@ -130,11 +125,7 @@
         {#each users as user}
           {#if !Object.keys(selectedUsers).includes(user.id)}
             <div class="flex place-items-center transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl">
-              <button
-                type="button"
-                onclick={() => handleToggle(user)}
-                class="flex w-full place-items-center gap-4 p-4"
-              >
+              <button type="button" onclick={() => handleToggle(user)} class="flex w-full place-items-center gap-4 p-4">
                 <UserAvatar {user} size="md" />
                 <div class="text-left flex-grow">
                   <p class="text-immich-fg dark:text-immich-dark-fg">

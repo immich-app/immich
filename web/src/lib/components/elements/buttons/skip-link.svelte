@@ -2,11 +2,10 @@
   import { t } from 'svelte-i18n';
   import Button from './button.svelte';
 
-  
   interface Props {
     /**
-   * Target for the skip link to move focus to.
-   */
+     * Target for the skip link to move focus to.
+     */
     target?: string;
     text?: string;
   }

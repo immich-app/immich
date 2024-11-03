@@ -67,12 +67,10 @@
   </form>
 
   {#snippet stickyBottom()}
-  
-      <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
-      {#if isEditing}
-        <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
-      {/if}
-      <Button type="submit" disabled={!canSubmit} fullwidth form="add-exclusion-pattern-form">{submitText}</Button>
-    
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
+    {#if isEditing}
+      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
+    {/if}
+    <Button type="submit" disabled={!canSubmit} fullwidth form="add-exclusion-pattern-form">{submitText}</Button>
   {/snippet}
 </FullScreenModal>

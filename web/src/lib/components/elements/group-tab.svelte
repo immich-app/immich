@@ -8,12 +8,7 @@
     onSelect: (selected: string) => void;
   }
 
-  let {
-    filters,
-    selected,
-    label,
-    onSelect
-  }: Props = $props();
+  let { filters, selected, label, onSelect }: Props = $props();
 
   const id = `group-tab-${generateId()}`;
 </script>

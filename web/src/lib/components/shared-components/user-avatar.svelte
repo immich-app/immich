@@ -37,12 +37,11 @@
     interactive = false,
     showTitle = true,
     showProfileImage = true,
-    label = undefined
+    label = undefined,
   }: Props = $props();
 
   let img: HTMLImageElement = $state();
   let showFallback = $state(true);
-
 
   const tryLoadImage = async () => {
     try {
@@ -84,9 +83,11 @@
   let colorClass = $derived(colorClasses[color || user.avatarColor]);
   let sizeClass = $derived(sizeClasses[size]);
   let title = $derived(label ?? `${user.name} (${user.email})`);
-  let interactiveClass = $derived(interactive
-    ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
-    : '');
+  let interactiveClass = $derived(
+    interactive
+      ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
+      : '',
+  );
 </script>
 
 <figure

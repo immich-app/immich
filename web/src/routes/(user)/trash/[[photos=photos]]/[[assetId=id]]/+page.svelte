@@ -104,7 +104,7 @@
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
     {#snippet buttons()}
-        <div class="flex place-items-center gap-2" >
+      <div class="flex place-items-center gap-2">
         <LinkButton on:click={handleRestoreTrash} disabled={$isMultiSelectState}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiHistory} size="18" />
@@ -118,15 +118,15 @@
           </div>
         </LinkButton>
       </div>
-      {/snippet}
+    {/snippet}
 
     <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
       {#snippet empty()}
-            <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url}  />
-          {/snippet}
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
+      {/snippet}
     </AssetGrid>
   </UserPageLayout>
 {/if}

@@ -20,7 +20,7 @@
     showLoadingSpinner,
     placeholder,
     onSearch = () => {},
-    onReset = () => {}
+    onReset = () => {},
   }: Props = $props();
 
   let inputRef: HTMLElement = $state();

@@ -63,12 +63,10 @@
   </form>
 
   {#snippet stickyBottom()}
-  
-      <Button color="gray" fullwidth onclick={onCancel}>{cancelText}</Button>
-      {#if isEditing}
-        <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
-      {/if}
-      <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
-    
+    <Button color="gray" fullwidth onclick={onCancel}>{cancelText}</Button>
+    {#if isEditing}
+      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
+    {/if}
+    <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
   {/snippet}
 </FullScreenModal>

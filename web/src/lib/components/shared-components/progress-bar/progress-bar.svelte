@@ -13,21 +13,15 @@
   import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
 
-  
-
-  
-
-
-
   interface Props {
     /**
-   * Autoplay on mount
-   * @default false
-   */
+     * Autoplay on mount
+     * @default false
+     */
     autoplay?: boolean;
     /**
-   * Progress bar status
-   */
+     * Progress bar status
+     */
     status?: ProgressBarStatus;
     hidden?: boolean;
     duration?: number;
@@ -43,7 +37,7 @@
     duration = 5,
     onDone,
     onPlaying = () => {},
-    onPaused = () => {}
+    onPaused = () => {},
   }: Props = $props();
 
   const onChange = async () => {

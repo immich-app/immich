@@ -1,14 +1,12 @@
 <script lang="ts">
-  
-  
   interface Props {
     /**
-   * Unique identifier for the checkbox element, used to associate labels with the input element.
-   */
+     * Unique identifier for the checkbox element, used to associate labels with the input element.
+     */
     id: string;
     /**
-   * Optional aria-describedby attribute to associate the checkbox with a description.
-   */
+     * Optional aria-describedby attribute to associate the checkbox with a description.
+     */
     ariaDescribedBy?: string | undefined;
     checked?: boolean;
     disabled?: boolean;
@@ -20,7 +18,7 @@
     ariaDescribedBy = undefined,
     checked = $bindable(false),
     disabled = false,
-    onToggle = undefined
+    onToggle = undefined,
   }: Props = $props();
 
   const handleToggle = (event: Event) => onToggle?.((event.target as HTMLInputElement).checked);

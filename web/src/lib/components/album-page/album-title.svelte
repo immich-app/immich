@@ -13,12 +13,7 @@
     onUpdate: (albumName: string) => void;
   }
 
-  let {
-    id,
-    albumName = $bindable(),
-    isOwned,
-    onUpdate
-  }: Props = $props();
+  let { id, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
 
   let newAlbumName;
   run(() => {

@@ -20,9 +20,6 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { fly } from 'svelte/transition';
 
-  
-
-
   interface Props {
     class?: string;
     options: T[];
@@ -46,7 +43,7 @@
     title = undefined,
     onSelect,
     onClickOutside = () => {},
-    render = String
+    render = String,
   }: Props = $props();
 
   const handleClickOutside = () => {

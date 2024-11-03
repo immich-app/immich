@@ -18,15 +18,7 @@
     children?: import('svelte').Snippet;
   }
 
-  let {
-    title,
-    direction = 'right',
-    x = 0,
-    y = 0,
-    isOpen = false,
-    onClose,
-    children
-  }: Props = $props();
+  let { title, direction = 'right', x = 0, y = 0, isOpen = false, onClose, children }: Props = $props();
 
   let uniqueKey = $state({});
   let menuContainer: HTMLUListElement = $state();
@@ -34,7 +26,6 @@
 
   const id = generateId();
   const menuId = `context-menu-${id}`;
-
 
   const reopenContextMenu = async (event: MouseEvent) => {
     const contextMenuEvent = new MouseEvent('contextmenu', {

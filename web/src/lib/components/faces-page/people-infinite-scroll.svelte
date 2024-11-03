@@ -10,12 +10,7 @@
     children?: import('svelte').Snippet<[any]>;
   }
 
-  let {
-    people,
-    hasNextPage = undefined,
-    loadNextPage,
-    children
-  }: Props = $props();
+  let { people, hasNextPage = undefined, loadNextPage, children }: Props = $props();
 
   let lastPersonContainer: HTMLElement | undefined = $state();
 
@@ -38,10 +33,10 @@
   {#each people as person, index (person.id)}
     {#if hasNextPage && index === people.length - 1}
       <div bind:this={lastPersonContainer}>
-        {@render children?.({ person, index, })}
+        {@render children?.({ person, index })}
       </div>
     {:else}
-      {@render children?.({ person, index, })}
+      {@render children?.({ person, index })}
     {/if}
   {/each}
 </div>

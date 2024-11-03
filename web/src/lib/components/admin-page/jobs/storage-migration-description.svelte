@@ -7,7 +7,6 @@
 <FormatMessage
   key="admin.storage_template_migration_description"
   values={{ template: $t('admin.storage_template_settings') }}
-  
 >
   {#snippet children({ message })}
     <a

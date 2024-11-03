@@ -12,10 +12,11 @@
   }
 
   let { album, preload = false, class: className = '' }: Props = $props();
-  
 
   let alt = $derived(album.albumName || $t('unnamed_album'));
-  let thumbnailUrl = $derived(album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null);
+  let thumbnailUrl = $derived(
+    album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null,
+  );
 </script>
 
 {#if thumbnailUrl}

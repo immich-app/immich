@@ -391,17 +391,15 @@
       </form>
 
       {#snippet stickyBottom()}
-          
-          <Button
-            color="gray"
-            fullwidth
-            onclick={() => {
-              showChangeNameModal = false;
-            }}>{$t('cancel')}</Button
-          >
-          <Button type="submit" fullwidth form="change-name-form">{$t('ok')}</Button>
-        
-          {/snippet}
+        <Button
+          color="gray"
+          fullwidth
+          onclick={() => {
+            showChangeNameModal = false;
+          }}>{$t('cancel')}</Button
+        >
+        <Button type="submit" fullwidth form="change-name-form">{$t('ok')}</Button>
+      {/snippet}
     </FullScreenModal>
   {/if}
 

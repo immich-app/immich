@@ -145,9 +145,7 @@
   </form>
 
   {#snippet stickyBottom()}
-  
-      <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
-      <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
-    
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
+    <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
   {/snippet}
 </FullScreenModal>

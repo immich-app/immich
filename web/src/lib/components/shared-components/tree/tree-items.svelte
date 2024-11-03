@@ -11,14 +11,7 @@
     getColor?: (path: string) => string | undefined;
   }
 
-  let {
-    items,
-    parent = '',
-    active = '',
-    icons,
-    getLink,
-    getColor = () => undefined
-  }: Props = $props();
+  let { items, parent = '', active = '', icons, getLink, getColor = () => undefined }: Props = $props();
 </script>
 
 <ul class="list-none ml-2">

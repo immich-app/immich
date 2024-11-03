@@ -10,12 +10,7 @@
     onSave: () => void;
   }
 
-  let {
-    showResetToDefault = true,
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { showResetToDefault = true, disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div class="mt-8 flex justify-between gap-2">

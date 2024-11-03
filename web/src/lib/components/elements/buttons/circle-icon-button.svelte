@@ -37,10 +37,6 @@
 
   type $$Props = Props;
 
-  
-  
-  
-
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
    */
@@ -51,21 +47,21 @@
     color?: Color;
     title: string;
     /**
-   * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
-   */
+     * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
+     */
     padding?: Padding;
     /**
-   * Size of the button, used for a CSS value.
-   */
+     * Size of the button, used for a CSS value.
+     */
     size?: string;
     hideMobile?: boolean;
     buttonSize?: string | undefined;
     /**
-   * viewBox attribute for the SVG icon.
-   */
+     * viewBox attribute for the SVG icon.
+     */
     viewBox?: string | undefined;
     class?: string;
-    [key: string]: any
+    [key: string]: any;
   }
 
   let {
@@ -82,7 +78,6 @@
     class: className = '',
     ...rest
   }: Props = $props();
-  
 
   const colorClasses: Record<Color, string> = {
     transparent: 'bg-transparent hover:bg-[#d3d3d3] dark:text-immich-dark-fg',

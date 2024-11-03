@@ -18,13 +18,7 @@
     navbar?: boolean;
   }
 
-  let {
-    panorama,
-    originalImageUrl,
-    adapter = EquirectangularAdapter,
-    plugins = [],
-    navbar = false
-  }: Props = $props();
+  let { panorama, originalImageUrl, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
 
   let container: HTMLDivElement = $state();
   let viewer: Viewer;

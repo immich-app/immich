@@ -10,7 +10,6 @@
 
   let { album }: Props = $props();
 
-
   const formatDate = (date?: string) => {
     return date ? new Date(date).toLocaleDateString($locale, dateFormats.album) : undefined;
   };

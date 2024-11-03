@@ -11,7 +11,7 @@
   let { key, values }: Props = $props();
 </script>
 
-<FormatMessage {key} {values}  >
+<FormatMessage {key} {values}>
   {#snippet children({ tag, message })}
     {#if tag === 'b'}
       <strong>{message}</strong>

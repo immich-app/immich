@@ -22,7 +22,6 @@
   let makes: string[] = $state([]);
   let models: string[] = $state([]);
 
-
   async function updateMakes() {
     const results: Array<string | null> = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraMake,

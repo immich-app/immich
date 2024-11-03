@@ -218,7 +218,7 @@
 
 <UserPageLayout title={data.meta.title} admin>
   {#snippet buttons()}
-    <div class="flex justify-end gap-2" >
+    <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
         <LinkButton on:click={() => handleScanAll()}>
           <div class="flex gap-1 text-sm">

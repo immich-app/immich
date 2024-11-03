@@ -56,7 +56,7 @@
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
     {#snippet empty()}
-        <EmptyPlaceholder text={$t('no_archived_assets_message')}  />
-      {/snippet}
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

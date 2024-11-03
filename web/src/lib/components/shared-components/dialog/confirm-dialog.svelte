@@ -47,15 +47,13 @@
   </div>
 
   {#snippet stickyBottom()}
-  
-      {#if !hideCancelButton}
-        <Button color={cancelColor} fullwidth onclick={onCancel}>
-          {cancelText}
-        </Button>
-      {/if}
-      <Button color={confirmColor} fullwidth onclick={handleConfirm} {disabled}>
-        {confirmText}
+    {#if !hideCancelButton}
+      <Button color={cancelColor} fullwidth onclick={onCancel}>
+        {cancelText}
       </Button>
-    
+    {/if}
+    <Button color={confirmColor} fullwidth onclick={handleConfirm} {disabled}>
+      {confirmText}
+    </Button>
   {/snippet}
 </FullScreenModal>

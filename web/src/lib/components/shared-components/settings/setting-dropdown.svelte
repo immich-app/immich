@@ -4,7 +4,6 @@
   import Dropdown, { type RenderedOption } from '$lib/components/elements/dropdown.svelte';
   import { t } from 'svelte-i18n';
 
-
   interface Props {
     title: string;
     subtitle?: string;
@@ -22,7 +21,7 @@
     selectedOption = $bindable(),
     isEdited = false,
     onToggle,
-    children
+    children,
   }: Props = $props();
 </script>
 

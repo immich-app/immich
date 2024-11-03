@@ -20,7 +20,7 @@
     required = false,
     disabled = false,
     isEdited = false,
-    desc
+    desc,
   }: Props = $props();
 
   const handleInput = (e: Event) => {

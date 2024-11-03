@@ -135,7 +135,7 @@ Result: Visit <a href="">docs</a> <strong>now</strong>
 -->
 {#each parts as { tag, message }}
   {#if tag}
-    {#if children}{@render children({ tag, message, })}{:else}{message}{/if}
+    {#if children}{@render children({ tag, message })}{:else}{message}{/if}
   {:else}
     {message}
   {/if}

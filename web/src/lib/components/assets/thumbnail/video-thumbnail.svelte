@@ -30,7 +30,7 @@
     showTime = true,
     curve = false,
     playIcon = mdiPlayCircleOutline,
-    pauseIcon = mdiPauseCircleOutline
+    pauseIcon = mdiPauseCircleOutline,
   }: Props = $props();
 
   const componentId = generateId();

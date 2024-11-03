@@ -12,7 +12,6 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
 
-
   interface Props {
     onFavorite: OnFavorite;
     menuItem?: boolean;

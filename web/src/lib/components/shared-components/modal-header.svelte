@@ -5,33 +5,24 @@
   import { mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  
-  
-  
   interface Props {
     /**
-   * Unique identifier for the header text.
-   */
+     * Unique identifier for the header text.
+     */
     id: string;
     title: string;
     onClose: () => void;
     /**
-   * If true, the logo will be displayed next to the modal title.
-   */
+     * If true, the logo will be displayed next to the modal title.
+     */
     showLogo?: boolean;
     /**
-   * Optional icon to display next to the modal title, if `showLogo` is false.
-   */
+     * Optional icon to display next to the modal title, if `showLogo` is false.
+     */
     icon?: string | undefined;
   }
 
-  let {
-    id,
-    title,
-    onClose,
-    showLogo = false,
-    icon = undefined
-  }: Props = $props();
+  let { id, title, onClose, showLogo = false, icon = undefined }: Props = $props();
 </script>
 
 <div class="flex place-items-center justify-between px-5 pb-3">

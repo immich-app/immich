@@ -13,7 +13,7 @@
 
 <FullscreenContainer title={data.meta.title}>
   {#snippet message()}
-    <p >
+    <p>
       {$t('admin.registration_description')}
     </p>
   {/snippet}

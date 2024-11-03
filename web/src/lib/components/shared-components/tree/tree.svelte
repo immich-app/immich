@@ -16,15 +16,7 @@
     getColor: (path: string) => string | undefined;
   }
 
-  let {
-    tree,
-    parent,
-    value,
-    active = '',
-    icons,
-    getLink,
-    getColor
-  }: Props = $props();
+  let { tree, parent, value, active = '', icons, getLink, getColor }: Props = $props();
 
   let path = $derived(normalizeTreePath(`${parent}/${value}`));
   let isActive = $derived(active === path || active.startsWith(`${path}/`));

@@ -76,7 +76,7 @@
     onDeleteComment,
     onDeleteLike,
     onAddComment,
-    onClose
+    onClose,
   }: Props = $props();
 
   let textArea: HTMLTextAreaElement = $state();
@@ -87,7 +87,6 @@
   let previousAssetId: string | undefined = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
-
 
   onMount(async () => {
     await getReactions();

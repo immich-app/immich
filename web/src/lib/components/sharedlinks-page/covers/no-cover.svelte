@@ -6,7 +6,6 @@
   }
 
   let { alt = '', preload = false, class: className = '' }: Props = $props();
-  
 </script>
 
 <enhanced:img

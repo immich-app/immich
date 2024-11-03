@@ -31,7 +31,7 @@
     header,
     sidebar,
     buttons,
-    children
+    children,
   }: Props = $props();
 
   let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden');
@@ -49,12 +49,10 @@
   tabindex="-1"
   class="relative grid h-screen grid-cols-[theme(spacing.18)_auto] overflow-hidden bg-immich-bg pt-[var(--navbar-height)] dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
 >
-  {#if sidebar}{@render sidebar()}{:else}
-    {#if admin}
-      <AdminSideBar />
-    {:else}
-      <SideBar />
-    {/if}
+  {#if sidebar}{@render sidebar()}{:else if admin}
+    <AdminSideBar />
+  {:else}
+    <SideBar />
   {/if}
 
   <section class="relative">

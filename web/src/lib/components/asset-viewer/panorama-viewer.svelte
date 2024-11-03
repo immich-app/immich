@@ -47,13 +47,7 @@
   {#await Promise.all([loadAssetData(), import('./photo-sphere-viewer-adapter.svelte'), ...photoSphereConfigs])}
     <LoadingSpinner />
   {:then [data, module, adapter, plugins, navbar]}
-    <module.default
-      panorama={data}
-      plugins={plugins ?? undefined}
-      {navbar}
-      {adapter}
-      {originalImageUrl}
-    />
+    <module.default panorama={data} plugins={plugins ?? undefined} {navbar} {adapter} {originalImageUrl} />
   {:catch}
     {$t('errors.failed_to_load_asset')}
   {/await}

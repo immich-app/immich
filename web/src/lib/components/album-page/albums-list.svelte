@@ -60,7 +60,7 @@
     allowEdit = false,
     showOwner = false,
     albumGroupIds = $bindable([]),
-    empty
+    empty,
   }: Props = $props();
 
   interface AlbumGroupOption {
@@ -201,7 +201,9 @@
     albumGroupIds = groupedAlbums.map(({ id }) => id);
   });
 
-  let showFullContextMenu = $derived(allowEdit && contextMenuTargetAlbum && contextMenuTargetAlbum.ownerId === $user.id);
+  let showFullContextMenu = $derived(
+    allowEdit && contextMenuTargetAlbum && contextMenuTargetAlbum.ownerId === $user.id,
+  );
 
   onMount(async () => {
     if (allowEdit) {

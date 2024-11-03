@@ -44,12 +44,10 @@
   {:else}
     <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
       {#snippet leading()}
-          
-          <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-            {data.partner.name}'s photos
-          </p>
-        
-          {/snippet}
+        <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
+          {data.partner.name}'s photos
+        </p>
+      {/snippet}
     </ControlAppBar>
   {/if}
   <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} />

@@ -159,7 +159,7 @@
 
 <UserPageLayout title={data.meta.title + ` (${data.duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
-    <div class="flex place-items-center gap-2" >
+    <div class="flex place-items-center gap-2">
       <LinkButton on:click={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiTrashCanOutline} size="18" />

@@ -18,7 +18,7 @@
     icon = '',
     activeColor = 'bg-slate-300',
     textColor = 'text-immich-fg dark:text-immich-dark-bg',
-    onClick
+    onClick,
   }: Props = $props();
 
   let id: string = generateId();

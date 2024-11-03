@@ -8,12 +8,7 @@
     src?: any;
   }
 
-  let {
-    onClick = undefined,
-    text,
-    fullWidth = false,
-    src = empty1Url
-  }: Props = $props();
+  let { onClick = undefined, text, fullWidth = false, src = empty1Url }: Props = $props();
 
   let width = $derived(fullWidth ? 'w-full' : 'w-1/2');
 

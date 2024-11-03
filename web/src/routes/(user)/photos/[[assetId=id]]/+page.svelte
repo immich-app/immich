@@ -137,7 +137,7 @@
       <MemoryLane />
     {/if}
     {#snippet empty()}
-        <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()}  />
-      {/snippet}
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

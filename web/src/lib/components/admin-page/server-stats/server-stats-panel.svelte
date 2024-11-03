@@ -11,12 +11,14 @@
     stats?: ServerStatsResponseDto;
   }
 
-  let { stats = {
-    photos: 0,
-    videos: 0,
-    usage: 0,
-    usageByUser: [],
-  } }: Props = $props();
+  let {
+    stats = {
+      photos: 0,
+      videos: 0,
+      usage: 0,
+      usageByUser: [],
+    },
+  }: Props = $props();
 
   let zeros = $derived((value: number) => {
     const maxLength = 13;

@@ -23,7 +23,7 @@
 
 <FullscreenContainer title={data.meta.title}>
   {#snippet message()}
-    <p >
+    <p>
       {$t('hi_user', { values: { name: $user.name, email: $user.email } })}
       <br />
       <br />

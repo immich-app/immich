@@ -30,14 +30,7 @@
     merge?: import('svelte').Snippet;
   }
 
-  let {
-    assetIds,
-    personAssets,
-    onConfirm,
-    onClose,
-    header,
-    merge
-  }: Props = $props();
+  let { assetIds, personAssets, onConfirm, onClose, header, merge }: Props = $props();
 
   let people: PersonResponseDto[] = $state([]);
   let selectedPerson: PersonResponseDto | null = $state(null);
@@ -131,45 +124,41 @@
 >
   <ControlAppBar {onClose}>
     {#snippet leading()}
-      
-        {@render header?.()}
-        <div></div>
-      
-      {/snippet}
+      {@render header?.()}
+      <div></div>
+    {/snippet}
     {#snippet trailing()}
-      
-        <div class="flex gap-4">
-          <Button
-            title={$t('create_new_person_hint')}
-            size={'sm'}
-            disabled={disableButtons || hasSelection}
-            on:click={handleCreate}
-          >
-            {#if !showLoadingSpinnerCreate}
-              <Icon path={mdiPlus} size={18} />
-            {:else}
-              <LoadingSpinner />
-            {/if}
-            <span class="ml-2"> {$t('create_new_person')}</span></Button
-          >
-          <Button
-            size={'sm'}
-            title={$t('reassing_hint')}
-            disabled={disableButtons || !hasSelection}
-            on:click={handleReassign}
-          >
-            {#if !showLoadingSpinnerReassign}
-              <div>
-                <Icon path={mdiMerge} size={18} class="rotate-180" />
-              </div>
-            {:else}
-              <LoadingSpinner />
-            {/if}
-            <span class="ml-2"> {$t('reassign')}</span></Button
-          >
-        </div>
-      
-      {/snippet}
+      <div class="flex gap-4">
+        <Button
+          title={$t('create_new_person_hint')}
+          size={'sm'}
+          disabled={disableButtons || hasSelection}
+          on:click={handleCreate}
+        >
+          {#if !showLoadingSpinnerCreate}
+            <Icon path={mdiPlus} size={18} />
+          {:else}
+            <LoadingSpinner />
+          {/if}
+          <span class="ml-2"> {$t('create_new_person')}</span></Button
+        >
+        <Button
+          size={'sm'}
+          title={$t('reassing_hint')}
+          disabled={disableButtons || !hasSelection}
+          on:click={handleReassign}
+        >
+          {#if !showLoadingSpinnerReassign}
+            <div>
+              <Icon path={mdiMerge} size={18} class="rotate-180" />
+            </div>
+          {:else}
+            <LoadingSpinner />
+          {/if}
+          <span class="ml-2"> {$t('reassign')}</span></Button
+        >
+      </div>
+    {/snippet}
   </ControlAppBar>
   {@render merge?.()}
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">

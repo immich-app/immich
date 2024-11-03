@@ -20,14 +20,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave
-  }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 </script>
 
 <div>

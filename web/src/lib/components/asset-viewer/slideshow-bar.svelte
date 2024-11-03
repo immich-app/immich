@@ -22,7 +22,7 @@
     onNext = () => {},
     onPrevious = () => {},
     onClose = () => {},
-    onSetToFullScreen = () => {}
+    onSetToFullScreen = () => {},
   }: Props = $props();
 
   const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;

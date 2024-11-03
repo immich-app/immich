@@ -75,32 +75,28 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-          
-          <ImmichLogoSmallLink width={innerWidth} />
-        
-          {/snippet}
+        <ImmichLogoSmallLink width={innerWidth} />
+      {/snippet}
 
       {#snippet trailing()}
-          
-          {#if sharedLink.allowUpload}
-            <CircleIconButton
-              title={$t('add_photos')}
-              on:click={() => openFileUploadDialog({ albumId: album.id })}
-              icon={mdiFileImagePlusOutline}
-            />
-          {/if}
+        {#if sharedLink.allowUpload}
+          <CircleIconButton
+            title={$t('add_photos')}
+            on:click={() => openFileUploadDialog({ albumId: album.id })}
+            icon={mdiFileImagePlusOutline}
+          />
+        {/if}
 
-          {#if album.assetCount > 0 && sharedLink.allowDownload}
-            <CircleIconButton
-              title={$t('download')}
-              on:click={() => downloadAlbum(album)}
-              icon={mdiFolderDownloadOutline}
-            />
-          {/if}
+        {#if album.assetCount > 0 && sharedLink.allowDownload}
+          <CircleIconButton
+            title={$t('download')}
+            on:click={() => downloadAlbum(album)}
+            icon={mdiFolderDownloadOutline}
+          />
+        {/if}
 
-          <ThemeButton />
-        
-          {/snippet}
+        <ThemeButton />
+      {/snippet}
     </ControlAppBar>
   {/if}
 </header>

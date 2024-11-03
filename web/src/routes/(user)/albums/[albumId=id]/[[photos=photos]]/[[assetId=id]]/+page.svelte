@@ -100,8 +100,6 @@
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
-
-
   enum ViewMode {
     LINK_SHARING = 'link-sharing',
     SELECT_USERS = 'select-users',
@@ -127,9 +125,6 @@
 
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
-
-
-
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
@@ -216,7 +211,6 @@
   const handleOpenAndCloseActivityTab = () => {
     isShowActivity = !isShowActivity;
   };
-
 
   const handleStartSlideshow = async () => {
     const asset =
@@ -432,13 +426,15 @@
   let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
   let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
   let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
-  
-  let showActivityStatus =
-    $derived(album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0));
+
+  let showActivityStatus = $derived(
+    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0),
+  );
   // svelte-ignore reactive_declaration_non_reactive_property
-  let isEditor =
-    $derived(album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
-    album.ownerId === $user.id);
+  let isEditor = $derived(
+    album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
+      album.ownerId === $user.id,
+  );
   // svelte-ignore reactive_declaration_non_reactive_property
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   run(() => {
@@ -493,98 +489,92 @@
       {#if viewMode === ViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
-                  
-              {#if isEditor}
-                <CircleIconButton
-                  title={$t('add_photos')}
-                  on:click={async () => {
-                    viewMode = ViewMode.SELECT_ASSETS;
-                    oldAt = { at: $gridScrollTarget?.at };
-                    await navigate(
-                      { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
-                      { replaceState: true },
-                    );
-                  }}
-                  icon={mdiImagePlusOutline}
-                />
-              {/if}
+            {#if isEditor}
+              <CircleIconButton
+                title={$t('add_photos')}
+                on:click={async () => {
+                  viewMode = ViewMode.SELECT_ASSETS;
+                  oldAt = { at: $gridScrollTarget?.at };
+                  await navigate(
+                    { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
+                    { replaceState: true },
+                  );
+                }}
+                icon={mdiImagePlusOutline}
+              />
+            {/if}
+
+            {#if isOwned}
+              <CircleIconButton
+                title={$t('share')}
+                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                icon={mdiShareVariantOutline}
+              />
+            {/if}
+
+            {#if album.assetCount > 0}
+              <CircleIconButton title={$t('slideshow')} on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
+              <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
-                <CircleIconButton
-                  title={$t('share')}
-                  on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                  icon={mdiShareVariantOutline}
-                />
+                <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+                  <MenuOption
+                    icon={mdiImageOutline}
+                    text={$t('select_album_cover')}
+                    onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                  />
+                  <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
+                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
+                </ButtonContextMenu>
               {/if}
+            {/if}
 
-              {#if album.assetCount > 0}
-                <CircleIconButton title={$t('slideshow')} on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
-                <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
-
-                {#if isOwned}
-                  <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
-                    <MenuOption
-                      icon={mdiImageOutline}
-                      text={$t('select_album_cover')}
-                      onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
-                    />
-                    <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
-                    <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
-                  </ButtonContextMenu>
-                {/if}
-              {/if}
-
-              {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
-                <Button
-                  size="sm"
-                  rounded="lg"
-                  disabled={album.assetCount === 0}
-                  on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                >
-                  {$t('share')}
-                </Button>
-              {/if}
-            
-                  {/snippet}
+            {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
+              <Button
+                size="sm"
+                rounded="lg"
+                disabled={album.assetCount === 0}
+                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+              >
+                {$t('share')}
+              </Button>
+            {/if}
+          {/snippet}
         </ControlAppBar>
       {/if}
 
       {#if viewMode === ViewMode.SELECT_ASSETS}
         <ControlAppBar onClose={handleCloseSelectAssets}>
           {#snippet leading()}
-                  
-              <p class="text-lg dark:text-immich-dark-fg">
-                {#if $timelineSelected.size === 0}
-                  {$t('add_to_album')}
-                {:else}
-                  {$t('selected_count', { values: { count: $timelineSelected.size } })}
-                {/if}
-              </p>
-            
-                  {/snippet}
+            <p class="text-lg dark:text-immich-dark-fg">
+              {#if $timelineSelected.size === 0}
+                {$t('add_to_album')}
+              {:else}
+                {$t('selected_count', { values: { count: $timelineSelected.size } })}
+              {/if}
+            </p>
+          {/snippet}
 
           {#snippet trailing()}
-                  
-              <button
-                type="button"
-                onclick={handleSelectFromComputer}
-                class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
-              >
-                {$t('select_from_computer')}
-              </button>
-              <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
-                >{$t('done')}</Button
-              >
-            
-                  {/snippet}
+            <button
+              type="button"
+              onclick={handleSelectFromComputer}
+              class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
+            >
+              {$t('select_from_computer')}
+            </button>
+            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
+              >{$t('done')}</Button
+            >
+          {/snippet}
         </ControlAppBar>
       {/if}
 
       {#if viewMode === ViewMode.SELECT_THUMBNAIL}
         <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW)}>
           {#snippet leading()}
-                    {$t('select_album_cover')}
-                  {/snippet}
+            {$t('select_album_cover')}
+          {/snippet}
         </ControlAppBar>
       {/if}
     {/if}

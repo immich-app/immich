@@ -439,12 +439,11 @@
         onClose={closeViewer}
       >
         {#snippet motionPhoto()}
-                <MotionPhotoAction
-            
+          <MotionPhotoAction
             isPlaying={shouldPlayMotionPhoto}
             onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
           />
-              {/snippet}
+        {/snippet}
       </AssetViewerNavBar>
     </div>
   {/if}

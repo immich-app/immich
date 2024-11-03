@@ -221,10 +221,12 @@
 
   let searchQuery = $state('');
 
-  let filteredSettings = $derived(settings.filter(({ title, subtitle }) => {
-    const query = searchQuery.toLowerCase();
-    return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
-  }));
+  let filteredSettings = $derived(
+    settings.filter(({ title, subtitle }) => {
+      const query = searchQuery.toLowerCase();
+      return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
+    }),
+  );
 </script>
 
 <input bind:this={inputElement} type="file" accept=".json" style="display: none" onchange={uploadConfig} />
@@ -241,7 +243,7 @@
 
   <UserPageLayout title={data.meta.title} admin>
     {#snippet buttons()}
-        <div class="flex justify-end gap-2" >
+      <div class="flex justify-end gap-2">
         <div class="hidden lg:block">
           <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
         </div>
@@ -266,11 +268,11 @@
           </LinkButton>
         {/if}
       </div>
-      {/snippet}
+    {/snippet}
 
-    <AdminSettings bind:config  bind:handleSave  >
+    <AdminSettings bind:config bind:handleSave>
       {#snippet children({ handleReset, savedConfig, defaultConfig })}
-            <section id="setting-content" class="flex place-content-center sm:mx-4">
+        <section id="setting-content" class="flex place-content-center sm:mx-4">
           <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
             <div class="block lg:hidden">
               <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
@@ -291,7 +293,7 @@
             </SettingAccordionState>
           </section>
         </section>
-                {/snippet}
-        </AdminSettings>
+      {/snippet}
+    </AdminSettings>
   </UserPageLayout>
 </div>

@@ -24,14 +24,7 @@
     onHidePerson: () => void;
   }
 
-  let {
-    person,
-    preload = false,
-    onChangeName,
-    onSetBirthDate,
-    onMergePeople,
-    onHidePerson
-  }: Props = $props();
+  let { person, preload = false, onChangeName, onSetBirthDate, onMergePeople, onHidePerson }: Props = $props();
 
   let showVerticalDots = $state(false);
 </script>

@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { AriaRole } from 'svelte/elements';
 
-  
   interface Props {
     size?: string | number;
     color?: string;
@@ -35,7 +34,7 @@
     ariaLabelledby = undefined,
     strokeWidth = 0,
     strokeColor = 'currentColor',
-    spin = false
+    spin = false,
   }: Props = $props();
 </script>
 

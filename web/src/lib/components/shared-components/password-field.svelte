@@ -4,22 +4,15 @@
   import Icon from '../elements/icon.svelte';
   import { t } from 'svelte-i18n';
 
-  
-
   interface Props {
     password: string;
     autocomplete: AutoFill;
     required?: boolean;
     onInput?: (value: string) => void;
-    [key: string]: any
+    [key: string]: any;
   }
 
-  let {
-    password = $bindable(),
-    required = true,
-    onInput = undefined,
-    ...rest
-  }: Props = $props();
+  let { password = $bindable(), required = true, onInput = undefined, ...rest }: Props = $props();
 
   let showPassword = $state(false);
 </script>

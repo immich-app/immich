@@ -25,12 +25,7 @@
     children?: import('svelte').Snippet;
   }
 
-  let {
-    assets,
-    clearSelect,
-    ownerId = undefined,
-    children
-  }: Props = $props();
+  let { assets, clearSelect, ownerId = undefined, children }: Props = $props();
 
   setContext({
     getAssets: () => assets,
@@ -42,7 +37,7 @@
 
 <ControlAppBar onClose={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   {#snippet leading()}
-    <div class="font-medium text-immich-primary dark:text-immich-dark-primary" >
+    <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
       <p class="block sm:hidden">{assets.size}</p>
       <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.size } })}</p>
     </div>

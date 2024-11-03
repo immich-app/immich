@@ -13,7 +13,6 @@
   }
 
   let { link, preload = false, class: className = '' }: Props = $props();
-  
 </script>
 
 <div class="relative shrink-0 size-24">

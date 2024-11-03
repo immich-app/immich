@@ -23,7 +23,7 @@
     options,
     selectedOption,
     onSelect,
-    children
+    children,
   }: Props = $props();
 </script>
 

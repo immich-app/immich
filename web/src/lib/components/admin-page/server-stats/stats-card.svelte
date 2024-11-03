@@ -9,12 +9,7 @@
     unit?: ByteUnit | undefined;
   }
 
-  let {
-    icon,
-    title,
-    value,
-    unit = undefined
-  }: Props = $props();
+  let { icon, title, value, unit = undefined }: Props = $props();
 
   let zeros = $derived(() => {
     const maxLength = 13;

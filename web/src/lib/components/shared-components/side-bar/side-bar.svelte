@@ -49,10 +49,8 @@
       icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
     >
       {#snippet moreInformation()}
-          
-          <MoreInformationAssets assetStats={{ isArchived: false }} />
-        
-          {/snippet}
+        <MoreInformationAssets assetStats={{ isArchived: false }} />
+      {/snippet}
     </SideBarLink>
 
     {#if $featureFlags.search}
@@ -84,10 +82,8 @@
       bind:isSelected={isSharingSelected}
     >
       {#snippet moreInformation()}
-          
-          <MoreInformationAlbums albumType="shared" />
-        
-          {/snippet}
+        <MoreInformationAlbums albumType="shared" />
+      {/snippet}
     </SideBarLink>
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
@@ -102,18 +98,14 @@
       bind:isSelected={isFavoritesSelected}
     >
       {#snippet moreInformation()}
-          
-          <MoreInformationAssets assetStats={{ isFavorite: true }} />
-        
-          {/snippet}
+        <MoreInformationAssets assetStats={{ isFavorite: true }} />
+      {/snippet}
     </SideBarLink>
 
     <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
       {#snippet moreInformation()}
-          
-          <MoreInformationAlbums albumType="owned" />
-        
-          {/snippet}
+        <MoreInformationAlbums albumType="owned" />
+      {/snippet}
     </SideBarLink>
 
     {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
@@ -138,10 +130,8 @@
       icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
     >
       {#snippet moreInformation()}
-          
-          <MoreInformationAssets assetStats={{ isArchived: true }} />
-        
-          {/snippet}
+        <MoreInformationAssets assetStats={{ isArchived: true }} />
+      {/snippet}
     </SideBarLink>
 
     {#if $featureFlags.trash}
@@ -152,10 +142,8 @@
         icon={isTrashSelected ? mdiTrashCan : mdiTrashCanOutline}
       >
         {#snippet moreInformation()}
-              
-            <MoreInformationAssets assetStats={{ isTrashed: true }} />
-          
-              {/snippet}
+          <MoreInformationAssets assetStats={{ isTrashed: true }} />
+        {/snippet}
       </SideBarLink>
     {/if}
   </nav>

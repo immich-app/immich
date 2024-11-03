@@ -39,7 +39,7 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
-    <div class="flex" >
+    <div class="flex">
       <LinkButton on:click={() => createAlbumAndRedirect()}>
         <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
           <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
@@ -96,8 +96,8 @@
         <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
           <!-- Empty List -->
           {#snippet empty()}
-                    <EmptyPlaceholder  text={$t('no_shared_albums_message')} src={empty2Url} />
-                  {/snippet}
+            <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} />
+          {/snippet}
         </Albums>
       </div>
     </div>

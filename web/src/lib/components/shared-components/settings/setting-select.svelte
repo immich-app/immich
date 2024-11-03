@@ -26,7 +26,7 @@
     isEdited = false,
     number = false,
     disabled = false,
-    onSelect = () => {}
+    onSelect = () => {},
   }: Props = $props();
 
   const handleChange = (e: Event) => {

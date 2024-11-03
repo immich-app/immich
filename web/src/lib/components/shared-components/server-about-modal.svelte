@@ -7,7 +7,6 @@
   import { mdiAlert } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-
   interface Props {
     onClose: () => void;
     info: ServerAboutResponseDto;

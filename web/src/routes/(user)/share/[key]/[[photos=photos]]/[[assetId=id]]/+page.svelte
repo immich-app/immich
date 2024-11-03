@@ -61,16 +61,12 @@
   <header>
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-          
-          <ImmichLogoSmallLink width={innerWidth} />
-        
-          {/snippet}
+        <ImmichLogoSmallLink width={innerWidth} />
+      {/snippet}
 
       {#snippet trailing()}
-          
-          <ThemeButton />
-        
-          {/snippet}
+        <ThemeButton />
+      {/snippet}
     </ControlAppBar>
   </header>
   <main

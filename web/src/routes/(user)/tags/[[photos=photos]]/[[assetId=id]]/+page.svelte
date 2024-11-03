@@ -230,11 +230,9 @@
     </form>
 
     {#snippet stickyBottom()}
-      
-        <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
-        <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
-      
-      {/snippet}
+      <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
+    {/snippet}
   </FullScreenModal>
 {/if}
 
@@ -251,10 +249,8 @@
     </form>
 
     {#snippet stickyBottom()}
-      
-        <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
-        <Button type="submit" fullwidth form="edit-tag-form">{$t('save')}</Button>
-      
-      {/snippet}
+      <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button type="submit" fullwidth form="edit-tag-form">{$t('save')}</Button>
+    {/snippet}
   </FullScreenModal>
 {/if}

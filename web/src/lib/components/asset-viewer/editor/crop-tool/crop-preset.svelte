@@ -5,22 +5,17 @@
 
   interface Props {
     size: {
-    icon: string;
-    name: CropAspectRatio;
-    viewBox: string;
-    rotate?: boolean;
-  };
+      icon: string;
+      name: CropAspectRatio;
+      viewBox: string;
+      rotate?: boolean;
+    };
     selectedSize: CropAspectRatio;
     rotateHorizontal: boolean;
     selectType: (size: CropAspectRatio) => void;
   }
 
-  let {
-    size,
-    selectedSize,
-    rotateHorizontal,
-    selectType
-  }: Props = $props();
+  let { size, selectedSize, rotateHorizontal, selectType }: Props = $props();
 
   let isSelected = $derived(selectedSize === size.name);
   let buttonColor = $derived((isSelected ? 'primary' : 'transparent-gray') as Color);

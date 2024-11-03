@@ -16,11 +16,11 @@
 {#if $featureFlags.loaded}
   <FullscreenContainer title={data.meta.title} showMessage={!!$serverConfig.loginPageMessage}>
     {#snippet message()}
-        <p >
+      <p>
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         {@html $serverConfig.loginPageMessage}
       </p>
-      {/snippet}
+    {/snippet}
 
     <LoginForm
       onSuccess={async () => await goto(AppRoute.PHOTOS, { invalidateAll: true })}

@@ -101,23 +101,19 @@
 >
   <ControlAppBar onClose={onBack}>
     {#snippet leading()}
-      
-        {#if hasSelection}
-          {$t('selected_count', { values: { count: selectedPeople.length } })}
-        {:else}
-          {$t('merge_people')}
-        {/if}
-        <div></div>
-      
-      {/snippet}
+      {#if hasSelection}
+        {$t('selected_count', { values: { count: selectedPeople.length } })}
+      {:else}
+        {$t('merge_people')}
+      {/if}
+      <div></div>
+    {/snippet}
     {#snippet trailing()}
-      
-        <Button size={'sm'} disabled={!hasSelection} on:click={handleMerge}>
-          <Icon path={mdiMerge} size={18} />
-          <span class="ml-2">{$t('merge')}</span></Button
-        >
-      
-      {/snippet}
+      <Button size={'sm'} disabled={!hasSelection} on:click={handleMerge}>
+        <Icon path={mdiMerge} size={18} />
+        <span class="ml-2">{$t('merge')}</span></Button
+      >
+    {/snippet}
   </ControlAppBar>
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">

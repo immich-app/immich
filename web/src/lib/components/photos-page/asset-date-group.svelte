@@ -14,7 +14,6 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import { generateId } from '$lib/utils/generate-id';
 
-
   interface Props {
     element?: HTMLElement | undefined;
     isSelectionMode?: boolean;
@@ -52,7 +51,7 @@
     onAssetInGrid = undefined,
     onSelect,
     onSelectAssets,
-    onSelectAssetCandidates
+    onSelectAssetCandidates,
   }: Props = $props();
 
   const componentId = generateId();

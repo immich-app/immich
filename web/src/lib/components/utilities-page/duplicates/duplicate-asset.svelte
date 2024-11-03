@@ -14,12 +14,7 @@
     onViewAsset: (asset: AssetResponseDto) => void;
   }
 
-  let {
-    asset,
-    isSelected,
-    onSelectAsset,
-    onViewAsset
-  }: Props = $props();
+  let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));

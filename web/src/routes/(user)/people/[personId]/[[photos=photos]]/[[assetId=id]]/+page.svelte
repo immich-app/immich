@@ -83,7 +83,6 @@
     personId: data.person.id,
   });
 
-
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
 
@@ -109,7 +108,6 @@
    **/
   let isSearchingPeople = $state(false);
   let suggestionContainer: HTMLDivElement = $state();
-
 
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
@@ -416,39 +414,37 @@
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
-              
-            <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-              <MenuOption
-                text={$t('select_featured_photo')}
-                icon={mdiAccountBoxOutline}
-                onClick={() => (viewMode = ViewMode.SELECT_PERSON)}
-              />
-              <MenuOption
-                text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
-                icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
-                onClick={() => toggleHidePerson()}
-              />
-              <MenuOption
-                text={$t('set_date_of_birth')}
-                icon={mdiCalendarEditOutline}
-                onClick={() => (viewMode = ViewMode.BIRTH_DATE)}
-              />
-              <MenuOption
-                text={$t('merge_people')}
-                icon={mdiAccountMultipleCheckOutline}
-                onClick={() => (viewMode = ViewMode.MERGE_PEOPLE)}
-              />
-            </ButtonContextMenu>
-          
-              {/snippet}
+          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+            <MenuOption
+              text={$t('select_featured_photo')}
+              icon={mdiAccountBoxOutline}
+              onClick={() => (viewMode = ViewMode.SELECT_PERSON)}
+            />
+            <MenuOption
+              text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
+              icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
+              onClick={() => toggleHidePerson()}
+            />
+            <MenuOption
+              text={$t('set_date_of_birth')}
+              icon={mdiCalendarEditOutline}
+              onClick={() => (viewMode = ViewMode.BIRTH_DATE)}
+            />
+            <MenuOption
+              text={$t('merge_people')}
+              icon={mdiAccountMultipleCheckOutline}
+              onClick={() => (viewMode = ViewMode.MERGE_PEOPLE)}
+            />
+          </ButtonContextMenu>
+        {/snippet}
       </ControlAppBar>
     {/if}
 
     {#if viewMode === ViewMode.SELECT_PERSON}
       <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}>
         {#snippet leading()}
-                {$t('select_featured_photo')}
-              {/snippet}
+          {$t('select_featured_photo')}
+        {/snippet}
       </ControlAppBar>
     {/if}
   {/if}

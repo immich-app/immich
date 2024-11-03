@@ -61,7 +61,7 @@
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
     {#snippet empty()}
-        <EmptyPlaceholder text={$t('no_favorites_message')}  />
-      {/snippet}
+      <EmptyPlaceholder text={$t('no_favorites_message')} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

@@ -27,10 +27,12 @@
     onSelectSearchTerm,
     onClearSearchTerm,
     onClearAllSearchTerms,
-    onActiveSelectionChange
+    onActiveSelectionChange,
   }: Props = $props();
 
-  let filteredSearchTerms = $derived($savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())));
+  let filteredSearchTerms = $derived(
+    $savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
   run(() => {
     isSearchSuggestions = filteredSearchTerms.length > 0;
   });

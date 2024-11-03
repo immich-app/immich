@@ -34,17 +34,10 @@
     loadNextPage: () => void;
   }
 
-  let {
-    people = $bindable(),
-    totalPeopleCount,
-    titleId = undefined,
-    onClose,
-    loadNextPage
-  }: Props = $props();
+  let { people = $bindable(), totalPeopleCount, titleId = undefined, onClose, loadNextPage }: Props = $props();
 
   let toggleVisibility = $state(ToggleVisibility.SHOW_ALL);
   let showLoadingSpinner = $state(false);
-
 
   const getPersonIsHidden = (people: PersonResponseDto[]) => {
     const personIsHidden: Record<string, boolean> = {};
@@ -53,7 +46,6 @@
     }
     return personIsHidden;
   };
-
 
   const getNextVisibility = (toggleVisibility: ToggleVisibility) => {
     if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
@@ -122,13 +114,15 @@
   });
   // svelte-ignore reactive_declaration_non_reactive_property
   // svelte-ignore reactive_declaration_module_script_dependency
-  let toggleButtonOptions = $derived(((): Record<ToggleVisibility, { icon: string; label: string }> => {
-    return {
-      [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
-      [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
-      [ToggleVisibility.SHOW_ALL]: { icon: mdiEye, label: $t('show_all_people') },
-    };
-  })());
+  let toggleButtonOptions = $derived(
+    ((): Record<ToggleVisibility, { icon: string; label: string }> => {
+      return {
+        [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
+        [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
+        [ToggleVisibility.SHOW_ALL]: { icon: mdiEye, label: $t('show_all_people') },
+      };
+    })(),
+  );
   let toggleButton = $derived(toggleButtonOptions[getNextVisibility(toggleVisibility)]);
 </script>
 
@@ -158,9 +152,9 @@
 </div>
 
 <div class="flex flex-wrap gap-1 bg-immich-bg p-2 pb-8 dark:bg-immich-dark-bg md:px-8 mt-16">
-  <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}  >
+  <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
     {#snippet children({ person, index })}
-        {@const hidden = personIsHidden[person.id]}
+      {@const hidden = personIsHidden[person.id]}
       <button
         type="button"
         class="group relative w-full h-full"
@@ -183,6 +177,6 @@
           </span>
         {/if}
       </button>
-          {/snippet}
-    </PeopleInfiniteScroll>
+    {/snippet}
+  </PeopleInfiniteScroll>
 </div>

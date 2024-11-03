@@ -28,7 +28,7 @@
     showOwner = false,
     showDateRange = false,
     showItemCount = false,
-    onShowContextMenu = undefined
+    onShowContextMenu = undefined,
   }: Props = $props();
 
   let isCollapsed = $derived(!!group && isAlbumGroupCollapsed($albumViewSettings, group.id));

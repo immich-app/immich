@@ -65,10 +65,7 @@
       ></div>
     </div>
     <div class="w-full min-w-screen py-8 flex h-full place-content-center place-items-center">
-      <SvelteComponent
-        onDone={handleDoneClicked}
-        onPrevious={handlePrevious}
-      />
+      <SvelteComponent onDone={handleDoneClicked} onPrevious={handlePrevious} />
     </div>
   </div>
 </section>

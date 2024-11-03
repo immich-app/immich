@@ -26,9 +26,7 @@
   </div>
 
   {#snippet stickyBottom()}
-  
-      <Button onclick={() => copyToClipboard(secret)} fullwidth>{$t('copy_to_clipboard')}</Button>
-      <Button onclick={onDone} fullwidth>{$t('done')}</Button>
-    
+    <Button onclick={() => copyToClipboard(secret)} fullwidth>{$t('copy_to_clipboard')}</Button>
+    <Button onclick={onDone} fullwidth>{$t('done')}</Button>
   {/snippet}
 </FullScreenModal>

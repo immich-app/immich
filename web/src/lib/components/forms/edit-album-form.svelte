@@ -70,9 +70,7 @@
   </form>
 
   {#snippet stickyBottom()}
-  
-      <Button color="gray" fullwidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
-      <Button type="submit" fullwidth disabled={isSubmitting} form="edit-album-form">{$t('ok')}</Button>
-    
+    <Button color="gray" fullwidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
+    <Button type="submit" fullwidth disabled={isSubmitting} form="edit-album-form">{$t('ok')}</Button>
   {/snippet}
 </FullScreenModal>

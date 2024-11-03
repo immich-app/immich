@@ -7,7 +7,6 @@
   import { archiveAssets } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
 
-
   interface Props {
     onArchive: OnArchive;
     menuItem?: boolean;

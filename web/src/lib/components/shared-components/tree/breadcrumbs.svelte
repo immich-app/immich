@@ -11,12 +11,7 @@
     icon: string;
   }
 
-  let {
-    pathSegments = [],
-    getLink,
-    title,
-    icon
-  }: Props = $props();
+  let { pathSegments = [], getLink, title, icon }: Props = $props();
 
   let isRoot = $derived(pathSegments.length === 0);
 </script>

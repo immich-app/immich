@@ -5,7 +5,6 @@
   import { slide } from 'svelte/transition';
   import { clickOutside } from '$lib/actions/click-outside';
 
-
   interface Props {
     isVisible?: boolean;
     direction?: 'left' | 'right';
@@ -31,7 +30,7 @@
     ariaActiveDescendant = undefined,
     menuElement = $bindable(undefined),
     onClose = undefined,
-    children
+    children,
   }: Props = $props();
 
   let left: number = $state();

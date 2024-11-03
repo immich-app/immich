@@ -17,7 +17,6 @@
 
   let isOpen = $state(false);
 
-
   let info: ServerAboutResponseDto = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
 
@@ -26,7 +25,9 @@
     [info, versions] = await Promise.all([getAboutInfo(), getVersionHistory()]);
   });
   let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
-  let version = $derived($serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null);
+  let version = $derived(
+    $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
+  );
 </script>
 
 {#if isOpen}

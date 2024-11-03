@@ -33,7 +33,6 @@
 
   let showNavigationLoadingBar = $state(false);
 
-
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
       theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;

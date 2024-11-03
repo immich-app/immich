@@ -102,7 +102,6 @@
     return memoryAssets;
   });
 
-
   const loadFromParams = (memories: MemoryAsset[], page: typeof $page | NavigationTarget | null) => {
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
     handlePromiseError(handleAction($isViewing ? 'pause' : 'reset'));
@@ -260,12 +259,10 @@
   {#if current && current.memory.assets.length > 0}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark>
       {#snippet leading()}
-          
-          <p class="text-lg">
-            {$memoryLaneTitle(current.memory.yearsAgo)}
-          </p>
-        
-          {/snippet}
+        <p class="text-lg">
+          {$memoryLaneTitle(current.memory.yearsAgo)}
+        </p>
+      {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
         <CircleIconButton

@@ -14,12 +14,7 @@
     onRating: (rating: number) => void | undefined;
   }
 
-  let {
-    count = 5,
-    rating,
-    readOnly = false,
-    onRating
-  }: Props = $props();
+  let { count = 5, rating, readOnly = false, onRating }: Props = $props();
 
   let ratingSelection = $state(0);
   let hoverRating = $state(0);

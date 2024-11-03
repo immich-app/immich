@@ -24,15 +24,7 @@
     onReassign: (person: PersonResponseDto) => void;
   }
 
-  let {
-    allPeople,
-    editedFace,
-    assetId,
-    assetType,
-    onClose,
-    onCreatePerson,
-    onReassign
-  }: Props = $props();
+  let { allPeople, editedFace, assetId, assetType, onClose, onCreatePerson, onReassign }: Props = $props();
 
   // loading spinners
   let isShowLoadingNewPerson = $state(false);

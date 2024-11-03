@@ -37,11 +37,10 @@
     autoScrollTo = false,
     icon = '',
     subtitle,
-    children
+    children,
   }: Props = $props();
 
   let accordionElement: HTMLDivElement = $state();
-
 
   const setIsOpen = (isOpen: boolean) => {
     if (isOpen) {

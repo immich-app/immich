@@ -7,13 +7,7 @@
     group?: string | undefined;
   }
 
-  let {
-    id,
-    label,
-    name,
-    value,
-    group = $bindable(undefined)
-  }: Props = $props();
+  let { id, label, name, value, group = $bindable(undefined) }: Props = $props();
 </script>
 
 <div class="flex items-center space-x-2">

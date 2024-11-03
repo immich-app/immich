@@ -35,12 +35,7 @@
     onRefresh: () => void;
   }
 
-  let {
-    assetId,
-    assetType,
-    onClose,
-    onRefresh
-  }: Props = $props();
+  let { assetId, assetType, onClose, onRefresh }: Props = $props();
 
   // keep track of the changes
   let peopleToCreate: string[] = [];

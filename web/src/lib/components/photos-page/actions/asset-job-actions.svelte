@@ -14,11 +14,8 @@
     jobs?: AssetJobName[];
   }
 
-  let { jobs = [
-    AssetJobName.RegenerateThumbnail,
-    AssetJobName.RefreshMetadata,
-    AssetJobName.TranscodeVideo,
-  ] }: Props = $props();
+  let { jobs = [AssetJobName.RegenerateThumbnail, AssetJobName.RefreshMetadata, AssetJobName.TranscodeVideo] }: Props =
+    $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 

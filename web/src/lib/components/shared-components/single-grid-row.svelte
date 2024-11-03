@@ -1,7 +1,6 @@
 <script lang="ts">
   import { run } from 'svelte/legacy';
 
-  
   interface Props {
     class?: string;
     itemCount?: number;
@@ -43,5 +42,5 @@
 </script>
 
 <div class={className} bind:this={container} bind:contentRect>
-  {@render children?.({ itemCount, })}
+  {@render children?.({ itemCount })}
 </div>

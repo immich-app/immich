@@ -20,7 +20,7 @@
     thumbnailSize = null,
     circle = false,
     border = false,
-    onClick = () => {}
+    onClick = () => {},
   }: Props = $props();
 </script>
 

@@ -90,26 +90,22 @@
   {:else}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       {#snippet leading()}
-          
-          <ImmichLogoSmallLink width={innerWidth} />
-        
-          {/snippet}
+        <ImmichLogoSmallLink width={innerWidth} />
+      {/snippet}
 
       {#snippet trailing()}
-          
-          {#if sharedLink?.allowUpload}
-            <CircleIconButton
-              title={$t('add_photos')}
-              on:click={() => handleUploadAssets()}
-              icon={mdiFileImagePlusOutline}
-            />
-          {/if}
+        {#if sharedLink?.allowUpload}
+          <CircleIconButton
+            title={$t('add_photos')}
+            on:click={() => handleUploadAssets()}
+            icon={mdiFileImagePlusOutline}
+          />
+        {/if}
 
-          {#if sharedLink?.allowDownload}
-            <CircleIconButton title={$t('download')} on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
-          {/if}
-        
-          {/snippet}
+        {#if sharedLink?.allowDownload}
+          <CircleIconButton title={$t('download')} on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
+        {/if}
+      {/snippet}
     </ControlAppBar>
   {/if}
   <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>

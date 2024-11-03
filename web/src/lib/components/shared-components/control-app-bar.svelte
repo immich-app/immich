@@ -27,7 +27,7 @@
     onClose = () => {},
     leading,
     children,
-    trailing
+    trailing,
   }: Props = $props();
 
   let appBarBorder = $state('bg-immich-bg border border-transparent');

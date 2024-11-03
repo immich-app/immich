@@ -21,7 +21,6 @@
 
   let time = $state(new Date());
 
-
   onMount(() => {
     const interval = setInterval(() => {
       time = new Date();
@@ -73,16 +72,20 @@
     }
   };
   let editedLocale = $derived(findLocale($locale).code);
-  let formattedDate = $derived(time.toLocaleString(editedLocale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }));
-  let timePortion = $derived(time.toLocaleString(editedLocale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }));
+  let formattedDate = $derived(
+    time.toLocaleString(editedLocale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }),
+  );
+  let timePortion = $derived(
+    time.toLocaleString(editedLocale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }),
+  );
   let selectedDate = $derived(`${formattedDate} ${timePortion}`);
   // svelte-ignore reactive_declaration_non_reactive_property
   let selectedOption = $derived({

@@ -28,17 +28,17 @@
 
 <OnboardingCard title={$t('admin.storage_template_settings')} icon={mdiHarddisk}>
   <p>
-    <FormatMessage key="admin.storage_template_onboarding_description" >
+    <FormatMessage key="admin.storage_template_onboarding_description">
       {#snippet children({ message })}
-            <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
-                {/snippet}
-        </FormatMessage>
+        <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
+      {/snippet}
+    </FormatMessage>
   </p>
 
   {#if config && $user}
-    <AdminSettings bind:config    >
+    <AdminSettings bind:config>
       {#snippet children({ defaultConfig, savedConfig, handleSave, handleReset })}
-            <StorageTemplateSettings
+        <StorageTemplateSettings
           minified
           disabled={$featureFlags.configFile}
           {config}
@@ -70,7 +70,7 @@
             </div>
           </div>
         </StorageTemplateSettings>
-                {/snippet}
-        </AdminSettings>
+      {/snippet}
+    </AdminSettings>
   {/if}
 </OnboardingCard>

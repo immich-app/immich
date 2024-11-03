@@ -7,7 +7,6 @@
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
   import { discordPath } from '$lib/assets/svg-paths';
 
-
   interface Props {
     onClose: () => void;
     info: ServerAboutResponseDto;

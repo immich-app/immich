@@ -15,12 +15,7 @@
     unlink?: boolean;
   }
 
-  let {
-    onLink,
-    onUnlink,
-    menuItem = false,
-    unlink = false
-  }: Props = $props();
+  let { onLink, onUnlink, menuItem = false, unlink = false }: Props = $props();
 
   let loading = $state(false);
 

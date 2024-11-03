@@ -13,7 +13,6 @@
   import { sortAlbums } from '$lib/utils/album-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
 
-
   let albums: AlbumResponseDto[] = $state([]);
   let recentAlbums: AlbumResponseDto[] = $state([]);
   let filteredAlbums: AlbumResponseDto[] = $state([]);
@@ -27,12 +26,7 @@
     onClose: () => void;
   }
 
-  let {
-    onNewAlbum,
-    onAlbumClick,
-    shared,
-    onClose
-  }: Props = $props();
+  let { onNewAlbum, onAlbumClick, shared, onClose }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });

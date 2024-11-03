@@ -22,7 +22,7 @@
     suggestedPeople = $bindable(),
     thumbnailData,
     isSearchingPeople = $bindable(),
-    onChange
+    onChange,
   }: Props = $props();
 </script>
 

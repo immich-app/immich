@@ -150,7 +150,7 @@
               <LoadingSpinner />
             </div>
           {/await}
-        {:then {default: Map }}
+        {:then { default: Map }}
           <Map
             mapMarkers={lat !== undefined && lng !== undefined && asset
               ? [

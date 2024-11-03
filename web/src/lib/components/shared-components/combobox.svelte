@@ -47,7 +47,7 @@
     options = [],
     selectedOption = $bindable(undefined),
     placeholder = '',
-    onSelect = () => {}
+    onSelect = () => {},
   }: Props = $props();
 
   /**
@@ -88,9 +88,6 @@
     },
     { threshold: 0.5 },
   );
-
-
-
 
   onMount(() => {
     observer.observe(input);
@@ -223,7 +220,9 @@
   run(() => {
     searchQuery = selectedOption ? selectedOption.label : '';
   });
-  let filteredOptions = $derived(options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase())));
+  let filteredOptions = $derived(
+    options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
   let position = $derived(calculatePosition(bounds));
 </script>
 

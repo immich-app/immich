@@ -46,7 +46,7 @@
     onReset,
     onSave,
     duration = 500,
-    children
+    children,
   }: Props = $props();
 
   let templateOptions: SystemConfigTemplateStorageOptionDto = $state();
@@ -58,7 +58,6 @@
   };
 
   const getSupportDateTimeFormat = () => getStorageTemplateOptions();
-
 
   const renderTemplate = (templateString: string) => {
     const template = handlebar.compile(templateString, {
@@ -108,9 +107,9 @@
 <section class="dark:text-immich-dark-fg mt-2">
   <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
     <p class="text-sm dark:text-immich-dark-fg">
-      <FormatMessage key="admin.storage_template_more_details"  >
+      <FormatMessage key="admin.storage_template_more_details">
         {#snippet children({ tag, message })}
-                {#if tag === 'template-link'}
+          {#if tag === 'template-link'}
             <a
               href="https://immich.app/docs/administration/storage-template"
               class="underline"
@@ -129,8 +128,8 @@
               {message}
             </a>
           {/if}
-                      {/snippet}
-            </FormatMessage>
+        {/snippet}
+      </FormatMessage>
     </p>
   </div>
   {#await getTemplateOptions() then}
@@ -184,24 +183,19 @@
             <FormatMessage
               key="admin.storage_template_path_length"
               values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
-              
             >
               {#snippet children({ message })}
-                            <span class="font-semibold text-immich-primary dark:text-immich-dark-primary">{message}</span>
-                                        {/snippet}
-                        </FormatMessage>
+                <span class="font-semibold text-immich-primary dark:text-immich-dark-primary">{message}</span>
+              {/snippet}
+            </FormatMessage>
           </p>
 
           <p class="text-sm">
-            <FormatMessage
-              key="admin.storage_template_user_label"
-              values={{ label: $user.storageLabel || $user.id }}
-              
-            >
+            <FormatMessage key="admin.storage_template_user_label" values={{ label: $user.storageLabel || $user.id }}>
               {#snippet children({ message })}
-                            <code class="text-immich-primary dark:text-immich-dark-primary">{message}</code>
-                                        {/snippet}
-                        </FormatMessage>
+                <code class="text-immich-primary dark:text-immich-dark-primary">{message}</code>
+              {/snippet}
+            </FormatMessage>
           </p>
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
@@ -256,14 +250,13 @@
                     <FormatMessage
                       key="admin.storage_template_migration_info"
                       values={{ job: $t('admin.storage_template_migration_job') }}
-                      
                     >
                       {#snippet children({ message })}
-                                            <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
+                        <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
                           {message}
                         </a>
-                                                                {/snippet}
-                                        </FormatMessage>
+                      {/snippet}
+                    </FormatMessage>
                   </p>
                 </section>
               </div>

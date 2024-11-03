@@ -13,12 +13,7 @@
     onSelect: (person: PersonResponseDto) => void;
   }
 
-  let {
-    screenHeight,
-    people,
-    peopleToNotShow,
-    onSelect
-  }: Props = $props();
+  let { screenHeight, people, peopleToNotShow, onSelect }: Props = $props();
 
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
 

@@ -22,7 +22,7 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
-    <div class="flex place-items-center gap-2" >
+    <div class="flex place-items-center gap-2">
       <AlbumsControls {albumGroups} bind:searchQuery />
     </div>
   {/snippet}
@@ -50,7 +50,7 @@
     bind:albumGroupIds={albumGroups}
   >
     {#snippet empty()}
-        <EmptyPlaceholder  text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} />
-      {/snippet}
+      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} />
+    {/snippet}
   </Albums>
 </UserPageLayout>

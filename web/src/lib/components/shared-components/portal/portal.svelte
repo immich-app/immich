@@ -64,11 +64,10 @@ Used for every occurrence of an HTML tag in a message
 ```
 -->
 <script lang="ts">
-  
   interface Props {
     /**
-   * DOM Element or CSS Selector
-   */
+     * DOM Element or CSS Selector
+     */
     target?: HTMLElement | string;
     children?: import('svelte').Snippet;
   }

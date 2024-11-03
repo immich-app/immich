@@ -8,13 +8,7 @@
     class?: string;
   }
 
-  let {
-    alt,
-    preload = false,
-    src,
-    class: className = ''
-  }: Props = $props();
-  
+  let { alt, preload = false, src, class: className = '' }: Props = $props();
 
   let isBroken = $state(false);
 </script>

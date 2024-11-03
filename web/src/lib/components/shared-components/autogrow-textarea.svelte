@@ -5,7 +5,6 @@
   import { shortcut } from '$lib/actions/shortcut';
   import { tick } from 'svelte';
 
-  
   interface Props {
     content?: string;
     class?: string;
@@ -13,12 +12,7 @@
     placeholder?: string;
   }
 
-  let {
-    content = '',
-    class: className = '',
-    onContentUpdate = () => null,
-    placeholder = ''
-  }: Props = $props();
+  let { content = '', class: className = '', onContentUpdate = () => null, placeholder = '' }: Props = $props();
 
   let textarea: HTMLTextAreaElement = $state();
   let newContent;

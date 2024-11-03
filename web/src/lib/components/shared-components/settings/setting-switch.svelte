@@ -22,7 +22,7 @@
     disabled = false,
     isEdited = false,
     onToggle = () => {},
-    children
+    children,
   }: Props = $props();
 
   let id: string = generateId();

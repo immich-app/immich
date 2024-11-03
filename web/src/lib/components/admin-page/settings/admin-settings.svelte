@@ -77,10 +77,8 @@
   onMount(async () => {
     [savedConfig, defaultConfig] = await Promise.all([getConfig(), getConfigDefaults()]);
   });
-
-  
 </script>
 
 {#if savedConfig && defaultConfig}
-  {@render children?.({ handleReset, handleSave, savedConfig, defaultConfig, })}
+  {@render children?.({ handleReset, handleSave, savedConfig, defaultConfig })}
 {/if}

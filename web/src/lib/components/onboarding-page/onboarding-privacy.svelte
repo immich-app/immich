@@ -30,9 +30,9 @@
   </p>
 
   {#if config && $user}
-    <AdminSettings bind:config >
+    <AdminSettings bind:config>
       {#snippet children({ handleSave })}
-            <SettingSwitch
+        <SettingSwitch
           title={$t('admin.map_settings')}
           subtitle={$t('admin.map_implications')}
           bind:checked={config.map.enabled}
@@ -63,7 +63,7 @@
             </Button>
           </div>
         </div>
-                {/snippet}
-        </AdminSettings>
+      {/snippet}
+    </AdminSettings>
   {/if}
 </OnboardingCard>

@@ -8,12 +8,7 @@
     children?: import('svelte').Snippet;
   }
 
-  let {
-    title,
-    message,
-    showMessage = message,
-    children
-  }: Props = $props();
+  let { title, message, showMessage = message, children }: Props = $props();
 </script>
 
 <section class="min-w-screen flex min-h-screen place-content-center place-items-center p-4">

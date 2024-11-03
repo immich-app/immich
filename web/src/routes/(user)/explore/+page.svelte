@@ -62,16 +62,22 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4" >
+      <SingleGridRow class="grid md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4">
         {#snippet children({ itemCount })}
-                {#each people.slice(0, itemCount) as person (person.id)}
+          {#each people.slice(0, itemCount) as person (person.id)}
             <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center">
-              <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
+              <ImageThumbnail
+                circle
+                shadow
+                url={getPeopleThumbnailUrl(person)}
+                altText={person.name}
+                widthStyle="100%"
+              />
               <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
             </a>
           {/each}
-                      {/snippet}
-            </SingleGridRow>
+        {/snippet}
+      </SingleGridRow>
     </div>
   {/if}
 
@@ -85,10 +91,14 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4" >
+      <SingleGridRow class="grid md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4">
         {#snippet children({ itemCount })}
-                {#each places.slice(0, itemCount) as item (item.data.id)}
-            <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
+          {#each places.slice(0, itemCount) as item (item.data.id)}
+            <a
+              class="relative"
+              href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}"
+              draggable="false"
+            >
               <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
                 <img
                   src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
@@ -103,8 +113,8 @@
               </span>
             </a>
           {/each}
-                      {/snippet}
-            </SingleGridRow>
+        {/snippet}
+      </SingleGridRow>
     </div>
   {/if}
 

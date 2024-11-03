@@ -55,12 +55,7 @@
     onClose: () => void;
   }
 
-  let {
-    asset,
-    albums = [],
-    currentAlbum = null,
-    onClose
-  }: Props = $props();
+  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -100,21 +95,22 @@
     handlePromiseError(handleNewAsset(asset));
   });
 
-  let latlng = $derived((() => {
-    const lat = asset.exifInfo?.latitude;
-    const lng = asset.exifInfo?.longitude;
+  let latlng = $derived(
+    (() => {
+      const lat = asset.exifInfo?.latitude;
+      const lng = asset.exifInfo?.longitude;
 
-    if (lat && lng) {
-      return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
-    }
-  })());
+      if (lat && lng) {
+        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
+      }
+    })(),
+  );
 
   let people;
   run(() => {
     people = asset.people || [];
   });
   let showingHiddenPeople = $state(false);
-  
 
   let unassignedFaces;
   run(() => {
@@ -122,10 +118,11 @@
   });
 
   let timeZone = $derived(asset.exifInfo?.timeZone);
-  let dateTime =
-    $derived(timeZone && asset.exifInfo?.dateTimeOriginal
+  let dateTime = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromLocalDateTime(asset.localDateTime));
+      : fromLocalDateTime(asset.localDateTime),
+  );
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -464,20 +461,18 @@
         onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
         {#snippet popup({ marker })}
-              
-            {@const { lat, lon } = marker}
-            <div class="flex flex-col items-center gap-1">
-              <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-              <a
-                href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
-                target="_blank"
-                class="font-medium text-immich-primary"
-              >
-                {$t('open_in_openstreetmap')}
-              </a>
-            </div>
-          
-              {/snippet}
+          {@const { lat, lon } = marker}
+          <div class="flex flex-col items-center gap-1">
+            <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+            <a
+              href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
+              target="_blank"
+              class="font-medium text-immich-primary"
+            >
+              {$t('open_in_openstreetmap')}
+            </a>
+          </div>
+        {/snippet}
       </component.default>
     {/await}
   </div>

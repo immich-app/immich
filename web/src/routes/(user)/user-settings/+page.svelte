@@ -17,13 +17,11 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
-  
-      <CircleIconButton
-        icon={mdiKeyboard}
-        title={$t('show_keyboard_shortcuts')}
-        on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
-      />
-    
+    <CircleIconButton
+      icon={mdiKeyboard}
+      title={$t('show_keyboard_shortcuts')}
+      on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+    />
   {/snippet}
   <section class="mx-4 flex place-content-center">
     <div class="w-full max-w-3xl">

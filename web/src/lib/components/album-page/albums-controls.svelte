@@ -82,21 +82,16 @@
   let selectedGroupOption: AlbumGroupOptionMetadata = $state();
   let groupIcon: string = $state();
 
-
-
-
-
-
-
-
   // svelte-ignore reactive_declaration_non_reactive_property
-  let albumFilterNames = $derived(((): Record<AlbumFilter, string> => {
-    return {
-      [AlbumFilter.All]: $t('all'),
-      [AlbumFilter.Owned]: $t('owned'),
-      [AlbumFilter.Shared]: $t('shared'),
-    };
-  })());
+  let albumFilterNames = $derived(
+    ((): Record<AlbumFilter, string> => {
+      return {
+        [AlbumFilter.All]: $t('all'),
+        [AlbumFilter.Owned]: $t('owned'),
+        [AlbumFilter.Shared]: $t('shared'),
+      };
+    })(),
+  );
   let selectedFilterOption = $derived(albumFilterNames[findFilterOption($albumViewSettings.filter)]);
   let selectedSortOption = $derived(findSortOptionMetadata($albumViewSettings.sortBy));
   run(() => {
@@ -117,24 +112,28 @@
   // svelte-ignore reactive_declaration_non_reactive_property
   let sortIcon = $derived($albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin);
   // svelte-ignore reactive_declaration_non_reactive_property
-  let albumSortByNames = $derived(((): Record<AlbumSortBy, string> => {
-    return {
-      [AlbumSortBy.Title]: $t('sort_title'),
-      [AlbumSortBy.ItemCount]: $t('sort_items'),
-      [AlbumSortBy.DateModified]: $t('sort_modified'),
-      [AlbumSortBy.DateCreated]: $t('sort_created'),
-      [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
-      [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
-    };
-  })());
+  let albumSortByNames = $derived(
+    ((): Record<AlbumSortBy, string> => {
+      return {
+        [AlbumSortBy.Title]: $t('sort_title'),
+        [AlbumSortBy.ItemCount]: $t('sort_items'),
+        [AlbumSortBy.DateModified]: $t('sort_modified'),
+        [AlbumSortBy.DateCreated]: $t('sort_created'),
+        [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+        [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+      };
+    })(),
+  );
   // svelte-ignore reactive_declaration_non_reactive_property
-  let albumGroupByNames = $derived(((): Record<AlbumGroupBy, string> => {
-    return {
-      [AlbumGroupBy.None]: $t('group_no'),
-      [AlbumGroupBy.Owner]: $t('group_owner'),
-      [AlbumGroupBy.Year]: $t('group_year'),
-    };
-  })());
+  let albumGroupByNames = $derived(
+    ((): Record<AlbumGroupBy, string> => {
+      return {
+        [AlbumGroupBy.None]: $t('group_no'),
+        [AlbumGroupBy.Owner]: $t('group_owner'),
+        [AlbumGroupBy.Year]: $t('group_year'),
+      };
+    })(),
+  );
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->

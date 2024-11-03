@@ -40,9 +40,6 @@
   import { generateId } from '$lib/utils/generate-id';
   import { isTimelineScrolling } from '$lib/stores/timeline.store';
 
-
-  
-
   interface Props {
     isSelectionMode?: boolean;
     singleSelect?: boolean;
@@ -52,12 +49,7 @@
     enableRouting: boolean;
     assetStore: AssetStore;
     assetInteractionStore: AssetInteractionStore;
-    removeAction?: 
-    | AssetAction.UNARCHIVE
-    | AssetAction.ARCHIVE
-    | AssetAction.FAVORITE
-    | AssetAction.UNFAVORITE
-    | null;
+    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
@@ -84,7 +76,7 @@
     onSelect = () => {},
     onEscape = () => {},
     children,
-    empty
+    empty,
   }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
@@ -470,7 +462,6 @@
     }
   };
 
-
   const handleSelectAsset = (asset: AssetResponseDto) => {
     if (!$assetStore.albumAssets.has(asset.id)) {
       assetInteractionStore.selectAsset(asset);
@@ -561,7 +552,6 @@
 
   let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
 
-
   let shiftKeyIsDown = $state(false);
 
   const deselectAllAssets = () => {
@@ -589,8 +579,6 @@
       shiftKeyIsDown = false;
     }
   };
-
-
 
   const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
     if (asset) {
@@ -741,32 +729,34 @@
       updateViewport();
     }
   });
-  let shortcutList = $derived((() => {
-    if ($isSearchEnabled || $showAssetViewer) {
-      return [];
-    }
+  let shortcutList = $derived(
+    (() => {
+      if ($isSearchEnabled || $showAssetViewer) {
+        return [];
+      }
 
-    const shortcuts: ShortcutOptions[] = [
-      { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-      { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
-      { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-      { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
-      { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
-      { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
-    ];
+      const shortcuts: ShortcutOptions[] = [
+        { shortcut: { key: 'Escape' }, onShortcut: onEscape },
+        { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
+        { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
+        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
+        { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
+        { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
+      ];
 
-    if ($isMultiSelectState) {
-      shortcuts.push(
-        { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-        { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
-        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-        { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
-        { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
-      );
-    }
+      if ($isMultiSelectState) {
+        shortcuts.push(
+          { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
+          { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+          { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+        );
+      }
 
-    return shortcuts;
-  })());
+      return shortcuts;
+    })(),
+  );
   run(() => {
     if (!lastAssetMouseEvent) {
       assetInteractionStore.clearAssetSelectionCandidates();

@@ -33,8 +33,6 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
 
-
-
   interface Props {
     asset: AssetResponseDto;
     dateGroup?: DateGroup | undefined;
@@ -51,13 +49,13 @@
     showStackedIcon?: boolean;
     disableMouseOver?: boolean;
     intersectionConfig?: {
-    root?: HTMLElement;
-    bottom?: string;
-    top?: string;
-    left?: string;
-    priority?: number;
-    disabled?: boolean;
-  };
+      root?: HTMLElement;
+      bottom?: string;
+      top?: string;
+      left?: string;
+      priority?: number;
+      disabled?: boolean;
+    };
     retrieveElement?: boolean;
     onIntersected?: (() => void) | undefined;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
@@ -89,9 +87,8 @@
     onRetrieveElement = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
-    class: className = ''
+    class: className = '',
   }: Props = $props();
-  
 
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },

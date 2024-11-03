@@ -24,7 +24,6 @@
   let states: string[] = $state([]);
   let cities: string[] = $state([]);
 
-
   async function updateCountries() {
     const results: Array<string | null> = await getSearchSuggestions({
       $type: SearchSuggestionType.Country,

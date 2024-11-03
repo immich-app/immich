@@ -167,9 +167,7 @@
   </form>
 
   {#snippet stickyBottom()}
-  
-      <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
-      <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>
-    
+    <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
+    <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>
   {/snippet}
 </FullScreenModal>

@@ -38,7 +38,7 @@
     onIntersected = undefined,
     showAssetName = false,
     onPrevious = undefined,
-    onNext = undefined
+    onNext = undefined,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
@@ -114,23 +114,25 @@
     $isViewerOpen = false;
   });
 
-  let geometry = $derived((() => {
-    const justifiedLayoutResult = justifiedLayout(
-      assets.map((asset) => getAssetRatio(asset)),
-      {
-        boxSpacing: 2,
-        containerWidth: Math.floor(viewport.width),
-        containerPadding: 0,
-        targetRowHeightTolerance: 0.15,
-        targetRowHeight: 235,
-      },
-    );
+  let geometry = $derived(
+    (() => {
+      const justifiedLayoutResult = justifiedLayout(
+        assets.map((asset) => getAssetRatio(asset)),
+        {
+          boxSpacing: 2,
+          containerWidth: Math.floor(viewport.width),
+          containerPadding: 0,
+          targetRowHeightTolerance: 0.15,
+          targetRowHeight: 235,
+        },
+      );
 
-    return {
-      ...justifiedLayoutResult,
-      containerWidth: calculateWidth(justifiedLayoutResult.boxes),
-    };
-  })());
+      return {
+        ...justifiedLayoutResult,
+        containerWidth: calculateWidth(justifiedLayoutResult.boxes),
+      };
+    })(),
+  );
 </script>
 
 {#if assets.length > 0}

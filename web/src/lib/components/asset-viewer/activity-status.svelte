@@ -12,13 +12,7 @@
     onFavorite: () => void;
   }
 
-  let {
-    isLiked,
-    numberOfComments,
-    disabled,
-    onOpenActivityTab,
-    onFavorite
-  }: Props = $props();
+  let { isLiked, numberOfComments, disabled, onOpenActivityTab, onFavorite }: Props = $props();
 </script>
 
 <div class="w-full flex p-4 text-white items-center justify-center rounded-full gap-5 bg-immich-dark-bg bg-opacity-60">
