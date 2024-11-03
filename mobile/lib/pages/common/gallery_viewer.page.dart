@@ -47,7 +47,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     this.initialIndex = 0,
     this.heroOffset = 0,
     this.showStack = false,
-  }) : controller = PageController(initialPage: initialIndex);
+  }) : controller = PageController(initialPage: initialIndex, keepPage: false);
 
   final PageController controller;
 
@@ -56,16 +56,13 @@ class GalleryViewerPage extends HookConsumerWidget {
     final settings = ref.watch(appSettingsServiceProvider);
     final loadAsset = renderList.loadAsset;
     final totalAssets = useState(renderList.totalAssets);
-    final shouldLoopVideo = useState(AppSettingsEnum.loopVideo.defaultValue);
+    final shouldLoopVideo =
+        useState(settings.getSetting<bool>(AppSettingsEnum.loopVideo));
     final isZoomed = useState(false);
     final isPlayingVideo = useState(false);
-    final localPosition = useState<Offset?>(null);
-    final currentIndex = useState(initialIndex);
+    final localPosition = useRef<Offset?>(null);
+    final currentIndex = useValueNotifier(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
-    // Update is playing motion video
-    ref.listen(videoPlaybackValueProvider.select((v) => v.state), (_, state) {
-      isPlayingVideo.value = state == VideoPlaybackState.playing;
-    });
 
     final stackIndex = useState(-1);
     final stack = showStack && currentAsset.stackCount > 0
@@ -80,26 +77,24 @@ class GalleryViewerPage extends HookConsumerWidget {
         : stackElements.elementAt(stackIndex.value);
 
     final isMotionPhoto = asset.livePhotoVideoId != null;
+    // Update is playing motion video
+    if (isMotionPhoto) {
+      ref.listen(videoPlaybackValueProvider.select((v) => v.state), (_, state) {
+        isPlayingVideo.value = state == VideoPlaybackState.playing;
+      });
+    }
     // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
     ref.listen(currentAssetProvider, (_, __) {});
     useEffect(
       () {
         // Delay state update to after the execution of build method
-        Future.microtask(
-          () => ref.read(currentAssetProvider.notifier).set(asset),
-        );
+        ref.read(currentAssetProvider.notifier).set(asset);
+        // Future.microtask(
+        //   () => ref.read(currentAssetProvider.notifier).set(asset),
+        // );
         return null;
       },
       [asset],
-    );
-
-    useEffect(
-      () {
-        shouldLoopVideo.value =
-            settings.getSetting<bool>(AppSettingsEnum.loopVideo);
-        return null;
-      },
-      [],
     );
 
     Future<void> precacheNextImage(int index) async {
@@ -110,6 +105,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       try {
         if (index < totalAssets.value && index >= 0) {
+          log.info('Precaching next image at index $index');
           final asset = loadAsset(index);
           await precacheImage(
             ImmichImage.imageProvider(asset: asset),
@@ -189,7 +185,9 @@ class GalleryViewerPage extends HookConsumerWidget {
         } else {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
         }
-        isPlayingVideo.value = false;
+        if (isMotionPhoto) {
+          isPlayingVideo.value = false;
+        }
         return null;
       },
       [],
@@ -275,6 +273,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isZoomed.value = state != PhotoViewScaleState.initial;
                 ref.read(showControlsProvider.notifier).show = !isZoomed.value;
               },
+              // wantKeepAlive: true,
+              // gaplessPlayback: true,
               loadingBuilder: (context, event, index) => ClipRect(
                 child: Stack(
                   fit: StackFit.expand,
@@ -302,13 +302,19 @@ class GalleryViewerPage extends HookConsumerWidget {
               itemCount: totalAssets.value,
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) async {
+                log.info('Page changed to $value');
                 final next = currentIndex.value < value ? value + 1 : value - 1;
 
                 ref.read(hapticFeedbackProvider.notifier).selectionClick();
 
+                log.info('Setting current index to $value');
                 currentIndex.value = value;
-                stackIndex.value = -1;
-                isPlayingVideo.value = false;
+                if (stackIndex.value != -1) {
+                  stackIndex.value = -1;
+                }
+                if (isMotionPhoto) {
+                  isPlayingVideo.value = false;
+                }
 
                 // Wait for page change animation to finish
                 await Future.delayed(const Duration(milliseconds: 400));
@@ -324,15 +330,19 @@ class GalleryViewerPage extends HookConsumerWidget {
 
                 if (a.isImage && !isPlayingVideo.value) {
                   return PhotoViewGalleryPageOptions(
-                    onDragStart: (_, details, __) =>
-                        localPosition.value = details.localPosition,
-                    onDragUpdate: (_, details, __) =>
-                        handleSwipeUpDown(details),
+                    onDragStart: (_, details, __) {
+                      log.info('Drag start');
+                      localPosition.value = details.localPosition;
+                    },
+                    onDragUpdate: (_, details, __) {
+                      log.info('Drag update');
+                      handleSwipeUpDown(details);
+                    },
                     onTapDown: (_, __, ___) {
                       ref.read(showControlsProvider.notifier).toggle();
                     },
                     onLongPressStart: (_, __, ___) {
-                      if (asset.livePhotoVideoId != null) {
+                      if (isMotionPhoto) {
                         isPlayingVideo.value = true;
                       }
                     },
@@ -352,24 +362,28 @@ class GalleryViewerPage extends HookConsumerWidget {
                     ),
                   );
                 } else {
+                  log.info('Loading asset ${a.id} (index $index) as video');
+                  ref.read(videoPlaybackValueProvider.notifier).value =
+                      VideoPlaybackValue.uninitialized();
                   return PhotoViewGalleryPageOptions.customChild(
-                    onDragStart: (_, details, __) =>
-                        localPosition.value = details.localPosition,
-                    onDragUpdate: (_, details, __) =>
-                        handleSwipeUpDown(details),
-                    heroAttributes: PhotoViewHeroAttributes(
-                      tag: isFromDto
-                          ? '${currentAsset.remoteId}-$heroOffset'
-                          : currentAsset.id + heroOffset,
-                    ),
+                    // onDragStart: (_, details, __) =>
+                    //     localPosition.value = details.localPosition,
+                    // onDragUpdate: (_, details, __) =>
+                    //     handleSwipeUpDown(details),
+                    // heroAttributes: PhotoViewHeroAttributes(
+                    //   tag: isFromDto
+                    //       ? '${currentAsset.remoteId}-$heroOffset'
+                    //       : currentAsset.id + heroOffset,
+                    // ),
                     filterQuality: FilterQuality.high,
+                    initialScale: 1.0,
                     maxScale: 1.0,
                     minScale: 1.0,
                     basePosition: Alignment.center,
                     child: NativeVideoLoader(
                       key: ValueKey(a.id),
                       asset: a,
-                      isMotionVideo: a.livePhotoVideoId != null,
+                      isMotionVideo: isMotionPhoto,
                       loopVideo: shouldLoopVideo.value,
                       placeholder: Image(
                         image: provider,

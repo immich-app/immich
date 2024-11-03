@@ -50,10 +50,10 @@ class NativeVideoLoader extends HookConsumerWidget {
     //   },
     // );
 
-    final localEntity = useMemoized(
-      () => asset.isLocal ? AssetEntity.fromId(asset.localId!) : null,
-    );
-    Future<double> calculateAspectRatio() async {
+    // final localEntity = useMemoized(
+    //   () => asset.isLocal ? AssetEntity.fromId(asset.localId!) : null,
+    // );
+    Future<double> calculateAspectRatio(AssetEntity? localEntity) async {
       log.info('Calculating aspect ratio');
       late final double? orientatedWidth;
       late final double? orientatedHeight;
@@ -62,9 +62,8 @@ class NativeVideoLoader extends HookConsumerWidget {
         orientatedWidth = asset.orientatedWidth?.toDouble();
         orientatedHeight = asset.orientatedHeight?.toDouble();
       } else if (localEntity != null) {
-        final entity = await localEntity;
-        orientatedWidth = entity?.orientatedWidth.toDouble();
-        orientatedHeight = entity?.orientatedHeight.toDouble();
+        orientatedWidth = localEntity.orientatedWidth.toDouble();
+        orientatedHeight = localEntity.orientatedHeight.toDouble();
       } else {
         final entity = await ref.read(assetServiceProvider).loadExif(asset);
         orientatedWidth = entity.orientatedWidth?.toDouble();
@@ -82,16 +81,15 @@ class NativeVideoLoader extends HookConsumerWidget {
       return 1.0;
     }
 
-    final aspectRatioFuture = useMemoized(() => calculateAspectRatio());
+    // final aspectRatioFuture = useMemoized(() => calculateAspectRatio());
 
-    Future<VideoSource> createLocalSource() async {
+    Future<VideoSource> createLocalSource(AssetEntity? localEntity) async {
       log.info('Loading video from local storage');
-      final entity = await localEntity;
-      if (entity == null) {
+      if (localEntity == null) {
         throw Exception('No entity found for the video');
       }
 
-      final file = await entity.file;
+      final file = await localEntity.file;
       if (file == null) {
         throw Exception('No file found for the video');
       }
@@ -122,23 +120,50 @@ class NativeVideoLoader extends HookConsumerWidget {
       return source;
     }
 
-    Future<VideoSource> createSource() {
-      if (asset.isLocal && asset.livePhotoVideoId == null) {
-        return createLocalSource();
+    Future<VideoSource> createSource(AssetEntity? localEntity) {
+      if (localEntity != null && asset.livePhotoVideoId == null) {
+        return createLocalSource(localEntity);
       }
 
       return createRemoteSource();
     }
 
-    final createSourceFuture = useMemoized(() => createSource());
+    // final createSourceFuture = useMemoized(() => createSource());
 
     final combinedFuture = useMemoized(
-      () async {
-        final aspectRatio = await aspectRatioFuture;
-        final source = await createSourceFuture;
-        return (source, aspectRatio);
-      },
+      () => Future.delayed(Duration(milliseconds: 1), () async {
+        if (!context.mounted) {
+          return null;
+        }
+
+        final entity =
+            asset.isLocal ? await AssetEntity.fromId(asset.localId!) : null;
+        return (createSource(entity), calculateAspectRatio(entity)).wait;
+      }),
     );
+
+    final doCleanup = useState(false);
+    ref.listen(videoPlaybackValueProvider.select((value) => value.state),
+        (_, value) {
+      if (value == VideoPlaybackState.initializing) {
+        log.info('Cleaning up video');
+        doCleanup.value = true;
+      }
+    });
+
+    // useEffect(() {
+    //   Future.microtask(() {
+    //     if (!context.mounted) {
+    //       return Future.value(null);
+    //     }
+
+    //     return (createSourceFuture, aspectRatioFuture).wait;
+    //   });
+
+    //   return () {
+
+    //   }
+    // }, [asset.id]);
 
     final size = MediaQuery.sizeOf(context);
 
@@ -154,25 +179,27 @@ class NativeVideoLoader extends HookConsumerWidget {
           child: SizedBox(
             height: size.height,
             width: size.width,
-            child: FutureBuilder(
-              key: ValueKey(asset.id),
-              future: combinedFuture,
-              // initialData: initAspectRatio,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return placeholder;
-                }
+            child: doCleanup.value
+                ? placeholder
+                : FutureBuilder(
+                    key: ValueKey(asset.id),
+                    future: combinedFuture,
+                    // initialData: initAspectRatio,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return placeholder;
+                      }
 
-                return NativeVideoViewerPage(
-                  videoSource: snapshot.data!.$1,
-                  duration: asset.duration,
-                  aspectRatio: snapshot.data!.$2,
-                  isMotionVideo: isMotionVideo,
-                  hideControlsTimer: hideControlsTimer,
-                  loopVideo: loopVideo,
-                );
-              },
-            ),
+                      return NativeVideoViewerPage(
+                        videoSource: snapshot.data!.$1,
+                        aspectRatio: snapshot.data!.$2,
+                        duration: asset.duration,
+                        isMotionVideo: isMotionVideo,
+                        hideControlsTimer: hideControlsTimer,
+                        loopVideo: loopVideo,
+                      );
+                    },
+                  ),
           ),
         ),
       ),
