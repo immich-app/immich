@@ -1,3 +1,6 @@
+<script lang="ts" module>
+</script>
+
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import type { FormEventHandler } from 'svelte/elements';

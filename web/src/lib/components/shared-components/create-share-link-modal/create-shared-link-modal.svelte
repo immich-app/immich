@@ -8,13 +8,14 @@
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { NotificationType, notificationController } from '../notification/notification';
-  import SettingInputField, { SettingInputFieldType } from '../settings/setting-input-field.svelte';
+  import SettingInputField from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
   import { locale } from '$lib/stores/preferences.store';
   import { DateTime, Duration } from 'luxon';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     onClose: () => void;
