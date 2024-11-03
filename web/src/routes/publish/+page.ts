@@ -4,9 +4,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async () => {
   const sharedLinks = await getAllSharedLinksUnchecked();
-  const sharedAlbums: AlbumResponseDto[] = sharedLinks
-    .filter((link) => link.album)
-    .map((link) => link.album!);
+  const sharedAlbums: AlbumResponseDto[] = sharedLinks.filter((link) => link.album).map((link) => link.album!);
 
   const keys: Record<string, string> = {};
   for (const link of sharedLinks) {
