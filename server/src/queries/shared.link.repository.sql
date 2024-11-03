@@ -283,6 +283,93 @@ WHERE
 ORDER BY
   "SharedLinkEntity"."createdAt" DESC
 
+-- SharedLinkRepository.getAllUnchecked
+SELECT
+  "SharedLinkEntity"."id" AS "SharedLinkEntity_id",
+  "SharedLinkEntity"."description" AS "SharedLinkEntity_description",
+  "SharedLinkEntity"."password" AS "SharedLinkEntity_password",
+  "SharedLinkEntity"."userId" AS "SharedLinkEntity_userId",
+  "SharedLinkEntity"."key" AS "SharedLinkEntity_key",
+  "SharedLinkEntity"."type" AS "SharedLinkEntity_type",
+  "SharedLinkEntity"."createdAt" AS "SharedLinkEntity_createdAt",
+  "SharedLinkEntity"."expiresAt" AS "SharedLinkEntity_expiresAt",
+  "SharedLinkEntity"."allowUpload" AS "SharedLinkEntity_allowUpload",
+  "SharedLinkEntity"."allowDownload" AS "SharedLinkEntity_allowDownload",
+  "SharedLinkEntity"."showExif" AS "SharedLinkEntity_showExif",
+  "SharedLinkEntity"."albumId" AS "SharedLinkEntity_albumId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."id" AS "SharedLinkEntity__SharedLinkEntity_assets_id",
+  "SharedLinkEntity__SharedLinkEntity_assets"."deviceAssetId" AS "SharedLinkEntity__SharedLinkEntity_assets_deviceAssetId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."ownerId" AS "SharedLinkEntity__SharedLinkEntity_assets_ownerId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."libraryId" AS "SharedLinkEntity__SharedLinkEntity_assets_libraryId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."deviceId" AS "SharedLinkEntity__SharedLinkEntity_assets_deviceId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."type" AS "SharedLinkEntity__SharedLinkEntity_assets_type",
+  "SharedLinkEntity__SharedLinkEntity_assets"."status" AS "SharedLinkEntity__SharedLinkEntity_assets_status",
+  "SharedLinkEntity__SharedLinkEntity_assets"."originalPath" AS "SharedLinkEntity__SharedLinkEntity_assets_originalPath",
+  "SharedLinkEntity__SharedLinkEntity_assets"."thumbhash" AS "SharedLinkEntity__SharedLinkEntity_assets_thumbhash",
+  "SharedLinkEntity__SharedLinkEntity_assets"."encodedVideoPath" AS "SharedLinkEntity__SharedLinkEntity_assets_encodedVideoPath",
+  "SharedLinkEntity__SharedLinkEntity_assets"."createdAt" AS "SharedLinkEntity__SharedLinkEntity_assets_createdAt",
+  "SharedLinkEntity__SharedLinkEntity_assets"."updatedAt" AS "SharedLinkEntity__SharedLinkEntity_assets_updatedAt",
+  "SharedLinkEntity__SharedLinkEntity_assets"."deletedAt" AS "SharedLinkEntity__SharedLinkEntity_assets_deletedAt",
+  "SharedLinkEntity__SharedLinkEntity_assets"."fileCreatedAt" AS "SharedLinkEntity__SharedLinkEntity_assets_fileCreatedAt",
+  "SharedLinkEntity__SharedLinkEntity_assets"."localDateTime" AS "SharedLinkEntity__SharedLinkEntity_assets_localDateTime",
+  "SharedLinkEntity__SharedLinkEntity_assets"."fileModifiedAt" AS "SharedLinkEntity__SharedLinkEntity_assets_fileModifiedAt",
+  "SharedLinkEntity__SharedLinkEntity_assets"."isFavorite" AS "SharedLinkEntity__SharedLinkEntity_assets_isFavorite",
+  "SharedLinkEntity__SharedLinkEntity_assets"."isArchived" AS "SharedLinkEntity__SharedLinkEntity_assets_isArchived",
+  "SharedLinkEntity__SharedLinkEntity_assets"."isExternal" AS "SharedLinkEntity__SharedLinkEntity_assets_isExternal",
+  "SharedLinkEntity__SharedLinkEntity_assets"."isOffline" AS "SharedLinkEntity__SharedLinkEntity_assets_isOffline",
+  "SharedLinkEntity__SharedLinkEntity_assets"."checksum" AS "SharedLinkEntity__SharedLinkEntity_assets_checksum",
+  "SharedLinkEntity__SharedLinkEntity_assets"."duration" AS "SharedLinkEntity__SharedLinkEntity_assets_duration",
+  "SharedLinkEntity__SharedLinkEntity_assets"."isVisible" AS "SharedLinkEntity__SharedLinkEntity_assets_isVisible",
+  "SharedLinkEntity__SharedLinkEntity_assets"."livePhotoVideoId" AS "SharedLinkEntity__SharedLinkEntity_assets_livePhotoVideoId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."originalFileName" AS "SharedLinkEntity__SharedLinkEntity_assets_originalFileName",
+  "SharedLinkEntity__SharedLinkEntity_assets"."sidecarPath" AS "SharedLinkEntity__SharedLinkEntity_assets_sidecarPath",
+  "SharedLinkEntity__SharedLinkEntity_assets"."stackId" AS "SharedLinkEntity__SharedLinkEntity_assets_stackId",
+  "SharedLinkEntity__SharedLinkEntity_assets"."duplicateId" AS "SharedLinkEntity__SharedLinkEntity_assets_duplicateId",
+  "SharedLinkEntity__SharedLinkEntity_album"."id" AS "SharedLinkEntity__SharedLinkEntity_album_id",
+  "SharedLinkEntity__SharedLinkEntity_album"."ownerId" AS "SharedLinkEntity__SharedLinkEntity_album_ownerId",
+  "SharedLinkEntity__SharedLinkEntity_album"."albumName" AS "SharedLinkEntity__SharedLinkEntity_album_albumName",
+  "SharedLinkEntity__SharedLinkEntity_album"."description" AS "SharedLinkEntity__SharedLinkEntity_album_description",
+  "SharedLinkEntity__SharedLinkEntity_album"."createdAt" AS "SharedLinkEntity__SharedLinkEntity_album_createdAt",
+  "SharedLinkEntity__SharedLinkEntity_album"."updatedAt" AS "SharedLinkEntity__SharedLinkEntity_album_updatedAt",
+  "SharedLinkEntity__SharedLinkEntity_album"."deletedAt" AS "SharedLinkEntity__SharedLinkEntity_album_deletedAt",
+  "SharedLinkEntity__SharedLinkEntity_album"."albumThumbnailAssetId" AS "SharedLinkEntity__SharedLinkEntity_album_albumThumbnailAssetId",
+  "SharedLinkEntity__SharedLinkEntity_album"."isActivityEnabled" AS "SharedLinkEntity__SharedLinkEntity_album_isActivityEnabled",
+  "SharedLinkEntity__SharedLinkEntity_album"."order" AS "SharedLinkEntity__SharedLinkEntity_album_order",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."id" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_id",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."name" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_name",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."isAdmin" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_isAdmin",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."email" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_email",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."storageLabel" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_storageLabel",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."oauthId" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_oauthId",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."profileImagePath" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_profileImagePath",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."shouldChangePassword" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_shouldChangePassword",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."createdAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_createdAt",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."deletedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_deletedAt",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."status" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_status",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."updatedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_updatedAt",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaSizeInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaSizeInBytes",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."quotaUsageInBytes" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_quotaUsageInBytes",
+  "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."profileChangedAt" AS "6d7fd45329a05fd86b3dbcacde87fe76e33a422d_profileChangedAt"
+FROM
+  "shared_links" "SharedLinkEntity"
+  LEFT JOIN "shared_link__asset" "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity" ON "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."sharedLinksId" = "SharedLinkEntity"."id"
+  LEFT JOIN "assets" "SharedLinkEntity__SharedLinkEntity_assets" ON "SharedLinkEntity__SharedLinkEntity_assets"."id" = "SharedLinkEntity__SharedLinkEntity_assets_SharedLinkEntity"."assetsId"
+  AND (
+    "SharedLinkEntity__SharedLinkEntity_assets"."deletedAt" IS NULL
+  )
+  LEFT JOIN "albums" "SharedLinkEntity__SharedLinkEntity_album" ON "SharedLinkEntity__SharedLinkEntity_album"."id" = "SharedLinkEntity"."albumId"
+  AND (
+    "SharedLinkEntity__SharedLinkEntity_album"."deletedAt" IS NULL
+  )
+  LEFT JOIN "users" "6d7fd45329a05fd86b3dbcacde87fe76e33a422d" ON "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."id" = "SharedLinkEntity__SharedLinkEntity_album"."ownerId"
+  AND (
+    "6d7fd45329a05fd86b3dbcacde87fe76e33a422d"."deletedAt" IS NULL
+  )
+WHERE
+  (("SharedLinkEntity"."allowUpload" = $1))
+ORDER BY
+  "SharedLinkEntity"."createdAt" DESC
+
 -- SharedLinkRepository.getByKey
 SELECT DISTINCT
   "distinctAlias"."SharedLinkEntity_id" AS "ids_SharedLinkEntity_id"
