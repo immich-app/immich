@@ -30,14 +30,14 @@
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import { preferences } from '$lib/stores/user.store';
 
-  let isArchiveSelected: boolean = $state();
-  let isFavoritesSelected: boolean = $state();
-  let isMapSelected: boolean = $state();
-  let isPeopleSelected: boolean = $state();
-  let isPhotosSelected: boolean = $state();
-  let isSharingSelected: boolean = $state();
-  let isTrashSelected: boolean = $state();
-  let isUtilitiesSelected: boolean = $state();
+  let isArchiveSelected: boolean = $state(false);
+  let isFavoritesSelected: boolean = $state(false);
+  let isMapSelected: boolean = $state(false);
+  let isPeopleSelected: boolean = $state(false);
+  let isPhotosSelected: boolean = $state(false);
+  let isSharingSelected: boolean = $state(false);
+  let isTrashSelected: boolean = $state(false);
+  let isUtilitiesSelected: boolean = $state(false);
 </script>
 
 <SideBarSection>
