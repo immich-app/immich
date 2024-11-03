@@ -30,7 +30,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 // }
 
 class NativeVideoViewerPage extends HookConsumerWidget {
-  final Future<VideoSource> videoSource;
+  final VideoSource videoSource;
   final double aspectRatio;
   final Duration duration;
   final bool isMotionVideo;
@@ -75,7 +75,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     }
 
     // timer to mark videos as buffering if the position does not change
-    useInterval(const Duration(seconds: 5), checkIfBuffering);
+    // useInterval(const Duration(seconds: 5), checkIfBuffering);
 
     // When the volume changes, set the volume
     ref.listen(videoPlayerControlsProvider.select((value) => value.mute),
@@ -186,12 +186,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       if (state == VideoPlaybackState.playing) {
         log.info('Syncing with the controls playing');
         // Sync with the controls playing
-        WakelockPlus.enable();
+        // WakelockPlus.enable();
         log.info('Synced with the controls playing');
       } else {
         log.info('Syncing with the controls pause');
         // Sync with the controls pause
-        WakelockPlus.disable();
+        // WakelockPlus.disable();
         log.info('Synced with the controls pause');
       }
     }
@@ -233,7 +233,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       log.info('initController: added onPlaybackEnded listener');
 
       log.info('initController: loading video source');
-      nc.loadVideoSource(await videoSource);
+      nc.loadVideoSource(videoSource);
       log.info('initController: loaded video source');
 
       log.info('initController: setting controller');
@@ -280,26 +280,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
             playerController.onPlaybackEnded.removeListener(onPlaybackEnded);
             log.info('Removed onPlaybackEnded listener');
 
-            Future.microtask(() async {
-              log.info('Stopping video');
-              await playerController.stop();
-              log.info('Stopped video');
-
-              log.info('Disabling wakelock');
-              await WakelockPlus.disable();
-              log.info('Disabled wakelock');
-            });
+            log.info('Stopping video');
+            playerController.stop();
+            log.info('Stopped video');
 
             log.info('Disposing controller');
             controller.value = null;
             log.info('Disposed controller');
+
+            // log.info('Disabling Wakelock');
+            // WakelockPlus.disable();
+            // log.info('Disabled Wakelock');
           } catch (error) {
             log.severe('Error during useEffect cleanup: $error');
             // Consume error from the controller
           }
         };
       },
-      [],
+      [videoSource],
     );
 
     return Stack(

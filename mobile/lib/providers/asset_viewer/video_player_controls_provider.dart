@@ -36,6 +36,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void reset() {
+    if (state.position == 0 && !state.mute && !state.pause) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: 0,
       pause: false,
@@ -47,6 +51,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   bool get mute => state.mute;
 
   set position(double value) {
+    if (state.position == value) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: value,
       mute: state.mute,
@@ -55,6 +63,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   set mute(bool value) {
+    if (state.mute == value) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: state.position,
       mute: value,
@@ -71,6 +83,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void pause() {
+    if (state.pause) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: state.position,
       mute: state.mute,
@@ -79,6 +95,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void play() {
+    if (!state.pause) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: state.position,
       mute: state.mute,
@@ -95,11 +115,13 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void restart() {
-    state = VideoPlaybackControls(
-      position: 0,
-      mute: state.mute,
-      pause: true,
-    );
+    if (state.position > 0 || !state.pause) {
+      state = VideoPlaybackControls(
+        position: 0,
+        mute: state.mute,
+        pause: false,
+      );
+    }
 
     state = VideoPlaybackControls(
       position: 0,
