@@ -63,7 +63,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
   getAllUnchecked(): Promise<SharedLinkEntity[]> {
     return this.repository.find({
       where: {
-        allowUpload: false
+        allowUpload: false,
       },
       relations: {
         assets: true,

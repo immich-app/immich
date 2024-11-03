@@ -27,13 +27,12 @@ export class SharedLinkService extends BaseService {
       links
         .map((link) => {
           const mappedLink = mapSharedLink(link);
-          mappedLink.password = "REDACTED";
+          mappedLink.password = 'REDACTED';
           return mappedLink;
         })
-        .filter( 
-          (link, index, self) =>
-            index === self.findIndex((l) => l.album!.id === link.album!.id) // Remove duplicate albums
-        )
+        .filter(
+          (link, index, self) => index === self.findIndex((l) => l.album!.id === link.album!.id), // Remove duplicate albums
+        ),
     );
     //TODO: figure out if this can be factored, out.. copy pasted from album.service.ts/getAll
     const results = await this.albumRepository.getMetadataForIds(links.map((link) => link.album!.id));
@@ -48,14 +47,13 @@ export class SharedLinkService extends BaseService {
       };
     }
 
-    
     links.forEach((link) => {
       const album = link.album!;
-      album.assetCount = albumMetadata[album.id].assetCount
-      album.endDate = albumMetadata[album.id].endDate
-      album.startDate = albumMetadata[album.id].startDate
+      album.assetCount = albumMetadata[album.id].assetCount;
+      album.endDate = albumMetadata[album.id].endDate;
+      album.startDate = albumMetadata[album.id].startDate;
     });
-    
+
     return links;
   }
 
