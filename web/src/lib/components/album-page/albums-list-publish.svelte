@@ -1,44 +1,22 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { groupBy } from 'lodash-es';
-  import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
-  import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
-  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
-  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
+  import { type AlbumResponseDto } from '@immich/sdk';
+  import { mdiFolderDownloadOutline } from '@mdi/js';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
-  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
-  import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
-  import { handleError } from '$lib/utils/handle-error';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import {
-    getSelectedAlbumGroupOption,
-    type AlbumGroup,
-    confirmAlbumDelete,
-    sortAlbums,
-    stringToSortOrder,
-  } from '$lib/utils/album-utils';
+  import { getSelectedAlbumGroupOption, type AlbumGroup, sortAlbums, stringToSortOrder } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { user } from '$lib/stores/user.store';
   import {
     AlbumGroupBy,
     AlbumSortBy,
-    AlbumFilter,
     AlbumViewMode,
     SortOrder,
-    locale,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
-  import { Exception } from 'handlebars';
   import AlbumCardGroupPublish from '$lib/components/album-page/album-card-group-publish.svelte';
 
   export let sharedAlbums: AlbumResponseDto[] = [];

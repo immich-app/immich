@@ -47,12 +47,12 @@ export class SharedLinkService extends BaseService {
       };
     }
 
-    links.forEach((link) => {
+    for (const link of links) {
       const album = link.album!;
       album.assetCount = albumMetadata[album.id].assetCount;
       album.endDate = albumMetadata[album.id].endDate;
       album.startDate = albumMetadata[album.id].startDate;
-    });
+    }
 
     return links;
   }

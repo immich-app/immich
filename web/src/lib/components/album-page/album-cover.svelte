@@ -16,12 +16,7 @@
 </script>
 
 {#if thumbnailUrl}
-  <AssetCover
-    {alt}
-    class={className}
-    src={thumbnailUrl + (shareKey !== undefined ? `?key=${shareKey}` : '')}
-    {preload}
-  />
+  <AssetCover {alt} class={className} src={shareKey ? `${thumbnailUrl}?key=${shareKey}` : thumbnailUrl} {preload} />
 {:else}
   <NoCover {alt} class={className} {preload} />
 {/if}
