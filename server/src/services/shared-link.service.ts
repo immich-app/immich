@@ -13,6 +13,7 @@ import {
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
+import { AlbumAssetCount } from 'src/interfaces/album.interface';
 import { BaseService } from 'src/services/base.service';
 import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
@@ -34,6 +35,27 @@ export class SharedLinkService extends BaseService {
             index === self.findIndex((l) => l.album!.id === link.album!.id) // Remove duplicate albums
         )
     );
+    //TODO: figure out if this can be factored, out.. copy pasted from album.service.ts/getAll
+    const results = await this.albumRepository.getMetadataForIds(links.map((link) => link.album!.id));
+    const albumMetadata: Record<string, AlbumAssetCount> = {};
+    for (const metadata of results) {
+      const { albumId, assetCount, startDate, endDate } = metadata;
+      albumMetadata[albumId] = {
+        albumId,
+        assetCount,
+        startDate,
+        endDate,
+      };
+    }
+
+    
+    links.forEach((link) => {
+      const album = link.album!;
+      album.assetCount = albumMetadata[album.id].assetCount
+      album.endDate = albumMetadata[album.id].endDate
+      album.startDate = albumMetadata[album.id].startDate
+    });
+    
     return links;
   }
 

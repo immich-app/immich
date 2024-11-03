@@ -9,5 +9,6 @@ export const newSharedLinkRepositoryMock = (): Mocked<ISharedLinkRepository> => 
     create: vitest.fn(),
     remove: vitest.fn(),
     update: vitest.fn(),
+    getAllUnchecked: vitest.fn()
   };
 };
