@@ -279,7 +279,7 @@
             </div>
             <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
               {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
-                <SettingAccordion {title} {subtitle} {key} {icon}>
+                <SettingAccordion {title} subtitleSnippet={subtitle} {key} {icon}>
                   <Component
                     onSave={(config) => handleSave(config)}
                     onReset={(options) => handleReset(options)}

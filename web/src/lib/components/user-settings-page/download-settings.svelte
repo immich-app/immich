@@ -13,11 +13,10 @@
   import { preferences } from '$lib/stores/user.store';
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
   let archiveSize = $state(convertFromBytes($preferences?.download?.archiveSize || 4, ByteUnit.GiB));
   let includeEmbeddedVideos = $state($preferences?.download?.includeEmbeddedVideos || false);
@@ -57,7 +56,7 @@
           bind:checked={includeEmbeddedVideos}
         ></SettingSwitch>
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSave()}>{$t('save')}</Button>
+          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

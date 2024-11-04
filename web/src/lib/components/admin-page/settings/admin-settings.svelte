@@ -15,13 +15,13 @@
 
   interface Props {
     config: SystemConfigDto;
-    children?: import('svelte').Snippet<[any]>;
+    children?: import('svelte').Snippet;
   }
 
   let { config = $bindable(), children }: Props = $props();
 
-  let savedConfig: SystemConfigDto = $state();
-  let defaultConfig: SystemConfigDto = $state();
+  let savedConfig: SystemConfigDto | undefined = $state();
+  let defaultConfig: SystemConfigDto | undefined = $state();
 
   const handleReset = async (options: SettingsResetOptions) => {
     await (options.default ? resetToDefault(options.configKeys) : reset(options.configKeys));
@@ -31,7 +31,8 @@
     let systemConfigDto = {
       ...savedConfig,
       ...update,
-    };
+    } as SystemConfigDto;
+
     if (isEqual(systemConfigDto, savedConfig)) {
       return;
     }
@@ -64,6 +65,10 @@
   };
 
   const resetToDefault = (configKeys: Array<keyof SystemConfigDto>) => {
+    if (!defaultConfig) {
+      return;
+    }
+
     for (const key of configKeys) {
       config = { ...config, [key]: defaultConfig[key] };
     }

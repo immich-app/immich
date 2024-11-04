@@ -8,10 +8,9 @@
 
   import Button from '$lib/components/elements/buttons/button.svelte';
   import type { HttpError } from '@sveltejs/kit';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
   let password = $state('');
   let newPassword = $state('');
@@ -72,7 +71,7 @@
             type="submit"
             size="sm"
             disabled={!(password && newPassword && newPassword === confirmPassword)}
-            on:click={() => handleChangePassword()}>{$t('save')}</Button
+            onclick={() => handleChangePassword()}>{$t('save')}</Button
           >
         </div>
       </div>

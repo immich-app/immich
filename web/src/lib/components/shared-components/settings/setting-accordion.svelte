@@ -1,13 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
-<!-- @migration-task Error while migrating Svelte code: This migration would change the name of a slot making the component unusable -->
 <script lang="ts">
   import { run } from 'svelte/legacy';
 
@@ -20,27 +10,27 @@
 
   interface Props {
     title: string;
-    subtitleText?: string;
+    subtitle?: string;
     key: string;
-    isOpen?: any;
+    isOpen?: boolean;
     autoScrollTo?: boolean;
     icon?: string;
-    subtitle?: import('svelte').Snippet;
+    subtitleSnippet?: import('svelte').Snippet;
     children?: import('svelte').Snippet;
   }
 
   let {
     title,
-    subtitleText = '',
+    subtitle: subtitleText = '',
     key,
     isOpen = $bindable($accordionState.has(key)),
     autoScrollTo = false,
     icon = '',
-    subtitle,
+    subtitleSnippet,
     children,
   }: Props = $props();
 
-  let accordionElement: HTMLDivElement = $state();
+  let accordionElement: HTMLDivElement | undefined = $state();
 
   const setIsOpen = (isOpen: boolean) => {
     if (isOpen) {
@@ -48,7 +38,7 @@
 
       if (autoScrollTo) {
         setTimeout(() => {
-          accordionElement.scrollIntoView({
+          accordionElement?.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
           });
@@ -63,7 +53,8 @@
   onDestroy(() => {
     setIsOpen(false);
   });
-  run(() => {
+
+  $effect(() => {
     setIsOpen(isOpen);
   });
 </script>
@@ -90,7 +81,7 @@
         </h2>
       </div>
 
-      {#if subtitle}{@render subtitle()}{:else}
+      {#if subtitleSnippet}{@render subtitleSnippet()}{:else}
         <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitleText}</p>
       {/if}
     </div>

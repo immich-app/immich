@@ -8,14 +8,13 @@
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -76,7 +75,7 @@
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
             isEdited={config.machineLearning.clip.modelName !== savedConfig.machineLearning.clip.modelName}
           >
-            {#snippet description()}
+            {#snippet descriptionSnippet()}
               <p class="immich-form-label pb-2 text-sm">
                 <FormatMessage key="admin.machine_learning_clip_model_description">
                   {#snippet children({ message })}

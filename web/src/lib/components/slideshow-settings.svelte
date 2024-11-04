@@ -75,6 +75,6 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth color="primary" onclick={onClose}>{$t('done')}</Button>
+    <Button fullwidth color="primary" onclick={(_) => onClose}>{$t('done')}</Button>
   {/snippet}
 </FullScreenModal>

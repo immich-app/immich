@@ -3,7 +3,7 @@
 
   const bubble = createBubbler();
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, SettingInputFieldType } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import {
     getStorageTemplateOptions,
@@ -18,9 +18,7 @@
   import SupportedDatetimePanel from './supported-datetime-panel.svelte';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
@@ -49,7 +47,7 @@
     children,
   }: Props = $props();
 
-  let templateOptions: SystemConfigTemplateStorageOptionDto = $state();
+  let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
   let selectedPreset = $state('');
 
   const getTemplateOptions = async () => {
@@ -60,6 +58,10 @@
   const getSupportDateTimeFormat = () => getStorageTemplateOptions();
 
   const renderTemplate = (templateString: string) => {
+    if (!templateOptions) {
+      return '';
+    }
+
     const template = handlebar.compile(templateString, {
       knownHelpers: undefined,
     });
@@ -206,22 +208,28 @@
 
           <form autocomplete="off" class="flex flex-col" onsubmit={preventDefault(bubble('submit'))}>
             <div class="flex flex-col my-2">
-              <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="preset-select">
-                {$t('preset')}
-              </label>
-              <select
-                class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
-                disabled={disabled || !config.storageTemplate.enabled}
-                name="presets"
-                id="preset-select"
-                bind:value={selectedPreset}
-                onchange={handlePresetSelection}
-              >
-                {#each templateOptions.presetOptions as preset}
-                  <option value={preset}>{renderTemplate(preset)}</option>
-                {/each}
-              </select>
+              {#if templateOptions}
+                <label
+                  class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm"
+                  for="preset-select"
+                >
+                  {$t('preset')}
+                </label>
+                <select
+                  class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+                  disabled={disabled || !config.storageTemplate.enabled}
+                  name="presets"
+                  id="preset-select"
+                  bind:value={selectedPreset}
+                  onchange={handlePresetSelection}
+                >
+                  {#each templateOptions.presetOptions as preset}
+                    <option value={preset}>{renderTemplate(preset)}</option>
+                  {/each}
+                </select>
+              {/if}
             </div>
+
             <div class="flex gap-2 align-bottom">
               <SettingInputField
                 label={$t('template')}

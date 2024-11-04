@@ -6,9 +6,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { user } from '$lib/stores/user.store';
   import { updateMyUser } from '@immich/sdk';
   import { cloneDeep } from 'lodash-es';
@@ -16,6 +14,7 @@
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
   let editedUser = $state(cloneDeep($user));
 
@@ -70,7 +69,7 @@
         />
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSaveProfile()}>{$t('save')}</Button>
+          <Button type="submit" size="sm" onclick={() => handleSaveProfile()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

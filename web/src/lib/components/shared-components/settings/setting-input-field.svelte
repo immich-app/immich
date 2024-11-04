@@ -1,6 +1,3 @@
-<script lang="ts" module>
-</script>
-
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import type { FormEventHandler } from 'svelte/elements';
@@ -24,7 +21,7 @@
     isEdited?: boolean;
     autofocus?: boolean;
     passwordAutocomplete?: AutoFill;
-    desc?: import('svelte').Snippet;
+    descriptionSnippet?: import('svelte').Snippet;
   }
 
   let {
@@ -41,7 +38,7 @@
     isEdited = false,
     autofocus = false,
     passwordAutocomplete = 'current-password',
-    desc,
+    descriptionSnippet,
   }: Props = $props();
 
   let input = $state<HTMLInputElement>();
@@ -92,7 +89,7 @@
       {description}
     </p>
   {:else}
-    {@render desc?.()}
+    {@render descriptionSnippet?.()}
   {/if}
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
