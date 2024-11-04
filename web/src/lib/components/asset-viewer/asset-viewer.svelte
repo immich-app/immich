@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
@@ -391,23 +389,23 @@
     selectedEditType = type;
   };
   let isFullScreen = $derived(fullscreenElement !== null);
-  run(() => {
+  $effect(() => {
     if (asset) {
       handlePromiseError(refreshStack());
     }
   });
-  run(() => {
+  $effect(() => {
     if (album && !album.isActivityEnabled && numberOfComments === 0) {
       isShowActivity = false;
     }
   });
-  run(() => {
+  $effect(() => {
     if (isShared && asset.id) {
       handlePromiseError(getFavorite());
       handlePromiseError(getNumberOfComments());
     }
   });
-  run(() => {
+  $effect(() => {
     if (asset.id && !sharedLink) {
       handlePromiseError(handleGetAllAlbums());
     }

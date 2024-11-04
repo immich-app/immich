@@ -17,7 +17,7 @@
     onAction: OnAction;
   }
 
-  let { asset = $bindable(), onAction }: Props = $props();
+  let { asset, onAction }: Props = $props();
 
   const toggleFavorite = async () => {
     try {
@@ -28,7 +28,8 @@
         },
       });
 
-      asset.isFavorite = data.isFavorite;
+      asset = { ...asset, isFavorite: data.isFavorite };
+
       onAction({ type: asset.isFavorite ? AssetAction.FAVORITE : AssetAction.UNFAVORITE, asset });
 
       notificationController.show({
