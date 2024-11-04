@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
@@ -101,12 +99,12 @@
   let lastRetrievedElement: HTMLElement | undefined = $state();
   let loaded = $state(false);
 
-  run(() => {
+  $effect(() => {
     if (!retrieveElement) {
       lastRetrievedElement = undefined;
     }
   });
-  run(() => {
+  $effect(() => {
     if (retrieveElement && element && lastRetrievedElement !== element) {
       lastRetrievedElement = element;
       onRetrieveElement?.(element);

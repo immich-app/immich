@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
@@ -87,8 +85,8 @@
   const safeViewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
 
   const componentId = generateId();
-  let element: HTMLElement = $state();
-  let timelineElement: HTMLElement = $state();
+  let element: HTMLElement | undefined = $state();
+  let timelineElement: HTMLElement | undefined = $state();
   let showShortcuts = $state(false);
   let showSkeleton = $state(true);
   let internalScroll = false;
@@ -133,11 +131,11 @@
 
     if ($gridScrollTarget?.at) {
       void $assetStore.scheduleScrollToAssetId($gridScrollTarget, () => {
-        element.scrollTo({ top: 0 });
+        element?.scrollTo({ top: 0 });
         showSkeleton = false;
       });
     } else {
-      element.scrollTo({ top: 0 });
+      element?.scrollTo({ top: 0 });
       showSkeleton = false;
     }
   };
@@ -177,7 +175,7 @@
                 { replaceState: true, forceNavigate: true },
               );
             } else {
-              element.scrollTo({ top: 0 });
+              element?.scrollTo({ top: 0 });
               showSkeleton = false;
             }
           }, 500);
@@ -268,14 +266,24 @@
     ($assetStore.timelineHeight + bottomSectionHeight + topSectionHeight - safeViewport.height) /
     ($assetStore.timelineHeight + bottomSectionHeight + topSectionHeight);
 
-  const getMaxScroll = () =>
-    topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+  const getMaxScroll = () => {
+    if (!element || !timelineElement) {
+      return 0;
+    }
+
+    return topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+  };
 
   const scrollToBucketAndOffset = (bucket: AssetBucket, bucketScrollPercent: number) => {
     const topOffset = getOffset(bucket.bucketDate) + topSectionHeight + topSectionOffset;
     const maxScrollPercent = getMaxScrollPercent();
     const delta = bucket.bucketHeight * bucketScrollPercent;
     const scrollTop = (topOffset + delta) * maxScrollPercent;
+
+    if (!element) {
+      return;
+    }
+
     element.scrollTop = scrollTop;
   };
 
@@ -289,6 +297,11 @@
 
       const maxScroll = getMaxScroll();
       const offset = maxScroll * scrollPercent;
+
+      if (!element) {
+        return;
+      }
+
       element.scrollTop = offset;
     } else {
       const bucket = assetStore.buckets.find((b) => b.bucketDate === bucketDate);
@@ -336,6 +349,11 @@
     }, 1000);
 
     leadout = false;
+
+    if (!element) {
+      return;
+    }
+
     if ($assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
@@ -401,7 +419,7 @@
     : () => void 0;
 
   const onScrollTarget: ScrollTargetListener = ({ bucket, offset }) => {
-    element.scrollTo({ top: offset });
+    element?.scrollTo({ top: offset });
     if (!bucket.measured) {
       preMeasure.push(bucket);
     }
@@ -458,7 +476,7 @@
 
   const focusElement = () => {
     if (document.activeElement === document.body) {
-      element.focus();
+      element?.focus();
     }
   };
 
@@ -608,7 +626,7 @@
 
     onSelect(asset);
 
-    if (singleSelect) {
+    if (singleSelect && element) {
       element.scrollTop = 0;
       return;
     }
@@ -708,12 +726,14 @@
   let isEmpty = $derived($assetStore.initialized && $assetStore.buckets.length === 0);
   let idsSelectedAssets = $derived([...$selectedAssets].map(({ id }) => id));
   let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
-  run(() => {
+
+  $effect(() => {
     if (isEmpty) {
       assetInteractionStore.clearMultiselect();
     }
   });
-  run(() => {
+
+  $effect(() => {
     if (element && isViewportOrigin()) {
       const rect = element.getBoundingClientRect();
       viewport.height = rect.height;
@@ -729,6 +749,7 @@
       updateViewport();
     }
   });
+
   let shortcutList = $derived(
     (() => {
       if ($isSearchEnabled || $showAssetViewer) {
@@ -757,17 +778,20 @@
       return shortcuts;
     })(),
   );
-  run(() => {
+
+  $effect(() => {
     if (!lastAssetMouseEvent) {
       assetInteractionStore.clearAssetSelectionCandidates();
     }
   });
-  run(() => {
+
+  $effect(() => {
     if (!shiftKeyIsDown) {
       assetInteractionStore.clearAssetSelectionCandidates();
     }
   });
-  run(() => {
+
+  $effect(() => {
     if (shiftKeyIsDown && lastAssetMouseEvent) {
       selectAssetCandidates(lastAssetMouseEvent);
     }

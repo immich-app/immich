@@ -63,7 +63,7 @@
     onClose: (dto: { asset: AssetResponseDto }) => void;
     onNext: () => void;
     onPrevious: () => void;
-    copyImage: () => Promise<void>;
+    copyImage?: () => Promise<void>;
   }
 
   let {

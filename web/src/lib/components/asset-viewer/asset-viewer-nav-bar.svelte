@@ -52,7 +52,7 @@
     showDetailButton: boolean;
     showSlideshow?: boolean;
     onZoomImage: () => void;
-    onCopyImage: () => Promise<void>;
+    onCopyImage?: () => Promise<void>;
     onAction: OnAction;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;

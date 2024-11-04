@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -37,13 +35,12 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  let isAllFavorite: boolean = $state();
-  let isAllOwned: boolean = $state();
-  let isAssetStackSelected: boolean = $state();
-  let isLinkActionAvailable: boolean = $state();
+  let isAllFavorite = $state(false);
+  let isAllOwned = $state(false);
+  let isAssetStackSelected = $state(false);
+  let isLinkActionAvailable = $state(false);
 
-  // svelte-ignore reactive_declaration_non_reactive_property
-  run(() => {
+  $effect(() => {
     const selection = [...$selectedAssets];
     isAllOwned = selection.every((asset) => asset.ownerId === $user.id);
     isAllFavorite = selection.every((asset) => asset.isFavorite);
