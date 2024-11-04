@@ -1211,10 +1211,10 @@ packages:
     dependency: "direct main"
     description:
       name: photo_manager
-      sha256: "70159eee32203e8162d49d588232f0299ed3f383c63eef1e899cb6b83dee6b26"
+      sha256: f5ef2618870e9a50d8bfeb81a02c242d580ae8614bd5ea9e1b80dbb7e49d4260
       url: "https://pub.dev"
     source: hosted
-    version: "3.5.1"
+    version: "3.6.1"
   photo_manager_image_provider:
     dependency: "direct main"
     description:
