@@ -13,7 +13,7 @@
   let {
     id,
     label,
-    checked = $bindable(undefined),
+    checked = $bindable(),
     disabled = false,
     labelClass = undefined,
     name = undefined,
