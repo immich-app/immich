@@ -1,7 +1,4 @@
-<!-- @migration-task Error while migrating Svelte code: `$:` is not allowed in runes mode, use `$derived` or `$effect` instead -->
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';

@@ -18,8 +18,6 @@
 </script>
 
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { fly } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
@@ -65,9 +63,8 @@
   let searchQuery = $state(selectedOption?.label || '');
   let selectedIndex: number | undefined = $state();
   let optionRefs: HTMLElement[] = $state([]);
-  let input: HTMLInputElement = $state();
+  let input = $state<HTMLInputElement>();
   let bounds: DOMRect | undefined = $state();
-  let dropdownDirection: 'bottom' | 'top' = $state('bottom');
 
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
@@ -90,8 +87,11 @@
   );
 
   onMount(() => {
+    if (!input) {
+      return;
+    }
     observer.observe(input);
-    const scrollableAncestor = input.closest('.overflow-y-auto, .overflow-y-scroll');
+    const scrollableAncestor = input?.closest('.overflow-y-auto, .overflow-y-scroll');
     scrollableAncestor?.addEventListener('scroll', onPositionChange);
     window.visualViewport?.addEventListener('resize', onPositionChange);
     window.visualViewport?.addEventListener('scroll', onPositionChange);
@@ -162,7 +162,6 @@
 
   const calculatePosition = (boundary: DOMRect | undefined) => {
     const visualViewport = window.visualViewport;
-    dropdownDirection = getComboboxDirection(boundary, visualViewport);
 
     if (!boundary) {
       return;
@@ -217,13 +216,16 @@
   };
 
   const getInputPosition = () => input?.getBoundingClientRect();
-  run(() => {
+
+  $effect(() => {
     searchQuery = selectedOption ? selectedOption.label : '';
   });
+
   let filteredOptions = $derived(
     options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase())),
   );
   let position = $derived(calculatePosition(bounds));
+  let dropdownDirection: 'bottom' | 'top' = $derived(getComboboxDirection(bounds, visualViewport));
 </script>
 
 <svelte:window onresize={onPositionChange} />
