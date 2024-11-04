@@ -309,7 +309,7 @@
     "transcoding_target_resolution_description": "較高的解析度可以保留更多細節，但編碼時間較長，檔案也較大，且可能降低應用程式的反應速度。",
     "transcoding_temporal_aq": "時間自適應量化（Temporal AQ）",
     "transcoding_temporal_aq_description": "僅適用於 NVENC。提高高細節、低運動場景的品質。可能與舊裝置不相容。",
-    "transcoding_threads": "線程數量",
+    "transcoding_threads": "執行序數量",
     "transcoding_threads_description": "較高的值會加快編碼速度，但會減少伺服器在運行過程中處理其他任務的空間。此值不應超過 CPU 核心數。設置為 0 可以最大化利用率。",
     "transcoding_tone_mapping": "色調映射",
     "transcoding_tone_mapping_description": "在將 HDR 影片轉換為 SDR 時，嘗試保留其外觀。每種算法在顏色、細節和亮度方面都有不同的權衡。Hable 保留細節，Mobius 保留顏色，Reinhard 保留亮度。",
