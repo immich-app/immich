@@ -22,6 +22,7 @@ import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
@@ -59,6 +60,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
@@ -98,6 +100,7 @@ export const repositories = [
   { provide: IOAuthRepository, useClass: OAuthRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
+  { provide: IProcessRepository, useClass: ProcessRepository },
   { provide: ISearchRepository, useClass: SearchRepository },
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISessionRepository, useClass: SessionRepository },

@@ -1,6 +1,7 @@
 <script lang="ts">
   import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
   import AuthSettings from '$lib/components/admin-page/settings/auth/auth-settings.svelte';
+  import BackupSettings from '$lib/components/admin-page/settings/backup-settings/backup-settings.svelte';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import ImageSettings from '$lib/components/admin-page/settings/image/image-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
@@ -30,6 +31,7 @@
   import {
     mdiAccountOutline,
     mdiAlert,
+    mdiBackupRestore,
     mdiBellOutline,
     mdiBookshelf,
     mdiContentCopy,
@@ -98,6 +100,13 @@
       subtitle: $t('admin.authentication_settings_description'),
       key: 'authentication',
       icon: mdiLockOutline,
+    },
+    {
+      component: BackupSettings,
+      title: $t('admin.backup_settings'),
+      subtitle: $t('admin.backup_settings_description'),
+      key: 'backup',
+      icon: mdiBackupRestore,
     },
     {
       component: ImageSettings,

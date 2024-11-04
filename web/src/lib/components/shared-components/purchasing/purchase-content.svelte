@@ -50,7 +50,7 @@
         <p>
           {$t('purchase_panel_info_2')}
         </p>
-        <div />
+        <div></div>
       </div>
     {/if}
 

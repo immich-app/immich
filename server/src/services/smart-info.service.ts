@@ -1,18 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { ImmichWorker } from 'src/enum';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import {
-  IBaseJob,
-  IEntityJob,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobName,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
@@ -86,7 +79,8 @@ export class SmartInfoService extends BaseService {
     });
   }
 
-  async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_SMART_SEARCH, queue: QueueName.SMART_SEARCH })
+  async handleQueueEncodeClip({ force }: JobOf<JobName.QUEUE_SMART_SEARCH>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
@@ -111,7 +105,8 @@ export class SmartInfoService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SMART_SEARCH, queue: QueueName.SMART_SEARCH })
+  async handleEncodeClip({ id }: JobOf<JobName.SMART_SEARCH>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;

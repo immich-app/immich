@@ -1,7 +1,7 @@
 import { WatchOptions } from 'chokidar';
 import { Stats } from 'node:fs';
 import { FileReadOptions } from 'node:fs/promises';
-import { Readable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 
 export interface ImmichReadStream {
@@ -36,6 +36,7 @@ export interface IStorageRepository {
   createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream>;
   readFile(filepath: string, options?: FileReadOptions<Buffer>): Promise<Buffer>;
   createFile(filepath: string, buffer: Buffer): Promise<void>;
+  createWriteStream(filepath: string): Writable;
   createOrOverwriteFile(filepath: string, buffer: Buffer): Promise<void>;
   overwriteFile(filepath: string, buffer: Buffer): Promise<void>;
   realpath(filepath: string): Promise<string>;

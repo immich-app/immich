@@ -52,7 +52,7 @@
 
         <div class="m-4 flex flex-col gap-2">
           <label class="immich-form-label" for="description">{$t('description')}</label>
-          <textarea class="immich-form-input" id="description" bind:value={description} />
+          <textarea class="immich-form-input" id="description" bind:value={description}></textarea>
         </div>
       </div>
     </div>

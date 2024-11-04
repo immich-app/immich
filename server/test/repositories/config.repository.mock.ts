@@ -15,8 +15,14 @@ const envData: EnvData = {
     queues: [{ name: 'queue-1' }],
   },
 
+  cls: {
+    config: {},
+  },
+
   database: {
     config: {
+      connectionType: 'parts',
+      database: 'immich',
       type: 'postgres',
       host: 'database',
       port: 5432,

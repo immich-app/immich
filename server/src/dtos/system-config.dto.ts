@@ -46,6 +46,30 @@ const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enab
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
+const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
+
+export class DatabaseBackupConfig {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isDatabaseBackupEnabled)
+  @IsNotEmpty()
+  @Validate(CronValidator, { message: 'Invalid cron expression' })
+  @IsString()
+  cronExpression!: string;
+
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  keepLastAmount!: number;
+}
+
+export class SystemConfigBackupsDto {
+  @Type(() => DatabaseBackupConfig)
+  @ValidateNested()
+  @IsObject()
+  database!: DatabaseBackupConfig;
+}
 
 export class SystemConfigFFmpegDto {
   @IsInt()
@@ -109,12 +133,6 @@ export class SystemConfigFFmpegDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   gopSize!: number;
-
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  npl!: number;
 
   @ValidateBoolean()
   temporalAQ!: boolean;
@@ -531,6 +549,11 @@ class SystemConfigUserDto {
 }
 
 export class SystemConfigDto implements SystemConfig {
+  @Type(() => SystemConfigBackupsDto)
+  @ValidateNested()
+  @IsObject()
+  backup!: SystemConfigBackupsDto;
+
   @Type(() => SystemConfigFFmpegDto)
   @ValidateNested()
   @IsObject()
