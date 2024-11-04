@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class VideoPlaybackControls {
-  VideoPlaybackControls({
+  const VideoPlaybackControls({
     required this.position,
     required this.mute,
     required this.pause,
@@ -17,15 +17,14 @@ final videoPlayerControlsProvider =
   return VideoPlayerControls(ref);
 });
 
+const videoPlayerControlsDefault = VideoPlaybackControls(
+  position: 0,
+  pause: false,
+  mute: false,
+);
+
 class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
-  VideoPlayerControls(this.ref)
-      : super(
-          VideoPlaybackControls(
-            position: 0,
-            pause: false,
-            mute: false,
-          ),
-        );
+  VideoPlayerControls(this.ref) : super(videoPlayerControlsDefault);
 
   final Ref ref;
 
@@ -36,15 +35,7 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void reset() {
-    if (state.position == 0 && !state.mute && !state.pause) {
-      return;
-    }
-
-    state = VideoPlaybackControls(
-      position: 0,
-      pause: false,
-      mute: false,
-    );
+    state = videoPlayerControlsDefault;
   }
 
   double get position => state.position;
@@ -115,14 +106,6 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void restart() {
-    if (state.position > 0 || !state.pause) {
-      state = VideoPlaybackControls(
-        position: 0,
-        mute: state.mute,
-        pause: false,
-      );
-    }
-
     state = VideoPlaybackControls(
       position: 0,
       mute: state.mute,

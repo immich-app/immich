@@ -173,9 +173,8 @@ class NativeVideoLoader extends HookConsumerWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.deferToChild,
         child: PopScope(
-          onPopInvokedWithResult: (didPop, _) => ref
-              .read(videoPlaybackValueProvider.notifier)
-              .value = VideoPlaybackValue.uninitialized(),
+          onPopInvokedWithResult: (didPop, _) =>
+              ref.read(videoPlaybackValueProvider.notifier).reset(),
           child: SizedBox(
             height: size.height,
             width: size.width,

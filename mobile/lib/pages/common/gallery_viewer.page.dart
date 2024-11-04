@@ -47,7 +47,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     this.initialIndex = 0,
     this.heroOffset = 0,
     this.showStack = false,
-  }) : controller = PageController(initialPage: initialIndex, keepPage: false);
+  }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
 
@@ -328,7 +328,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final ImageProvider provider =
                     ImmichImage.imageProvider(asset: a);
 
+                ref.read(videoPlaybackValueProvider.notifier).reset();
                 if (a.isImage && !isPlayingVideo.value) {
+                  ref.read(showControlsProvider.notifier).show = false;
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) {
                       log.info('Drag start');
@@ -363,13 +365,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                   );
                 } else {
                   log.info('Loading asset ${a.id} (index $index) as video');
-                  ref.read(videoPlaybackValueProvider.notifier).value =
-                      VideoPlaybackValue.uninitialized();
                   return PhotoViewGalleryPageOptions.customChild(
-                    // onDragStart: (_, details, __) =>
-                    //     localPosition.value = details.localPosition,
-                    // onDragUpdate: (_, details, __) =>
-                    //     handleSwipeUpDown(details),
+                    onDragStart: (_, details, __) =>
+                        localPosition.value = details.localPosition,
+                    onDragUpdate: (_, details, __) =>
+                        handleSwipeUpDown(details),
                     // heroAttributes: PhotoViewHeroAttributes(
                     //   tag: isFromDto
                     //       ? '${currentAsset.remoteId}-$heroOffset'

@@ -12,23 +12,6 @@ import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-// @override
-// void dispose() {
-//   bufferingTimer.value.cancel();
-//   try {
-//     controller.value?.onPlaybackPositionChanged
-//         .removeListener(onPlaybackPositionChanged);
-//     controller.value?.onPlaybackStatusChanged
-//         .removeListener(onPlaybackPositionChanged);
-//     controller.value?.onPlaybackReady.removeListener(onPlaybackReady);
-//     controller.value?.onPlaybackEnded.removeListener(onPlaybackEnded);
-//     controller.value?.stop();
-//   } catch (_) {
-//     // Consume error from the controller
-//   }
-//   super.dispose();
-// }
-
 class NativeVideoViewerPage extends HookConsumerWidget {
   final VideoSource videoSource;
   final double aspectRatio;
@@ -75,7 +58,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     }
 
     // timer to mark videos as buffering if the position does not change
-    // useInterval(const Duration(seconds: 5), checkIfBuffering);
+    useInterval(const Duration(seconds: 5), checkIfBuffering);
 
     // When the volume changes, set the volume
     ref.listen(videoPlayerControlsProvider.select((value) => value.mute),
@@ -86,19 +69,22 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
+      final playbackInfo = playerController.playbackInfo;
+      if (playbackInfo == null) {
+        log.info('No playback info to update');
+        return;
+      }
+
       try {
-        if (mute) {
+        if (mute && playbackInfo.volume != 0.0) {
           log.info('Muting video');
           playerController.setVolume(0.0);
-          log.info('Muted video');
-        } else {
+        } else if (!mute && playbackInfo.volume != 0.7) {
           log.info('Unmuting video');
           playerController.setVolume(0.7);
-          log.info('Unmuted video');
         }
       } catch (error) {
         log.severe('Error setting volume: $error');
-        // Consume error from the controller
       }
     });
 
@@ -108,20 +94,28 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       final playerController = controller.value;
       if (playerController == null) {
         log.info('No controller to seek to');
-        // No seeeking if there is no video
+        return;
+      }
+
+      final playbackInfo = playerController.playbackInfo;
+      if (playbackInfo == null) {
+        log.info('No playback info to update');
         return;
       }
 
       // Find the position to seek to
-      final Duration seek = duration * (position / 100.0);
-      try {
-        log.info('Seeking to position: ${seek.inSeconds}');
-        playerController.seekTo(seek.inSeconds);
-        log.info('Seeked to position: ${seek.inSeconds}');
-      } catch (error) {
-        log.severe('Error seeking to position $position: $error');
-        // Consume error from the controller
+      final int seek = (duration * (position / 100.0)).inSeconds;
+      if (seek != playbackInfo.position) {
+        log.info('Seeking to position: $seek from ${playbackInfo.position}');
+        try {
+          playerController.seekTo(seek);
+        } catch (error) {
+          log.severe('Error seeking to position $position: $error');
+        }
       }
+
+      ref.read(videoPlaybackValueProvider.notifier).position =
+          Duration(seconds: seek);
     });
 
     // // When the custom video controls pause or play
@@ -131,15 +125,14 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         if (pause) {
           log.info('Pausing video');
           controller.value?.pause();
-          log.info('Paused video');
+          WakelockPlus.disable();
         } else {
           log.info('Playing video');
           controller.value?.play();
-          log.info('Played video');
+          WakelockPlus.enable();
         }
       } catch (error) {
         log.severe('Error pausing or playing video: $error');
-        // Consume error from the controller
       }
     });
 
@@ -148,69 +141,77 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         log.info('onPlaybackReady: Playing video');
         controller.value?.play();
         controller.value?.setVolume(0.9);
-        log.info('onPlaybackReady: Played video');
+        WakelockPlus.enable();
       } catch (error) {
         log.severe('Error playing video: $error');
-        // Consume error from the controller
       }
     }
 
-    void onPlaybackPositionChanged() {
-      if (controller.value == null || !context.mounted) {
+    void onPlaybackStatusChanged() {
+      final videoController = controller.value;
+      if (videoController == null || !context.mounted) {
         log.info('No controller to update');
         return;
       }
 
-      log.info('Updating video playback');
       final videoPlayback =
           VideoPlaybackValue.fromNativeController(controller.value!);
       ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
-      log.info('Updated video playback');
+
+      if (videoPlayback.state == VideoPlaybackState.playing) {
+        // Sync with the controls playing
+        WakelockPlus.enable();
+        log.info('Video is playing; enabled wakelock');
+      } else {
+        // Sync with the controls pause
+        WakelockPlus.disable();
+        log.info('Video is not playing; disabled wakelock');
+      }
+    }
+
+    void onPlaybackPositionChanged() {
+      final videoController = controller.value;
+      if (videoController == null || !context.mounted) {
+        log.info('No controller to update');
+        return;
+      }
+
+      final playbackInfo = videoController.playbackInfo;
+      if (playbackInfo == null) {
+        log.info('No playback info to update');
+        return;
+      }
+
+      ref.read(videoPlaybackValueProvider.notifier).position =
+          Duration(seconds: playbackInfo.position);
 
       // Check if the video is buffering
-      if (videoPlayback.state == VideoPlaybackState.playing) {
-        log.info('Updating video: checking if playing video is buffering');
-        isBuffering.value =
-            lastVideoPosition.value == videoPlayback.position.inSeconds;
-        lastVideoPosition.value = videoPlayback.position.inSeconds;
+      if (playbackInfo.status == PlaybackStatus.playing) {
         log.info('Updating playing video position');
+        isBuffering.value = lastVideoPosition.value == playbackInfo.position;
+        lastVideoPosition.value = playbackInfo.position;
       } else {
-        log.info('Updating video: video is not playing');
+        log.info('Updating non-playing video position');
         isBuffering.value = false;
         lastVideoPosition.value = -1;
-        log.info('Updated non-playing video position');
-      }
-      final state = videoPlayback.state;
-
-      // Enable the WakeLock while the video is playing
-      if (state == VideoPlaybackState.playing) {
-        log.info('Syncing with the controls playing');
-        // Sync with the controls playing
-        // WakelockPlus.enable();
-        log.info('Synced with the controls playing');
-      } else {
-        log.info('Syncing with the controls pause');
-        // Sync with the controls pause
-        // WakelockPlus.disable();
-        log.info('Synced with the controls pause');
       }
     }
 
     void onPlaybackEnded() {
-      try {
-        log.info('onPlaybackEnded: Video ended');
-        if (loopVideo) {
-          log.info('onPlaybackEnded: Looping video');
+      log.info('onPlaybackEnded: Video ended');
+      if (loopVideo) {
+        log.info('onPlaybackEnded: Looping video');
+        try {
           controller.value?.play();
-          log.info('onPlaybackEnded: Looped video');
+        } catch (error) {
+          log.severe('Error looping video: $error');
         }
-      } catch (error) {
-        log.severe('Error looping video: $error');
-        // Consume error from the controller
+      } else {
+        WakelockPlus.disable();
       }
     }
 
-    Future<void> initController(NativeVideoPlayerController nc) async {
+    void initController(NativeVideoPlayerController nc) {
       if (controller.value != null) {
         log.info('initController: Controller already initialized');
         return;
@@ -218,27 +219,21 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       log.info('initController: adding onPlaybackPositionChanged listener');
       nc.onPlaybackPositionChanged.addListener(onPlaybackPositionChanged);
-      log.info('initController: added onPlaybackPositionChanged listener');
 
       log.info('initController: adding onPlaybackStatusChanged listener');
-      nc.onPlaybackStatusChanged.addListener(onPlaybackPositionChanged);
-      log.info('initController: added onPlaybackStatusChanged listener');
+      nc.onPlaybackStatusChanged.addListener(onPlaybackStatusChanged);
 
       log.info('initController: adding onPlaybackReady listener');
       nc.onPlaybackReady.addListener(onPlaybackReady);
-      log.info('initController: added onPlaybackReady listener');
 
       log.info('initController: adding onPlaybackEnded listener');
       nc.onPlaybackEnded.addListener(onPlaybackEnded);
-      log.info('initController: added onPlaybackEnded listener');
 
       log.info('initController: loading video source');
       nc.loadVideoSource(videoSource);
-      log.info('initController: loaded video source');
 
       log.info('initController: setting controller');
       controller.value = nc;
-      log.info('initController: set controller');
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
 
@@ -246,55 +241,45 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       () {
         log.info('useEffect: resetting video player controls');
         ref.read(videoPlayerControlsProvider.notifier).reset();
-        log.info('useEffect: resetting video player controls');
 
         if (isMotionVideo) {
           // ignore: prefer-extracting-callbacks
-          log.info('useEffect: disabled showing video player controls');
+          log.info('useEffect: disabling showing video player controls');
           ref.read(showControlsProvider.notifier).show = false;
-          log.info('useEffect: disabled showing video player controls');
         }
 
         return () {
+          final playerController = controller.value;
+          if (playerController == null) {
+            log.info('No controller to dispose');
+            return;
+          }
           try {
-            final playerController = controller.value;
-            if (playerController == null) {
-              log.info('No controller to dispose');
-              return;
-            }
+            log.info('Stopping video');
+            playerController.stop();
+
             log.info('Removing onPlaybackPositionChanged listener');
             playerController.onPlaybackPositionChanged
                 .removeListener(onPlaybackPositionChanged);
-            log.info('Removed onPlaybackPositionChanged listener');
 
             log.info('Removing onPlaybackStatusChanged listener');
             playerController.onPlaybackStatusChanged
-                .removeListener(onPlaybackPositionChanged);
-            log.info('Removed onPlaybackStatusChanged listener');
+                .removeListener(onPlaybackStatusChanged);
 
             log.info('Removing onPlaybackReady listener');
             playerController.onPlaybackReady.removeListener(onPlaybackReady);
-            log.info('Removed onPlaybackReady listener');
 
             log.info('Removing onPlaybackEnded listener');
             playerController.onPlaybackEnded.removeListener(onPlaybackEnded);
-            log.info('Removed onPlaybackEnded listener');
-
-            log.info('Stopping video');
-            playerController.stop();
-            log.info('Stopped video');
-
-            log.info('Disposing controller');
-            controller.value = null;
-            log.info('Disposed controller');
-
-            // log.info('Disabling Wakelock');
-            // WakelockPlus.disable();
-            // log.info('Disabled Wakelock');
           } catch (error) {
             log.severe('Error during useEffect cleanup: $error');
-            // Consume error from the controller
           }
+
+          log.info('Disposing controller');
+          controller.value = null;
+
+          log.info('Disabling Wakelock');
+          WakelockPlus.disable();
         };
       },
       [videoSource],
