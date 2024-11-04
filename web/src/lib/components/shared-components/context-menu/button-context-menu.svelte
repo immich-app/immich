@@ -54,8 +54,8 @@
 
   let isOpen = $state(false);
   let contextMenuPosition = $state({ x: 0, y: 0 });
-  let menuContainer: HTMLUListElement = $state();
-  let buttonContainer: HTMLDivElement = $state();
+  let menuContainer: HTMLUListElement | undefined = $state();
+  let buttonContainer: HTMLDivElement | undefined = $state();
 
   const id = generateId();
   const buttonId = `context-menu-button-${id}`;
@@ -84,9 +84,10 @@
   };
 
   const onResize = () => {
-    if (!isOpen) {
+    if (!isOpen || !buttonContainer) {
       return;
     }
+
     contextMenuPosition = getContextMenuPositionFromBoundingRect(buttonContainer.getBoundingClientRect(), align);
   };
 
@@ -104,10 +105,11 @@
   };
 
   const focusButton = () => {
-    const button: HTMLButtonElement | null = buttonContainer.querySelector(`#${buttonId}`);
+    const button = buttonContainer?.querySelector(`#${buttonId}`) as HTMLButtonElement | null;
     button?.focus();
   };
-  run(() => {
+
+  $effect(() => {
     if (isOpen) {
       $optionClickCallbackStore = handleOptionClick;
     }
@@ -115,6 +117,7 @@
 </script>
 
 <svelte:window onresize={onResize} />
+
 <div
   use:contextMenuNavigation={{
     closeDropdown,

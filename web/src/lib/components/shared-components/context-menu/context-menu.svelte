@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { quintOut } from 'svelte/easing';
   import { slide } from 'svelte/transition';
   import { clickOutside } from '$lib/actions/click-outside';
@@ -28,19 +26,19 @@
     ariaLabel = undefined,
     ariaLabelledBy = undefined,
     ariaActiveDescendant = undefined,
-    menuElement = $bindable(undefined),
+    menuElement = $bindable(),
     onClose = undefined,
     children,
   }: Props = $props();
 
-  let left: number = $state();
-  let top: number = $state();
+  let left: number = $state(0);
+  let top: number = $state(0);
 
   // We need to bind clientHeight since the bounding box may return a height
   // of zero when starting the 'slide' animation.
-  let height: number = $state();
+  let height: number = $state(0);
 
-  run(() => {
+  $effect(() => {
     if (menuElement) {
       const rect = menuElement.getBoundingClientRect();
       const directionWidth = direction === 'left' ? rect.width : 0;
