@@ -28,7 +28,7 @@
     sharedLink?: SharedLinkResponseDto | undefined;
     onPreviousAsset?: (() => void) | null;
     onNextAsset?: (() => void) | null;
-    copyImage?: (() => Promise<void>) | null;
+    copyImage?: () => Promise<void>;
     zoomToggle?: (() => void) | null;
     onClose?: () => void;
   }
@@ -36,13 +36,13 @@
   let {
     asset,
     preloadAssets = undefined,
-    element = $bindable(undefined),
+    element = $bindable(),
     haveFadeTransition = true,
     sharedLink = undefined,
     onPreviousAsset = null,
     onNextAsset = null,
     copyImage = $bindable(),
-    zoomToggle = $bindable(null),
+    zoomToggle = $bindable(),
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;

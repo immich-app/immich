@@ -52,7 +52,7 @@
     showDetailButton: boolean;
     showSlideshow?: boolean;
     onZoomImage: () => void;
-    onCopyImage: () => void;
+    onCopyImage: () => Promise<void>;
     onAction: OnAction;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
@@ -121,7 +121,7 @@
       />
     {/if}
     {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
-      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} on:click={onCopyImage} />
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} onclick={onCopyImage} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
