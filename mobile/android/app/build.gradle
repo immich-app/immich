@@ -2,7 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id "kotlin-kapt"
+    id 'com.google.devtools.ksp'
 }
 
 def localProperties = new Properties()
@@ -83,11 +83,11 @@ flutter {
 }
 
 dependencies {
-    def kotlin_version = '1.9.24'
-    def kotlin_coroutines_version = '1.8.1'
-    def work_version = '2.9.0'
-    def concurrent_version = '1.1.0'
-    def guava_version = '33.2.0-android'
+    def kotlin_version = '2.0.20'
+    def kotlin_coroutines_version = '1.9.0'
+    def work_version = '2.9.1'
+    def concurrent_version = '1.2.0'
+    def guava_version = '33.3.1-android'
     def glide_version = '4.16.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -96,8 +96,8 @@ dependencies {
     implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
     implementation "com.google.guava:guava:$guava_version"
     implementation "com.github.bumptech.glide:glide:$glide_version"
-    kapt "com.github.bumptech.glide:compiler:$glide_version"
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    ksp "com.github.bumptech.glide:ksp:$glide_version"
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 }
 
 // This is uncommented in F-Droid build script

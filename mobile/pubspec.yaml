@@ -25,7 +25,7 @@ dependencies:
   intl: ^0.19.0
   auto_route: ^9.2.0
   fluttertoast: ^8.2.4
-  video_player: ^2.8.2
+  video_player: ^2.9.2
   chewie: ^1.7.4
   socket_io_client: ^2.0.3+1
   maplibre_gl: 0.19.0+2
