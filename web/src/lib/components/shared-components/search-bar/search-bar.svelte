@@ -19,9 +19,10 @@
     value?: string;
     grayTheme: boolean;
     searchQuery?: MetadataSearchDto | SmartSearchDto;
+    onSearch?: () => void;
   }
 
-  let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
+  let { value = $bindable(''), grayTheme, searchQuery = {}, onSearch }: Props = $props();
 
   let showClearIcon = $derived(value.length > 0);
 
@@ -34,13 +35,14 @@
 
   const listboxId = generateId();
 
-  const onSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
+  const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
 
     closeDropdown();
     showFilter = false;
     $isSearchEnabled = false;
     await goto(`${AppRoute.SEARCH}?${params}`);
+    onSearch?.();
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -83,7 +85,7 @@
   const onHistoryTermClick = async (searchTerm: string) => {
     value = searchTerm;
     const searchPayload = { query: searchTerm };
-    await onSearch(searchPayload);
+    await handleSearch(searchPayload);
   };
 
   const onFilterClick = () => {
@@ -96,7 +98,7 @@
   };
 
   const onSubmit = () => {
-    handlePromiseError(onSearch({ query: value }));
+    handlePromiseError(handleSearch({ query: value }));
     saveSearchTerm(value);
   };
 
@@ -223,6 +225,10 @@
   </form>
 
   {#if showFilter}
-    <SearchFilterModal {searchQuery} onSearch={(payload) => onSearch(payload)} onClose={() => (showFilter = false)} />
+    <SearchFilterModal
+      {searchQuery}
+      onSearch={(payload) => handleSearch(payload)}
+      onClose={() => (showFilter = false)}
+    />
   {/if}
 </div>
