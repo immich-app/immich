@@ -267,14 +267,15 @@
 
         {#each current.memory.assets as asset, index}
           <a class="relative w-full py-2" href={asHref(asset)}>
-            <span class="absolute left-0 h-[2px] w-full bg-gray-500" />
+            <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
             {#await resetPromise}
-              <span class="absolute left-0 h-[2px] bg-white" style:width={`${index < current.assetIndex ? 100 : 0}%`} />
+              <span class="absolute left-0 h-[2px] bg-white" style:width={`${index < current.assetIndex ? 100 : 0}%`}
+              ></span>
             {:then}
               <span
                 class="absolute left-0 h-[2px] bg-white"
                 style:width={`${index < current.assetIndex ? 100 : index > current.assetIndex ? 0 : $progress * 100}%`}
-              />
+              ></span>
             {/await}
           </a>
         {/each}

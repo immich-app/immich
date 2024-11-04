@@ -87,7 +87,7 @@ WHERE
   )
   AND ("entity"."deletedAt" IS NULL)
 ORDER BY
-  "entity"."localDateTime" ASC
+  "entity"."fileCreatedAt" ASC
 
 -- AssetRepository.getByIds
 SELECT

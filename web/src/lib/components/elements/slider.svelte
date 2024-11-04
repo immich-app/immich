@@ -28,11 +28,11 @@
   {#if disabled}
     <span
       class="slider slider-disabled cursor-not-allowed border border-transparent before:border before:border-transparent"
-    />
+    ></span>
   {:else}
     <span
       class="slider slider-enabled cursor-pointer border-2 border-transparent before:border-2 before:border-transparent peer-focus-visible:outline before:peer-focus-visible:outline peer-focus-visible:dark:outline-gray-200 before:peer-focus-visible:dark:outline-gray-200 peer-focus-visible:outline-gray-600 before:peer-focus-visible:outline-gray-600 peer-focus-visible:dark:border-black before:peer-focus-visible:dark:border-black peer-focus-visible:border-white before:peer-focus-visible:border-white"
-    />
+    ></span>
   {/if}
 </label>
 

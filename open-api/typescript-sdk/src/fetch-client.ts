@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.118.2
+ * 1.119.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -535,6 +535,7 @@ export type JobStatusDto = {
 };
 export type AllJobStatusResponseDto = {
     backgroundTask: JobStatusDto;
+    backupDatabase: JobStatusDto;
     duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
@@ -1084,6 +1085,14 @@ export type AssetFullSyncDto = {
     updatedUntil: string;
     userId?: string;
 };
+export type DatabaseBackupConfig = {
+    cronExpression: string;
+    enabled: boolean;
+    keepLastAmount: number;
+};
+export type SystemConfigBackupsDto = {
+    database: DatabaseBackupConfig;
+};
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     accelDecode: boolean;
@@ -1095,7 +1104,6 @@ export type SystemConfigFFmpegDto = {
     crf: number;
     gopSize: number;
     maxBitrate: string;
-    npl: number;
     preferredHwDevice: string;
     preset: string;
     refs: number;
@@ -1232,6 +1240,7 @@ export type SystemConfigUserDto = {
     deleteDelay: number;
 };
 export type SystemConfigDto = {
+    backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
     job: SystemConfigJobDto;
@@ -3445,7 +3454,8 @@ export enum JobName {
     Search = "search",
     Sidecar = "sidecar",
     Library = "library",
-    Notifications = "notifications"
+    Notifications = "notifications",
+    BackupDatabase = "backupDatabase"
 }
 export enum JobCommand {
     Start = "start",

@@ -44,6 +44,7 @@
   } from '@mdi/js';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
+  import CastButton from '$lib/components/cast/cast-button.svelte';
 
   export let asset: AssetResponseDto;
   export let album: AlbumResponseDto | null = null;
@@ -61,6 +62,7 @@
 
   const sharedLink = getSharedLink();
   $: isOwner = $user && asset.ownerId === $user?.id;
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   // $: showEditorButton =
   //   isOwner &&
@@ -83,6 +85,7 @@
     class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
     data-testid="asset-viewer-navbar-actions"
   >
+    <CastButton />
     {#if !asset.isTrashed && $user}
       <ShareAction {asset} />
     {/if}

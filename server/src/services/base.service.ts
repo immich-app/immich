@@ -1,6 +1,10 @@
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject, Optional } from '@nestjs/common';
+import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
+import { IWorker, SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { UserEntity } from 'src/entities/user.entity';
+import { ImmichWorker } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -25,6 +29,7 @@ import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
@@ -45,6 +50,7 @@ export class BaseService {
   protected storageCore: StorageCore;
 
   constructor(
+    @Inject(IWorker) @Optional() protected worker: ImmichWorker | undefined,
     @Inject(ILoggerRepository) protected logger: ILoggerRepository,
     @Inject(IAccessRepository) protected accessRepository: IAccessRepository,
     @Inject(IActivityRepository) protected activityRepository: IActivityRepository,
@@ -69,6 +75,7 @@ export class BaseService {
     @Inject(IOAuthRepository) protected oauthRepository: IOAuthRepository,
     @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,
+    @Inject(IProcessRepository) protected processRepository: IProcessRepository,
     @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
     @Inject(IServerInfoRepository) protected serverInfoRepository: IServerInfoRepository,
     @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,
@@ -118,5 +125,29 @@ export class BaseService {
 
   checkAccess(request: AccessRequest) {
     return checkAccess(this.accessRepository, request);
+  }
+
+  async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
+    const user = await this.userRepository.getByEmail(dto.email);
+    if (user) {
+      throw new BadRequestException('User exists');
+    }
+
+    if (!dto.isAdmin) {
+      const localAdmin = await this.userRepository.getAdmin();
+      if (!localAdmin) {
+        throw new BadRequestException('The first registered account must the administrator.');
+      }
+    }
+
+    const payload: Partial<UserEntity> = { ...dto };
+    if (payload.password) {
+      payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
+    }
+    if (payload.storageLabel) {
+      payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
+    }
+
+    return this.userRepository.create(payload);
   }
 }

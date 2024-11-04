@@ -36,14 +36,14 @@
     class:hover:opacity-100={selectable}
     class:rounded-full={circle}
     class:rounded-lg={!circle}
-  />
+  ></div>
 
   {#if selected}
     <div
       class="absolute left-0 top-0 h-full w-full bg-blue-500/80"
       class:rounded-full={circle}
       class:rounded-lg={!circle}
-    />
+    ></div>
   {/if}
 
   {#if person.name}

@@ -23,6 +23,7 @@
   export let onClose: () => void;
 
   let selectedType: string = editTypes[0].name;
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
 
   setTimeout(() => {

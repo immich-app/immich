@@ -432,7 +432,7 @@
   "birthdate_set_description": "Datum rođenja se koristi da bi se izračunale godine ove osobe u dobu određene fotografije.",
   "blurred_background": "Zamućena pozadina",
   "bugs_and_feature_requests": "Greške (bugs) i zahtevi za funkcije",
-  "build": "Build",
+  "build": "Pod-verzija (Build)",
   "build_image": "Sagradi (Build) image",
   "bulk_delete_duplicates_confirmation": "Da li ste sigurni da želite grupno da izbrišete {count, plural, one {# dupliran elemenat} few {# duplirana elementa} other {# dupliranih elemenata}}? Ovo će zadržati najveće sredstvo svake grupe i trajno izbrisati sve druge duplikate. Ne možete poništiti ovu radnju!",
   "bulk_keep_duplicates_confirmation": "Da li ste sigurni da želite da zadržite {count, plural, one {1 dupliranu datoteku} few {# duplirane datoteke} other {# dupliranih datoteka}}? Ovo će rešiti sve duplirane grupe bez brisanja bilo čega.",

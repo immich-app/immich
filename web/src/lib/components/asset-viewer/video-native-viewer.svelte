@@ -4,13 +4,14 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { swipe } from 'svelte-gestures';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
   import CastPlayer from '$lib/utils/cast-sender';
   import { get } from 'svelte/store';
+  import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
 
   export let assetId: string;
   export let loopVideo: boolean;
@@ -20,34 +21,41 @@
   export let onVideoEnded: () => void = () => {};
   export let onVideoStarted: () => void = () => {};
 
-  let castPlayer: CastPlayer | undefined;
+  let castPlayer = CastPlayer.getInstance();
 
   let element: HTMLVideoElement | undefined = undefined;
   let isVideoLoading = true;
   let assetFileUrl: string;
   let forceMuted = false;
 
-  let isConnected = false;
+  let isCastInitialized = false;
+  let castState = get(castPlayer.castState);
 
   $: if (element) {
     assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
     forceMuted = false;
     element.load();
-    cast(assetFileUrl);
   }
+  $: cast(assetFileUrl);
 
-  const cast = async (url: string) => {
-    castPlayer = await CastPlayer.getInstance();
-
-    if (!castPlayer) {
-      return;
-    }
-
-    isConnected = get(castPlayer.isConnected);
-    castPlayer.isConnected.subscribe((value) => {
-      isConnected = value;
+  onMount(async () => {
+    isCastInitialized = get(castPlayer.isInitialized);
+    castPlayer.isInitialized.subscribe((value) => {
+      isCastInitialized = value;
     });
 
+    castPlayer.castState.subscribe((value) => {
+      castState = value;
+      if (value === 'CONNECTED') {
+        cast(assetFileUrl);
+      }
+    });
+  });
+
+  const cast = async (url: string) => {
+    if (!url) {
+      return;
+    }
     const fullUrl = new URL(url, window.location.href);
     await castPlayer.loadMedia(fullUrl.href);
   };
@@ -87,10 +95,12 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
-  {#if isConnected}
-    abcd
-  {:else}
+{#if castState === 'CONNECTED'}
+  <div class="place-content-center h-full place-items-center">
+    <VideoRemoteViewer poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })} />
+  </div>
+{:else}
+  <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
     <video
       bind:this={element}
       loop={$loopVideoPreference && loopVideo}
@@ -119,5 +129,5 @@
         <LoadingSpinner />
       </div>
     {/if}
-  {/if}
-</div>
+  </div>
+{/if}

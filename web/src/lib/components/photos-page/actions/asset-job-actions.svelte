@@ -18,6 +18,7 @@
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: isAllVideos = [...getOwnedAssets()].every((asset) => asset.type === AssetTypeEnum.Video);
 
   const handleRunJob = async (name: AssetJobName) => {

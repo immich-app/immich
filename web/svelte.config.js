@@ -11,7 +11,8 @@ process.env.PUBLIC_IMMICH_CAST_APPLICATION_ID = process.env.PUBLIC_IMMICH_CAST_A
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  preprocess: vitePreprocess(),
+  // TODO: migrate all enums to .ts files and remove `{script: true}` once
+  preprocess: vitePreprocess({ script: true }),
   kit: {
     adapter: adapter({
       fallback: 'index.html',

@@ -19,6 +19,8 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import CastPlayer from '$lib/utils/cast-sender';
+  import { get } from 'svelte/store';
 
   export let asset: AssetResponseDto;
   export let preloadAssets: AssetResponseDto[] | undefined = undefined;
@@ -38,6 +40,11 @@
   let forceUseOriginal: boolean = false;
   let loader: HTMLImageElement;
 
+  let castPlayer = CastPlayer.getInstance();
+  let isCastInitialized = get(castPlayer.isInitialized);
+
+  let castState = get(castPlayer.castState);
+
   $: isWebCompatible = isWebCompatibleImage(asset);
   $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
   $: useOriginalImage = useOriginalByDefault || forceUseOriginal;
@@ -47,6 +54,7 @@
 
   $: preload(useOriginalImage, preloadAssets);
   $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
+  $: cast(imageLoaderUrl);
 
   photoZoomState.set({
     currentRotation: 0,
@@ -56,6 +64,27 @@
     currentPositionY: 0,
   });
   $zoomed = false;
+
+  onMount(async () => {
+    castPlayer.isInitialized.subscribe((value) => {
+      isCastInitialized = value;
+    });
+
+    castPlayer.castState.subscribe((value) => {
+      castState = value;
+      if (value === 'CONNECTED') {
+        cast(assetFileUrl);
+      }
+    });
+  });
+
+  const cast = async (url: string) => {
+    if (!url) {
+      return;
+    }
+    const fullUrl = new URL(url, window.location.href);
+    await castPlayer.loadMedia(fullUrl.href);
+  };
 
   onDestroy(() => {
     $boundingBoxesArray = [];
@@ -193,7 +222,7 @@
         <div
           class="absolute border-solid border-white border-[3px] rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        />
+        ></div>
       {/each}
     </div>
   {/if}

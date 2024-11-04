@@ -1,3 +1,4 @@
+import { ImmichTelemetry } from 'src/enum';
 import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
 
 const getEnv = () => {
@@ -7,16 +8,14 @@ const getEnv = () => {
 
 const resetEnv = () => {
   for (const env of [
+    'IMMICH_ENV',
     'IMMICH_WORKERS_INCLUDE',
     'IMMICH_WORKERS_EXCLUDE',
     'IMMICH_TRUSTED_PROXIES',
     'IMMICH_API_METRICS_PORT',
     'IMMICH_MICROSERVICES_METRICS_PORT',
-    'IMMICH_METRICS',
-    'IMMICH_API_METRICS',
-    'IMMICH_HOST_METRICS',
-    'IMMICH_IO_METRICS',
-    'IMMICH_JOB_METRICS',
+    'IMMICH_TELEMETRY_INCLUDE',
+    'IMMICH_TELEMETRY_EXCLUDE',
 
     'DB_URL',
     'DB_HOSTNAME',
@@ -64,16 +63,30 @@ describe('getEnv', () => {
     resetEnv();
   });
 
+  it('should use defaults', () => {
+    const config = getEnv();
+
+    expect(config).toMatchObject({
+      host: undefined,
+      port: 2283,
+      environment: 'production',
+      configFile: undefined,
+      logLevel: undefined,
+    });
+  });
+
   describe('database', () => {
     it('should use defaults', () => {
       const { database } = getEnv();
       expect(database).toEqual({
-        url: undefined,
-        host: 'database',
-        port: 5432,
-        name: 'immich',
-        username: 'postgres',
-        password: 'postgres',
+        config: expect.objectContaining({
+          type: 'postgres',
+          host: 'database',
+          port: 5432,
+          database: 'immich',
+          username: 'postgres',
+          password: 'postgres',
+        }),
         skipMigrations: false,
         vectorExtension: 'vectors',
       });
@@ -202,6 +215,11 @@ describe('getEnv', () => {
         trustedProxies: ['10.1.0.0', '10.2.0.0', '169.254.0.0/16'],
       });
     });
+
+    it('should reject invalid trusted proxies', () => {
+      process.env.IMMICH_TRUSTED_PROXIES = '10.1';
+      expect(() => getEnv()).toThrowError('Invalid environment variables: IMMICH_TRUSTED_PROXIES');
+    });
   });
 
   describe('telemetry', () => {
@@ -210,11 +228,7 @@ describe('getEnv', () => {
       expect(telemetry).toEqual({
         apiPort: 8081,
         microservicesPort: 8082,
-        enabled: false,
-        apiMetrics: false,
-        hostMetrics: false,
-        jobMetrics: false,
-        repoMetrics: false,
+        metrics: new Set([]),
       });
     });
 
@@ -225,32 +239,29 @@ describe('getEnv', () => {
       expect(telemetry).toMatchObject({
         apiPort: 2001,
         microservicesPort: 2002,
+        metrics: expect.any(Set),
       });
     });
 
     it('should run with telemetry enabled', () => {
-      process.env.IMMICH_METRICS = 'true';
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'all';
       const { telemetry } = getEnv();
-      expect(telemetry).toMatchObject({
-        enabled: true,
-        apiMetrics: true,
-        hostMetrics: true,
-        jobMetrics: true,
-        repoMetrics: true,
-      });
+      expect(telemetry.metrics).toEqual(new Set(Object.values(ImmichTelemetry)));
     });
 
     it('should run with telemetry enabled and jobs disabled', () => {
-      process.env.IMMICH_METRICS = 'true';
-      process.env.IMMICH_JOB_METRICS = 'false';
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'all';
+      process.env.IMMICH_TELEMETRY_EXCLUDE = 'job';
       const { telemetry } = getEnv();
-      expect(telemetry).toMatchObject({
-        enabled: true,
-        apiMetrics: true,
-        hostMetrics: true,
-        jobMetrics: false,
-        repoMetrics: true,
-      });
+      expect(telemetry.metrics).toEqual(
+        new Set([ImmichTelemetry.API, ImmichTelemetry.HOST, ImmichTelemetry.IO, ImmichTelemetry.REPO]),
+      );
+    });
+
+    it('should run with specific telemetry metrics', () => {
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'io, host, api';
+      const { telemetry } = getEnv();
+      expect(telemetry.metrics).toEqual(new Set([ImmichTelemetry.API, ImmichTelemetry.HOST, ImmichTelemetry.IO]));
     });
   });
 });

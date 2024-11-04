@@ -51,12 +51,12 @@
     {#if loading}
       {#each { length: 3 } as _}
         <div class="flex animate-pulse gap-4 px-6 py-2">
-          <div class="h-12 w-12 rounded-xl bg-slate-200" />
+          <div class="h-12 w-12 rounded-xl bg-slate-200"></div>
           <div class="flex flex-col items-start justify-center gap-2">
-            <span class="h-4 w-36 animate-pulse bg-slate-200" />
+            <span class="h-4 w-36 animate-pulse bg-slate-200"></span>
             <div class="flex animate-pulse gap-1">
-              <span class="h-3 w-8 bg-slate-200" />
-              <span class="h-3 w-20 bg-slate-200" />
+              <span class="h-3 w-8 bg-slate-200"></span>
+              <span class="h-3 w-20 bg-slate-200"></span>
             </div>
           </div>
         </div>

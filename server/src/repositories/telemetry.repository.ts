@@ -14,7 +14,7 @@ import { snakeCase, startCase } from 'lodash';
 import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { serverVersion } from 'src/constants';
-import { MetadataKey } from 'src/enum';
+import { ImmichTelemetry, MetadataKey } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricGroupRepository, ITelemetryRepository, MetricGroupOptions } from 'src/interfaces/telemetry.interface';
@@ -99,17 +99,18 @@ export class TelemetryRepository implements ITelemetryRepository {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     const { telemetry } = this.configRepository.getEnv();
-    const { apiMetrics, hostMetrics, jobMetrics, repoMetrics } = telemetry;
+    const { metrics } = telemetry;
 
-    this.api = new MetricGroupRepository(metricService).configure({ enabled: apiMetrics });
-    this.host = new MetricGroupRepository(metricService).configure({ enabled: hostMetrics });
-    this.jobs = new MetricGroupRepository(metricService).configure({ enabled: jobMetrics });
-    this.repo = new MetricGroupRepository(metricService).configure({ enabled: repoMetrics });
+    this.api = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.API) });
+    this.host = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.HOST) });
+    this.jobs = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.JOB) });
+    this.repo = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.REPO) });
   }
 
   setup({ repositories }: { repositories: ClassConstructor<unknown>[] }) {
     const { telemetry } = this.configRepository.getEnv();
-    if (!telemetry.enabled || !telemetry.repoMetrics) {
+    const { metrics } = telemetry;
+    if (!metrics.has(ImmichTelemetry.REPO)) {
       return;
     }
 

@@ -135,6 +135,7 @@
   let isOpen = false;
 
   // Step 1: Filter between Owned and Shared albums, or both.
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: {
     switch (userSettings.filter) {
       case AlbumFilter.Owned: {
