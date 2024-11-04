@@ -40,8 +40,8 @@ docker compose up -d
 ```
 
 :::note
-Due to the underlying properties of docker bind mounts, it is not recommended to mount the `upload/` and `library/` folders as separate bind mounts if they are on the same device.
-For this reason, we mount the hard drive (HDD) or the network storage (NAS) to `/usr/src/app/upload` and then mount the folders we want to access under that folder.
+Because of the underlying properties of docker bind mounts, it is not recommended to mount the `upload/` and `library/` folders as separate bind mounts if they are on the same device.
+For this reason, we mount the HDD or the network storage (NAS) to `/usr/src/app/upload` and then mount the folders we want to access under that folder.
 
 The `thumbs/` folder contains both the small thumbnails displayed in the timeline and the larger previews shown when clicking into an image. These cannot be separated.
 
