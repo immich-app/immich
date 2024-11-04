@@ -41,7 +41,7 @@
     sharedLink = undefined,
     onPreviousAsset = null,
     onNextAsset = null,
-    copyImage = $bindable(null),
+    copyImage = $bindable(),
     zoomToggle = $bindable(null),
   }: Props = $props();
 
