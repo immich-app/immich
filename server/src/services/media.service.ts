@@ -341,10 +341,26 @@ export class MediaService extends BaseService {
       if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
         return JobStatus.FAILED;
       }
-      this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
-      const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
-      command = config.getCommand(target, mainVideoStream, mainAudioStream);
-      await this.mediaRepository.transcode(input, output, command);
+
+      let partialFallbackSuccess = false;
+      if (ffmpeg.accelDecode) {
+        try {
+          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration but software decoding`);
+          const config = BaseConfig.create({...ffmpeg, accelDecode: false});
+          command = config.getCommand(target, mainVideoStream, mainAudioStream);
+          await this.mediaRepository.transcode(input, output, command);
+          partialFallbackSuccess = true;
+        } catch (error: any) {
+          this.logger.error(`Error occurred during transcoding: ${error.message}`);
+        }
+      }
+
+      if (!partialFallbackSuccess) {
+        this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
+        const config = BaseConfig.create({...ffmpeg, accel: TranscodeHWAccel.DISABLED});
+        command = config.getCommand(target, mainVideoStream, mainAudioStream);
+        await this.mediaRepository.transcode(input, output, command);
+      }
     }
 
     this.logger.log(`Successfully encoded ${asset.id}`);

@@ -924,8 +924,7 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
+  getBaseInputOptions(): string[] {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
@@ -978,16 +977,12 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
     this.hasMaliOpenCL = hasMaliOpenCL;
   }
 
-  getBaseInputOptions(videoStream: VideoStreamInfo) {
+  getBaseInputOptions() {
     if (this.devices.length === 0) {
       throw new Error('No RKMPP device found');
     }
 
-    if (!this.shouldToneMap(videoStream) || (this.shouldToneMap(videoStream) && this.hasMaliOpenCL)) {
-      return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
-    }
-
-    return [];
+    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -1002,8 +997,13 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
           'format=drm_prime',
         ];
       }
-      // use CPU for scaling & tone mapping
-      return super.getFilterOptions(videoStream);
+      return [ // use RKMPP for scaling, CPU for tone mapping (only works on RK3588 which support 10bit output)
+        `scale_rkrga=${this.getScaling(videoStream)}:format=p010`,
+        'hwdownload',
+        'format=yuv420p10le',
+        `tonemapx=tonemap=${this.config.tonemap}:desat=0:p=${primaries}:t=${transfer}:m=${matrix}:r=pc:peak=100:format=yuv420p`,
+        'hwupload',
+      ];
     } else if (this.shouldScale(videoStream)) {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
