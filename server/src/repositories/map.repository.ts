@@ -249,6 +249,7 @@ export class MapRepository implements IMapRepository {
     const input = createReadStream(filePath);
     let bufferGeodata: QueryDeepPartialEntity<GeodataPlacesEntity>[] = [];
     const lineReader = readLine.createInterface({ input });
+    let count = 0;
 
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
@@ -257,8 +258,12 @@ export class MapRepository implements IMapRepository {
       }
       const geoData = lineToEntityMapper(lineSplit);
       bufferGeodata.push(geoData);
-      if (bufferGeodata.length > 1000) {
+      if (bufferGeodata.length >= 1000) {
         await queryRunner.manager.upsert(GeodataPlacesEntity, bufferGeodata, ['id']);
+        count += bufferGeodata.length;
+        if (count % 10_000 === 0) {
+          this.logger.log(`${count} geodata records imported`);
+        }
         bufferGeodata = [];
       }
     }
