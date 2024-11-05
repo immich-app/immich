@@ -97,13 +97,16 @@
           duplicateId: null,
         };
         if (isSynchronizeAlbumsActive) {
-          await synchronizeAlbums(duplicateAssetIds);
+          console.log(selectedDataToSync.albums);
+          selectedDataToSync.albums?.forEach((album) => {
+            addAssetsToAlbum(album.id, duplicateAssetIds, false);
+          });
         }
         if (isSynchronizeArchivesActive) {
-          assetBulkUpdate.isArchived = data.duplicates[0].assets.some((asset) => asset.isArchived);
+          assetBulkUpdate.isArchived = selectedDataToSync.isArchived;
         }
         if (isSynchronizeFavoritesActive) {
-          assetBulkUpdate.isFavorite = data.duplicates[0].assets.some((asset) => asset.isFavorite);
+          assetBulkUpdate.isFavorite = selectedDataToSync.isFavorite;
         }
         if (selectedDataToSync.dateTime !== null) {
           assetBulkUpdate.dateTimeOriginal = selectedDataToSync.dateTime;
@@ -247,6 +250,9 @@
           onResolve={(duplicateAssetIds, trashIds, selectedDataToSync) =>
             handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds, selectedDataToSync)}
           onStack={(assets) => handleStack(duplicates[0].duplicateId, assets)}
+          {isSynchronizeAlbumsActive}
+          {isSynchronizeFavoritesActive}
+          {isSynchronizeArchivesActive}
         />
       {/key}
     {:else}

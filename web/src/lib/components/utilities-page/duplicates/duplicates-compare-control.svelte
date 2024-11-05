@@ -20,15 +20,22 @@
   }
 
   let { assets, onResolve, onStack }: Props = $props();
+  export let isSynchronizeAlbumsActive: boolean;
+  export let isSynchronizeFavoritesActive: boolean;
+  export let isSynchronizeArchivesActive: boolean;
+
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
+  let descriptionHeight = 0;
+  let locationHeight = 0;
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
   let selectedSyncData = {
     dateTime: null,
     description: null,
     location: null,
+    albums: [],
   };
 
   onMount(() => {
@@ -136,8 +143,20 @@
         {onSelectDescription}
         {onSelectLocation}
         {selectedSyncData}
+        {descriptionHeight}
+        setDescriptionHeight={(height) =>
+          (descriptionHeight = height >= descriptionHeight ? height : descriptionHeight)}
+        {locationHeight}
+        setLocationHeight={(height) => (locationHeight = height >= locationHeight ? height : locationHeight)}
         isSelected={selectedAssetIds.has(asset.id)}
         onViewAsset={(asset) => setAsset(asset)}
+        {isSynchronizeAlbumsActive}
+        {isSynchronizeFavoritesActive}
+        {isSynchronizeArchivesActive}
+        setAlbums={(albums) =>
+          (selectedSyncData.albums = selectedSyncData.albums
+            .concat(albums)
+            .filter((item, index, self) => index === self.findIndex((t) => t.id === item.id)))}
       />
     {/each}
   </div>
