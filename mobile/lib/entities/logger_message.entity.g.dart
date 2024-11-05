@@ -60,7 +60,7 @@ const LoggerMessageSchema = CollectionSchema(
   getId: _loggerMessageGetId,
   getLinks: _loggerMessageGetLinks,
   attach: _loggerMessageAttach,
-  version: '3.1.0+1',
+  version: '3.1.8',
 );
 
 int _loggerMessageEstimateSize(
