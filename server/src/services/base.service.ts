@@ -1,10 +1,9 @@
-import { BadRequestException, Inject, Optional } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
-import { IWorker, SALT_ROUNDS } from 'src/constants';
+import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserEntity } from 'src/entities/user.entity';
-import { ImmichWorker } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -50,7 +49,6 @@ export class BaseService {
   protected storageCore: StorageCore;
 
   constructor(
-    @Inject(IWorker) @Optional() protected worker: ImmichWorker | undefined,
     @Inject(ILoggerRepository) protected logger: ILoggerRepository,
     @Inject(IAccessRepository) protected accessRepository: IAccessRepository,
     @Inject(IActivityRepository) protected activityRepository: IActivityRepository,
@@ -101,6 +99,10 @@ export class BaseService {
       systemMetadataRepository,
       this.logger,
     );
+  }
+
+  get worker() {
+    return this.configRepository.getWorker();
   }
 
   private get configRepos() {

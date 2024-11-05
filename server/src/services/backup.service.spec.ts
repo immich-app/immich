@@ -2,6 +2,7 @@ import { PassThrough } from 'node:stream';
 import { defaults, SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { ImmichWorker, StorageFolder } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, JobStatus } from 'src/interfaces/job.interface';
 import { IProcessRepository } from 'src/interfaces/process.interface';
@@ -16,13 +17,14 @@ describe(BackupService.name, () => {
   let sut: BackupService;
 
   let databaseMock: Mocked<IDatabaseRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let jobMock: Mocked<IJobRepository>;
   let processMock: Mocked<IProcessRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    ({ sut, databaseMock, jobMock, processMock, storageMock, systemMock } = newTestService(BackupService));
+    ({ sut, configMock, databaseMock, jobMock, processMock, storageMock, systemMock } = newTestService(BackupService));
   });
 
   it('should work', () => {
@@ -32,25 +34,23 @@ describe(BackupService.name, () => {
   describe('onBootstrapEvent', () => {
     it('should init cron job and handle config changes', async () => {
       databaseMock.tryLock.mockResolvedValue(true);
-      systemMock.get.mockResolvedValue(systemConfigStub.backupEnabled);
 
-      await sut.onBootstrap(ImmichWorker.API);
+      await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
       expect(jobMock.addCronJob).toHaveBeenCalled();
-      expect(systemMock.get).toHaveBeenCalled();
     });
 
     it('should not initialize backup database cron job when lock is taken', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.backupEnabled);
       databaseMock.tryLock.mockResolvedValue(false);
 
-      await sut.onBootstrap(ImmichWorker.API);
+      await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
       expect(jobMock.addCronJob).not.toHaveBeenCalled();
     });
 
     it('should not initialise backup database job when running on microservices', async () => {
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      configMock.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
       expect(jobMock.addCronJob).not.toHaveBeenCalled();
     });
@@ -58,9 +58,8 @@ describe(BackupService.name, () => {
 
   describe('onConfigUpdateEvent', () => {
     beforeEach(async () => {
-      systemMock.get.mockResolvedValue(defaults);
       databaseMock.tryLock.mockResolvedValue(true);
-      await sut.onBootstrap(ImmichWorker.API);
+      await sut.onConfigInit({ newConfig: defaults });
     });
 
     it('should update cron job if backup is enabled', () => {
@@ -80,14 +79,9 @@ describe(BackupService.name, () => {
       expect(jobMock.updateCronJob).toHaveBeenCalled();
     });
 
-    it('should do nothing if oldConfig is not provided', () => {
-      sut.onConfigUpdate({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
-      expect(jobMock.updateCronJob).not.toHaveBeenCalled();
-    });
-
     it('should do nothing if instance does not have the backup database lock', async () => {
       databaseMock.tryLock.mockResolvedValue(false);
-      await sut.onBootstrap(ImmichWorker.API);
+      await sut.onConfigInit({ newConfig: defaults });
       sut.onConfigUpdate({ newConfig: systemConfigStub.backupEnabled as SystemConfig, oldConfig: defaults });
       expect(jobMock.updateCronJob).not.toHaveBeenCalled();
     });

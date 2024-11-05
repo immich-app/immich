@@ -74,8 +74,9 @@ export class StorageTemplateService extends BaseService {
     return this._template;
   }
 
+  @OnEvent({ name: 'config.init' })
   @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+  onConfigInitOrUpdate({ newConfig }: ArgOf<'config.init'>) {
     const template = newConfig.storageTemplate.template;
     if (!this._template || template !== this.template.raw) {
       this.logger.debug(`Compiling new storage template: ${template}`);
