@@ -162,7 +162,6 @@ export class NotificationService extends BaseService {
         displayName: user.name,
       },
     });
-
     const { messageId } = await this.notificationRepository.sendEmail({
       to: user.email,
       subject: 'Test email from Immich',
@@ -182,7 +181,7 @@ export class NotificationService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { server } = await this.getConfig({ withCache: true });
+    const { server, templates } = await this.getConfig({ withCache: true });
     const { port } = this.configRepository.getEnv();
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.WELCOME,
@@ -192,6 +191,7 @@ export class NotificationService extends BaseService {
         username: user.email,
         password: tempPassword,
       },
+      customTemplate: templates.email.welcomeTemplate,
     });
 
     await this.jobRepository.queue({
@@ -226,7 +226,7 @@ export class NotificationService extends BaseService {
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.getConfig({ withCache: false });
+    const { server, templates } = await this.getConfig({ withCache: false });
     const { port } = this.configRepository.getEnv();
     const { html, text } = await this.notificationRepository.renderEmail({
       template: EmailTemplate.ALBUM_INVITE,
@@ -238,6 +238,7 @@ export class NotificationService extends BaseService {
         recipientName: recipient.name,
         cid: attachment ? attachment.cid : undefined,
       },
+      customTemplate: templates.email.albumInviteTemplate,
     });
 
     await this.jobRepository.queue({
@@ -271,7 +272,7 @@ export class NotificationService extends BaseService {
     );
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
-    const { server } = await this.getConfig({ withCache: false });
+    const { server, templates } = await this.getConfig({ withCache: false });
     const { port } = this.configRepository.getEnv();
 
     for (const recipient of recipients) {
@@ -295,6 +296,7 @@ export class NotificationService extends BaseService {
           recipientName: recipient.name,
           cid: attachment ? attachment.cid : undefined,
         },
+        customTemplate: templates.email.albumUpdateTemplate,
       });
 
       await this.jobRepository.queue({

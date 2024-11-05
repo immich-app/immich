@@ -22,13 +22,15 @@
       <div class="flex flex-col gap-4">
         <SettingAccordion
           key="templates"
-          title={$t('emailtemplates')}
-          subtitle={$t('admin.tempalates_emails_description')}
+          title={$t('admin.template_email_settings')}
+          subtitle={$t('admin.template_settings_description')}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingTextarea
               label={$t('admin.template_email_welcome')}
-              desc={$t('admin.template_email_welcome_description')}
+              desc={$t('admin.template_email_available_tags', {
+                values: { tags: '{username}, {password}, {displayName}, {baseUrl}' },
+              })}
               bind:value={config.templates.email.welcomeTemplate}
               isEdited={config.templates.email.welcomeTemplate !== savedConfig.templates.email.welcomeTemplate}
             />
@@ -36,7 +38,9 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingTextarea
               label={$t('admin.template_email_invite_album')}
-              desc={$t('admin.template_email_invite_album_desciption')}
+              desc={$t('admin.template_email_available_tags', {
+                values: { tags: '{senderName}, {recipientName}, {albumId}, {albumName}, {baseUrl}' },
+              })}
               bind:value={config.templates.email.albumInviteTemplate}
               isEdited={config.templates.email.albumInviteTemplate !== savedConfig.templates.email.albumInviteTemplate}
             />
@@ -44,7 +48,9 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingTextarea
               label={$t('admin.template_email_update_album')}
-              desc={$t('admin.template_email_update_album_description')}
+              desc={$t('admin.template_email_available_tags', {
+                values: { tags: '{recipientName}, {albumId}, {albumName}, {baseUrl}' },
+              })}
               bind:value={config.templates.email.albumUpdateTemplate}
               isEdited={config.templates.email.albumUpdateTemplate !== savedConfig.templates.email.albumUpdateTemplate}
             />

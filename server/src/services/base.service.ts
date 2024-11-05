@@ -1,4 +1,5 @@
 import { BadRequestException, Inject } from '@nestjs/common';
+import { template } from 'lodash';
 import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
@@ -104,6 +105,7 @@ export class BaseService {
       configRepo: this.configRepository,
       metadataRepo: this.systemMetadataRepository,
       logger: this.logger,
+      notifications: this.notificationRepository,
     };
   }
 
