@@ -66,7 +66,7 @@ const IOSDeviceAssetSchema = CollectionSchema(
   getId: _iOSDeviceAssetGetId,
   getLinks: _iOSDeviceAssetGetLinks,
   attach: _iOSDeviceAssetAttach,
-  version: '3.1.0+1',
+  version: '3.1.8',
 );
 
 int _iOSDeviceAssetEstimateSize(
