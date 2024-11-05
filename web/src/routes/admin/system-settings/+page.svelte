@@ -31,6 +31,7 @@
     mdiAccountOutline,
     mdiAlert,
     mdiBellOutline,
+    mdiBellCogOutline,
     mdiBookshelf,
     mdiContentCopy,
     mdiDatabaseOutline,
@@ -159,9 +160,9 @@
     {
       component: TemplateSettings,
       title: $t('admin.template_settings'),
-      subtitle: $t('admin.template_settings'),
+      subtitle: $t('admin.template_settings_description'),
       key: 'templates',
-      icon: mdiBellOutline,
+      icon: mdiBellCogOutline,
     },
     {
       component: ServerSettings,

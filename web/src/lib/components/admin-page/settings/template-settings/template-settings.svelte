@@ -7,6 +7,8 @@
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { t } from 'svelte-i18n';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
@@ -26,6 +28,13 @@
           subtitle={$t('admin.template_settings_description')}
         >
           <div class="ml-4 mt-4 flex flex-col gap-4">
+            <p class="text-sm dark:text-immich-dark-fg">
+              <FormatMessage key="admin.template_email_if_empty">
+                {$t('admin.template_email_if_empty')}
+              </FormatMessage>
+            </p>
+            <hr />
+
             <SettingTextarea
               label={$t('admin.template_email_welcome')}
               desc={$t('admin.template_email_available_tags', {
@@ -33,6 +42,7 @@
               })}
               bind:value={config.templates.email.welcomeTemplate}
               isEdited={config.templates.email.welcomeTemplate !== savedConfig.templates.email.welcomeTemplate}
+              disabled={!config.notifications.smtp.enabled}
             />
           </div>
           <div class="ml-4 mt-4 flex flex-col gap-4">
@@ -43,6 +53,7 @@
               })}
               bind:value={config.templates.email.albumInviteTemplate}
               isEdited={config.templates.email.albumInviteTemplate !== savedConfig.templates.email.albumInviteTemplate}
+              disabled={!config.notifications.smtp.enabled}
             />
           </div>
           <div class="ml-4 mt-4 flex flex-col gap-4">
@@ -53,6 +64,7 @@
               })}
               bind:value={config.templates.email.albumUpdateTemplate}
               isEdited={config.templates.email.albumUpdateTemplate !== savedConfig.templates.email.albumUpdateTemplate}
+              disabled={!config.notifications.smtp.enabled}
             />
           </div>
         </SettingAccordion>

@@ -39,7 +39,11 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password, customT
     <ImmichLayout
       preview={customTemplate ? emailContent.toString() : 'You have been invited to a new Immich instance.'}
     >
-      {customTemplate && <Text className="m-0">{emailContent}</Text>}
+      {customTemplate && (
+        <Text className="m-0">
+          <div dangerouslySetInnerHTML={{ __html: emailContent }}></div>
+        </Text>
+      )}
 
       {!customTemplate && emailContent}
 
