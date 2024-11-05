@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
 
   const accordionState = getAccordionState();
@@ -54,7 +52,12 @@
     setIsOpen(false);
   });
 
-  $effect(() => {
+  const onclick = () => {
+    isOpen = !isOpen;
+    setIsOpen(isOpen);
+  };
+
+  onMount(() => {
     setIsOpen(isOpen);
   });
 </script>
@@ -68,7 +71,7 @@
   <button
     type="button"
     aria-expanded={isOpen}
-    onclick={() => (isOpen = !isOpen)}
+    {onclick}
     class="flex w-full place-items-center justify-between text-left"
   >
     <div>

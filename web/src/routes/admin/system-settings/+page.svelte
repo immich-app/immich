@@ -27,7 +27,6 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import type { SystemConfigDto } from '@immich/sdk';
   import {
     mdiAccountOutline,
     mdiAlert,
@@ -53,7 +52,7 @@
   } from '@mdi/js';
   import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
-  import type { ComponentType, SvelteComponent } from 'svelte';
+  import type { Component } from 'svelte';
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
 
@@ -64,9 +63,9 @@
   let { data }: Props = $props();
 
   let config = $state(data.configs);
-  let handleSave: (update: Partial<SystemConfigDto>) => Promise<void> = $state();
+  let adminSettingElement = $state<ReturnType<typeof AdminSettings>>();
 
-  type SettingsComponent = ComponentType<SvelteComponent<SettingsComponentProps>>;
+  type SettingsComponent = Component<SettingsComponentProps>;
 
   const downloadConfig = () => {
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -77,7 +76,8 @@
     setTimeout(() => downloadManager.clear(downloadKey), 5000);
   };
 
-  let inputElement: HTMLInputElement = $state();
+  let inputElement: HTMLInputElement | undefined = $state();
+
   const uploadConfig = (e: Event) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) {
@@ -86,7 +86,7 @@
     const reader = async () => {
       const text = await file.text();
       const newConfig = JSON.parse(text);
-      await handleSave(newConfig);
+      await adminSettingElement?.handleSave(newConfig);
     };
     reader().catch((error) => console.error('Error handling JSON config upload', error));
   };
@@ -247,20 +247,20 @@
         <div class="hidden lg:block">
           <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
         </div>
-        <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
+        <LinkButton onclick={() => copyToClipboard(JSON.stringify(config, null, 2))}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiContentCopy} size="18" />
             {$t('copy_to_clipboard')}
           </div>
         </LinkButton>
-        <LinkButton on:click={() => downloadConfig()}>
+        <LinkButton onclick={() => downloadConfig()}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiDownload} size="18" />
             {$t('export_as_json')}
           </div>
         </LinkButton>
         {#if !$featureFlags.configFile}
-          <LinkButton on:click={() => inputElement?.click()}>
+          <LinkButton onclick={() => inputElement?.click()}>
             <div class="flex place-items-center gap-2 text-sm">
               <Icon path={mdiUpload} size="18" />
               {$t('import_from_json')}
@@ -270,8 +270,8 @@
       </div>
     {/snippet}
 
-    <AdminSettings bind:config bind:handleSave>
-      {#snippet children({ handleReset, savedConfig, defaultConfig })}
+    <AdminSettings bind:config bind:this={adminSettingElement}>
+      {#snippet children({ savedConfig, defaultConfig })}
         <section id="setting-content" class="flex place-content-center sm:mx-4">
           <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
             <div class="block lg:hidden">
@@ -279,13 +279,13 @@
             </div>
             <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
               {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
-                <SettingAccordion {title} subtitleSnippet={subtitle} {key} {icon}>
+                <SettingAccordion {title} {subtitle} {key} {icon}>
                   <Component
-                    onSave={(config) => handleSave(config)}
-                    onReset={(options) => handleReset(options)}
+                    onSave={(config) => adminSettingElement?.handleSave(config)}
+                    onReset={(options) => adminSettingElement?.handleReset(options)}
                     disabled={$featureFlags.configFile}
+                    bind:config
                     {defaultConfig}
-                    {config}
                     {savedConfig}
                   />
                 </SettingAccordion>

@@ -1,5 +1,3 @@
-<svelte:options />
-
 <script lang="ts">
   import {
     NotificationType,
@@ -15,7 +13,7 @@
 
   interface Props {
     config: SystemConfigDto;
-    children?: import('svelte').Snippet;
+    children: import('svelte').Snippet<[{ savedConfig: SystemConfigDto; defaultConfig: SystemConfigDto }]>;
   }
 
   let { config = $bindable(), children }: Props = $props();
@@ -23,7 +21,7 @@
   let savedConfig: SystemConfigDto | undefined = $state();
   let defaultConfig: SystemConfigDto | undefined = $state();
 
-  const handleReset = async (options: SettingsResetOptions) => {
+  export const handleReset = async (options: SettingsResetOptions) => {
     await (options.default ? resetToDefault(options.configKeys) : reset(options.configKeys));
   };
 
@@ -85,5 +83,5 @@
 </script>
 
 {#if savedConfig && defaultConfig}
-  {@render children?.({ handleReset, handleSave, savedConfig, defaultConfig })}
+  {@render children({ savedConfig, defaultConfig })}
 {/if}

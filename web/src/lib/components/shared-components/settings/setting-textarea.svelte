@@ -6,21 +6,21 @@
   interface Props {
     value: string;
     label?: string;
-    descriptionText?: string;
+    description?: string;
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
-    desc?: import('svelte').Snippet;
+    descriptionSnippet?: import('svelte').Snippet;
   }
 
   let {
     value = $bindable(),
     label = '',
-    descriptionText = '',
+    description = '',
     required = false,
     disabled = false,
     isEdited = false,
-    desc,
+    descriptionSnippet,
   }: Props = $props();
 
   const handleInput = (e: Event) => {
@@ -45,17 +45,17 @@
     {/if}
   </div>
 
-  {#if descriptionText}
+  {#if description}
     <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
-      {descriptionText}
+      {description}
     </p>
   {:else}
-    {@render desc?.()}
+    {@render descriptionSnippet?.()}
   {/if}
 
   <textarea
     class="immich-form-input w-full pb-2"
-    aria-describedby={descriptionText ? `${label}-desc` : undefined}
+    aria-describedby={description ? `${label}-desc` : undefined}
     aria-labelledby="{label}-label"
     id={label}
     name={label}

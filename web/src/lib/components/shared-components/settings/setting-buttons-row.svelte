@@ -27,7 +27,7 @@
   </div>
 
   <div class="right">
-    <Button {disabled} size="sm" color="gray" on:click={() => onReset({ default: false })}>{$t('reset')}</Button>
-    <Button type="submit" {disabled} size="sm" on:click={() => onSave()}>{$t('save')}</Button>
+    <Button {disabled} size="sm" color="gray" onclick={() => onReset({ default: false })}>{$t('reset')}</Button>
+    <Button type="submit" {disabled} size="sm" onclick={() => onSave()}>{$t('save')}</Button>
   </div>
 </div>
