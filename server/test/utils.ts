@@ -58,9 +58,7 @@ export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
   overrides?: Overrides,
 ) => {
-  const { metadataRepository, worker: workerOverride } = overrides || {};
-
-  const worker = workerOverride || ImmichWorker.API;
+  const { metadataRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggerRepositoryMock();
@@ -102,7 +100,6 @@ export const newTestService = <T extends BaseService>(
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
-    worker,
     loggerMock,
     accessMock,
     activityMock,

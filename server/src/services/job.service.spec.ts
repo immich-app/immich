@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { defaults } from 'src/config';
 import { ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IJobRepository, JobCommand, JobItem, JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
@@ -13,14 +14,15 @@ import { Mocked } from 'vitest';
 describe(JobService.name, () => {
   let sut: JobService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let jobMock: Mocked<IJobRepository>;
   let loggerMock: Mocked<ILoggerRepository>;
   let telemetryMock: Mocked<ITelemetryRepository>;
 
   beforeEach(() => {
-    ({ sut, assetMock, jobMock, loggerMock, telemetryMock } = newTestService(JobService, {
-      worker: ImmichWorker.MICROSERVICES,
-    }));
+    ({ sut, assetMock, configMock, jobMock, loggerMock, telemetryMock } = newTestService(JobService, {}));
+
+    configMock.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
   });
 
   it('should work', () => {
