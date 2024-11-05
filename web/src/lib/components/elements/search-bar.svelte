@@ -48,7 +48,7 @@
     title={$t('search')}
     size="16"
     padding="2"
-    on:click={() => onSearch({ force: true })}
+    onclick={() => onSearch({ force: true })}
   />
   <input
     class="w-full gap-2 bg-gray-200 dark:bg-immich-dark-gray dark:text-white"
@@ -65,6 +65,6 @@
     </div>
   {/if}
   {#if name}
-    <CircleIconButton icon={mdiClose} title={$t('clear_value')} size="16" padding="2" on:click={resetSearch} />
+    <CircleIconButton icon={mdiClose} title={$t('clear_value')} size="16" padding="2" onclick={resetSearch} />
   {/if}
 </div>

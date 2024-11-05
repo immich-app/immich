@@ -50,7 +50,7 @@
         size="20"
         padding="2"
         class="icon-white-drop-shadow"
-        on:click={showAlbumContextMenu}
+        onclick={showAlbumContextMenu}
       />
     </div>
   {/if}

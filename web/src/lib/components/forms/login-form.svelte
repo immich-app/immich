@@ -22,7 +22,7 @@
 
   let { onSuccess, onFirstLogin, onOnboarding }: Props = $props();
 
-  let errorMessage: string = $state();
+  let errorMessage: string = $state('');
   let email = $state('');
   let password = $state('');
   let oauthError = $state('');
@@ -93,10 +93,15 @@
       oauthError = $t('errors.unable_to_login_with_oauth');
     }
   };
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleLogin();
+  };
 </script>
 
 {#if !oauthLoading && $featureFlags.passwordLogin}
-  <form onsubmit={preventDefault(handleLogin)} class="mt-5 flex flex-col gap-5">
+  <form {onsubmit} class="mt-5 flex flex-col gap-5">
     {#if errorMessage}
       <p class="text-red-400" transition:fade>
         {errorMessage}
@@ -156,7 +161,7 @@
       size="lg"
       fullwidth
       color={$featureFlags.passwordLogin ? 'secondary' : 'primary'}
-      on:click={handleOAuthLogin}
+      onclick={handleOAuthLogin}
     >
       {#if oauthLoading}
         <span class="h-6">

@@ -132,7 +132,7 @@
   class="fixed top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
 >
   <div class="flex items-center">
-    <CircleIconButton title={$t('close')} icon={mdiClose} on:click={onClose} />
+    <CircleIconButton title={$t('close')} icon={mdiClose} onclick={onClose} />
     <div class="flex gap-2 items-center">
       <p id={titleId} class="ml-2">{$t('show_and_hide_people')}</p>
       <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
@@ -140,11 +140,11 @@
   </div>
   <div class="flex items-center justify-end">
     <div class="flex items-center md:mr-4">
-      <CircleIconButton title={$t('reset_people_visibility')} icon={mdiRestart} on:click={handleResetVisibility} />
-      <CircleIconButton title={toggleButton.label} icon={toggleButton.icon} on:click={handleToggleVisibility} />
+      <CircleIconButton title={$t('reset_people_visibility')} icon={mdiRestart} onclick={handleResetVisibility} />
+      <CircleIconButton title={toggleButton.label} icon={toggleButton.icon} onclick={handleToggleVisibility} />
     </div>
     {#if !showLoadingSpinner}
-      <Button on:click={handleSaveVisibility} size="sm" rounded="lg">{$t('done')}</Button>
+      <Button onclick={handleSaveVisibility} size="sm" rounded="lg">{$t('done')}</Button>
     {:else}
       <LoadingSpinner />
     {/if}

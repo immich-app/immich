@@ -20,7 +20,7 @@
     <CircleIconButton
       icon={mdiKeyboard}
       title={$t('show_keyboard_shortcuts')}
-      on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+      onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
     />
   {/snippet}
   <section class="mx-4 flex place-content-center">

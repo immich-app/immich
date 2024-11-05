@@ -187,25 +187,25 @@
   {#snippet sidebar()}{/snippet}
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
-      <LinkButton onclick={() => handleRepair()} disabled={matches.length === 0 || repairing}>
+      <LinkButton onClick={() => handleRepair()} disabled={matches.length === 0 || repairing}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiWrench} size="18" />
           {$t('admin.repair_all')}
         </div>
       </LinkButton>
-      <LinkButton onclick={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
+      <LinkButton onClick={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCheckAll} size="18" />
           {$t('admin.check_all')}
         </div>
       </LinkButton>
-      <LinkButton onclick={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
+      <LinkButton onClick={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
           {$t('export')}
         </div>
       </LinkButton>
-      <LinkButton onclick={() => handleRefresh()}>
+      <LinkButton onClick={() => handleRefresh()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiRefresh} size="18" />
           {$t('refresh')}

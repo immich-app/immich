@@ -20,7 +20,7 @@
 <svelte:window use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: onDownloadFile }} />
 
 {#if !menuItem}
-  <CircleIconButton color="opaque" icon={mdiFolderDownloadOutline} title={$t('download')} on:click={onDownloadFile} />
+  <CircleIconButton color="opaque" icon={mdiFolderDownloadOutline} title={$t('download')} onclick={onDownloadFile} />
 {:else}
   <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} onClick={onDownloadFile} />
 {/if}

@@ -82,7 +82,7 @@
                   title={$t('clear_message')}
                   size="12"
                   padding="1"
-                  on:click={() => onCommand({ command: JobCommand.ClearFailed, force: false })}
+                  onclick={() => onCommand({ command: JobCommand.ClearFailed, force: false })}
                 />
               </div>
             </Badge>

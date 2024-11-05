@@ -29,7 +29,7 @@
 
   let people: PersonResponseDto[] = $state([]);
   let selectedPeople: PersonResponseDto[] = $state([]);
-  let screenHeight: number = $state();
+  let screenHeight: number = $state(0);
 
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
@@ -109,7 +109,7 @@
       <div></div>
     {/snippet}
     {#snippet trailing()}
-      <Button size={'sm'} disabled={!hasSelection} on:click={handleMerge}>
+      <Button size={'sm'} disabled={!hasSelection} onclick={handleMerge}>
         <Icon path={mdiMerge} size={18} />
         <span class="ml-2">{$t('merge')}</span></Button
       >
@@ -139,7 +139,7 @@
                       title={$t('swap_merge_direction')}
                       icon={mdiSwapHorizontal}
                       size="24"
-                      on:click={handleSwapPeople}
+                      onclick={handleSwapPeople}
                     />
                   </div>
                 {/if}

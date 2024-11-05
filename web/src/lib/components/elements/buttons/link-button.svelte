@@ -14,14 +14,15 @@
   interface Props {
     color?: Color;
     children?: import('svelte').Snippet;
-    onclick?: () => void;
+    onclick?: (e: MouseEvent) => void;
     title?: string;
     disabled?: boolean;
+    fullwidth?: boolean;
   }
 
   let { color = 'transparent-gray', children, ...rest }: Props = $props();
 </script>
 
-<Button size="link" {color} shadow={false} rounded="lg" {rest}>
+<Button size="link" {color} shadow={false} rounded="lg" {...rest}>
   {@render children?.()}
 </Button>

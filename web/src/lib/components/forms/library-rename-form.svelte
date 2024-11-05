@@ -20,7 +20,7 @@
     <input class="immich-form-input" id="name" name="name" type="text" bind:value={library.name} />
   </div>
   <div class="flex w-full justify-end gap-2 pt-2">
-    <Button size="sm" color="gray" on:click={onCancel}>{$t('cancel')}</Button>
+    <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
     <Button size="sm" type="submit">{$t('save')}</Button>
   </div>
 </form>

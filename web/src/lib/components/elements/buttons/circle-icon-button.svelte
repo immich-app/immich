@@ -35,14 +35,12 @@
   const bubble = createBubbler();
   import Icon from '$lib/components/elements/icon.svelte';
 
-  type $$Props = Props;
-
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
    */
   interface Props {
-    type?: $$Props['type'];
-    href?: $$Props['href'];
+    type?: string;
+    href?: string;
     icon: string;
     color?: Color;
     title: string;
@@ -61,7 +59,8 @@
      */
     viewBox?: string | undefined;
     class?: string;
-    [key: string]: any;
+
+    onclick: (e: MouseEvent) => void;
   }
 
   let {
@@ -76,6 +75,7 @@
     buttonSize = undefined,
     viewBox = undefined,
     class: className = '',
+    onclick,
     ...rest
   }: Props = $props();
 
@@ -110,7 +110,7 @@
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
   class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all disabled:cursor-default hover:dark:text-immich-dark-gray {className} {mobileClass}"
-  onclick={bubble('click')}
+  {onclick}
   {...rest}
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />

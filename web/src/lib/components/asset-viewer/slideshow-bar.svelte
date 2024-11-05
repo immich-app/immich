@@ -11,10 +11,10 @@
 
   interface Props {
     isFullScreen: boolean;
-    onNext?: any;
-    onPrevious?: any;
-    onClose?: any;
-    onSetToFullScreen?: any;
+    onNext?: () => void;
+    onPrevious?: () => void;
+    onClose?: () => void;
+    onSetToFullScreen?: () => void;
   }
 
   let {
@@ -27,8 +27,8 @@
 
   const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
 
-  let progressBarStatus: ProgressBarStatus = $state();
-  let progressBar: ProgressBar = $state();
+  let progressBarStatus: ProgressBarStatus | undefined = $state();
+  let progressBar = $state<ReturnType<typeof ProgressBar>>();
   let showSettings = $state(false);
   let showControls = $state(true);
   let timer: NodeJS.Timeout;
@@ -65,13 +65,13 @@
     hideControlsAfterDelay();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
-        progressBar.restart(value);
+        progressBar?.restart(value);
       }
     });
 
     unsubscribeStop = stopProgress.subscribe((value) => {
       if (value) {
-        progressBar.restart(false);
+        progressBar?.restart(false);
         stopControlsHideTimer();
       }
     });
@@ -113,27 +113,27 @@
     transition:fly={{ duration: 150 }}
     role="navigation"
   >
-    <CircleIconButton buttonSize="50" icon={mdiClose} on:click={onClose} title={$t('exit_slideshow')} />
+    <CircleIconButton buttonSize="50" icon={mdiClose} onclick={onClose} title={$t('exit_slideshow')} />
 
     <CircleIconButton
       buttonSize="50"
       icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-      on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
+      onclick={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar?.play() : progressBar?.pause())}
       title={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
     />
-    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} on:click={onPrevious} title={$t('previous')} />
-    <CircleIconButton buttonSize="50" icon={mdiChevronRight} on:click={onNext} title={$t('next')} />
+    <CircleIconButton buttonSize="50" icon={mdiChevronLeft} onclick={onPrevious} title={$t('previous')} />
+    <CircleIconButton buttonSize="50" icon={mdiChevronRight} onclick={onNext} title={$t('next')} />
     <CircleIconButton
       buttonSize="50"
       icon={mdiCog}
-      on:click={() => (showSettings = !showSettings)}
+      onclick={() => (showSettings = !showSettings)}
       title={$t('slideshow_settings')}
     />
     {#if !isFullScreen}
       <CircleIconButton
         buttonSize="50"
         icon={mdiFullscreen}
-        on:click={onSetToFullScreen}
+        onclick={onSetToFullScreen}
         title={$t('set_slideshow_to_fullscreen')}
       />
     {/if}

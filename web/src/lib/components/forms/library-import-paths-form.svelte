@@ -25,7 +25,7 @@
   let editImportPath: number | null = $state(null);
 
   let importPathToAdd: string | null = $state(null);
-  let editedImportPath: string = $state();
+  let editedImportPath: string = $state('');
 
   let validatedPaths: ValidateLibraryImportPathResponseDto[] = $state([]);
 
@@ -205,7 +205,7 @@
               icon={mdiPencilOutline}
               title={$t('edit_import_path')}
               size="16"
-              on:click={() => {
+              onclick={() => {
                 editImportPath = listIndex;
                 editedImportPath = validatedPath.importPath;
               }}
@@ -229,7 +229,7 @@
           ><Button
             type="button"
             size="sm"
-            on:click={() => {
+            onclick={() => {
               addImportPath = true;
             }}>{$t('add_path')}</Button
           ></td
@@ -239,12 +239,12 @@
   </table>
   <div class="flex justify-between w-full">
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => revalidate()}
+      <Button size="sm" color="gray" onclick={() => revalidate()}
         ><Icon path={mdiRefresh} size={20} />{$t('validate')}</Button
       >
     </div>
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={onCancel}>{$t('cancel')}</Button>
+      <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
       <Button size="sm" type="submit">{$t('save')}</Button>
     </div>
   </div>

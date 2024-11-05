@@ -160,7 +160,7 @@
 
   {#snippet stickyBottom()}
     {#if canResetPassword}
-      <Button color="light-red" fullwidth on:click={resetPassword}>{$t('reset_password')}</Button>
+      <Button color="light-red" fullwidth onclick={resetPassword}>{$t('reset_password')}</Button>
     {/if}
     <Button type="submit" fullwidth form="edit-user-form">{$t('confirm')}</Button>
   {/snippet}

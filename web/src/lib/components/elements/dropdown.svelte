@@ -82,7 +82,7 @@
 
 <div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
   <!-- BUTTON TITLE -->
-  <LinkButton on:click={() => (showMenu = true)} fullwidth {title}>
+  <LinkButton onclick={() => (showMenu = true)} fullwidth {title}>
     <div class="flex place-items-center gap-2 text-sm">
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />

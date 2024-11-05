@@ -145,7 +145,7 @@
     <h2>{$t('editor_crop_tool_h2_rotation').toUpperCase()}</h2>
   </div>
   <ul class="flex-wrap flex-row flex gap-x-6 gap-y-4 justify-center">
-    <li><CircleIconButton title={$t('anti_clockwise')} on:click={() => rotate(false)} icon={mdiRotateLeft} /></li>
-    <li><CircleIconButton title={$t('clockwise')} on:click={() => rotate(true)} icon={mdiRotateRight} /></li>
+    <li><CircleIconButton title={$t('anti_clockwise')} onclick={() => rotate(false)} icon={mdiRotateLeft} /></li>
+    <li><CircleIconButton title={$t('clockwise')} onclick={() => rotate(true)} icon={mdiRotateRight} /></li>
   </ul>
 </div>

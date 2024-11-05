@@ -150,7 +150,7 @@
         fullwidth
         rounded="full"
         disabled={Object.keys(selectedUsers).length === 0}
-        on:click={() =>
+        onclick={() =>
           onSelect(Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })))}
         >{$t('add')}</Button
       >

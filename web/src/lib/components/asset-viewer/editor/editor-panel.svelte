@@ -26,7 +26,6 @@
   let { asset = $bindable(), onUpdateSelectedType, onClose }: Props = $props();
 
   let selectedType: string = $state(editTypes[0].name);
-  // svelte-ignore reactive_declaration_non_reactive_property
   let selectedTypeObj = $derived(editTypes.find((t) => t.name === selectedType) || editTypes[0]);
 
   setTimeout(() => {
@@ -42,7 +41,7 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
   </div>
   <section class="px-4 py-4">
@@ -53,7 +52,7 @@
             color={etype.name === selectedType ? 'primary' : 'opaque'}
             icon={etype.icon}
             title={etype.name}
-            on:click={() => selectType(etype.name)}
+            onclick={() => selectType(etype.name)}
           />
         </li>
       {/each}

@@ -37,7 +37,7 @@
 </script>
 
 <li>
-  <Button color={buttonColor} class="flex-col gap-1" size="sm" rounded="lg" on:click={() => selectType(size.name)}>
+  <Button color={buttonColor} class="flex-col gap-1" size="sm" rounded="lg" onclick={() => selectType(size.name)}>
     <Icon size="1.75em" path={size.icon} viewBox={size.viewBox} class={toRotate(size.rotate) ? 'rotate-90' : ''} />
     <span>{rotatedTitle(size.name, rotateHorizontal)}</span>
   </Button>

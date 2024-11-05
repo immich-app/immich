@@ -79,10 +79,9 @@
       $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 
-  let selectedGroupOption: AlbumGroupOptionMetadata = $state();
-  let groupIcon: string = $state();
+  let selectedGroupOption: AlbumGroupOptionMetadata | undefined = $state();
+  let groupIcon: string = $state('');
 
-  // svelte-ignore reactive_declaration_non_reactive_property
   let albumFilterNames = $derived(
     ((): Record<AlbumFilter, string> => {
       return {
@@ -100,18 +99,17 @@
       selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
     }
   });
-  // svelte-ignore reactive_declaration_non_reactive_property
   run(() => {
-    if (selectedGroupOption.id === AlbumGroupBy.None) {
+    if (selectedGroupOption?.id === AlbumGroupBy.None) {
       groupIcon = mdiFolderRemoveOutline;
     } else {
       groupIcon =
         $albumViewSettings.groupOrder === SortOrder.Desc ? mdiFolderArrowDownOutline : mdiFolderArrowUpOutline;
     }
   });
-  // svelte-ignore reactive_declaration_non_reactive_property
+
   let sortIcon = $derived($albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin);
-  // svelte-ignore reactive_declaration_non_reactive_property
+
   let albumSortByNames = $derived(
     ((): Record<AlbumSortBy, string> => {
       return {
@@ -124,7 +122,7 @@
       };
     })(),
   );
-  // svelte-ignore reactive_declaration_non_reactive_property
+
   let albumGroupByNames = $derived(
     ((): Record<AlbumGroupBy, string> => {
       return {
@@ -152,7 +150,7 @@
 </div>
 
 <!-- Create Album -->
-<LinkButton on:click={() => createAlbumAndRedirect()}>
+<LinkButton onclick={() => createAlbumAndRedirect()}>
   <div class="flex place-items-center gap-2 text-sm">
     <Icon path={mdiPlusBoxOutline} size="18" />
     <p class="hidden md:block">{$t('create_album')}</p>
@@ -189,7 +187,7 @@
     <!-- Expand Album Groups -->
     <div class="hidden xl:flex gap-0">
       <div class="block">
-        <LinkButton title={$t('expand_all')} on:click={() => expandAllAlbumGroups()}>
+        <LinkButton title={$t('expand_all')} onclick={() => expandAllAlbumGroups()}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldMoreHorizontal} size="18" />
           </div>
@@ -198,7 +196,7 @@
 
       <!-- Collapse Album Groups -->
       <div class="block">
-        <LinkButton title={$t('collapse_all')} on:click={() => collapseAllAlbumGroups(albumGroups)}>
+        <LinkButton title={$t('collapse_all')} onclick={() => collapseAllAlbumGroups(albumGroups)}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldLessHorizontal} size="18" />
           </div>
@@ -209,7 +207,7 @@
 {/if}
 
 <!-- Cover/List Display Toggle -->
-<LinkButton on:click={() => handleChangeListMode()}>
+<LinkButton onclick={() => handleChangeListMode()}>
   <div class="flex place-items-center gap-2 text-sm">
     {#if $albumViewSettings.view === AlbumViewMode.List}
       <Icon path={mdiViewGridOutline} size="18" />

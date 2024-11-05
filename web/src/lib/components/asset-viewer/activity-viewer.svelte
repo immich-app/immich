@@ -79,11 +79,11 @@
     onClose,
   }: Props = $props();
 
-  let textArea: HTMLTextAreaElement = $state();
-  let innerHeight: number = $state();
-  let activityHeight: number = $state();
-  let chatHeight: number = $state();
-  let divHeight: number = $state();
+  let textArea: HTMLTextAreaElement | undefined = $state();
+  let innerHeight: number = $state(0);
+  let activityHeight: number = $state(0);
+  let chatHeight: number = $state(0);
+  let divHeight: number = $state(0);
   let previousAssetId: string | undefined = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
@@ -143,7 +143,11 @@
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
       });
       reactions.push(data);
-      textArea.style.height = '18px';
+
+      if (textArea) {
+        textArea.style.height = '18px';
+      }
+
       message = '';
       onAddComment();
       // Re-render the activity feed
@@ -166,6 +170,11 @@
       previousAssetId = assetId;
     }
   });
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleSendComment();
+  };
 </script>
 
 <div class="overflow-y-hidden relative h-full" bind:offsetHeight={innerHeight}>
@@ -175,7 +184,7 @@
       bind:clientHeight={activityHeight}
     >
       <div class="flex place-items-center gap-2">
-        <CircleIconButton on:click={onClose} icon={mdiClose} title={$t('close')} />
+        <CircleIconButton onclick={onClose} icon={mdiClose} title={$t('close')} />
 
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('activity')}</p>
       </div>
@@ -295,7 +304,7 @@
         <div>
           <UserAvatar {user} size="md" showTitle={false} />
         </div>
-        <form class="flex w-full max-h-56 gap-1" onsubmit={preventDefault(() => handleSendComment())}>
+        <form class="flex w-full max-h-56 gap-1" {onsubmit}>
           <div class="flex w-full items-center gap-4">
             <textarea
               {disabled}
@@ -326,7 +335,7 @@
                 size="15"
                 icon={mdiSend}
                 class="dark:text-immich-dark-gray"
-                on:click={() => handleSendComment()}
+                onclick={() => handleSendComment()}
               />
             </div>
           {/if}

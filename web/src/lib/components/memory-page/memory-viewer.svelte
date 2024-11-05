@@ -268,7 +268,7 @@
         <CircleIconButton
           title={paused ? $t('play_memories') : $t('pause_memories')}
           icon={paused ? mdiPlay : mdiPause}
-          on:click={() => handleAction(paused ? 'play' : 'pause')}
+          onclick={() => handleAction(paused ? 'play' : 'pause')}
           class="hover:text-black"
         />
 
@@ -306,7 +306,7 @@
           onclick={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
           disabled={!galleryInView}
         >
-          <CircleIconButton title={$t('hide_gallery')} icon={mdiChevronUp} color="light" />
+          <CircleIconButton title={$t('hide_gallery')} icon={mdiChevronUp} color="light" onclick={() => {}} />
         </button>
       </div>
     {/if}
@@ -374,6 +374,7 @@
                 icon={mdiImageSearch}
                 title={$t('view_in_timeline')}
                 color="light"
+                onclick={() => {}}
               />
             </div>
             <!-- CONTROL BUTTONS -->
@@ -383,7 +384,7 @@
                   title={$t('previous_memory')}
                   icon={mdiChevronLeft}
                   color="dark"
-                  on:click={handlePreviousAsset}
+                  onclick={handlePreviousAsset}
                 />
               </div>
             {/if}
@@ -394,7 +395,7 @@
                   title={$t('next_memory')}
                   icon={mdiChevronRight}
                   color="dark"
-                  on:click={handleNextAsset}
+                  onclick={handleNextAsset}
                 />
               </div>
             {/if}
@@ -458,7 +459,7 @@
           title={$t('show_gallery')}
           icon={mdiChevronDown}
           color="light"
-          on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}
+          onclick={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}
         />
       </div>
 

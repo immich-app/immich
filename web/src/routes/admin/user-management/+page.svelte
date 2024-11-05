@@ -169,7 +169,7 @@
                 >
                   {newPassword}
                 </code>
-                <LinkButton onclick={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
+                <LinkButton onClick={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
                   <div class="flex place-items-center gap-2 text-sm">
                     <Icon path={mdiContentCopy} size="18" />
                   </div>

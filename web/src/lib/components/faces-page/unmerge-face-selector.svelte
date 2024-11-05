@@ -38,7 +38,7 @@
   let showLoadingSpinnerCreate = $state(false);
   let showLoadingSpinnerReassign = $state(false);
   let hasSelection = $state(false);
-  let screenHeight: number = $state();
+  let screenHeight: number = $state(0);
 
   let peopleToNotShow = $derived(selectedPerson ? [personAssets, selectedPerson] : [personAssets]);
 
@@ -133,7 +133,7 @@
           title={$t('create_new_person_hint')}
           size={'sm'}
           disabled={disableButtons || hasSelection}
-          on:click={handleCreate}
+          onclick={handleCreate}
         >
           {#if !showLoadingSpinnerCreate}
             <Icon path={mdiPlus} size={18} />
@@ -146,7 +146,7 @@
           size={'sm'}
           title={$t('reassing_hint')}
           disabled={disableButtons || !hasSelection}
-          on:click={handleReassign}
+          onclick={handleReassign}
         >
           {#if !showLoadingSpinnerReassign}
             <div>

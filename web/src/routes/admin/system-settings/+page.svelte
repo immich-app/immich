@@ -247,20 +247,20 @@
         <div class="hidden lg:block">
           <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
         </div>
-        <LinkButton onclick={() => copyToClipboard(JSON.stringify(config, null, 2))}>
+        <LinkButton onClick={() => copyToClipboard(JSON.stringify(config, null, 2))}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiContentCopy} size="18" />
             {$t('copy_to_clipboard')}
           </div>
         </LinkButton>
-        <LinkButton onclick={() => downloadConfig()}>
+        <LinkButton onClick={() => downloadConfig()}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiDownload} size="18" />
             {$t('export_as_json')}
           </div>
         </LinkButton>
         {#if !$featureFlags.configFile}
-          <LinkButton onclick={() => inputElement?.click()}>
+          <LinkButton onClick={() => inputElement?.click()}>
             <div class="flex place-items-center gap-2 text-sm">
               <Icon path={mdiUpload} size="18" />
               {$t('import_from_json')}

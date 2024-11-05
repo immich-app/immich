@@ -106,7 +106,7 @@
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
-      <CircleIconButton color="alert" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
+      <CircleIconButton color="alert" icon={mdiAlertOutline} onclick={onShowDetail} title={$t('asset_offline')} />
     {/if}
     {#if asset.livePhotoVideoId}
       {@render motionPhoto?.()}
@@ -117,11 +117,11 @@
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
         title={$t('zoom_image')}
-        on:click={onZoomImage}
+        onclick={onZoomImage}
       />
     {/if}
     {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
-      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} onclick={onCopyImage} />
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} onclick={() => onCopyImage?.()} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
@@ -140,7 +140,7 @@
         color="opaque"
         hideMobile={true}
         icon={mdiImageEditOutline}
-        on:click={showEditorHandler}
+        onclick={showEditorHandler}
         title={$t('editor')}
       />
     {/if} -->

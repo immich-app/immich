@@ -57,19 +57,19 @@
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
       <div class="flex items-center gap-2">
-        <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
+        <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} onclick={onClose} />
         <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('select_face')}</p>
       </div>
       <div class="flex justify-end gap-2">
         <CircleIconButton
           icon={mdiMagnify}
           title={$t('search_for_existing_person')}
-          on:click={() => {
+          onclick={() => {
             searchFaces = true;
           }}
         />
         {#if !isShowLoadingNewPerson}
-          <CircleIconButton icon={mdiPlus} title={$t('create_new_person')} on:click={handleCreatePerson} />
+          <CircleIconButton icon={mdiPlus} title={$t('create_new_person')} onclick={handleCreatePerson} />
         {:else}
           <div class="flex place-content-center place-items-center">
             <LoadingSpinner />
@@ -77,7 +77,7 @@
         {/if}
       </div>
     {:else}
-      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} onclick={onClose} />
       <div class="w-full flex">
         <SearchPeople
           type="input"
@@ -91,7 +91,7 @@
           </div>
         {/if}
       </div>
-      <CircleIconButton icon={mdiClose} title={$t('cancel_search')} on:click={() => (searchFaces = false)} />
+      <CircleIconButton icon={mdiClose} title={$t('cancel_search')} onclick={() => (searchFaces = false)} />
     {/if}
   </div>
   <div class="px-4 py-4 text-sm">

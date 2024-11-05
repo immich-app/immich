@@ -29,7 +29,7 @@
   let { sharedLink, user = undefined }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
-  let innerWidth: number = $state();
+  let innerWidth: number = $state(0);
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -82,7 +82,7 @@
         {#if sharedLink.allowUpload}
           <CircleIconButton
             title={$t('add_photos')}
-            on:click={() => openFileUploadDialog({ albumId: album.id })}
+            onclick={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
@@ -90,7 +90,7 @@
         {#if album.assetCount > 0 && sharedLink.allowDownload}
           <CircleIconButton
             title={$t('download')}
-            on:click={() => downloadAlbum(album)}
+            onclick={() => downloadAlbum(album)}
             icon={mdiFolderDownloadOutline}
           />
         {/if}

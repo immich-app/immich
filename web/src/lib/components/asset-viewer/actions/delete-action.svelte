@@ -81,7 +81,7 @@
   color="opaque"
   icon={asset.isTrashed ? mdiDeleteForeverOutline : mdiDeleteOutline}
   title={asset.isTrashed ? $t('permanently_delete') : $t('delete')}
-  on:click={() => trashOrDelete(asset.isTrashed)}
+  onclick={() => trashOrDelete(asset.isTrashed)}
 />
 
 {#if showConfirmModal}

@@ -137,7 +137,7 @@
               icon={mdiPencilOutline}
               title={$t('edit_exclusion_pattern')}
               size="16"
-              on:click={() => {
+              onclick={() => {
                 editExclusionPattern = listIndex;
                 editedExclusionPattern = exclusionPattern;
               }}
@@ -160,7 +160,7 @@
         <td class="w-1/4 text-ellipsis px-4 text-sm"
           ><Button
             size="sm"
-            on:click={() => {
+            onclick={() => {
               addExclusionPattern = true;
             }}>{$t('add_exclusion_pattern')}</Button
           ></td
@@ -170,7 +170,7 @@
   </table>
 
   <div class="flex w-full justify-end gap-4">
-    <Button size="sm" color="gray" on:click={onCancel}>{$t('cancel')}</Button>
+    <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
     <Button size="sm" type="submit">{$t('save')}</Button>
   </div>
 </form>

@@ -24,9 +24,9 @@
   <Button
     size={'sm'}
     rounded="none"
-    on:click={moveFocus}
-    on:focus={() => (isFocused = true)}
-    on:blur={() => (isFocused = false)}
+    onclick={moveFocus}
+    onfocus={() => (isFocused = true)}
+    onblur={() => (isFocused = false)}
   >
     {text}
   </Button>

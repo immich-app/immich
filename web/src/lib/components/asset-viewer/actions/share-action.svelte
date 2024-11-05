@@ -15,12 +15,7 @@
   let showModal = $state(false);
 </script>
 
-<CircleIconButton
-  color="opaque"
-  icon={mdiShareVariantOutline}
-  on:click={() => (showModal = true)}
-  title={$t('share')}
-/>
+<CircleIconButton color="opaque" icon={mdiShareVariantOutline} onclick={() => (showModal = true)} title={$t('share')} />
 
 {#if showModal}
   <Portal target="body">

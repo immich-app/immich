@@ -54,7 +54,7 @@
         <CircleIconButton
           title={$t('swap_merge_direction')}
           icon={mdiMerge}
-          on:click={() => ([personMerge1, personMerge2] = [personMerge2, personMerge1])}
+          onclick={() => ([personMerge1, personMerge2] = [personMerge2, personMerge1])}
         />
       </div>
 

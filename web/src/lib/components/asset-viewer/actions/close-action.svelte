@@ -13,4 +13,4 @@
 
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
-<CircleIconButton color="opaque" icon={mdiArrowLeft} title={$t('go_back')} on:click={onClose} />
+<CircleIconButton color="opaque" icon={mdiArrowLeft} title={$t('go_back')} onclick={onClose} />

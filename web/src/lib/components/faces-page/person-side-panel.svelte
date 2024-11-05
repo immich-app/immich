@@ -45,7 +45,7 @@
   let peopleWithFaces: AssetFaceResponseDto[] = $state([]);
   let selectedPersonToReassign: Record<string, PersonResponseDto> = $state({});
   let selectedPersonToCreate: Record<string, string> = $state({});
-  let editedFace: AssetFaceResponseDto = $state();
+  let editedFace: AssetFaceResponseDto | undefined = $state();
 
   // loading spinners
   let isShowLoadingDone = $state(false);
@@ -156,14 +156,14 @@
   };
 
   const handleCreatePerson = (newFeaturePhoto: string | null) => {
-    if (newFeaturePhoto) {
+    if (newFeaturePhoto && editedFace) {
       selectedPersonToCreate[editedFace.id] = newFeaturePhoto;
     }
     showSelectedFaces = false;
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
-    if (person) {
+    if (person && editedFace) {
       selectedPersonToReassign[editedFace.id] = person;
     }
     showSelectedFaces = false;
@@ -181,7 +181,7 @@
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} onclick={onClose} />
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('edit_faces')}</p>
     </div>
     {#if !isShowLoadingDone}
@@ -295,7 +295,7 @@
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
-                    on:click={() => handleReset(face.id)}
+                    onclick={() => handleReset(face.id)}
                   />
                 {:else}
                   <CircleIconButton
@@ -305,7 +305,7 @@
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
-                    on:click={() => handleFacePicker(face)}
+                    onclick={() => handleFacePicker(face)}
                   />
                 {/if}
               </div>
@@ -326,7 +326,7 @@
   </div>
 </section>
 
-{#if showSelectedFaces}
+{#if showSelectedFaces && editedFace}
   <AssignFaceSidePanel
     {allPeople}
     {editedFace}

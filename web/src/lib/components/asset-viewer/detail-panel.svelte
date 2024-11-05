@@ -68,7 +68,7 @@
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
-  let previousId: string = $state();
+  let previousId: string | undefined = $state();
 
   run(() => {
     if (!previousId) {
@@ -106,17 +106,9 @@
     })(),
   );
 
-  let people;
-  run(() => {
-    people = asset.people || [];
-  });
+  let people = $state(asset.people || []);
+  let unassignedFaces = $state(asset.unassignedFaces || []);
   let showingHiddenPeople = $state(false);
-
-  let unassignedFaces;
-  run(() => {
-    unassignedFaces = asset.unassignedFaces || [];
-  });
-
   let timeZone = $derived(asset.exifInfo?.timeZone);
   let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
@@ -158,7 +150,7 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
@@ -207,7 +199,7 @@
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
               padding="1"
               buttonSize="32"
-              on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+              onclick={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
           <CircleIconButton
@@ -216,7 +208,7 @@
             padding="1"
             size="20"
             buttonSize="32"
-            on:click={() => (showEditFaces = true)}
+            onclick={() => (showEditFaces = true)}
           />
         </div>
       </div>
@@ -374,7 +366,7 @@
               title={$t('show_file_location')}
               size="16"
               padding="2"
-              on:click={toggleAssetPath}
+              onclick={toggleAssetPath}
             />
           {/if}
         </p>

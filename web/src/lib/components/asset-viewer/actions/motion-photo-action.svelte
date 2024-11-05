@@ -15,5 +15,5 @@
   color="opaque"
   icon={isPlaying ? mdiMotionPauseOutline : mdiPlaySpeed}
   title={isPlaying ? $t('stop_motion_photo') : $t('play_motion_photo')}
-  on:click={() => onClick(!isPlaying)}
+  onclick={() => onClick(!isPlaying)}
 />

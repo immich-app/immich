@@ -58,6 +58,7 @@
     onblur?: () => void;
     form?: string;
     disabled?: boolean;
+    title?: string;
   }
 
   let {

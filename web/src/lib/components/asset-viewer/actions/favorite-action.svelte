@@ -48,5 +48,5 @@
   color="opaque"
   icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
   title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
-  on:click={toggleFavorite}
+  onclick={toggleFavorite}
 />
