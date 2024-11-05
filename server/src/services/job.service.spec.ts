@@ -31,7 +31,7 @@ describe(JobService.name, () => {
 
   describe('onConfigUpdate', () => {
     it('should update concurrency', () => {
-      sut.onConfigUpdate({ oldConfig: defaults, newConfig: defaults });
+      sut.onConfigInitOrUpdate({ newConfig: defaults });
 
       expect(jobMock.setConcurrency).toHaveBeenCalledTimes(15);
       expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
