@@ -7,7 +7,6 @@
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { t } from 'svelte-i18n';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
   export let savedConfig: SystemConfigDto;

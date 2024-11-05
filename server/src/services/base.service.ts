@@ -1,5 +1,4 @@
 import { BadRequestException, Inject } from '@nestjs/common';
-import { template } from 'lodash';
 import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
