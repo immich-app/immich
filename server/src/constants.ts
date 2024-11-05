@@ -13,6 +13,8 @@ export const ADDED_IN_PREFIX = 'This property was added in ';
 
 export const SALT_ROUNDS = 10;
 
+export const IWorker = 'IWorker';
+
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
 export const serverVersion = new SemVer(version);
 

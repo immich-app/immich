@@ -15,11 +15,29 @@ describe('AssetViewerNavBar component', () => {
     showShareButton: false,
     onZoomImage: () => {},
     onCopyImage: () => {},
+    onAction: () => {},
+    onRunJob: () => {},
+    onPlaySlideshow: () => {},
+    onShowDetail: () => {},
+    onClose: () => {},
   };
 
+  beforeAll(() => {
+    Element.prototype.animate = vi.fn().mockImplementation(() => ({
+      cancel: () => {},
+    }));
+    vi.stubGlobal(
+      'ResizeObserver',
+      vi.fn(() => ({ observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() })),
+    );
+  });
+
   afterEach(() => {
-    vi.resetAllMocks();
     resetSavedUser();
+  });
+
+  afterAll(() => {
+    vi.restoreAllMocks();
   });
 
   it('shows back button', () => {

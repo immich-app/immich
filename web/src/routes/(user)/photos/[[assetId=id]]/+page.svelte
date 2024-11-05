@@ -40,6 +40,7 @@
   let isAssetStackSelected: boolean;
   let isLinkActionAvailable: boolean;
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: {
     const selection = [...$selectedAssets];
     isAllOwned = selection.every((asset) => asset.ownerId === $user.id);

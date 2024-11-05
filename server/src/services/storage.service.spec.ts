@@ -3,7 +3,8 @@ import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { ImmichStartupError, StorageService } from 'src/services/storage.service';
+import { StorageService } from 'src/services/storage.service';
+import { ImmichStartupError } from 'src/utils/misc';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
@@ -32,6 +33,7 @@ describe(StorageService.name, () => {
 
       expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
         mountChecks: {
+          backups: true,
           'encoded-video': true,
           library: true,
           profile: true,
@@ -44,16 +46,19 @@ describe(StorageService.name, () => {
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/profile');
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs');
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/backups');
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/encoded-video/.immich', expect.any(Buffer));
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/profile/.immich', expect.any(Buffer));
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/thumbs/.immich', expect.any(Buffer));
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/upload/.immich', expect.any(Buffer));
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/backups/.immich', expect.any(Buffer));
     });
 
     it('should enable mount folder checking for a new folder type', async () => {
       systemMock.get.mockResolvedValue({
         mountChecks: {
+          backups: false,
           'encoded-video': true,
           library: false,
           profile: true,
@@ -66,6 +71,7 @@ describe(StorageService.name, () => {
 
       expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
         mountChecks: {
+          backups: true,
           'encoded-video': true,
           library: true,
           profile: true,
@@ -73,10 +79,12 @@ describe(StorageService.name, () => {
           upload: true,
         },
       });
-      expect(storageMock.mkdirSync).toHaveBeenCalledTimes(1);
+      expect(storageMock.mkdirSync).toHaveBeenCalledTimes(2);
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/library');
-      expect(storageMock.createFile).toHaveBeenCalledTimes(1);
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/backups');
+      expect(storageMock.createFile).toHaveBeenCalledTimes(2);
       expect(storageMock.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
+      expect(storageMock.createFile).toHaveBeenCalledWith('upload/backups/.immich', expect.any(Buffer));
     });
 
     it('should throw an error if .immich is missing', async () => {

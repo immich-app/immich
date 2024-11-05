@@ -87,6 +87,7 @@
     }
   }
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: {
     if (selectedGroupOption.id === AlbumGroupBy.None) {
       groupIcon = mdiFolderRemoveOutline;
@@ -96,8 +97,10 @@
     }
   }
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: albumFilterNames = ((): Record<AlbumFilter, string> => {
     return {
       [AlbumFilter.All]: $t('all'),
@@ -106,6 +109,7 @@
     };
   })();
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
     return {
       [AlbumSortBy.Title]: $t('sort_title'),
@@ -117,6 +121,7 @@
     };
   })();
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: albumGroupByNames = ((): Record<AlbumGroupBy, string> => {
     return {
       [AlbumGroupBy.None]: $t('group_no'),

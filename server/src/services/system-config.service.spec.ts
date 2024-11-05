@@ -44,6 +44,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
     [QueueName.NOTIFICATION]: { concurrency: 5 },
   },
+  backup: {
+    database: {
+      enabled: true,
+      cronExpression: '0 02 * * *',
+      keepLastAmount: 14,
+    },
+  },
   ffmpeg: {
     crf: 30,
     threads: 0,
@@ -58,7 +65,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     bframes: -1,
     refs: 0,
     gopSize: 0,
-    npl: 0,
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,

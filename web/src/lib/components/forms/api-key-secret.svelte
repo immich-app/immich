@@ -18,7 +18,7 @@
 
   <div class="my-4 flex flex-col gap-2">
     <!-- <label class="immich-form-label" for="secret">{ $t("api_key") }</label> -->
-    <textarea class="immich-form-input" id="secret" name="secret" readonly={true} value={secret} />
+    <textarea class="immich-form-input" id="secret" name="secret" readonly={true} value={secret}></textarea>
   </div>
 
   <svelte:fragment slot="sticky-bottom">

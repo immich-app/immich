@@ -1,4 +1,4 @@
-import type { ComponentProps, ComponentType, SvelteComponent } from 'svelte';
+import type { Component as ComponentType } from 'svelte';
 import { writable } from 'svelte/store';
 
 export enum NotificationType {
@@ -28,27 +28,26 @@ type NoopAction = { type: 'noop' };
 
 export type NotificationAction = DiscardAction | NoopAction;
 
-type Component<T extends ComponentType> = {
-  type: T;
-  props: ComponentProps<InstanceType<T>>;
+type Props = Record<string, unknown>;
+type Component<T extends Props> = {
+  type: ComponentType<T>;
+  props: T;
 };
 
 type BaseNotificationOptions<T, R extends keyof T> = Partial<Omit<T, 'id'>> & Pick<T, R>;
 
 export type NotificationOptions = BaseNotificationOptions<Notification, 'message'>;
-export type ComponentNotificationOptions<T extends ComponentType> = BaseNotificationOptions<
+export type ComponentNotificationOptions<T extends Props> = BaseNotificationOptions<
   ComponentNotification<T>,
   'component'
 >;
 
-export type ComponentNotification<T extends ComponentType = ComponentType<SvelteComponent>> = Omit<
-  Notification,
-  'message'
-> & {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ComponentNotification<T extends Props = any> = Omit<Notification, 'message'> & {
   component: Component<T>;
 };
 
-export const isComponentNotification = <T extends ComponentType>(
+export const isComponentNotification = <T extends Props>(
   notification: Notification | ComponentNotification<T>,
 ): notification is ComponentNotification<T> => {
   return 'component' in notification;
@@ -58,7 +57,7 @@ function createNotificationList() {
   const notificationList = writable<(Notification | ComponentNotification)[]>([]);
   let count = 1;
 
-  const show = <T>(options: T extends ComponentType ? ComponentNotificationOptions<T> : NotificationOptions) => {
+  const show = <T>(options: T extends Props ? ComponentNotificationOptions<T> : NotificationOptions) => {
     notificationList.update((currentList) => {
       currentList.push({
         id: count++,

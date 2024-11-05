@@ -6,7 +6,7 @@
 
   interface $$Props extends HTMLInputAttributes {
     password: string;
-    autocomplete: string;
+    autocomplete: AutoFill;
     required?: boolean;
     onInput?: (value: string) => void;
   }

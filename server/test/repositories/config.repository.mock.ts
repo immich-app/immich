@@ -15,6 +15,10 @@ const envData: EnvData = {
     queues: [{ name: 'queue-1' }],
   },
 
+  cls: {
+    config: {},
+  },
+
   database: {
     config: {
       connectionType: 'parts',
@@ -92,5 +96,6 @@ export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...confi
 export const newConfigRepositoryMock = (): Mocked<IConfigRepository> => {
   return {
     getEnv: vitest.fn().mockReturnValue(mockEnvData({})),
+    getWorker: vitest.fn().mockReturnValue(ImmichWorker.API),
   };
 };

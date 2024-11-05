@@ -1,5 +1,5 @@
 import NumberRangeInput from '$lib/components/shared-components/number-range-input.svelte';
-import { act, render, type RenderResult } from '@testing-library/svelte';
+import { render, type RenderResult } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 
 describe('NumberRangeInput component', () => {
@@ -8,13 +8,18 @@ describe('NumberRangeInput component', () => {
   let input: HTMLInputElement;
 
   beforeEach(() => {
-    sut = render(NumberRangeInput, { id: '', min: -90, max: 90, onInput: () => {} });
+    sut = render(NumberRangeInput, {
+      id: '',
+      min: -90,
+      max: 90,
+      onInput: () => {},
+    });
     input = sut.getByRole('spinbutton') as HTMLInputElement;
   });
 
   it('updates value', async () => {
     expect(input.value).toBe('');
-    await act(() => sut.component.$set({ value: 10 }));
+    await sut.rerender({ value: 10 });
     expect(input.value).toBe('10');
   });
 

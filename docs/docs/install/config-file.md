@@ -26,7 +26,6 @@ The default configuration looks like this:
     "bframes": -1,
     "refs": 0,
     "gopSize": 0,
-    "npl": 0,
     "temporalAQ": false,
     "cqMode": "auto",
     "twoPass": false,

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -12,7 +13,7 @@ import {
 } from 'src/dtos/tag.dto';
 import { TagEntity } from 'src/entities/tag.entity';
 import { Permission } from 'src/enum';
-import { JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { AssetTagItem } from 'src/interfaces/tag.interface';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
@@ -131,6 +132,7 @@ export class TagService extends BaseService {
     return results;
   }
 
+  @OnJob({ name: JobName.TAG_CLEANUP, queue: QueueName.BACKGROUND_TASK })
   async handleTagCleanup() {
     await this.tagRepository.deleteEmptyTags();
     return JobStatus.SUCCESS;
