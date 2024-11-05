@@ -2,15 +2,14 @@ import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ImmichWorker } from 'src/enum';
 import { JobItem, QueueName } from 'src/interfaces/job.interface';
 
 export const IEventRepository = 'IEventRepository';
 
 type EventMap = {
   // app events
-  'app.bootstrap': [ImmichWorker];
-  'app.shutdown': [ImmichWorker];
+  'app.bootstrap': [];
+  'app.shutdown': [];
 
   'config.init': [{ newConfig: SystemConfig }];
   // config events
