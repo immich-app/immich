@@ -59,7 +59,7 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ml-4 mt-4 flex flex-col">
-        <SettingAccordion key="folders" title={$t('folders')} subtitleSnippet={$t('folders_feature_description')}>
+        <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={foldersEnabled} />
           </div>
@@ -75,17 +75,13 @@
           {/if}
         </SettingAccordion>
 
-        <SettingAccordion
-          key="memories"
-          title={$t('time_based_memories')}
-          subtitleSnippet={$t('photos_from_previous_years')}
-        >
+        <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={memoriesEnabled} />
           </div>
         </SettingAccordion>
 
-        <SettingAccordion key="people" title={$t('people')} subtitleSnippet={$t('people_feature_description')}>
+        <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={peopleEnabled} />
           </div>
@@ -101,13 +97,13 @@
           {/if}
         </SettingAccordion>
 
-        <SettingAccordion key="rating" title={$t('rating')} subtitleSnippet={$t('rating_description')}>
+        <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={ratingsEnabled} />
           </div>
         </SettingAccordion>
 
-        <SettingAccordion key="tags" title={$t('tags')} subtitleSnippet={$t('tag_feature_description')}>
+        <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={tagsEnabled} />
           </div>
@@ -123,7 +119,7 @@
         </SettingAccordion>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSave()}>{$t('save')}</Button>
+          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

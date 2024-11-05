@@ -50,21 +50,16 @@
     icon={mdiCogOutline}
     key="app-settings"
     title={$t('app_settings')}
-    subtitleSnippet={$t('manage_the_app_settings')}
+    subtitle={$t('manage_the_app_settings')}
   >
     <AppSettings />
   </SettingAccordion>
 
-  <SettingAccordion
-    icon={mdiAccountOutline}
-    key="account"
-    title={$t('account')}
-    subtitleSnippet={$t('manage_your_account')}
-  >
+  <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
     <UserProfileSettings />
   </SettingAccordion>
 
-  <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitleSnippet={$t('manage_your_api_keys')}>
+  <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
     <UserAPIKeyList bind:keys />
   </SettingAccordion>
 
@@ -72,7 +67,7 @@
     icon={mdiDevices}
     key="authorized-devices"
     title={$t('authorized_devices')}
-    subtitleSnippet={$t('manage_your_devices')}
+    subtitle={$t('manage_your_devices')}
   >
     <DeviceList bind:devices={sessions} />
   </SettingAccordion>
@@ -81,7 +76,7 @@
     icon={mdiDownload}
     key="download-settings"
     title={$t('download_settings')}
-    subtitleSnippet={$t('download_settings_description')}
+    subtitle={$t('download_settings_description')}
   >
     <DownloadSettings />
   </SettingAccordion>
@@ -90,7 +85,7 @@
     icon={mdiFeatureSearchOutline}
     key="feature"
     title={$t('features')}
-    subtitleSnippet={$t('features_setting_description')}
+    subtitle={$t('features_setting_description')}
   >
     <FeatureSettings />
   </SettingAccordion>
@@ -99,7 +94,7 @@
     icon={mdiBellOutline}
     key="notifications"
     title={$t('notifications')}
-    subtitleSnippet={$t('notifications_setting_description')}
+    subtitle={$t('notifications_setting_description')}
   >
     <NotificationsSettings />
   </SettingAccordion>
@@ -109,19 +104,14 @@
       icon={mdiTwoFactorAuthentication}
       key="oauth"
       title={$t('oauth')}
-      subtitleSnippet={$t('manage_your_oauth_connection')}
+      subtitle={$t('manage_your_oauth_connection')}
       isOpen={oauthOpen || undefined}
     >
       <OAuthSettings user={$user} />
     </SettingAccordion>
   {/if}
 
-  <SettingAccordion
-    icon={mdiOnepassword}
-    key="password"
-    title={$t('password')}
-    subtitleSnippet={$t('change_your_password')}
-  >
+  <SettingAccordion icon={mdiOnepassword} key="password" title={$t('password')} subtitle={$t('change_your_password')}>
     <ChangePasswordSettings />
   </SettingAccordion>
 
@@ -129,7 +119,7 @@
     icon={mdiAccountGroupOutline}
     key="partner-sharing"
     title={$t('partner_sharing')}
-    subtitleSnippet={$t('manage_sharing_with_partners')}
+    subtitle={$t('manage_sharing_with_partners')}
   >
     <PartnerSettings user={$user} />
   </SettingAccordion>
@@ -138,7 +128,7 @@
     icon={mdiKeyOutline}
     key="user-purchase-settings"
     title={$t('user_purchase_settings')}
-    subtitleSnippet={$t('user_purchase_settings_description')}
+    subtitle={$t('user_purchase_settings_description')}
     autoScrollTo={true}
   >
     <UserPurchaseSettings />

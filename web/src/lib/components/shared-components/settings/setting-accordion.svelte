@@ -19,7 +19,7 @@
 
   let {
     title,
-    subtitle: subtitleText = '',
+    subtitle = '',
     key,
     isOpen = $bindable($accordionState.has(key)),
     autoScrollTo = false,
@@ -85,7 +85,7 @@
       </div>
 
       {#if subtitleSnippet}{@render subtitleSnippet()}{:else}
-        <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitleText}</p>
+        <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitle}</p>
       {/if}
     </div>
 
