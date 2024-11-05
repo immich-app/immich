@@ -766,7 +766,7 @@
 {#if showShortcuts}
   <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
 {/if}
-{#if assetStore.buckets.length > 0}
+{#if $assetStore.buckets.length > 0}
   <Scrubber
     invisible={showSkeleton}
     {assetStore}
