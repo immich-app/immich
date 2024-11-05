@@ -77,7 +77,7 @@ describe(NotificationService.name, () => {
 
   describe('onConfigUpdate', () => {
     it('should emit client and server events', () => {
-      const update = { newConfig: defaults };
+      const update = { oldConfig: defaults, newConfig: defaults };
       expect(sut.onConfigUpdate(update)).toBeUndefined();
       expect(eventMock.clientBroadcast).toHaveBeenCalledWith('on_config_update');
       expect(eventMock.serverSend).toHaveBeenCalledWith('config.update', update);

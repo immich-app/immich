@@ -80,12 +80,12 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 @Injectable()
 export class MetadataService extends BaseService {
   @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    if (app !== ImmichWorker.MICROSERVICES) {
+  async onBootstrap() {
+    if (this.worker !== ImmichWorker.MICROSERVICES) {
       return;
     }
-    const config = await this.getConfig({ withCache: false });
-    await this.init(config);
+    this.logger.log('Bootstrapping metadata service');
+    await this.init();
   }
 
   @OnEvent({ name: 'app.shutdown' })
@@ -93,17 +93,8 @@ export class MetadataService extends BaseService {
     await this.metadataRepository.teardown();
   }
 
-  @OnEvent({ name: 'config.update' })
-  async onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
-    await this.init(newConfig);
-  }
-
-  private async init({ reverseGeocoding }: SystemConfig) {
-    const { enabled } = reverseGeocoding;
-
-    if (!enabled) {
-      return;
-    }
+  private async init() {
+    this.logger.log('Initializing metadata service');
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
